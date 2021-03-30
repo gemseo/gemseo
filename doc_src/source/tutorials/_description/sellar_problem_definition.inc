@@ -1,0 +1,41 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. math::
+
+   \begin{aligned}
+   \text{minimize the objective function }&obj=x_{local}^2 + x_{shared,1} +y_0+e^{-y_1} \\
+   \text{with respect to the design variables }&x_{shared},\,x_{local} \\
+   \text{subject to the general constraints }
+   & c_1 \leq 0\\
+   & c_2 \leq 0\\
+   \text{subject to the bound constraints }
+   & -10 \leq x_{shared,0} \leq 10\\
+   & 0 \leq x_{shared,1} \leq 10\\
+   & 0 \leq x_{local} \leq 10.
+   \end{aligned}
+
+where the coupling variables are
+
+.. math::
+
+	\text{Discipline 0: } y_0 = x_{shared,0}^2 + x_{shared,1} + x_{local} - 0.2\,y_1,
+
+and
+
+.. math::
+
+	\text{Discipline 1: }y_1 = \sqrt{y_0} + x_{shared,0} + x_{shared,1}.
+
+and where the general constraints are
+
+.. math::
+
+   c_0 = 1-y_0/{3.16}
+
+   c_1 = y_1/{24.} - 1

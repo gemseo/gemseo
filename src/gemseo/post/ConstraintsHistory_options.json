@@ -1,0 +1,28 @@
+{
+    "name": "LineChart_options",
+    "required": ["save", "constraints_list"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        },
+        "constraints_list":{
+        	"items": {
+                "type": "string",
+                "minItems": 1
+            },
+            "type": "array"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

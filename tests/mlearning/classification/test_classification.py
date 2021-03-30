@@ -1,0 +1,67 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+""" Test machine learning classification algorithm module. """
+from __future__ import absolute_import, division, unicode_literals
+
+import pytest
+from future import standard_library
+from numpy import arange, zeros
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.classification.classification import MLClassificationAlgo
+
+standard_library.install_aliases()
+
+
+@pytest.fixture
+def dataset():
+    """ Build an input-output dataset. """
+    data = arange(60).reshape(10, 6)
+    variables = ["x_1", "x_2", "y_1"]
+    sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
+    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    io_dataset = Dataset("dataset_name")
+    io_dataset.set_from_array(data, variables, sizes, groups)
+    return io_dataset
+
+
+def test_notimplementederror(dataset):
+    """ Test not implemented methods. """
+    ml_algo = MLClassificationAlgo(dataset)
+    ml_algo_limited = MLClassificationAlgo(dataset, output_names=["y_1"])
+    with pytest.raises(NotImplementedError):
+        ml_algo.learn()
+    with pytest.raises(NotImplementedError):
+        ml_algo_limited.learn()
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict({"x_1": zeros(1), "x_2": zeros(2)})
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict(zeros(3))
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict_proba({"x_1": zeros(1), "x_2": zeros(2)})
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict_proba(zeros(3))
+    with pytest.raises(NotImplementedError):
+        ml_algo.predict_proba(zeros(3), hard=False)

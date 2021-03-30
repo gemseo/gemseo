@@ -1,0 +1,232 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or
+#                       initial documentation
+#        :author:  Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+from builtins import str
+
+import numpy as np
+from future import standard_library
+
+from gemseo import SOFTWARE_NAME
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.api import configure_logger
+from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.analytical.rastrigin import Rastrigin
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.third_party.junitxmlreq import link_to
+from gemseo.utils.py23_compat import PY2
+
+standard_library.install_aliases()
+LOGGER = configure_logger(SOFTWARE_NAME)
+
+
+class OptLibraryTestBase(object):
+    """ """
+
+    @staticmethod
+    def relative_norm(x, x_ref):
+        """
+
+        :param x: param x_ref:
+        :param x_ref:
+
+        """
+        xr_norm = np.linalg.norm(x_ref)
+        if xr_norm < 1e-8:
+            return np.linalg.norm(x - x_ref)
+        return np.linalg.norm(x - x_ref) / xr_norm
+
+    @staticmethod
+    def norm(x):
+        """
+
+        :param x:
+
+        """
+        return np.linalg.norm(x)
+
+    @staticmethod
+    def generate_one_test(opt_lib_name, algo_name, **options):
+        """
+
+        :param opt_lib_name: param algo_name:
+        :param algo_name:
+        :param **options:
+
+        """
+        problem = OptLibraryTestBase().get_pb_instance("Power2")
+        opt_library = OptimizersFactory().create(opt_lib_name)
+        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
+        opt_library.execute(problem, algo_name=algo_name, **options)
+        return opt_library
+
+    @staticmethod
+    def generate_one_test_unconstrained(opt_lib_name, algo_name, **options):
+        """
+
+        :param opt_lib_name: param algo_name:
+        :param algo_name:
+        :param **options:
+
+        """
+        problem = OptLibraryTestBase().get_pb_instance("Rosenbrock")
+        opt_library = OptimizersFactory().create(opt_lib_name)
+        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
+        opt_library.execute(problem, algo_name=algo_name, **options)
+        return opt_library
+
+    @staticmethod
+    def generate_error_test(opt_lib_name, algo_name, **options):
+        """
+
+        :param opt_lib_name: param algo_name:
+        :param algo_name:
+        :param **options:
+
+        """
+        problem = Power2(exception_error=True)
+        opt_library = OptimizersFactory().create(opt_lib_name)
+        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
+        opt_library.execute(problem, algo_name=algo_name, **options)
+        return opt_library
+
+    @staticmethod
+    def run_and_test_problem(problem, opt_library, algo_name, **options):
+        """
+
+        :param problem: param opt_library:
+        :param algo_name: param **options:
+        :param opt_library:
+        :param **options:
+
+        """
+        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
+        opt = opt_library.execute(problem, algo_name=algo_name, **options)
+        x_opt, f_opt = problem.get_solution()
+        x_err = OptLibraryTestBase.relative_norm(opt.x_opt, x_opt)
+        f_err = OptLibraryTestBase.relative_norm(opt.f_opt, f_opt)
+
+        if x_err > 1e-2 or f_err > 1e-2:
+            pb_name = problem.__class__.__name__
+            LOGGER.error(
+                "Optimizer : "
+                + str(algo_name)
+                + " from library :"
+                + opt_library.name
+                + " failed to solve the problem :"
+                + str()
+            )
+            LOGGER.error("Theoretical optimum : x_opt =" + str(x_opt))
+            LOGGER.error("f_opt = " + str(f_opt))
+            LOGGER.error("Obtained optimum    : x_opt =" + str(opt.x_opt))
+            LOGGER.error("f_opt = " + str(opt.f_opt))
+            error_msg = (
+                "Optimization with "
+                + algo_name
+                + " failed to find solution"
+                + " of problem "
+                + pb_name
+            )
+            return error_msg
+        return None
+
+    def create_test(self, problem, opt_library, algo_name, options):
+        """
+
+        :param problem: param opt_library:
+        :param algo_name: param options:
+        :param opt_library:
+        :param options:
+
+        """
+
+        @link_to(
+            "Req-DEP-1",
+            "Req-MDO-4",
+            "Req-MDO-4.2",
+            "Req-MDO-4.7",
+            "Req-MDO-4.8",
+            "Req-MDO-4.9",
+        )
+        def test_algo(self=None):
+            """
+
+            :param self: Default value = None)
+
+            """
+            # self=None is a trick for a bug with nose2 and link_to decorator
+            msg = OptLibraryTestBase.run_and_test_problem(
+                problem, opt_library, algo_name, **options
+            )
+            if msg is not None:
+                raise Exception(msg)
+            return msg
+
+        return test_algo
+
+    def get_pb_instance(self, pb_name):
+        """
+
+        :param pb_name:
+
+        """
+        if pb_name == "Rosenbrock":
+            return Rosenbrock(2)
+        elif pb_name == "Power2":
+            return Power2()
+        if pb_name == "Rastrigin":
+            return Rastrigin()
+
+    def generate_test(self, opt_lib_name, get_options=None):
+        """Generates the tests for an opt library
+        Filters algorithms adapted to the benchmark problems
+
+        :param opt_lib_name: name of the library
+        :param get_options: Default value = None)
+        :returns: list of test methods to be attached to a unitest class
+
+        """
+        tests = []
+        factory = OptimizersFactory()
+        if factory.is_available(opt_lib_name):
+            opt_lib = OptimizersFactory().create(opt_lib_name)
+            for pb_name in ["Rosenbrock", "Power2", "Rastrigin"]:
+                problem = self.get_pb_instance(pb_name)
+                algos = opt_lib.filter_adapted_algorithms(problem)
+                for algo_name in algos:
+                    # Reinitialize problem between runs
+                    problem = self.get_pb_instance(pb_name)
+                    if get_options is not None:
+                        options = get_options(algo_name)
+                    else:
+                        options = {"max_iter": 10000}
+                    test_method = self.create_test(problem, opt_lib, algo_name, options)
+                    name = "test_" + opt_lib.__class__.__name__ + "_" + algo_name
+                    name += "_on_" + problem.__class__.__name__
+                    name = name.replace("-", "_")
+                    if PY2:
+                        name = name.encode("ascii")
+                    test_method.__name__ = name
+
+                    tests.append(test_method)
+        return tests

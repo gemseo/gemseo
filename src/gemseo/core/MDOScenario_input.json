@@ -1,0 +1,22 @@
+{
+    "name": "MDOScenario_input",
+    "required": ["algo", "max_iter"],
+    "properties": {
+        "max_iter": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "algo": {
+            "type": "string",
+            "enum":["SLSQP","L-BFGS-B","P-L-BFGS-B","TNC","NLOPT_COBYLA",
+            		"NLOPT_MMA","NLOPT_SLSQP","NLOPT_BOBYQA","NLOPT_BFGS", "NLOPT_NEWUOA",
+            		"SNOPTB", "ODD"]
+        },
+		"algo_options": {
+			"type": "object"
+		}
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#MDOScenario_input"
+}

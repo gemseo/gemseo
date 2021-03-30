@@ -1,0 +1,26 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+     MixtureOfExperts -> Dataset: read input and output data
+     MixtureOfExperts <- Dataset: input data, output data
+     MixtureOfExperts -> MLClusteringAlgo: split data into clusters
+     MixtureOfExperts <- MLClusteringAlgo: labeled data
+     MixtureOfExperts -> MLClassificationAlgo: build classifier from inputs and labels
+     MixtureOfExperts <- MLClassificationAlgo: classification model
+
+     loop build local regression models
+     	MixtureOfExperts -> RegressionModelFactory: local input and output data
+     	RegressionModelFactory -> MLRegressionAlgo: create a local regression model
+     	RegressionModelFactory <- MLRegressionAlgo: local regression model
+     	MixtureOfExperts <- RegressionModelFactory: local surrogate model
+     end
+
+     MixtureOfExperts -> AggregationAlgo: aggregate local surrogate models
+     MixtureOfExperts <- AggregationAlgo: mixture of experts

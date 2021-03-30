@@ -1,0 +1,33 @@
+{
+    "name": "OptHistoryView_options",
+    "required": ["save"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        },
+        "variables_names": {
+            "type": "array"
+        },
+        "obj_relative": {
+            "type": "boolean"
+        },
+        "obj_min":{
+            "type":"number"
+        },
+        "obj_max":{
+            "type":"number"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

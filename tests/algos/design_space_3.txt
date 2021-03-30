@@ -1,0 +1,2 @@
+ name          lower_bound   type   upper_bound
+ is_supersonic       0           integer      1

@@ -1,0 +1,39 @@
+{
+    "name": "SobieskiPropulsion_output",
+    "required": ["y_32","y_31","g_3","y_3", "y_34"],
+    "properties": {
+        "y_32": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_31": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "g_3": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_3": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_34": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiPropulsion_output"
+}

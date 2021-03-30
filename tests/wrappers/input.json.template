@@ -1,0 +1,5 @@
+{
+    "a": GEMSEO_INPUT{a::1.0},
+    "b": GEMSEO_INPUT{b::2.0},
+    "c": GEMSEO_INPUT{c::3.0}
+}

@@ -1,0 +1,37 @@
+% Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+%
+% This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+% International License. To view a copy of this license, visit
+% http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+% Commons, PO Box 1866, Mountain View, CA 94042, USA.
+%
+\begin{tikzpicture}
+\node [mybox] (box){%
+\begin{minipage}{0.3\textwidth}
+
+Save or show the N2 chart:
+\begin{python}
+from gemseo.api import generate_n2_plot
+disciplines_names = ['disc1', 'disc2', 'disc3']
+disciplines = create_discipline(disciplines_names, 'ext_path')
+generate_n2_plot(disciplines, save=True, show=False)
+\end{python}
+
+Save the coupling graph:
+\begin{python}
+from gemseo.api import generate_coupling_graph, create_discipline
+disciplines = create_discipline(['disc1', 'disc2', 'disc3'])
+generate_coupling_graph(disciplines)
+\end{python}
+
+Get all the inputs or outputs:
+\begin{python}
+from gemseo.api import get_all_inputs, get_all_outputs
+get_all_inputs(disciplines)
+get_all_outputs(disciplines, recursive=True)
+\end{python}
+
+\end{minipage}
+};
+\node[fancytitle, right=10pt] at (box.north west) {\DOT Coupling};
+\end{tikzpicture}

@@ -1,0 +1,33 @@
+{
+    "name": "Mission_input",
+    "required": ["lift", "mass", "drag", "reserve_fact"],
+    "properties": {
+    	"lift": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "mass": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "drag": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "reserve_fact": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#Mission_input"
+}

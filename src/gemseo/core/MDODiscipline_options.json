@@ -1,0 +1,63 @@
+{
+	"name": "MDODiscipline_options",
+	"properties": {
+		"linearization_mode": {
+			"type": "string",
+			"description": "Linearization mode",
+			"enum": [
+				"auto",
+				"direct",
+				"reverse",
+				"adjoint"
+			]
+		},
+		"jac_approx_type": {
+			"type": "string",
+			"description": "Jacobian approximation type",
+			"enum": [
+				"finite_differences",
+				"complex_step"
+			]
+		},
+		"jax_approx_step": {
+			"type": "number",
+			"minimum": 0,
+			"exclusiveMinimum": true,
+			"description": "Step for finite differences or complex step for Jacobian approximation"
+		},
+		"jac_approx_use_threading": {
+			"type": "boolean",
+			"description": "if True, use Threads instead of processes\n to parallelize the execution. \nMultiprocessing will serialize all the disciplines, \nwhile multithreading will share all the memory.\n This is important to note if you want to execute the same\n  discipline multiple times, you shall use multiprocessing"
+		},
+		"jac_approx_wait_time": {
+			"description": "Time waited between two forks of the process or thread when using parallel jacobian approximations (parallel=True)",
+			"minimum": 0,
+			"type": "number"
+		},
+		"jac_approx_n_processes": {
+			"type": "integer",
+			"minimum": 1,
+			"description": "maximum number of processors or threads on \nwhich the jacobian approximation is performed\n by default, 1 means no parallel calculations"
+		},
+		"cache_type": {
+			"type": "string",
+			"description": "Type of cache to be used.  \nBy default, simple cache stores the last execution inputs and outputs  \nin memory only to avoid computation of the outputs if the inputs are identical.\n To store more executions, use HDF5 caches, which stores data on the disk.\n There is a hashing mechanism which avoids reading on the disk for every calculation."
+		},
+		"cache_tolerance": {
+			"type": "number",
+			"minimum": 0,
+			"description": "Numerical tolerance on the relative norm of input vectors \n to consider that two sets of inputs are equal, and that the outputs may therefore be returned from the cache without calculations."
+		},
+		"cache_hdf_file": {
+			"type": "string",
+			"format":"uri",
+			"description": "Path to the HDF5 file to store the cache data."
+		},
+		"cache_hdf_node_name": {
+			"type": "string",
+			"description": "Name of the HDF dataset to store the discipline\n data. If None, the discipline name is used."
+		}
+	},
+	"$schema": "http://json-schema.org/draft-04/schema",
+	"type": "object"
+}

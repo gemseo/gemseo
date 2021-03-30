@@ -1,0 +1,3 @@
+# This file contains the dependencies used by the style tox target
+
+pre-commit

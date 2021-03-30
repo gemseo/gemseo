@@ -1,0 +1,33 @@
+{
+    "name": "SobieskiMission_input",
+    "required": ["y_14","x_shared","y_24","y_34"],
+    "properties": {
+        "y_14": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "x_shared": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_24": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_34": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+	},
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiMission_input"
+}

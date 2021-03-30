@@ -1,0 +1,19 @@
+{
+    "name": "PropaneComb2_output",
+    "required": ["y_2"],
+    "properties": {
+        "y_2": {
+            "items": {
+                "type": "number",
+                "id": "0"
+            },
+            "minItems": 2,
+          	"maxItems": 2,
+            "type": "array",
+            "id": "y_2"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#PropaneComb2_output"
+}

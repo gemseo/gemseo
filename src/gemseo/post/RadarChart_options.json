@@ -1,0 +1,39 @@
+{
+    "name": "RadarChart_options",
+    "required": ["save", "constraints_list"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        },
+        "iteration": {
+            "type": "integer"
+        },
+        "figsize_x": {
+            "type": "number",
+            "minimum": 2.0
+        },
+        "figsize_y": {
+            "type": "number",
+            "minimum": 2.0
+        },
+        "constraints_list":{
+        	"items": {
+                "type": "string",
+                "minItems": 1
+            },
+            "type": "array"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

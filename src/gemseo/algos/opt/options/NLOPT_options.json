@@ -1,0 +1,55 @@
+{
+    "name": "NLOPT_options",
+     "required":["max_iter"],
+    "properties": {
+        "xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		},
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_iter": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "max_time":{
+            "type": "number",
+             "minimum": 0.0
+        },
+        "stopval":{
+            "type": "number"
+        },
+        "ctol_abs":{
+            "type": "number",
+            "minimum": 0.0
+        },
+        "eq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ineq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "init_step": {
+            "type": "number",
+            "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

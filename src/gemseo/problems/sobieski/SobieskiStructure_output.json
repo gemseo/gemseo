@@ -1,0 +1,39 @@
+{
+    "name": "SobieskiStructure_output",
+    "required": ["y_1","y_11","y_14","g_1","y_12"],
+    "properties": {
+        "y_1": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_11": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_14": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "g_1": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_12": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiStructure_output"
+}

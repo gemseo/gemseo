@@ -1,0 +1,92 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+	class Transformer {
+	 +duplicate()
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 +fit_transform()
+	 +compute_jacobian()
+	 +compute_jacobian_inverse()
+	 +__str__()
+	}
+
+	class Pipeline {
+	 +transformers
+	 +duplicate()
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 +compute_jacobian()
+	 +compute_jacobian_inverse()
+	}
+
+	class Scaler {
+	 +offset
+	 +coefficient
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 +compute_jacobian()
+	 +compute_jacobian_inverse()
+	}
+
+	class MinMaxScaler {
+	 +fit()
+	}
+
+	class StandardScaler {
+	 +fit()
+	}
+
+	class DimensionReduction {
+	 +n_components
+	}
+
+	class PCA {
+	 +components
+	 +algo
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 +compute_jacobian()
+	 +compute_jacobian_inverse()
+	}
+
+	class KPCA {
+	 +algo
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	}
+
+	class KLSVD {
+	 +algo
+	 +ot_mesh
+	 +output_dimension
+	 +components
+	 +eigenvalues
+	 +mesh()
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 #get_process_sample()
+	 #truncate_kl_result()
+	}
+
+	Transformer <|-- Pipeline
+	Transformer <|-- Scaler
+	Scaler <|-- MinMaxScaler
+	Scaler <|-- StandardScaler
+	Transformer <|-- DimensionReduction
+	DimensionReduction <|-- PCA
+	DimensionReduction <|-- KPCA
+	DimensionReduction <|-- KLSVD

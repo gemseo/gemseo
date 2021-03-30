@@ -1,0 +1,25 @@
+{
+    "name": "Sellar2_output",
+    "required": ["y_1","r_1"],
+    "properties": {
+        "y_1": {
+            "items": {
+                "type": "number",
+                "id": "0"
+            },
+            "type": "array",
+            "id": "y_1"
+        },
+        "r_1": {
+            "items": {
+                "type": "number",
+                "id": "0"
+            },
+            "type": "array",
+            "id": "r_1"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#Sellar2_output"
+}

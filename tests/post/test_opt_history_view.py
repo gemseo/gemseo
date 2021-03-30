@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Damien Guenot
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import absolute_import, division, unicode_literals
+
+import unittest
+from os import remove
+from os.path import dirname, exists, join
+
+from future import standard_library
+
+from gemseo import SOFTWARE_NAME
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.api import configure_logger, execute_post
+from gemseo.core.grammar import InvalidDataException
+from gemseo.post.opt_history_view import OptHistoryView
+from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.third_party.junitxmlreq import link_to
+
+standard_library.install_aliases()
+
+
+configure_logger(SOFTWARE_NAME)
+
+DIRNAME = dirname(__file__)
+POWER2 = join(DIRNAME, "power2_opt_pb.h5")
+POWER2_NAN = join(DIRNAME, "power2_opt_pb_nan.h5")
+
+
+class Test_PlotHistoryViews(unittest.TestCase):
+    """ """
+
+    @link_to("Req-VIZ-1", "Req-VIZ-1.1", "Req-VIZ-1.2", "Req-VIZ-2", "Req-MR-4")
+    def test_view(self):
+        """ """
+        problem = Rosenbrock()
+        OptimizersFactory().execute(problem, "L-BFGS-B")
+        view = OptHistoryView(problem)
+        path = join(DIRNAME, "rosen_1")
+        view.execute(show=False, save=True, file_path=path)
+        for full_path in view.output_files:
+            assert exists(full_path)
+            remove(full_path)
+
+    def test_view_load_pb(self):
+        """ """
+        problem = OptimizationProblem.import_hdf(POWER2)
+        view = OptHistoryView(problem)
+        view.execute(show=False, save=True, file_path="power2view", obj_relative=True)
+        for full_path in view.output_files:
+            assert exists(full_path)
+            remove(full_path)
+
+    @link_to("Req-VIZ-1", "Req-VIZ-1.3", "Req-MDO-8.2", "Req-MR-4")
+    def test_view_constraints(self):
+        """ """
+        problem = Power2()
+        OptimizersFactory().execute(problem, "SLSQP")
+        view = OptHistoryView(problem)
+
+        _, cstr = view._get_constraints(["toto", "ineq1"])
+        assert len(cstr) == 1
+        view.execute(
+            show=False,
+            save=True,
+            variables_names=["x"],
+            file_path="power2_2",
+            obj_min=0.0,
+            obj_max=5.0,
+        )
+        for full_path in view.output_files:
+            assert exists(full_path)
+            remove(full_path)
+
+    @link_to("Req-VIZ-1", "Req-VIZ-1.3", "Req-MR-4")
+    def test_opt_errors(self):
+        """ """
+        problem = Power2()
+        OptimizersFactory().execute(problem, "SLSQP")
+        view = OptHistoryView(problem)
+        self.assertRaises(InvalidDataException, view.execute)
+        self.assertRaises(InvalidDataException, view.execute, save="toto")
+        self.assertRaises(InvalidDataException, view.execute, save=True, file_path=True)
+        self.assertRaises(InvalidDataException, view.execute, save=False, show=1)
+
+    def test_nans(self):
+
+        #         problem = Power2()
+        #         refun = problem.objective._func
+        #         refctr = problem.constraints[0]._func
+        #
+        #         def newpt(x):
+        #             out = refun(x)
+        #             if x[1] < 0.51:
+        #                 out = float("nan")
+        #             return out
+        #
+        #         def newptc(x):
+        #             out = refctr(x)
+        #             if x[1] < 0.51:
+        #                 out = float("nan")
+        #             return out
+        #
+        #         problem.objective._func = newpt
+        #         problem.objective.name = "Pow2 with nans"
+        #         problem.constraints[0]._func = newptc
+        #         problem.stop_if_nan = False
+        #
+        #         execute_algo(problem, "NLOPT_COBYLA", max_iter=10)
+        #
+        #         problem.export_hdf("power2_opt_pb_nan.h5")
+
+        problem = OptimizationProblem.import_hdf(POWER2_NAN)
+        view = execute_post(problem, "OptHistoryView", show=False, save=True)
+
+        for full_path in view.output_files:
+            assert exists(full_path)
+            remove(full_path)

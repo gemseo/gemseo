@@ -1,0 +1,137 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+	abstract class MLRegressionAlgo {
+	 +DataFormatters
+	 +predict_raw()
+	 +predict_jacobian()
+	 #predict_jacobian()
+	}
+
+	class LinearRegression {
+	 +coefficients
+	 +intercept
+	 +get_coefficients()
+	 +get_intercept()
+	 #fit()
+	 #predict()
+	 #predict_jacobian()
+	 #convert_array_to_dict()
+	}
+
+	class PolynomialRegression {
+	 +poly
+	 +degree
+	 #predict()
+	 #predict_jacobian()
+	 #fit()
+	 #get_coefficients()
+	 #save_algo()
+	 +load_algo()
+	}
+
+	class RBFRegression {
+     +LIBRARY
+     +ABBR
+     +EUCLIDEAN
+     +MULTIQUADRIC
+     +INVERSE_MULTIQUADRIC
+     +GAUSSIAN
+     +LINEAR
+     +CUBIC
+     +QUINTIC
+     +THIN_PLATE
+	 +AVAILABLE_FUNCTIONS
+	 +function
+	 +der_function
+	 +epsilon
+	 +y_average
+	 +RBFDerivatives
+	 +get_available_functions()
+	 #fit()
+	 #predict()
+	 #predict_jacobian()
+	 #check_available_jacobian()
+	 #get_objects_to_save()
+	 #save_algo()
+	 +load_algo()
+	}
+
+	class GaussianProcessRegression {
+	 +kernel
+	 +nugget_effect
+	 +n_restarts
+	 +optimizer
+	 +predict_std()
+	 #fit()
+	 #predict()
+	}
+
+	class PCERegression {
+     +LIBRARY
+     +ABBR
+     +LS_STRATEGY
+     +QUAD_STRATEGY
+     +SPARSE_STRATEGY
+     +AVAILABLE_STRATEGIES
+     +compute_sobol()
+	 #fit()
+	 #predict()
+	 #predict_jacobian()
+	 #build_pce()
+	 #get_basis()
+	 #get_basis_size()
+	 #get_quadrature_points()
+	 #get_trunc_strategy()
+	 #get_proj_strategy()
+	 #get_ls_weights()
+	 #get_quad_weights()
+	 #get_weights()
+	}
+
+	class MixtureOfExperts {
+	 +ABBR
+	 +LABELS
+	 #LOCAL_INPUT
+	 #LOCAL_OUTPUT
+	 +regress_algo
+	 +classif_algo
+	 +cluster_algo
+	 +regress_params
+	 +classif_params
+	 +cluster_params
+	 +labels
+	 +n_clusters
+	 +set_clusterer()
+	 +set_classifier()
+	 +set_regressor()
+	 +predict_class()
+	 +predict_local_model()
+	 +__str__()
+	 #fit()
+	 #fit_clusters()
+	 #fit_classifier()
+	 #fit_regressors()
+	 #predict_all()
+	 #predict()
+	 #predict_jacobian()
+	 #predict_jacobian_hard()
+	 #predict_jacobian_soft()
+	 #save_algo()
+	 +load_algo()
+	 #get_objects_to_save()
+	}
+
+	MLRegressionAlgo <|-- LinearRegression
+	LinearRegression <|-- PolynomialRegression
+	MLRegressionAlgo <|-- GaussianProcessRegression
+	MLRegressionAlgo <|-- RBFRegression
+	MLRegressionAlgo <|-- PCERegression
+	MLRegressionAlgo <|-- MixtureOfExperts

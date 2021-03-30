@@ -1,0 +1,32 @@
+{
+    "name": "SLSQP_options",
+    "required":["max_iter"],
+    "properties": {
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "disp": {
+            "type": "number"
+        },
+        "eq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ineq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_iter":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		}
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "id": "#SLSQP"
+}

@@ -1,0 +1,166 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Syver Doving Agdestein
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+""" Test mean squared error measure. """
+from __future__ import absolute_import, division, unicode_literals
+
+import pytest
+from future import standard_library
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+
+standard_library.install_aliases()
+
+
+MODEL = AnalyticDiscipline(expressions_dict={"y": "1+x+x**2"})
+MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
+
+TOL_DEG_1 = 0.03
+TOL_DEG_2 = 0.001
+ATOL = 1e-12
+
+
+@pytest.fixture
+def dataset():
+    """ Data points. """
+    MODEL.cache.clear()
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
+    scenario.execute({"algo": "fullfact", "n_samples": 20})
+    return MODEL.cache.export_to_dataset()
+
+
+@pytest.fixture
+def dataset_test():
+    """ Data points. """
+    MODEL.cache.clear()
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
+    scenario.execute({"algo": "fullfact", "n_samples": 5})
+    return MODEL.cache.export_to_dataset()
+
+
+def test_constructor(dataset):
+    """ Test construction."""
+    algo = MLAlgo(dataset)
+    measure = MSEMeasure(algo)
+    assert measure.algo is not None
+    assert measure.algo.learning_set is dataset
+
+
+def test_evaluate_learn(dataset):
+    """ Test evaluate learn method. """
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    mse_train = measure.evaluate("learn")
+    assert mse_train < TOL_DEG_2
+
+    algo = PolynomialRegression(dataset, degree=1)
+    measure = MSEMeasure(algo)
+    mse_train = measure.evaluate("learn")
+    assert mse_train < TOL_DEG_1
+
+    algo = PolynomialRegression(
+        dataset,
+        degree=2,
+        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+    )
+    measure = MSEMeasure(algo)
+    mse_train = measure.evaluate("learn")
+    assert mse_train < TOL_DEG_2
+
+
+def test_evaluate_test(dataset, dataset_test):
+    """ Test evaluate test method. """
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    mse_test = measure.evaluate("test", test_data=dataset_test)
+    assert mse_test < TOL_DEG_2
+
+    algo = PolynomialRegression(dataset, degree=1)
+    measure = MSEMeasure(algo)
+    mse_test = measure.evaluate("test", test_data=dataset_test)
+    assert mse_test < TOL_DEG_1
+
+    algo = PolynomialRegression(
+        dataset,
+        degree=2,
+        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+    )
+    measure = MSEMeasure(algo)
+    mse_test = measure.evaluate("test", test_data=dataset_test)
+    assert mse_test < TOL_DEG_2
+
+
+def test_evaluate_loo(dataset):
+    """ Test evaluate leave one out method. """
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    mse_loo = measure.evaluate("loo")
+    assert mse_loo < TOL_DEG_2
+
+    algo = PolynomialRegression(dataset, degree=1)
+    measure = MSEMeasure(algo)
+    mse_loo = measure.evaluate("loo")
+    assert mse_loo < TOL_DEG_1
+
+
+def test_evaluate_kfolds(dataset):
+    """ Test evaluate k-folds method. """
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    mse_kfolds = measure.evaluate("kfolds")
+    assert mse_kfolds < TOL_DEG_2
+
+    algo = PolynomialRegression(dataset, degree=1)
+    measure = MSEMeasure(algo)
+    mse_kfolds = measure.evaluate("kfolds")
+    assert mse_kfolds < TOL_DEG_1
+
+    algo = PolynomialRegression(
+        dataset,
+        degree=2,
+        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+    )
+    measure = MSEMeasure(algo)
+    mse_kfolds = measure.evaluate("kfolds")
+    assert mse_kfolds < TOL_DEG_2
+
+
+def test_evaluate_bootstrap(dataset):
+    """ Test evaluate bootstrap method. """
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    mse_bootstrap = measure.evaluate("bootstrap")
+    assert mse_bootstrap < TOL_DEG_2
+
+    algo = PolynomialRegression(dataset, degree=1)
+    measure = MSEMeasure(algo)
+    mse_bootstrap = measure.evaluate("bootstrap")
+    assert mse_bootstrap < TOL_DEG_1

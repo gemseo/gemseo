@@ -1,0 +1,27 @@
+{
+    "name": "Structure_output",
+    "required": ["mass", "reserve_fact", "displ"],
+    "properties": {
+        "mass": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "reserve_fact": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "displ": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#Structure_output"
+}

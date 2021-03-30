@@ -1,0 +1,36 @@
+{
+    "name": "L-BFGS-B_options",
+    "required":["max_iter"],
+    "properties": {
+        "disp": {
+            "type": "integer",
+             "minimum": 0
+        },
+		"normalize_design_space": {
+			"type": "boolean"
+		},
+        "maxcor":{
+            "type": "integer"
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "pg_tol": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_fun_eval":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "max_iter":{
+            "type": "integer",
+            "minimum": 1
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object",
+    "id": "#L-BFGS-B"
+}

@@ -1,0 +1,11 @@
+name: gemseo
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=2.7
+  - pip
+  # The following dependencies must be the same as in requirements/gemseo-conda-python2.txt
+  - pyside2 <=5.15.2
+  - python-graphviz <=0.15
+  - nlopt >=2.4.2,<=2.6.2

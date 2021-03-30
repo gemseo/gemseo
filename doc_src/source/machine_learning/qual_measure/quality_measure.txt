@@ -1,0 +1,46 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+	abstract class MLQualityMeasure {
+	    +LEARN
+	    +TEST
+	    +LOO
+	    +KFOLDS
+	    +BOOTSTRAP
+	    +algo
+	    +evaluate()
+	    +evaluate_learn()
+	    +evaluate_test()
+	    +evaluate_loo()
+	    +evaluate_kfolds()
+	    +evaluate_bootstrap()
+	}
+
+	abstract class MLErrorMeasure {
+	    +evaluate_learn()
+	    +evaluate_test()
+	    +evaluate_loo()
+	    +evaluate_kfolds()
+	    +evaluate_bootstrap()
+	    #compute_measure()
+	}
+
+	class MSEMeasure {
+		#compute_measure()
+	}
+
+	class R2Measure {
+		#compute_measure()
+	}
+
+
+	MLQualityMeasure <|-- ErrorMeasure
+	MLErrorMeasure <|-- R2Measure
+	MLErrorMeasure <|-- MSEMeasure

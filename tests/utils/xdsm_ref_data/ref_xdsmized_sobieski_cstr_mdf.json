@@ -1,0 +1,220 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "MDAGaussSeidel",
+        "type": "mda"
+      },
+      {
+        "id": "Dis3",
+        "name": "SobieskiPropulsion",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "SobieskiAerodynamics",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis5",
+        "name": "SobieskiStructure",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis6",
+        "name": "SobieskiMission",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_shared^(0), x_1^(0), x_2^(0), x_3^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "y_4^*, g_1_g_2_g_3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_shared, x_1, x_2, x_3"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "g_1, g_2, g_3, y_4"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x_shared, x_1, x_2, x_3"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "g_1, g_2, g_3"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_shared, x_3"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "x_shared, x_2"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis5",
+        "name": "x_shared, x_1"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis6",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis6",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y_32^*, y_31^*, y_3^*, y_34^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Dis4",
+        "to": "_U_",
+        "name": "y_21^*, y_23^*, y_24^*, y_2^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Dis5",
+        "to": "_U_",
+        "name": "y_1^*, y_11^*, y_14^*, y_12^*"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Dis6",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis6",
+        "name": "y_14, y_24, y_34"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis4",
+        "name": "y_12, y_32"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis5",
+        "name": "y_21, y_31"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "y_32"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis5",
+        "name": "y_31"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis5",
+        "name": "y_21"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis2",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis2",
+        "name": "y_12"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis4",
+        "name": "y_12"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          [
+            "Dis3",
+            "Dis4",
+            "Dis5"
+          ],
+          "Dis6"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n      Minimize: y_4(x_shared, x_1, x_2, x_3)\nWith respect to: \n    x_shared, x_1, x_2, x_3\nSubject to constraints: \ng_1_g_2_g_3(x_shared, x_1, x_2, x_3) <= 0\nDesign Space: \n+----------+-------------+-------+-------------+-------+\n| name     | lower_bound | value | upper_bound | type  |\n+----------+-------------+-------+-------------+-------+\n| x_shared |     0.01    |  0.05 |     0.09    | float |\n| x_shared |    30000    | 45000 |    60000    | float |\n| x_shared |     1.4     |  1.6  |     1.8     | float |\n| x_shared |     2.5     |  5.5  |     8.5     | float |\n| x_shared |      40     |   55  |      70     | float |\n| x_shared |     500     |  1000 |     1500    | float |\n| x_1      |     0.1     |  0.25 |     0.4     | float |\n| x_1      |     0.75    |   1   |     1.25    | float |\n| x_2      |     0.75    |   1   |     1.25    | float |\n| x_3      |     0.1     |  0.5  |      1      | float |\n+----------+-------------+-------+-------------+-------+"
+  }
+}

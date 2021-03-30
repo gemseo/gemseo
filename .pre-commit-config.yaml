@@ -1,0 +1,90 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+exclude: ^(src/gemseo/third_party|versioneer.py$|src/gemseo/_version.py$)
+
+repos:
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.4.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+    exclude: LICENSES/headers
+  - id: check-yaml
+    exclude: meta.yaml
+  - id: check-added-large-files
+  - id: check-json
+  - id: check-toml
+  - id: destroyed-symlinks
+  - id: check-symlinks
+
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.7.0
+  hooks:
+    - id: rst-backticks
+    - id: rst-directive-colons
+    - id: rst-inline-touching-normal
+
+- repo: https://github.com/timothycrosley/isort
+  rev: 5.7.0
+  hooks:
+  - id: isort
+- repo: https://github.com/psf/black
+  rev: 20.8b1
+  hooks:
+  - id: black
+
+- repo: https://github.com/commitizen-tools/commitizen
+  rev: v2.16.0
+  hooks:
+    - id: commitizen
+      stages: [commit-msg]
+
+- repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.1.10
+  hooks:
+    - id: insert-license
+      name: insert LGPL license
+      exclude: ^(tests/third_party/genson_tests|doc_src)
+      files: \.py$
+      args:
+        - --license-filepath
+        - LICENSES/headers/LGPL-3.0.txt
+    - id: insert-license
+      name: insert BSD license
+      files: ^doc_src/(examples|tutorials).*\.py$
+      args:
+        - --license-filepath
+        - LICENSES/headers/BSD-0-Clause.txt
+    - id: insert-license
+      name: insert CC-BY-SA license
+      files: (\.rst|\.rst\.txt)$
+      args:
+        - --license-filepath
+        - LICENSES/headers/CC-BY-SA-4.0.txt
+        - --comment-style
+        - ..|   |
+
+- repo: local
+  hooks:
+    - id: extract_req_in_from_setup_cfg
+      name: extract gemseo all and test requirements
+      language: python
+      pass_filenames: false
+      files: ^setup\.cfg$
+      entry: >
+        ./tools/extract_req_in_from_setup_cfg.py
+        --add-install-requires
+        --extras-require-key all
+        --extras-require-key test
+        requirements/gemseo.in
+    - id: extract_req_in_from_setup_cfg
+      name: extract test requirements
+      language: python
+      pass_filenames: false
+      files: ^setup\.cfg$
+      entry: >
+        ./tools/extract_req_in_from_setup_cfg.py
+        --extras-require-key test
+        requirements/test.in

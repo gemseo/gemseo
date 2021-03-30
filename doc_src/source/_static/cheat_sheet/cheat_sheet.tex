@@ -1,0 +1,68 @@
+% Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+%
+% This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+% International License. To view a copy of this license, visit
+% http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+% Commons, PO Box 1866, Mountain View, CA 94042, USA.
+%
+\documentclass{article}
+\usepackage[a3paper, landscape,  left=45mm, right=45mm, top=25mm]{geometry}
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand{\seriesdefault}{\bfdefault}
+\usepackage{url}
+\usepackage{multicol}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing}
+\usepackage{amsmath,amssymb}
+
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{minted}
+\newenvironment{python}
+{\VerbatimEnvironment\begin{minted}{python}}
+{\end{minted}}
+\newcommand\py[1]{\mintinline{python}{#1}}
+
+\title{GEMSEO Cheat Sheet}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+\advance\topmargin-.8in
+\advance\textheight3in
+\advance\textwidth3in
+\advance\oddsidemargin-1.5in
+\advance\evensidemargin-1.5in
+\parindent0pt
+\parskip2pt
+\newcommand{\hr}{\centerline{\rule{3.5in}{1pt}}}
+\newcommand*{\DOT}{\includegraphics[width=0.25cm]{dot.png}~}%
+\definecolor{gemsbluedraw}{RGB}{87,191,200}
+\definecolor{gemsbluetext}{RGB}{29,70,117}
+\definecolor{gemsyellow}{RGB}{250,176,59}
+\tikzstyle{mybox} = [draw=gemsbluedraw, fill=white, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=10pt]
+\tikzstyle{fancytitle} =[fill=white, text=gemsbluetext, font=\bfseries]
+
+\begin{document}
+\begin{center}{\color{gemsbluetext}\Huge{\textbf{A general cheat sheet for~}}\raisebox{-.2\height}{\includegraphics[height=3\fontcharht\font`\B]{../logo-small.png}}}\\
+\end{center}
+\begin{multicols*}{3}
+
+\input{elements/design_space.tex}
+\input{elements/discipline.tex}
+\input{elements/coupling.tex}
+\input{elements/surrogate.tex}
+\input{elements/cache.tex}
+\input{elements/scenario.tex}
+\input{elements/post.tex}
+\input{elements/availables.tex}
+\input{elements/new_discipline.tex}
+
+
+\end{multicols*}
+\end{document}

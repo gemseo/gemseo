@@ -1,0 +1,27 @@
+{
+    "name": "Structure_input",
+    "required": ["sweep", "thick_panels", "forces"],
+    "properties": {
+        "sweep": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "thick_panels": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "forces": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#Structure_input"
+}

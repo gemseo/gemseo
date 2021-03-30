@@ -1,0 +1,27 @@
+{
+    "name": "QuadApprox_options",
+    "required": ["function"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        },
+        "function":{
+            "type": "string"
+        },
+        "func_index":{
+        	"type":"integer"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

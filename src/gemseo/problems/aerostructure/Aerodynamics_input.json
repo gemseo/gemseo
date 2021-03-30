@@ -1,0 +1,27 @@
+{
+    "name": "Aerodynamics_input",
+    "required": ["sweep", "thick_airfoils", "displ"],
+    "properties": {
+    	"sweep": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "thick_airfoils": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "displ": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#Aerodynamics_input"
+}

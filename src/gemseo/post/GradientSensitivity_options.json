@@ -1,0 +1,33 @@
+{
+    "name": "GradientSensitivity_options",
+    "required": ["save"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        },
+        "figsize_x": {
+            "type": "number",
+            "minimum":4
+        },
+        "figsize_y": {
+            "type": "number",
+            "minimum":4
+        },
+        "iteration":{
+            "type": "integer",
+            "minimum":0
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

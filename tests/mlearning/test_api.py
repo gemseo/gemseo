@@ -1,0 +1,260 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+""" Test machine learning API. """
+from __future__ import absolute_import, division, unicode_literals
+
+import pytest
+from future import standard_library
+from numpy import arange, array, atleast_2d, hstack
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.api import create_dataset
+from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.mlearning.api import (
+    create_classification_model,
+    create_clustering_model,
+    create_mlearning_model,
+    create_regression_model,
+    get_classification_models,
+    get_classification_options,
+    get_clustering_models,
+    get_clustering_options,
+    get_mlearning_models,
+    get_mlearning_options,
+    get_regression_models,
+    get_regression_options,
+    import_classification_model,
+    import_clustering_model,
+    import_mlearning_model,
+    import_regression_model,
+)
+
+standard_library.install_aliases()
+
+
+LEARNING_SIZE = 9
+AVAILABLE_REGRESSION_MODELS = [
+    "LinearRegression",
+    "PolynomialRegression",
+    "GaussianProcessRegression",
+    "PCERegression",
+    "RBFRegression",
+    "MixtureOfExperts",
+]
+AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
+AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
+
+
+@pytest.fixture
+def dataset():
+    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
+    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+    design_space = DesignSpace()
+    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
+    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    return discipline.cache.export_to_dataset("dataset_name")
+
+
+@pytest.fixture
+def classification_data():
+    """ Dataset for classification. """
+    data = array(
+        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
+    )
+    data = hstack((data, atleast_2d(arange(9)).T))
+    variables = ["x_1", "x_2", "class"]
+    groups = {"class": "outputs", "x_1": "inputs", "x_2": "inputs"}
+    return data, variables, groups
+
+
+@pytest.fixture
+def cluster_data():
+    """ Dataset for clustering. """
+    data = array(
+        [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
+    )
+    return data, ["x_1", "x_2"]
+
+
+def test_get_mlearning_models():
+    """ Test that available ML models are found. """
+    available_models = get_mlearning_models()
+    for regression_model in AVAILABLE_REGRESSION_MODELS:
+        assert regression_model in available_models
+    for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
+        assert classification_model in available_models
+    for clustering_model in AVAILABLE_CLUSTERING_MODELS:
+        assert clustering_model in available_models
+    assert "Dummy" not in available_models
+
+
+def test_get_regression_models():
+    """ Test that available regression models are found. """
+    available_models = get_regression_models()
+    for regression_model in AVAILABLE_REGRESSION_MODELS:
+        assert regression_model in available_models
+    assert "Dummy" not in available_models
+
+
+def test_get_classification_models():
+    """ Test that available classification models are found. """
+    available_models = get_classification_models()
+    for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
+        assert classification_model in available_models
+    assert "Dummy" not in available_models
+
+
+def test_get_clustering_models():
+    """ Test that available clustering models are found. """
+    available_models = get_clustering_models()
+    for clustering_model in AVAILABLE_CLUSTERING_MODELS:
+        assert clustering_model in available_models
+    assert "Dummy" not in available_models
+
+
+def test_create_mlearning_model(dataset, classification_data, cluster_data):
+    """ Test creation of model. """
+    model = create_mlearning_model("LinearRegression", dataset)
+    assert model.algo is not None
+    data, variables, groups = classification_data
+    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    model = create_classification_model("KNNClassifier", dataset)
+    assert model.algo is not None
+    data, variables = cluster_data
+    dataset = create_dataset("dataset_name", data, variables)
+    model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
+    assert model.algo is not None
+
+
+def test_create_regression_model(dataset):
+    """ Test creation of regression model. """
+    model = create_regression_model("LinearRegression", dataset)
+    assert model.algo is not None
+
+
+def test_create_classification_model(classification_data):
+    """ Test creation of classification model. """
+    data, variables, groups = classification_data
+    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    model = create_classification_model("KNNClassifier", dataset)
+    assert model.algo is not None
+
+
+def test_create_clustering_model(cluster_data):
+    """ Test creation of clustering model. """
+    data, variables = cluster_data
+    dataset = create_dataset("dataset_name", data, variables)
+    model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
+    assert model.algo is not None
+
+
+def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_path):
+    """ Test import of model. """
+    model = create_mlearning_model("LinearRegression", dataset)
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_mlearning_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+    data, variables = cluster_data
+    dataset = create_dataset("dataset_name", data, variables)
+    model = create_mlearning_model("KMeans", dataset)
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_mlearning_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+    data, variables, groups = classification_data
+    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    model = create_mlearning_model("RandomForestClassifier", dataset)
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_mlearning_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+
+
+def test_import_regression_model(dataset, tmp_path):
+    """ Test import of regression model. """
+    model = create_regression_model("LinearRegression", dataset)
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_regression_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+
+
+def test_import_classification_model(classification_data, tmp_path):
+    """ Test import of classification model. """
+    data, variables, groups = classification_data
+    dataset = create_dataset("dataset_name", data, variables, groups=groups)
+    model = create_classification_model("KNNClassifier", dataset)
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_classification_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+
+
+def test_import_clustering_model(cluster_data, tmp_path):
+    """ Test import of clustering model. """
+    data, variables = cluster_data
+    dataset = create_dataset("dataset_name", data, variables)
+    model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
+    model.learn()
+    dirname = model.save(path=str(tmp_path))
+    loaded_model = import_clustering_model(dirname)
+    assert hasattr(loaded_model, "parameters")
+
+
+def test_get_mlearning_options():
+    """ Test correct retrieval of model options. """
+    properties = get_mlearning_options("LinearRegression")["properties"]
+    assert "fit_intercept" in properties
+    assert "Dummy" not in properties
+    properties = get_mlearning_options("KNNClassifier")["properties"]
+    assert "n_neighbors" in properties
+    assert "Dummy" not in properties
+    properties = get_mlearning_options("KMeans")["properties"]
+    assert "n_clusters" in properties
+    assert "Dummy" not in properties
+
+
+def test_get_regression_options():
+    """ Test correct retrieval of regression model options. """
+    properties = get_regression_options("LinearRegression")["properties"]
+    assert "fit_intercept" in properties
+    assert "Dummy" not in properties
+
+
+def test_get_classification_options():
+    """ Test correct retrieval of classification model options. """
+    properties = get_classification_options("KNNClassifier")["properties"]
+    assert "n_neighbors" in properties
+    assert "Dummy" not in properties
+
+
+def test_get_clustering_model_options():
+    """ Test correct retrieval of clustering model options. """
+    properties = get_clustering_options("KMeans")["properties"]
+    assert "n_clusters" in properties
+    assert "Dummy" not in properties

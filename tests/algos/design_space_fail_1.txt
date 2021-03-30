@@ -1,0 +1,3 @@
+ name      lower_bound
+ x_shared      0.01
+ y_12        24850.0

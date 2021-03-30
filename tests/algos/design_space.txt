@@ -1,0 +1,4 @@
+ name      lower_bound      upper_bound
+ x_shared      0.01          0.09
+ y_12        24850.0        77250.0
+ y_12          0.45           1.5

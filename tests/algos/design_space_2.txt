@@ -1,0 +1,4 @@
+ x_shared    0.04       0.01        float     0.09
+ y_12        30000.   24850.0      float       77250.0
+ y_12         1.0      0.45        float       1.5
+ is_supersonic  0      0           integer      1

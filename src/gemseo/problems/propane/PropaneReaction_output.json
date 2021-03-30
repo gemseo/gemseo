@@ -1,0 +1,29 @@
+{
+    "name": "PropaneReaction_output",
+    "required": ["f_2","f_6","f_7","f_9","obj"],
+    "properties": {
+        "f_2": {
+            "type": "array",
+            "id": "f_2"
+        },
+        "f_6": {
+            "type": "array",
+            "id": "f_6"
+        },
+        "f_7": {
+            "type": "array",
+            "id": "f_7"
+        },
+        "f_9": {
+            "type": "array",
+            "id": "f_9"
+        },
+        "obj": {
+            "type": "array",
+            "id": "obj"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#PropaneReaction_output"
+}

@@ -1,0 +1,26 @@
+{
+    "name": "DOEScenario_input",
+    "required": ["algo"],
+    "properties": {
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "algo": {
+            "type": "string",
+            "enum":[ "OT_SOBOL","OT_RANDOM","OT_HASELGROVE",
+            "OT_REVERSE_HALTON","OT_HALTON","OT_FAURE","OT_MONTE_CARLO",
+            "OT_FACTORIAL","OT_COMPOSITE","OT_AXIAL","OT_LHS","OT_LHSC","OT_FULLFACT",
+            "lhs","ff2n","fullfact","pbdesign","bbdesign","ccdesign" ]
+        },
+		"algo_options": {
+			"type": "object"
+		},
+		"n_samples": {
+        	"type" : "integer",
+        	"minimum":1
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#DOEScenario_input"
+}

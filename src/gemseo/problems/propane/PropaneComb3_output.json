@@ -1,0 +1,19 @@
+{
+    "name": "PropaneComb3_output",
+    "required": ["y_3"],
+    "properties": {
+        "y_3": {
+            "items": {
+                "type": "number",
+                "id": "0"
+            },
+            "minItems": 3,
+          	"maxItems": 3,
+            "type": "array",
+            "id": "y_3"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#PropaneComb3_output"
+}

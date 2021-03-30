@@ -1,0 +1,135 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "SobieskiPropulsion",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis2",
+        "name": "SobieskiAerodynamics",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "SobieskiMission",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "SobieskiStructure",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_shared^(0), x_1^(0), x_2^(0), x_3^(0), y_14^(0), y_32^(0), y_31^(0), y_24^(0), y_34^(0), y_23^(0), y_21^(0), y_12^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "y_4^*, y_31_y_32_y_34^*, y_21_y_23_y_24^*, y_12_y_14^*, g_1^*, g_2^*, g_3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_shared, y_23, x_3"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_32, y_34, g_3, y_31"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x_shared, y_32, x_2, y_12"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y_21, g_2, y_24, y_23"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_shared, y_34, y_14, y_24"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "y_21, x_1, x_shared, y_31"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_1, y_12, y_14"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y_3^*"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_32, y_31, g_3, y_34"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "y_2^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y_21, y_23, y_24, g_2"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis4",
+        "to": "_U_",
+        "name": "y_1^*, y_11^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "y_14, g_1, y_12"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          {
+            "parallel": [
+              "Dis1",
+              "Dis2",
+              "Dis3",
+              "Dis4"
+            ]
+          }
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n      Minimize: y_4(x_shared, y_14, y_24, y_34)\nWith respect to: \n    x_shared, x_1, x_2, x_3, y_14, y_32, y_31, y_24, y_34, y_23, y_21, y_12\nSubject to constraints: \ny_31_y_32_y_34(x_shared, x_3, y_23) = y_31(x_shared, x_3, y_23) - y_31 = 0\n                                      y_32(x_shared, x_3, y_23) - y_32 = 0\n                                      y_34(x_shared, x_3, y_23) - y_34 = 0\ny_21_y_23_y_24(x_shared, x_2, y_32, y_12) = y_21(x_shared, x_2, y_32, y_12) - y_21 = 0\n                                            y_23(x_shared, x_2, y_32, y_12) - y_23 = 0\n                                            y_24(x_shared, x_2, y_32, y_12) - y_24 = 0\ny_12_y_14(x_shared, x_1, y_31, y_21) = y_12(x_shared, x_1, y_31, y_21) - y_12 = 0\n                                       y_14(x_shared, x_1, y_31, y_21) - y_14 = 0\ng_1(x_shared, x_1, y_31, y_21) <= 0\ng_2(x_shared, x_2, y_32, y_12) <= 0\ng_3(x_shared, x_3, y_23) <= 0\nDesign Space: \n+----------+-------------+--------------------+-------------+-------+\n| name     | lower_bound |       value        | upper_bound | type  |\n+----------+-------------+--------------------+-------------+-------+\n| x_shared |     0.01    |        0.05        |     0.09    | float |\n| x_shared |    30000    |       45000        |    60000    | float |\n| x_shared |     1.4     |        1.6         |     1.8     | float |\n| x_shared |     2.5     |        5.5         |     8.5     | float |\n| x_shared |      40     |         55         |      70     | float |\n| x_shared |     500     |        1000        |     1500    | float |\n| x_1      |     0.1     |        0.25        |     0.4     | float |\n| x_1      |     0.75    |         1          |     1.25    | float |\n| x_2      |     0.75    |         1          |     1.25    | float |\n| x_3      |     0.1     |        0.5         |      1      | float |\n| y_14     |    24850    |   50606.9741711    |    77100    | float |\n| y_14     |    -7700    |   7306.20262124    |    45000    | float |\n| y_32     |    0.235    | 0.5027962499999999 |    0.795    | float |\n| y_31     |     2960    |   6354.32430691    |    10185    | float |\n| y_24     |     0.44    |     4.15006276     |    11.13    | float |\n| y_34     |     0.44    |     1.10754577     |     1.98    | float |\n| y_23     |     3365    |   12194.2671934    |    26400    | float |\n| y_21     |    24850    |   50606.9741711    |    77250    | float |\n| y_12     |    24850    |     50606.9742     |    77250    | float |\n| y_12     |     0.45    |        0.95        |     1.5     | float |\n+----------+-------------+--------------------+-------------+-------+"
+  }
+}

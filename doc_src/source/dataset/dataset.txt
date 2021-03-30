@@ -1,0 +1,81 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+	class Dataset {
+		+PARAMETER_GROUP
+		+DESIGN_GROUP
+    	+FUNCTION_GROUP = 'functions'
+    	+INPUT_GROUP = 'inputs'
+    	+OUTPUT_GROUP = 'outputs'
+    	+DEFAULT_GROUP
+    	+DEFAULT_NAMES
+		+data
+		+dimension
+		+length
+		+name
+		+sizes
+		#cached_inputs
+		#cached_outputs
+		#group
+		#groups
+		#names
+		#plot_factory
+		#positions
+		#strings_encoding
+		+add_group()
+		+add_variable()
+		+export_to_cache()
+		+export_to_dataframe()
+		+get_all_data()
+		+get_data_by_group()
+		+get_data_by_names()
+		+get_names()
+		+groups()
+		+is_group()
+		+is_variable()
+		+n_samples()
+		+n_variables()
+		+n_variables_by_group()
+		+plot()
+		+set_from_array()
+		+set_from_file()
+		+variables()
+		#clean()
+		#get_columns_names()
+		- str()
+		- len()
+		- getitem()
+		- str()
+	}
+
+	MLAlgo *-- Dataset
+	Dataset <|-- IrisDataSet
+	Dataset <|-- RosenbrockDataset
+	RosenbrockDataset *-- Rosenbrock
+	Rosenbrock --|> OptimizationProblem
+	OptimizationProblem --> Dataset
+	AbstractFullCache --> Dataset
+	DatasetFactory --> Dataset
+
+	class API << (A,#FF7700) >> {
+		+create_dataset()
+		+load_dataset()
+	}
+
+	API *-- DatasetFactory
+	API --> Dataset
+
+	class OptimizationProblem {
+		+ export_to_dataset()
+	}
+
+	class AbstractFullCache {
+		+ export_to_dataset()
+	}

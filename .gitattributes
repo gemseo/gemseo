@@ -1,0 +1,28 @@
+src/gemseo/_version.py export-subst
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# End of lines are set to UNIX
+* text eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+*.db binary
+*.di binary
+*.dvi binary
+*.gif binary
+*.h5 binary
+*.hdf5 binary
+*.idx binary
+*.jpg binary
+*.npy binary
+*.out binary
+*.pack binary
+*.pdf binary
+*.png binary
+*.pptx binary
+*.xcf binary
+*.xlsm binary
+*.xlsx binary
+*.eot binary
+*.ttf binary

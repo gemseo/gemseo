@@ -1,0 +1,17 @@
+{
+    "name": "PropaneComb1_input",
+    "required": ["x_shared"],
+    "properties": {
+        "x_shared": {
+            "items": {
+                "type": "number"
+            },
+            "minItems": 4,
+          	"maxItems": 4,
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#PropaneComb1_input"
+}

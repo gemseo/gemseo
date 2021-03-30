@@ -1,0 +1,105 @@
+..
+   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+   This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+   International License. To view a copy of this license, visit
+   http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+   Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+.. uml::
+
+	class Dataset {
+	}
+
+	abstract class MLAlgo {
+	 +ABBR
+	 +LIBRARY
+	 +algo
+	 +is_trained
+	 +learning_set
+	 +parameters
+	 +transformer
+	 +DataFormatters
+	 +learn()
+	 +save()
+	 #save_algo()
+	 +load_algo()
+	 #get_objects_to_save()
+	}
+
+	abstract class MLUnsupervisedAlgo {
+	 +var_names
+	 +learn()
+	 #fit()
+	}
+
+	abstract class MLClusteringAlgo {
+	 +n_clusters
+	 +labels
+	 +learn()
+	 +predict()
+	 +predict_proba()
+	 #predict_proba()
+	 #predict_proba_hard()
+	 #predict_proba_soft()
+	}
+
+	abstract class MLSupervisedAlgo {
+	 +input_names
+	 +input_shape
+	 +output_names
+	 +output_shape
+	 +DataFormatters
+	 +learn()
+	 +predict()
+	 #fit()
+	 #predict()
+	 #get_objects_to_save()
+	}
+
+	abstract class MLClassificationAlgo {
+	 +n_classes
+	 +learn()
+	 +predict_proba()
+	 #predict_proba()
+	 #predict_proba_hard()
+	 #predict_proba_soft()
+	 #get_objects_to_save()
+	}
+
+	abstract class MLRegressionAlgo {
+	 +DataFormatters
+	 +predict_raw()
+	 +predict_jacobian()
+	 #predict_jacobian()
+	}
+
+	abstract class MLQualityMeasure
+
+	abstract class SurrogateDiscipline {
+	 +input_grammar
+	 +output_grammar
+	 +execute()
+	 +linearize()
+	}
+
+	abstract class Transformer {
+	 +duplicate()
+	 +fit()
+	 +transform()
+	 +inverse_transform()
+	 +fit_transform()
+	 +compute_jacobian()
+	 +compute_jacobian_inverse()
+	}
+
+
+	MLAlgo *-- Dataset
+	MLAlgo *-- Transformer
+	MLAlgo <|-down- MLUnsupervisedAlgo
+	MLAlgo <|-down- MLSupervisedAlgo
+	MLUnsupervisedAlgo <|-down- MLClusteringAlgo
+	MLSupervisedAlgo <|-- MLRegressionAlgo
+	MLSupervisedAlgo <|-- MLClassificationAlgo
+	MLQualityMeasure *-left- MLAlgo
+	SurrogateDiscipline *-down- MLRegressionAlgo

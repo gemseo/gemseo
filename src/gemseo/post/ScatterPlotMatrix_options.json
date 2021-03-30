@@ -1,0 +1,36 @@
+{
+    "name": "ScatterPlotMatrix_options",
+    "required": ["save","variables_list"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show":{
+            "type": "boolean"
+        },
+        "figsize_x": {
+            "type": "number",
+            "minimum":4
+        },
+        "figsize_y": {
+            "type": "number",
+            "minimum":4
+        },
+        "variables_list":{
+        	"items": {
+                "type": "string",
+                "minItems": 1
+            },
+            "type": "array"
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

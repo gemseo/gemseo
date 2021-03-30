@@ -1,0 +1,34 @@
+{
+    "name": "Correlations_options",
+    "required": ["save"],
+    "properties": {
+        "save": {
+            "type": "boolean"
+        },
+        "show": {
+            "type": "boolean"
+        },
+        "n_plots_x":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "n_plots_y":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "coeff_limit":{
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+        },
+        "file_path": {
+            "type": "string"
+        },
+        "extension": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false,
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object"
+}

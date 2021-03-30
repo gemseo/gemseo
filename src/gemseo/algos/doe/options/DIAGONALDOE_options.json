@@ -1,0 +1,31 @@
+{
+    "name": "DIAGONALDOE8options",
+    "description": "Diagonal DOE algorithm",
+    "properties": {
+         "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+        "n_samples":{
+            "type": "integer",
+             "minimum": 1
+        },
+        "reverse":{
+            "type": "array",
+            "items":	{
+                		"type": "string",
+                		"minItems": 1
+                		}
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

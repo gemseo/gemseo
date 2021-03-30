@@ -1,0 +1,39 @@
+{
+    "name": "SobieskiAerodynamics_output",
+    "required": ["y_21","y_23","y_24","g_2","y_2"],
+    "properties": {
+        "y_21": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_23": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_24": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "g_2": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        },
+        "y_2": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "id": "#SobieskiAerodynamics_output"
+}

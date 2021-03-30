@@ -1,0 +1,68 @@
+{
+    "name": "TNC_options",
+    "required":["max_iter"],
+    "properties": {
+        "scale": {
+            "required": ["items"],
+            "type": "array",
+            "items":	{
+                		"type": "number",
+                		"minItems": 1
+                		}
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		},
+        "offset": {
+            "type": "number"
+        },
+        "disp": {
+            "type": "number"
+        },
+        "maxCGit": {
+            "type": "integer",
+            "minimum": -1
+        },
+        "max_iter":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "eta": {
+            "type": "number"
+        },
+        "stepmx": {
+            "type": "number"
+        },
+        "minfev": {
+            "type": "number"
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "pg_tol": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "eq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ineq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "rescale":{
+            "type": "number",
+            "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "id": "#TNC"
+}

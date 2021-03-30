@@ -1,0 +1,25 @@
+{
+	"name": "RosenMF_input",
+	"required": [
+		"x",
+		"fidelity"
+	],
+	"properties": {
+		"x": {
+			"items": {
+				"type": "number"
+			},
+			"type": "array"
+		},
+		"fidelity": {
+			"items": {
+				"type": "number"
+			},
+			"minItems": 1,
+			"maxItems": 1,
+			"type": "array"
+		}
+	},
+	"$schema": "http://json-schema.org/draft-04/schema",
+	"type": "object"
+}
