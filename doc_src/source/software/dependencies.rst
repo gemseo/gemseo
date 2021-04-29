@@ -11,15 +11,14 @@
 Dependencies
 ------------
 
-|g| depends on the packages listed in the next table,
+|g| depends on the packages listed below,
 some of them are optional.
 
 You may use more recent versions of these packages,
-but we cannot guarantee the backward compatibility ;
-has only been tested with these versions.
+but we cannot guarantee the backward compatibility.
 However,
 we provide a large set of tests with a high code
-coverage (99%) so that you can fully check your configuration.
+coverage so that you can fully check your configuration.
 
 .. seealso::
 
@@ -28,18 +27,19 @@ coverage (99%) so that you can fully check your configuration.
 Mandatory dependencies
 **********************
 
-The minimal dependencies are:
+The minimal dependencies are (shown here for python 3):
 
+   - custom_inherit ==2.3.1
    - fastjsonschema <=2.14.5
    - future
    - h5py >=2.3,<=2.10.0
    - matplotlib >=2,<=3.3.3
-   - numpy >=1.10,<=1.19.3
-   - pathlib
+   - numpy >=1.10,<=1.19.4
    - pyxdsm <=2.1.3
    - requests
    - scipy >=1.1,<=1.4.1
    - six
+   - tqdm >=4,<=4.54.0
    - xdsmjs ==1.0.0
 
 The minimal dependencies will allow to execute
@@ -53,12 +53,12 @@ Optional dependencies
 
 Some packages are not required to execute basic scenarios,
 but provide additional features,
-they are listed in the next table.
+they are listed below.
 The dependencies are independent,
 and can be installed one by one to activate
 the dependent features of listed in the same table.
 All these tools are open source with non-viral licenses
-(see :file:`CREDITS.rst`):
+(see :ref:`credits`):
 
    - openturns >=1.13,<=1.15: designs of experiments
    - pandas >=0.16,<=1.1.4: scatterplot matrix
@@ -69,4 +69,4 @@ All these tools are open source with non-viral licenses
    - xlwings <=0.21.4: excel reading with pandas
    - graphviz <=2.42.3: coupling graph generation
    - nlopt >=2.4.2,<=2.6.2: optimization library
-   - pyside2 <=5.13.2: grammar editor GUI
+   - pyside2 <=5.15.2: grammar editor GUI

@@ -20,10 +20,11 @@ doc_src/source/tutorials_sg
 doc_src/examples/**/*.*
 !doc_src/examples/**/*.py
 !doc_src/examples/**/*.sh
-!doc_src/examples/**/*.txt
 !doc_src/examples/**/*.xlsx
-!doc_src/examples/**/LICENSE.txt
 !doc_src/examples/**/README.rst
+!doc_src/examples/LICENSE.txt
+!doc_src/examples/design_space/design_space.txt
+!doc_src/examples/doe/doe.txt
 /doc
 
 htmlcov
