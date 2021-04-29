@@ -1,0 +1,4 @@
+name lower_bound value upper_bound type
+x1 -1. 0. 1. float
+x2 5. 6. 8. float
+x 2. 3. 5. integer

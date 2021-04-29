@@ -53,6 +53,8 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 sys.path.append(os.path.abspath("_ext"))
 
 extensions = [

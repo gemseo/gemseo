@@ -1,0 +1,17 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+sphinx:
+   configuration: doc_src/source/conf.py
+
+conda:
+   environment: requirements/docs-environment.yml
+
+python:
+   install:
+      - path: .
+        extra_requirements:
+           - all
+
