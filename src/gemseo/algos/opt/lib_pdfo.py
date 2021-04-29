@@ -57,7 +57,7 @@ class PDFOOpt(OptimizationLibrary):
         - does it handle inequality constraints
         """
         super(PDFOOpt, self).__init__()
-        doc = "www.pdfo.net"
+        doc = "https://www.pdfo.net/"
         self.lib_dict = {
             "PDFO_COBYLA": {
                 self.INTERNAL_NAME: "cobyla",

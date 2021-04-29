@@ -42,7 +42,7 @@ History
          <div class="col-8">
 
 |g| was initially created in 2015 by François Gallard
-within the `Multidisciplinary Design Optimization (MDO) Competence Center <https://www.irt-saintexupery.com/expertise/systems-engineering-modeling-domain/mdo-competence-center/>`_
+within the Multidisciplinary Design Optimization (MDO) Competence Center
 of `IRT Saint Exupéry <https://www.irt-saintexupery.com/>`_.
 This team, under the leadership of Anne Gazaix, is dedicated to the development of process automation technologies
 encompassing a wide range of disciplines, and their usage in a range of applications.
