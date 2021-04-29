@@ -25,19 +25,16 @@ The Rastrigin analytic problem
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from cmath import cos, pi, sin
 
-from future import standard_library
 from numpy import array, ones, zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Rastrigin(OptimizationProblem):
@@ -115,14 +112,14 @@ class Rastrigin(OptimizationProblem):
             function value at optimum
         :rtype: numpy array
         """
-        x_opt = zeros((2))
+        x_opt = zeros(2)
         f_opt = 0.0
         return x_opt, f_opt
 
     @staticmethod
     def rastrigin_jac(x_dv):
-        """This function computes the analytical gradient of 2nd order
-        Rastrigin function.
+        """This function computes the analytical gradient of 2nd order Rastrigin
+        function.
 
         :param x_dv: design variable vector
         :type x_dv: numpy array

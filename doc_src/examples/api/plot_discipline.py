@@ -26,7 +26,6 @@ Discipline
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import (
@@ -46,7 +45,6 @@ from gemseo.core.discipline import MDODiscipline
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##########################################################################
 # In this example, we will discover the different functions of the API

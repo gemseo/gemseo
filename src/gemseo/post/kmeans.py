@@ -24,7 +24,8 @@ A k-means classification of the optimization history
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import array
 from numpy import int as np_int
 from sklearn import cluster
@@ -32,16 +33,12 @@ from sklearn.preprocessing import StandardScaler
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class KMeans(OptPostProcessor):
-    """
-    The **KMeans** post processing
-    performs a k-means clustering on optimization history.
+    """The **KMeans** post processing performs a k-means clustering on optimization
+    history.
 
     The default number of clusters is 5 and can be modified in option.
 
@@ -53,16 +50,14 @@ class KMeans(OptPostProcessor):
     """
 
     def _run(self, n_clusters=5):  # pylint: disable=W0221
-        """
-        Computes the clustering
+        """Computes the clustering.
 
         :param n_clusters: prescribed number of clusters
         """
         self.__build_clusters(n_clusters)
 
     def __build_clusters(self, n_clusters=5):
-        """
-        Builds the clusters
+        """Builds the clusters.
 
         :param n_clusters: prescribed number of clusters
         :type n_clusters: int

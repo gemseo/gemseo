@@ -27,8 +27,10 @@
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
 .. _editable mode: https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
-.. _google docstrings: https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html
 .. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _mypy: http://mypy-lang.org
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
+.. _pytest-cov: https://pytest-cov.readthedocs.io
 
 .. _dev:
 
@@ -568,14 +570,55 @@ Check the links in the generated documentation with:
 
    doc-linkchecker does not work on windows.
 
-Writing style
-+++++++++++++
+Writing guidelines
+++++++++++++++++++
+
+Documenting classes, functions, methods, attributes, modules, etc... is mandatory.
+End user and developers shall not have to guess the purpose of an API
+and how to use it.
+
+Style
+~~~~~
+
+Use the Google Style Docstrings format for documenting the code.
+This :ref:`example module` shows how to write such docstrings.
+Older docstrings use the legacy *epydoc* docstrings format
+which is visually dense and hard to read.
+They will be overhauled progressively.
+
+Type hints
+~~~~~~~~~~
+
+For functions and methods,
+write type hints with inlined comments as shown in :ref:`example module`
+(this is compatible with both python 2.7 and 3.6+).
+The type hints are used when generating the functions and methods documentation,
+they will also be used gradually to check and improved the code quality
+with the help of a type checker like `mypy`_.
+
+Functions and methods arguments shall use `standard duck typing`_.
+In practice, use :class:`Iterable` or :class:`Sequence`
+instead of :class:`List` when appropriate,
+similarly for :class:`Mapping` instead of :class:`Dict`.
+For ``*args`` and ``**kwargs`` arguments,
+use only the value types with no container.
+
+Return types shall match exactly the type of the returned object.
+
+Linefeeds
+~~~~~~~~~
 
 Use `semantic linefeeds`_
 by starting a new line at the end of each sentence,
 and splitting sentences themselves at natural breaks between clauses,
 a text file becomes far easier to edit and version control.
 You can give a look at the current page's source for instance.
+
+Example
+~~~~~~~
+
+Have a look to the uncertainty module
+for an example of proper code documentation.
 
 Versioning
 ----------

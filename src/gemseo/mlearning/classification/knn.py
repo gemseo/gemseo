@@ -91,20 +91,18 @@ generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import stack
-from sklearn.neighbors import KNeighborsClassifier as SKLKNN
+from sklearn.neighbors import KNeighborsClassifier
 
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class KNNClassifier(MLClassificationAlgo):
-    """ K nearest neighbors classification algorithm. """
+    """K nearest neighbors classification algorithm."""
 
     LIBRARY = "scikit-learn"
     ABBR = "KNN"
@@ -141,7 +139,7 @@ class KNNClassifier(MLClassificationAlgo):
             n_neighbors=n_neighbors,
             **parameters
         )
-        self.algo = SKLKNN(n_neighbors, **parameters)
+        self.algo = KNeighborsClassifier(n_neighbors, **parameters)
 
     def _fit(self, input_data, output_data):
         """Fit the classification model.

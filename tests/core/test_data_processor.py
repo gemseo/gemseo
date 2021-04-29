@@ -23,13 +23,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from builtins import super
 
-from future import standard_library
 from numpy import array, complex128, float64, linalg, ndarray
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.data_processor import (
     ComplexDataProcessor,
     FloatDataProcessor,
@@ -37,20 +33,13 @@ from gemseo.core.data_processor import (
 )
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
+class TestDataProcessor(unittest.TestCase):
+    """"""
 
-
-class Test_DataProcessor(unittest.TestCase):
-    """ """
-
-    @link_to("Req-WF-1", "Req-WF-1.1", "Req-WF-1.4")
-    def test_FloatDataProcessor(self):
-        """ """
+    def test_float_data_processor(self):
+        """"""
         dp = FloatDataProcessor()
         in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
         pre_data = dp.pre_process_data(in_data)
@@ -68,9 +57,8 @@ class Test_DataProcessor(unittest.TestCase):
             assert k in in_data
             assert isinstance(v, ndarray)
 
-    @link_to("Req-WF-1", "Req-WF-1.1", "Req-WF-1.4")
-    def test_ComplexDataProcessor(self):
-        """ """
+    def test_complex_data_processor(self):
+        """"""
         dp = ComplexDataProcessor()
         in_data = {"a": array([1.1 + 2j]), "b": array([3.1, 4.1 + 3j])}
         pre_data = dp.pre_process_data(in_data)

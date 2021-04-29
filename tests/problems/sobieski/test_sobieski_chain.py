@@ -23,28 +23,19 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.chains import SobieskiChain, SobieskiMDAGaussSeidel
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_sobieski_chain(unittest.TestCase):
-    """ """
+class TestSobieskiChain(unittest.TestCase):
+    """"""
 
     def test_exec_chain(self):
-        """ """
+        """"""
         chain = SobieskiChain()
         chain.execute()
 
     def test_exec_mda(self):
-        """ """
+        """"""
         mda = SobieskiMDAGaussSeidel()
         mda.execute()
         self.assertAlmostEqual(

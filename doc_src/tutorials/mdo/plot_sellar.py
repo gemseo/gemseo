@@ -52,7 +52,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import super
 from math import exp, sqrt
 
-from future import standard_library
 from numpy import array, ones
 
 from gemseo.algos.design_space import DesignSpace
@@ -61,7 +60,6 @@ from gemseo.core.discipline import MDODiscipline
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Create the disciplinary classes
@@ -108,7 +106,7 @@ class SellarSystem(MDODiscipline):
         # ie how outputs are computed from inputs
         x, z, y_0, y_1 = self.get_inputs_by_name(["x", "z", "y_0", "y_1"])
         # The ouputs are stored here
-        self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] ** 2 + exp(-y_1[0])])
+        self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] + exp(-y_1[0])])
         self.local_data["c_1"] = array([1.0 - y_0[0] / 3.16])
         self.local_data["c_2"] = array([y_1[0] / 24.0 - 1.0])
 

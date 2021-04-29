@@ -22,20 +22,16 @@
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import allclose, array, linspace, savetxt
+from numpy import allclose, array
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.doe_scenario import DOEScenario
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-
-standard_library.install_aliases()
 
 
 @pytest.fixture(scope="module")
 def dataset():
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.analytic_discipline import AnalyticDiscipline
-    from gemseo.core.doe_scenario import DOEScenario
-
     discipline = AnalyticDiscipline(
         expressions_dict={"obj": "x_1+x_2", "cstr": "x_1-x_2"}
     )
@@ -54,7 +50,7 @@ def dataset():
 def mc_datasets(dataset):
     stats = EmpiricalStatistics(dataset)
     stats_obj = EmpiricalStatistics(dataset, ["obj"])
-    return (stats, stats_obj, dataset)
+    return stats, stats_obj, dataset
 
 
 def test_empstats_properties(mc_datasets):
@@ -66,17 +62,17 @@ def test_empstats_properties(mc_datasets):
 
 def test_empstats_minmax(mc_datasets):
     stats, _, _ = mc_datasets
-    tmp = stats.minimum()
+    tmp = stats.compute_minimum()
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 3.0)
     assert allclose(tmp["x_2"][0], 2.0)
     assert allclose(tmp["x_1"][0], 1.0)
-    tmp = stats.maximum()
+    tmp = stats.compute_maximum()
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 21.0)
     assert allclose(tmp["x_2"][0], 11.0)
     assert allclose(tmp["x_1"][0], 10.0)
-    tmp = stats.range()
+    tmp = stats.compute_range()
     assert allclose(tmp["cstr"][0], 0.0)
     assert allclose(tmp["obj"][0], 18.0)
     assert allclose(tmp["x_2"][0], 9.0)
@@ -89,7 +85,7 @@ def test_empstats_mean(mc_datasets):
         _,
         _,
     ) = mc_datasets
-    tmp = stats.mean()
+    tmp = stats.compute_mean()
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 12.0)
     assert allclose(tmp["x_2"][0], 6.5)
@@ -98,17 +94,17 @@ def test_empstats_mean(mc_datasets):
 
 def test_empstats_std(mc_datasets):
     stats, stats_obj, _ = mc_datasets
-    tmp = stats.standard_deviation()
+    tmp = stats.compute_standard_deviation()
     assert allclose(tmp["cstr"][0], 0.0)
     assert allclose(tmp["obj"][0], 5.744563, rtol=1e-06)
     assert allclose(tmp["x_2"][0], 2.872281, rtol=1e-06)
     assert allclose(tmp["x_1"][0], 2.872281, rtol=1e-06)
-    tmp = stats.variance()
+    tmp = stats.compute_variance()
     assert allclose(tmp["cstr"][0], 0.0, rtol=1e-06)
     assert allclose(tmp["obj"][0], 33.0, rtol=1e-06)
     assert allclose(tmp["x_2"][0], 8.25, rtol=1e-06)
     assert allclose(tmp["x_1"][0], 8.25, rtol=1e-06)
-    assert allclose(stats_obj.variance()["obj"][0], 33.0)
+    assert allclose(stats_obj.compute_variance()["obj"][0], 33.0)
 
 
 def test_empstats_prob(mc_datasets):
@@ -119,12 +115,12 @@ def test_empstats_prob(mc_datasets):
         "x_2": array([3.0]),
         "x_1": array([3.0]),
     }
-    tmp = stats.probability(value)
+    tmp = stats.compute_probability(value)
     assert allclose(tmp["cstr"], 0.0)
     assert allclose(tmp["obj"], 1.0)
     assert allclose(tmp["x_2"], 0.9)
     assert allclose(tmp["x_1"], 0.8)
-    tmp = stats.probability(value, False)
+    tmp = stats.compute_probability(value, False)
     assert allclose(tmp["cstr"], 1.0)
     assert allclose(tmp["obj"], 0.1)
     assert allclose(tmp["x_2"], 0.2)
@@ -133,53 +129,53 @@ def test_empstats_prob(mc_datasets):
 
 def test_empstats_quant(mc_datasets):
     stats, stats_obj, _ = mc_datasets
-    tmp = stats.quantile(0.5)
+    tmp = stats.compute_quantile(0.5)
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 12.0)
     assert allclose(tmp["x_1"][0], 5.5)
     assert allclose(tmp["x_2"][0], 6.5)
-    assert allclose(stats_obj.quantile(0.5)["obj"][0], 12.0)
+    assert allclose(stats_obj.compute_quantile(0.5)["obj"][0], 12.0)
 
 
 def test_empstats_quart(mc_datasets):
     stats, stats_obj, _ = mc_datasets
-    tmp = stats.quartile(2)
+    tmp = stats.compute_quartile(2)
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 12.0)
     assert allclose(tmp["x_1"][0], 5.5)
     assert allclose(tmp["x_2"][0], 6.5)
-    assert allclose(stats_obj.quartile(2)["obj"][0], 12.0)
+    assert allclose(stats_obj.compute_quartile(2)["obj"][0], 12.0)
     with pytest.raises(ValueError):
-        stats.quartile(0.25)
+        stats.compute_quartile(0.25)
 
 
 def test_empstats_perc(mc_datasets):
     stats, stats_obj, _ = mc_datasets
-    tmp = stats.percentile(50)
+    tmp = stats.compute_percentile(50)
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 12.0)
     assert allclose(tmp["x_1"][0], 5.5)
     assert allclose(tmp["x_2"][0], 6.5)
-    assert allclose(stats_obj.percentile(50)["obj"][0], 12.0)
+    assert allclose(stats_obj.compute_percentile(50)["obj"][0], 12.0)
     with pytest.raises(TypeError):
-        stats.percentile(0.25)
+        stats.compute_percentile(0.25)
     with pytest.raises(TypeError):
-        stats.percentile(-1)
+        stats.compute_percentile(-1)
 
 
 def test_empstats_med(mc_datasets):
     stats, stats_obj, _ = mc_datasets
-    tmp = stats.median()
+    tmp = stats.compute_median()
     assert allclose(tmp["cstr"][0], -1.0)
     assert allclose(tmp["obj"][0], 12.0)
     assert allclose(tmp["x_1"][0], 5.5)
     assert allclose(tmp["x_2"][0], 6.5)
-    assert allclose(stats_obj.median()["obj"][0], 12.0)
+    assert allclose(stats_obj.compute_median()["obj"][0], 12.0)
 
 
 def test_empstats_moment(mc_datasets):
     stats, _, _ = mc_datasets
-    tmp = stats.moment(1)
+    tmp = stats.compute_moment(1)
     assert allclose(tmp["cstr"][0], 0.0)
     assert allclose(tmp["obj"][0], 0.0)
     assert allclose(tmp["x_1"][0], 0.0)

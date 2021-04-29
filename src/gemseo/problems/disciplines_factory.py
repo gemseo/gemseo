@@ -21,32 +21,22 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
 Factory to create |g| disciplines
-**********************************
+**************************************
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from copy import deepcopy
 from os.path import dirname, join
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core import discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory
 from gemseo.core.json_grammar import JSONGrammar
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class DisciplinesFactory(object):
-    """
-    The **DisciplinesFactory** is used to create :class:`.MDODiscipline`
-    objects that are known to |g|
+    """The **DisciplinesFactory** is used to create :class:`.MDODiscipline` objects that
+    are known to |g|
 
     Three types of directories are scanned
     to import the :class:`.MDODiscipline` classes:
@@ -58,9 +48,9 @@ class DisciplinesFactory(object):
     """
 
     def __init__(self):
-        """
-        The constructor initializes the factory by scanning the directories
-        to search for subclasses of :class:`.MDODiscipline` objects.
+        """The constructor initializes the factory by scanning the directories to search
+        for subclasses of :class:`.MDODiscipline` objects.
+
         Searches in "GEMSEO_PATH" and :doc:`gemseo.problems`.
         """
         # Defines the benchmark problems to be imported
@@ -76,8 +66,7 @@ class DisciplinesFactory(object):
         self.__base_grammar_names = self.__base_grammar.get_data_names()
 
     def create(self, discipline_name, **options):
-        """
-        Create a :class:`.MDODiscipline` from its name.
+        """Create a :class:`.MDODiscipline` from its name.
 
         :param discipline_name: name of the discipline
         :type discipline_name: str
@@ -105,8 +94,7 @@ class DisciplinesFactory(object):
 
     @staticmethod
     def __filter_opts_dict(options, startstring):
-        """
-        Filters the options that start with a string.
+        """Filters the options that start with a string.
 
         :param options: discipline options
         :type options: dict
@@ -116,8 +104,7 @@ class DisciplinesFactory(object):
         return {k: v for k, v in options.items() if k.startswith(startstring)}
 
     def __filter_common_options(self, options):
-        """
-        Separates options:
+        """Separates options:
 
         - from the :class:`.MDODiscipline` options grammar
         - from the options that are specific to the discipline.
@@ -131,16 +118,12 @@ class DisciplinesFactory(object):
         return com_opts_dict, spec_opts_dict
 
     def update(self):
-        """
-        Updates the paths, to be used if GEMSEO_PATH was changed.
-        """
+        """Updates the paths, to be used if GEMSEO_PATH was changed."""
         self.factory.update()
 
     @property
     def disciplines(self):
-        """
-        Lists the available :class:`.MDODiscipline`,
-        known to this factory.
+        """Lists the available :class:`.MDODiscipline`, known to this factory.
 
         :returns: the list of available disciplines names
             (ie their class names)
@@ -148,10 +131,8 @@ class DisciplinesFactory(object):
         return self.factory.classes
 
     def get_options_grammar(self, name, write_schema=False, schema_file=None):
-        """
-        Get the options default values for the given class name
-        Only addresses kwargs
-        Generates
+        """Get the options default values for the given class name Only addresses kwargs
+        Generates.
 
         :param name: name of the class
         :type name: str

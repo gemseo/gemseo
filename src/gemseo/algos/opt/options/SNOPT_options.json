@@ -2,6 +2,26 @@
     "name": "SNOPT_options",
     "required":["max_iter"],
     "properties": {
+		"xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        },
         "max_iter": {
             "type": "integer",
             "minimum": 0
@@ -9,10 +29,6 @@
         "normalize_design_space": {
 			"type": "boolean"
 		},
-        "max_time": {
-            "type": "number",
-            "minimum": 0.0
-        },
         "Start_type": {
             "type": "string"
         },

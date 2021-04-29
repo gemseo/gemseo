@@ -31,29 +31,27 @@ model type is available.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class RegressionModelFactory(MLAlgoFactory):
-    """This factory instantiates a :class:`.MLRegressionAlgo`
-    from its class name.
-    The class can be internal to |g| or located in an external module
-    whose path is provided to the constructor.
+    """This factory instantiates a :class:`.MLRegressionAlgo` from its class name.
+
+    The class can be internal to |g| or located in an external module whose path is
+    provided to the constructor.
     """
 
     def __init__(self):
-        """Initializes the factory: scans the directories to search for
-        subclasses of :class:`.MLRegressionAlgo`. Searches in "GEMSEO_PATH"
-        and gemseo.mlearning.regression.
+        """Initializes the factory: scans the directories to search for subclasses of
+        :class:`.MLRegressionAlgo`.
+
+        Searches in "GEMSEO_PATH" and gemseo.mlearning.regression.
         """
         super(RegressionModelFactory, self).__init__()
         self.factory = Factory(MLRegressionAlgo, ("gemseo.mlearning.regression",))

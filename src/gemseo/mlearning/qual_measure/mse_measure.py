@@ -24,7 +24,7 @@ Mean squared error measure
 ==========================
 
 The :mod:`~gemseo.mlearning.qual_measure.mse_measure` module
-implements the concept of means squared error measures
+implements the concept of mean squared error measures
 for machine learning algorithms.
 
 This concept is implemented through the
@@ -43,16 +43,13 @@ where
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from sklearn.metrics import mean_squared_error
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 
-standard_library.install_aliases()
-
 
 class MSEMeasure(MLErrorMeasure):
-    """ Mean Squared Error measure for machine learning. """
+    """Mean Squared Error measure for machine learning."""
 
     def _compute_measure(self, outputs, predictions, multioutput=True):
         """Compute MSE.
@@ -62,6 +59,7 @@ class MSEMeasure(MLErrorMeasure):
         :param bool multioutput: if True, return the error measure for each
             output component. Otherwise, average these errors. Default: True.
         :return: MSE value.
+        :rtype: float or ndarray(float)
         """
         multioutput = "raw_values" if multioutput else "uniform_average"
         return mean_squared_error(outputs, predictions, multioutput=multioutput)

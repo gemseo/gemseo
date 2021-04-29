@@ -34,19 +34,17 @@ generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class RandomForestRegressor(MLRegressionAlgo):
-    """ Random forest regression """
+    """Random forest regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "RandomForestRegressor"

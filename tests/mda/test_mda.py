@@ -22,27 +22,22 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import os
 import unittest
-from builtins import str
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.mda import MDA
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
-standard_library.install_aliases()
-
-configure_logger(SOFTWARE_NAME)
+DIRNAME = os.path.dirname(__file__)
 
 
 class TestMDA(unittest.TestCase):
-    """Test of the MDA abstract class"""
+    """Test of the MDA abstract class."""
 
     @classmethod
     def setUpClass(cls):
@@ -53,21 +48,22 @@ class TestMDA(unittest.TestCase):
 
     @staticmethod
     def get_sellar_initial():
-        """Generate initial solution"""
+        """Generate initial solution."""
         x_local = np.array([0.0], dtype=np.float64)
         x_shared = np.array([1.0, 0.0], dtype=np.float64)
-        y_0 = np.ones((1), dtype=np.complex128)
-        y_1 = np.ones((1), dtype=np.complex128)
+        y_0 = np.ones(1, dtype=np.complex128)
+        y_1 = np.ones(1, dtype=np.complex128)
         return x_local, x_shared, y_0, y_1
 
     @classmethod
     def get_sellar_initial_input_data(cls):
-        """Build dictionary with initial solution"""
+        """Build dictionary with initial solution."""
         x_local, x_shared, y_0, y_1 = TestMDA.get_sellar_initial()
         return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
 
     def test_reset(self):
-        """Test that the MDA successfully resets its disciplines after their executions"""
+        """Test that the MDA successfully resets its disciplines after their
+        executions."""
         for discipline in self.disciplines:
             discipline.execute(self.input_data_sellar)
         for discipline in self.disciplines:
@@ -81,12 +77,8 @@ class TestMDA(unittest.TestCase):
         mda = MDA([Sellar1()])
         assert len(mda._current_input_couplings()) == 0
 
-    def test_norm0(self):
-        mda = MDA([Sellar1()], norm0=1e18)
-        assert mda.norm0 == 1e18
-
     def test_jacobian(self):
-        """Check the Jacobian computation"""
+        """Check the Jacobian computation."""
         self.mda_sellar.use_lu_fact = True
         self.mda_sellar.matrix_type = JacobianAssembly.LINEAR_OPERATOR
         self.assertRaises(
@@ -105,8 +97,11 @@ class TestMDA(unittest.TestCase):
         self.mda_sellar.linearize(self.input_data_sellar)
 
     def test_expected_workflow(self):
-        """ """
-        expected = "{MDAGaussSeidel(None), [Sellar1(None), Sellar2(None), SellarSystem(None), ], }"
+        """"""
+        expected = (
+            "{MDAGaussSeidel(None), [Sellar1(None), Sellar2(None), "
+            "SellarSystem(None), ], }"
+        )
         self.assertEqual(str(self.mda_sellar.get_expected_workflow()), expected)
 
     def test_warm_start(self):

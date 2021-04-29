@@ -33,11 +33,9 @@ from collections import defaultdict
 import json
 import re
 
-from future import standard_library
 from six import string_types
 
 
-standard_library.install_aliases()
 
 
 JS_TYPES = {dict: 'object',

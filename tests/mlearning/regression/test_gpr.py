@@ -19,11 +19,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test Gaussian process regression algorithm module. """
+"""Test Gaussian process regression algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, ndarray
 
 from gemseo.algos.design_space import DesignSpace
@@ -33,15 +32,12 @@ from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.gpr import GaussianProcessRegression
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
-standard_library.install_aliases()
-
-
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
 def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -55,7 +51,7 @@ def dataset():
 
 @pytest.fixture
 def model(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     gpr = GaussianProcessRegression(dataset)
     gpr.learn()
     return gpr
@@ -63,27 +59,27 @@ def model(dataset):
 
 @pytest.fixture
 def model_with_transform(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     gpr = GaussianProcessRegression(dataset, transformer={"inputs": Scaler()})
     gpr.learn()
     return gpr
 
 
 def test_constructor(dataset):
-    """ Test construction. """
+    """Test construction."""
     gpr = GaussianProcessRegression(dataset)
     assert gpr.algo is not None
 
 
 def test_learn(dataset):
-    """ Test learn. """
+    """Test learn."""
     gpr = GaussianProcessRegression(dataset)
     gpr.learn()
     assert gpr.algo is not None
 
 
 def test_predict(model):
-    """ Test prediction. """
+    """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction = model.predict(input_value)
     assert isinstance(prediction, dict)
@@ -97,7 +93,7 @@ def test_predict(model):
 
 
 def test_predict_std(model):
-    """ Test std prediction. """
+    """Test std prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
     prediction_std = model.predict_std(input_value)
     assert allclose(prediction_std, 0, atol=1e-3)
@@ -107,7 +103,7 @@ def test_predict_std(model):
 
 
 def test_predict_std_with_transform(model_with_transform):
-    """ Test std prediction with data transformation. """
+    """Test std prediction with data transformation."""
     input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
     prediction_std = model_with_transform.predict_std(input_value)
     assert allclose(prediction_std, 0, atol=1e-3)
@@ -117,7 +113,7 @@ def test_predict_std_with_transform(model_with_transform):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}

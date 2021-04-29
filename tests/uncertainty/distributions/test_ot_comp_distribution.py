@@ -23,14 +23,11 @@
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, inf
 from numpy.random import seed
 
-from gemseo.uncertainty.distributions.ot_cdist import OTComposedDistribution
-from gemseo.uncertainty.distributions.ot_dist import OTNormalDistribution
-
-standard_library.install_aliases()
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
 
 @pytest.fixture
@@ -38,7 +35,7 @@ def composed_distribution():
     distribution1 = OTNormalDistribution("x1", dimension=2)
     distribution2 = OTNormalDistribution("x2", dimension=2)
     distributions = [distribution1, distribution2]
-    return OTComposedDistribution(distributions)
+    return OTDistribution._COMPOSED_DISTRIBUTION(distributions)
 
 
 def test_constructor(composed_distribution):
@@ -56,19 +53,19 @@ def test_str(composed_distribution):
 
 def test_get_sample(composed_distribution):
     seed(0)
-    sample = composed_distribution.get_sample(3)
+    sample = composed_distribution.compute_samples(3)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3
     assert sample.shape[1] == 4
 
 
 def test_get_cdf(composed_distribution):
-    result = composed_distribution.cdf(array([0] * 4))
+    result = composed_distribution.compute_cdf(array([0] * 4))
     assert allclose(result, array([0.5] * 4))
 
 
 def test_get_inverse_cdf(composed_distribution):
-    result = composed_distribution.inverse_cdf(array([0.5] * 4))
+    result = composed_distribution.compute_inverse_cdf(array([0.5] * 4))
     assert allclose(result, array([0.0] * 4))
 
 

@@ -26,8 +26,6 @@ Scenario
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import (
     configure_logger,
     create_design_space,
@@ -42,7 +40,6 @@ from gemseo.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##########################################################################
 # In this example, we will discover the different functions of the API to
@@ -135,10 +132,10 @@ print(get_scenario_differenciation_modes())
 
 
 class Observer(object):
-    """ Observer. """
+    """Observer."""
 
     def update(self, atom):
-        """Update method
+        """Update method.
 
         :param AtomicExecSequence atom: atomic execution sequence.
         """

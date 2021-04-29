@@ -23,23 +23,13 @@ from __future__ import absolute_import, division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_KMeans(unittest.TestCase):
-    """ """
+class TestKMeans(unittest.TestCase):
+    """"""
 
     @classmethod
     def setUpClass(cls):
@@ -48,8 +38,7 @@ class Test_KMeans(unittest.TestCase):
         cls.problem = problem
         cls.factory = PostFactory()
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.1", "Req-VIZ-1.2", "Req-VIZ-2", "Req-VIZ-1.5")
     def test_kmeans(self):
-        """ """
+        """"""
         if self.factory.is_available("KMeans"):
             self.factory.execute(self.problem, "KMeans", n_clusters=6)

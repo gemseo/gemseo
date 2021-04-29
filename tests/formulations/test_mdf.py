@@ -21,11 +21,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -33,21 +29,16 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
-from gemseo.utils.py23_compat import PY2
 from gemseo.utils.xdsmizer import XDSMizer
 
-from .formulations_basetest import Formulations_BaseTest
-
-standard_library.install_aliases()
-LOGGER = configure_logger(SOFTWARE_NAME)
+from .formulations_basetest import FormulationsBaseTest
 
 
-class Test_MDFFormulation(Formulations_BaseTest):
-    """ """
+class TestMDFFormulation(FormulationsBaseTest):
+    """"""
 
     def test_init_mdf(self):
-        """ """
+        """"""
         scs = [self.build_mdo_scenario("MDF")]
         for scenario in scs:
             coupl = scenario.formulation.mda.coupling_structure.strong_couplings()
@@ -90,9 +81,8 @@ class Test_MDFFormulation(Formulations_BaseTest):
 
     # Tests with SCIPY ONLY ! Other libraries are optional...
 
-    @link_to("Req-MDO-1.1", "Req-MDO-2.2", "Req-SC-1", "Req-SC-1.2")
     def test_exec_mdf_cstr(self):
-        """ """
+        """"""
         options = {
             "tolerance": 1e-15,
             "max_mda_iter": 10,
@@ -109,7 +99,7 @@ class Test_MDFFormulation(Formulations_BaseTest):
         assert 2000.0 < obj < 5000.0
 
     def test_expected_workflow(self):
-        """ """
+        """"""
         disc1 = SobieskiStructure()
         disc2 = SobieskiPropulsion()
         disc3 = SobieskiAerodynamics()
@@ -119,7 +109,9 @@ class Test_MDFFormulation(Formulations_BaseTest):
         wkf = mdf.get_expected_workflow()
         self.assertEqual(
             str(wkf),
-            "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, SobieskiMission(None), ]",
+            "[MDAChain(None), {MDAGaussSeidel(None), [SobieskiStructure(None), "
+            "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
+            "SobieskiMission(None), ]",
         )
         mdf.get_expected_dataflow()
 

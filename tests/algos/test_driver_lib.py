@@ -19,34 +19,23 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Driver library tests
-"""
+"""Driver library tests."""
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from builtins import super
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.driver_lib import DriverLib
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
 
 
-LOGGER = configure_logger(SOFTWARE_NAME)
-
-
-class Test_DriverLib(unittest.TestCase):
+class TestDriverLib(unittest.TestCase):
     def test_fail_messages(self):
         class MyDriver(DriverLib):
             pass
 
         MyDriver()._pre_run(None, None)
         self.assertRaises(
-            ValueError, MyDriver().init_progress_bar, max_iter=-1, message="message"
+            ValueError, MyDriver().init_iter_observer, max_iter=-1, message="message"
         )
 
         self.assertRaises(ValueError, MyDriver().execute, None)

@@ -23,32 +23,23 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from unittest import TestCase
 
-from future import standard_library
 from numpy import array, inf
 from scipy.optimize.optimize import rosen, rosen_der
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
 from gemseo.core.function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.third_party.junitxmlreq import link_to
 
 from .opt_lib_test_base import OptLibraryTestBase
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 
 class TestNLOPT(TestCase):
 
     OPT_LIB_NAME = "Nlopt"
 
-    @link_to("Req-DEP-1", "Req-MDO-4")
     def _test_init(self):
         """Tests the initialization of the problem."""
         factory = OptimizersFactory()
@@ -56,7 +47,7 @@ class TestNLOPT(TestCase):
             factory.create(self.OPT_LIB_NAME)
 
     def test_failed(self):
-        """ """
+        """"""
         algo_name = "NLOPT_SLSQP"
         self.assertRaises(
             Exception,
@@ -78,8 +69,8 @@ class TestNLOPT(TestCase):
         opt_library.execute(problem, algo_name="NLOPT_BFGS", max_iter=10)
 
     def test_normalization(self):
-        """Runs a problem with one variable to be normalized
-        and three not to be normalized."""
+        """Runs a problem with one variable to be normalized and three not to be
+        normalized."""
         design_space = DesignSpace()
         design_space.add_variable("x1", 1, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
         design_space.add_variable("x2", 1, DesignSpace.FLOAT, -inf, 1.0, 0.0)
@@ -88,6 +79,26 @@ class TestNLOPT(TestCase):
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "NLOPT_COBYLA")
+
+    def test_xtol_ftol_activation(self):
+        def run_pb(algo_options):
+            design_space = DesignSpace()
+            design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
+            problem = OptimizationProblem(design_space)
+            problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
+            res = OptimizersFactory().execute(problem, "NLOPT_SLSQP", **algo_options)
+            return res, problem
+
+        for tol_name in (
+            OptLib.F_TOL_ABS,
+            OptLib.F_TOL_REL,
+            OptLib.X_TOL_ABS,
+            OptLib.X_TOL_REL,
+        ):
+            res, pb = run_pb({tol_name: 1e10})
+            assert tol_name in res.message
+            # Check that the criteria is activated as ap
+            assert len(pb.database) == 3
 
 
 def get_options(algo_name):

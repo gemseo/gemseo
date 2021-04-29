@@ -31,8 +31,6 @@ we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
@@ -44,16 +42,16 @@ from gemseo.problems.scalable.data_driven.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create the disciplinary datasets
 # --------------------------------
 # First of all, we create the disciplinary :class:`.AbstractFullCache` datasets
 # based on a :class:`.DiagonalDOE`.
+datasets = {}
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 for discipline in disciplines:
-    discipline.set_cache_policy("HDF5Cache", cache_hdf_file="dataset.hdf5")
+    discipline.set_cache_policy("MemoryFullCache")
     design_space = AerostructureDesignSpace()
     design_space.filter(discipline.get_input_data_names())
     output = next(iter(discipline.get_output_data_names()))
@@ -61,6 +59,8 @@ for discipline in disciplines:
         discipline, "DisciplinaryOpt", output, design_space, scenario_type="DOE"
     )
     scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
+    datasets[discipline.name] = discipline.cache.export_to_dataset()
+    discipline.cache.clear()
 
 ###############################################################################
 # Define the design problem
@@ -78,7 +78,7 @@ for discipline in disciplines:
 # such as the fill factor
 # describing the level of dependence between inputs and outputs.
 
-study = ScalabilityStudy(
+study = create_scalability_study(
     objective="range",
     design_variables=["thick_airfoils", "thick_panels", "sweep"],
     eq_constraints=["c_rf"],
@@ -91,11 +91,9 @@ study = ScalabilityStudy(
 ###############################################################################
 # Add the disciplinary datasets
 # -----------------------------
-# After instantiation, we add the disciplinary datasets
-# used for the construction of the different scalable disciplines.
-study.add_discipline("Aerodynamics", HDF5Cache("dataset.hdf5", "Aerodynamics"))
-study.add_discipline("Structure", HDF5Cache("dataset.hdf5", "Structure"))
-study.add_discipline("Mission", HDF5Cache("dataset.hdf5", "Mission"))
+study.add_discipline(datasets["Aerodynamics"])
+study.add_discipline(datasets["Structure"])
+study.add_discipline(datasets["Mission"])
 
 ###############################################################################
 # Add the optimization strategies
@@ -217,14 +215,15 @@ study.execute(n_replicates=10)
 # ------------------------
 # Lastly, we plot the results.
 # Because of the replicates,
-# the latter are not displayed as one line per optimization strategy w.r.t. scaling strategy,
+# the latter are not displayed as one line per optimization strategy
+# w.r.t. scaling strategy,
 # but as one series of boxplots per optimization strategy w.r.t. scaling strategy,
 # where the boxplots represents the variability due to the 10 replicates.
 # In this case, it seems that
 # the :class:`.MDF` formulation is more expensive than the :class:`.IDF` one
 # when the design space dimension increases
 # while they seems to be the same when each design parameter has a size equal to 1.
-post = PostScalabilityStudy("study")
+post = plot_scalability_results("study")
 post.labelize_scaling_strategy("Number of design parameters per type.")
 post.plot(
     xmargin=3.0, xticks=[1.0, 10.0, 20.0], xticks_labels=["1", "10", "20"], widths=1.0

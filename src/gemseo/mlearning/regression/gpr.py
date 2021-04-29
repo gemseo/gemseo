@@ -101,7 +101,8 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import atleast_2d
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -109,14 +110,11 @@ from sklearn.gaussian_process.kernels import Matern
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class GaussianProcessRegression(MLRegressionAlgo):
-    """ Gaussian process regression """
+    """Gaussian process regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "GPR"

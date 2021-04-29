@@ -24,12 +24,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import unittest
 from copy import deepcopy
 
-from future import standard_library
 from numpy import all as np_all
-from numpy import allclose, array, ones, zeros
+from numpy import allclose, array, matmul, ones, zeros, zeros_like
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.chain import MDOChain
 from gemseo.core.function import MDOFunction, MDOFunctionGenerator
 from gemseo.core.mdo_scenario import (
@@ -46,21 +43,16 @@ from gemseo.problems.sobieski.wrappers import (
 )
 from gemseo.utils.derivatives_approx import DisciplineJacApprox
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME, "WARNING")
-
-
-class Test_MDOScenarioAdapter(unittest.TestCase):
-    """ """
+class TestMDOScenarioAdapter(unittest.TestCase):
+    """"""
 
     def create_design_space(self):
-        """ """
+        """"""
         return SobieskiProblem().read_design_space()
 
     def get_sobieski_scenario(self):
-        """ """
+        """"""
         disciplines = [
             SobieskiPropulsion(),
             SobieskiAerodynamics(),
@@ -81,7 +73,7 @@ class Test_MDOScenarioAdapter(unittest.TestCase):
         return scenario
 
     def test_adapter(self):
-        """ """
+        """"""
         inputs = ["x_shared"]
         outputs = ["y_4"]
         scenario = self.get_sobieski_scenario()
@@ -105,7 +97,7 @@ class Test_MDOScenarioAdapter(unittest.TestCase):
         MDOScenarioAdapter(scenario, inputs, outputs)
 
     def test_adapter_resetx0(self):
-        """ """
+        """"""
         inputs = ["x_shared"]
         outputs = ["y_4"]
         scenario = self.get_sobieski_scenario()
@@ -166,7 +158,7 @@ class Test_MDOScenarioAdapter(unittest.TestCase):
         assert np_all(ds.get_upper_bounds() == ones(4))
 
     def test_chain(self):
-        """ """
+        """"""
 
         scenario = self.get_sobieski_scenario()
         mda = scenario.formulation.mda
@@ -285,6 +277,21 @@ class Test_MDOScenarioAdapter(unittest.TestCase):
             lagrangian_threshold=1e-5,
         )
 
+    def test_add_outputs(self):
+
+        # Maximization scenario
+        struct_scenario = self.build_struct_scenario()
+        struct_adapter = MDOScenarioAdapter(
+            struct_scenario, ["x_shared"], ["y_11"], reset_x0_before_opt=True
+        )
+        struct_adapter.add_outputs(["g_1"])
+        self.check_adapter_jacobian(
+            struct_adapter,
+            ["x_shared"],
+            objective_threshold=5e-2,
+            lagrangian_threshold=5e-2,
+        )
+
     def check_obj_scenario_adapter(
         self, scenario, outputs, minimize, objective_threshold, lagrangian_threshold
     ):
@@ -337,3 +344,27 @@ class Test_MDOScenarioAdapter(unittest.TestCase):
             objective_threshold=1e-5,
             lagrangian_threshold=1e-5,
         )
+
+    def test_lagrange_multipliers_outputs(self):
+        """Test the output of Lagrange multipliers."""
+        struct_scenario = self.build_struct_scenario()
+        x1_low_mult_name = MDOScenarioAdapter.get_bnd_mult_name("x_1", False)
+        x1_upp_mult_name = MDOScenarioAdapter.get_bnd_mult_name("x_1", True)
+        g1_mult_name = MDOScenarioAdapter.get_cstr_mult_name("g_1")
+        mult_names = [x1_low_mult_name, x1_upp_mult_name, g1_mult_name]
+        # Check the absence of multipliers when not required
+        adapter = MDOScenarioAdapter(struct_scenario, ["x_shared"], ["y_11", "g_1"])
+        assert not adapter.is_all_outputs_existing(mult_names)
+        # Check the multipliers when required
+        adapter = MDOScenarioAdapter(
+            struct_scenario, ["x_shared"], ["y_11", "g_1"], output_multipliers=True
+        )
+        assert adapter.is_all_outputs_existing(mult_names)
+        adapter.execute()
+        problem = struct_scenario.formulation.opt_problem
+        x_opt = problem.solution.x_opt
+        obj_grad = problem.nonproc_objective.jac(x_opt)
+        g1_jac = problem.nonproc_constraints[0].jac(x_opt)
+        x1_low_mult, x1_upp_mult, g1_mult = adapter.get_outputs_by_name(mult_names)
+        lagr_grad = obj_grad + matmul(g1_mult.T, g1_jac) - x1_low_mult + x1_upp_mult
+        assert allclose(lagr_grad, zeros_like(lagr_grad))

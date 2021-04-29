@@ -24,31 +24,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 
 class TestAlgorithmFactory(unittest.TestCase):
-    """ """
+    """"""
 
     def test_is_available_error(self):
-        """ """
+        """"""
         self.assertFalse(OptimizersFactory().is_available("None"))
 
     def test_init_library_error(self):
-        """ """
+        """"""
         OptimizersFactory().create("L-BFGS-B")
         self.assertRaises(Exception, OptimizersFactory().create, "idontexist")
 
     def test_is_scipy_available(self):
-        """ """
+        """"""
         assert OptimizersFactory().is_available("ScipyOpt")
         assert "SLSQP" in OptimizersFactory().algorithms

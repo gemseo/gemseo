@@ -19,35 +19,30 @@
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A factory to instantiate MDA from their class names
-"""
+"""A factory to instantiate MDA from their class names."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.core.factory import Factory
 from gemseo.mda.mda import MDA
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MDAFactory(object):
     """MDA factory to create the MDA from a name or a class."""
 
     def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of MDA.
+        """Initializes the factory: scans the directories to search for subclasses of
+        MDA.
+
         Searches in "GEMSEO_PATH" and gemseo.mda
         """
         self.factory = Factory(MDA, ("gemseo.mda",))
 
     def create(self, mda_name, disciplines, **options):
-        """
-        Create a MDA
+        """Create a MDA.
 
         :param mda_name: name of the MDA (its classname)
         :param disciplines: list of the disciplines
@@ -59,18 +54,16 @@ class MDAFactory(object):
 
     @property
     def mdas(self):
-        """
-        Lists the available classes
+        """Lists the available classes.
 
         :returns : the list of classes names
         """
         return self.factory.classes
 
     def is_available(self, mda_name):
-        """
-        Checks the availability of a MDA
+        """Checks the availability of a MDA.
 
-        :param name :  mda_name of the MDA
+        :param mda_name :  name of the MDA
         :returns: True if the MDA is available
         """
         return self.factory.is_available(mda_name)

@@ -29,7 +29,6 @@ array. For that, we need to import this :class:`.Dataset` class:
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import concatenate
 from numpy.random import rand
 
@@ -38,7 +37,6 @@ from gemseo.core.dataset import Dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Synthetic data

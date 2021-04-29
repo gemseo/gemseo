@@ -29,8 +29,6 @@ on the Sobieski's SSBJ problem.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 ###############################################################################
 # Import
 # ------
@@ -41,7 +39,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create disciplines

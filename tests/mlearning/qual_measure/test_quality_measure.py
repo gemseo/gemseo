@@ -19,21 +19,18 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test quality measure module. """
+"""Test quality measure module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
-standard_library.install_aliases()
-
 
 def test_constructor():
-    """ Test construction."""
+    """Test construction."""
     dataset = Dataset()
     algo = MLAlgo(dataset)
     measure = MLQualityMeasure(algo)
@@ -42,7 +39,7 @@ def test_constructor():
 
 
 def test_evaluate():
-    """ Test evaluation of quality measure. """
+    """Test evaluation of quality measure."""
     dataset = Dataset()
     test_dataset = Dataset()
     algo = MLAlgo(dataset)

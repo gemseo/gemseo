@@ -25,17 +25,14 @@ Jameson sensor
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import abs as np_abs
 from numpy import amax
 
 from gemseo.mlearning.transform.transformer import Transformer
 
-standard_library.install_aliases()
-
 
 class JamesonSensor(Transformer):
-    """ Jameson Sensor. """
+    """Jameson Sensor."""
 
     def __init__(
         self, name="JamesonSensor", threshold=0.3, removing_part=0.01, dimension=1

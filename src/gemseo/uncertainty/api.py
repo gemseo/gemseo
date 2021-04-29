@@ -19,79 +19,143 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-API for uncertainty management
-==============================
-
-This API (Application Programming Interface) is dedicated to
-uncertainty management. Current functions are:
-
-- :meth:`~gemseo.uncertainty.api.get_available_distributions`,
-- :meth:`~gemseo.uncertainty.api.create_distribution`,
-- :meth:`~gemseo.uncertainty.api.create_statistics`.
-"""
+"""The API for uncertainty quantification and management."""
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+from typing import Iterable, List, Optional, Sequence
 
-standard_library.install_aliases()
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.dataset import Dataset
+from gemseo.core.discipline import MDODiscipline
+from gemseo.uncertainty.distributions.distribution import Distribution
 
-# pylint: disable=import-outside-toplevel
 
-
-def get_available_distributions():
+def get_available_distributions():  # type: (...) -> List[str]
     """Get the available distributions."""
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
-    factor = DistributionFactory()
-    return factor.distributions
+    factory = DistributionFactory()
+    return factory.available_distributions
 
 
-def create_distribution(variable, distribution_type, dimension=1, **options):
-    """Create a distribution
+def create_distribution(
+    variable,  # type: str
+    distribution_name,  # type: str,
+    dimension=1,  # type: int
+    **options
+):  # type: (...) -> Distribution
+    """Create a distribution.
 
-    :param str variable: variable name.
-    :param str distribution_type: distribution type.
-    :param int dimension: variable dimension.
-    :param options: distribution options.
+    Args:
+        variable: The name of the random variable.
+        distribution_name: The name of a class
+            implementing a probability distribution,
+            e.g. 'OTUniformDistribution' or 'SPDistribution'.
+        dimension: The dimension of the random variable.
+        **options: The distribution options.
+
+    Examples:
+        >>> from gemseo.uncertainty.api import create_distribution
+        >>>
+        >>> distribution = create_distribution(
+        ...     "x", "OTNormalDistribution", dimension=2, mu=1, sigma=2
+        ... )
+        >>> print(distribution)
+        Normal(mu=1, sigma=2)
+        >>> print(distribution.mean, distribution.standard_deviation)
+        [1. 1.] [2. 2.]
+        >>> samples = distribution.get_sample(10)
+        >>> print(samples.shape)
+        (10, 2)
     """
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
-    factor = DistributionFactory()
-    return factor.create(
-        distribution_type, variable=variable, dimension=dimension, **options
+    factory = DistributionFactory()
+    return factory.create(
+        distribution_name, variable=variable, dimension=dimension, **options
     )
 
 
-def create_statistics(
-    dataset,
-    variables_names=None,
-    tested_distributions=None,
-    fitting_criterion="BIC",
-    selection_criterion="best",
-    level=0.05,
-    name=None,
-):
-    """Constructor
+def get_available_sensitivity_analyses():  # type: (...) -> List[str]
+    """Get the available sensitivity analyses."""
+    from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
-    :param Dataset dataset: dataset
-    :param list(str) variables_names: list of variables names
-        or list of variables names. If None, the method considers
-        all variables from loaded dataset. Default: None.
-    :param list(str) tested_distributions: list of candidate distributions
-        names for parametric statistics. If None, considers empirical
-        statistics. Default: None.
-    :param str fitting_criterion: goodness-of-fit criterion
-        for parametric statistics. Default: 'BIC'.
-    :param float level: risk of committing a Type 1 error,
-        that is an incorrect rejection of a true null hypothesis,
-        for criteria based on test hypothesis in the case of
-        parametric statistics. Default: 0.05.
-    :param str selection_criterion: selection criterion
-        for parametric statistics. Default: 'best'
-    :param str name: name of the object.
-        If None, use the concatenation of class and dataset names.
-        Default: None.
+    factory = SensitivityAnalysisFactory()
+    return factory.available_sensitivity_analyses
+
+
+def create_statistics(
+    dataset,  # type: Dataset
+    variables_names=None,  # type: Optional[Iterable[str]]
+    tested_distributions=None,  # type: Optional[Sequence[str]]
+    fitting_criterion="BIC",  # type: str
+    selection_criterion="best",
+    level=0.05,  # type: float
+    name=None,  # type: Optional[str]
+):  # type (...) -> Statistics
+    """Create a statistics toolbox, either parametric or empirical.
+
+    If parametric, the toolbox selects a distribution from candidates,
+    based on a fitting criterion and on a selection strategy.
+
+    Args:
+        dataset: A dataset.
+        variables_names: The variables of interest.
+            If None, consider all the variables from dataset.
+        tested_distributions: The names of
+            the tested distributions.
+        fitting_criterion: The name of a goodness-of-fit criterion,
+            measuring how the distribution fits the data.
+            Use :meth:`.ParametricStatistics.get_criteria`
+            to get the available criteria.
+        selection_criterion: The name of a selection criterion
+            to select a distribution from candidates.
+            Either 'first' or 'best'.
+        level: A test level,
+            i.e. the risk of committing a Type 1 error,
+            that is an incorrect rejection of a true null hypothesis,
+            for criteria based on a test hypothesis.
+        name: A name for the statistics toolbox instance.
+            If None, use the concatenation of class and dataset names.
+
+    Returns:
+        A statistics toolbox.
+
+    Examples:
+        >>> from gemseo.api import (
+        ...     create_discipline,
+        ...     create_parameter_space,
+        ...     create_scenario
+        ... )
+        >>> from gemseo.uncertainty.api import create_statistics
+        >>>
+        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
+        >>> discipline = create_discipline(
+        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ... )
+        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+        >>>
+        >>> parameter_space = create_parameter_space()
+        >>> parameter_space.add_random_variable(
+        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
+        ... )
+        >>> parameter_space.add_random_variable(
+        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
+        ... )
+        >>>
+        >>> scenario = create_scenario(
+        ...     [discipline],
+        ...     "DisciplinaryOpt",
+        ...     "y1",
+        ...     parameter_space,
+        ...     scenario_type="DOE"
+        ... )
+        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>>
+        >>> dataset = discipline.cache.export_to_dataset()
+        >>>
+        >>> statistics = create_statistics(dataset)
+        >>> mean = statistics.mean()
     """
     from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics as EmpStats
     from gemseo.uncertainty.statistics.parametric import (
@@ -111,3 +175,54 @@ def create_statistics(
             name,
         )
     return statistical_analysis
+
+
+def create_sensitivity_analysis(
+    analysis,  # type: str
+    discipline,  # type: MDODiscipline
+    parameter_space,  # type: ParameterSpace
+    **options
+):  # type (...) -> SensitivityIndices
+    """Create the sensitivity analysis.
+
+    Args:
+        analysis: The name of a sensitivity analysis class.
+        discipline: A discipline.
+        parameter_space: A parameter space.
+        **options: The DOE algorithm options.
+
+    Returns:
+        The toolbox for these sensitivity indices.
+
+    Examples:
+        >>> from gemseo.api import create_discipline, create_parameter_space
+        >>> from gemseo.uncertainty.api import create_sensitivity_analysis
+        >>>
+        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
+        >>> discipline = create_discipline(
+        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ... )
+        >>>
+        >>> parameter_space = create_parameter_space()
+        >>> parameter_space.add_random_variable(
+        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
+        ... )
+        >>> parameter_space.add_random_variable(
+        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
+        ... )
+        >>>
+        >>> analysis = create_sensitivity_analysis(
+        ...     "CorrelationIndices", discipline, parameter_space, n_samples=1000
+        ... )
+        >>> indices = analysis.compute_indices()
+    """
+    from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
+
+    factory = SensitivityAnalysisFactory()
+
+    name = analysis
+    if "Analysis" not in name:
+        name += "Analysis"
+    name = name[0].upper() + name[1:]
+
+    return factory.create(name, discipline, parameter_space, **options)

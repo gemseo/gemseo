@@ -24,20 +24,13 @@ from __future__ import absolute_import, division, unicode_literals
 
 import os
 import re
-from pathlib import Path
 
 import pytest
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.singleton import SingleInstancePerAttributeEq
-
-standard_library.install_aliases()
-configure_logger(SOFTWARE_NAME)
-
 
 # test data
 DATA = Path(__file__).parent / "data"
@@ -51,7 +44,7 @@ def reset_factory():
 
 
 def test_unknown_internal_modules_paths(reset_factory):
-    factory = Factory(MDOFormulation)
+    Factory(MDOFormulation)
 
 
 def test_print_configuration(tmp_path, reset_factory):
@@ -70,12 +63,7 @@ def test_print_configuration(tmp_path, reset_factory):
         assert re.findall(pattern, line)
 
     # check table body
-    formulations = [
-        "BiLevel",
-        "DisciplinaryOpt",
-        "IDF",
-        "MDF",
-    ]
+    formulations = ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
 
     for formulation in formulations:
         pattern = "\\|\\s+{}\\s+\\|\\s+Yes\\s+\\|.+\\|".format(formulation)
@@ -143,10 +131,10 @@ def test_ext_plugin(monkeypatch, reset_factory):
 
 
 def test_ext_gems_path(reset_factory):
-    os.environ["GEMS_PATH"] = str(DATA)
+    os.environ["GEMSEO_PATH"] = str(DATA)
     factory = Factory(MDOFormulation)
     factory.create("DummyBiLevel")
-    del os.environ["GEMS_PATH"]
+    del os.environ["GEMSEO_PATH"]
 
 
 def test_ext_gemseo_path(reset_factory):

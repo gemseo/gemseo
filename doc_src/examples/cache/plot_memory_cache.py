@@ -27,7 +27,6 @@ This example shows how to manipulate a :class:`.MemoryFullCache` object.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -41,8 +40,6 @@ configure_logger()
 #
 # First, we import the `array` and the :class:`MemoryError` classes.
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create

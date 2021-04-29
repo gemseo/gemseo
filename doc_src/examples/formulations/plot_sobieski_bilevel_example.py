@@ -27,12 +27,9 @@ from __future__ import division, unicode_literals
 
 from copy import deepcopy
 
-from future import standard_library
-
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
-standard_library.install_aliases()
 configure_logger()
 
 ##############################################################################

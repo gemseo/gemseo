@@ -21,29 +21,54 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+from numpy import pi
 from numpy.random import normal
 
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.api import (
     create_distribution,
+    create_sensitivity_analysis,
     create_statistics,
     get_available_distributions,
+    get_available_sensitivity_analyses,
 )
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 
-standard_library.install_aliases()
 
-
-def test_available():
+def test_available_distribution():
     distributions = get_available_distributions()
     assert "OTNormalDistribution" in distributions
 
 
-def test_create():
+def test_create_distribution():
     distribution = create_distribution("x", "OTNormalDistribution")
     assert distribution.mean[0] == 0.0
+
+
+def test_available_sensitivity_analysis():
+    sensitivities = get_available_sensitivity_analyses()
+    assert "MorrisAnalysis" in sensitivities
+
+
+def test_create_sensitivity():
+    expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
+    discipline = AnalyticDiscipline(expressions_dict=expressions, name="Ishigami")
+
+    space = ParameterSpace()
+    for variable in ["x1", "x2", "x3"]:
+        space.add_random_variable(
+            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+        )
+    assert create_sensitivity_analysis(
+        "MorrisAnalysis", discipline, space, n_samples=None, n_replicates=5
+    )
+
+    assert create_sensitivity_analysis(
+        "morris", discipline, space, n_samples=None, n_replicates=5
+    )
 
 
 def test_create_statistics():

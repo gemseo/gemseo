@@ -41,16 +41,13 @@ design of experiments.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import hstack, linspace, meshgrid
 
 from gemseo.core.dataset import Dataset
 
-standard_library.install_aliases()
-
 
 class RosenbrockDataset(Dataset):
-    """ Rosenbrock dataset parametrization. """
+    """Rosenbrock dataset parametrization."""
 
     def __init__(
         self,
@@ -71,7 +68,8 @@ class RosenbrockDataset(Dataset):
         :parma bool opt_naming: use an optimization naming. Default: True.
         """
         super(RosenbrockDataset, self).__init__(name, by_group)
-        x_i = linspace(-2.0, 2.0, int(n_samples ** 0.5))
+        root_n_samples = int(n_samples ** 0.5)
+        x_i = linspace(-2.0, 2.0, root_n_samples)
         x_i, y_i = meshgrid(x_i, x_i)
         x_i = x_i.reshape((-1, 1))
         y_i = y_i.reshape((-1, 1))
@@ -85,3 +83,4 @@ class RosenbrockDataset(Dataset):
         else:
             groups = None
         self.set_from_array(data, ["x", "rosen"], {"x": 2, "rosen": 1}, groups=groups)
+        self.set_metadata("root_n_samples", root_n_samples)

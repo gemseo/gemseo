@@ -24,16 +24,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import unittest
 from copy import deepcopy
-from os import remove
 from os.path import abspath, dirname, exists, join
 
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
-from gemseo.core.execution_sequence import ExecutionSequenceFactory as esf
-from gemseo.core.mdo_scenario import MDODiscipline as D
-from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.mdo_scenario import MDODiscipline, MDOScenario
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
@@ -44,34 +40,31 @@ from gemseo.problems.sobieski.wrappers import (
 )
 from gemseo.utils.xdsmizer import XDSMizer, expand
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 INPUT_DIR = join(dirname(__file__), "xdsm_ref_data")
 
 
-class Test_XDSMizer(unittest.TestCase):
-    """Test XDSM diagram json generation"""
+@pytest.mark.usefixtures("tmp_wd")
+class TestXDSMizer(unittest.TestCase):
+    """Test XDSM diagram json generation."""
 
     def test_expand(self):
-        """ """
-        mda = esf.atom(D("mda"))
-        d1 = esf.atom(D("d1"))
-        d2 = esf.atom(D("d2"))
+        """"""
+        mda = ExecutionSequenceFactory.atom(MDODiscipline("mda"))
+        d1 = ExecutionSequenceFactory.atom(MDODiscipline("d1"))
+        d2 = ExecutionSequenceFactory.atom(MDODiscipline("d2"))
         to_id = {mda: "mda", d1: "d1", d2: "d2"}
 
-        serial_seq = esf.serial([]).extend(d1)
-        loop_seq = esf.loop(mda, serial_seq)
+        serial_seq = ExecutionSequenceFactory.serial([]).extend(d1)
+        loop_seq = ExecutionSequenceFactory.loop(mda, serial_seq)
 
         self.assertEqual(expand(loop_seq, to_id), ["mda", ["d1"]])
-        self.assertEqual(expand(esf.serial([]), to_id), [])
+        self.assertEqual(expand(ExecutionSequenceFactory.serial([]), to_id), [])
         self.assertEqual(expand(serial_seq, to_id), ["d1"])
 
-        parallel_seq = esf.parallel([]).extend(d1)
+        parallel_seq = ExecutionSequenceFactory.parallel([]).extend(d1)
         parallel_seq.extend(d2)
 
-        loop_seq = esf.loop(mda, parallel_seq)
+        loop_seq = ExecutionSequenceFactory.loop(mda, parallel_seq)
         self.assertEqual(expand(loop_seq, to_id), ["mda", [{"parallel": ["d1", "d2"]}]])
 
         self.assertRaises(Exception, expand, "a_bad_exec_seq", to_id)
@@ -100,10 +93,11 @@ class Test_XDSMizer(unittest.TestCase):
         return sc
 
     def test_xdsmize_mdf(self):
-        """Test xdsmization of Sobieski problem solved with MDF with and without constraint"""
+        """Test xdsmization of Sobieski problem solved with MDF with and without
+        constraint."""
         scenario = self.build_mdo_scenario("MDF", sub_mda_class="MDAGaussSeidel")
         options = {
-            "outdir": ".",
+            "output_directory_path": ".",
             "html_output": False,
             "json_output": True,
             "outfilename": "xdsmized_sobieski_mdf.json",
@@ -134,12 +128,13 @@ class Test_XDSMizer(unittest.TestCase):
         )
 
     def test_xdsmize_idf(self):
-        """Test xdsmization of Sobieski problem solved with IDF with and without constraint"""
+        """Test xdsmization of Sobieski problem solved with IDF with and without
+        constraint."""
         formulation = "IDF"
         scenario = self.build_mdo_scenario(formulation)
         scenario.xdsmize(html_output=False, json_output=True)
         options = {
-            "outdir": ".",
+            "output_directory_path": ".",
             "html_output": False,
             "json_output": True,
             "outfilename": "xdsmized_sobieski_idf.json",
@@ -153,7 +148,7 @@ class Test_XDSMizer(unittest.TestCase):
         self._assert_xdsm(scenario, **options)
 
     def test_xdsmize_bilevel(self):
-        """Test xdsmization of Sobieski problem solved with bilevel"""
+        """Test xdsmization of Sobieski problem solved with bilevel."""
 
         design_space = SobieskiProblem().read_design_space()
         # Disciplinary optimization
@@ -225,7 +220,7 @@ class Test_XDSMizer(unittest.TestCase):
         system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
         system_scenario.xdsmize(html_output=True, json_output=True, open_browser=False)
         options = {
-            "outdir": ".",
+            "output_directory_path": ".",
             "latex_output": False,
             "html_output": False,
             "json_output": True,
@@ -255,7 +250,6 @@ class Test_XDSMizer(unittest.TestCase):
         :param scenario: the scenario to be xdsmize
         @options options for xdsmise function
         :param **options:
-
         """
         fname = options["outfilename"]
         xdsmizer = XDSMizer(scenario)
@@ -265,11 +259,10 @@ class Test_XDSMizer(unittest.TestCase):
         self._assert_xdsm_file_ok(fname)
 
     def _assert_xdsm_json(self, fname, xdsm_json):
-        """Tests XDSM equality taking file 'ref_<fname> as reference and
-        given xdsm_json string
+        """Tests XDSM equality taking file 'ref_<fname> as reference and given xdsm_json
+        string.
 
         :param fname: filename containing generated XDSM
-
         """
         ref_filepath = join(dirname(abspath(__file__)), "ref_" + fname)
         assert exists(ref_filepath)
@@ -280,11 +273,10 @@ class Test_XDSMizer(unittest.TestCase):
         self._assert_xdsm_equal(expected, xdsm_json)
 
     def _assert_xdsm_file_ok(self, fname):
-        """Tests XDSM equality taking file 'ref_<fname> as reference and
-        new generated file <fname>
+        """Tests XDSM equality taking file 'ref_<fname> as reference and new generated
+        file <fname>
 
         :param fname: filename containing generated XDSM
-
         """
         ref_filepath = join(dirname(abspath(__file__)), "xdsm_ref_data", "ref_" + fname)
         # Erase reference files
@@ -301,7 +293,6 @@ class Test_XDSMizer(unittest.TestCase):
             xdsm_str = new_file.read()
         xdsm_json = json.loads(xdsm_str)
         self._assert_xdsm_equal(expected, xdsm_json)
-        remove(new_filepath)
 
     def _assert_xdsm_equal(self, expected, xdsm_json):
         """

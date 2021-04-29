@@ -19,11 +19,10 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning algorithm module. """
+"""Test machine learning algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange, array_equal
 
 from gemseo.core.dataset import Dataset
@@ -32,11 +31,9 @@ from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
-
 
 class NewMLAlgo(MLAlgo):
-    """ New machine learning algorithm class. """
+    """New machine learning algorithm class."""
 
     LIBRARY = "NewLibrary"
 
@@ -46,7 +43,7 @@ class NewMLAlgo(MLAlgo):
 
 @pytest.fixture
 def dataset():
-    """ Create dataset with two variables. """
+    """Create dataset with two variables."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
@@ -56,7 +53,7 @@ def dataset():
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     ml_algo = MLAlgo(dataset)
     assert ml_algo.algo is None
     assert not ml_algo.is_trained
@@ -66,26 +63,33 @@ def test_constructor(dataset):
 
 
 def test_notimplementederror(dataset):
-    """ Test notimplementederror."""
+    """Test notimplementederror."""
     ml_algo = MLAlgo(dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
 
 
 def test_str(dataset):
-    """ Test string representation."""
+    """Test string representation."""
     ml_algo = NewMLAlgo(dataset)
-    assert "NewLibrary" in str(ml_algo)
+    expected = "\n".join(
+        [
+            "NewMLAlgo()",
+            "   based on the NewLibrary library",
+            "   built from 10 learning samples",
+        ]
+    )
+    assert str(ml_algo) == expected
 
 
 def test_scale(dataset):
-    """ Test scaler in MLAlgo """
+    """Test scaler in MLAlgo."""
     ml_algo = MLAlgo(dataset, transformer={"parameters": MinMaxScaler()})
     assert isinstance(ml_algo.transformer["parameters"], MinMaxScaler)
 
 
 def test_save_and_load(dataset, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     model = NewMLAlgo(dataset)
     model.learn()
     factory = MLAlgoFactory()

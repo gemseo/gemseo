@@ -21,25 +21,23 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import absolute_import, division, unicode_literals
 
-from os import remove
 from os.path import exists
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, inf, ndarray
 from numpy.random import randn, seed
 from openturns import RandomGenerator
 
-from gemseo.uncertainty.distributions.ot_dist import (
-    OTDistribution,
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
-    OTNormalDistribution,
-    OTTriangularDistribution,
-    OTUniformDistribution,
 )
-from gemseo.uncertainty.distributions.ot_fdist import OTDistributionFitter
-
-standard_library.install_aliases()
+from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
+from gemseo.uncertainty.distributions.openturns.triangular import (
+    OTTriangularDistribution,
+)
+from gemseo.uncertainty.distributions.openturns.uniform import OTUniformDistribution
 
 
 def test_constructor():
@@ -72,10 +70,10 @@ def test_str():
     assert str(distribution) == "Normal(mean=0, var=4)"
 
 
-def test_get_sample():
+def test_compute_samples():
     RandomGenerator.SetSeed(0)
     distribution = OTDistribution("x", "Normal", (0, 2))
-    sample = distribution.get_sample(3)
+    sample = distribution.compute_samples(3)
     assert isinstance(sample, ndarray)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3
@@ -83,7 +81,7 @@ def test_get_sample():
     expectation = array([[1.216403], [-2.532346], [-0.876531]])
     assert allclose(sample, expectation, 1e-3)
     distribution = OTDistribution("x", "Normal", (0, 2), 4)
-    sample = distribution.get_sample(3)
+    sample = distribution.compute_samples(3)
     expectation = array(
         [
             [2.410956, -0.710014, 1.586312, -4.580124],
@@ -96,13 +94,13 @@ def test_get_sample():
 
 def test_get_cdf():
     distribution = OTDistribution("x", "Normal", (0, 2), 2)
-    result = distribution.cdf(array([0, 0]))
+    result = distribution.compute_cdf(array([0, 0]))
     assert allclose(result, array([0.5, 0.5]))
 
 
 def test_get_inverse_cdf():
     distribution = OTDistribution("x", "Normal", (0, 2), 2)
-    result = distribution.inverse_cdf(array([0.5, 0.5]))
+    result = distribution.compute_inverse_cdf(array([0.5, 0.5]))
     assert allclose(result, array([0.0, 0.0]))
 
 
@@ -147,32 +145,34 @@ def test_range():
 
 
 def test_truncation():
-    distribution = OTDistribution("x", "Normal", (0, 2), 2, l_b=0.0, u_b=1.0)
+    distribution = OTDistribution(
+        "x", "Normal", (0, 2), 2, lower_bound=0.0, upper_bound=1.0
+    )
     expectation = array([0.0, 1.0])
     for element in distribution.support:
         assert allclose(element, expectation, 1e-3)
 
-    distribution = OTDistribution("x", "Uniform", (0, 1), 2, l_b=0.5)
+    distribution = OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=0.5)
     expectation = array([0.5, 1.0])
     for element in distribution.support:
         assert allclose(element, expectation, 1e-3)
 
-    distribution = OTDistribution("x", "Uniform", (0, 1), 2, u_b=0.5)
+    distribution = OTDistribution("x", "Uniform", (0, 1), 2, upper_bound=0.5)
     expectation = array([0.0, 0.5])
     for element in distribution.support:
         assert allclose(element, expectation, 1e-3)
 
     with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, u_b=1.5)
+        OTDistribution("x", "Uniform", (0, 1), 2, upper_bound=1.5)
 
     with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, l_b=-0.5)
+        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=-0.5)
 
     with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, l_b=-0.5, u_b=1.0)
+        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=-0.5, upper_bound=1.0)
 
     with pytest.raises(ValueError):
-        OTDistribution("x", "Uniform", (0, 1), 2, l_b=0.0, u_b=1.5)
+        OTDistribution("x", "Uniform", (0, 1), 2, lower_bound=0.0, upper_bound=1.5)
 
 
 def test_transformation():
@@ -202,18 +202,14 @@ def test_triangular():
     assert str(distribution) == "Triangular(lower=0.0, mode=0.5, upper=1.0)"
 
 
-def test_plot():
+def test_plot(tmp_wd):
     distribution = OTTriangularDistribution("x", dimension=2)
     distribution.plot_all(False, True)
     assert exists("distribution_x_0.pdf")
     assert exists("distribution_x_1.pdf")
-    remove("distribution_x_0.pdf")
-    remove("distribution_x_1.pdf")
     distribution.plot_all(False, True, "prefix")
     assert exists("prefix_distribution_x_0.pdf")
     assert exists("prefix_distribution_x_1.pdf")
-    remove("prefix_distribution_x_0.pdf")
-    remove("prefix_distribution_x_1.pdf")
 
 
 @pytest.fixture
@@ -233,13 +229,13 @@ def test_otdistfitter_distribution(norm_data):
         factory.fit("Dummy")
     with pytest.raises(TypeError):
         dist = OTNormalDistribution("x", dimension=2)
-        factory.measure(dist, "BIC")
+        factory.compute_measure(dist, "BIC")
 
 
 def test_otdistfitter_criterion(norm_data):
     factory = OTDistributionFitter("x", norm_data)
     with pytest.raises(ValueError):
-        factory.measure("Normal", "Dummy")
+        factory.compute_measure("Normal", "Dummy")
 
 
 def test_otdistfitter_fit(norm_data):
@@ -248,20 +244,20 @@ def test_otdistfitter_fit(norm_data):
     assert isinstance(dist, OTDistribution)
 
 
-def test_otdistfitter_BIC(norm_data):
+def tst_otdistfitter_bic(norm_data):
     factory = OTDistributionFitter("x", norm_data)
     dist = factory.fit("Normal")
-    quality_measure = factory.measure(dist, "BIC")
+    quality_measure = factory.compute_measure(dist, "BIC")
     assert allclose(quality_measure, 2.59394512877)
     factory = OTDistributionFitter("x", norm_data)
-    quality_measure = factory.measure("Normal", "BIC")
+    quality_measure = factory.compute_measure("Normal", "BIC")
     assert allclose(quality_measure, 2.59394512877)
 
 
 def test_otdistfitter_kolmogorov(norm_data):
     factory = OTDistributionFitter("x", norm_data)
     dist = factory.fit("Normal")
-    acceptable, details = factory.measure(dist, "Kolmogorov")
+    acceptable, details = factory.compute_measure(dist, "Kolmogorov")
     assert acceptable
     assert "statistics" in details
     assert "p-value" in details
@@ -271,11 +267,11 @@ def test_otdistfitter_kolmogorov(norm_data):
     assert allclose(details["p-value"], 0.9879299613543082)
 
 
-def test_otdistfitter_get(norm_data):
+def test_otdistfitter_available(norm_data):
     factory = OTDistributionFitter("x", norm_data)
-    assert "BIC" in factory.get_available_criteria()
-    assert "BIC" not in factory.get_significance_tests()
-    assert "Normal" in factory.get_available_distributions()
+    assert "BIC" in factory.available_criteria
+    assert "BIC" not in factory.available_significance_tests
+    assert "Normal" in factory.available_distributions
 
 
 def test_otdistfitter_select(norm_data):

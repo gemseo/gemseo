@@ -25,28 +25,22 @@ Display a Pareto Front
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(OptPostProcessor):
-    """
-    Compute the Pareto front
-    Search for all non dominated points, ie there exists j such that
-    there is no lower value for obj_values[:,j] that does not degrade
-    at least one other objective  obj_values[:,i].
+    """Compute the Pareto front Search for all non dominated points, ie there exists j
+    such that there is no lower value for obj_values[:,j] that does not degrade at least
+    one other objective  obj_values[:,i].
 
-    Generates a plot or a matrix of plots if there are more than 2 objectives.
-    Plots in red the locally non dominated points
-    for the currrent two objectives.
-    Plot in green the globally (all objectives) Pareto optimal points.
+    Generates a plot or a matrix of plots if there are more than 2 objectives. Plots in
+    red the locally non dominated points for the currrent two objectives. Plot in green
+    the globally (all objectives) Pareto optimal points.
     """
 
     def _plot(
@@ -60,8 +54,7 @@ class ParetoFront(OptPostProcessor):
         file_path=None,
         extension="pdf",
     ):
-        """
-        Plots the Pareto front
+        """Plots the Pareto front.
 
         :param objectives: the functions names or design variables to plot
             if None, use the objective function (may be a vector)
@@ -84,7 +77,6 @@ class ParetoFront(OptPostProcessor):
         add_dv = False
         all_funcs = self.opt_problem.get_all_functions_names()
         all_dv_names = self.opt_problem.design_space.variables_names
-        design_variables = None
         if not objectives:
             # function list only contains design variables
             vals = self.database.get_x_history()
@@ -108,7 +100,7 @@ class ParetoFront(OptPostProcessor):
                     add_dv = True
                     objectives.remove(func)
                     design_variables.append(func)
-            if design_variables == []:
+            if not design_variables:
                 design_variables = None
             vals, vname, _ = self.database.get_history_array(
                 objectives, design_variables, add_dv=add_dv

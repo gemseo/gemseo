@@ -25,19 +25,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from os.path import exists, join
 
 import pytest
-from future import standard_library
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy.random import rand, seed
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.pareto_front import generate_pareto_plots, select_pareto_optimal
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 def test_pareto_front(tmp_path):
@@ -51,7 +43,7 @@ def test_pareto_front(tmp_path):
     plt.savefig(outfile)
     plt.close()
     assert exists(outfile)
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(ValueError):
         generate_pareto_plots(objs, range(3))
 
 

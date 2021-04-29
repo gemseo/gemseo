@@ -37,11 +37,11 @@ in a txt or HDF file.
 
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from copy import deepcopy
 from os.path import exists
 
 import h5py
-from future import standard_library
 from numpy import abs as np_abs
 from numpy import (
     array,
@@ -70,17 +70,14 @@ from gemseo.algos.opt_result import OptimizationResult
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.py23_compat import string_array, to_unicode_list
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DesignSpace(object):
-    """
-    Class that describes the design space at a given state:
-    the names/sizes/types/bounds of the variables and the
-    initial solution of the optimization problem
+    """Class that describes the design space at a given state:
+
+    the names/sizes/types/bounds of the variables and the initial solution of the
+    optimization problem
     """
 
     FLOAT = "float"
@@ -90,9 +87,11 @@ class DesignSpace(object):
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
     DESIGN_SPACE_GROUP = "design_space"
+    NAME_GROUP = "name"
     NAMES_GROUP = "names"
     LB_GROUP = "l_b"
     UB_GROUP = "u_b"
+    TYPE_GROUP = "type"
     VAR_TYPE_GROUP = "var_type"
     VALUE_GROUP = "value"
     SIZE_GROUP = "size"
@@ -100,9 +99,7 @@ class DesignSpace(object):
     SEP = "!"
 
     def __init__(self, hdf_file=None):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.variables_names = []
         self.dimension = 0
         self.variables_sizes = {}
@@ -125,7 +122,7 @@ class DesignSpace(object):
             self.import_hdf(hdf_file)
 
     def remove_variable(self, name):
-        """Remove a variable (and bounds and types) from the design space
+        """Remove a variable (and bounds and types) from the design space.
 
         :param name: name of the variable to remove
         """
@@ -143,24 +140,31 @@ class DesignSpace(object):
         if name in self._current_x:
             del self._current_x[name]
 
-    def filter(self, keep_variables):
-        """Filters the design space to keep a sublist of variables
+    def filter(self, keep_variables, copy=False):
+        """Filter the design space to keep a sublist of variables.
 
         :param keep_variables: the list of variables to keep
+        :type keep_variables: str of list(str)
+        :param copy: if True then a copy of the design space is filtered, otherwise the
+            design space itself is filtered
+        :type copy: bool
+        :returns: the filtered design space (or a copy)
+        :rtype: DesignSpace
         """
         if isinstance(keep_variables, string_types):
             keep_variables = [keep_variables]
+        design_space = deepcopy(self) if copy else self
         for name in deepcopy(self.variables_names):
             if name not in keep_variables:
-                self.remove_variable(name)
+                design_space.remove_variable(name)
         for name in keep_variables:
             if name not in self.variables_names:
                 raise ValueError('Variable "' + str(name) + '" is not known')
-        return self
+        return design_space
 
     def filter_dim(self, variable, keep_dimensions):
-        """Filters the design space to keep a sublist of dimensions
-        for a given variable
+        """Filters the design space to keep a sublist of dimensions for a given
+        variable.
 
         :param variable: the variable
         :param keep_dimensions: the list of dimension to keep
@@ -201,7 +205,7 @@ class DesignSpace(object):
     def add_variable(
         self, name, size=1, var_type=FLOAT, l_b=None, u_b=None, value=None
     ):
-        """Add a variable to the design space
+        """Add a variable to the design space.
 
         :param name: param size:  (Default value = 1)
         :param var_type: Default value = FLOAT)
@@ -239,7 +243,7 @@ class DesignSpace(object):
             self._check_current_x_value(name)
 
     def _add_type(self, name, size, var_type=None):
-        """Add a type to a variable
+        """Add a type to a variable.
 
         :param name: name of the variable
         :param size: size of the variable
@@ -279,9 +283,8 @@ class DesignSpace(object):
         self.__norm_data_is_computed = False
 
     def _add_norm_policy(self, name):
-        """Adds a normalization policy to a variable.
-        Unbounded variables are not normalized.
-        Bounded variables (both from above and from below) are normalized.
+        """Adds a normalization policy to a variable. Unbounded variables are not
+        normalized. Bounded variables (both from above and from below) are normalized.
 
         :param name: variable name
         """
@@ -321,14 +324,14 @@ class DesignSpace(object):
 
     @staticmethod
     def __is_integer(value):
-        """  Checks that all values are integers  """
+        """Checks that all values are integers."""
         are_none = equal(value, None)
         are_int = equal(mod(value.astype("f"), 1), 0)
         return logical_or(are_none, are_int)
 
     @staticmethod
     def __is_numeric(value):
-        """ Checks that a value is numeric """
+        """Checks that a value is numeric."""
         res = (value is None) or hasattr(value, "real")
         try:
             if not res:
@@ -339,12 +342,11 @@ class DesignSpace(object):
 
     @staticmethod
     def __isnot_nan(value):
-        """ Checks that a value is not nan"""
+        """Checks that a value is not nan."""
         return (value is None) or ~isnan(value)
 
     def _check_value(self, value, name):
-        """
-        Checks that a variable value is valid
+        """Checks that a variable value is valid.
 
         :param value: a numpy array
         """
@@ -401,7 +403,7 @@ class DesignSpace(object):
                 )
 
     def _add_bound(self, name, size, bound, is_lower=True):
-        """Add a lower or upper bound to a variable
+        """Add a lower or upper bound to a variable.
 
         :param name: name of the variable
         :param bound: lower or upper bound (array)
@@ -447,7 +449,7 @@ class DesignSpace(object):
         return
 
     def _check_variable_bounds(self, name):
-        """Check that the bounds are compatible and are the same size
+        """Check that the bounds are compatible and are the same size.
 
         :param name: name of the variable
         """
@@ -466,7 +468,7 @@ class DesignSpace(object):
             )
 
     def _check_current_x_value(self, name):
-        """Check that the current x values are between bounds
+        """Check that the current x values are between bounds.
 
         :param name: name of the variable
         """
@@ -495,8 +497,7 @@ class DesignSpace(object):
             )
 
     def has_current_x(self):
-        """
-        Tests if current_x is defined
+        """Tests if current_x is defined.
 
         :returns: True if current_x is defined
         """
@@ -508,7 +509,7 @@ class DesignSpace(object):
         return False
 
     def check(self):
-        """Check the state of the design space"""
+        """Check the state of the design space."""
         if not self.variables_names:
             raise ValueError("Design space is empty !")
 
@@ -519,13 +520,11 @@ class DesignSpace(object):
             self._check_current_x()
 
     def check_membership(self, x_vect, variables_names=None):
-        """Checks whether the input variables satisfy the design space
-        requirements.
+        """Checks whether the input variables satisfy the design space requirements.
 
         :param x_vect: design variables
         :type x_vect: dict or array
         :param variables_names: names of the variables to be checked
-
         """
         # Convert the input vector into a dictionary if necessary:
         if isinstance(x_vect, dict):
@@ -590,7 +589,7 @@ class DesignSpace(object):
                     raise ValueError(msg)
 
     def get_active_bounds(self, x_vec=None, tol=1e-8):
-        """Determine which bound constraints of the current point are active
+        """Determine which bound constraints of the current point are active.
 
         :param x_vec: the point at which we check the bounds
         :param tol: tolerance of comparison of a scalar with a bound
@@ -655,9 +654,14 @@ class DesignSpace(object):
             raise KeyError("DesignSpace has no current_x for " + err.args[0])
 
     def get_indexed_var_name(self, variable_name):
-        """
-        Retuns a list of the variables names with their indices
-        such as [x!0,x!1,y,z!0,z!1]
+        """Return a list of the variables names with their indices such as.
+
+        [x!0,x!1,y,z!0,z!1]
+
+        :param variable_name: name of the variable
+        :type variable_name: str
+        :returns: names of the variable components
+        :rtype: list(str)
         """
         size = self.variables_sizes[variable_name]
         if size == 1:
@@ -665,9 +669,12 @@ class DesignSpace(object):
         return [variable_name + self.SEP + str(i) for i in range(size)]
 
     def get_indexed_variables_names(self):
-        """
-        Retuns a list of the variables names with their indices
-        such as [x!0,x!1,y,z!0,z!1]
+        """Return a list of the variables names with their indices such as.
+
+        [x!0,x!1,y,z!0,z!1]
+
+        :returns: names of all the variables components
+        :rtype: list(str)
         """
         var_ind_names = []
         for var in self.variables_names:
@@ -678,11 +685,26 @@ class DesignSpace(object):
                 var_ind_names += vnames
         return var_ind_names
 
+    def get_variables_indexes(self, variables_names):
+        """Return the indexes of a design array corresponding to the variables names.
+
+        :param variables_names: names of the variables
+        :type variables_names: list(str)
+        :return: indexes of a design array corresponding to the variables names
+        :rtype: ndarray
+        """
+        indexes = list()
+        index = 0
+        for name in self.variables_names:
+            var_size = self.get_size(name)
+            if name in variables_names:
+                indexes.extend(range(index, index + var_size))
+            index += var_size
+        return array(indexes)
+
     def __update_normalization_vars(self):
-        """
-        Computes inner attributes used to compute
-        the normalization/unnormalization
-        """
+        """Computes inner attributes used to compute the
+        normalization/unnormalization."""
 
         self.__lower_bounds_array = self.get_lower_bounds()
         self.__upper_bounds_array = self.get_upper_bounds()
@@ -701,8 +723,8 @@ class DesignSpace(object):
         self.__norm_data_is_computed = True
 
     def normalize_vect(self, x_vect, minus_lb=True):
-        """Normalizes a vector of the design space.
-        Unbounded variables are not normalized.
+        """Normalizes a vector of the design space. Unbounded variables are not
+        normalized.
 
         :param x_vect: design variables
         :type x_vect: ndarray
@@ -739,7 +761,7 @@ class DesignSpace(object):
         :param x_vect: design variables
         :type x_vect: ndarray
         :param minus_lb: if True, remove lower bounds at normalization
-        :param no_check: if True, dont check that values are in [0,1]
+        :param no_check: if True, don't check that values are in [0,1]
         :return: normalized vector
         """
         if not self.__norm_data_is_computed:
@@ -790,8 +812,7 @@ class DesignSpace(object):
         return r_xvec
 
     def round_vect(self, x_vect):
-        """
-        Rounds the vector where variables are of integer type
+        """Rounds the vector where variables are of integer type.
 
         :param x_vect: design variables to round
         """
@@ -828,7 +849,7 @@ class DesignSpace(object):
         return self.normalize_vect(current_x)
 
     def get_current_x_dict(self):
-        """Get the current point in the design space
+        """Get the current point in the design space.
 
         :returns: the x vector as a dict, keys are the variable names
             values are the variable vales as np array
@@ -836,7 +857,7 @@ class DesignSpace(object):
         return self._current_x
 
     def set_current_x(self, current_x):
-        """Set the current point
+        """Set the current point.
 
         :param current_x: the current design vector
         """
@@ -871,7 +892,7 @@ class DesignSpace(object):
         self._check_current_x()
 
     def set_current_variable(self, name, current_value):
-        """Set the current value of a single variable
+        """Set the current value of a single variable.
 
         :param name: name of the variable
         :param current_value: current value of the variable
@@ -882,16 +903,14 @@ class DesignSpace(object):
             raise ValueError("Variable " + str(name) + " is not in the design space !")
 
     def get_size(self, name):
-        """Get the size of a variable
-        Return None if the variable is not known
+        """Get the size of a variable Return None if the variable is not known.
 
         :param name: name of the variable
         """
         return self.variables_sizes.get(name, None)
 
     def get_type(self, name):
-        """Get the type of a variable
-        Return None if the variable is not known
+        """Get the type of a variable Return None if the variable is not known.
 
         :param name: name of the variable
         """
@@ -902,7 +921,6 @@ class DesignSpace(object):
 
         :param name: variable name
         :returns: variable lower bound (possibly infinite)
-
         """
         return self._lower_bounds.get(name)
 
@@ -935,7 +953,7 @@ class DesignSpace(object):
         return self.dict_to_array(self._upper_bounds, all_var_list=variables_names)
 
     def set_lower_bound(self, name, lower_bound):
-        """Set a new lower bound for variable name
+        """Set a new lower bound for variable name.
 
         :param name: name of the variable
         :param lower_bound: lower bound
@@ -947,7 +965,7 @@ class DesignSpace(object):
         self._add_norm_policy(name)
 
     def set_upper_bound(self, name, upper_bound):
-        """Set a new upper bound for variable name
+        """Set a new upper bound for variable name.
 
         :param name: name of the variable
         :param upper_bound: upper bound
@@ -959,7 +977,7 @@ class DesignSpace(object):
         self._add_norm_policy(name)
 
     def array_to_dict(self, x_array):
-        """Split the current point into a dictionary with variables names
+        """Split the current point into a dictionary with variables names.
 
         :param x_array: x array to be converted to a dict of array
         """
@@ -974,10 +992,9 @@ class DesignSpace(object):
 
     @staticmethod
     def __get_common_dtype(x_dict):
-        """
-        If dict has a value complex array, returns numpy.complex128
-        if dict has real values and mixed floats/int, returns numpy.float64
-        if dict has only int values, returns numpy.int32
+        """If dict has a value complex array, returns numpy.complex128 if dict has real
+        values and mixed floats/int, returns numpy.float64 if dict has only int values,
+        returns numpy.int32.
 
         :param x_dict : dictionary of variables
         """
@@ -999,7 +1016,7 @@ class DesignSpace(object):
         return float64
 
     def dict_to_array(self, x_dict, all_vars=True, all_var_list=None):
-        """Aggregate a point as dictionary into array
+        """Aggregate a point as dictionary into array.
 
         :param x_dict: point as dictionary
         :param all_vars: if True, all variables shall be in x_dict
@@ -1020,7 +1037,7 @@ class DesignSpace(object):
         return concatenate(array_list)
 
     def get_pretty_table(self, fields=None):
-        """Builds a PrettyTable object from the design space data
+        """Builds a PrettyTable object from the design space data.
 
         :param fields: list of fields to export, by default all
         :returns:  the pretty table object
@@ -1092,7 +1109,7 @@ class DesignSpace(object):
         h5file.close()
 
     def import_hdf(self, file_path):
-        """Imports design space from hdf file
+        """Imports design space from hdf file.
 
         :param file_path:
         """
@@ -1127,9 +1144,8 @@ class DesignSpace(object):
 
     @staticmethod
     def __read_opt_attr_array(var_group, dataset_name):
-        """
-        Reads an array in a group, can be optional
-        If data does not exists, returns None
+        """Reads an array in a group, can be optional If data does not exists, returns
+        None.
 
         :param var_group : the variable group
         :param dataset_name : name of the data
@@ -1142,16 +1158,16 @@ class DesignSpace(object):
 
     @staticmethod
     def __to_real(data):
-        """   Convert complex to real numpy array        """
+        """Convert complex to real numpy array."""
         return array(array(data, copy=False).real, dtype=float64)
 
     def to_complex(self):
-        """  Casts the current value to complex  """
+        """Casts the current value to complex."""
         for name, val in self._current_x.items():
             self._current_x[name] = array(val, dtype=complex128)
 
     def export_to_txt(self, output_file, fields=None, header_char="", **table_options):
-        """Exports the design space to a text file
+        """Exports the design space to a text file.
 
         :param output_file: output file path
         :param fields: list of fields to export, by default all
@@ -1166,7 +1182,7 @@ class DesignSpace(object):
 
     @staticmethod
     def read_from_txt(input_file, header=None):
-        """Parses a csv file to read the DesignSpace
+        """Parses a csv file to read the DesignSpace.
 
         :param input_file: returns: s: the design space
         :param header: fields list, or by default, read in the file
@@ -1229,25 +1245,14 @@ class DesignSpace(object):
         design_space.check()
         return design_space
 
-    def log_me(self):
-        """Logs a representation of the design_space characteristics
-        as a table
-
-        """
-        msg = str(self)
-        for line in msg.split("\n"):
-            LOGGER.info(line)
-
-    def __str__(self, *args, **kwargs):
-        desc = "Design Space: "
-        desc += "\n" + str(self.get_pretty_table().get_string())
-        return desc
+    def __str__(self):
+        return "Design Space:\n" + self.get_pretty_table().get_string()
 
     def project_into_bounds(self, x_c, normalized=False):
-        """
-        Projects x_c onto the bounds, using a simple
-        coordinate wise approach
+        """Projects x_c onto the bounds, using a simple coordinate wise approach.
 
+        :param normalized: if True then the vector is assumed to be normalized
+        :type normalized: bool
         :param x_c: x vector (np array)
         :returns: projected x_c
         """
@@ -1266,3 +1271,64 @@ class DesignSpace(object):
         u_inds = where(x_c > u_b)
         x_p[u_inds] = u_b[u_inds]
         return x_p
+
+    def __contains__(self, variable):
+        """Return True if a variable is in the design space.
+
+        :param str variable: variable name.
+        """
+        return variable in self.variables_names
+
+    def __len__(self):
+        """Return the length of the design space which is equal to the number of
+        variables."""
+        return len(self.variables_names)
+
+    def __getitem__(self, variable):
+        """Return the data associated with a given variable: name, type, size, lower
+        bound, upper bound and current value.
+
+        :param variable: variable name or index.
+        :type variable: str or int
+        :return: data associated with variable.
+        :rtype: dict
+        """
+        if isinstance(variable, int):
+            try:
+                variable = self.variables_names[variable]
+            except IndexError:
+                raise ValueError(
+                    "The parameter indices are comprise between 0 and {}. "
+                    "Got {}.".format(len(self) - 1, variable)
+                )
+        else:
+            if variable not in self.variables_names:
+                raise ValueError(
+                    "The design space does not contain '{}'.".format(variable)
+                )
+        try:
+            value = self.get_current_x([variable])
+        except KeyError:
+            value = None
+        return {
+            self.NAME_GROUP: variable,
+            self.TYPE_GROUP: self.get_type(variable)[0],
+            self.VALUE_GROUP: value,
+            self.SIZE_GROUP: self.get_size(variable),
+            self.LB_GROUP: self.get_lower_bound(variable),
+            self.UB_GROUP: self.get_upper_bound(variable),
+        }
+
+    def extend(self, other):
+        """Extend the design space with another design space.
+
+        :param other: design space to be appended
+        :type other: DesignSpace
+        """
+        for name in other.variables_names:
+            size = other.get_size(name)
+            var_type = other.get_type(name)
+            l_b = other.get_lower_bound(name)
+            u_b = other.get_upper_bound(name)
+            value = other.get_current_x_dict()[name]
+            self.add_variable(name, size, var_type, l_b, u_b, value)

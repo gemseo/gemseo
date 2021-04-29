@@ -27,7 +27,6 @@ Plot - Scatter
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import linspace, pi, sin
 
 from gemseo.api import configure_logger
@@ -35,7 +34,6 @@ from gemseo.core.dataset import Dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ############################################################################
 # Build a dataset
@@ -52,4 +50,4 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # Plot y vs x
 # -----------
 # We can use the :class:`.Scatter` plot
-dataset.plot("Scatter", x="x", y="y", color=color)
+dataset.plot("Scatter", x="x", y="y", properties={"color": color})

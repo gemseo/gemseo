@@ -23,34 +23,23 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import math
 import unittest
-from builtins import range
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.function import MDOFunction, MDOFunctionGenerator
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.third_party.junitxmlreq import link_to
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
 
+class TestMDOFormulation(unittest.TestCase):
+    """"""
 
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_MDOFormulation(unittest.TestCase):
-    """ """
-
-    @link_to("Req-MDO-1")
     def test_get_generator(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().read_design_space()
         f = MDOFormulation([sm], "y_4", ds)
@@ -70,7 +59,7 @@ class Test_MDOFormulation(unittest.TestCase):
         self.assertRaises(Exception, f._get_generator_from, *args)
 
     def test_cstrs(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().read_design_space()
         f = MDOFormulation([sm], "y_4", ds)
@@ -79,7 +68,6 @@ class Test_MDOFormulation(unittest.TestCase):
         f.add_constraint("y_4", constraint_name="toto")
         assert f.opt_problem.constraints[-1].name == "toto"
 
-    #     @link_to("Req-MDO-1")
     #     def test_disciplines_runinputs(self):
     #         sm = SobieskiMission()
     #         rid = SobieskiProblem().get_default_inputs(sm.get_input_data_names())
@@ -102,7 +90,7 @@ class Test_MDOFormulation(unittest.TestCase):
     #         self.assertRaises(Exception, f.get_discipline_run_inputs, None)
 
     def test_jac_sign(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         f = MDOFormulation([sm], "y_4", ["x_shared"])
 
@@ -121,20 +109,18 @@ class Test_MDOFormulation(unittest.TestCase):
         self.assertAlmostEqual(obj.jac(0.0), 1.0, 9)
 
     def test_get_x0(self):
-        """ """
+        """"""
         _ = MDOFormulation(
             [SobieskiMission()], "y_4", SobieskiProblem().read_design_space()
         )
 
-    @link_to("Req-MDO-1")
     def test_add_user_defined_constraint_error(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         f = MDOFormulation([sm], "y_4", ["x_shared"])
         self.assertRaises(Exception, f.add_constraint, "y_4", "None", "None")
 
     # =========================================================================
-    #     @link_to("Req-MDO-1", "Req-MDO-4.3", "Req-SC-6")
     #     def test_add_user_defined_constraint(self):
     #         sm = SobieskiMission()
     #         design_space = DesignSpace()
@@ -147,20 +133,19 @@ class Test_MDOFormulation(unittest.TestCase):
     # =========================================================================
 
     def test_get_values_array_from_dict(self):
-        """ """
+        """"""
         a = DataConversion.dict_to_array({}, [])
         self.assertIsInstance(a, type(np.array([])))
 
     def test_get_mask_from_datanames(self):
-        """ """
+        """"""
         a = MDOFormulation._get_mask_from_datanames(["y_1", "y_2", "y_3"], ["y_2"])[0][
             0
         ]
         self.assertEqual(a, 1)
 
-    @link_to("Req-WF-10")
     def test_x_mask(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         rid = SobieskiProblem().get_default_inputs(sm.get_input_data_names())
         dvs = ["x_shared", "y_14"]
@@ -206,7 +191,7 @@ class Test_MDOFormulation(unittest.TestCase):
         assert "x" not in f2.design_space.variables_names
 
     def test_wrong_inputs(self):
-        """ """
+        """"""
         dvs = ["x_shared", "y_14"]
 
         design_space = DesignSpace()
@@ -215,7 +200,7 @@ class Test_MDOFormulation(unittest.TestCase):
         self.assertRaises(TypeError, MDOFormulation, [], "y_4", design_space)
 
     def test_get_obj(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         dvs = ["x_shared", "y_14"]
 
@@ -226,7 +211,6 @@ class Test_MDOFormulation(unittest.TestCase):
         f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())
 
-    @link_to("Req-WF-10")
     def test_get_x_mask(self):
         sm = SobieskiMission()
         dvs = ["x_shared", "y_14"]
@@ -249,9 +233,8 @@ class Test_MDOFormulation(unittest.TestCase):
         design_space.add_variable("x_shared", 10)
         self.assertRaises(ValueError, f.unmask_x_swap_order, dvs, x)
 
-    @link_to("Req-WF-10")
     def test_get_expected_workflow(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().read_design_space()
         f = MDOFormulation([sm], "Y5", ds)

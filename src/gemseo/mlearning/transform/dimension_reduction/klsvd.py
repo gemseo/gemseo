@@ -29,7 +29,6 @@ _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import array
 from openturns import (
     Basis,
@@ -49,11 +48,9 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 
-standard_library.install_aliases()
-
 
 class KLSVD(DimensionReduction):
-    """ Karhunen Loeve SVD Algorithm. """
+    """Karhunen Loeve SVD Algorithm."""
 
     def __init__(self, mesh, n_components=5, name="KLSVD"):
         """Constructor.
@@ -68,7 +65,7 @@ class KLSVD(DimensionReduction):
         self.ot_mesh = Mesh(Sample(mesh))
 
     def mesh(self):
-        """ mesh """
+        """mesh."""
         return self.parameters["mesh"]
 
     def fit(self, data):
@@ -119,13 +116,13 @@ class KLSVD(DimensionReduction):
 
     @property
     def components(self):
-        """ Principal components """
+        """Principal components."""
         tmp = array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
         return tmp
 
     @property
     def eigenvalues(self):
-        """ Eigen values """
+        """Eigen values."""
         return array(self.algo.getEigenValues())
 
     def _get_process_sample(self, data):
@@ -141,7 +138,7 @@ class KLSVD(DimensionReduction):
         return sample
 
     def _truncate_kl_result(self, result):
-        """Truncate an openturns.KarhurenLoeveResult
+        """Truncate an openturns.KarhurenLoeveResult.
 
         :param result: KL result
         """

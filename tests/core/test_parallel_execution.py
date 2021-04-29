@@ -20,18 +20,14 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
-
 import unittest
-from builtins import map, object, range, str, zip
 from timeit import default_timer as timer
 
-from future import standard_library
+import pytest
 from numpy import array, complex128, equal, ones
 from scipy.optimize import rosen
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger, create_discipline
+from gemseo.api import create_discipline
 from gemseo.core.function import MDOFunctionGenerator
 from gemseo.core.parallel_execution import (
     DiscParallelExecution,
@@ -39,34 +35,25 @@ from gemseo.core.parallel_execution import (
     ParallelExecution,
 )
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem, get_inputs
-from gemseo.utils.testing_utils import skip_under_windows
-
-standard_library.install_aliases()
-
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 class CallableWorker(object):
-    """Callable worker"""
-
-    def __init__(self):
-        """Constructor"""
-        pass
+    """Callable worker."""
 
     def __call__(self, counter):
-        """Callable"""
+        """Callable."""
         return 2 * counter
 
 
 def function_raising_exception(counter):
-    """Raises an Exception"""
+    """Raises an Exception."""
     raise Exception("This is an Exception")
 
 
 class TestParallelExecution(unittest.TestCase):
-    """Test the parallel execution"""
+    """Test the parallel execution."""
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_functional(self):
         n = 10
         function_list = [rosen] * n
@@ -96,7 +83,7 @@ class TestParallelExecution(unittest.TestCase):
         )
 
     def test_callable(self):
-        """Test ParallelExecution with a Callable worker"""
+        """Test ParallelExecution with a Callable worker."""
         n = 2
         function_list = [CallableWorker(), CallableWorker()]
         parallel_execution = ParallelExecution(function_list, use_threading=True)
@@ -104,13 +91,13 @@ class TestParallelExecution(unittest.TestCase):
         assert output_list == [2] * n
 
     def test_callable_exception(self):
-        """Test ParallelExecution with a Callable worker"""
+        """Test ParallelExecution with a Callable worker."""
         n = 2
         function_list = [function_raising_exception, CallableWorker()]
         parallel_execution = ParallelExecution(function_list, use_threading=True)
         parallel_execution.execute([1] * n)
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_disc_parallel_doe(self):
         s_1 = Sellar1()
         n = 10
@@ -147,7 +134,7 @@ class TestParallelExecution(unittest.TestCase):
             assert s_1.local_data["y_0"] == outs[i]["y_0"]
             assert s_1.local_data["y_0"] == output_list[i]
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_parallel_lin(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelLinearization(disciplines)
@@ -172,7 +159,7 @@ class TestParallelExecution(unittest.TestCase):
                     assert (dfdx == j_ref[f][x]).all()
                     assert (dfdx == outs[i][f][x]).all()
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_disc_parallel_threading_proc(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelExecution(
@@ -199,15 +186,11 @@ class TestParallelExecution(unittest.TestCase):
             use_threading=True,
         )
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_async_call(self):
 
         disc = create_discipline("SobieskiMission")
         func = MDOFunctionGenerator(disc).get_function(["x_shared"], ["y_4"])
-
-        def func2(x):
-            LOGGER.info("computing light func2")
-            return x.sum()
 
         x_list = [i * ones(6) for i in range(4)]
 
@@ -215,8 +198,6 @@ class TestParallelExecution(unittest.TestCase):
             return list(map(func, x_list))
 
         par = ParallelExecution([func] * 2, n_processes=2, use_threading=False)
-        LOGGER.info("Submitting heavy calculation")
-        res = par.execute(
+        par.execute(
             [i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work
         )
-        LOGGER.info("Got result heavy async exec " + str(res))

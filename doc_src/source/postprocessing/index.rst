@@ -18,7 +18,7 @@
 How to deal with post-processing
 ================================
 
-In this section we describe the post processing features of GEMSEO, used to
+In this section we describe the post processing features of |g|, used to
 analyze :class:`~gemseo.algos.opt_result.OptimizationResult`, called the
 :term:`optimization history`.
 

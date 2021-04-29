@@ -29,20 +29,13 @@ import re
 from builtins import range, str
 from inspect import getargspec, getdoc
 
-from future import standard_library
-
-standard_library.install_aliases()
-
 
 class SourceParsing(object):
-    """
-    Parse source code to extract information
-    """
+    """Parse source code to extract information."""
 
     @staticmethod
     def get_options_doc(method):
-        """
-        Get the documentation of a method
+        """Get the documentation of a method.
 
         :param method: the method to retreive the doc from
         :returns: the dictionary of options meaning
@@ -50,19 +43,16 @@ class SourceParsing(object):
         doc = getdoc(method)
         if doc is None:
             raise ValueError("Empty doc for " + str(method))
-        pattern = ":param ([\*\w]+): (.*?)"  # pylint: disable=W1401
-        pattern += "(?:(?=:param)|(?=:return)|\Z)"  # pylint: disable=W1401
+        pattern = r":param ([\*\w]+): (.*?)(?:(?=:param)|(?=:return)|\Z)"
         param_re = re.compile(pattern, re.S)
         doc_list = param_re.findall(doc)
         return {txt[0]: txt[1].replace(" " * 4, "") for txt in doc_list}
 
     @staticmethod
     def get_default_options_values(klass):
-        """
-        Get the options default values for the given class
-        Only addresses kwargs
+        """Get the options default values for the given class Only addresses kwargs.
 
-        :param name : name of the class
+        :param klass : name of the class
         :returns: the dict option name: option default value
         """
         args, _, _, defaults = getargspec(klass.__init__)

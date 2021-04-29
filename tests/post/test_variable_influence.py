@@ -22,33 +22,24 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from os import remove
 from os.path import dirname, exists, join
 
-from future import standard_library
+import pytest
 from numpy import repeat
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
 SSBJ = join(dirname(__file__), "mdf_backup.h5")
 
 
-class Test_VariableInfluence(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestVariableInfluence(unittest.TestCase):
+    """"""
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.1", "Req-VIZ-1.2", "Req-VIZ-2", "Req-VIZ-4")
     def test_gradient_sensitivity(self):
-        """ """
+        """"""
         if PostFactory().is_available("VariableInfluence"):
             problem = OptimizationProblem.import_hdf(POWER2)
             post = PostFactory().execute(
@@ -57,7 +48,6 @@ class Test_VariableInfluence(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)
             database = problem.database
             database.filter(["pow2", "@pow2"])
             problem.constraints = []
@@ -72,7 +62,6 @@ class Test_VariableInfluence(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)
 
     def test_gradient_sensitivity_ssbj(self):
         if PostFactory().is_available("VariableInfluence"):
@@ -91,4 +80,3 @@ class Test_VariableInfluence(unittest.TestCase):
             assert len(post.output_files) == 14
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)

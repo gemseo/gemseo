@@ -21,11 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.caches.cache_factory import CacheFactory
-
-standard_library.install_aliases()
 
 
 def test_cache_factory():

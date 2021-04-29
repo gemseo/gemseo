@@ -16,8 +16,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import (
     create_discipline,
     create_scenario,
@@ -25,8 +23,6 @@ from gemseo.api import (
     get_available_scenario_types,
 )
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-
-standard_library.install_aliases()
 
 get_available_scenario_types()
 

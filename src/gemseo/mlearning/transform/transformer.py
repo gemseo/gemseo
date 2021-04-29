@@ -35,13 +35,11 @@ possibly :meth:`.Transformer.inverse_transform` methods.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
-standard_library.install_aliases()
-
 
 class Transformer(object):
-    """ Transformer baseclass. """
+    """Transformer baseclass."""
+
+    CROSSED = False
 
     def __init__(self, name="Transformer", **parameters):
         """Constructor.
@@ -53,10 +51,10 @@ class Transformer(object):
         self.parameters = parameters
 
     def duplicate(self):
-        """ Duplicate the constructor. """
+        """Duplicate the constructor."""
         return self.__class__(self.name, **self.parameters)
 
-    def fit(self, data):
+    def fit(self, data, *args):
         """Fit transformer to data.
 
         :param ndarray data: data to be fitted.
@@ -81,14 +79,14 @@ class Transformer(object):
         """
         raise NotImplementedError
 
-    def fit_transform(self, data):
+    def fit_transform(self, data, *args):
         """Fit transformer to data and transform data.
 
         :param ndarray data: data to be fitted and transformed.
         :return: transformed data.
         :rtype: ndarray
         """
-        self.fit(data)
+        self.fit(data, *args)
         transformed_data = self.transform(data)
         return transformed_data
 
@@ -111,6 +109,6 @@ class Transformer(object):
         raise NotImplementedError
 
     def __str__(self):
-        """ String representation for end user. """
+        """String representation for end user."""
         string = self.__class__.__name__
         return string

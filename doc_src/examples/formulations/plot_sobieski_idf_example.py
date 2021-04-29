@@ -25,12 +25,9 @@ IDF-based MDO on the Sobieski SSBJ test case
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
-standard_library.install_aliases()
 configure_logger()
 
 ##############################################################################

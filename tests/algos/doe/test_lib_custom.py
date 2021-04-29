@@ -25,33 +25,24 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import unittest
 from os.path import dirname, join
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 
 from .doe_lib_test_base import DOELibraryTestBase
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_CustomLib(unittest.TestCase):
-    """ """
+class TestCustomLib(unittest.TestCase):
+    """"""
 
     DOE_LIB_NAME = "CustomDOE"
 
     def test_init(self):
-        """ """
+        """"""
         factory = DOEFactory()
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
     def test_missing_file_except(self):
-        """ """
+        """"""
         dim = 3
         self.assertRaises(
             Exception,
@@ -62,7 +53,7 @@ class Test_CustomLib(unittest.TestCase):
         )
 
     def test_delimiter_option(self):
-        """ """
+        """"""
         dim = 3
         doe_file = join(dirname(__file__), "dim_" + str(dim) + "_semicolon.csv")
         doe_library = DOELibraryTestBase.generate_one_test(
@@ -72,7 +63,7 @@ class Test_CustomLib(unittest.TestCase):
         self.assertEqual(samples.shape, (30, 3))
 
     def test_check_dv_lenght(self):
-        """ """
+        """"""
         dim = 4
         doe_file = join(dirname(__file__), "dim_3_semicolon.csv")
         self.assertRaises(
@@ -85,7 +76,7 @@ class Test_CustomLib(unittest.TestCase):
         )
 
     def test_read_file_error(self):
-        """ """
+        """"""
         dim = 4
         doe_file = join(dirname(__file__), "dim_3_semicolon.csv")
         self.assertRaises(
@@ -128,6 +119,6 @@ def get_options(algo_name, dim):
 #
 suite_tests = DOELibraryTestBase()
 for test_method in suite_tests.generate_test(
-    Test_CustomLib.DOE_LIB_NAME, get_expected_nsamples, get_options
+    TestCustomLib.DOE_LIB_NAME, get_expected_nsamples, get_options
 ):
-    setattr(Test_CustomLib, test_method.__name__, test_method)
+    setattr(TestCustomLib, test_method.__name__, test_method)

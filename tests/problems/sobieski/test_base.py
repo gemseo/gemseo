@@ -23,21 +23,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
 from numpy import array, complex128, eye, float64, zeros
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.base import SobieskiBase
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_Sobieski_base(unittest.TestCase):
-    """ """
+class TestSobieskiBase(unittest.TestCase):
+    """"""
 
     def test_init(self):
         SobieskiBase("float64")

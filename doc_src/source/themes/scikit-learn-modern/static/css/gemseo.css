@@ -231,3 +231,39 @@ a.gemseo-btn:hover {
   font-size: 1.1rem;
   font-weight: 500;
 }
+
+/* api docs */
+
+.class > dt, .function > dt, .method > dt {
+  border-left-color: rgb(163,20,100);
+}
+
+.class > dt {
+    border-left-width: 10px;
+}
+
+.method > dt, .function > dt {
+  border: 1px solid rgb(163,20,100);
+    border-left-width: 5px;
+}
+
+.class {
+    border-left: 2px solid rgb(163,20,100);
+}
+
+.field-list > dt {
+    color:rgba(30, 154, 168);
+    background-color: rgba(30, 154, 168,0.1);
+    border: 1px solid rgba(30, 154, 168,0.3);
+}
+.field-list > dd {
+    border: 1px solid rgba(30, 154, 168,0.3);
+}
+
+.field-even {
+  margin-top: 10px;
+}
+
+dl.field-list > dt:after {
+  content: "";
+}

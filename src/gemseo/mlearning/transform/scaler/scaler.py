@@ -44,16 +44,13 @@ equal to 1. Consequently, the scaling operation is the identity:
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import diag, eye, ndarray
 
 from gemseo.mlearning.transform.transformer import Transformer
 
-standard_library.install_aliases()
-
 
 class Scaler(Transformer):
-    """ Data scaler. """
+    """Data scaler."""
 
     def __init__(self, name="Scaler", offset=0.0, coefficient=1.0):
         """Constructor.
@@ -68,27 +65,27 @@ class Scaler(Transformer):
 
     @property
     def offset(self):
-        """ Offset. """
+        """Offset."""
         return self.parameters["offset"]
 
     @property
     def coefficient(self):
-        """ Coefficient. """
+        """Coefficient."""
         return self.parameters["coefficient"]
 
     @offset.setter
     def offset(self, value):
-        """ Set offset. """
+        """Set offset."""
         self.parameters["offset"] = value
 
     @coefficient.setter
     def coefficient(self, value):
-        """ Set coefficient. """
+        """Set coefficient."""
         self.parameters["coefficient"] = value
 
     def fit(self, data):
-        """Fit scaler to data. Offset and coefficient terms are already
-        defined in the constructor.
+        """Fit scaler to data. Offset and coefficient terms are already defined in the
+        constructor.
 
         :param ndarray data: data to be fitted.
         """

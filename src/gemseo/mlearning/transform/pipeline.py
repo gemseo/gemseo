@@ -28,16 +28,13 @@ global fit(), transform(), fit_transform() and inverse_transform() methods.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import eye, matmul
 
 from gemseo.mlearning.transform.transformer import Transformer
 
-standard_library.install_aliases()
-
 
 class Pipeline(Transformer):
-    """ Transformer pipeline. """
+    """Transformer pipeline."""
 
     def __init__(self, name="Pipeline", transformers=None):
         """Constructor.
@@ -54,22 +51,22 @@ class Pipeline(Transformer):
         self.transformers = transformers or []
 
     def duplicate(self):
-        """ Duplicate the constructor. """
+        """Duplicate the constructor."""
         transformers = [trans.duplicate() for trans in self.transformers]
         return Pipeline(self.name, transformers)
 
-    def fit(self, data):
+    def fit(self, data, **options):
         """Fit transformer pipeline to data. All the transformers are fitted,
         transforming the data along the way.
 
         :param ndarray data: data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data)
+            data = transformer.fit_transform(data, **options)
 
     def transform(self, data):
-        """Transform data. The data is transformed sequentially, where the
-        output of one transformer is the input of the next.
+        """Transform data. The data is transformed sequentially, where the output of one
+        transformer is the input of the next.
 
         :param ndarray data: data to be transformed.
         :return: transformed data.
@@ -80,9 +77,8 @@ class Pipeline(Transformer):
         return data
 
     def inverse_transform(self, data):
-        """Perform an inverse transform on the data. The data is inverse
-        transformed sequentially, starting with the last tranformer in the
-        list.
+        """Perform an inverse transform on the data. The data is inverse transformed
+        sequentially, starting with the last tranformer in the list.
 
         :param ndarray data: data  to be inverse transformed.
         :return: inverse transformed data.

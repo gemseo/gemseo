@@ -19,18 +19,20 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test the dataset module. """
 from __future__ import absolute_import, division, unicode_literals
 
 from os.path import join
 
 import pytest
-from future import standard_library
-from numpy import allclose, arange, array, concatenate, savetxt
+from numpy import allclose, arange, array, concatenate, nan, savetxt
 
-from gemseo.core.dataset import Dataset
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
+from gemseo.core.doe_scenario import DOEScenario
+from gemseo.utils.string_tools import MultiLineString
 
-standard_library.install_aliases()
+""" Test the dataset module. """
 
 
 def assert_allclose(a, b):
@@ -121,6 +123,21 @@ def test_is_empty():
 
 def test_str(io_dataset):
     assert "inputs" in str(io_dataset)
+    expected = MultiLineString()
+    expected.add("Dataset")
+    expected.indent()
+    expected.add("Number of samples: 10")
+    expected.add("Number of variables: 3")
+    expected.add("Variables names and sizes by group:")
+    expected.indent()
+    expected.add("inputs: in_1 (2), in_2 (3)")
+    expected.add("outputs: out_1 (2)")
+    expected.dedent()
+    expected.add("Number of dimensions (total = 7) by group:")
+    expected.indent()
+    expected.add("inputs: 5")
+    expected.add("outputs: 2")
+    assert str(expected) == str(io_dataset)
 
 
 def test_set_from_raw_array(data):
@@ -146,6 +163,83 @@ def test_set_metadata(data):
     dataset = Dataset()
     dataset.set_metadata("toto", 5)
     assert dataset.metadata["toto"] == 5
+
+
+def test_remove(io_dataset):
+    assert io_dataset.n_samples == 10
+    io_dataset.remove([0, 3])
+    assert io_dataset.data["inputs"].shape == (8, 5)
+    assert io_dataset.data["outputs"].shape == (8, 2)
+    assert io_dataset.n_samples == 8
+
+
+def test_logical_operators():
+    assert set(LOGICAL_OPERATORS.keys()) == set(["==", "<", "<=", ">", ">=", "!="])
+    assert LOGICAL_OPERATORS["=="](1, 1)
+    assert not LOGICAL_OPERATORS["=="](1, 2)
+    assert LOGICAL_OPERATORS["!="](1, 2)
+    assert not LOGICAL_OPERATORS["!="](1, 1)
+    assert LOGICAL_OPERATORS["<"](1, 2)
+    assert not LOGICAL_OPERATORS["<"](2, 2)
+    assert not LOGICAL_OPERATORS["<"](1, 0)
+    assert LOGICAL_OPERATORS["<="](1, 2)
+    assert LOGICAL_OPERATORS["<="](2, 2)
+    assert not LOGICAL_OPERATORS["<="](1, 0)
+    assert not LOGICAL_OPERATORS[">"](1, 2)
+    assert not LOGICAL_OPERATORS[">"](2, 2)
+    assert LOGICAL_OPERATORS[">"](1, 0)
+    assert not LOGICAL_OPERATORS[">="](1, 2)
+    assert LOGICAL_OPERATORS[">="](2, 2)
+    assert LOGICAL_OPERATORS[">="](1, 0)
+
+
+def test_find_and_compare(io_dataset):
+    data = io_dataset
+
+    with pytest.raises(ValueError):
+        comparison = data.compare(0, "==", 0)
+
+    expected = r"\+ is not a logical operator: use either '==', '<', '<=', '>' or '>='"
+    with pytest.raises(ValueError, match=expected):
+        comparison = data.compare("in_1", "+", 0)
+
+    comparison = data.compare("in_1", "==", 0)
+    assert (comparison == array([True] + [False] * 9)).all()
+
+    comparison = data.compare("in_1", "==", 0)
+    indices = data.find(comparison)
+    assert indices == [0]
+
+    comparison = data.compare("in_1", "==", 10)
+    indices = data.find(comparison)
+    assert indices == [2]
+
+    comparison = data.compare("in_1", "==", 10) & data.compare("in_2", "==", 12)
+    indices = data.find(comparison)
+    assert indices == [2]
+
+    comparison = data.compare("in_1", "==", 0) | data.compare("in_1", "==", 10)
+    indices = data.find(comparison)
+    assert indices == [0, 2]
+
+
+def test_isnan():
+    dataset = Dataset()
+    dataset.set_from_array(array([[1.0, 2.0], [3.0, nan], [5.0, 6.0], [nan, 8.0]]))
+    is_nan = dataset.is_nan()
+    assert (is_nan == array([False, True, False, True])).all()
+    assert len(dataset) == 4
+    dataset.remove(is_nan)
+    assert len(dataset) == 2
+
+
+def test_find_and_remove(io_dataset):
+    data = io_dataset
+    assert 0 in data["in_1"]["in_1"][:, 0]
+    assert len(data) == 10
+    data.remove(data.compare("in_1", "==", 0))
+    assert 0 not in data["in_1"]["in_1"][:, 0]
+    assert len(data) == 9
 
 
 def test_is_variable(dataset, io_dataset):
@@ -351,15 +445,20 @@ def test_n_samples(io_dataset):
 #                     array([18, 19]))
 
 
-# def test_export_dataset_to_cache(dataset, tmp_path):
-#     cache = dataset.export_to_cache()
-#     assert cache.get_length() == 10
-#     assert_allclose(cache[1]['var_1'], array([0]))
-#     assert_allclose(cache[1]['var_2'], array([1, 2]))
-#     filename = join(str(tmp_path), 'cache.hdf5')
-#     cache = dataset.export_to_cache(cache_type=dataset.HDF5_CACHE,
-#                                     cache_hdf_file=filename)
-#     assert cache.get_length() == 10
+def test_export_dataset_to_cache(dataset, tmp_path):
+    cache = dataset.export_to_cache()
+    assert cache.get_length() == 10
+    for name, value in cache.get_last_cached_inputs().items():
+        assert (dataset[9][name] == value).all()
+
+    filename = join(str(tmp_path), "cache.hdf5")
+    cache = dataset.export_to_cache(
+        cache_type=dataset.HDF5_CACHE, cache_hdf_file=filename
+    )
+    assert cache.get_length() == 10
+    for name, value in cache.get_last_cached_inputs().items():
+        assert (dataset[9][name] == value).all()
+
 
 #
 # def test_dataset_with_file(file_dataset, header_file_dataset):
@@ -433,8 +532,87 @@ def test_getitem(dataset, data):
     assert_allclose(res["var_2"], data[2:4, 1:3])
 
 
-def test_plot(dataset, tmpdir):
-    post = dataset.plot(
-        "ScatterMatrix", show=False, save=True, file_path=join(str(tmpdir), "scatter")
-    )
+def test_plot(dataset, tmp_path):
+    fpath = tmp_path / "scatter"
+    post = dataset.plot("ScatterMatrix", show=False, save=True, file_path=fpath)
     assert len(post.output_files) > 0
+    assert "ScatterMatrix" in dataset.get_available_plots()
+
+
+def test_export_to_dataset():
+    disc = AnalyticDiscipline(expressions_dict={"obj": "x1+x2", "cstr": "x1-x2"})
+    disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
+    d_s = DesignSpace()
+    d_s.add_variable("x1", 1, "float", 0, 1, 0.5)
+    d_s.add_variable("x2", 1, "float", 0, 1, 0.5)
+    scn = DOEScenario([disc], "DisciplinaryOpt", "obj", d_s)
+    scn.execute({"algo": "lhs", "n_samples": 10})
+    dataset = disc.cache.export_to_dataset()
+    assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
+    assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
+    assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
+    assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
+    dataset = disc.cache.export_to_dataset(inputs_names=["x1"])
+    assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
+    assert "x2" not in dataset.get_names(dataset.INPUT_GROUP)
+    assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
+    assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
+    dataset = disc.cache.export_to_dataset(outputs_names=["obj"])
+    assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
+    assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
+    assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
+    assert "cstr" not in dataset.get_names(dataset.OUTPUT_GROUP)
+
+
+def test_row_names(io_dataset):
+    """Check row_names property and setter."""
+    assert io_dataset.row_names == [str(val) for val in range(len(io_dataset))]
+    io_dataset.row_names = [
+        "sample_{}".format(index) for index in range(len(io_dataset))
+    ]
+    assert io_dataset.row_names == io_dataset.row_names
+
+
+def test_parameter_space(io_dataset):
+    parameter_space = io_dataset.get_parameter_space()
+    for name in ["in_1", "in_2", "out_1"]:
+        assert name in parameter_space
+        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
+    assert parameter_space["in_1"][parameter_space.SIZE_GROUP] == 2
+    ref = io_dataset["in_1"]["in_1"].min(0)
+    assert (parameter_space["in_1"][parameter_space.LB_GROUP] == ref).all()
+    ref = io_dataset["in_1"]["in_1"].max(0)
+    assert (parameter_space["in_1"][parameter_space.UB_GROUP] == ref).all()
+    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
+    assert (parameter_space["in_1"][parameter_space.VALUE_GROUP] == ref).all()
+    assert parameter_space["in_2"][parameter_space.SIZE_GROUP] == 3
+    assert parameter_space["out_1"][parameter_space.SIZE_GROUP] == 2
+
+    parameter_space = io_dataset.get_parameter_space(uncertain=True)
+    names = ["in_1_0", "in_1_1", "in_2_0", "in_2_1", "in_2_2"]
+    names += ["out_1_0", "out_1_1"]
+    for name in names:
+        assert name in parameter_space
+        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
+
+    assert parameter_space["in_1_0"][parameter_space.SIZE_GROUP] == 1
+    assert parameter_space["in_1_1"][parameter_space.SIZE_GROUP] == 1
+    ref = io_dataset["in_1"]["in_1"].min(0)
+    assert parameter_space["in_1_0"][parameter_space.LB_GROUP] == ref[0]
+    assert parameter_space["in_1_1"][parameter_space.LB_GROUP] == ref[1]
+    ref = io_dataset["in_1"]["in_1"].max(0)
+    assert parameter_space["in_1_0"][parameter_space.UB_GROUP] == ref[0]
+    assert parameter_space["in_1_1"][parameter_space.UB_GROUP] == ref[1]
+    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
+    assert parameter_space["in_1_0"][parameter_space.VALUE_GROUP] == ref[0]
+    assert parameter_space["in_1_1"][parameter_space.VALUE_GROUP] == ref[1]
+
+    parameter_space = io_dataset.get_parameter_space([io_dataset.INPUT_GROUP])
+    for name in ["in_1", "in_2"]:
+        assert name in parameter_space
+    assert "out_1" not in parameter_space
+
+    parameter_space = io_dataset.get_parameter_space([io_dataset.OUTPUT_GROUP])
+    for name in ["in_1", "in_2"]:
+        assert name not in parameter_space
+    assert "out_1" in parameter_space

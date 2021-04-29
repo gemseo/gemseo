@@ -30,39 +30,31 @@ SSBJ Mission computation
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from math import pi
 
-from future import standard_library
 from numpy import zeros
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 DEG_TO_RAD = pi / 180.0
 
 
 class SobieskiMission(object):
-    """Class defining mission analysis for Sobieski problem and
-    related method to the mission problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining mission analysis for Sobieski problem and related method to the
+    mission problem such as disciplines computation, constraints, reference optimum."""
 
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
 
     def __init__(self, sobieski_base):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.base = sobieski_base
         self.dtype = self.base.dtype
         self.math = self.base.math
 
     @staticmethod
     def compute_weight_ratio(y_14):
-        """Computation of weight ratio of Breguet formula
+        """Computation of weight ratio of Breguet formula.
 
         :param y_14: shared variables coming from blackbox_structure
 
@@ -77,7 +69,7 @@ class SobieskiMission(object):
 
     @staticmethod
     def compute_dweightratio_dwt(y_14):
-        """Computation of derivative of weight ratio wrt total weight
+        """Computation of derivative of weight ratio wrt total weight.
 
         :param y_14: shared variables coming from blackbox_structure:
 
@@ -92,7 +84,7 @@ class SobieskiMission(object):
 
     @staticmethod
     def compute_dweightratio_dwf(y_14):
-        """Computation of partial derivative of weight ratio wrt fuel weight
+        """Computation of partial derivative of weight ratio wrt fuel weight.
 
         :param y_14: shared variables coming from blackbox_structure:
 
@@ -106,8 +98,7 @@ class SobieskiMission(object):
         return y_14[0] / ((y_14[0] - y_14[1]) * (y_14[0] - y_14[1]))
 
     def compute_dlnweightratio_dwt(self, y_14):
-        """Computation of partial derivative of log of weight ratio
-        wrt total weight
+        """Computation of partial derivative of log of weight ratio wrt total weight.
 
         :param y_14: shared variables coming from blackbox_structure:
 
@@ -121,8 +112,7 @@ class SobieskiMission(object):
         return self.compute_dweightratio_dwt(y_14) / self.compute_weight_ratio(y_14)
 
     def compute_dlnweightratio_dwf(self, y_14):
-        """Computation of partial derivative of log of weight ratio
-        wrt fuel weight
+        """Computation of partial derivative of log of weight ratio wrt fuel weight.
 
         :param y_14: shared variables coming from blackbox_structure:
 
@@ -132,12 +122,11 @@ class SobieskiMission(object):
         :type y_14: numpy array
         :returns: d(ln(weight ratio)/d(fuel weight)
         :rtype: numpy array
-
         """
         return self.compute_dweightratio_dwf(y_14) / self.compute_weight_ratio(y_14)
 
     def compute_range(self, x_shared, y_14, y_24, y_34):
-        """Computation of range from Breguet formula
+        """Computation of range from Breguet formula.
 
         :param x_shared: shared design variable vector:
 
@@ -170,7 +159,7 @@ class SobieskiMission(object):
         )
 
     def compute_drange_dtotalweight(self, x_shared, y_14, y_24, y_34, sqrt_theta):
-        """Computation of range derivative wrt total weight
+        """Computation of range derivative wrt total weight.
 
         :param x_shared: shared design variable vector
         :type x_shared: numpy array
@@ -196,7 +185,7 @@ class SobieskiMission(object):
         )
 
     def compute_drange_dfuelweight(self, x_shared, y_14, y_24, y_34, sqrt_theta):
-        """Computation of range derivative wrt fuel weight
+        """Computation of range derivative wrt fuel weight.
 
         :param x_shared: shared design variable vector
         :type x_shared: numpy array
@@ -222,7 +211,7 @@ class SobieskiMission(object):
         )
 
     def compute_dtheta_dh(self, x_shared):
-        """Computation of air temperature and its derivative wrt altitude
+        """Computation of air temperature and its derivative wrt altitude.
 
         :param x_shared: shared design variable vector
         :type x_shared: numpy array
@@ -238,7 +227,7 @@ class SobieskiMission(object):
         return self.math.sqrt(theta), dtheta_dh
 
     def compute_sqrt_theta(self, x_shared):
-        """Computation of air temperature a
+        """Computation of air temperature a.
 
         :param x_shared: shared design variable vector
         :type x_shared: numpy array
@@ -252,7 +241,7 @@ class SobieskiMission(object):
         return self.math.sqrt(theta)
 
     def blackbox_mission(self, x_shared, y_14, y_24, y_34):
-        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law
+        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law.
 
         :param x_shared: shared design variable vector:
 
@@ -278,9 +267,8 @@ class SobieskiMission(object):
         :type y_34: numpy array
         :returns: y_4: range value
         :rtype: numpy array
-
         """
-        y_4 = zeros((1), dtype=self.dtype)
+        y_4 = zeros(1, dtype=self.dtype)
         y_4[0] = self.compute_range(x_shared, y_14, y_24, y_34)
         return y_4
 
@@ -290,8 +278,7 @@ class SobieskiMission(object):
         :returns:  jacobian
         :rtype: dict(dict(ndarray))
         """
-        jacobian = {}
-        jacobian["y_4"] = {}
+        jacobian = {"y_4": {}}
 
         jacobian["y_4"]["x_shared"] = zeros((1, 6), dtype=self.dtype)
         jacobian["y_4"]["y_14"] = zeros((1, 2), dtype=self.dtype)
@@ -301,7 +288,7 @@ class SobieskiMission(object):
         return jacobian
 
     def derive_blackbox_mission(self, x_shared, y_14, y_24, y_34):
-        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law
+        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law.
 
         :param x_shared: shared design variable vector:
 
@@ -326,7 +313,6 @@ class SobieskiMission(object):
         :type y_34: numpy array
         :returns: jacobian matrix of partial derivatives
         :rtype: dict(dict(ndarray))
-
         """
         jacobian = self.__initialize_jacobian()
         sqrt_theta, dtheta_dh = self.compute_dtheta_dh(x_shared)

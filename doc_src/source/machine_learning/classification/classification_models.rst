@@ -21,6 +21,7 @@ Available classification models are:
 
    knn
    random_forest
+   svm
 
 .. raw:: html
 

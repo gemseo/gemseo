@@ -19,72 +19,67 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Dataset plot factory
-====================
+"""A factory to create instances of :class:`.DatasetPlot`.
 
-The module :mod:`~gemseo.post.dataset.factory` contains
-the :class:`DatasetPlotFactory` class which is a factory
-to instantiate a :class:`.DatasetPlot` from its class name.
-The class can be internal to |g| or located in an external module whose path
-is provided to the constructor. It also provides a list of available cache
-types and allows you to test if a cache type is available.
+The module :mod:`~gemseo.post.dataset.factory` contains the :class:`DatasetPlotFactory`
+class which is a factory to instantiate a :class:`.DatasetPlot` from its class name. The
+class can be internal to |g| or located in an external module whose path is provided to
+the constructor. It also provides a list of available cache types and allows you to test
+if a cache type is available.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+from typing import TYPE_CHECKING, List
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
 
 from gemseo.core.factory import Factory
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DatasetPlotFactory(object):
-    """This factory instantiates a :class:`.DatasetPlot` from its class name.
-    The class can be internal to |g| or located in an external module
-    whose path is provided to the constructor.
-    """
+    """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
-    def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of DatasetPlot.
-        Searches in "GEMSEO_PATH" and gemseo.mlearning.p_datasets
-        """
+    def __init__(self):  # type: (...) -> None
         self.factory = Factory(DatasetPlot, ("gemseo.post.dataset",))
 
-    def create(self, plot_name, **options):
-        """
-        Create a plot for dataset
+    def create(
+        self,
+        plot_name,  # type: str
+        dataset,  # type: Dataset
+        **options
+    ):  # type: (...) -> DatasetPlot
+        """Create a plot for dataset.
 
-        :param str plot_name: name of the plot for dataset
-            (its classname)
-        :param options: additional options specific
-        :return: dataset plot
+        Args:
+            plot_name: The name of a plot method for dataset (its class name).
+            dataset: The dataset to visualize.
+            options: The additional options specific to this plot method.
+
+        Returns:
+            A plot method built from the provided dataset.
         """
-        return self.factory.create(plot_name, **options)
+        return self.factory.create(plot_name, dataset=dataset, **options)
 
     @property
-    def plots(self):
-        """
-        Lists the available plots for datasets.
-
-        :returns: the list of plots for datasets.
-        :rtype: list(str)
-        """
+    def plots(self):  # type: (...) -> List[str]
+        """The available plot methods for dataset."""
         return self.factory.classes
 
-    def is_available(self, plot_name):
-        """
-        Checks the availability of a plot for dataset.
+    def is_available(
+        self,
+        plot_name,  # type: str
+    ):  # type: (...) -> bool
+        """Check the availability of a plot for dataset.
 
-        :param str plot_name:  name of the plot for dataset
-            (its class name).
-        :returns: True if the plot for dataset is available.
-        :rtype: bool
+        Args:
+            plot_name: The name of a plot method for dataset (its class name).
+
+        Returns:
+            True if the plot method is available.
         """
         return self.factory.is_available(plot_name)

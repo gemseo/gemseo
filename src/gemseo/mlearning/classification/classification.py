@@ -36,12 +36,9 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import unique, zeros
 
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
-
-standard_library.install_aliases()
 
 
 class MLClassificationAlgo(MLSupervisedAlgo):
@@ -53,13 +50,19 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     """
 
     def __init__(
-        self, data, transformer=None, input_names=None, output_names=None, **parameters
+        self,
+        data,
+        transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,
+        input_names=None,
+        output_names=None,
+        **parameters
     ):
         """Constructor.
 
         :param Dataset data: learning dataset.
         :param transformer: transformation strategy for data groups.
-            If None, do not scale data. Default: None.
+            If None, do not scale data. Default: DEFAULT_TRANSFORMER, which is
+            a min/max scaler applied to the inputs.
         :type transformer: dict(str)
         :param input_names: names of the input variables.
         :type input_names: list(str)
@@ -77,8 +80,9 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         self.n_classes = None
 
     def learn(self, samples=None):
-        """Train machine learning algorithm on learning set, possibly filtered
-        using the given parameters. Determine the number of classes.
+        """Train machine learning algorithm on learning set, possibly filtered using the
+        given parameters. Determine the number of classes.
+
         :param list(int) samples: indices of training samples.
         """
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
@@ -147,6 +151,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
 
     def _get_objects_to_save(self):
         """Get objects to save.
+
         :return: objects to save.
         :rtype: dict
         """

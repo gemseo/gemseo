@@ -28,11 +28,4 @@ htmlcov
 
 coverage.xml
 .coverage*
-
-/tmp/
-
-/*.h5
-/*.out
-*iterate.dat
-
-tags
+/.pytest_cache/

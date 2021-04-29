@@ -20,23 +20,17 @@ Functional operations
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import delete, insert
 
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
-
 
 class RestrictedFunction(MDOFunction):
-    """
-    Restrict an MDOFunction to a subset of its input vector
-    Fixes the rest of the indices
-    """
+    """Restrict an MDOFunction to a subset of its input vector Fixes the rest of the
+    indices."""
 
     def __init__(self, orig_function, restriction_indices, restriction_values):
-        """
-        Constructor
+        """Constructor.
 
         :param orig_function: the original function to restrict
         :param restriction_indices: indices array of the input vector to fix
@@ -63,15 +57,14 @@ class RestrictedFunction(MDOFunction):
         )
 
     def _restrict(self, orig_function, restriction_indices):
-        """
-        Restricts the function, builds the pointer to f and jac
+        """Restricts the function, builds the pointer to f and jac.
+
         @param orig_function: original MDOFunction pointer
         @param restriction_indices: indices array for restriction
         """
 
         def restricted_function(x_vect):
-            """Wrapped provided function in order to give to
-            optimizer
+            """Wrapped provided function in order to give to optimizer.
 
             :param x_vect: design variable
             :returns: evaluation of function at x_vect
@@ -80,8 +73,7 @@ class RestrictedFunction(MDOFunction):
             return orig_function(x_full)
 
         def restricted_jac(x_vect):
-            """Wrapped provided jacobian in order to give to
-            optimizer
+            """Wrapped provided jacobian in order to give to optimizer.
 
             :param x_vect: design variable
             :returns: evaluation of jacobian at x_vect
@@ -95,14 +87,11 @@ class RestrictedFunction(MDOFunction):
 
 
 class LinerarComposition(MDOFunction):
-    """
-    Composes a function with a linear operator defined by a matrix
-    computes orig_f(Mat.dot(x))
-    """
+    """Composes a function with a linear operator defined by a matrix computes
+    orig_f(Mat.dot(x))"""
 
     def __init__(self, orig_function, interp_operator):
-        """
-        Constructor
+        """Constructor.
 
         :param orig_function: the original function to restrict
         :param interp_operator: operator matrix, the output of the
@@ -123,16 +112,15 @@ class LinerarComposition(MDOFunction):
 
     @staticmethod
     def _restrict(orig_function, interp_operator):
-        """
-        Generates the function restriction
+        """Generates the function restriction.
+
         @param orig_function : the original function to restrict
         @param interp_operator: operator matrix, the output of the
             function will be f(interp_operator.dot(x))
         """
 
         def restricted_function(x_vect):
-            """Wrapped provided function in order to give to
-            optimizer
+            """Wrapped provided function in order to give to optimizer.
 
             :param x_vect: design variable
             :returns: evaluation of function at x_vect
@@ -141,8 +129,7 @@ class LinerarComposition(MDOFunction):
             return orig_function(x_full)
 
         def restricted_jac(x_vect):
-            """Wrapped provided jacobian in order to give to
-            optimizer
+            """Wrapped provided jacobian in order to give to optimizer.
 
             :param x_vect: design variable
             :returns: evaluation of jacobian at x_vect

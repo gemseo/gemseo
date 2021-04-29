@@ -22,32 +22,24 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from os import remove
 from os.path import dirname, exists, join
 
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.third_party.junitxmlreq import link_to
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
 
 
-class Test_Robustness(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestRobustness(unittest.TestCase):
+    """"""
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.9")
     def test_robustness(self):
-        """ """
+        """"""
         factory = PostFactory()
         if factory.is_available("Robustness"):
             problem = Power2()
@@ -63,11 +55,9 @@ class Test_Robustness(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)
 
-    @link_to("Req-VIZ-1", "Req-VIZ-5", "Req-VIZ-1.9")
     def test_robustness_load(self):
-        """ """
+        """"""
         factory = PostFactory()
         if factory.is_available("Robustness"):
             problem = OptimizationProblem.import_hdf(POWER2)
@@ -82,4 +72,3 @@ class Test_Robustness(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)

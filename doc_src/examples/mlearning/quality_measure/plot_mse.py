@@ -34,7 +34,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import int
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import arange, argmin, hstack, linspace, sort
 from numpy.random import choice, normal, seed
 
@@ -44,7 +43,6 @@ from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 
 configure_logger()
-standard_library.install_aliases()
 
 ###############################################################################
 # Define parameters

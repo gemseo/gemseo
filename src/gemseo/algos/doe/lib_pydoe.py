@@ -23,10 +23,13 @@
 PyDOE algorithms wrapper
 ************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-from numpy.random import seed
+import logging
+from builtins import int, round, super
+
+from numpy.random import RandomState
+from numpy.random import seed as set_seed
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.py23_compat import PY3
@@ -36,16 +39,12 @@ if PY3:
 else:
     import pyDOE
 
-standard_library.install_aliases()
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class PyDOE(DOELibrary):
-    """PyDOE optimization library interface
-    See DOELibrary
-
-    """
+    """PyDOE optimization library interface See DOELibrary."""
 
     # Available designs
     PYDOE_DOC = "https://pythonhosted.org/pyDOE/"
@@ -99,12 +98,8 @@ class PyDOE(DOELibrary):
     CENTER_CC_KEYWORD = "center_cc"
 
     def __init__(self):
-        """
-        Constructor
-        """
+        """Constructor."""
         super(PyDOE, self).__init__()
-        seed(1)
-
         for idx, algo in enumerate(self.ALGO_LIST):
             self.lib_dict[algo] = {
                 DOELibrary.LIB: self.__class__.__name__,
@@ -129,9 +124,11 @@ class PyDOE(DOELibrary):
         levels=None,
         n_processes=1,
         wait_time_between_samples=0.0,
+        seed=1,
+        max_time=0,
         **kwargs
     ):  # pylint: disable=W0221
-        """Sets the options
+        """Sets the options.
 
         :param alpha: effect the variance, either "orthogonal" or "rotatable"
         :type alpha: str
@@ -157,6 +154,11 @@ class PyDOE(DOELibrary):
         :type n_processes: int
         :param wait_time_between_samples: waiting time between two samples
         :type wait_time_between_samples: float
+        :param seed: seed value.
+        :type seed: int
+        :param max_time: maximum runtime in seconds,
+            disabled if 0 (Default value = 0)
+        :type max_time: float
         :param kwargs: additional arguments
         """
         if center_cc is None:
@@ -174,6 +176,8 @@ class PyDOE(DOELibrary):
             n_processes=n_processes,
             levels=levels,
             wait_time_between_samples=wtbs,
+            seed=seed,
+            max_time=max_time,
             **kwargs
         )
 
@@ -181,31 +185,35 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def __translate(result):
-        """
-        Translate DOE design variables in [0,1]
+        """Translate DOE design variables in [0,1]
 
         :param result: the samples
         """
         return (result + 1.0) * 0.5
 
     def _generate_samples(self, **options):
-        """
-        Generates the list of x samples
+        """Generates the list of x samples.
 
         :param options: the options dict for the algorithm,
             see associated JSON file
-
         """
-        dim = self.problem.dimension
+        self.seed += 1
+        dim = options[self.DIMENSION]
         if self.algo_name == self.PYDOE_LHS:
             criterion = options.get(self.CRITERION_KEYWORD)
             iterations = options.get(self.ITERATION_KEYWORD)
-            samples = pyDOE.lhs(
-                dim,
-                samples=options["n_samples"],
-                criterion=criterion,
-                iterations=iterations,
-            )
+            seed = options.get(self.SEED, self.seed)
+            lhs_kwargs = {
+                "samples": options["n_samples"],
+                "criterion": criterion,
+                "iterations": iterations,
+            }
+            if PY3:
+                random_state = RandomState(seed)
+                lhs_kwargs["random_state"] = random_state
+            else:
+                set_seed(seed)
+            samples = pyDOE.lhs(dim, **lhs_kwargs)
 
         elif self.algo_name == self.PYDOE_CCDESIGN:
             samples = pyDOE.ccdesign(
@@ -244,12 +252,10 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem
-        according to its algo dict
+        """Checks if the algorithm is suited to the problem according to its algo dict.
 
         :param algo_dict: the algorithm characteristics
         :param problem: the opt_problem to be solved
-
         """
         if DOELibrary.MIN_DIMS in algo_dict:
             if problem.dimension < algo_dict[DOELibrary.MIN_DIMS]:

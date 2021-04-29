@@ -23,31 +23,18 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
 from numpy import array, ones, zeros
 from scipy.optimize import rosen, rosen_der
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_mda,
-    create_scenario,
-    execute_algo,
-)
+from gemseo.api import create_design_space, create_mda, create_scenario, execute_algo
 from gemseo.core.auto_py_discipline import AutoPyDiscipline
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-def create_ds(N):
+def create_ds(n):
     design_space = create_design_space()
-    design_space.add_variable("x", N, l_b=-2 * ones(N), u_b=2 * ones(N), value=zeros(N))
+    design_space.add_variable("x", n, l_b=-2 * ones(n), u_b=2 * ones(n), value=zeros(n))
     return design_space
 
 
@@ -107,20 +94,20 @@ class TestAutoPyDiscipline(unittest.TestCase):
         self.assertRaises(ValueError, AutoPyDiscipline, f4)
 
         not_a_function = 2
-        self.assertRaises(ValueError, AutoPyDiscipline, not_a_function)
+        self.assertRaises(TypeError, AutoPyDiscipline, not_a_function)
 
     def test_jac_pb(self):
         max_iter = 100
-        N = 4
+        n = 4
         algo = "L-BFGS-B"
 
-        design_space = create_ds(N)
+        design_space = create_ds(n)
         pb = OptimizationProblem(design_space)
         pb.objective = MDOFunction(rosen, "rosen", jac=rosen_der)
         execute_algo(pb, algo, max_iter=max_iter)
         fopt_ref = pb.solution.f_opt
 
-        design_space = create_ds(N)
+        design_space = create_ds(n)
         auto_rosen = AutoPyDiscipline(rosen, rosen_der)
         scn = create_scenario(auto_rosen, "DisciplinaryOpt", "r", design_space)
         scn.execute({"algo": algo, "max_iter": max_iter})

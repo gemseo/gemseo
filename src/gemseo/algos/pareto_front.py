@@ -29,20 +29,15 @@ from builtins import range, str
 from itertools import combinations
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import all as np_all
 from numpy import any as np_any
 from numpy import full, vstack
 
-standard_library.install_aliases()
-
 
 def select_pareto_optimal(obj_values):
-    """
-    Compute the Pareto front
-    Search for all non dominated points, ie there exists j such that
-    there is no lower value for obj_values[:,j] that does not degrade
-    at least one other objective  obj_values[:,i]
+    """Compute the Pareto front Search for all non dominated points, ie there exists j
+    such that there is no lower value for obj_values[:,j] that does not degrade at least
+    one other objective  obj_values[:,i]
 
     :param obj_values: objective function array, of size (n_samples, n_objs)
     :returns pareto_optimal: vector of booleans of size n_samples, True if
@@ -61,8 +56,7 @@ def select_pareto_optimal(obj_values):
 
 
 def plot_pareto_bi_obj(axe, obj_values, pareto_optimal, obj_names, all_pareto=None):
-    """
-    Plot a 2D Pareto front
+    """Plot a 2D Pareto front.
 
     :param axe: matplotlib axe on which to be plotted
     :param obj_values: objective function array, of size (n_samples, n_objs)
@@ -84,8 +78,8 @@ def plot_pareto_bi_obj(axe, obj_values, pareto_optimal, obj_names, all_pareto=No
 
 
 def generate_pareto_plots(obj_values, obj_names, figsize=(10, 10)):
-    """
-    Plot a 2D Pareto front
+    """Plot a 2D Pareto front.
+
     :param  obj_values: objective function array, of size (n_samples, n_objs)
     :param obj_names: names of the objectives
     :param figsize: matplotlib figure size in inches

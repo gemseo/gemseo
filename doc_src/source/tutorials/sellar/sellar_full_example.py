@@ -19,9 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-"""
-A from scratch example on the Sellar problem
-"""
+"""A from scratch example on the Sellar problem."""
 
 from math import exp, sqrt
 

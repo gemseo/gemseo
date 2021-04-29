@@ -25,11 +25,11 @@ Caching module to avoid multiple evaluations of a discipline
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
+import sys
 from hashlib import sha1
-from logging import getLogger
 from numbers import Number
 
-from future import standard_library
 from numpy import (
     append,
     array,
@@ -48,9 +48,6 @@ from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized, synchronized_hashes
 from gemseo.utils.multi_processing import Manager, RLock, Value
 
-standard_library.install_aliases()
-
-
 TYPE_ERR_MSG = "__getitem__ uses one of these argument types: "
 TYPE_ERR_MSG += "int, str, "
 TYPE_ERR_MSG += "list(int), list(str), "
@@ -58,14 +55,12 @@ TYPE_ERR_MSG += "(int, str), (int, list(str)), "
 TYPE_ERR_MSG += "(list(int), str), (int, list(str)) "
 TYPE_ERR_MSG += "or (list(int), list(str)). "
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class AbstractCache(object):
-    """
-    Abstract class for caches:
-    Defines the common methods for caching inputs, outputs,
-    and jacobians of a MDODiscipline
+    """Abstract class for caches: Defines the common methods for caching inputs,
+    outputs, and jacobians of a MDODiscipline.
 
     See also
     --------
@@ -80,10 +75,9 @@ class AbstractCache(object):
     JACOBIAN_GROUP = "jacobian"
 
     def __init__(self, tolerance=0.0, name=None):
-        """
-        Initialize cache tolerance.
-        By default, don't use approximate cache.
-        It is up to the user to choose to optimize CPU time with this or not
+        """Initialize cache tolerance. By default, don't use approximate cache. It is up
+        to the user to choose to optimize CPU time with this or not.
+
         could be something like 2 * finfo(float).eps
 
         Parameters
@@ -102,7 +96,7 @@ class AbstractCache(object):
         self.__outputs_names = None
 
     def __bool__(self):
-        """ returns True is the cache is not empty. """
+        """returns True is the cache is not empty."""
         return len(self) > 0
 
     @property
@@ -130,7 +124,7 @@ class AbstractCache(object):
         """Return the variables sizes."""
 
         def length(obj):
-            """ Length of an object if __len__ attribute exists, else 1. """
+            """Length of an object if __len__ attribute exists, else 1."""
             return len(obj) if hasattr(obj, "__len__") else 1
 
         if self._varsizes is None:
@@ -144,17 +138,12 @@ class AbstractCache(object):
         return self._varsizes
 
     def __str__(self):
-        inputs = outputs = None
-        if self.inputs_names is not None:
-            inputs = ", ".join(self.inputs_names)
-        if self.outputs_names is not None:
-            outputs = ", ".join(self.outputs_names)
-        msg = "Name: " + self.name + "\n"
-        msg += "Type: " + self.__class__.__name__ + "\n"
-        msg += "Tolerance: " + str(self.tolerance) + "\n"
-        msg += "Input names: " + str(inputs) + "\n"
-        msg += "Output names: " + str(outputs) + "\n"
-        msg += "Length: " + str(len(self))
+        msg = "Name: {}\n".format(self.name)
+        msg += "Type: {}\n".format(self.__class__.__name__)
+        msg += "Tolerance: {}\n".format(self.tolerance)
+        msg += "Input names: {}\n".format(self.inputs_names)
+        msg += "Output names: {}\n".format(self.outputs_names)
+        msg += "Length: {}".format(len(self))
         return msg
 
     def __len__(self):
@@ -178,7 +167,7 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def cache_jacobian(self, input_data, input_names, jacobian):
-        """Cache jacobian data to avoid re evaluation
+        """Cache jacobian data to avoid re evaluation.
 
         Parameters
         ----------
@@ -192,9 +181,8 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def get_outputs(self, input_data, input_names=None):
-        """Check if the discipline has already been evaluated
-        for the given input data dictionary.
-        If True, return the associated cache, otherwise return None.
+        """Check if the discipline has already been evaluated for the given input data
+        dictionary. If True, return the associated cache, otherwise return None.
 
         Parameters
         ----------
@@ -216,16 +204,13 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def clear(self):
-        """
-        Clear the cache.
-        """
+        """Clear the cache."""
         self.__inputs_names = None
         self.__outputs_names = None
         self._varsizes = None
 
     def get_last_cached_inputs(self):
-        """
-        Retrieve the last execution inputs.
+        """Retrieve the last execution inputs.
 
         Returns
         -------
@@ -235,8 +220,7 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def get_last_cached_outputs(self):
-        """
-        Retrieve the last execution outputs.
+        """Retrieve the last execution outputs.
 
         Returns
         -------
@@ -246,8 +230,7 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def get_all_data(self, **options):
-        """
-        Read all the data in the cache
+        """Read all the data in the cache.
 
         Returns
         -------
@@ -258,13 +241,23 @@ class AbstractCache(object):
         raise NotImplementedError()
 
     def get_length(self):
-        """
-        Get the length of the cache, ie the number of stored elements.
+        """Get the length of the cache, ie the number of stored elements.
 
         Returns
         -------
         length : int
             Length of the cache.
+        """
+        raise NotImplementedError()
+
+    @property
+    def max_length(self):
+        """Get the maximal length of the cache (the maximal number of stored elements).
+
+        Returns
+        -------
+        length : int
+            Maximal length of the cache.
         """
         raise NotImplementedError()
 
@@ -288,13 +281,12 @@ class AbstractCache(object):
 
     @property
     def samples_indices(self):
-        """ List of samples indices. """
+        """List of samples indices."""
         return range(1, self.get_length() + 1)
 
 
 class AbstractFullCache(AbstractCache):
-    """
-    Abstract cache to store all data, either in memory or on the disk.
+    """Abstract cache to store all data, either in memory or on the disk.
 
     See also
     --------
@@ -303,10 +295,9 @@ class AbstractFullCache(AbstractCache):
     """
 
     def __init__(self, tolerance=0.0, name=None):
-        """
-        Initialize cache tolerance.
-        By default, don't use approximate cache.
-        It is up to the user to choose to optimize CPU time with this or not
+        """Initialize cache tolerance. By default, don't use approximate cache. It is up
+        to the user to choose to optimize CPU time with this or not.
+
         could be something like 2 * finfo(float).eps
 
         Parameters
@@ -328,14 +319,14 @@ class AbstractFullCache(AbstractCache):
         self.lock = self._set_lock()
 
     def _set_lock(self):
-        """Sets a lock for multithreading,
-        either from an external object or internally by using RLock()."""
+        """Sets a lock for multithreading, either from an external object or internally
+        by using RLock()."""
         raise NotImplementedError
 
     def __get_or_increment_group_num(self, input_data, data_hash):
-        """This method is the second step of caching new inputs.
-        Either gets the right cache group number if the inputs are already
-        cached or creates a new one if needed.
+        """This method is the second step of caching new inputs. Either gets the right
+        cache group number if the inputs are already cached or creates a new one if
+        needed.
 
         :param dict input_data: the input data to cache
         :param int data_hash: the hash of the data
@@ -385,8 +376,8 @@ class AbstractFullCache(AbstractCache):
         raise NotImplementedError()
 
     def _write_data(self, values, names, var_group, sample_id):
-        """Writes data associated with a variables group
-        and a sample ID into the dataset.
+        """Writes data associated with a variables group and a sample ID into the
+        dataset.
 
         :param dict values: data dictionary where keys are variables names
             and values are variables values (numpy arrays).
@@ -399,9 +390,9 @@ class AbstractFullCache(AbstractCache):
         raise NotImplementedError()
 
     def _cache_inputs(self, input_data, input_names, out_group_to_check):
-        """This method is the first step step of caching new inputs
-        or Jacobian. It caches inputs and increments group if needed.
-        Checks if the out_group_to_check exists for these inputs.
+        """This method is the first step step of caching new inputs or Jacobian. It
+        caches inputs and increments group if needed. Checks if the out_group_to_check
+        exists for these inputs.
 
         :param dict input_data: data dictionary where keys are variables names
             and values are variables values (numpy arrays).
@@ -462,7 +453,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def cache_jacobian(self, input_data, input_names, jacobian):
-        """Cache jacobian data to avoid re evaluation
+        """Cache jacobian data to avoid re evaluation.
 
         Parameters
         ----------
@@ -490,9 +481,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def clear(self):
-        """
-        Clears the cache.
-        """
+        """Clears the cache."""
         super(AbstractFullCache, self).clear()
         self._hashes = self._manager.dict()
         self._max_group.value = 0
@@ -500,8 +489,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def get_last_cached_inputs(self):
-        """
-        Retrieve the last execution inputs.
+        """Retrieve the last execution inputs.
 
         Returns
         -------
@@ -514,8 +502,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def get_last_cached_outputs(self):
-        """
-        Retrieve the last execution outputs.
+        """Retrieve the last execution outputs.
 
         Returns
         -------
@@ -528,8 +515,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def get_length(self):
-        """
-        Get the length of the cache, ie the number of stored elements.
+        """Get the length of the cache, ie the number of stored elements.
 
         Returns
         -------
@@ -537,6 +523,17 @@ class AbstractFullCache(AbstractCache):
             Length of the cache.
         """
         return self._max_group.value
+
+    @property
+    def max_length(self):
+        """Get the maximal length of the cache (the maximal number of stored elements).
+
+        Returns
+        -------
+        length : int
+            Maximal length of the cache.
+        """
+        return sys.maxsize
 
     def _read_data(self, group_number, group_name, **options):
         """Read data from a data provider defined in the overloaded classes.
@@ -559,8 +556,8 @@ class AbstractFullCache(AbstractCache):
         return out
 
     def _read_group(self, group_nums, input_data):
-        """Read output data and jacobian associated to given input data
-        inside given groups.
+        """Read output data and jacobian associated to given input data inside given
+        groups.
 
         :param list(int) group_nums: group numbers.
         :param dict input_data: input data dictionary.
@@ -580,9 +577,8 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def get_outputs(self, input_data, input_names=None):
-        """Check if the discipline has already been evaluated
-        for the given input data dictionary.
-        If True, return the associated cache, otherwise return None.
+        """Check if the discipline has already been evaluated for the given input data
+        dictionary. If True, return the associated cache, otherwise return None.
 
         Parameters
         ----------
@@ -618,7 +614,7 @@ class AbstractFullCache(AbstractCache):
 
     @property
     def _all_groups(self):
-        """ Sorted group numbers. """
+        """Sorted group numbers."""
         tmp = []
         for group_nums in self._hashes.values():
             tmp += list(group_nums)
@@ -626,14 +622,13 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def _get_all_data(self):
-        """ Same as _all_data() but with pre- and post- treatment. """
+        """Same as _all_data() but with pre- and post- treatment."""
         for data in self._all_data():
             yield data
 
     @synchronized
     def _all_data(self, **options):
-        """
-        Iterator of all data in the cache.
+        """Iterator of all data in the cache.
 
         :returns: sample ID, input data, output data and jacobian.
         :rtype: dict
@@ -670,8 +665,7 @@ class AbstractFullCache(AbstractCache):
 
     @synchronized
     def get_all_data(self, as_iterator=False):  # pylint: disable=W0221
-        """
-        Return all the data in the cache.
+        """Return all the data in the cache.
 
         Parameters
         ----------
@@ -789,13 +783,14 @@ class AbstractFullCache(AbstractCache):
                 self.cache_jacobian(input_data, inputs_names, jacobian)
 
     def _duplicate_from_scratch(self):
-        """Duplicate a cache from scratch,
-        ie. only duplicate the construction step."""
+        """Duplicate a cache from scratch, ie.
+
+        only duplicate the construction step.
+        """
         raise NotImplementedError()
 
     def __add__(self, other_cache):
-        """Add another cache to the current cache and returns the sum.
-                                                    dtype="bytes"))
+        """Add another cache to the current cache and returns the sum. dtype="bytes"))
 
             for data_name in data_names:
                 val = data.get(data_name)
@@ -819,7 +814,14 @@ class AbstractFullCache(AbstractCache):
         new_cache.merge(other_cache)
         return new_cache
 
-    def export_to_dataset(self, name=None, by_group=True, categorize=True):
+    def export_to_dataset(
+        self,
+        name=None,
+        by_group=True,
+        categorize=True,
+        inputs_names=None,
+        outputs_names=None,
+    ):
         """Set Dataset from a cache.
 
         :param str name: dataset name.
@@ -827,12 +829,19 @@ class AbstractFullCache(AbstractCache):
             store them by variables. Default: True
         :param bool categorize: distinguish between the different groups of
             variables. Default: True.
+        :param list(str) inputs_names: list of inputs names. If None, use all
+            inputs. Default: None.
+        :param list(str) outputs_names: list of outputs names. If None, use all
+            outputs. Default: None.
         """
         from gemseo.core.dataset import Dataset
 
         dataset = Dataset(name or self.name, by_group)
 
         to_array = DataConversion.list_of_dict_to_array
+
+        inputs_names = inputs_names or self.inputs_names
+        outputs_names = outputs_names or self.outputs_names
 
         # Set the different groups
         in_grp = out_grp = dataset.DEFAULT_GROUP
@@ -844,13 +853,13 @@ class AbstractFullCache(AbstractCache):
 
         # Add cache inputs and outputs
         data = list(self.get_all_data(True))
-        inputs = to_array(data, self.inputs_names, self.INPUTS_GROUP)
-        data = DataConversion.array_to_dict(inputs, self.inputs_names, self.varsizes)
+        inputs = to_array(data, inputs_names, self.INPUTS_GROUP)
+        data = DataConversion.array_to_dict(inputs, inputs_names, self.varsizes)
         for input_name, value in data.items():
             dataset.add_variable(input_name, value, in_grp)
         data = list(self.get_all_data(True))
-        outputs = to_array(data, self.outputs_names, self.OUTPUTS_GROUP)
-        data = DataConversion.array_to_dict(outputs, self.outputs_names, self.varsizes)
+        outputs = to_array(data, outputs_names, self.OUTPUTS_GROUP)
+        data = DataConversion.array_to_dict(outputs, outputs_names, self.varsizes)
         for output_name, value in data.items():
             dataset.add_variable(
                 output_name, value, out_grp, cache_as_input=cache_output_as_input
@@ -905,9 +914,8 @@ def hash_data_dict(data, names_tokeep=None):
 
 
 def check_cache_approx(data_dict, cache_dict, cache_tol=0.0):
-    """
-    Checks if the data_dict is approximately equal to the cache dict
-    at self.tolerance (absolute + relative)
+    """Checks if the data_dict is approximately equal to the cache dict at
+    self.tolerance (absolute + relative)
 
     :param data_dict: data dict to check
     :returns: True if the dict are approximately equal
@@ -921,8 +929,7 @@ def check_cache_approx(data_dict, cache_dict, cache_tol=0.0):
 
 
 def check_cache_equal(data_dict, cache_dict):
-    """
-    Check if the data dictionary is equal to the cache data dictionary.
+    """Check if the data dictionary is equal to the cache data dictionary.
 
     Parameters
     ----------
@@ -954,9 +961,7 @@ def check_cache_equal(data_dict, cache_dict):
 
 
 def to_real(data):
-    """
-    Convert complex to real numpy array
-    """
+    """Convert complex to real numpy array."""
     if data.dtype == complex128:
         return array(array(data, copy=False).real, dtype=float64)
     return data

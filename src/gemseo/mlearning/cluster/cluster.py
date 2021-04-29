@@ -35,13 +35,10 @@ which inherits from the :class:`.MLUnsupervisedAlgo` class.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import atleast_2d, unique, zeros
 
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.utils.data_conversion import DataConversion
-
-standard_library.install_aliases()
 
 
 class MLClusteringAlgo(MLUnsupervisedAlgo):
@@ -72,6 +69,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     def learn(self, samples=None):
         """Overriding learn function for assuring that labels are defined.
+
         Identify number of clusters.
         """
         super(MLClusteringAlgo, self).learn(samples=samples)
@@ -147,7 +145,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def _predict_proba_hard(self, data):
         """Create cluster indicator of input data.
 
-        :param ndarray input_data: input data (2D).
+        :param ndarray data: input data (2D).
         :return: cluster indicators for each sample (2D). The sum of
             each row is one.
         :rtype: ndarray
@@ -170,6 +168,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     def _get_objects_to_save(self):
         """Get objects to save.
+
         :return: objects to save.
         :rtype: dict
         """

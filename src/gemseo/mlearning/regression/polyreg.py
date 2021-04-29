@@ -80,23 +80,20 @@ linear_model.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 import pickle
 from os.path import join
 
-from future import standard_library
 from numpy import concatenate, where, zeros
 from sklearn.preprocessing import PolynomialFeatures
 
 from gemseo.mlearning.regression.linreg import LinearRegression
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class PolynomialRegression(LinearRegression):
-    """ Polynomial regression. """
+    """Polynomial regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "PolyReg"
@@ -139,6 +136,7 @@ class PolynomialRegression(LinearRegression):
         """
         super(PolynomialRegression, self).__init__(
             data,
+            degree=degree,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
@@ -241,8 +239,8 @@ class PolynomialRegression(LinearRegression):
         return jacobians
 
     def get_coefficients(self, as_dict=True):
-        """Return the regression coefficients of the linear fit
-        as a numpy array or as a dict.
+        """Return the regression coefficients of the linear fit as a numpy array or as a
+        dict.
 
         :param bool as_dict: if True, returns coefficients as a dictionary.
             Default: True.

@@ -28,21 +28,24 @@ Scalable problem of Tedford and Martins, 2010
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 from numpy.random import rand
 
-from gemseo.api import generate_n2_plot
-from gemseo.problems.scalable.scalable_tm.core import (
+from gemseo.api import configure_logger, generate_n2_plot
+from gemseo.problems.scalable.parametric.core.design_space import TMDesignSpace
+from gemseo.problems.scalable.parametric.disciplines import (
+    TMMainDiscipline,
+    TMSubDiscipline,
+)
+from gemseo.problems.scalable.parametric.problem import TMScalableProblem
+from gemseo.problems.scalable.parametric.study import (
     TMParamSS,
     TMParamSSPost,
-    TMScalableProblem,
     TMScalableStudy,
 )
-from gemseo.problems.scalable.scalable_tm.design_space import TMDesignSpace
-from gemseo.problems.scalable.scalable_tm.disciplines import TMDiscipline, TMSystem
 
-standard_library.install_aliases()
+configure_logger()
+
 
 ##########################################################################
 # Disciplines
@@ -74,7 +77,7 @@ index = 0
 c_shared = rand(sizes["y_0"], sizes["x_shared"])
 c_local = rand(sizes["y_0"], sizes["x_local_0"])
 c_coupling = {"y_1": rand(sizes["y_0"], sizes["y_1"])}
-disc0 = TMDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
+disc0 = TMSubDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
 
 print(disc0.name)
 print(disc0.get_input_data_names())
@@ -99,7 +102,7 @@ index = 1
 c_shared = rand(sizes["y_1"], sizes["x_shared"])
 c_local = rand(sizes["y_1"], sizes["x_local_1"])
 c_coupling = {"y_0": rand(sizes["y_1"], sizes["y_0"])}
-disc1 = TMDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
+disc1 = TMSubDiscipline(index, c_shared, c_local, c_coupling, default_inputs)
 
 print(disc1.name)
 print(disc1.get_input_data_names())
@@ -122,7 +125,7 @@ default_inputs = {
     "y_0": array([2.0, 3.0]),
     "y_1": array([4.0, 5.0, 6.0]),
 }
-system = TMSystem(c_constraint, default_inputs)
+system = TMMainDiscipline(c_constraint, default_inputs)
 
 print(system.name)
 print(system.get_input_data_names())
@@ -243,7 +246,10 @@ print(problem.get_default_inputs())
 #     | y_1       |      0      |  0.5  |      1      | float |
 #     | y_1       |      0      |  0.5  |      1      | float |
 #     +-----------+-------------+-------+-------------+-------+
-#     {'x_shared': array([0.5, 0.5, 0.5]), 'x_local_0': array([0.5, 0.5]), 'y_0': array([0.5, 0.5]), 'cstr_0': array([0.5]), 'x_local_1': array([0.5, 0.5, 0.5, 0.5]), 'y_1': array([0.5, 0.5, 0.5]), 'cstr_1': array([0.5])}
+#     {'x_shared': array([0.5, 0.5, 0.5]), 'x_local_0': array([0.5, 0.5]),
+#     'y_0': array([0.5, 0.5]), 'cstr_0': array([0.5]), 'x_local_1':
+#     array([0.5, 0.5, 0.5, 0.5]), 'y_1': array([0.5, 0.5, 0.5]), 'cstr_1':
+#     array([0.5])}
 
 ##########################################################################
 # Scalable study

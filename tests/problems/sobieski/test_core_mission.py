@@ -23,30 +23,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestSobieskiMission(unittest.TestCase):
-    """ """
+    """"""
 
     def setUp(self):
-        """At creation of unittest, initiate a sobieski problem class"""
+        """At creation of unittest, initiate a sobieski problem class."""
         self.problem = SobieskiProblem("complex128")
         self.threshold = 1e-12
 
     def test_dweightratio_dwt(self):
-        """ """
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_mission
         indata = self.problem.get_default_inputs_equilibrium(
@@ -60,7 +52,7 @@ class TestSobieskiMission(unittest.TestCase):
         )
 
     def test_dlnweightratio_dwt(self):
-        """ """
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_mission
         indata = self.problem.get_default_inputs_equilibrium(
@@ -75,8 +67,8 @@ class TestSobieskiMission(unittest.TestCase):
             lin_weightratio, cmath.log(sr.compute_weight_ratio(y_14)).imag / h, places=8
         )
 
-    def test_dRange_dWt(self):
-        """ """
+    def test_d_range_d_wt(self):
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_mission
         indata = self.problem.get_default_inputs_equilibrium(
@@ -95,8 +87,8 @@ class TestSobieskiMission(unittest.TestCase):
             lin_range, sr.compute_range(x_shared, y_14, y_24, y_34).imag / h, places=8
         )
 
-    def test_dRange_dWf(self):
-        """ """
+    def test_d_range_d_wf(self):
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_mission
         indata = self.problem.get_default_inputs_equilibrium(
@@ -116,7 +108,7 @@ class TestSobieskiMission(unittest.TestCase):
         )
 
     def test_jac_mission(self):
-        """ """
+        """"""
 
         sr = SobieskiMission("complex128")
         assert sr.check_jacobian(

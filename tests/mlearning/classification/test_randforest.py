@@ -19,11 +19,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test random forest classification module. """
+"""Test random forest classification module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, array_equal, linspace, ndarray, zeros
 from numpy.random import permutation, seed
 
@@ -32,7 +31,6 @@ from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
 seed(12345)
 
 N_INPUTS = 2
@@ -49,7 +47,7 @@ INPUT_VALUES = {
 
 @pytest.fixture
 def dataset():
-    """ Dataset. """
+    """Dataset."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 3))
     output_data[::4, 0] = 1
@@ -69,7 +67,7 @@ def dataset():
 
 @pytest.fixture
 def model_1d(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     rfc = RandomForestClassifier(dataset, output_names=["y_1"])
     rfc.learn()
     return rfc
@@ -77,7 +75,7 @@ def model_1d(dataset):
 
 @pytest.fixture
 def model(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     rfc = RandomForestClassifier(dataset)
     rfc.learn()
     return rfc
@@ -85,27 +83,27 @@ def model(dataset):
 
 @pytest.fixture
 def model_with_transform(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     rfc = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
     rfc.learn()
     return rfc
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     rfc = RandomForestClassifier(dataset)
     assert rfc.algo is not None
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     rfc = RandomForestClassifier(dataset)
     rfc.learn()
     assert rfc.algo is not None
 
 
 def test_predict_1d(model_1d):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model_1d.predict(INPUT_VALUE)
     predictions = model_1d.predict(INPUT_VALUES)
 
@@ -119,7 +117,7 @@ def test_predict_1d(model_1d):
 
 
 def test_predict(model):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
 
@@ -137,7 +135,7 @@ def test_predict(model):
 
 
 def test_predict_with_transform(model_with_transform):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model_with_transform.predict(INPUT_VALUE)
     predictions = model_with_transform.predict(INPUT_VALUES)
 
@@ -156,7 +154,7 @@ def test_predict_with_transform(model_with_transform):
 
 
 def test_predict_proba_1d(model_1d):
-    """ Test probability prediction. """
+    """Test probability prediction."""
     for hard in [True, False]:
         proba = model_1d.predict_proba(INPUT_VALUE, hard)
         probas = model_1d.predict_proba(INPUT_VALUES, hard)
@@ -173,7 +171,7 @@ def test_predict_proba_1d(model_1d):
 
 
 def test_predict_proba(model):
-    """ Test probability prediction. """
+    """Test probability prediction."""
     for hard in [True, False]:
         proba = model.predict_proba(INPUT_VALUE, hard)
         probas = model.predict_proba(INPUT_VALUES, hard)
@@ -196,7 +194,7 @@ def test_predict_proba(model):
 
 
 def test_predict_proba_transform(model_with_transform):
-    """ Test probability prediction. """
+    """Test probability prediction."""
     for hard in [True, False]:
         proba = model_with_transform.predict_proba(INPUT_VALUE, hard)
         probas = model_with_transform.predict_proba(INPUT_VALUES, hard)
@@ -219,7 +217,7 @@ def test_predict_proba_transform(model_with_transform):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_classification_model(dirname)
     out1 = model.predict(INPUT_VALUE)

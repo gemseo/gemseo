@@ -30,19 +30,19 @@ This concept is implemented through the :class:`.MLQualityMeasure` class.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
-standard_library.install_aliases()
+from numpy import arange
 
 
 class MLQualityMeasure(object):
-    """ Quality measure for machine learning. """
+    """Quality measure for machine learning."""
 
     LEARN = "learn"
     TEST = "test"
     LOO = "loo"
     KFOLDS = "kfolds"
     BOOTSTRAP = "bootstrap"
+
+    SMALLER_IS_BETTER = True  # To be overwritten in inheriting classes
 
     def __init__(self, algo):
         """Constructor.
@@ -51,71 +51,121 @@ class MLQualityMeasure(object):
         """
         self.algo = algo
 
-    def evaluate(self, method=LEARN, **options):
+    def evaluate(self, method=LEARN, samples=None, **options):
         """Evaluate quality measure.
 
         :param str method: method to estimate the quality measure.
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param options: options of the estimation method (e.g. 'test_data' for
-            the 'test' method, 'n_replicates' for the boostrap one, ...)
+            the 'test' method, 'n_replicates' for the bootstrap one, ...)
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         if method == self.LEARN:
-            evalutation = self.evaluate_learn(**options)
+            evaluation = self.evaluate_learn(samples=samples, **options)
         elif method == self.TEST:
-            evalutation = self.evaluate_test(**options)
+            evaluation = self.evaluate_test(samples=samples, **options)
         elif method == self.LOO:
-            evalutation = self.evaluate_loo(**options)
+            evaluation = self.evaluate_loo(samples=samples, **options)
         elif method == self.KFOLDS:
-            evalutation = self.evaluate_kfolds(**options)
+            evaluation = self.evaluate_kfolds(samples=samples, **options)
         elif method == self.BOOTSTRAP:
-            evalutation = self.evaluate_bootstrap(**options)
-        return evalutation
+            evaluation = self.evaluate_bootstrap(samples=samples, **options)
+        return evaluation
 
-    def evaluate_learn(self, multioutput=True):
+    def evaluate_learn(self, samples=None, multioutput=True):
         """Evaluate quality measure using the learning dataset.
 
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param bool multioutput: if True, return the quality measure for each
             output component. Otherwise, average these measures. Default: True.
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         raise NotImplementedError
 
-    def evaluate_test(self, test_data, multioutput=True):
+    def evaluate_test(self, test_data, samples=None, multioutput=True):
         """Evaluate quality measure using a test dataset.
 
         :param Dataset test_data: test data.
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param bool multioutput: if True, return the quality measure for each
             output component. Otherwise, average these measures. Default: True.
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         raise NotImplementedError
 
-    def evaluate_loo(self, multioutput=True):
+    def evaluate_loo(self, samples=None, multioutput=True):
         """Evaluate quality measure using the leave-one-out technique.
 
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param bool multioutput: if True, return the quality measure for each
             component. Otherwise, average these measures. Default: True.
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         n_samples = self.algo.learning_set.n_samples
         return self.evaluate_kfolds(n_folds=n_samples, multioutput=multioutput)
 
-    def evaluate_kfolds(self, n_folds=5, multioutput=True):
+    def evaluate_kfolds(self, n_folds=5, samples=None, multioutput=True):
         """Evaluate quality measure using the k-folds technique.
 
         :param int n_folds: number of folds. Default: 5.
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param bool multioutput: if True, return the quality measure for each
             component. Otherwise, average these measures. Default: True.
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         raise NotImplementedError
 
-    def evaluate_bootstrap(self, n_replicates=100, multioutput=True):
+    def evaluate_bootstrap(self, n_replicates=100, samples=None, multioutput=True):
         """Evaluate quality measure using the bootstrap technique.
 
         :param int n_replicates: number of bootstrap replicates. Default: 100.
+        :param list(int) samples: samples to consider for training.
+            If None, use all samples. Default: None.
         :param bool multioutput: if True, return the quality measure for each
             component. Otherwise, average these measures. Default: True.
         :return: quality measure value.
+        :rtype: float or ndarray(float)
         """
         raise NotImplementedError
+
+    @classmethod
+    def is_better(cls, val1, val2):
+        """Compare quality between two values and return True if the first one is better
+        than the second one.
+
+        For most measures, a smaller value is "better" than a larger one (MSE
+        etc.). But for some, like an R2-measure, higher values are better than
+        smaller ones. This comparison method correctly handles this,
+        regardless of the type of measure.
+
+        :param float val1: first quality measure value.
+        :param float val2: second quality measure value.
+        :return: Indicator for whether val1 is of better quality than val2.
+        :rtype: bool
+        """
+        if cls.SMALLER_IS_BETTER:
+            result = val1 < val2
+        else:
+            result = val1 > val2
+        return result
+
+    def _assure_samples(self, samples):
+        """Get list of all samples if samples is None.
+
+        :param list(int) samples: List of samples. Can also be None.
+        :return: list of samples.
+        :rtype: list(int)
+        """
+        if samples is None:
+            samples = arange(self.algo.learning_set.n_samples)
+        return samples

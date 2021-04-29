@@ -34,20 +34,18 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class RandomForestClassifier(MLClassificationAlgo):
-    """ Random forest classification algorithm. """
+    """Random forest classification algorithm."""
 
     LIBRARY = "scikit-learn"
     ABBR = "RandomForestClassifier"

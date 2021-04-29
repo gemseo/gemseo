@@ -24,9 +24,8 @@ A Bi level formulation
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from builtins import str, super
-
-from future import standard_library
 
 from gemseo.core.chain import MDOChain, MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -35,24 +34,22 @@ from gemseo.core.function import MDOFunction
 from gemseo.core.mdo_scenario import MDOScenarioAdapter
 from gemseo.mda.mda_factory import MDAFactory
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class BiLevel(MDOFormulation):
-    """
-    A bi-level formulation draws an optimization architecture
-    that involves multiple optimization problems to be solved to
-    obtain the solution of the MDO problem.
+    """A bi-level formulation draws an optimization architecture that involves multiple
+    optimization problems to be solved to obtain the solution of the MDO problem.
 
-    Here, at each iteration on the global design variables,
-    the bi-level MDO formulation implementation performs a first
-    MDA to compute the coupling variables, then disciplinary
-    optimizations on the local design variables in parallel and then,
-    a second MDA to update the coupling variables.
+    Here, at each iteration on the global design variables, the bi-level MDO formulation
+    implementation performs a first MDA to compute the coupling variables, then
+    disciplinary optimizations on the local design variables in parallel and then, a
+    second MDA to update the coupling variables.
     """
+
+    SYSTEM_LEVEL = "system"
+    SUBSCENARIOS_LEVEL = "sub-scenarios"
+    LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
 
     def __init__(
         self,
@@ -68,8 +65,7 @@ class BiLevel(MDOFormulation):
         reset_x0_before_opt=False,
         **mda_options
     ):
-        """
-        Constructor, initializes the objective functions and constraints
+        """Constructor, initializes the objective functions and constraints.
 
         :param disciplines: the disciplines list.
         :type disciplines: list(MDODiscipline)
@@ -140,8 +136,8 @@ class BiLevel(MDOFormulation):
         adapter_class=MDOScenarioAdapter,
         **adapter_options
     ):
-        """Builds the MDOScenarioAdapter required for each sub scenario
-        This is used to build the self.chain.
+        """Builds the MDOScenarioAdapter required for each sub scenario This is used to
+        build the self.chain.
 
         :param output_functions: if True then the optimization functions are
             outputs of the adapter
@@ -174,10 +170,9 @@ class BiLevel(MDOFormulation):
 
             # All couplings of the scenarios are taken from the MDA
             sc_allins = list(
-                set(top_inputs) & set(couplings)
-                |
                 # Add shared variables from system scenario driver
-                set(top_inputs) & shared_dv
+                set(top_inputs) & set(couplings)
+                | set(top_inputs) & shared_dv
             )
             if pass_nonshared_var:
                 nonshared_var = scenario.design_space.variables_names
@@ -204,10 +199,8 @@ class BiLevel(MDOFormulation):
 
     @classmethod
     def get_sub_options_grammar(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option schema may be specified here, mainly for
-        use in the API
+        """When some options of the formulation depend on higher level options, a sub
+        option schema may be specified here, mainly for use in the API.
 
         :param options: options dict required to deduce the sub options grammar
         :returns: None, or the sub options grammar
@@ -223,10 +216,8 @@ class BiLevel(MDOFormulation):
 
     @classmethod
     def get_default_sub_options_values(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option defaults may be specified here, mainly for
-        use in the API
+        """When some options of the formulation depend on higher level options, a sub
+        option defaults may be specified here, mainly for use in the API.
 
         :param options: options dict required to deduce the sub options grammar
         :returns: None, or the sub options defaults
@@ -251,7 +242,7 @@ class BiLevel(MDOFormulation):
         else:
             LOGGER.warning(
                 "No strongly coupled disciplines detected, "
-                + " MDA1 is deactivated in the BiLevel formulation."
+                " MDA1 is deactivated in the BiLevel formulation"
             )
 
         disc_mda2 = self.get_sub_disciplines()
@@ -260,9 +251,7 @@ class BiLevel(MDOFormulation):
         self.mda2.warm_start = False
 
     def _build_chain_dis_sub_opts(self):
-        """
-        Inits the chain of disciplines and the list of sub scenarios
-        """
+        """Inits the chain of disciplines and the list of sub scenarios."""
         chain_dis = []
         if self.mda1 is not None:
             chain_dis = [self.mda1]
@@ -294,11 +283,8 @@ class BiLevel(MDOFormulation):
             run_mda1_orig = self.mda1._run
 
             def _run_mda():
-                """Redefine mda1 execution to warm start the chain
-                with previous x_local opt
-
-                :param input_data: Default value = None)
-                """
+                """Redefine mda1 execution to warm start the chain with previous x_local
+                opt."""
                 # TODO : Define a pre run method to be overloaded in MDA maybe
                 # Or use observers at the system driver level to pass the local
                 # vars
@@ -313,14 +299,14 @@ class BiLevel(MDOFormulation):
             self.mda1._run = _run_mda
 
     def _update_design_space(self):
-        """Update the design space by removing the coupling variables"""
+        """Update the design space by removing the coupling variables."""
         self._set_defaultinputs_from_ds()
         self._remove_sub_scenario_dv_from_ds()
         self._remove_couplings_from_ds()
         self._remove_unused_variables()
 
     def _remove_couplings_from_ds(self):
-        """Removes the coupling variables from the design space"""
+        """Removes the coupling variables from the design space."""
         if hasattr(self.mda2, "strong_couplings"):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
@@ -331,17 +317,15 @@ class BiLevel(MDOFormulation):
                     design_space.remove_variable(coupling)
 
     def get_top_level_disc(self):
-        """ Overriden method from MDOFormulation base class """
+        """Overriden method from MDOFormulation base class."""
         return [self.chain]
 
     def get_expected_workflow(self):
-        """Overriden method from MDOFormulation base class
-        delegated to chain object"""
+        """Overriden method from MDOFormulation base class delegated to chain object."""
         return self.chain.get_expected_workflow()
 
     def get_expected_dataflow(self):
-        """Overriden method from MDOFormulation base class
-        delegated to chain object"""
+        """Overriden method from MDOFormulation base class delegated to chain object."""
         return self.chain.get_expected_dataflow()
 
     def add_constraint(
@@ -351,42 +335,123 @@ class BiLevel(MDOFormulation):
         constraint_name=None,
         value=None,
         positive=False,
+        levels=None,
     ):
-        """
-        Add a contraint to the formulation
+        """Add a constraint to the formulation.
 
-        :param output_name: param constraint_type:
+        :param output_name: name of the output defining the constraint
+        :type output_name: str
+        :param constraint_type: type of the constraint
             (Default value = MDOFunction.TYPE_EQ)
-        :param constraint_name: Default value = None)
-        :param value: Default value = None)
-        :param positive: Default value = False)
-        :param constraint_type:  (Default value = MDOFunction.TYPE_EQ)
-
+        :type constraint_type: str, optional
+        :param constraint_name: name of the constraint (Default value = None)
+        :type constraint_name: str or None, optional
+        :param value: reference value of the constraint (Default value = None)
+        :type value: float or None, optional
+        :param positive: if True then the reference value is considered a lower bound on
+            the constraint value, otherwise an upper bound (Default value = False)
+        :type positive: bool, optional
+        :param levels: levels at which the constraint is to be added (sublist of
+            Bilevel.LEVELS). By default the policy set at the initialization of the
+            formulation is enforced.
+        :type levels: list(str), optional
         """
-        if self._apply_cstr_to_system:
-            super(BiLevel, self).add_constraint(
-                output_name, constraint_type, constraint_name, value, positive
-            )
-        if self._apply_cstr_tosub_scenarios:
-            added = False
-            outputs_list = self._check_add_cstr_input(output_name, constraint_type)
-            for scen in self.get_sub_scenarios():
-                if self._scenario_computes_outputs(scen, outputs_list):
-                    scen.add_constraint(
-                        outputs_list, constraint_type, constraint_name, value, positive
-                    )
-                    added = True
-            if not added:
-                raise ValueError(
-                    "No sub scenario has an output named "
-                    + str(output_name)
-                    + " cannot create such a constraint."
+        # If the constraint levels are not specified the initial policy is enforced.
+        if levels is None:
+            if self._apply_cstr_to_system:
+                self._add_system_level_constraint(
+                    output_name, constraint_type, constraint_name, value, positive
                 )
+            if self._apply_cstr_tosub_scenarios:
+                self._add_sub_level_constraint(
+                    output_name, constraint_type, constraint_name, value, positive
+                )
+        # Otherwise the constraint is applied at the specified levels.
+        elif not isinstance(levels, list) or not set(levels) <= set(BiLevel.LEVELS):
+            raise ValueError(
+                "Constraint levels must be a sublist of {}".format(BiLevel.LEVELS)
+            )
+        elif not levels:
+            LOGGER.warning("Empty list of constraint levels, constraint not added")
+        else:
+            if BiLevel.SYSTEM_LEVEL in levels:
+                self._add_system_level_constraint(
+                    output_name, constraint_type, constraint_name, value, positive
+                )
+            if BiLevel.SUBSCENARIOS_LEVEL in levels:
+                self._add_sub_level_constraint(
+                    output_name, constraint_type, constraint_name, value, positive
+                )
+
+    def _add_system_level_constraint(
+        self,
+        output_name,
+        constraint_type=MDOFunction.TYPE_EQ,
+        constraint_name=None,
+        value=None,
+        positive=False,
+    ):
+        """Add a constraint at the system level.
+
+        :param output_name: name of the output defining the constraint
+        :type output_name: str
+        :param constraint_type: type of the constraint
+            (Default value = MDOFunction.TYPE_EQ)
+        :type constraint_type: str, optional
+        :param constraint_name: name of the constraint (Default value = None)
+        :type constraint_name: str or None, optional
+        :param value: reference value of the constraint (Default value = None)
+        :type value: float or None, optional
+        :param positive: if True then the reference value is considered a lower bound on
+            the constraint value, otherwise an upper bound (Default value = False)
+        :type positive: bool, optional
+        """
+        super(BiLevel, self).add_constraint(
+            output_name, constraint_type, constraint_name, value, positive
+        )
+
+    def _add_sub_level_constraint(
+        self,
+        output_name,
+        constraint_type=MDOFunction.TYPE_EQ,
+        constraint_name=None,
+        value=None,
+        positive=False,
+    ):
+        """Add a constraint at the sub-scenarios level.
+
+        :param output_name: name of the output defining the constraint
+        :type output_name: str or list(str)
+        :param constraint_type: type of the constraint
+            (Default value = MDOFunction.TYPE_EQ)
+        :type constraint_type: str, optional
+        :param constraint_name: name of the constraint (Default value = None)
+        :type constraint_name: str or None, optional
+        :param value: reference value of the constraint (Default value = None)
+        :type value: float or None, optional
+        :param positive: if True then the reference value is considered a lower bound on
+            the constraint value, otherwise an upper bound (Default value = False)
+        :type positive: bool, optional
+        """
+        added = False
+        outputs_list = self._check_add_cstr_input(output_name, constraint_type)
+        for scen in self.get_sub_scenarios():
+            if self._scenario_computes_outputs(scen, outputs_list):
+                scen.add_constraint(
+                    outputs_list, constraint_type, constraint_name, value, positive
+                )
+                added = True
+        if not added:
+            raise ValueError(
+                "No sub scenario has an output named "
+                + str(output_name)
+                + " cannot create such a constraint."
+            )
 
     @staticmethod
     def _scenario_computes_outputs(scenario, output_names):
-        """Returns True if the top level disciplines compute
-        the outputs named output_names
+        """Returns True if the top level disciplines compute the outputs named
+        output_names.
 
         :param output_names: name of the variable names to check
         :param scenario: the scenario to be tested

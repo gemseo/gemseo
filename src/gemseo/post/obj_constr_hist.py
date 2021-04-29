@@ -24,9 +24,10 @@ A constraints plot
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
+
 import matplotlib.gridspec as gridspec
 import numpy as np
-from future import standard_library
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
@@ -34,23 +35,19 @@ from matplotlib.ticker import MaxNLocator
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ObjConstrHist(OptPostProcessor):
-    """
-    The **ObjConstrHist** post processing
-    plots the constraint functions history in lines charts.
+    """The **ObjConstrHist** post processing plots the constraint functions history in
+    lines charts.
 
-    By default, all constraints are considered. A sublist of constraints
-    can be passed as options.
-    It is possible either to save the plot, to show the plot or both.
+    By default, all constraints are considered. A sublist of constraints can be passed
+    as options. It is possible either to save the plot, to show the plot or both.
     """
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem: the optimization problem to run
         """
@@ -68,8 +65,7 @@ class ObjConstrHist(OptPostProcessor):
         constr_names=None,
         extension="pdf",
     ):
-        """
-        Creates the design variables plot
+        """Creates the design variables plot.
 
         :param show: if True, displays the plot windows
         :type show: bool
@@ -175,9 +171,8 @@ class ObjConstrHist(OptPostProcessor):
         )
 
     def __get_history(self, fname):
-        """
-        Access the optimization history of a function and the design
-        variables at which it was computed
+        """Access the optimization history of a function and the design variables at
+        which it was computed.
 
         :param fname: name of the function
         :returns: list of function values
@@ -192,10 +187,9 @@ class ObjConstrHist(OptPostProcessor):
         return f_hist, x_hist, n_iter
 
     def __get_constraints(self, constr_names=None):
-        """
-        Returns constraints with formated shape
+        """Returns constraints with formated shape.
 
-        :param constr_name: list of constraint names
+        :param constr_names: list of constraint names
         """
         # retrieve the constraints values
         ineq_cstr_names = []
@@ -213,11 +207,11 @@ class ObjConstrHist(OptPostProcessor):
                 if cstr.name in constr_names:
                     eq_cstr_names.append(cstr.name)
         get_hist_array = self.database.get_history_array
-        if ineq_cstr_names != []:
+        if ineq_cstr_names:
             ineq_vals, ineq_id, _ = get_hist_array(ineq_cstr_names, add_dv=False)
         else:
             ineq_vals, ineq_id = np.array([]), np.array([])
-        if eq_cstr_names != []:
+        if eq_cstr_names:
             eq_vals, eq_cstr_id, _ = get_hist_array(eq_cstr_names, add_dv=False)
         else:
             eq_vals, eq_cstr_id = np.array([]), np.array([])

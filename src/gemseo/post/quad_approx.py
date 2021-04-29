@@ -27,12 +27,12 @@ Quadratic approximations of functions from the optimization history
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from math import ceil
 from os.path import splitext
 
 import numpy as np
 import pylab
-from future import standard_library
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatter
@@ -42,26 +42,22 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class QuadApprox(OptPostProcessor):
-    """
-    The **QuadApprox** post processing
-    performs a quadratic approximation of a given function
-    from an optimization history
-    and plot the results as cuts of the approximation.
+    """The **QuadApprox** post processing performs a quadratic approximation of a given
+    function from an optimization history and plot the results as cuts of the
+    approximation.
 
-    The function index can be passed as option.
-    It is possible either to save the plot, to show the plot or both.
+    The function index can be passed as option. It is possible either to save the plot,
+    to show the plot or both.
     """
 
     SR1_APPROX = "SR1"
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem : the optimization problem to run
         """
@@ -77,8 +73,7 @@ class QuadApprox(OptPostProcessor):
         func_index=None,
         extension="pdf",
     ):
-        """
-        Builds the plot and saves it
+        """Builds the plot and saves it.
 
         :param function: function name to build quadratic approximation
         :type function: str
@@ -88,9 +83,6 @@ class QuadApprox(OptPostProcessor):
         :type save: bool
         :param file_path: the base paths of the files to export
         :type file_path: str
-        :param share_y: if True, all Y axis are the same,
-            useful to compare sensitivities
-        :type share_y: bool
         :param func_index: functional index
         :type func_index: int
         :param extension: file extension
@@ -113,11 +105,7 @@ class QuadApprox(OptPostProcessor):
         )
 
     def __build_approx(self, function, func_index):
-        """
-        Builds the approximation
-
-        :param method: SR1 or BFGS
-        """
+        """Builds the approximation."""
         apprx = SR1Approx(self.database)
         n_x = self.opt_problem.get_dimension()
         max_i = int(1.5 * n_x)
@@ -133,8 +121,7 @@ class QuadApprox(OptPostProcessor):
 
     @staticmethod
     def __plot_hessian(hessian, function):
-        """
-        Plots the Hessian of the function
+        """Plots the Hessian of the function.
 
         :param hessian: the hessian
         """
@@ -142,7 +129,7 @@ class QuadApprox(OptPostProcessor):
         pylab.plt.xlabel(r"$x_i$", fontsize=16)
         pylab.plt.ylabel(r"$x_j$", fontsize=16)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
-        linthresh = 10 ** ((np.log10(vmax) - 5.0))
+        linthresh = 10 ** (np.log10(vmax) - 5.0)
         # SymLog is a symetric log scale adapted to negative values
         pylab.imshow(
             hessian,
@@ -164,7 +151,7 @@ class QuadApprox(OptPostProcessor):
 
     @staticmethod
     def unnormalize_vector(xn_array, ivar, lower_bounds, upper_bounds):
-        """Unormalize a variable with respect to bounds
+        """Unormalize a variable with respect to bounds.
 
         :param xn_array: normalized variable (array)
         :param ivar: index of variable bound
@@ -172,14 +159,13 @@ class QuadApprox(OptPostProcessor):
         :param upper_bounds:
         :returns: unnormalized array
         :rtype: numpy array
-
         """
         l_b = lower_bounds[ivar]
         u_b = upper_bounds[ivar]
         return (u_b - l_b) * xn_array * 0.5 + 0.5 * (l_b + u_b)
 
     def __plot_variations(self, hessian):
-        """Plots the variation plots of the function wrt all variables """
+        """Plots the variation plots of the function wrt all variables."""
         ndv = hessian.shape[0]
         ncols = int(np.sqrt(ndv)) + 1
         nrows = int(ceil(float(ndv) / ncols))

@@ -69,16 +69,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import super
 from cmath import exp, sqrt
 
-from future import standard_library
 from numpy import array, atleast_2d, complex128, ones, zeros
 
 from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
-
 
 def get_inputs(names=None):
-    """Generate initial solution
+    """Generate initial solution.
 
     :param names: input names (default: None)
     :type names: list(str)
@@ -88,8 +85,8 @@ def get_inputs(names=None):
     inputs = {
         "x_local": array([0.0], dtype=complex128),
         "x_shared": array([1.0, 0.0], dtype=complex128),
-        "y_0": ones((1), dtype=complex128),
-        "y_1": ones((1), dtype=complex128),
+        "y_0": ones(1, dtype=complex128),
+        "y_1": ones(1, dtype=complex128),
     }
     if names is None:
         return inputs
@@ -102,16 +99,16 @@ class SellarSystem(MDODiscipline):
     and constraints discipline."""
 
     def __init__(self):
-        """Constructor"""
+        """Constructor."""
         super(SellarSystem, self).__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Defines the execution of the process, given that data
-        has been checked.
-        Compute the outputs (= objective value and constraints at system level)
-        of the Sellar analytical problem.
+        """Defines the execution of the process, given that data has been checked.
+
+        Compute the outputs (= objective value and constraints at system level) of the
+        Sellar analytical problem.
         """
         x_local, x_shared, y_0, y_1 = self.get_inputs_by_name(
             ["x_local", "x_shared", "y_0", "y_1"]
@@ -123,7 +120,7 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def obj(x_local, x_shared, y_0, y_1):
-        """Objective function
+        """Objective function.
 
         :param x_local: local design variables
         :type x_local: ndarray
@@ -140,7 +137,7 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def c_1(y_0):
-        """First constraint on system level
+        """First constraint on system level.
 
         :param y_0: coupling variable from discipline 1
         :type y_0: ndarray
@@ -151,7 +148,7 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def c_2(y_1):
-        """Second constraint on system level
+        """Second constraint on system level.
 
         :param y_1: coupling variable from discipline 2
         :type y_1: ndarray
@@ -161,8 +158,7 @@ class SellarSystem(MDODiscipline):
         return y_1[0] - 24.0
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """
-        Computes the jacobian
+        """Computes the jacobian.
 
         :param inputs: linearization should be performed with respect
             to inputs list. If None, linearization should
@@ -190,8 +186,7 @@ class Sellar1(MDODiscipline):
     """
 
     def __init__(self, residual_form=False):
-        """
-        Constructor
+        """Constructor.
 
         :param residual_form: if True only residuals are computed, no Ys
         :type residual_form: bool
@@ -210,8 +205,7 @@ class Sellar1(MDODiscipline):
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
     def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized
-        Can be overloaded by disciplines
+        """Defines the attributes to be serialized Can be overloaded by disciplines.
 
         :returns: the list of attributes names
         :rtype: list(str)
@@ -221,10 +215,9 @@ class Sellar1(MDODiscipline):
         return base_d
 
     def _run(self):
-        """Defines the execution of the process, given that
-        data has been checked.
-        Solve a coupling equation in functional form and
-        compute coupling variable y_0.
+        """Defines the execution of the process, given that data has been checked.
+
+        Solve a coupling equation in functional form and compute coupling variable y_0.
         """
         x_local, x_shared, y_1 = self.get_inputs_by_name(["x_local", "x_shared", "y_1"])
 
@@ -312,8 +305,7 @@ class Sellar2(MDODiscipline):
     """
 
     def __init__(self, residual_form=False):
-        """
-        Constructor
+        """Constructor.
 
         :param residual_form: if True only residuals are computed, no Ys
         :type residual_form: bool
@@ -330,8 +322,7 @@ class Sellar2(MDODiscipline):
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
     def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized
-        Can be overloaded by disciplines
+        """Defines the attributes to be serialized Can be overloaded by disciplines.
 
         :returns: the list of attributes names
         :rtype: list(str)
@@ -341,10 +332,9 @@ class Sellar2(MDODiscipline):
         return base_d
 
     def _run(self):
-        """Defines the execution of the process, given
-        that data has been checked.
-        Solve a coupling equation in functional form and compute coupling
-        variable y1.
+        """Defines the execution of the process, given that data has been checked.
+
+        Solve a coupling equation in functional form and compute coupling variable y1.
         """
         x_shared, y_0 = self.get_inputs_by_name(["x_shared", "y_0"])
 

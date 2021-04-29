@@ -34,7 +34,6 @@ Analytical test case # 3
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import sum as np_sum
 
 from gemseo.algos.design_space import DesignSpace
@@ -43,7 +42,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import configure_logger, execute_post
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
 LOGGER = configure_logger()
 
 

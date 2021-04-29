@@ -19,12 +19,11 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test linear regression module. """
+"""Test linear regression module."""
 
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array
 from sklearn.linear_model import ElasticNet, Lasso, Ridge
 
@@ -34,17 +33,15 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
+from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-
-standard_library.install_aliases()
-
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
 def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -58,7 +55,7 @@ def dataset():
 
 @pytest.fixture
 def model(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     linreg = LinearRegression(dataset)
     linreg.learn()
     return linreg
@@ -66,7 +63,7 @@ def model(dataset):
 
 @pytest.fixture
 def model_with_transform(dataset):
-    """ Define model with transformers from data. """
+    """Define model with transformers from data."""
     linreg = LinearRegression(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
@@ -74,14 +71,23 @@ def model_with_transform(dataset):
     return linreg
 
 
+@pytest.fixture
+def models_with_pls(dataset):
+    """Define model with transformers from data."""
+    linreg1 = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
+    linreg1.learn()
+    linreg2 = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
+    return linreg1, linreg2
+
+
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     model_ = LinearRegression(dataset)
     assert model_.algo is not None
 
 
 def test_constructor_penalty(dataset):
-    """ Test construction."""
+    """Test construction."""
     model_ = LinearRegression(dataset, penalty_level=0.1, l2_penalty_ratio=0.0)
     assert isinstance(model_.algo, Lasso)
     model_ = LinearRegression(dataset, penalty_level=0.1, l2_penalty_ratio=1.0)
@@ -91,14 +97,14 @@ def test_constructor_penalty(dataset):
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     model_ = LinearRegression(dataset)
     model_.learn()
     assert model_.algo is not None
 
 
 def test_coefficients(model):
-    """ Test coefficients. """
+    """Test coefficients."""
     assert model.coefficients.shape[0] == 2
     assert model.coefficients.shape[1] == 2
     coefficients = model.get_coefficients()
@@ -109,7 +115,7 @@ def test_coefficients(model):
 
 
 def test_coefficients_with_transform(dataset, model_with_transform):
-    """ Test correct handling of get_coefficients with transformers. """
+    """Test correct handling of get_coefficients with transformers."""
     model_with_transform.get_coefficients(as_dict=False)
     model_with_transform.get_coefficients(as_dict=True)
 
@@ -123,14 +129,14 @@ def test_coefficients_with_transform(dataset, model_with_transform):
 
 
 def test_intercept(model):
-    """ Test intercept. """
+    """Test intercept."""
     intercept = model.get_intercept()
     assert allclose(intercept["y_1"], array([1.0]))
     assert allclose(intercept["y_2"], array([-1.0]))
 
 
 def test_prediction(model):
-    """ Test prediction. """
+    """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
         "x_1": array([[1.0], [0.0], [-1.0]]),
@@ -147,7 +153,7 @@ def test_prediction(model):
 
 
 def test_prediction_with_transform(model_with_transform):
-    """ Test prediction. """
+    """Test prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
         "x_1": array([[1.0], [0.0], [-1.0]]),
@@ -163,8 +169,29 @@ def test_prediction_with_transform(model_with_transform):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
+def test_prediction_with_pls(models_with_pls):
+    """Test prediction."""
+    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+    another_input_value = {
+        "x_1": array([[1.0], [0.0], [-1.0]]),
+        "x_2": array([[2.0], [0.0], [1.0]]),
+    }
+    model = models_with_pls[0]
+    prediction = model.predict(input_value)
+    another_prediction = model.predict(another_input_value)
+    assert isinstance(prediction, dict)
+    assert isinstance(another_prediction, dict)
+    assert allclose(prediction["y_1"], array([9.0]))
+    assert allclose(prediction["y_2"], array([-9.0]))
+    assert allclose(another_prediction["y_1"], array([[9.0], [1.0], [2.0]]))
+    assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
+    model = models_with_pls[1]
+    with pytest.raises(NotImplementedError):
+        model.learn()
+
+
 def test_prediction_jacobian(model):
-    """ Test jacobian prediction. """
+    """Test jacobian prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     jac = model.predict_jacobian(input_value)
     assert isinstance(jac, dict)
@@ -175,7 +202,7 @@ def test_prediction_jacobian(model):
 
 
 def test_jacobian_transform(model_with_transform):
-    """ Test jacobian prediction. """
+    """Test jacobian prediction."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     jac = model_with_transform.predict_jacobian(input_value)
     assert isinstance(jac, dict)
@@ -186,7 +213,7 @@ def test_jacobian_transform(model_with_transform):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_regression_model(dirname)
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}

@@ -25,10 +25,10 @@ Self Organizing Maps plots to display high dimensional design spaces
 
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from math import floor, sqrt
 
 import matplotlib
-from future import standard_library
 from numpy import array, bincount, float64, int32, isnan, logical_not
 from numpy import max as np_max
 from numpy import mean, mgrid
@@ -38,26 +38,22 @@ from pylab import plt
 
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.third_party.sompy import SOM as spy_som
+from gemseo.third_party import sompy
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class SOM(OptPostProcessor):
-    """
-    The **SOM** post processing
-    perform a self organizing map
-    clustering on optimization history
+    """The **SOM** post processing perform a self organizing map clustering on
+    optimization history.
 
-    Options of the plot method are the figure width and height,
-    and the x- and y- number of cells in the SOM.
-    It is also possible either to save the plot, to show the plot or both.
+    Options of the plot method are the figure width and height, and the x- and y- number
+    of cells in the SOM. It is also possible either to save the plot, to show the plot
+    or both.
     """
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem : the optimization problem to run
         """
@@ -77,7 +73,7 @@ class SOM(OptPostProcessor):
         height=18,
         extension="pdf",
     ):
-        """Computes the clustering
+        """Computes the clustering.
 
         :param n_x: x-size
         :type n_x: int
@@ -115,8 +111,7 @@ class SOM(OptPostProcessor):
     def __build_som_from_vars(
         x_vars, som_grid_nx=5, som_grid_ny=5, initmethod="pca", verbose="off"
     ):
-        """
-        Builds the SOM from the design variables history
+        """Builds the SOM from the design variables history.
 
         :param x_vars:  the design variables history numpy array (n_iter,n_dv)
         :param som_grid_nx: number of neurons in the x direction
@@ -128,7 +123,7 @@ class SOM(OptPostProcessor):
         LOGGER.info("Building Self Organizing Map from optimization history:")
         LOGGER.info("    Number of neurons in x direction = %s", str(som_grid_nx))
         LOGGER.info("    Number of neurons in y direction = %s", str(som_grid_ny))
-        var_som = spy_som(
+        var_som = sompy.SOM(
             "som",
             x_vars,
             mapsize=[som_grid_ny + 1, som_grid_nx + 1],
@@ -140,8 +135,7 @@ class SOM(OptPostProcessor):
         return var_som
 
     def _plot(self, criteria_list, n_x, n_y, width=12, height=18, annotate=False):
-        """
-        Shows the SOM view after computation for a given criteria list
+        """Shows the SOM view after computation for a given criteria list.
 
         :param criteria_list: the criteria to show
         :param n_x: number of grids in x
@@ -158,7 +152,7 @@ class SOM(OptPostProcessor):
             )
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
-                for k in range(dim_val):
+                for _ in range(dim_val):
                     subplot_number += 1
 
             else:
@@ -214,8 +208,7 @@ class SOM(OptPostProcessor):
         grid_size_y=20,
         annotate=False,
     ):
-        """
-        Builds the SOM plot after computation for a given criteria
+        """Builds the SOM plot after computation for a given criteria.
 
         :param criteria: the criteria to show
         :param f_hist_scalar: the scalar data to show
@@ -227,7 +220,7 @@ class SOM(OptPostProcessor):
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])
         average = {}
-        for i, som_id in enumerate(unique_ind):
+        for _, som_id in enumerate(unique_ind):
             where_somid = where(f_hist[2, :] == som_id)[0]
             ranges_of_uniques = f_hist[3, where_somid]
             average[som_id] = mean(ranges_of_uniques)
@@ -275,8 +268,7 @@ class SOM(OptPostProcessor):
         return axe
 
     def __compute(self, som_grid_nx=5, som_grid_ny=5):
-        """
-        Builds the SOM from optimization history
+        """Builds the SOM from optimization history.
 
         :param som_grid_nx: number of neurons in the x direction
         :param som_grid_ny: number of neurons in the y direction
@@ -302,10 +294,8 @@ class SOM(OptPostProcessor):
 
     @staticmethod
     def __coord2d_to_coords_offsets(som_coord, max_ofset=0.6):
-        """
-        Takes a coord array from SOM and adds an offset to the coordinates of
-        the elements in the cluster so that they can be distinguished
-        at display
+        """Takes a coord array from SOM and adds an offset to the coordinates of the
+        elements in the cluster so that they can be distinguished at display.
 
         :param som_coord: the SOM coords array
         :paramtype som_coord: ndarray

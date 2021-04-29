@@ -9,4 +9,4 @@
 Classification model
 ~~~~~~~~~~~~~~~~~~~~
 
-Below is a gallery of examples of classificaton models.
+Below is a gallery of examples of classification models.

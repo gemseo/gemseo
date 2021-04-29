@@ -27,8 +27,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from copy import deepcopy
 
-from future import standard_library
-
 from gemseo.api import (
     configure_logger,
     create_discipline,
@@ -41,7 +39,6 @@ from gemseo.problems.aerostructure.aerostructure_design_space import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 algo_options = {
     "xtol_rel": 1e-8,

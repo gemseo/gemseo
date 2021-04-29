@@ -28,14 +28,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from os import mkdir
 from os.path import exists, join
 
-from future import standard_library
-
 from gemseo.api import configure_logger
 from gemseo.utils.study_analysis import StudyAnalysis
 
 configure_logger()
 
-standard_library.install_aliases()
 
 #############################################################################
 # Describe your MDO problem in an Excel file

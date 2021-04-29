@@ -24,16 +24,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import unittest
 from copy import deepcopy
-from os import remove
-from os.path import dirname, exists, join
+from os.path import exists
 
-from future import standard_library
-from numpy import array
+import pytest
+from numpy import array, cos, linspace
+from numpy import pi as np_pi
+from numpy import sin
 from six import string_types
 
-from gemseo import SOFTWARE_NAME
 from gemseo.api import (
-    configure_logger,
     create_cache,
     create_design_space,
     create_discipline,
@@ -77,21 +76,13 @@ from gemseo.api import (
     monitor_scenario,
     print_configuration,
 )
-from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammar import InvalidDataException
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
-
-standard_library.install_aliases()
-
-
-DIRNAME = dirname(__file__)
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 class Observer(object):
@@ -100,10 +91,10 @@ class Observer(object):
 
     def update(self, atom):
         self.status_changes += 1
-        LOGGER.info(atom)
 
 
-class Test_API(unittest.TestCase):
+@pytest.mark.usefixtures("tmp_wd")
+class TestAPI(unittest.TestCase):
     def test_generate_n2_plot(self):
         disciplines = create_discipline(
             [
@@ -114,10 +105,8 @@ class Test_API(unittest.TestCase):
             ]
         )
         file_path = "n2.png"
-        file_path = join(DIRNAME, file_path)
         generate_n2_plot(disciplines, file_path, save=True, show=False, figsize=(5, 5))
         assert exists(file_path)
-        remove(file_path)
 
     def test_generate_coupling_graph(self):
         disciplines = create_discipline(
@@ -129,19 +118,16 @@ class Test_API(unittest.TestCase):
             ]
         )
         base_path = "coupl"
-        base_path = join(DIRNAME, base_path)
+        gv_path = "coupl.gv"
         file_path = base_path + ".pdf"
-        file_path = join(DIRNAME, file_path)
         generate_coupling_graph(disciplines, file_path)
         assert exists(file_path)
-        remove(file_path)
-        assert exists(base_path + ".gv")
-        remove(base_path + ".gv")
+        assert exists(gv_path)
 
     def test_get_algorithm_options_schema(self):
         schema_dict = get_algorithm_options_schema("SLSQP")
         assert "properties" in schema_dict
-        assert len(schema_dict["properties"]) == 6
+        assert len(schema_dict["properties"]) == 10
 
         schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
         out_dict = json.loads(schema_json)
@@ -156,9 +142,6 @@ class Test_API(unittest.TestCase):
     def test_get_surrogate_options_schema(self):
         get_surrogate_options_schema("RBFRegression")
         get_surrogate_options_schema("RBFRegression", pretty_print=True)
-
-    def test_configure_logger(self):
-        configure_logger("root", level="INFO")
 
     def test_create_scenario_and_monitor(self):
         scenario = create_scenario(
@@ -188,7 +171,7 @@ class Test_API(unittest.TestCase):
         )
         self.assertRaises(TypeError, execute_post, 1234, "OptHistoryView")
 
-    def test_create_DOE_scenario(self):
+    def test_create_doe_scenario(self):
         create_scenario(
             create_discipline("SobieskiMission"),
             "DisciplinaryOpt",
@@ -256,11 +239,7 @@ class Test_API(unittest.TestCase):
         get_all_outputs([sc_aero, sc_struct, miss], recursive=True)
 
     def test_get_scenario_inputs_schema(self):
-        aero = create_discipline(
-            [
-                "SobieskiAerodynamics",
-            ]
-        )
+        aero = create_discipline(["SobieskiAerodynamics"])
         design_space = SobieskiProblem().read_design_space()
         sc_aero = create_scenario(
             aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
@@ -367,14 +346,20 @@ class Test_API(unittest.TestCase):
         assert outs["y_4"] > 0.0
 
     def test_create_scalable(self):
-        hdf_file_path = join(dirname(__file__), "problems", "scalable", "dataset.hdf5")
-        mission = SobieskiMission()
-        inputs = mission.default_inputs
-        sizes = {}
-        for k, value in inputs.items():
-            sizes[k] = len(value)
-        cache = HDF5Cache(hdf_file_path, "SobieskiMission")
-        create_scalable("ScalableDiagonalModel", cache, sizes, fill_factor=0.7)
+        def f_1(x_1, x_2, x_3):
+            return sin(2 * np_pi * x_1) + cos(2 * np_pi * x_2) + x_3
+
+        def f_2(x_1, x_2, x_3):
+            return sin(2 * np_pi * x_1) * cos(2 * np_pi * x_2) - x_3
+
+        data = Dataset("sinus")
+        x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, None]
+        data.add_variable("x1", x1_val, data.INPUT_GROUP, True)
+        data.add_variable("x2", x2_val, data.INPUT_GROUP, True)
+        data.add_variable("x3", x2_val, data.INPUT_GROUP, True)
+        data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.OUTPUT_GROUP, True)
+        data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.OUTPUT_GROUP, True)
+        create_scalable("ScalableDiagonalModel", data, fill_factor=0.7)
 
     def test_create_mda(self):
         disciplines = create_discipline(

@@ -21,19 +21,12 @@
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import logging
 import os
 import unittest
-from builtins import next, super
-from os.path import join
 
-from future import standard_library
+import pytest
 from numpy import array, complex128, ndarray
 
-from gemseo import LOGGER, SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.auto_py_discipline import AutoPyDiscipline
 from gemseo.core.chain import MDOChain
@@ -47,20 +40,12 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
-from gemseo.utils.py23_compat import TemporaryDirectory
-from gemseo.utils.testing_utils import skip_under_windows
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
-
-
+@pytest.mark.usefixtures("tmp_wd")
 class TestMDODiscipline(unittest.TestCase):
-    @link_to("Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-SC-1.1", "Req-WF-6")
     def build_sobieski_chain(self):
-        """ """
+        """"""
         chain = MDOChain(
             [
                 SobieskiStructure(),
@@ -73,11 +58,8 @@ class TestMDODiscipline(unittest.TestCase):
         indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
         return chain, indata
 
-    @link_to(
-        "Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-SC-1.1", "Req-WF-6", "Req-WF-9"
-    )
     def test_set_statuses(self):
-        """ """
+        """"""
         chain = MDOChain(
             [
                 SobieskiAerodynamics(),
@@ -90,22 +72,13 @@ class TestMDODiscipline(unittest.TestCase):
         self.assertEqual(chain.disciplines[0].status, "FAILED")
 
     def test_get_sub_disciplines(self):
-        """ """
-        chain = MDOChain(
-            [
-                SobieskiAerodynamics(),
-            ]
-        )
+        """"""
+        chain = MDOChain([SobieskiAerodynamics()])
         self.assertEqual(len(chain.disciplines[0].get_sub_disciplines()), 0)
 
-    @link_to("Req-WF-3", "Req-WF-10")
     def test_instantiate_grammars(self):
-        """ """
-        chain = MDOChain(
-            [
-                SobieskiAerodynamics(),
-            ]
-        )
+        """"""
+        chain = MDOChain([SobieskiAerodynamics()])
         self.assertRaises(
             ValueError,
             lambda: chain.disciplines[0]._instantiate_grammars(
@@ -113,28 +86,25 @@ class TestMDODiscipline(unittest.TestCase):
             ),
         )
 
-    @link_to("Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-MR-1", "Req-WF-6", "Req-MR-2")
     def test_execute_status_error(self):
-        """ """
+        """"""
         chain, indata = self.build_sobieski_chain()
         chain.set_disciplines_statuses("FAILED")
         self.assertRaises(Exception, chain.execute, indata)
 
     def test_check_status_error(self):
-        """ """
+        """"""
         chain, _ = self.build_sobieski_chain()
         self.assertRaises(Exception, chain._check_status, "None")
 
-    @link_to("Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-SC-1.1", "Req-WF-6")
     def test_check_input_data_exception_chain(self):
-        """ """
+        """"""
         chain, indata = self.build_sobieski_chain()
         del indata["x_1"]
         self.assertRaises(InvalidDataException, chain.check_input_data, indata)
 
-    @link_to("Req-DEP-4", "Req-WF-10")
     def test_check_input_data_exception(self):
-        """ """
+        """"""
         struct = SobieskiStructure()
         struct_inputs = struct.input_grammar.get_data_names()
         indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
@@ -149,63 +119,50 @@ class TestMDODiscipline(unittest.TestCase):
         in_array = struct.get_inputs_asarray()
         assert len(in_array) == 10
 
-    @link_to("Req-DM-1", "Req-DM-2", "Req-WF-7.1")
     def test_get_outputs_by_name_exception(self):
-        """ """
+        """"""
         chain, indata = self.build_sobieski_chain()
         chain.execute(indata)
         self.assertRaises(Exception, chain.get_outputs_by_name, "toto")
 
-    @link_to("Req-DM-1", "Req-DM-2")
     def test_get_inputs_by_name_exception(self):
-        """ """
+        """"""
         chain, _ = self.build_sobieski_chain()
         self.assertRaises(Exception, chain.get_inputs_by_name, "toto")
 
-    @link_to(
-        "Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-SC-1.1", "Req-WF-5", "Req-WF-7.1"
-    )
     def test_get_input_data(self):
-        """ """
+        """"""
         chain, indata_ref = self.build_sobieski_chain()
         chain.execute(indata_ref)
         indata = chain.get_input_data()
         self.assertListEqual(sorted(indata.keys()), sorted(indata_ref.keys()))
 
-    @link_to("Req-DM-1", "Req-DM-2", "Req-WF-5", "Req-WF-7.1")
     def test_get_local_data_by_name_exception(self):
-        """ """
+        """"""
         chain, indata = self.build_sobieski_chain()
         chain.execute(indata)
         self.assertRaises(Exception, chain.get_local_data_by_name, "toto")
 
-    @link_to(
-        "Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-MR-1", "Req-SC-1.1", "Req-WF-9"
-    )
     def test_reset_statuses_for_run_error(self):
-        """ """
+        """"""
         chain, _ = self.build_sobieski_chain()
         chain.set_disciplines_statuses("FAILED")
         chain.reset_statuses_for_run()
 
-    @link_to(
-        "Req-WF-1", "Req-WF-1.1", "Req-WF-1.4", "Req-DM-1", "Req-DM-2", "Req-SC-1.1"
-    )
     def test_get_data_list_from_dict_error(self):
-        """ """
+        """"""
         _, indata = self.build_sobieski_chain()
         self.assertRaises(TypeError, MDODiscipline.get_data_list_from_dict, 2, indata)
 
-    @link_to("Req-WF-2", "Req-WF-2.1", "Req-WF-3")
     def test_check_lin_error(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         problem = SobieskiProblem()
         indata = problem.get_default_inputs(names=aero.get_input_data_names())
         self.assertRaises(Exception, aero.check_jacobian, indata, derr_approx="bidon")
 
     def test_check_jac_fdapprox(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics("complex128")
         inpts = aero.default_inputs
         aero.linearization_mode = aero.FINITE_DIFFERENCES
@@ -216,50 +173,45 @@ class TestMDODiscipline(unittest.TestCase):
         aero.check_jacobian(inpts)
 
     def test_check_jac_csapprox(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics("complex128")
         aero.linearization_mode = aero.COMPLEX_STEP
         aero.linearize(force_all=True)
         aero.check_jacobian()
 
     def test_check_jac_approx_plot(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         aero.linearize(force_all=True)
         file_path = "gradients_validation.pdf"
         aero.check_jacobian(step=10.0, plot_result=True, file_path=file_path)
         assert os.path.exists(file_path)
-        os.remove(file_path)
 
-    @link_to("Req-WF-2", "Req-WF-2.1")
     def test_check_lin_threshold(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         problem = SobieskiProblem()
         indata = problem.get_default_inputs(names=aero.get_input_data_names())
         aero.check_jacobian(indata, threshold=1e-50)
 
-    @link_to("Req-DEP-4", "Req-WF-3", "Req-MR-7")
     def test_input_exist(self):
-        """ """
+        """"""
         sr = SobieskiAerodynamics()
         problem = SobieskiProblem()
         indata = problem.get_default_inputs(names=sr.get_input_data_names())
         self.assertTrue(sr.is_input_existing(next(iter(indata.keys()))))
         self.assertFalse(sr.is_input_existing("bidon"))
 
-    @link_to("Req-MR-7")
     def test_get_all_inputs_outputs_name(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         problem = SobieskiProblem()
         indata = problem.get_default_inputs(names=aero.get_input_data_names())
         for data_name in indata:
             self.assertTrue(data_name in aero.get_input_data_names())
 
-    @link_to("Req-MR-7")
     def test_get_all_inputs_outputs(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         problem = SobieskiProblem()
         indata = problem.get_default_inputs(names=aero.get_input_data_names())
@@ -273,9 +225,8 @@ class TestMDODiscipline(unittest.TestCase):
         assert isinstance(arr, ndarray)
         assert len(arr) > 0
 
-    @link_to("Req-WF-11")
     def test_serialize_deserialize(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         aero.data_processor = ComplexDataProcessor()
         out_file = "sellar1.o"
@@ -287,7 +238,6 @@ class TestMDODiscipline(unittest.TestCase):
         for k, v in locd.items():
             assert k in saero_u.local_data
             assert (v == saero_u.local_data[k]).all()
-        os.remove(out_file)
 
         def attr_list():
             return ["numpy_test"]
@@ -297,48 +247,43 @@ class TestMDODiscipline(unittest.TestCase):
 
         saero_u_dict = saero_u.__dict__
         ok = True
-        for k, v in aero.__dict__.items():
+        for k, _ in aero.__dict__.items():
             if k not in saero_u_dict and k != "get_attributes_to_serialize":
-                LOGGER.error("Missing " + k)
                 ok = False
 
         assert ok
 
-    @link_to("Req-WF-11")
     def test_serialize_run_deserialize(self):
-        """ """
-        with TemporaryDirectory() as out_dir:
-            aero = SobieskiAerodynamics()
-            out_file = join(out_dir, "sellar1.o")
-            input_data = SobieskiProblem().get_default_inputs()
-            aero.serialize(out_file)
-            saero_u = MDODiscipline.deserialize(out_file)
-            saero_u.serialize(out_file)
-            saero_u.execute(input_data)
-            saero_u.serialize(out_file)
-            saero_loc = MDODiscipline.deserialize(out_file)
-            saero_loc.status = "PENDING"
-            saero_loc.execute(input_data)
+        """"""
+        aero = SobieskiAerodynamics()
+        out_file = "sellar1.o"
+        input_data = SobieskiProblem().get_default_inputs()
+        aero.serialize(out_file)
+        saero_u = MDODiscipline.deserialize(out_file)
+        saero_u.serialize(out_file)
+        saero_u.execute(input_data)
+        saero_u.serialize(out_file)
+        saero_loc = MDODiscipline.deserialize(out_file)
+        saero_loc.status = "PENDING"
+        saero_loc.execute(input_data)
 
-            for k, v in saero_loc.local_data.items():
-                assert k in saero_u.local_data
-                assert (v == saero_u.local_data[k]).all()
+        for k, v in saero_loc.local_data.items():
+            assert k in saero_u.local_data
+            assert (v == saero_u.local_data[k]).all()
 
     def test_serialize_hdf_cache(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
-        with TemporaryDirectory() as tmp_dir:
-            cache_hdf_file = join(tmp_dir, "aero_cache.h5")
-            aero.set_cache_policy(aero.HDF5_CACHE, cache_hdf_file=cache_hdf_file)
-            aero.execute()
-            out_file = "sob_aero.pckl"
-            aero.serialize(out_file)
-            saero_u = MDODiscipline.deserialize(out_file)
-            assert saero_u.cache.get_last_cached_outputs()["y_2"] is not None
+        cache_hdf_file = "aero_cache.h5"
+        aero.set_cache_policy(aero.HDF5_CACHE, cache_hdf_file=cache_hdf_file)
+        aero.execute()
+        out_file = "sob_aero.pckl"
+        aero.serialize(out_file)
+        saero_u = MDODiscipline.deserialize(out_file)
+        assert saero_u.cache.get_last_cached_outputs()["y_2"] is not None
 
-    @link_to("Req-WF-3", "Req-WF-1.1", "Req-WF-1.4")
     def test_data_processor(self):
-        """ """
+        """"""
         aero = SobieskiAerodynamics()
         input_data = SobieskiProblem().get_default_inputs()
         aero.data_processor = ComplexDataProcessor()
@@ -483,7 +428,7 @@ class TestMDODiscipline(unittest.TestCase):
         disc.jac = {"y": {"x": array([[0.0]])}}
         self.assertRaises(ValueError, disc.linearize, {"x": x}, force_all=True)
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_check_jacobian_parallel_fd(self):
         sm = SobieskiMission()
         sm.check_jacobian(
@@ -495,7 +440,7 @@ class TestMDODiscipline(unittest.TestCase):
             n_processes=6,
         )
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_check_jacobian_parallel_cplx(self):
         sm = SobieskiMission()
         sm.check_jacobian(
@@ -544,8 +489,6 @@ class TestMDODiscipline(unittest.TestCase):
     def test_cache_h5(self):
         sm = SobieskiMission(enable_delay=0.1)
         hdf_file = sm.name + ".hdf5"
-        if os.path.exists(hdf_file):
-            os.remove(hdf_file)
         sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
         xs = sm.default_inputs["x_shared"]
         sm.execute({"x_shared": xs})
@@ -560,15 +503,12 @@ class TestMDODiscipline(unittest.TestCase):
         assert t0 != sm.exec_time
         # Read again the hashes
         sm.cache = HDF5Cache(hdf_file, sm.name)
-        os.remove(hdf_file)
 
         self.assertRaises(ImportError, sm.set_cache_policy, cache_type="toto")
 
     def test_cache_h5_inpts(self):
         sm = SobieskiMission()
         hdf_file = sm.name + ".hdf5"
-        if os.path.exists(hdf_file):
-            os.remove(hdf_file)
         sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
         xs = sm.default_inputs["x_shared"]
         sm.execute({"x_shared": xs})
@@ -577,8 +517,6 @@ class TestMDODiscipline(unittest.TestCase):
         sm.execute({"x_shared": xs})
         assert (sm.local_data["x_shared"] == xs).all()
         assert (sm.local_data["y_4"] == out_ref).all()
-
-        os.remove(hdf_file)
 
     def test_cache_memory_inpts(self):
         sm = SobieskiMission()
@@ -594,8 +532,6 @@ class TestMDODiscipline(unittest.TestCase):
     def test_cache_h5_jac(self):
         sm = SobieskiMission()
         hdf_file = sm.name + ".hdf5"
-        if os.path.exists(hdf_file):
-            os.remove(hdf_file)
         sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file)
         xs = sm.default_inputs["x_shared"]
         input_data = {"x_shared": xs}
@@ -620,13 +556,10 @@ class TestMDODiscipline(unittest.TestCase):
         assert self.check_jac_equals(jac_3, jac_4)
 
         sm.cache = HDF5Cache(hdf_file, sm.name)
-        os.remove(hdf_file)
 
     def test_cache_run_and_linearize(self):
-        """
-        Check that the cache is filled with the Jacobian when
-        the discipline is linearized during _run()
-        """
+        """Check that the cache is filled with the Jacobian when the discipline is
+        linearized during _run()"""
         sm = SobieskiMission()
         run_orig = sm._run
 
@@ -662,7 +595,7 @@ class TestMDODiscipline(unittest.TestCase):
 
         return True
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_jac_approx_mix_fd(self):
         sm = SobieskiMission()
         sm.set_jacobian_approximation(
@@ -726,3 +659,12 @@ class TestMDODiscipline(unittest.TestCase):
         disc.jac = {}
         disc.execute()
         disc._init_jacobian(outputs=["z"], fill_missing_keys=True)
+
+    def test_repr_str(self):
+        def myfunc(x=1, y=2):
+            z = x + y
+            return z
+
+        disc = AutoPyDiscipline(myfunc)
+        assert str(disc) == "myfunc"
+        assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"

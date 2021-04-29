@@ -38,7 +38,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import int
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from matplotlib.lines import Line2D
 from numpy import nonzero
 
@@ -51,7 +50,6 @@ from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Load dataset (Burgers)

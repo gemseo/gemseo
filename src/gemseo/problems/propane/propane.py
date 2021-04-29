@@ -100,18 +100,14 @@ from builtins import super
 from cmath import sqrt
 from os.path import dirname, join
 
-from future import standard_library
 from numpy import array, complex128, ones, zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
-
 
 def get_design_space(to_complex=True):
-    """
-    Reads the design space file
+    """Reads the design space file.
 
     :param to_complex: if True, current x is a complex vector
     """
@@ -125,9 +121,9 @@ def get_design_space(to_complex=True):
 
 class PropaneReaction(MDODiscipline):
 
-    """Propane's objective and constraints discipline
-    This discipline's outputs are the objective function and partial terms
-    used in inequality constraints.
+    """Propane's objective and constraints discipline This discipline's outputs are the
+    objective function and partial terms used in inequality constraints.
+
     Note: the equations have been decoupled (y_i = y_i(x_shared)). Otherwise,
     the solvers may find iterates for
     which discipline analyses are not computable.
@@ -159,8 +155,8 @@ class PropaneReaction(MDODiscipline):
 
     @classmethod
     def f_2(cls, x_shared, y_1, y_2, y_3):
-        """First term of a sum of four in the objective function.
-        Is also a nonnegative constraint at system level.
+        """First term of a sum of four in the objective function. Is also a nonnegative
+        constraint at system level.
 
         :param x_shared: vector of shared design variables
         :type x_shared: ndarray
@@ -186,8 +182,8 @@ class PropaneReaction(MDODiscipline):
 
     @classmethod
     def f_6(cls, x_shared, y_1, y_3):
-        """Second term of a sum of four in the objective function.
-        Is also a nonnegative constraint at system level.
+        """Second term of a sum of four in the objective function. Is also a nonnegative
+        constraint at system level.
 
         :param x_shared: vector of shared design variables
         :type x_shared: ndarray
@@ -202,8 +198,8 @@ class PropaneReaction(MDODiscipline):
 
     @classmethod
     def f_7(cls, x_shared, y_1, y_3):
-        """Third term of a sum of four in the objective function.
-        Is also a nonnegative constraint at system level.
+        """Third term of a sum of four in the objective function. Is also a nonnegative
+        constraint at system level.
 
         :param x_shared: vector of shared design variables
         :type x_shared: ndarray
@@ -218,8 +214,8 @@ class PropaneReaction(MDODiscipline):
 
     @classmethod
     def f_9(cls, x_shared, y_1, y_3):
-        """Fourth term of a sum of four in the objective function.
-        Is also a nonnegative constraint at system level.
+        """Fourth term of a sum of four in the objective function. Is also a nonnegative
+        constraint at system level.
 
         :param x_shared: vector of shared design variables
         :type x_shared: ndarray
@@ -235,8 +231,8 @@ class PropaneReaction(MDODiscipline):
 
 class PropaneComb1(MDODiscipline):
 
-    """Propane combustion 1st set of equations
-    This discipline is characterized by two governing equations."""
+    """Propane combustion 1st set of equations This discipline is characterized by two
+    governing equations."""
 
     def __init__(self):
         super(PropaneComb1, self).__init__(auto_detect_grammar_files=True)
@@ -244,9 +240,8 @@ class PropaneComb1(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Solve 2 coupling equations in functional form and compute
-        coupling variables Y0 and y_1.
-        """
+        """Solve 2 coupling equations in functional form and compute coupling variables
+        Y0 and y_1."""
         x_shared = self.get_inputs_by_name("x_shared")
         y_1_out = zeros(2, dtype=complex128)
         y_1_out[0] = self.compute_y0(x_shared)
@@ -275,8 +270,8 @@ class PropaneComb1(MDODiscipline):
 
 
 class PropaneComb2(MDODiscipline):
-    """Propane combustion 2nd set of equations
-    This discipline is characterized by two governing equations."""
+    """Propane combustion 2nd set of equations This discipline is characterized by two
+    governing equations."""
 
     def __init__(self):
         super(PropaneComb2, self).__init__(auto_detect_grammar_files=True)
@@ -284,9 +279,8 @@ class PropaneComb2(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Solve 2 coupling equations in functional form and
-        compute coupling variables y_2 and y_3.
-        """
+        """Solve 2 coupling equations in functional form and compute coupling variables
+        y_2 and y_3."""
         x_shared = self.get_inputs_by_name("x_shared")
         y_2_out = zeros(2, dtype=complex128)
         y_2_out[0] = self.compute_y2(x_shared)
@@ -327,9 +321,8 @@ class PropaneComb3(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Solve 3 coupling equations in functional form and compute coupling
-        variables y_4, Y5 and Y6.
-        """
+        """Solve 3 coupling equations in functional form and compute coupling variables
+        y_4, Y5 and Y6."""
         x_shared = self.get_inputs_by_name("x_shared")
         y_3_out = zeros(3, dtype=complex128)
         y_3_out[0] = self.compute_y4(x_shared)

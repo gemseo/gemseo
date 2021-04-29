@@ -30,25 +30,20 @@ SSBJ Structure computations
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import range
 from math import pi
 
-from future import standard_library
 from numpy import append, array, ones, zeros
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 DEG_TO_RAD = pi / 180.0
 
 
 class SobieskiStructure(object):
-    """Class defining structural analysis for Sobieski problem and
-    related method to the sructural problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining structural analysis for Sobieski problem and related method to the
+    sructural problem such as disciplines computation, constraints, reference
+    optimum."""
 
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
@@ -58,8 +53,7 @@ class SobieskiStructure(object):
     TWIST_LOWER_LIMIT = 0.8
 
     def __init__(self, sobieski_base):
-        """
-        Constructor
+        """Constructor.
 
         :param sobieski_base: Sobieski problem
         :type sobieski_base: SobieskiBase
@@ -83,9 +77,7 @@ class SobieskiStructure(object):
         self.math = self.base.math
 
     def __set_coeff_twist(self, x_1, y_21, half_span, aero_center):
-        """
-        Prepare settings of polynomial function
-        for wing twist computation
+        """Prepare settings of polynomial function for wing twist computation.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -112,9 +104,7 @@ class SobieskiStructure(object):
         return s_initial, s_new, flag, bound
 
     def __set_coeff_secthick(self, x_1):
-        """
-        Prepare settings of polynomial function
-        for sectional thickness
+        """Prepare settings of polynomial function for sectional thickness.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -128,9 +118,7 @@ class SobieskiStructure(object):
         return s_initial, s_new, flag, bound
 
     def __set_coeff_stress(self, x_1, x_shared, y_21, half_span, aero_center):
-        """
-        Prepare settings of polynomial function
-        for stress
+        """Prepare settings of polynomial function for stress.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -162,8 +150,7 @@ class SobieskiStructure(object):
         return s_initial, s_new, flag
 
     def __compute_dadimcenter_dcenter(self, x_1):
-        """
-        Compute derivative of adim aero center wrt aero center
+        """Compute derivative of adim aero center wrt aero center.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -174,8 +161,7 @@ class SobieskiStructure(object):
         return self.base.derive_normalize_s(self.aero_center_initial, aero_center)
 
     def __compute_dcenter_dlambda(self, x_1):
-        """
-        Compute derivative of aero center wrt wing taper ratio
+        """Compute derivative of aero center wrt wing taper ratio.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -186,7 +172,7 @@ class SobieskiStructure(object):
         return dadimcenter_dcenter * 1.0 / (3.0 * (1.0 + x_1[0]) ** 2)
 
     def compute_wing_weight(self, x_shared, x_1, y_21, linearize=False):
-        """Compute wing weight
+        """Compute wing weight.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -197,7 +183,6 @@ class SobieskiStructure(object):
         :param linearize: Default value = False)
         :returns: wing weight, wing_weight_coeff, value of poly. function
         :rtype: ndarray
-
         """
         s_initial, s_new, flag, bound = self.__set_coeff_secthick(x_1)
         if linearize:
@@ -222,7 +207,7 @@ class SobieskiStructure(object):
         return wing_weight
 
     def compute_fuelwing_weight(self, x_shared):
-        """Compute fuel wing weight
+        """Compute fuel wing weight.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -233,7 +218,7 @@ class SobieskiStructure(object):
         return (5.0 * x_shared[5] / 18.0) * (2.0 / 3.0 * thickness) * 42.5
 
     def compute_dfuelwing_dtoverc(self, x_shared):
-        """Compute fuel wing weight
+        """Compute fuel wing weight.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -244,7 +229,7 @@ class SobieskiStructure(object):
 
     @staticmethod
     def compute_dfuelwing_dar(x_shared):
-        """Compute fuel wing weight
+        """Compute fuel wing weight.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -256,7 +241,7 @@ class SobieskiStructure(object):
         return dfuelwing_dar
 
     def compute_dfuelwing_dsref(self, x_shared):
-        """Compute fuel wing weight
+        """Compute fuel wing weight.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -266,14 +251,13 @@ class SobieskiStructure(object):
         return (
             637.5
             / 54.0
-            * x_shared[5] ** (0.5)
+            * x_shared[5] ** 0.5
             * x_shared[0]
             / self.math.sqrt(x_shared[3])
         )
 
     def __compute_dhalfspan_dar(self, x_shared):
-        """
-        Compute partial derivative of half-span wrt aspect ratio
+        """Compute partial derivative of half-span wrt aspect ratio.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -288,8 +272,7 @@ class SobieskiStructure(object):
         )
 
     def __compute_dadimspan_dsref(self, x_shared):
-        """
-        Compute partial derivative of half-span wrt wing surface
+        """Compute partial derivative of half-span wrt wing surface.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -304,9 +287,8 @@ class SobieskiStructure(object):
         )
 
     def __compute_dadimspan_dspan(self, x_shared):
-        """
-        Compute partial derivative of adim half-span of
-        polynomial function wrt half-span
+        """Compute partial derivative of adim half-span of polynomial function wrt half-
+        span.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -317,9 +299,8 @@ class SobieskiStructure(object):
         return self.base.derive_normalize_s(self.half_span_initial, half_span)
 
     def __compute_dadimx_dx(self, x_1):
-        """
-        Compute partial derivative of adim sectional area of polynomial
-        function wrt sectional area
+        """Compute partial derivative of adim sectional area of polynomial function wrt
+        sectional area.
 
         :param x_1: local design variables
         :type x_1: ndarray
@@ -329,9 +310,8 @@ class SobieskiStructure(object):
         return self.base.derive_normalize_s(self.x_initial, x_1[1])
 
     def __compute_dadimtaper_dtaper(self, x_shared):
-        """
-        Compute partial derivative of adim taper ratio area of polynomial
-        function wrt taper ratio
+        """Compute partial derivative of adim taper ratio area of polynomial function
+        wrt taper ratio.
 
         :param x_shared: system design variables
         :type x_shared: ndarray
@@ -341,9 +321,8 @@ class SobieskiStructure(object):
         return self.base.derive_normalize_s(self.tc_initial, x_shared[0])
 
     def __compute_dadimlift_dlift(self, y_21):
-        """
-        Compute partial derivative of adim lift  area of polynomial
-        function wrt lift
+        """Compute partial derivative of adim lift  area of polynomial function wrt
+        lift.
 
         :param y_21: coupling design variables (weight)
         :type y_21: ndarray
@@ -354,7 +333,7 @@ class SobieskiStructure(object):
 
     @staticmethod
     def compute_weight_ratio(y_1):
-        """Computation of weight ratio of Breguet formula
+        """Computation of weight ratio of Breguet formula.
 
         :param y_1: shared variables coming from blackbox_structure
             - y_1[0]: total aircraft weight
@@ -362,13 +341,12 @@ class SobieskiStructure(object):
         :type y_1: ndarray
         :returns: Wt / (Wt -Wf)
         :rtype: ndarray
-
         """
         return y_1[0] / (y_1[0] - y_1[1])
 
     def blackbox_structure(self, x_shared, y_21, y_31, x_1, true_cstr=False):
-        """This function calculates the weight of the aircraft by
-        structure and adds them to obtain a total aircraft weight.
+        """This function calculates the weight of the aircraft by structure and adds
+        them to obtain a total aircraft weight.
 
         :param x_shared: shared design variable vector:
 
@@ -417,10 +395,9 @@ class SobieskiStructure(object):
                 - y_14[1]: fuel weight
 
         :rtype: ndarray, ndarray, ndarray, ndarray
-
         """
-        y_12 = zeros((2), dtype=self.dtype)
-        y_14 = zeros((2), dtype=self.dtype)
+        y_12 = zeros(2, dtype=self.dtype)
+        y_14 = zeros(2, dtype=self.dtype)
 
         y_1, y_11 = self.poly_structure(x_shared, x_1, y_21, y_31)
 
@@ -441,19 +418,13 @@ class SobieskiStructure(object):
         return y_1, y_11, y_12, y_14, g_1
 
     def __initialize_jacobian(self):
-        """
-        Initialization of jacobian matrix
+        """Initialization of jacobian matrix.
 
         :returns:  jacobian
         :rtype: dict of dict of ndarray
         """
         # Jacobian matrix as a dictionary
-        jacobian = {}
-        jacobian["y_1"] = {}
-        jacobian["g_1"] = {}
-        jacobian["y_12"] = {}
-        jacobian["y_14"] = {}
-        jacobian["y_11"] = {}
+        jacobian = {"y_1": {}, "g_1": {}, "y_12": {}, "y_14": {}, "y_11": {}}
 
         n_y1 = 3
         jacobian["y_1"]["x_shared"] = zeros((n_y1, 6), dtype=self.dtype)
@@ -478,9 +449,8 @@ class SobieskiStructure(object):
         return jacobian
 
     def derive_blackbox_structure(self, x_shared, y_21, y_31, x_1, true_cstr=False):
-        """Compute jacobian matrix of structural analysis
-        y_1 is the vector of structural outputs and g_1
-        are the structural constraints:
+        """Compute jacobian matrix of structural analysis y_1 is the vector of
+        structural outputs and g_1 are the structural constraints:
 
         - y_1[0]: total aircraft weight
         - y_1[1]: fuel weight
@@ -501,7 +471,6 @@ class SobieskiStructure(object):
         :param true_cstr: Default value = False)
         :returns: jacobian : Jacobian matrix
         :rtype: dict(dict(ndarray))
-
         """
         # Jacobian matrix as a dictionary
         jacobian = self.__initialize_jacobian()
@@ -530,9 +499,7 @@ class SobieskiStructure(object):
 
     @staticmethod
     def __set_coupling_jacobian(jacobian):
-        """
-        Set jacobian of coupling variables
-        """
+        """Set jacobian of coupling variables."""
         # Coupling variables
         for der_v, jac_loc in jacobian["y_1"].items():
             jacobian["y_12"][der_v][1, :] = jac_loc[2, :]
@@ -541,8 +508,7 @@ class SobieskiStructure(object):
         return jacobian
 
     def derive_poly_structure(self, jacobian, x_shared, x_1, y_21, y_31):
-        """Compute derivatives of structural variables from a polynomial
-        approximation
+        """Compute derivatives of structural variables from a polynomial approximation.
 
         :param jacobian: jacobian matrix
         :type jacobian: dict(dict(ndarray))
@@ -701,8 +667,7 @@ class SobieskiStructure(object):
         return jacobian
 
     def derive_constraints(self, jacobian, x_shared, x_1, y_21, true_cstr=False):
-        """Compute derivative structural constraints from a polynomial
-        approximation
+        """Compute derivative structural constraints from a polynomial approximation.
 
         :param jacobian: Jacobian matrix
         :type jacobian: dict(dict(ndarray))
@@ -738,7 +703,7 @@ class SobieskiStructure(object):
             x_1, x_shared, y_21, half_span, aero_center
         )
 
-        ones_mat = ones((5), dtype=self.dtype)
+        ones_mat = ones(5, dtype=self.dtype)
         for i in range(5):
             bound = 0.1 * ones_mat + i * 0.05 * ones_mat
             _, a_i, a_ij, s_shifted = self.base.derive_poly_approx(
@@ -755,8 +720,7 @@ class SobieskiStructure(object):
         return jacobian
 
     def poly_structure(self, x_shared, x_1, y_21, y_31):
-        """Compute structural variables from a polynomial
-        approximation
+        """Compute structural variables from a polynomial approximation.
 
         :param x_shared: shared design variable vector
         :type x_shared: ndarray
@@ -777,18 +741,12 @@ class SobieskiStructure(object):
             - y_1[2]: wing twist
 
         :rtype: ndarray, ndarray
-
         """
-        y_1 = zeros((3), dtype=self.dtype)
+        y_1 = zeros(3, dtype=self.dtype)
         #         t = self.base.compute_thickness(x_shared)  # wing thickness
-        half_span = self.base.compute_half_span(x_shared)  # 1/2 span
-        aero_center = self.base.compute_aero_center(x_1)
 
         # Calculation of wing twist
-        s_initial1, s_1, flag1, bound1 = self.__set_coeff_twist(
-            x_1, y_21, half_span, aero_center
-        )
-        y_1[2] = self.base.poly_approx(s_initial1, s_1, flag1, bound1)
+        y_1[2] = self.compute_wing_twist(x_shared, x_1, y_21)
 
         # Calculation of wingbox X-sectional thickness
         wing_w = self.compute_wing_weight(x_shared, x_1, y_21)
@@ -802,10 +760,30 @@ class SobieskiStructure(object):
 
         return y_1, y_11
 
-    def __der_constraint(self, x_1, x_shared, y_21, a_i, a_ij, s_shifted):
+    def compute_wing_twist(self, x_shared, x_1, y_21):
+        """Compute the wing twist (a.k.a. theta, y_12[1], y_1[2]).
+
+        :param x_shared: shared design variables
+        :type x_shared: ndarray
+        :param x_1: structure design variable
+        :type x_1: ndarray
+        :param y_21: coupling variable from aerodynamics
+        :type y_21: ndarray
+        :returns: the wing twist
+        :rtype: float
         """
-        Compute derivative of a structural constraints from a polynomial
-        approximation on a section
+        # Compute the half span and the aerodynamic center
+        half_span = self.base.compute_half_span(x_shared)
+        aero_center = self.base.compute_aero_center(x_1)
+
+        s_initial1, s_1, flag1, bound1 = self.__set_coeff_twist(
+            x_1, y_21, half_span, aero_center
+        )
+        return self.base.poly_approx(s_initial1, s_1, flag1, bound1)
+
+    def __der_constraint(self, x_1, x_shared, y_21, a_i, a_ij, s_shifted):
+        """Compute derivative of a structural constraints from a polynomial
+        approximation on a section.
 
         :param x_1: structure design variable vector:
 
@@ -915,8 +893,7 @@ class SobieskiStructure(object):
         return dg_dx_1, dg_dz, dg_dy_21, dg_dy_31
 
     def poly_structure_constraints(self, x_shared, x_1, y_21):
-        """Compute structural constraints from a polynomial
-        approximation
+        """Compute structural constraints from a polynomial approximation.
 
         :param x_shared: shared design variable vector
         :type x_shared: ndarray
@@ -936,11 +913,11 @@ class SobieskiStructure(object):
         # wing aero. center location
         aero_center = self.base.compute_aero_center(x_1)
 
-        g_1 = zeros((6), dtype=self.dtype)
+        g_1 = zeros(6, dtype=self.dtype)
         s_initial, s_new, flag = self.__set_coeff_stress(
             x_1, x_shared, y_21, half_span, aero_center
         )
-        loc_ones = ones((5), dtype=self.dtype)
+        loc_ones = ones(5, dtype=self.dtype)
         for i in range(5):
             bound = 0.1 * loc_ones + i * 0.05 * loc_ones
             g_1[i] = self.base.poly_approx(s_initial, s_new, flag, bound)

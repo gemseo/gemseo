@@ -50,16 +50,21 @@ while each feature corresponds to a given spatial point :math:`x`.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import exp, hstack, linspace, pi, square
 
 from gemseo.core.dataset import Dataset
+from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
+
+class BurgersDiscipline(MDODiscipline):
+    def __init__(self):
+        super(BurgersDiscipline, self).__init__()
+        self.input_grammar.initialize_from_data_names(["x", "z"])
+        self.output_grammar.initialize_from_data_names(["f", "g"])
 
 
 class BurgersDataset(Dataset):
-    """ Burgers dataset parametrization. """
+    """Burgers dataset parametrization."""
 
     def __init__(
         self,
@@ -95,7 +100,7 @@ class BurgersDataset(Dataset):
         gamma_2 = square(gamma)
         phi = exp(-alpha_2 / beta) + exp(-gamma_2 / beta)
         phi_deriv = -2 * alpha / beta * exp(-alpha_2 / beta)
-        phi_deriv -= 2 * gamma / beta * exp(-gamma_2 / (beta))
+        phi_deriv -= 2 * gamma / beta * exp(-gamma_2 / beta)
         u_t = -2 * visc / phi * phi_deriv
 
         if categorize:

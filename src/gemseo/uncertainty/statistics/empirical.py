@@ -19,158 +19,154 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Empirical estimation of statistics from a dataset
-=================================================
+
+"""Class for the empirical estimation of statistics from a dataset.
 
 Overview
 --------
 
-The :class:`.EmpiricalStatistics` class inherits from the
-abstract :class:`.Statistics` class and aims to estimate statistics
-from a :class:`.Dataset`, based on empirical estimators.
+The :class:`.EmpiricalStatistics` class inherits
+from the abstract :class:`.Statistics` class
+and aims to estimate statistics from a :class:`.Dataset`,
+based on empirical estimators.
 
 Construction
 ------------
 
-A :class:`.EmpiricalStatistics` is built from a :class:`.Dataset` and
-optionally a list of variables names.
-In this case, statistics are only computed for these variables.
-Otherwise, statistics are computed for all variables.
-Lastly, the user can name its :class:`.Statistics`. By default,
-the name is the concatenation of 'EmpiricalStatistics' and
+A :class:`.EmpiricalStatistics` is built from a :class:`.Dataset`
+and optionally variables names.
+In this case,
+statistics are only computed for these variables.
+Otherwise,
+statistics are computed for all the variable available in the dataset.
+Lastly,
+the user can give a name to its :class:`.EmpiricalStatistics` object.
+By default,
+this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
+
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-from numpy import all as npall
-from numpy import max as npmax
+import logging
+from typing import Dict, Iterable, Optional
+
+from numpy import all as np_all
+from numpy import max as np_max
 from numpy import mean
-from numpy import min as npmin
-from numpy import quantile, std, var
+from numpy import min as np_min
+from numpy import ndarray, quantile, std, var
 from scipy.stats import moment
 
+from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.statistics import Statistics
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class EmpiricalStatistics(Statistics):
-    """ Empirical estimation of statistics. """
+    """Empirical estimation of statistics.
 
-    def __init__(self, dataset, variables_names=None, name=None):
-        """Constructor
+    Examples:
+        >>> from gemseo.api import (
+        ...     create_discipline,
+        ...     create_parameter_space,
+        ...     create_scenario)
+        >>> from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+        >>>
+        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
+        >>> discipline = create_discipline(
+        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ... )
+        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+        >>>
+        >>> parameter_space = create_parameter_space()
+        >>> parameter_space.add_random_variable(
+        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
+        ... )
+        >>> parameter_space.add_random_variable(
+        ...     "x2", "OTUniformDistribution", minimum=-1, maximum=1
+        ... )
+        >>>
+        >>> scenario = create_scenario(
+        ...     [discipline],
+        ...     "DisciplinaryOpt",
+        ...     "y1",
+        ...     parameter_space,
+        ...     scenario_type="DOE"
+        ... )
+        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>>
+        >>> dataset = discipline.cache.export_to_dataset()
+        >>>
+        >>> statistics = EmpiricalStatistics(dataset)
+        >>> mean = statistics.mean()
+    """
 
-        :param Dataset dataset: dataset
-        :param list(str) variables_names: list of variables names
-            or list of variables names. If None, the method considers
-            all variables from dataset. Default: None.
-        :param str name: name of the object.
-            If None, use the concatenation of class and dataset names.
-            Default: None."""
+    def __init__(
+        self,
+        dataset,  # type: Dataset,
+        variables_names=None,  # type: Optional[Iterable[str]]
+        name=None,  # type: Optional[str]
+    ):  # type: (...) -> None # noqa: D107,D205,D212,D415
         name = name or dataset.name
         super(EmpiricalStatistics, self).__init__(dataset, variables_names, name)
 
-    def maximum(self):
-        """Get the maximum.
-
-        :return: maximum
-        :rtype: dict
-        """
-        result = {name: npmax(self.dataset[name], 0) for name in self.names}
+    def compute_maximum(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+        result = {name: np_max(self.dataset[name], 0) for name in self.names}
         return result
 
-    def mean(self):
-        """Get the mean.
-
-        :return: mean
-        :rtype: dict
-        """
+    def compute_mean(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {name: mean(self.dataset[name], 0) for name in self.names}
         return result
 
-    def minimum(self):
-        """Get the minimum.
-
-        :return: minimum
-        :rtype: dict
-        """
-        result = {name: npmin(self.dataset[name], 0) for name in self.names}
+    def compute_minimum(self):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+        result = {name: np_min(self.dataset[name], 0) for name in self.names}
         return result
 
-    def probability(self, thresh, greater=True):
-        """Compute a probability associated to a threshold. This threshold
-        is a dictionary of arrays indexed by variables names.
-        For a multidimensional variable, the probability to be greater
-        (or lower) than the threshold is defined as the probability that all
-        variables components are greater (respectively lower) than their
-        counterparts in the threshold.
-
-        :param dict thresh: threshold
-        :param bool greater: if True, compute the probability the probability
-            of exceeding the threshold, if False, compute the reverse.
-            Default: True.
-        :return: probability
-        """
+    def compute_probability(
+        self,
+        thresh,  # type: float
+        greater=True,  # type: bool
+    ):  # type: (...) -> Dict[str,ndarray]  # noqa: D102
         if greater:
             result = {
-                name: mean(npall(self.dataset[name] >= thresh[name], 1))
+                name: mean(np_all(self.dataset[name] >= thresh[name], 1))
                 for name in self.names
             }
         else:
             result = {
-                name: mean(npall(self.dataset[name] <= thresh[name], 1))
+                name: mean(np_all(self.dataset[name] <= thresh[name], 1))
                 for name in self.names
             }
         return result
 
-    def quantile(self, prob):
-        """Get the quantile associated to a given probability.
-
-        :param int merge: if True, merge variables. Default: True.
-        :return: quantile
-        :rtype: dict
-        """
+    def compute_quantile(
+        self,
+        prob,  # type:float
+    ):  # type: (...) -> Dict[str, ndarray] # noqa: D102
         result = {name: quantile(self.dataset[name], prob, 0) for name in self.names}
         return result
 
-    def standard_deviation(self):
-        """Get the standard deviation.
-
-        :return: standard deviation
-        :rtype: dict
-        """
+    def compute_standard_deviation(
+        self,
+    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {name: std(self.dataset[name], 0) for name in self.names}
         return result
 
-    def variance(self):
-        """Get the variance.
-
-        :return: variance
-        :rtype: dict
-        """
+    def compute_variance(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {name: var(self.dataset[name], 0) for name in self.names}
         return result
 
-    def moment(self, order):
-        """Compute the central moment for a given order.
-
-        :param int order: moment order.
-        :return: moment
-        :rtype: dict
-        """
+    def compute_moment(
+        self,
+        order,  # type: int
+    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {name: moment(self.dataset[name], order, 0) for name in self.names}
         return result
 
-    def range(self):
-        """Get the range of variables.
-
-        :return: range of variables
-        """
-        lower = self.minimum()
-        upper = self.maximum()
+    def compute_range(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+        lower = self.compute_minimum()
+        upper = self.compute_maximum()
         result = {name: upper[name] - lower[name] for name in self.names}
         return result

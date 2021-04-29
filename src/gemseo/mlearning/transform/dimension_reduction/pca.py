@@ -33,7 +33,6 @@ generated/sklearn.decomposition.PCA.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import sqrt
 from sklearn.decomposition import PCA as SKLPCA
 
@@ -41,11 +40,9 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 
-standard_library.install_aliases()
-
 
 class PCA(DimensionReduction):
-    """ Principal component dimension reduction algorithm. """
+    """Principal component dimension reduction algorithm."""
 
     def __init__(self, name="PCA", n_components=5, **parameters):
         """Constructor.
@@ -102,5 +99,5 @@ class PCA(DimensionReduction):
 
     @property
     def components(self):
-        """ Components """
+        """Components."""
         return sqrt(self.algo.singular_values_) * self.algo.components_.T

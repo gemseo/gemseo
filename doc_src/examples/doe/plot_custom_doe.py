@@ -27,11 +27,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from builtins import open
 
-from future import standard_library
-
 from gemseo.api import create_design_space, create_discipline, create_scenario
 
-standard_library.install_aliases()
 #######################################################################################
 # In this example, we consider a discipline implementing the function :math:`y=a+b`
 # where :math:`a,b\in\{1,2,\ldots,10\}`

@@ -29,23 +29,19 @@ from os.path import abspath, dirname, exists, join, splitext
 
 import matplotlib
 import pylab
-from future import standard_library
 
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.source_parsing import SourceParsing
 
-standard_library.install_aliases()
-
 
 class OptPostProcessor(object):
-    """Abstract class for optimization post processing methods"""
+    """Abstract class for optimization post processing methods."""
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
-        :param opt_problem: the optimization problem to run
+        :param opt_problem : the optimization problem to run
         """
         self.opt_problem = opt_problem
         self.database = opt_problem.database
@@ -80,8 +76,7 @@ class OptPostProcessor(object):
         self.output_files = []
 
     def execute(self, **options):
-        """
-        Executes the post processing
+        """Executes the post processing.
 
         :param options: options dict, see associated JSON file
         """
@@ -95,8 +90,7 @@ class OptPostProcessor(object):
         self._run(**options)
 
     def check_options(self, **options):
-        """
-        Checks the options of the post processor
+        """Checks the options of the post processor.
 
         :param options: options dict, see associated JSON file
         """
@@ -109,7 +103,7 @@ class OptPostProcessor(object):
             )
 
     def _run(self, **options):
-        """Visualizes the optimization history
+        """Visualizes the optimization history.
 
         :param options: options of the plot,
             see associated JSON file
@@ -117,16 +111,14 @@ class OptPostProcessor(object):
         self._plot(**options)
 
     def _plot(self, **options):
-        """Visualizers
+        """Visualizers.
 
         :param options: options dict, see associated JSON file
-
         """
         raise NotImplementedError()
 
     def _save_and_show(self, fig, file_path, save=True, show=False, extension="pdf"):
-        """
-        Saves figures and or shows it depending on options
+        """Saves figures and or shows it depending on options.
 
         :param fig: matplotlib figure
         :param file_path: file path to save the plot. If it does not end with

@@ -23,75 +23,88 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
-import unittest
-from builtins import str
-from os.path import abspath, dirname, join
 
-from future import standard_library
+import pytest
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
+from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
+@pytest.mark.usefixtures("tmp_wd")
+def test_sobieski():
+    """Test the execution of Gauss-Seidel on Sobieski."""
+    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda.default_inputs["x_shared"] += 0.1
+    mda.execute()
+    mda.plot_residual_history(False, True, filename="GaussSeidel.pdf")
+    mda.default_inputs["x_shared"] += 0.1
+    mda.warm_start = True
+    mda.execute()
+
+    assert mda.residual_history[-1][0] < 1e-4
+
+    filename = "SobieskiMDAGS_residual_history.pdf"
+    mda.plot_residual_history(save=True, filename=filename)
+    assert os.path.exists(filename)
 
 
-class TestMDAGaussSeidel(unittest.TestCase):
-    """Test the Gauss-Seidel MDA"""
+def test_expected_workflow():
+    """Test MDA GaussSeidel workflow should be disciplines sequence."""
+    disc1 = MDODiscipline()
+    disc2 = MDODiscipline()
+    disc3 = MDODiscipline()
+    disciplines = [disc1, disc2, disc3]
 
-    @staticmethod
-    @link_to("Req-MDO-9", "Req-MDO-9.3")
-    def test_sobieski():
-        """Test the execution of Gauss-Seidel on Sobieski"""
-        mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
-        mda.default_inputs["x_shared"] += 0.1
-        mda.execute()
-        filename = "GaussSeidel.pdf"
-        mda.plot_residual_history(False, True, filename=filename)
-        mda.default_inputs["x_shared"] += 0.1
-        mda.warm_start = True
-        mda.execute()
+    mda = MDAGaussSeidel(disciplines)
+    expected = (
+        "{MDAGaussSeidel(None), [MDODiscipline(None), "
+        "MDODiscipline(None), MDODiscipline(None), ], }"
+    )
+    assert str(mda.get_expected_workflow()) == expected
 
-        assert mda.residual_history[-1][0] < 1e-4
 
-        filename = "SobieskiMDAGS_residual_history.pdf"
-        mda.plot_residual_history(save=True, filename=filename)
-        assert os.path.exists(filename)
-        os.remove(filename)
+def test_self_coupled():
+    for plus_y in [False, True]:
+        sc_disc = SelfCoupledDisc(plus_y)
+        mda = MDAGaussSeidel([sc_disc], tolerance=1e-14, max_mda_iter=40)
+        _ = mda.execute()
+        # assert abs(out["y"] - 2. / 3.) < 1e-6
 
-    def test_expected_workflow(self):
-        """Test MDA GaussSeidel workflow should be disciplines sequence"""
-        disc1 = MDODiscipline()
-        disc2 = MDODiscipline()
-        disc3 = MDODiscipline()
-        disciplines = [disc1, disc2, disc3]
+        mda.add_differentiated_inputs(["x"])
+        mda.add_differentiated_outputs(["o"])
+        jac1 = mda.linearize()
 
-        mda = MDAGaussSeidel(disciplines)
-        expected = "{MDAGaussSeidel(None), [MDODiscipline(None), MDODiscipline(None), MDODiscipline(None), ], }"
-        self.assertEqual(str(mda.get_expected_workflow()), expected)
+        mda.set_jacobian_approximation()
+        mda.cache.clear()
+        jac2 = mda.linearize()
+        assert abs(jac1["o"]["x"][0, 0] - jac2["o"]["x"][0, 0]) < 1e-3
 
-    def test_self_coupled(self):
-        for plus_y in [False, True]:
-            sc_disc = SelfCoupledDisc(plus_y)
-            mda = MDAGaussSeidel([sc_disc], tolerance=1e-14, max_mda_iter=40)
-            _ = mda.execute()
-            # assert abs(out["y"] - 2. / 3.) < 1e-6
 
-            mda.add_differentiated_inputs(["x"])
-            mda.add_differentiated_outputs(["o"])
-            jac1 = mda.linearize()
-
-            mda.set_jacobian_approximation()
-            mda.cache.clear()
-            jac2 = mda.linearize()
-            assert abs(jac1["o"]["x"][0, 0] - jac2["o"]["x"][0, 0]) < 1e-3
+@pytest.mark.parametrize("over_relax_factor", [1.0, 0.8, 1.1, 1.2, 1.5])
+def test_over_relaxation(over_relax_factor):
+    discs = create_discipline(
+        [
+            "SobieskiPropulsion",
+            "SobieskiStructure",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]
+    )
+    tolerance = 1e-14
+    mda = MDAGaussSeidel(
+        discs,
+        tolerance=tolerance,
+        max_mda_iter=100,
+        over_relax_factor=over_relax_factor,
+    )
+    mda.execute()
+    assert mda.residual_history[-1][0] <= tolerance
+    # mda.plot_residual_history(
+    # save=True, filename="GaussSeidel_relax{}.pdf".format(over_relax_factor)
+    # )
 
 
 class SelfCoupledDisc(MDODiscipline):

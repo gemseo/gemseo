@@ -32,19 +32,19 @@ Both inherits from a common abstract cache.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import str, super
 from copy import deepcopy
 
-from future import standard_library
 from numpy.linalg import norm
 from scipy.optimize import root
 
-from gemseo import LOGGER
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
+# from gemseo.core.parallel_execution import DisciplinesParallelExecution
+LOGGER = logging.getLogger(__name__)
 
 
 class MDARoot(MDA):
@@ -60,7 +60,6 @@ class MDARoot(MDA):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
     ):
         """Constructor.
 
@@ -99,7 +98,6 @@ class MDARoot(MDA):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
-            norm0=norm0,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -170,7 +168,6 @@ class MDANewtonRaphson(MDARoot):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
     ):
         """Constructor.
 
@@ -187,9 +184,6 @@ class MDANewtonRaphson(MDARoot):
         :type grammar_type: str
         :param linear_solver: linear solver used to compute the Newton step
         :type linear_solver: str
-        :param n_processes: number of processes running the MDA.
-            if >1, the run is parallel
-        :type n_processes: int
         :param tolerance: tolerance of the iterative direct coupling solver,
             norm of the current residuals divided by initial residuals norm
             shall be lower than the tolerance to stop iterating
@@ -204,10 +198,6 @@ class MDANewtonRaphson(MDARoot):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
         """
         super(MDANewtonRaphson, self).__init__(
             disciplines,
@@ -218,7 +208,6 @@ class MDANewtonRaphson(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
-            norm0=norm0,
         )
 
         self.relax_factor = self.__check_relax_factor(relax_factor)
@@ -354,7 +343,6 @@ class MDAQuasiNewton(MDARoot):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
     ):
         """Constructor.
 
@@ -387,10 +375,6 @@ class MDAQuasiNewton(MDARoot):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
         """
         super(MDAQuasiNewton, self).__init__(
             disciplines,
@@ -401,7 +385,6 @@ class MDAQuasiNewton(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
-            norm0=norm0,
         )
         if method not in self.QUASI_NEWTON_METHODS:
             msg = "Method " + method + " is not a valid quasi-Newton method"

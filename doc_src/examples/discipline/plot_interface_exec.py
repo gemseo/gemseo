@@ -29,7 +29,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import subprocess
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -37,7 +36,6 @@ from gemseo.core.discipline import MDODiscipline
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Introduction

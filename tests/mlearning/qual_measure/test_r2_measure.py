@@ -19,11 +19,10 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test R2 error measure module. """
+"""Test R2 error measure module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
@@ -33,20 +32,18 @@ from gemseo.mlearning.qual_measure.r2_measure import R2Measure
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
-
-
 MODEL = AnalyticDiscipline(expressions_dict={"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
 
 TOL_DEG_1 = 0.1
 TOL_DEG_2 = 0.001
+TOL_DEG_3 = 0.01
 ATOL = 1e-12
 
 
 @pytest.fixture
 def dataset():
-    """ Data points. """
+    """Data points."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -57,7 +54,7 @@ def dataset():
 
 @pytest.fixture
 def dataset_test():
-    """ Data points. """
+    """Data points."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -67,7 +64,7 @@ def dataset_test():
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     algo = MLAlgo(dataset)
     measure = R2Measure(algo)
     assert measure.algo is not None
@@ -75,7 +72,7 @@ def test_constructor(dataset):
 
 
 def test_evaluate_learn(dataset):
-    """ Test evaluate learn method. """
+    """Test evaluate learn method."""
     algo = PolynomialRegression(dataset, degree=2)
     measure = R2Measure(algo)
     r2_train = measure.evaluate("learn")
@@ -97,7 +94,7 @@ def test_evaluate_learn(dataset):
 
 
 def test_evaluate_test(dataset, dataset_test):
-    """ Test evaluate test method. """
+    """Test evaluate test method."""
     algo = PolynomialRegression(dataset, degree=2)
     measure = R2Measure(algo)
     r2_test = measure.evaluate("test", test_data=dataset_test)
@@ -119,7 +116,7 @@ def test_evaluate_test(dataset, dataset_test):
 
 
 def test_evaluate_loo(dataset):
-    """ Test evaluate leave one out method. """
+    """Test evaluate leave one out method."""
     algo = PolynomialRegression(dataset, degree=2)
     measure = R2Measure(algo)
     r2_loo = measure.evaluate("loo")
@@ -128,11 +125,11 @@ def test_evaluate_loo(dataset):
     algo = PolynomialRegression(dataset, degree=1)
     measure = R2Measure(algo)
     r2_loo = measure.evaluate("loo")
-    assert r2_loo > 1 - TOL_DEG_1
+    assert r2_loo < 1 - TOL_DEG_3
 
 
 def test_evaluate_kfolds(dataset):
-    """ Test evaluate k-folds method. """
+    """Test evaluate k-folds method."""
     algo = PolynomialRegression(dataset, degree=2)
     measure = R2Measure(algo)
     r2_kfolds = measure.evaluate("kfolds")
@@ -141,7 +138,7 @@ def test_evaluate_kfolds(dataset):
     algo = PolynomialRegression(dataset, degree=1)
     measure = R2Measure(algo)
     r2_kfolds = measure.evaluate("kfolds")
-    assert r2_kfolds > 1 - TOL_DEG_1
+    assert r2_kfolds < 1 - TOL_DEG_3
 
     algo = PolynomialRegression(
         dataset,
@@ -154,13 +151,8 @@ def test_evaluate_kfolds(dataset):
 
 
 def test_evaluate_bootstrap(dataset):
-    """ Test evaluate bootstrap method. """
+    """Test evaluate bootstrap method."""
     algo = PolynomialRegression(dataset, degree=2)
     measure = R2Measure(algo)
-    r2_bootstrap = measure.evaluate("bootstrap")
-    assert r2_bootstrap > 1 - TOL_DEG_2
-
-    algo = PolynomialRegression(dataset, degree=1)
-    measure = R2Measure(algo)
-    r2_bootstrap = measure.evaluate("bootstrap")
-    assert r2_bootstrap > 1 - TOL_DEG_1
+    with pytest.raises(NotImplementedError):
+        measure.evaluate("bootstrap")

@@ -86,23 +86,27 @@ carefully tune in order to maximize the generalization power of the model.
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.calibration`
+   :mod:`~gemseo.mlearning.core.selection`
 
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 import pickle
 import re
 from os import makedirs
 from os.path import exists, join
 
-from future import standard_library
+from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
 class MLAlgo(object):
-    """The :class:`.MLAlgo` abstract class implements the concept of machine
-    learning algorithm. Such a model is built from a training dataset,
+    """The :class:`.MLAlgo` abstract class implements the concept of machine learning
+    algorithm.
+
+    Such a model is built from a training dataset,
     data transformation options and parameters. This abstract class defines the
     :meth:`.MLAlgo.learn`, :meth:`.MLAlgo.save` methods and the boolean
     property, :attr:`!MLAlgo.is_trained`. It also offers a string
@@ -124,43 +128,48 @@ class MLAlgo(object):
             transform. The dictionary items are the transformers, either
             referenced by their names as strings, or provided directly.
             Default: None.
-        :type transformer: dict(str) or dict(Transformer)
+        :param transformer: dict(Transformer)
         :param parameters: algorithm parameters
         """
         self.learning_set = data
         self.parameters = parameters
-        self.transformer = transformer or {}
+        self.transformer = {}
+        if transformer:
+            self.transformer = {
+                group: transf.duplicate() for group, transf in transformer.items()
+            }
+
         self.algo = None
         self._trained = False
 
     class DataFormatters(object):
-        """ Decorators for internal MLAlgo methods. """
+        """Decorators for internal MLAlgo methods."""
 
     @property
     def is_trained(self):
         """Check if algorithm is trained.
+
         :return: bool
         """
         return self._trained
 
     def learn(self, samples=None):
-        """Train machine learning algorithm on learning set, possibly filtered
-        using the given parameters.
+        """Train machine learning algorithm on learning set, possibly filtered using the
+        given parameters.
+
         :param list(int) samples: indices of training samples.
         """
         raise NotImplementedError
 
     def __str__(self):
-        """ String representation for end user. """
-        string = self.__class__.__name__ + "("
-        parameters = [key + "=" + str(val) for key, val in self.parameters.items()]
-        string += ", ".join(parameters)
-        string += ")\n"
+        """String representation for end user."""
+        msg = MultiLineString()
+        msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
+        msg.indent()
         if self.LIBRARY is not None:
-            string += "| based on the " + self.LIBRARY + " library\n"
-        string += "| built from " + str(self.learning_set.length)
-        string += " learning samples"
-        return string
+            msg.add("based on the {} library", self.LIBRARY)
+        msg.add("built from {} learning samples", self.learning_set.length)
+        return str(msg)
 
     def save(self, directory=None, path=".", save_learning_set=False):
         """Save the machine learning algorithm.

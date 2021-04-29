@@ -14,23 +14,4 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-"""
-Optimization and DOE history post processing and analysis
-"""
-import os
-
-# drop here optimizaiton / DOE history analysis
-# to generate plots or quantitative criteria
-
-
-# To be used for Jenkins which has no display, otherwise graphs export
-# wont work
-NO_DISPLAY = os.environ.get("NO_DISPLAY")
-if NO_DISPLAY == "True":
-
-    import matplotlib
-
-    from gemseo import LOGGER
-
-    LOGGER.warning("Use 'Agg' in matplotlib prevents from displaying windows")
-    matplotlib.use("Agg")
+"""Optimization and DOE history post processing and analysis."""

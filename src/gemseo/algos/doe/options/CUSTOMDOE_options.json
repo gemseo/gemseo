@@ -22,6 +22,10 @@
         	"type" : "integer",
         	"minimum":1
         },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        },
         "wait_time_between_samples": {
         	"type" : "number",
         	"minimum":0

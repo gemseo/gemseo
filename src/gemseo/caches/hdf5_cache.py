@@ -25,7 +25,7 @@ Caching module to avoid multiple evaluations of a discipline
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from logging import getLogger
+import logging
 from os.path import exists
 
 import h5py
@@ -36,25 +36,20 @@ from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, 
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import is_py2
+from gemseo.utils.py23_compat import PY2
 from gemseo.utils.py23_compat import long as _long
 from gemseo.utils.py23_compat import string_array, string_dtype
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
-PY2 = is_py2()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class HDF5Cache(AbstractFullCache):
-    """
-    Cache using disk HDF5 file to store the data
-    """
+    """Cache using disk HDF5 file to store the data."""
 
     def __init__(self, hdf_file_path, hdf_node_path, tolerance=0.0, name=None):
-        """Initialize a singleton to access a HDF file.
-        This singleton is used for multithreaded/multiprocessing access
-        with a Lock.
+        """Initialize a singleton to access a HDF file. This singleton is used for
+        multithreaded/multiprocessing access with a Lock.
 
         Initialize cache tolerance.
         By default, don't use approximate cache.
@@ -99,15 +94,13 @@ class HDF5Cache(AbstractFullCache):
         )
 
     def _set_lock(self):
-        """Set a lock for multithreading,
-        either from an external object or internally by using RLock()."""
+        """Set a lock for multithreading, either from an external object or internally
+        by using RLock()."""
         return self._hdf_file.lock
 
     @synchronized
     def _read_hashes(self):
-        """
-        Read the hashes dict in the HDF file
-        """
+        """Read the hashes dict in the HDF file."""
         max_grp = self._hdf_file.read_hashes(self._hashes, self.__hdf_node_path)
         self._last_accessed_group.value = max_grp
         self._max_group.value = max_grp
@@ -128,8 +121,7 @@ class HDF5Cache(AbstractFullCache):
 
     @synchronized
     def clear(self):
-        """
-        Clear the cache
+        """Clear the cache.
 
         Examples
         --------
@@ -166,8 +158,8 @@ class HDF5Cache(AbstractFullCache):
         return result
 
     def _write_data(self, values, names, var_group, sample_id):
-        """Write data associated with a variables group
-        and a sample ID into the dataset.
+        """Write data associated with a variables group and a sample ID into the
+        dataset.
 
         :param dict values: data dictionary where keys are variables names
             and values are variables values (numpy arrays).
@@ -201,10 +193,8 @@ class HDF5Cache(AbstractFullCache):
 
     @synchronized
     def _get_all_data(self):
-        """Same as _all_data() but first open a file,
-        then pass the opened file to the generator and lastly,
-        close the file.
-        """
+        """Same as _all_data() but first open a file, then pass the opened file to the
+        generator and lastly, close the file."""
         h5file = h5py.File(self._hdf_file.hdf_file_path, "a")
         for data in self._all_data(h5_open_file=h5file):
             yield data
@@ -212,11 +202,8 @@ class HDF5Cache(AbstractFullCache):
 
 
 class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
-    """
-    Singleton to access a HDF file
-    Used for multithreaded/multiprocessing access
-    with a Lock
-    """
+    """Singleton to access a HDF file Used for multithreaded/multiprocessing access with
+    a Lock."""
 
     # We create a single instance of cache per HDF5 file
     # to allow the multiprocessing lock to work
@@ -228,8 +215,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     JACOBIAN_GROUP = AbstractCache.JACOBIAN_GROUP
 
     def __init__(self, hdf_file_path):
-        """
-        Constructor
+        """Constructor.
 
         :param hdf_file_path: path to the HDF5 file
         """
@@ -241,7 +227,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     def write_data(
         self, data, data_names, group_name, group_num, hdf_node_path, h5_open_file=None
     ):
-        """Cache input data to avoid re evaluation
+        """Cache input data to avoid re evaluation.
 
         :param data: the data to cache
         :param data_names: list of data names
@@ -275,23 +261,21 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
                         )
                     else:
                         io_group.create_dataset(data_name, data=to_real(val))
-        except (RuntimeError, OSError) as err:
+        except (RuntimeError, OSError):
             h5file.close()
-            node_path = str(hdf_node_path) + "." + str(group_num)
-            node_path += "." + str(group_name)
-            LOGGER.error(err)
+            LOGGER.exception("")
             raise RuntimeError(
-                "Failed to cache dataset "
-                + node_path
-                + " in file : "
-                + str(self.hdf_file_path)
+                "Failed to cache dataset %s.%s.%s in file: %s",
+                hdf_node_path,
+                group_num,
+                group_name,
+                self.hdf_file_path,
             )
         if h5_open_file is None:
             h5file.close()
 
     def read_data(self, group_number, group_name, hdf_node_path, h5_open_file=None):
-        """
-        Read a data dict in the hdf
+        """Read a data dict in the hdf.
 
         :param group_name: name of the group where data is written
         :param group_number: number of the group
@@ -335,8 +319,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     @staticmethod
     def _has_group(group_number, group_name, hdf_node_path, h5file):
-        """
-        Check if a group is present in the HDF file
+        """Check if a group is present in the HDF file.
 
         :param group_name: name of the group where data is written
         :param group_number: number of the group
@@ -354,8 +337,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         return True
 
     def has_group(self, group_number, group_name, hdf_node_path):
-        """
-        Check if a group is present in the HDF file
+        """Check if a group is present in the HDF file.
 
         :param group_name: name of the group where data is written
         :param group_number: number of the group
@@ -368,8 +350,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         return has_grp
 
     def read_hashes(self, hashes_dict, hdf_node_path):
-        """
-        Read the hashes in the HDF file
+        """Read the hashes in the HDF file.
+
         :param hashes_dict: dict of hashes to fill
         :param hdf_node_path: name of the main HDF group
         :return:  max_group
@@ -395,8 +377,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         return max_group
 
     def clear(self, hdf_node_path):
-        """
-        Clear the data in the cache
+        """Clear the data in the cache.
+
         :param hdf_node_path: node path to clear
         """
         h5file = h5py.File(self.hdf_file_path, "a")

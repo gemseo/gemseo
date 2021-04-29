@@ -26,32 +26,29 @@ A parallel coordinates plot of functions and x
 
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from os.path import splitext
 
 import matplotlib as mpl
-from future import standard_library
 from matplotlib import pyplot
 from numpy import array
 
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParallelCoordinates(OptPostProcessor):
-    """
-    The **ParallelCoordinates** post processing
-    builds parallel coordinates plots  among design
-    variables, outputs functions and constraints
+    """The **ParallelCoordinates** post processing builds parallel coordinates plots
+    among design variables, outputs functions and constraints.
 
     x- and y- figure sizes can be changed in option.
     It is possible either to save the plot, to show the plot or both.
     """
 
     def _run(self, figsize_x=10, figsize_y=2, **options):
-        """Visualizes the ScatterPlotMatrix
+        """Visualizes the ScatterPlotMatrix.
 
         :param options: plotting options according to associated json file
         :param figsize_x: X size of the figure Default value = 10
@@ -61,7 +58,7 @@ class ParallelCoordinates(OptPostProcessor):
 
     @staticmethod
     def parallel_coordinates(y_data, x_names, color_criteria, figsize_x, figsize_y):
-        """Plots parallel coordinates
+        """Plots parallel coordinates.
 
         :param y_data: the lines data to plot
         :type y_data: array
@@ -108,8 +105,7 @@ class ParallelCoordinates(OptPostProcessor):
         file_path="para_coord_funcs",
         extension="pdf",
     ):
-        """
-        Plots the ScatterPlotMatrix graph
+        """Plots the ScatterPlotMatrix graph.
 
         :param figsize_x: size of figure in horizontal direction (inches)
         :type figsize_x: int

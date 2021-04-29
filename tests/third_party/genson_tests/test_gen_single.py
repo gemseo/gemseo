@@ -1,19 +1,4 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2014 Jon Wolverton github.com/wolverdude
@@ -40,79 +25,70 @@ from __future__ import absolute_import, division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.third_party.genson_generator import SchemaError
 
 from . import base
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestBasicTypes(base.SchemaTestCase):
-    """ """
+    """"""
 
-    def test_ShemaError(self):
+    def test_shema_error(self):
         assert len(str(SchemaError("msg"))) > 4
 
     def test_no_object(self):
-        """ """
+        """"""
         s = base.Schema()
-        self.assertSchema(s.to_dict(), {})
+        self.assert_schema(s.to_dict(), {})
 
     def test_string(self):
-        """ """
-        self.assertGenSchema("string", {}, {"type": "string"})
+        """"""
+        self.assert_gen_schema("string", {}, {"type": "string"})
 
     def test_integer(self):
-        """ """
-        self.assertGenSchema(1, {}, {"type": "integer"})
+        """"""
+        self.assert_gen_schema(1, {}, {"type": "integer"})
 
     def test_number(self):
-        """ """
-        self.assertGenSchema(1.1, {}, {"type": "number"})
+        """"""
+        self.assert_gen_schema(1.1, {}, {"type": "number"})
 
     def test_boolean(self):
-        """ """
-        self.assertGenSchema(True, {}, {"type": "boolean"})
+        """"""
+        self.assert_gen_schema(True, {}, {"type": "boolean"})
 
     def test_null(self):
-        """ """
-        self.assertGenSchema(None, {}, {})
+        """"""
+        self.assert_gen_schema(None, {}, {})
 
 
 class TestArray(base.SchemaTestCase):
-    """ """
+    """"""
 
     def test_empty(self):
-        """ """
-        self.assertGenSchema([], {}, {"type": "array", "items": {}})
+        """"""
+        self.assert_gen_schema([], {}, {"type": "array", "items": {}})
 
     def test_empty_sep(self):
-        """ """
-        self.assertGenSchema([], {"merge_arrays": False}, {"type": "array"})
+        """"""
+        self.assert_gen_schema([], {"merge_arrays": False}, {"type": "array"})
 
     def test_monotype(self):
-        """ """
+        """"""
         instance = ["spam", "spam", "spam", "egg", "spam"]
         expected = {"type": "array", "items": {"type": "string"}}
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
     def test_bitype(self):  # both instances validate against merged array
         instance1 = ["spam", 1, "spam", "egg", "spam"]
         instance2 = [1, "spam", "spam", "egg", "spam"]
         expected = {"type": "array", "items": {"type": ["integer", "string"]}}
-        actual = self.assertGenSchema(instance1, {}, expected)
-        self.assertObjectValid(instance2, actual)
+        actual = self.assert_gen_schema(instance1, {}, expected)
+        self.assert_object_valid(instance2, actual)
 
     # instance 2 doesn't validate against tuple array
     def test_bitype_sep(self):
-        """ """
+        """"""
         instance1 = ["spam", 1, "spam", "egg", "spam"]
         instance2 = [1, "spam", "spam", "egg", "spam"]
         expected = {
@@ -125,20 +101,20 @@ class TestArray(base.SchemaTestCase):
                 {"type": "string"},
             ],
         }
-        actual = self.assertGenSchema(instance1, {"merge_arrays": False}, expected)
-        self.assertObjectInvalid(instance2, actual)
+        actual = self.assert_gen_schema(instance1, {"merge_arrays": False}, expected)
+        self.assert_object_invalid(instance2, actual)
 
     def test_multitype_merge(self):
-        """ """
+        """"""
         instance = [1, "2", False]
         expected = {
             "type": "array",
             "items": {"type": ["boolean", "integer", "string"]},
         }
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
     def test_multitype_sep(self):
-        """ """
+        """"""
         instance = [1, "2", "3", False]
         expected = {
             "type": "array",
@@ -149,10 +125,10 @@ class TestArray(base.SchemaTestCase):
                 {"type": "boolean"},
             ],
         }
-        self.assertGenSchema(instance, {"merge_arrays": False}, expected)
+        self.assert_gen_schema(instance, {"merge_arrays": False}, expected)
 
     def test_2deep(self):
-        """ """
+        """"""
         instance = [1, "2", [3.14, 4, "5", 6], False]
         expected = {
             "type": "array",
@@ -171,18 +147,18 @@ class TestArray(base.SchemaTestCase):
                 {"type": "boolean"},
             ],
         }
-        self.assertGenSchema(instance, {"merge_arrays": False}, expected)
+        self.assert_gen_schema(instance, {"merge_arrays": False}, expected)
 
 
 class TestObject(base.SchemaTestCase):
-    """ """
+    """"""
 
     def test_empty_object(self):
-        """ """
-        self.assertGenSchema({}, {}, {"type": "object", "properties": {}})
+        """"""
+        self.assert_gen_schema({}, {}, {"type": "object", "properties": {}})
 
     def test_basic_object(self):
-        """ """
+        """"""
         instance = {
             "Red Windsor": "Normally, but today the van broke down.",
             "Stilton": "Sorry.",
@@ -197,14 +173,14 @@ class TestObject(base.SchemaTestCase):
                 "Stilton": {"type": "string"},
             },
         }
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
 
 class TestComplex(base.SchemaTestCase):
-    """ """
+    """"""
 
     def test_array_reduce(self):
-        """ """
+        """"""
         instance = [
             ["surprise"],
             ["fear", "surprise"],
@@ -220,10 +196,10 @@ class TestComplex(base.SchemaTestCase):
             "type": "array",
             "items": {"type": "array", "items": {"type": "string"}},
         }
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
     def test_array_in_object(self):
-        """ """
+        """"""
         instance = {"a": "b", "c": [1, 2, 3]}
         expected = {
             "required": ["a", "c"],
@@ -233,7 +209,7 @@ class TestComplex(base.SchemaTestCase):
                 "c": {"type": "array", "items": {"type": "integer"}},
             },
         }
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
     #     def test_object_in_array(self):
     #         instance = [
@@ -256,10 +232,10 @@ class TestComplex(base.SchemaTestCase):
     #                 }
     #             }
     #         }
-    #         self.assertGenSchema(instance, {}, expected)
+    #         self.assert_gen_schema(instance, {}, expected)
 
     def test_three_deep(self):
-        """ """
+        """"""
         instance = {"matryoshka": {"design": {"principle": "FTW!"}}}
         expected = {
             "type": "object",
@@ -278,11 +254,11 @@ class TestComplex(base.SchemaTestCase):
                 }
             },
         }
-        self.assertGenSchema(instance, {}, expected)
+        self.assert_gen_schema(instance, {}, expected)
 
 
 class TestAdditional(base.SchemaTestCase):
-    """ """
+    """"""
 
     def test_additional_items_sep(self):  # instance2 fails validation
         instance1 = ["parrot", "dead"]
@@ -293,16 +269,16 @@ class TestAdditional(base.SchemaTestCase):
             "items": [{"type": "string"}, {"type": "string"}],
             "additionalItems": False,
         }
-        actual = self.assertGenSchema(instance1, options, expected)
-        self.assertObjectInvalid(instance2, actual)
+        actual = self.assert_gen_schema(instance1, options, expected)
+        self.assert_object_invalid(instance2, actual)
 
     def test_additional_items_merge(self):  # both pass
         instance1 = ["parrot", "dead"]
         instance2 = ["parrot", "dead", "resting"]
         options = {"merge_arrays": True, "additional_items": False}
         expected = {"type": "array", "items": {"type": "string"}}
-        actual = self.assertGenSchema(instance1, options, expected)
-        self.assertObjectValid(instance2, actual)
+        actual = self.assert_gen_schema(instance1, options, expected)
+        self.assert_object_valid(instance2, actual)
 
     def test_additional_props(self):  # instance 2 fails validation
         instance1 = {"witch": {"wood": True, "stone": False}}
@@ -324,8 +300,8 @@ class TestAdditional(base.SchemaTestCase):
                 }
             },
         }
-        actual = self.assertGenSchema(instance1, options, expected)
-        self.assertObjectInvalid(instance2, actual)
+        actual = self.assert_gen_schema(instance1, options, expected)
+        self.assert_object_invalid(instance2, actual)
 
 
 class TestPatternProps(base.SchemaTestCase):
@@ -364,13 +340,13 @@ class TestPatternProps(base.SchemaTestCase):
     #                 }
     #             }
     #         }
-    #         actual = self.assertGenSchema(self.instance, options, expected)
+    #         actual = self.assert_gen_schema(self.instance, options, expected)
 
     def test_match_props2(self):  # Schema error - pattern overlap
-        options = {"match_props": ["^\d+$", "^\w+\d+$"]}  # bad alpha then numeric
+        options = {"match_props": [r"^\d+$", r"^\w+\d+$"]}  # bad alpha then numeric
         expected = None
         self.assertRaises(
-            SchemaError, self.assertGenSchema, self.instance, options, expected
+            SchemaError, self.assert_gen_schema, self.instance, options, expected
         )
 
         #     # 2 patterns no overlap - ugly but correct alpha
@@ -393,11 +369,11 @@ class TestPatternProps(base.SchemaTestCase):
     #                 }
     #             }
     #         }
-    #         actual = self.assertGenSchema(self.instance, options, expected)
+    #         actual = self.assert_gen_schema(self.instance, options, expected)
 
     def test_match_props4(self):
-        """ """
-        options = {"match_props": ["^\d+$"], "merge_arrays": False}
+        """"""
+        options = {"match_props": [r"^\d+$"], "merge_arrays": False}
         expected = {
             "type": "array",
             "items": [
@@ -426,7 +402,7 @@ class TestPatternProps(base.SchemaTestCase):
                 },
             ],
         }
-        actual = self.assertGenSchema(self.instance, options, expected)
+        self.assert_gen_schema(self.instance, options, expected)
 
 
 if __name__ == "__main__":

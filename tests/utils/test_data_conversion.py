@@ -23,24 +23,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
 from numpy import array, array_equal, hstack, zeros
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.utils.data_conversion import DataConversion
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 
 class TestDataConversion(unittest.TestCase):
-    """Test the conversion between data dict and numpy arrays"""
+    """Test the conversion between data dict and numpy arrays."""
 
     def test_dict_to_array(self):
-        """ """
+        """"""
         data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
         data_names = ["z", "x"]
         zx_array = DataConversion.dict_to_array(data_dict, data_names)
@@ -65,7 +57,7 @@ class TestDataConversion(unittest.TestCase):
         )
 
     def test_update_dict_from_array(self):
-        """ """
+        """"""
         data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
         data_names = ["y"]
         values_array = array([0.5])
@@ -103,7 +95,7 @@ class TestDataConversion(unittest.TestCase):
         )
 
     def test_update_too_long(self):
-        """ """
+        """"""
         data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
         data_names = ["y"]
         values_array = array([0.5, 1.5])
@@ -111,7 +103,7 @@ class TestDataConversion(unittest.TestCase):
             DataConversion.update_dict_from_array(data_dict, data_names, values_array)
 
     def test_update_too_short(self):
-        """ """
+        """"""
         data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
         data_names = ["z"]
         values_array = array([0.5])

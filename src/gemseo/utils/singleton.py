@@ -28,20 +28,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import str
 from os.path import realpath
 
-from future import standard_library
-
 from gemseo.utils.py23_compat import string_types
-
-standard_library.install_aliases()
 
 
 class SingleInstancePerAttributeId(type):
-    """A Singleton-like design pattern so that subclasses
-    are only instantiated when the discipline instance
-    passed as input of the constructor is different from
-    already created instances.
-    The test if the instances are equal is made with
-    the id(obj1)==id(obj2) operator
+    """A Singleton-like design pattern so that subclasses are only instantiated when the
+    discipline instance passed as input of the constructor is different from already
+    created instances.
+
+    The test if the instances are equal is made with the id(obj1)==id(obj2) operator
     """
 
     instances = {}
@@ -66,12 +61,11 @@ class SingleInstancePerAttributeId(type):
 
 
 class SingleInstancePerAttributeEq(type):
-    """A Singleton-like design pattern so that subclasses
-    are only instantiated when the discipline instance
-    passed as input of the constructor is different from
-    already created instances.
-    The test if the instances are equal is made with the
-    obj1 == obj2 operator
+    """A Singleton-like design pattern so that subclasses are only instantiated when the
+    discipline instance passed as input of the constructor is different from already
+    created instances.
+
+    The test if the instances are equal is made with the obj1 == obj2 operator
     """
 
     instances = {}
@@ -91,12 +85,11 @@ class SingleInstancePerAttributeEq(type):
 
 
 class SingleInstancePerFileAttribute(type):
-    """A Singleton-like design pattern so that subclasses
-    are only instantiated when the discipline instance
-    passed as input of the constructor is different from
-    already created instances.
-    The test if the instances are equal is made with the
-    obj1 == obj2 operator
+    """A Singleton-like design pattern so that subclasses are only instantiated when the
+    discipline instance passed as input of the constructor is different from already
+    created instances.
+
+    The test if the instances are equal is made with the obj1 == obj2 operator
     """
 
     instances = {}

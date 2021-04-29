@@ -21,18 +21,13 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
 import unittest
-from builtins import range, str
 from copy import deepcopy
-from os import remove
 from os.path import exists
 
-from future import standard_library
+import pytest
 from numpy import array
 
-from gemseo import LOGGER, SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
@@ -45,17 +40,13 @@ from gemseo.problems.sobieski.wrappers import (
 
 from .test_dependency_graph import DESC_LIST_16_DISC, generate_disciplines_from_desc
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
+@pytest.mark.usefixtures("tmp_wd")
 class TestCouplingStructure(unittest.TestCase):
-    """Test the methods of the coupling structure class"""
+    """Test the methods of the coupling structure class."""
 
     def test_couplings_sellar(self):
-        """Verify the strong/weak/total couplings of Sellar pb"""
+        """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         coupling_structure = MDOCouplingStructure(disciplines)
 
@@ -81,7 +72,7 @@ class TestCouplingStructure(unittest.TestCase):
         assert s1_o_weak == ["y_14"]
 
     def test_n2(self):
-        """Verify the strong/weak/total couplings of Sellar pb"""
+        """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [
             SobieskiStructure(),
             SobieskiAerodynamics(),
@@ -90,12 +81,10 @@ class TestCouplingStructure(unittest.TestCase):
         ]
         coupling_structure = MDOCouplingStructure(disciplines)
 
-        coupling_structure.plot_n2_chart("n2.png", False, show=False, save=True)
-        assert exists("n2.png")
-        remove("n2.png")
-        coupling_structure.plot_n2_chart("n2.png", True, show=False, save=True)
-        assert exists("n2.png")
-        remove("n2.png")
+        coupling_structure.plot_n2_chart("n2_1.png", False, show=False, save=True)
+        assert exists("n2_1.png")
+        coupling_structure.plot_n2_chart("n2_2.png", True, show=False, save=True)
+        assert exists("n2_2.png")
 
         from random import shuffle
 
@@ -107,7 +96,10 @@ class TestCouplingStructure(unittest.TestCase):
         fname = "n2_16d.png"
         coupling_structure.plot_n2_chart(fname, False, show=False, save=True)
         assert exists(fname)
-        remove(fname)
+
+        coupling_structure = MDOCouplingStructure([disciplines[0]])
+        with pytest.raises(ValueError):
+            coupling_structure.plot_n2_chart("n2_3.png", False, show=False, save=True)
 
     def test_n2_many_io(self):
         a = MDODiscipline("a")
@@ -117,12 +109,8 @@ class TestCouplingStructure(unittest.TestCase):
         b.output_grammar.initialize_from_data_names(["i" + str(i) for i in range(30)])
         b.input_grammar.initialize_from_data_names(["o" + str(i) for i in range(30)])
 
-        fpath = "n2.pdf"
-        if exists(fpath):
-            remove(fpath)
         cpl = MDOCouplingStructure([a, b])
         cpl.plot_n2_chart(save=True, show=False)
-        remove(fpath)
 
     def test_self_coupled(self):
         sc_disc = SelfCoupledDisc()

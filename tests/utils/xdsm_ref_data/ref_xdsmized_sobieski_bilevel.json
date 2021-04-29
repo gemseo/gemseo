@@ -498,7 +498,7 @@
     ],
     "optpb": "Optimization problem:\n      Minimize: -y_4(x_shared)\nWith respect to: \n    x_shared\nSubject to constraints: \ng_1_g_2_g_3(x_shared) <= 0\nDesign Space: \n+----------+-------------+-------+-------------+-------+\n| name     | lower_bound | value | upper_bound | type  |\n+----------+-------------+-------+-------------+-------+\n| x_shared |     0.01    |  0.05 |     0.09    | float |\n| x_shared |    30000    | 45000 |    60000    | float |\n| x_shared |     1.4     |  1.6  |     1.8     | float |\n| x_shared |     2.5     |  5.5  |     8.5     | float |\n| x_shared |      40     |   55  |      70     | float |\n| x_shared |     500     |  1000 |     1500    | float |\n+----------+-------------+-------+-------------+-------+"
   },
-  "scn-1-1": {
+  "PropulsionScenario_scn-1-1": {
     "nodes": [
       {
         "id": "Opt",
@@ -554,7 +554,7 @@
     ],
     "optpb": "Optimization problem:\n      Minimize: y_34(x_3)\nWith respect to: \n    x_3\nSubject to constraints: \ng_3(x_3) <= 0\nDesign Space: \n+------+-------------+-------+-------------+-------+\n| name | lower_bound | value | upper_bound | type  |\n+------+-------------+-------+-------------+-------+\n| x_3  |     0.1     |  0.5  |      1      | float |\n+------+-------------+-------+-------------+-------+"
   },
-  "scn-1-2": {
+  "AerodynamicsScenario_scn-1-2": {
     "nodes": [
       {
         "id": "Opt",
@@ -610,7 +610,7 @@
     ],
     "optpb": "Optimization problem:\n      Minimize: -y_24(x_2)\nWith respect to: \n    x_2\nSubject to constraints: \ng_2(x_2) <= 0\nDesign Space: \n+------+-------------+-------+-------------+-------+\n| name | lower_bound | value | upper_bound | type  |\n+------+-------------+-------+-------------+-------+\n| x_2  |     0.75    |   1   |     1.25    | float |\n+------+-------------+-------+-------------+-------+"
   },
-  "scn-1-3": {
+  "StructureScenario_scn-1-3": {
     "nodes": [
       {
         "id": "Opt",

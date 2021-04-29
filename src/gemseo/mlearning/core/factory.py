@@ -31,29 +31,28 @@ algorithm type is available.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 import pickle
 from os.path import join
-
-from future import standard_library
 
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MLAlgoFactory(object):
-    """This factory instantiates a :class:`.MLAlgo`
-    from its class name. The class can be internal to |g| or located in an
-    external module whose path is provided to the constructor.
+    """This factory instantiates a :class:`.MLAlgo` from its class name.
+
+    The class can be internal to |g| or located in an external module whose path is
+    provided to the constructor.
     """
 
     def __init__(self):
-        """Initializes the factory: scans the directories to search for
-        subclasses of MLAlgo. Searches in "GEMSEO_PATH" and gemseo.mlearning.
+        """Initializes the factory: scans the directories to search for subclasses of
+        MLAlgo.
+
+        Searches in "GEMSEO_PATH" and gemseo.mlearning.
         """
         self.factory = Factory(MLAlgo, ("gemseo.mlearning",))
 

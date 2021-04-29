@@ -18,69 +18,80 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Generate XDSMjs input json file
-*******************************
-"""
+"""Creation of a XDSM diagram from a scenario.
 
+The :class:`.XDSMizer` generates a JSON file.
+
+The latter is used by
+the `XDSMjs javascript library <https://github.com/OneraHub/XDSMjs>`_
+to produce an interactive web XDSM
+and by the pyxdsm python library
+to produce TIKZ and PDF versions of the XDSM.
+
+For more information, see:
+A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matrix for
+the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
+Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 import webbrowser
-from builtins import open, str
 from json import dumps
 from multiprocessing import RLock
-from os import getcwd
-from os.path import abspath, basename, join, splitext
+from os.path import basename, splitext
 from tempfile import mkdtemp
-
-from future import standard_library
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.execution_sequence import (
     AtomicExecSequence,
+    CompositeExecSequence,
     LoopExecSequence,
     ParallelExecSequence,
     SerialExecSequence,
 )
-from gemseo.core.mdo_scenario import MDOScenarioAdapter
+from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
 from gemseo.core.monitoring import Monitoring
+from gemseo.core.scenario import Scenario
 from gemseo.mda.mda import MDA
 from gemseo.utils.locks import synchronized
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.show_utils import generate_xdsm_html
+from gemseo.utils.xdsm_to_pdf import xdsm_data_to_pdf
 
-from .xdsm_tikz import xdsm_dict2tex
-
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 OPT_NAME = OPT_ID = "Opt"
 USER_NAME = USER_ID = "_U_"
 
+EdgeType = Dict[str, Union[MDODiscipline, List[str]]]
+NodeType = Dict[str, str]
+IdsType = Any
+
 
 class XDSMizer(object):
-    """Class to build the XDSM diagram of a scenario
+    """Build the XDSM diagram of a scenario as a JSON structure."""
 
-    Generates input json for XDSMjs javascript library
-    https://github.com/OneraHub/XDSMjs
-
-    See :
-    Martins, Joaquim RRA, and Andrew B. Lambe.
-    "Multidisciplinary design optimization: a survey of architectures."
-    AIAA journal 51.9 (2013): 2049-2075.
-    """
-
-    def __init__(self, scenario, hashref="root", level=0, expected_workflow=None):
+    def __init__(
+        self,
+        scenario,  # type: Scenario
+        hashref="root",  # type: str
+        level=0,  # type: int
+        expected_workflow=None,  # type: Optional[CompositeExecSequence]
+    ):  # type: (...) -> None
         """
-        Constructor
 
-        :param scenario: the MDO scenario to be represented as a XDSM diagram
-        :param hashref: key used in the final XDSM json structure to reference
-                        {nodes, edges, workflow, optpb} data structure.
-                        Default to 'root'
-        :param level: level number corresponding to scenario depth.
-                      Root scenario is level 0.
+        Args:
+            scenario: The scenario to be represented as an XDSM diagram.
+            hashref: The keyword used in the JSON structure
+                to reference the dictionary data structure
+                whose keys are "nodes", "edges", "workflow" and "optpb".
+            level: The depth of the scenario. Root scenario is level 0.
+            expected_workflow: The expected workflow,
+                describing the sequence of execution of the different disciplines
+                (:class:`.MDODiscipline`, :class:`.Scenario`, :class:`.MDA`, etc.)
         """
         self.scenario = scenario
         self.level = level
@@ -95,12 +106,17 @@ class XDSMizer(object):
         self.print_statuses = False  # Prints the statuses in the console
         self.latex_output = False
 
-    def initialize(self, workflow=None):
-        """
-        Initialize from a given workflow or use self.scenario' one,
-        create sub XDSM diagram accordingly.
+    def initialize(
+        self,
+        workflow=None,  # type: Optional[CompositeExecSequence]
+    ):  # type: (...) -> None
+        """Initialize the XDSM from a workflow.
 
-        :param workflow: composite execution sequence
+        The initialization also creates sub-XDSM diagram accordingly.
+
+        Args:
+            workflow: The composite execution sequence.
+                If None, use the scenario's one.
         """
         self.sub_xdsmizers = []
         # Find disciplines from workflow structure
@@ -119,7 +135,8 @@ class XDSMizer(object):
                     self.to_hashref[atom] = "root"
                     self.root_atom = atom
                 else:  # sub-scenario
-                    self.to_hashref[atom] = "scn-" + str(level) + "-" + str(num)
+                    name = atom.discipline.name
+                    self.to_hashref[atom] = "{}_scn-{}-{}".format(name, level, num)
                     sub_workflow = XDSMizer._find_sub_workflow(self.workflow, atom)
                     self.sub_xdsmizers.append(
                         XDSMizer(
@@ -130,21 +147,19 @@ class XDSMizer(object):
 
     def monitor(
         self,
-        outdir=".",
-        outfilename="xdsm.json",
-        print_statuses=False,
-        latex_output=False,
-    ):
-        """Monitors |g| discipline execution by generating XDSM json file on
-        discipline status update.
+        outdir=".",  # type: str
+        outfilename="xdsm.json",  # type: str
+        print_statuses=False,  # type: str
+        latex_output=False,  # type: bool
+    ):  # type: (...) -> None
+        """Monitor the discipline execution by generating XDSM json file on discipline
+        status update.
 
-        :param str outdir: the directory where XDSM json file is generated
-        :param str outfilename: the file name of the generated XDSM json file
-            (default: xdsm.json)
-        :param bool print_statuses: print the statuses in the console
-            at each update (default: False)
-        :param bool latex_output: generate tikz, tex and pdf output
-            (default: False)
+        Args:
+            outdir: The name of the directory to store the different files.
+            outfilename: The name of the JSON file.
+            print_statuses: If True, print the statuses in the console at each update.
+            latex_output: If True, save the XDSM to tikz, tex and pdf files.
         """
         self._monitor = Monitoring(self.scenario)
         self._monitor.add_observer(self)
@@ -155,13 +170,17 @@ class XDSMizer(object):
         self.print_statuses = print_statuses
         self.latex_output = latex_output
 
-    def update(self, atom):  # pylint: disable=unused-argument
-        """Callback function that generate new XDSM regarding the given
-        atom status update
-        :param atom: discipline which status has been updated
+    def update(
+        self,
+        atom,  # type: AtomicExecSequence
+    ):  # type: (...) -> None  # pylint: disable=unused-argument
+        """Generate a new XDSM regarding the atom status update.
+
+        Args:
+            atom: The discipline which status is monitored.
         """
         self.run(
-            outdir=self.outdir,
+            output_directory_path=self.outdir,
             outfilename=self.outfilename,
             latex_output=self.latex_output,
         )
@@ -170,33 +189,33 @@ class XDSMizer(object):
 
     def run(
         self,
-        outdir=None,
-        latex_output=False,
-        outfilename="xdsm.html",
-        html_output=True,
-        json_output=False,
-        open_browser=False,
-    ):
-        """Generates a XDSM diagram from the process.
-        By default, a self contined HTML file is generated, that can be
-        viewed in a browser.
+        output_directory_path=None,  # type: Optional[str]
+        latex_output=False,  # type: bool
+        outfilename="xdsm.html",  # type: str
+        html_output=True,  # type: bool
+        json_output=False,  # type: bool
+        open_browser=False,  # type: bool
+    ):  # type: (...) -> Dict[str,Any]
+        """Generate a XDSM diagram from the process.
 
+        By default,
+        a self contained HTML file is generated,
+        that can be viewed in a browser.
 
-        :param outdir: the directory where XDSM json file is generated.
-            if None, current working dir is used.
-            If open_browser is True and outdir is None, generates a
-            temporary directory to store the file
-        :param outfilename: the file name of the generated XDSM json file
-            (default: xdsm.json).
-        :param latex_output: produces .tex, .tikz and .tex files if True
-            If ``outdir`` is not set the XDSM json is printed
-            on the standard output.
-        :param open_browser: if True, opens the web browser with the XDSM
-        :param html_output: if True, outputs a self contained HTML file
-        :param json_output: if True, outputs a JSON file for XDSMjs
+        Args:
+            output_directory_path: The name of the directory to store the JSON file.
+                If None, the current working directory is used.
+                If open_browser is True and outdir is None,
+                the file is stored in a temporary directory.
+            outfilename: The name of the JSON file.
+            latex_output: If True, save the XDSM to tikz, tex and pdf files.
+            open_browser: If True, open the web browser and display the XDSM.
+            html_output: If True, save the XDSM in a self-contained HTML file
+            json_output: If True, save the JSON file.
 
-        :returns: XDSM json either in a file when ``outdir`` is set,
-                  ouput on the console otherwise.
+        Returns:
+            The XDSM structure expressed as a dictionary
+            whose keys are "nodes", "edges", "workflow" and "optpb".
         """
         xdsm = self.xdsmize()
         xdsm_json = dumps(xdsm, indent=2, ensure_ascii=False)
@@ -204,33 +223,41 @@ class XDSMizer(object):
         outfile_basename = splitext(base)[0]
 
         no_html_loc = False
-        if outdir is None:
-            outdir = getcwd()
+
+        if output_directory_path is None:
+            output_directory_path = Path.cwd()
             no_html_loc = True
+        else:
+            output_directory_path = Path(output_directory_path)
 
         if json_output:
-            with open(join(outdir, outfile_basename + ".json"), "w") as out:
-                out.write(xdsm_json)
+            json_path = output_directory_path / "{}.json".format(outfile_basename)
+            with json_path.open("w") as file_stream:
+                file_stream.write(xdsm_json)
+
         if latex_output:
-            xdsm_dict2tex(xdsm, outdir, outfile_basename)
+            xdsm_data_to_pdf(xdsm, output_directory_path, outfile_basename)
 
         if html_output or open_browser:
             if no_html_loc:
-                outdir = mkdtemp(suffix="", prefix="tmp", dir=None)
-            out_file_path = join(outdir, outfile_basename + ".html")
+                output_directory_path = Path(mkdtemp(suffix="", prefix="tmp", dir=None))
+            out_file_path = (output_directory_path / outfile_basename).with_suffix(
+                ".html"
+            )
             LOGGER.info("Generating HTML XDSM file in : %s", out_file_path)
             generate_xdsm_html(xdsm, out_file_path)
             if open_browser:
-                url = "file://" + abspath(out_file_path)
+                url = "file://{}".format(out_file_path)
                 webbrowser.open(url, new=2)  # open in new tab
             return out_file_path
 
         return xdsm
 
-    def get_all_sub_xdsmizers(self):
-        """Retrieves all sub xdsmizers corresponding to sub Scenario objects
+    def get_all_sub_xdsmizers(self):  # type: (...) -> List[XDSMizer]
+        """Retrieve all the sub-xdsmizers corresponding to the sub-scenarios.
 
-        :returns: the array of XDSMizer objects
+        Returns:
+            The sub-xdsmizers.
         """
         result = []
         for sub in self.sub_xdsmizers:
@@ -239,13 +266,18 @@ class XDSMizer(object):
         return result
 
     @synchronized
-    def xdsmize(self, algoname="Optimizer"):
-        """Builds the Python data structure to be used to generate JSON
-        format compatible with XDSMjs viewer.
+    def xdsmize(
+        self,
+        algoname="Optimizer",  # type: str
+    ):  # type: (...) -> Dict[str,Any]
+        """Build the data structure to be used to generate the JSON file.
 
-        :param algoname: Default value = "Optimizer")
-        :returns: the Python object containing relevant information
-                    for XDSM representation
+        Args:
+            algoname: The name under which a scenario appears in an XDSM.
+
+        Returns:
+            The XDSM structure expressed as a dictionary
+            whose keys are "nodes", "edges", "workflow" and "optpb".
         """
         nodes = self._create_nodes(algoname)
         edges = self._create_edges()
@@ -262,15 +294,29 @@ class XDSMizer(object):
                 }
             }
             for sub_xdsmizer in self.get_all_sub_xdsmizers():
-                res[sub_xdsmizer.hashref] = sub_xdsmizer.xdsmize()
+                if sub_xdsmizer.scenario.name.endswith("ing"):
+                    name = "{}er".format(sub_xdsmizer.scenario.name[:-3])
+                elif sub_xdsmizer.scenario.name.endswith("Scenario"):
+                    if isinstance(sub_xdsmizer.scenario, DOEScenario):
+                        name = "Trade-Off"
+                    elif isinstance(sub_xdsmizer.scenario, MDOScenario):
+                        name = "Optimizer"
+                    else:
+                        name = sub_xdsmizer.scenario.name
+                else:
+                    name = sub_xdsmizer.scenario.name
+                res[sub_xdsmizer.hashref] = sub_xdsmizer.xdsmize(name)
             return res
         return {"nodes": nodes, "edges": edges, "workflow": workflow, "optpb": optpb}
 
-    def _create_nodes(self, algoname):  # pylint: disable=too-many-branches
-        """Manages XDSM diagram nodes creation from optimization
-        algorithm and disciplines
+    def _create_nodes(
+        self,
+        algoname,  # type: str
+    ):  # type: (...) ->  List[NodeType]# pylint: disable=too-many-branches
+        """Create the nodes of the XDSM from the scenarios and the disciplines.
 
-        :param algoname: name of the algorithm
+        Args:
+            algoname: The name under which a scenario appears in an XDSM.
         """
         nodes = []
         self.to_id = {}
@@ -328,7 +374,7 @@ class XDSMizer(object):
             elif atom.discipline.is_scenario():
                 node["type"] = "mdo"
                 node["subxdsm"] = self.to_hashref[atom]
-                node["name"] = atom.discipline.name + "_" + self.to_hashref[atom]
+                node["name"] = self.to_hashref[atom]
             else:
                 node["type"] = "analysis"
 
@@ -339,18 +385,23 @@ class XDSMizer(object):
 
         return nodes
 
-    def _create_edges(self):
-        """Manage XDSM edges creation from scenario dataflow."""
+    def _create_edges(self):  # type: (...) -> List[EdgeType]
+        """Create the edges of the XDSM from the dataflow of the scenario."""
         edges = []
         # convenient method to factorize code for creating and appending edges
 
-        def add_edge(from_edge, to_edge, varnames):
-            """Adds an edge
+        def add_edge(
+            from_edge,  # type: MDODiscipline
+            to_edge,  # type: MDODiscipline
+            varnames,  # type: List[str]
+        ):  # type: (...) -> None
+            """Add an edge from a discipline to another with variables names as label.
 
-            :param from_edge: param to_edge:
-            :param varnames:
-            :param to_edge:
-
+            Args:
+                from_edge: The starting discipline.
+                to_edge: The end discipline.
+                varnames: The names of the variables
+                    going from the starting discipline to the end one.
             """
             edge = {"from": from_edge, "to": to_edge, "name": ", ".join(varnames)}
             edges.append(edge)
@@ -370,8 +421,10 @@ class XDSMizer(object):
         to_user = functions_names
         to_opt = self.scenario.get_optim_variables_names()
 
-        add_edge(USER_ID, OPT_ID, [x + "^(0)" for x in to_opt])
-        add_edge(OPT_ID, USER_ID, [x + "^*" for x in to_user])
+        user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
+        opt_pattern = "{}^(1:N)" if self.scenario.name == "Sampling" else "{}^*"
+        add_edge(USER_ID, OPT_ID, [user_pattern.format(x) for x in to_opt])
+        add_edge(OPT_ID, USER_ID, [opt_pattern.format(x) for x in to_user])
 
         # Disciplines to/from optimization
         for atom in self.atoms:
@@ -424,14 +477,20 @@ class XDSMizer(object):
         return edges
 
     @staticmethod
-    def _get_single_level_atoms(workflow):
-        """
-        Retrieves the list of atoms of the given workflow without
-        looking into loop execution sequences coming from Scenario.
-        Thus retrieves the atoms for a one level XDSM diagram.
+    def _get_single_level_atoms(
+        workflow,  # type: CompositeExecSequence
+    ):  # type: (...) -> List[AtomicExecSequence]
+        """Retrieve the list of atoms of the given workflow.
 
-        :param workflow: execution sequence
-        :returns: a list of atoms
+        This method does not look into the loop execution sequences
+        coming from the scenario.
+        Thus, it retrieves the atoms for a one level XDSM diagram.
+
+        Args:
+            The composite execution sequence.
+
+        Returns:
+            The atomic execution sequences.
         """
         atoms = []
         for seq in workflow.sequence_list:
@@ -445,13 +504,20 @@ class XDSMizer(object):
                 atoms += XDSMizer._get_single_level_atoms(seq)
         return atoms
 
-    def _find_atom(self, discipline):
-        """
-        Find atom corresponding to the given discipline.
-        Raise exception if not found
+    def _find_atom(
+        self,
+        discipline,  # type: MDODiscipline
+    ):  # type: (...) -> AtomicExecSequence
+        """Find the atomic sequence corresponding to a given discipline.
 
-        :param disicpline: an MDODiscipline
-        :returns: the corresponding atom
+        Args:
+            discipline: A discipline.
+
+        Returns:
+            The atomic sequence corresponding to the given discipline.
+
+        Raises:
+            ValueError: If the atomic sequence is not found.
         """
         atom = None
         if isinstance(discipline, MDOScenarioAdapter):
@@ -463,19 +529,25 @@ class XDSMizer(object):
         if atom is None:
             disciplines = [a.discipline for a in self.atoms]
             raise ValueError(
-                "Discipline {} " "not found in {}".format(discipline, disciplines)
+                "Discipline {} not found in {}".format(discipline, disciplines)
             )
         return atom
 
     @staticmethod
-    def _find_sub_workflow(workflow, atom_controller):
-        """
-        Find loop execution sequence sub_workflow with the given
-        atom as controller within the given workflow
+    def _find_sub_workflow(
+        workflow,  # type: CompositeExecSequence
+        atom_controller,  # type: AtomicExecSequence
+    ):  # type: (...) -> Optional[LoopExecSequence]
+        """Find the sub-workflow from a workflow and controller atom in it.
 
-        :param atom_controller: the AtomicExecSequence object that controls
-        the LoopExecutionSequence object to find
-        :returns: the subworkflow (LoopExecutionSequence), None if not found
+        Args:
+            workflow: The workflow from which to find a sub-workflow.
+            atom_controller: The atomic execution sequence that controls
+                the loop execution sequence to find.
+
+        Returns:
+            The sub-workflow.
+            None if the list of execution sequences of the original workflow is empty.
         """
         sub_workflow = None
         for seq in workflow.sequence_list:
@@ -494,20 +566,29 @@ class XDSMizer(object):
 
         return sub_workflow
 
-    def _create_workflow(self):
-        """Manage XDSM workflow creation from formulation workflow"""
+    def _create_workflow(self):  # type: (...) -> List[str,IdsType]
+        """Manage the creation of the XDSM workflow creation from a formulation one."""
         workflow = [USER_ID, expand(self.workflow, self.to_id)]
         return workflow
 
 
-def expand(wks, to_id):
-    """Expands workflow structure as an ids structure using to_id mapping.
-    The expansion preserve the structure while replacing the object by its id
-    in all case except when a tuple is encountered as cdr then the expansion
-    transforms loop[A, (B,C)] in [idA, {'parallel': [idB, idC]}]
-    :param wks: the workflow structure
-    :param to_id: the mapping dict from object to id
-    :returns: the ids structure valid to be used as XDSM json chains
+def expand(
+    wks,  # type: CompositeExecSequence
+    to_id,  # type: Mapping[str,str]
+):  # type: (...) -> IdsType
+    """Expand the workflow structure as an ids structure using to_id mapping.
+
+    The expansion preserve the structure
+    while replacing the object by its id in all case
+    except when a tuple is encountered as cdr
+    then the expansion transforms loop[A, (B,C)] in [idA, {'parallel': [idB, idC]}].
+
+    Args:
+        wks: The workflow structure.
+        to_id: The mapping dict from object to id.
+
+    Returns:
+        The ids structure valid to be used as XDSM json chains.
     """
     if isinstance(wks, SerialExecSequence):
         res = []
@@ -531,5 +612,5 @@ def expand(wks, to_id):
     elif isinstance(wks, AtomicExecSequence):
         ids = [to_id[wks]]
     else:
-        raise Exception("Bad execution sequence : found " + str(wks))
+        raise Exception("Bad execution sequence: found {}".format(wks))
     return ids

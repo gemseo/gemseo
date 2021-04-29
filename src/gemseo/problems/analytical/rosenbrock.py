@@ -25,9 +25,9 @@ The Rosenbrock analytic problem
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import range, str, super
 
-from future import standard_library
 from numpy import array, atleast_2d, ones, zeros
 from scipy.optimize import rosen, rosen_der
 
@@ -36,10 +36,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Rosenbrock(OptimizationProblem):
@@ -127,10 +124,8 @@ class RosenMF(MDODiscipline):
     """
 
     def __init__(self, dimension=2):
-        """The constructor defines the default inputs of
-        the :class:`.MDODiscipline`,
-        namely the default design parameter values
-        and the fidelity.
+        """The constructor defines the default inputs of the :class:`.MDODiscipline`,
+        namely the default design parameter values and the fidelity.
 
         :param dimension: problem dimension
         :type dimension: int
@@ -146,8 +141,9 @@ class RosenMF(MDODiscipline):
     def _compute_jacobian(self, inputs=None, outputs=None):
         x_val = self.local_data["x"]
         fidelity = self.local_data["fidelity"]
-        self.jac = {}
-        self.jac["rosen"] = {
-            "x": atleast_2d(fidelity * rosen_der(x_val)),
-            "fidelity": atleast_2d(rosen(x_val)),
+        self.jac = {
+            "rosen": {
+                "x": atleast_2d(fidelity * rosen_der(x_val)),
+                "fidelity": atleast_2d(rosen(x_val)),
+            }
         }

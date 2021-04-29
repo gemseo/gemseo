@@ -27,13 +27,10 @@ Plot - Andrews curves
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ############################################################################
 # Load a dataset

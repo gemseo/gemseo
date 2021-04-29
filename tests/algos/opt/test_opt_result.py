@@ -24,19 +24,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
-
-
-class OptResult_Tests(unittest.TestCase):
+class TestOptResult(unittest.TestCase):
     def test_init_dict_repr(self):
         dct = {
             "x_0": [0],

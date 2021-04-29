@@ -24,23 +24,18 @@ The Multi-disciplinary Design Feasible formulation
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.core.formulation import MDOFormulation
 from gemseo.mda.mda_factory import MDAFactory
 
-standard_library.install_aliases()
-
 
 class MDF(MDOFormulation):
-    """
-    The Multidisciplinary Design Feasible formulation draws an
-    optimization architecture where the coupling of strongly
-    coupled disciplines is made consistent by means of a
-    Multidisciplinary Design Analysis (MDA), the optimization
-    problem w.r.t. local and global design variables is made
-    at the top level. Multidisciplinary analysis is made at
-    a each optimization iteration.
+    """The Multidisciplinary Design Feasible formulation draws an optimization
+    architecture where the coupling of strongly coupled disciplines is made consistent
+    by means of a Multidisciplinary Design Analysis (MDA), the optimization problem
+    w.r.t.
+
+    local and global design variables is made at the top level. Multidisciplinary
+    analysis is made at a each optimization iteration.
     """
 
     def __init__(
@@ -53,8 +48,7 @@ class MDF(MDOFormulation):
         sub_mda_class="MDAJacobi",
         **mda_options
     ):
-        """
-        Constructor, initializes the objective functions and constraints
+        """Constructor, initializes the objective functions and constraints.
 
         :param main_mda_class: classname of the main MDA, typically the
             MDAChain,  but one can force to use MDAGaussSeidel for instance
@@ -92,7 +86,7 @@ class MDF(MDOFormulation):
     def _instantiate_mda(
         self, main_mda_class="MDAChain", sub_mda_class="MDAJacobi", **mda_options
     ):
-        """Create MDA discipline"""
+        """Create MDA discipline."""
         if main_mda_class == "MDAChain":
             mda_options["sub_mda_class"] = sub_mda_class
         self.mda = self._mda_factory.create(
@@ -101,10 +95,8 @@ class MDF(MDOFormulation):
 
     @classmethod
     def get_sub_options_grammar(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option schema may be specified here, mainly for
-        use in the API
+        """When some options of the formulation depend on higher level options, a sub
+        option schema may be specified here, mainly for use in the API.
 
         :param options: options dict required to deduce the sub options grammar
         :returns: None, or the sub options grammar
@@ -120,10 +112,8 @@ class MDF(MDOFormulation):
 
     @classmethod
     def get_default_sub_options_values(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option defaults may be specified here, mainly for
-        use in the API
+        """When some options of the formulation depend on higher level options, a sub
+        option defaults may be specified here, mainly for use in the API.
 
         :param options: options dict required to deduce the sub options grammar
         :returns: None, or the sub options defaults
@@ -138,7 +128,7 @@ class MDF(MDOFormulation):
         return factory.get_default_options_values(main_mda)
 
     def _build_objective(self):
-        """Builds the objective function on the MDA"""
+        """Builds the objective function on the MDA."""
         # Build the objective from the mda and the objective name
         self._build_objective_from_disc(self._objective_name, discipline=self.mda)
 
@@ -149,7 +139,7 @@ class MDF(MDOFormulation):
         return self.mda.get_expected_dataflow()
 
     def _update_design_space(self):
-        """Update the design space by removing the coupling variables"""
+        """Update the design space by removing the coupling variables."""
         self._set_defaultinputs_from_ds()
         # No couplings in design space (managed by MDA)
         self._remove_couplings_from_ds()
@@ -157,7 +147,7 @@ class MDF(MDOFormulation):
         self._remove_unused_variables()
 
     def _remove_couplings_from_ds(self):
-        """Removes the coupling variables from the design space"""
+        """Removes the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
         for coupling in self.mda.strong_couplings:
             if coupling in design_space.variables_names:

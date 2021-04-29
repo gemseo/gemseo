@@ -26,31 +26,26 @@ Coupled problem analysis, weak/strong coupling computation using graphs
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 import os
 from shutil import move
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from graphviz import Digraph
 from numpy import array
 from pylab import gca
 
 from gemseo.utils.py23_compat import string_types
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MDOCouplingStructure(object):
-    """Structure of the couplings between disciplines
-    The methods of this class include the computation of weak,
-    strong or all couplings."""
+    """Structure of the couplings between disciplines The methods of this class include
+    the computation of weak, strong or all couplings."""
 
     def __init__(self, disciplines):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: list of MDO disciplines that possibly
             exchange coupling variables
@@ -63,8 +58,9 @@ class MDOCouplingStructure(object):
 
     def _compute_execution_sequence(self):
         """Generates the execution sequence of the disciplines.
-        Transforms the sequence of indices into a sequence of
-        disciplines."""
+
+        Transforms the sequence of indices into a sequence of disciplines.
+        """
         sequence = []
         for parallel_tasks in self.graph.execution_sequence:
             parallel_tasks_disc = []
@@ -77,9 +73,8 @@ class MDOCouplingStructure(object):
 
     @staticmethod
     def is_self_coupled(discipline):
-        """
-        Tests if the discipline is self coupled
-        ie if one of its outputs is also an input
+        """Tests if the discipline is self coupled ie if one of its outputs is also an
+        input.
 
         :param discipline: the discipline
         :returns: a boolean
@@ -95,8 +90,8 @@ class MDOCouplingStructure(object):
     # methods that determine strong/weak/all couplings
 
     def strongly_coupled_disciplines(self):
-        """Determines the strongly coupled disciplines, that is
-        the disciplines that occur in (possibly different) MDAs."""
+        """Determines the strongly coupled disciplines, that is the disciplines that
+        occur in (possibly different) MDAs."""
         strong_disciplines = []
         for parallel_tasks in self.sequence:
             for component in parallel_tasks:
@@ -111,8 +106,8 @@ class MDOCouplingStructure(object):
         return strong_disciplines
 
     def weakly_coupled_disciplines(self):
-        """Determines the weakly coupled disciplines, that is
-        the disciplines that do not occur in MDAs."""
+        """Determines the weakly coupled disciplines, that is the disciplines that do
+        not occur in MDAs."""
         weak_disciplines = []
         for parallel_tasks in self.sequence:
             for component in parallel_tasks:
@@ -189,7 +184,6 @@ class MDOCouplingStructure(object):
         :param output: the name of the output
         :returns: the discipline if it is found, otherwise raise
             an exception
-
         """
         if not isinstance(output, string_types):
             raise TypeError("Output shall be a string")
@@ -206,8 +200,7 @@ class MDOCouplingStructure(object):
         show=False,
         figsize=(15, 10),
     ):
-        """
-        Generates a N2 plot for the disciplines list.
+        """Generates a N2 plot for the disciplines list.
 
         :param file_path: file path of the figure
         :param show_data_names: if true, the names of the
@@ -219,15 +212,20 @@ class MDOCouplingStructure(object):
         """
 
         fig = plt.figure(figsize=figsize)
-        plt.rc("grid", linestyle="-", color="black", lw=1)
         plt.grid(True)
         axe = gca()
+        axe.grid(True, linestyle="-", color="black", lw=1)
         n_disc = len(self.disciplines)
+        if n_disc == 1:
+            raise ValueError("N2 Diagrams can be generated for at least 2 disciplines.")
         ax_ticks = list(range(n_disc + 1))
         axe.xaxis.set_ticks(ax_ticks)
         axe.yaxis.set_ticks(ax_ticks)
         axe.xaxis.set_ticklabels([])
         axe.yaxis.set_ticklabels([])
+        axe.set(xlim=(0, ax_ticks[-1]), ylim=(0, ax_ticks[-1]))
+        axe.tick_params(axis="x", direction="in")
+        axe.tick_params(axis="y", direction="in")
         fig.tight_layout()
 
         for i, disc_i in enumerate(self.disciplines):
@@ -278,9 +276,8 @@ class MDOCouplingStructure(object):
 
     @staticmethod
     def _check_size_text(text, figure, n_disc):
-        """
-        check the size of the text plotted in the N2 matrix and adapt
-        the fig size according to the text shown
+        """check the size of the text plotted in the N2 matrix and adapt the fig size
+        according to the text shown.
 
         :param text: text shown in the N2 matrix
         :param figure: figure of the n2 matrix
@@ -301,13 +298,12 @@ class MDOCouplingStructure(object):
 
 
 class DependencyGraph(object):
-    """Constructs a graph of dependency between the disciplines, and
-    generate a sequence of execution (including strongly coupled
-    disciplines, sequential tasks, parallel tasks)."""
+    """Constructs a graph of dependency between the disciplines, and generate a sequence
+    of execution (including strongly coupled disciplines, sequential tasks, parallel
+    tasks)."""
 
     def __init__(self, disciplines):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: list of disciplines
         """
@@ -323,9 +319,10 @@ class DependencyGraph(object):
         self.execution_sequence = self._topological_sort()
 
     def _create_initial_nodes(self):
-        """Creates a list of (input, output) coupling variables
-        for each discipline.
-        The resulting list has the same order as the disciplines."""
+        """Creates a list of (input, output) coupling variables for each discipline.
+
+        The resulting list has the same order as the disciplines.
+        """
         nodes = []
         for discipline in self.disciplines:
             nodes.append(
@@ -334,10 +331,9 @@ class DependencyGraph(object):
         return nodes
 
     def _create_component_nodes(self, initial_nodes):
-        """Creates a list of (input, output) coupling variables
-        for each strongly connected component.
-        The resulting list has the same order as the strongly connected
-        components.
+        """Creates a list of (input, output) coupling variables for each strongly
+        connected component. The resulting list has the same order as the strongly
+        connected components.
 
         :param initial_nodes: nodes of the initial graph
         """
@@ -354,8 +350,7 @@ class DependencyGraph(object):
 
     @staticmethod
     def _compute_graph(nodes):
-        """Computes the successors_i of each node and the edges between
-        the nodes.
+        """Computes the successors_i of each node and the edges between the nodes.
 
         :param nodes: the nodes of the graph
         """
@@ -385,9 +380,9 @@ class DependencyGraph(object):
         return graph, edges
 
     def _strongly_connected_components(self):
-        """Tarjan's algorithm determines the strongly connected components of a
-        directed initial_graph.
-        Within a component, there exists a path between each pair of nodes.
+        """Tarjan's algorithm determines the strongly connected components of a directed
+        initial_graph. Within a component, there exists a path between each pair of
+        nodes.
 
         Based on:
         http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
@@ -442,8 +437,7 @@ class DependencyGraph(object):
 
     @staticmethod
     def _unstack_component(node, stack):
-        """Builds a set of nodes corresponding to a strongly connected
-        component.
+        """Builds a set of nodes corresponding to a strongly connected component.
 
         :param node: current node
         :param stack: current stack
@@ -460,7 +454,9 @@ class DependencyGraph(object):
     # TOPOLOGICAL SORT
     def _topological_sort(self):
         """Computes a topological sort of a directed graph.
-        Determines if some nodes may be run in parallel."""
+
+        Determines if some nodes may be run in parallel.
+        """
         current_graph = self.reduced_graph.copy()
         result = []
         while True:
@@ -487,9 +483,8 @@ class DependencyGraph(object):
         return result[::-1]
 
     def get_disciplines_couplings(self):
-        """Returns couplings between disciplines as a list of
-        3-uples (from_disc, to_disc, variables names set).
-        """
+        """Returns couplings between disciplines as a list of 3-uples (from_disc,
+        to_disc, variables names set)."""
         couplings = []
         for from_disc in self.initial_edges:
             for to_disc in self.initial_edges[from_disc]:
@@ -530,7 +525,7 @@ class DependencyGraph(object):
             i_str = "-" + str(k)
             disc = self.disciplines[last_taskind]
             last_outputs = disc.get_output_data_names()
-            if last_outputs != []:
+            if last_outputs:
                 # create an edge to an invisible node
                 dot.node(i_str, style="invis", shape="point")
                 label = ",".join(last_outputs)
@@ -564,7 +559,7 @@ class DependencyGraph(object):
             last_taskind = last_task[0]
             i_str = "-" + str(i)
             last_outputs = self.disciplines[last_taskind].get_output_data_names()
-            if last_outputs != []:
+            if last_outputs:
                 # create an edge to an invisible node
                 dot.node(i_str, style="invis", shape="point")
                 label = ",".join(last_outputs)

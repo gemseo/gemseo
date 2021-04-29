@@ -20,16 +20,11 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from pathlib import Path
-
 import pytest
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
+from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
-
-configure_logger(SOFTWARE_NAME)
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")

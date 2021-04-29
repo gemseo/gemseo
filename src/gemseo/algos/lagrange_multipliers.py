@@ -25,18 +25,17 @@ Implementation of the Lagrange multipliers
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import arange, array, atleast_2d, concatenate, where, zeros
 from numpy.linalg import lstsq, matrix_rank, norm
+from scipy.optimize import linprog
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.third_party.prettytable import PrettyTable
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class LagrangeMultipliers(object):
@@ -84,8 +83,7 @@ class LagrangeMultipliers(object):
     CSTR_LABELS = [LOWER_BOUNDS, UPPER_BOUNDS, INEQUALITY, EQUALITY]
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem: optimization problem on which Lagrange multipliers
             shall be computed
@@ -117,9 +115,8 @@ class LagrangeMultipliers(object):
             raise ValueError("Optimization problem was not solved !")
 
     def compute(self, x_vect, ineq_tolerance=1e-6, rcond=-1):
-        """
-        Computes and returns the Lagrange multipliers,
-        as a post-processing of the optimal point.
+        """Computes and returns the Lagrange multipliers, as a post-processing of the
+        optimal point.
 
         This solves :
         (d ActiveConstraints)'               d Objective
@@ -133,6 +130,10 @@ class LagrangeMultipliers(object):
                see sipy.linalg.lsq
         """
         LOGGER.info("Computation of Lagrange multipliers")
+
+        # Check feasibility
+        self._check_feasibility(x_vect)
+
         # get jacobian of all active constraints, and an
         # ordered list of their name
         jac_act, _ = self._get_jac_act(x_vect, ineq_tolerance)
@@ -153,20 +154,53 @@ class LagrangeMultipliers(object):
         obj_jac = self._get_obj_jac(x_vect)
         rhs = -obj_jac.T
 
-        mul, residuals, _, sval = lstsq(lhs, rhs, rcond=rcond)
-        LOGGER.info("Min singular values of jacobian = %s", str(sval.min()))
-        LOGGER.info("Residuals norm = %s", str(norm(residuals)))
+        # Compute the Lagrange multipliers as a feasible solution of a
+        # linear optimization problem
+        act_eq_constr_nb = len(self.active_eq_names)
+        bounds = [(0, None)] * (act_constr_nb - act_eq_constr_nb) + [
+            (None, None)
+        ] * act_eq_constr_nb
+        optim_result = linprog(zeros(act_constr_nb), A_eq=lhs, b_eq=rhs, bounds=bounds)
+        if optim_result.status == 2:
+            LOGGER.warning("Lagrange multipliers appear not to exist")
+        if optim_result.success:
+            mul = optim_result.x
+        else:
+            # If the linear optimization failed then obtain the Lagrange
+            # multipliers as a solution of a least-square problem
+            mul, residuals, _, sval = lstsq(lhs, rhs, rcond=rcond)
+            LOGGER.info("Min singular values of jacobian = %s", str(sval.min()))
+            LOGGER.info("Residuals norm = %s", str(norm(residuals)))
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)
 
         return self.lagrange_multipliers
 
+    def _check_feasibility(self, x_vect):
+        """Checks that the given point is in the design space and satisfies all
+        constraints.
+
+        :param x_vect: point at which the Lagrange multipliers are to be
+            computed
+        :type x_vect: ndarray
+        """
+        problem = self.opt_problem
+
+        # Check that the point is within bounds
+        problem.design_space.check_membership(x_vect)
+
+        # Check that the point satisfies other constraints
+        values, _ = problem.evaluate_functions(
+            x_vect, eval_obj=False, normalize=False, no_db_no_norm=True
+        )
+        feasible = problem.is_point_feasible(values)
+        if not feasible:
+            LOGGER.warning("Infeasible point, Lagrange multipliers may not" " exist")
+
     def _get_act_bound_jac(self, act_bounds):
-        """
-        Returns the jacobian of active  bounds constraints
-        sign is not taken into account (matrix is made of 0 and 1)
-        """
+        """Returns the jacobian of active  bounds constraints sign is not taken into
+        account (matrix is made of 0 and 1)"""
         dspace = self.opt_problem.design_space
         x_dim = dspace.dimension
         dim_act = sum(len(where(bnd)[0]) for bnd in act_bounds.values())
@@ -187,11 +221,8 @@ class LagrangeMultipliers(object):
         return bnd_jac, act_b_names
 
     def __get_act_ineq_jac(self, x_vect, ineq_tolerance=1e-6):
-        """
-        Returns the jacobian of active inequality
-        constraints defined by user in
-        the optimization problem
-        """
+        """Returns the jacobian of active inequality constraints defined by user in the
+        optimization problem."""
         # retrieves the active functions and the indices :
         # a function is active if at least
         # one of its component (in case of multidimensional constraints) is
@@ -218,7 +249,9 @@ class LagrangeMultipliers(object):
                     names.append(func.name)
                 else:
                     names += [
-                        func.name + DesignSpace.SEP + str(i) for i in range(func.dim)
+                        self._get_component_name(func.name, i)
+                        for i, active in enumerate(act_set)
+                        if active
                     ]
         if jac:
             jac = concatenate(jac)
@@ -227,9 +260,8 @@ class LagrangeMultipliers(object):
         return jac, names
 
     def _get_act_eq_jac(self, x_vect):
-        """Returns jacobian of active equality constraints defined by user in
-        the optimization problem
-        """
+        """Returns jacobian of active equality constraints defined by user in the
+        optimization problem."""
         eq_functions = self.opt_problem.get_eq_constraints()
         # loop on equality functions
         # NB: as the solution (x_vect) is supposed to be feasible,
@@ -248,7 +280,7 @@ class LagrangeMultipliers(object):
                 names.append(eq_function.name)
             else:
                 names += [
-                    eq_function.name + DesignSpace.SEP + str(i)
+                    self._get_component_name(eq_function.name, i)
                     for i in range(eq_jac.shape[0])
                 ]
         if jac:
@@ -258,16 +290,15 @@ class LagrangeMultipliers(object):
         return jac, names
 
     def _get_obj_jac(self, x_vect):
-        """Returns objective jacobian"""
+        """Returns objective jacobian."""
         if self.__normalized:
             x_vect = self.opt_problem.design_space.normalize_vect(x_vect)
 
         return self.opt_problem.objective.jac(x_vect)
 
     def _get_jac_act(self, x_vect, ineq_tolerance=1e-6):
-        """Returns active constraints jacobian, and the
-        name of each component of each function
-        """
+        """Returns active constraints jacobian, and the name of each component of each
+        function."""
         # Bounds jacobian
         dspace = self.opt_problem.design_space
         act_lb, act_ub = dspace.get_active_bounds(x_vect, tol=ineq_tolerance)
@@ -300,7 +331,7 @@ class LagrangeMultipliers(object):
         return jac_act_arr, names_list
 
     def _store_multipliers(self, multipliers):
-        """Stores multipliers in a dictionary"""
+        """Stores multipliers in a dictionary."""
         lag = {}
 
         i_min = 0
@@ -355,8 +386,125 @@ class LagrangeMultipliers(object):
 
         self.lagrange_multipliers = lag
 
+    def _initialize_multipliers(self):
+        """Initialize the Lagrange multipliers with zeros.
+
+        :returns: Lagrange multipliers
+        :rtype: dict(dict(float64))
+        """
+        problem = self.opt_problem
+        multipliers = dict()
+
+        # Bound-constraints
+        indexed_varnames = problem.design_space.get_indexed_variables_names()
+        multipliers[self.LOWER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
+        multipliers[self.UPPER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
+
+        # Inequality-constraints
+        multipliers[self.INEQUALITY] = {
+            func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
+            for func in problem.get_ineq_constraints()
+            for i in range(func.dim)
+        }
+
+        # Equality-constraints
+        multipliers[self.EQUALITY] = {
+            func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
+            for func in problem.get_eq_constraints()
+            for i in range(func.dim)
+        }
+
+        return multipliers
+
+    def get_multipliers_arrays(self):
+        """Return the Lagrange multipliers (zero and nonzero) as arrays.
+
+        :returns: Lagrange multipliers
+        :rtype: dict(dict(ndarray))
+        """
+        problem = self.opt_problem
+        design_space = problem.design_space
+
+        # Convert to dictionaries
+        multipliers = dict()
+        for label in self.CSTR_LABELS:
+            names, mults = self.lagrange_multipliers.get(label, ([], array([])))
+            multipliers[label] = dict(zip(names, mults))
+
+        # Add the Lagrange multipliers equal to zero
+        multipliers_init = self._initialize_multipliers()
+        for label in self.CSTR_LABELS:
+            multipliers_init[label].update(multipliers[label])
+
+        # Cast the multipliers as arrays
+        mult_arrays = dict()
+        # Bound-constraints multipliers
+        mult_arrays[self.LOWER_BOUNDS] = dict()
+        mult_arrays[self.UPPER_BOUNDS] = dict()
+        for name in design_space.variables_names:
+            indexed_varnames = design_space.get_indexed_variables_names()
+            var_low_mult = array(
+                [
+                    multipliers_init[self.LOWER_BOUNDS][comp_name]
+                    for comp_name in indexed_varnames
+                ]
+            )
+            mult_arrays[self.LOWER_BOUNDS][name] = var_low_mult
+            var_upp_mult = array(
+                [
+                    multipliers_init[self.UPPER_BOUNDS][comp_name]
+                    for comp_name in indexed_varnames
+                ]
+            )
+            mult_arrays[self.UPPER_BOUNDS][name] = var_upp_mult
+        # Inequality-constraints multipliers
+        ineq_mult = multipliers_init[self.INEQUALITY]
+        mult_arrays[self.INEQUALITY] = dict()
+        for func in problem.get_ineq_constraints():
+            func_mult = array(
+                [
+                    ineq_mult[
+                        func.name
+                        if func.dim == 1
+                        else self._get_component_name(func.name, index)
+                    ]
+                    for index in range(func.dim)
+                ]
+            )
+            mult_arrays[self.INEQUALITY][func.name] = func_mult
+        # Equality-constraints multipliers
+        eq_mult = multipliers_init[self.EQUALITY]
+        mult_arrays[self.EQUALITY] = dict()
+        for func in problem.get_eq_constraints():
+            func_mult = array(
+                [
+                    eq_mult[
+                        func.name
+                        if func.dim == 1
+                        else self._get_component_name(func.name, index)
+                    ]
+                    for index in range(func.dim)
+                ]
+            )
+            mult_arrays[self.EQUALITY][func.name] = func_mult
+
+        return mult_arrays
+
+    @staticmethod
+    def _get_component_name(name, index):
+        """Return the name of a variable component.
+
+        :param name: the variable name
+        :type name: str
+        :param index: the component index
+        :type index: int
+        :returns: name of the variable component
+        :rtype: str
+        """
+        return name + DesignSpace.SEP + str(index)
+
     def _get_pretty_table(self):
-        """Displays Lagrange Multipliers"""
+        """Displays Lagrange Multipliers."""
         table = PrettyTable(
             ["Constraint type", "Constraint name", "Lagrange Multiplier"]
         )
@@ -367,18 +515,8 @@ class LagrangeMultipliers(object):
 
         return table
 
-    def log_me(self):
-        """Logs a representation of the optimization problem characteristics
-        logs self.__repr__ message
-        """
-        msg = str(self)
-        for line in msg.split("\n"):
-            LOGGER.info(line)
-
     def __str__(self, *args, **kwargs):
-        """
-        Textual representation of the design space
-        """
+        """Textual representation of the design space."""
         desc = "Lagrange multipliers : "
         desc += "\n" + str(self._get_pretty_table().get_string())
         return desc

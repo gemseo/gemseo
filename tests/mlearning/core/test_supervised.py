@@ -20,11 +20,10 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test supervised machine learning algorithm module. """
+"""Test supervised machine learning algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange, array, array_equal, ndarray, zeros
 
 from gemseo.core.dataset import Dataset
@@ -32,12 +31,10 @@ from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def io_dataset():
-    """ Build an input-output dataset. """
+    """Build an input-output dataset."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
@@ -47,8 +44,20 @@ def io_dataset():
     return dataset
 
 
+@pytest.fixture
+def io_dataset_w_scalout():
+    """Build an input-output dataset."""
+    data = arange(40).reshape(10, 4)
+    variables = ["x_1", "x_2", "y_1"]
+    sizes = {"x_1": 1, "x_2": 2, "y_1": 1}
+    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    dataset = Dataset("dataset_name")
+    dataset.set_from_array(data, variables, sizes, groups)
+    return dataset
+
+
 def test_constructor(io_dataset):
-    """ Test construction. """
+    """Test construction."""
     ml_algo = MLSupervisedAlgo(io_dataset)
     assert ml_algo.algo is None
     assert ml_algo.input_names == io_dataset.get_names("inputs")
@@ -56,7 +65,7 @@ def test_constructor(io_dataset):
 
 
 def test_notimplementederror(io_dataset):
-    """ Test that learn() and predict() raise NotImplementedErrors. """
+    """Test that learn() and predict() raise NotImplementedErrors."""
     ml_algo = MLSupervisedAlgo(io_dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
@@ -65,7 +74,7 @@ def test_notimplementederror(io_dataset):
 
 
 def test_learn(io_dataset):
-    """ Test learn. """
+    """Test learn."""
     model = LinearRegression(io_dataset)
     model.learn()
     reference = model.get_coefficients(False)
@@ -92,7 +101,7 @@ def test_learn(io_dataset):
 
 
 def test_io_shape(io_dataset):
-    """ Test input output shapes. """
+    """Test input output shapes."""
     model = LinearRegression(io_dataset)
     assert model.input_shape == 3
     assert model.output_shape == 3
@@ -110,13 +119,13 @@ INPUT_VALUES = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 
 def test_format_dict(io_dataset):
-    """ Test format dict decorator. """
+    """Test format dict decorator."""
     ml_algo = MLSupervisedAlgo(io_dataset)
     partially_transformed = [None]
 
     @MLSupervisedAlgo.DataFormatters.format_dict
     def predict_dict(self, input_data):
-        """ Predict after dict formatting. """
+        """Predict after dict formatting."""
         assert self == ml_algo
         partially_transformed[0] = input_data
         return input_data
@@ -151,13 +160,13 @@ def test_format_dict(io_dataset):
 
 
 def test_format_sample(io_dataset):
-    """ Test format sample decorator. """
+    """Test format sample decorator."""
     partially_transformed = [None]
     ml_algo = MLSupervisedAlgo(io_dataset)
 
     @MLSupervisedAlgo.DataFormatters.format_samples
     def predict_sample(self, input_data):
-        """ Predict (identity function). """
+        """Predict (identity function)."""
         assert self == ml_algo
         partially_transformed[0] = input_data
         return input_data
@@ -177,18 +186,18 @@ def test_format_sample(io_dataset):
 
 
 def test_format_transform(io_dataset):
-    """ Test format transform decorators. """
+    """Test format transform decorators."""
 
     class LearnableMLSupervisedAlgo(MLSupervisedAlgo):
-        """ Supervised algorithm that can learn. """
+        """Supervised algorithm that can learn."""
 
         def _fit(self, input_data, output_data):
-            """ Fit data. """
+            """Fit data."""
             assert input_data.shape == (10, 3)
             assert output_data.shape == (10, 3)
 
         def _predict(self, input_data):
-            """ Predict. """
+            """Predict."""
             return input_data
 
     partially_transformed = [None]

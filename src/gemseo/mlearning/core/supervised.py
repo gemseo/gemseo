@@ -67,7 +67,6 @@ through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import atleast_2d
 
 from gemseo.core.dataset import Dataset
@@ -75,9 +74,8 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import DataConversion
-
-standard_library.install_aliases()
 
 
 class MLSupervisedAlgo(MLAlgo):
@@ -88,19 +86,31 @@ class MLSupervisedAlgo(MLAlgo):
     """
 
     ABBR = "MLSupervisedAlgo"
+    DEFAULT_TRANSFORMER = {Dataset.INPUT_GROUP: MinMaxScaler()}
 
     def __init__(
-        self, data, transformer=None, input_names=None, output_names=None, **parameters
+        self,
+        data,
+        transformer=DEFAULT_TRANSFORMER,
+        input_names=None,
+        output_names=None,
+        **parameters
     ):
         """Constructor.
 
         :param Dataset data: learning dataset.
         :param transformer: transformation strategy for data groups.
-            If None, do not scale data. Default: None.
-        :type transformer: dict(str)
+            If None, do not scale data.
+            Default: DEFAULT_TRANSFORMER,
+            which is a min/max scaler applied to the inputs.
+        :type transformer: dict(Transformer)
         :param input_names: names of the input variables.
+            If None, consider all input variables mentioned in the learning dataset.
+            Default: None.
         :type input_names: list(str)
         :param output_names: names of the output variables.
+            If None, consider all input variables mentioned in the learning dataset.
+            Default: None.
         :type output_names: list(str)
         :param parameters: algorithm parameters.
         """
@@ -109,13 +119,14 @@ class MLSupervisedAlgo(MLAlgo):
         )
         self.input_names = input_names or data.get_names(data.INPUT_GROUP)
         self.output_names = output_names or data.get_names(data.OUTPUT_GROUP)
+        self.input_space_center = None
 
     class DataFormatters(MLAlgo.DataFormatters):
-        """Decorators for supervised algorithms. """
+        """Decorators for supervised algorithms."""
 
         @staticmethod
         def _array_to_dict(data_array, data_names, data_sizes):
-            """Convert an array into a dict
+            """Convert an array into a dict.
 
             :param data_array: the array
             :param data_names: list of names (keys of the resulting dict)
@@ -134,8 +145,8 @@ class MLSupervisedAlgo(MLAlgo):
 
         @classmethod
         def format_dict(cls, predict):
-            """If input_data is passed as a dictionary, then convert it to
-            ndarray, and convert output_data to dictionary. Else, do nothing.
+            """If input_data is passed as a dictionary, then convert it to ndarray, and
+            convert output_data to dictionary. Else, do nothing.
 
             :param predict: Method whose input_data and output_data are to be
                 formatted.
@@ -159,17 +170,16 @@ class MLSupervisedAlgo(MLAlgo):
 
         @classmethod
         def format_samples(cls, predict):
-            """If input_data has shape (n_inputs,), reshape input_data to
-            (1, n_inputs), and then reshape output data from (1, n_outputs)
-            to (n_outputs,).
-            If input_data has shape (n_samples, n_inputs), then do nothing.
+            """If input_data has shape (n_inputs,), reshape input_data to (1, n_inputs),
+            and then reshape output data from (1, n_outputs) to (n_outputs,). If
+            input_data has shape (n_samples, n_inputs), then do nothing.
 
             :param predict: Method whose input_data and output_data are to be
                 formatted.
             """
 
             def wrapper(self, input_data, *args, **kwargs):
-                """Format data before and after applying predictor. """
+                """Format data before and after applying predictor."""
                 single_sample = input_data.ndim == 1
                 input_data = atleast_2d(input_data)
                 output_data = predict(self, input_data, *args, **kwargs)
@@ -183,20 +193,19 @@ class MLSupervisedAlgo(MLAlgo):
         def format_transform(cls, transform_inputs=True, transform_outputs=True):
             """Apply transform to inputs, and inverse transform to outputs.
 
-            :param bool format_inputs: Indicates whether to transform inputs.
-            :param bool format_outputs: Indicates whether to transform outputs.
+            :param bool transform_inputs: Indicates whether to transform inputs.
+            :param bool transform_outputs: Indicates whether to transform outputs.
             """
 
             def format_transform_(predict):
-                """Apply transform to inputs, and inverse transform to
-                outputs.
+                """Apply transform to inputs, and inverse transform to outputs.
 
                 :param predict: Method whose input_data and output_data are to
                     be formatted.
                 """
 
                 def wrapper(self, input_data, *args, **kwargs):
-                    """Wrapped version of predict function. """
+                    """Wrapped version of predict function."""
                     inputs = self.learning_set.INPUT_GROUP
                     if transform_inputs and inputs in self.transformer:
                         input_data = self.transformer[inputs].transform(input_data)
@@ -229,8 +238,8 @@ class MLSupervisedAlgo(MLAlgo):
             return wrapper
 
     def learn(self, samples=None):
-        """Train machine learning algorithm on learning set, possibly filtered
-        using the given parameters.
+        """Train machine learning algorithm on learning set, possibly filtered using the
+        given parameters.
 
         :param list(int) samples: indices of training samples.
         """
@@ -243,11 +252,23 @@ class MLSupervisedAlgo(MLAlgo):
             input_data = input_data[samples]
             output_data = output_data[samples]
 
+        self.input_space_center = DataConversion.array_to_dict(
+            input_data.mean(0), self.input_names, self.learning_set.sizes
+        )
+
         if input_grp in self.transformer:
-            input_data = self.transformer[input_grp].fit_transform(input_data)
+            transformer = self.transformer[input_grp]
+            if transformer.CROSSED:
+                input_data = transformer.fit_transform(input_data, output_data)
+            else:
+                input_data = transformer.fit_transform(input_data)
 
         if output_grp in self.transformer:
-            output_data = self.transformer[output_grp].fit_transform(output_data)
+            transformer = self.transformer[output_grp]
+            if self.transformer[output_grp].CROSSED:
+                raise NotImplementedError
+            else:
+                output_data = transformer.fit_transform(output_data)
 
         self._fit(input_data, output_data)
         self._trained = True
@@ -309,15 +330,29 @@ class MLSupervisedAlgo(MLAlgo):
 
     @property
     def input_shape(self):
-        """ Dimension of input variables before applying transformers. """
+        """Dimension of input variables before applying transformers."""
         sizes = [self.learning_set.sizes[name] for name in self.input_names]
         return sum(sizes)
 
     @property
     def output_shape(self):
-        """ Dimension of output variables before applying transformers. """
+        """Dimension of output variables before applying transformers."""
         sizes = [self.learning_set.sizes[name] for name in self.output_names]
         return sum(sizes)
+
+    @property
+    def input_data(self):
+        """Return input data."""
+        in_names = self.input_names
+        inputs = self.learning_set.get_data_by_names(in_names, False)
+        return inputs
+
+    @property
+    def output_data(self):
+        """Return output data."""
+        out_names = self.output_names
+        outputs = self.learning_set.get_data_by_names(out_names, False)
+        return outputs
 
     def _get_objects_to_save(self):
         """Get objects to save.
@@ -328,4 +363,5 @@ class MLSupervisedAlgo(MLAlgo):
         objects = super(MLSupervisedAlgo, self)._get_objects_to_save()
         objects["input_names"] = self.input_names
         objects["output_names"] = self.output_names
+        objects["input_space_center"] = self.input_space_center
         return objects

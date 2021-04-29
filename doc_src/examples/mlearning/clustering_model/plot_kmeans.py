@@ -32,7 +32,6 @@ Load Iris dataset and create clusters.
 # ------
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger, load_dataset
@@ -41,7 +40,6 @@ from gemseo.mlearning.api import create_clustering_model
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create dataset

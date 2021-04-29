@@ -22,39 +22,32 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from os import remove
-from os.path import exists, join
-from tempfile import gettempdir
+from os.path import exists
 
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
+@pytest.mark.usefixtures("tmp_wd")
 class TestParetoFrontPost(unittest.TestCase):
     def test_pareto(self):
         factory = PostFactory()
-        if factory.is_available("ScatterPlotMatrix"):
-            problem = Power2()
-            DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
-            file_path = join(gettempdir(), "power")
-            post = factory.execute(
-                problem,
-                "ParetoFront",
-                save=True,
-                file_path=file_path,
-                objectives=problem.get_all_functions_names(),
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
-                remove(outf)
+        if not factory.is_available("ScatterPlotMatrix"):
+            return
+
+        problem = Power2()
+        DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+        file_path = "power"
+        post = factory.execute(
+            problem,
+            "ParetoFront",
+            save=True,
+            file_path=file_path,
+            objectives=problem.get_all_functions_names(),
+        )
+        assert len(post.output_files) == 1
+        for outf in post.output_files:
+            assert exists(outf)

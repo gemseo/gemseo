@@ -40,9 +40,7 @@ A pretty table in the shell or in a file
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-from future import standard_library
 
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 
 
-standard_library.install_aliases()

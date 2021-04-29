@@ -25,30 +25,22 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import unittest
-from builtins import int, range, str
 from os.path import dirname, exists, join
 
-from future import standard_library
+import pytest
 from numpy import arange, array, ones
 from numpy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.database import Database, HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 DIRNAME = dirname(os.path.realpath(__file__))
 FAIL_HDF = join(DIRNAME, "fail.hdf5")
 
 
+@pytest.mark.usefixtures("tmp_wd")
 class TestDatabase(unittest.TestCase):
     """Tests for the Database class."""
 
@@ -63,7 +55,6 @@ class TestDatabase(unittest.TestCase):
 
         :param to_test: value to be tested
         :param ref: referece value
-
         """
         n_ref = norm(ref)
         err = norm(to_test - ref)
@@ -93,8 +84,6 @@ class TestDatabase(unittest.TestCase):
         OptimizersFactory().execute(problem, "L-BFGS-B")
         database = problem.database
         outf = "rosen.hdf"
-        if exists(outf):
-            os.remove(outf)
         database.export_hdf(outf)
         assert exists(outf)
         fname = problem.objective.name
@@ -114,8 +103,6 @@ class TestDatabase(unittest.TestCase):
 
             self.assertAlmostEqual(f_rel_err, 0.0, places=14)
             self.assertAlmostEqual(df_rel_err, 0.0, places=14)
-
-        os.remove(outf)
 
     def test_set_item(self):
         """Tests setitem."""
@@ -149,7 +136,6 @@ class TestDatabase(unittest.TestCase):
         ]
 
     @staticmethod
-    @link_to("Req-MDO-8", "Req-MDO-8.1", "Req-MDO-8.2")
     def test_get_f_hist():
         """Tests objective history extraction."""
         problem = Rosenbrock()
@@ -193,7 +179,6 @@ class TestDatabase(unittest.TestCase):
         self.assertAlmostEqual(hist_g2[1], 0.85259476, 6)
 
     @staticmethod
-    @link_to("Req-MDO-8", "Req-MDO-8.1", "Req-MDO-8.2")
     def test_scipy_df0_rosenbrock():
         """Tests the storage of optimization solutions."""
         problem = Rosenbrock()
@@ -223,7 +208,6 @@ class TestDatabase(unittest.TestCase):
         # Export again with append mode and check that it is much faster
         database.export_hdf(file_path_db, append=True)
         assert len(Database(file_path_db)) == n_calls + 1
-        os.remove(file_path_db)
 
     def test_get_x_by_iter_except(self):
         """Tests exception in get_x_by_iter."""
@@ -270,7 +254,6 @@ class TestDatabase(unittest.TestCase):
         database.export_to_ggobi(file_path=file_path)
         database.export_to_ggobi(file_path=file_path)
         path_exists = os.path.exists(file_path)
-        os.remove(file_path)
         assert path_exists
 
     @staticmethod
@@ -287,10 +270,8 @@ class TestDatabase(unittest.TestCase):
         assert (norm(array(f_database) - array(f_database_ref)) < 1e-16).all()
         assert (norm(array(x_database) - array(x_database_ref)) < 1e-16).all()
         assert len(database) == len(database_read)
-        os.remove(func_data)
 
     @staticmethod
-    @link_to("Req-MDO-8", "Req-MDO-8.1")
     def test_hdf_import():
         """Tests import from HDF."""
         inf = join(DIRNAME, "rosen_grad.hdf5")
@@ -325,7 +306,6 @@ class TestDatabase(unittest.TestCase):
         outfpath = "rae2822_cl075_085_mach_068_074_cp.hdf5"
         database.export_hdf(outfpath)
         assert os.path.exists(outfpath)
-        os.remove(outfpath)
 
     def test_duplicates(self):
         """Tests the storing of identical entries at different iterations."""
@@ -407,3 +387,14 @@ class TestDatabase(unittest.TestCase):
         database.store(ones(1), {})
         database.remove_empty_entries()
         self.assertRaises(ValueError, database.get_x_by_iter, 0)
+
+    def test_get_last_n_x(self):
+        database = Database()
+        database.store(ones(1), {})
+        database.store(2 * ones(1), {})
+        database.store(3 * ones(1), {})
+        assert database.get_last_n_x(3) == [ones(1), 2 * ones(1), 3 * ones(1)]
+        assert database.get_last_n_x(2) == [2 * ones(1), 3 * ones(1)]
+
+        with pytest.raises(ValueError):
+            database.get_last_n_x(4)

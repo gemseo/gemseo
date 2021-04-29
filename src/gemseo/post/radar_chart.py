@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
@@ -24,11 +23,16 @@ A radar plot of constraints
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from matplotlib import pyplot
-from numpy import concatenate, linspace, max, pi, rad2deg, zeros
+import logging
 
-from gemseo import LOGGER
+from numpy import vstack, zeros
+
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import Path
+
+LOGGER = logging.getLogger(__name__)
 
 
 class RadarChart(OptPostProcessor):
@@ -74,94 +78,41 @@ class RadarChart(OptPostProcessor):
         for func in constraints_list:
             if func not in all_constr_names:
                 raise ValueError(
-                    "Cannot build radar chart,"
-                    + " Function "
-                    + func
-                    + " is not among constraints names"
-                    + " or does not exist."
+                    "Cannot build radar chart; "
+                    "function {} is not among constraints names"
+                    " or does not exist.".format(func)
                 )
 
-        vals, vname, _ = self.database.get_history_array(
+        cstr_values, cstr_names, _ = self.database.get_history_array(
             constraints_list, add_dv=add_dv
         )
 
         if iteration < -1 or iteration >= len(self.database):
             raise ValueError(
-                "iteration should be positive and lower than"
-                + " maximum iteration ="
-                + str(len(self.database))
+                "iteration should be either equal to -1 or positive and lower than "
+                "maximum iteration = {}".format(len(self.database))
             )
-        cstr_values = vals[iteration, :]
+        cstr_values = cstr_values[iteration, :].ravel()
 
-        # formating values, max and min
-        values = cstr_values.ravel()
-        vmax = max(cstr_values)
-        vmin = min(cstr_values)
-
-        # radar solid grid lines
-        pyplot.rc("grid", color="k", linewidth=0.3, linestyle=":")
-        pyplot.rc("xtick", labelsize=10)
-        pyplot.rc("ytick", labelsize=10)
-
-        # force square figure and square axes looks better for polar, IMO
-        figsize = (figsize_x, figsize_y)
-        fig = pyplot.figure(figsize=figsize)
-        axe = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
-        constr_nb = len(vname)
-        constr_trigger = zeros(constr_nb)
-
-        # computes angles
-        theta = 2 * pi * linspace(0, 1 - 1.0 / constr_nb, constr_nb)
-
-        # plot lines
-        lines_cstr_comp = axe.plot(
-            theta, values, color="k", lw=1, label="computed constraints"
+        dataset = Dataset("Constraints")
+        values = vstack((cstr_values, zeros(len(cstr_values))))
+        dataset.add_group(
+            dataset.DEFAULT_GROUP,
+            values,
+            cstr_names,
+            {name: 1 for name in cstr_names},
         )
-        self.__close_line(lines_cstr_comp[0])
+        dataset.row_names = ["computed constraints", "limit constraint"]
 
-        lines_cstr_lim = axe.plot(
-            theta,
-            constr_trigger,
-            color="red",
-            ls="--",
-            lw=1,
-            label="maximum constraint",
-        )
-        self.__close_line(lines_cstr_lim[0])
-
-        # display settings
-        theta_degree = rad2deg(theta)
-        axe.set_thetagrids(theta_degree, vname)
-        axe.set_rlim([vmin, vmax])
-        axe.set_rticks(linspace(vmin, vmax, 6))
-        # set title
+        radar = RadarChartPost(dataset)
+        radar.linestyle = {"computed constraints": "-", "limit constraint": "--"}
+        radar.color = {"computed constraints": "k", "limit constraint": "r"}
         if iteration == -1:
-            title = "Constraints at last iteration"
+            radar.title = "Constraints at last iteration"
         else:
-            title = "Constraints at iteration %i" % iteration
-        axe.set_title(title)
-
-        # Shrink current axis's height by 10% on the bottom
-        box = axe.get_position()
-        axe.set_position(
-            [box.x0, box.y0 + box.height * 0.15, box.width, box.height * 0.85]
-        )
-
-        axe.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15))
-
-        # save or show
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
-
-    @staticmethod
-    def __close_line(line):
-        """
-        Closes line plotted in the radar chart
-
-        :param : line (matplotlib oject) to close
-        """
-        x_values, y_values = line.get_data()
-        x_values = concatenate((x_values, [x_values[0]]))
-        y_values = concatenate((y_values, [y_values[0]]))
-        line.set_data(x_values, y_values)
+            radar.title = "Constraints at iteration {}".format(iteration)
+        radar.figsize_x = figsize_x
+        radar.figsize_y = figsize_y
+        fpath = Path(file_path).with_suffix(".{}".format(extension))
+        fpath = radar.execute(save, show, fpath, display_zero=False)
+        self.output_files.append(fpath)

@@ -30,14 +30,11 @@ For that, we need to import this :class:`.Dataset` class:
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Synthetic data

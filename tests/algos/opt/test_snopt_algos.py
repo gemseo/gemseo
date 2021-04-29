@@ -24,22 +24,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import unittest
 from unittest import TestCase
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 
 from .opt_lib_test_base import OptLibraryTestBase
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class SnoptResult(object):
-    """ """
+    """"""
 
     def __init__(self):
         res = [1] * 14
@@ -57,10 +48,10 @@ class SnoptResult(object):
 
 
 class TestSNOPT(TestCase):
-    """ """
+    """"""
 
     def test_init(self):
-        """ """
+        """"""
         if OptimizersFactory().is_available("SnOpt"):
             OptimizersFactory().create("SnOpt")
 

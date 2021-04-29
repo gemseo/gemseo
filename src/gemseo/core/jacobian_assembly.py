@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -28,7 +27,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import atleast_2d, concatenate, empty, ones, zeros
 from scipy.sparse import dia_matrix, dok_matrix, vstack
 from scipy.sparse.csc import csc_matrix
@@ -37,26 +35,22 @@ from scipy.sparse.linalg.interface import LinearOperator
 
 from gemseo.utils.linear_solver import LinearSolver
 
-standard_library.install_aliases()
-
 
 def none_factory():
-    """
-    Returns None... To be used for defaultdict
+    """Returns None...
+
+    To be used for defaultdict
     """
 
 
 def default_dict_factory():
-    """
-    Instantiates a defaultdict(None) object
-    """
+    """Instantiates a defaultdict(None) object."""
     return defaultdict(none_factory)
 
 
 class JacobianAssembly(object):
-    """Assembly of Jacobians
-    Typically, assemble disciplines's Jacobians into a system Jacobian
-    """
+    """Assembly of Jacobians Typically, assemble disciplines's Jacobians into a system
+    Jacobian."""
 
     DIRECT_MODE = "direct"
     ADJOINT_MODE = "adjoint"
@@ -73,8 +67,7 @@ class JacobianAssembly(object):
     AVAILABLE_SOLVERS = LinearSolver.AVAILABLE_SOLVERS
 
     def __init__(self, coupling_structure):
-        """
-        Constructor of the assembly
+        """Constructor of the assembly.
 
         :param coupling_structure: the disciplines that form
            the coupled system
@@ -87,8 +80,7 @@ class JacobianAssembly(object):
         self.linear_solver = LinearSolver()
 
     def __check_inputs(self, functions, variables, couplings, matrix_type, use_lu_fact):
-        """
-        Checks the inputs before differentiation
+        """Checks the inputs before differentiation.
 
         :param functions: the functions to differentiate
         :param variables: the differentiation variables
@@ -155,8 +147,7 @@ class JacobianAssembly(object):
             )
 
     def compute_sizes(self, functions, variables, couplings):
-        """Computes the number of scalar functions, variables
-        and couplings
+        """Computes the number of scalar functions, variables and couplings.
 
         :param functions: the functions to differentiate
         :param variables: the differentiation variables
@@ -208,8 +199,8 @@ class JacobianAssembly(object):
         return mode
 
     def compute_dimension(self, names):
-        """Compute the total number of functions/variables/couplings
-        of the whole system
+        """Compute the total number of functions/variables/couplings of the whole
+        system.
 
         :param names: list of names of inputs or outputs
         """
@@ -274,7 +265,7 @@ class JacobianAssembly(object):
         return dres_dvar.real
 
     def _dres_dvar_linop(self, residuals, variables, n_residuals, n_variables):
-        """Forms the linear operator of partial derivatives of residuals
+        """Forms the linear operator of partial derivatives of residuals.
 
         :param residuals: the residuals (R)
         :param variables: the differentiation variables
@@ -283,7 +274,7 @@ class JacobianAssembly(object):
         """
         # define the linear function
         def dres_dvar(x_array):
-            """The linear operator that represents the square matrix dR/dy
+            """The linear operator that represents the square matrix dR/dy.
 
             :param x_array: vector multiplied by the matrix
             """
@@ -322,8 +313,7 @@ class JacobianAssembly(object):
         return LinearOperator((n_residuals, n_variables), matvec=dres_dvar)
 
     def _dres_dvar_t_linop(self, residuals, variables, n_residuals, n_variables):
-        """Forms the transposed linear operator of
-        partial derivatives of residuals
+        """Forms the transposed linear operator of partial derivatives of residuals.
 
         :param residuals: the residuals (R)
         :param variables: the differentiation variables
@@ -332,11 +322,9 @@ class JacobianAssembly(object):
         """
         # define the linear function
         def dres_t_dvar(x_array):
-            """The transposed linear operator that represents the square
-            matrix dR/dy
+            """The transposed linear operator that represents the square matrix dR/dy.
 
             :param x_array: vector multiplied by the matrix
-
             """
             assert x_array.shape[0] == n_residuals
             # initialize the result
@@ -460,8 +448,8 @@ class JacobianAssembly(object):
         force_no_exec=False,
         **kwargs
     ):
-        """Computes the Jacobian of total derivatives of the coupled system
-        formed by the disciplines
+        """Computes the Jacobian of total derivatives of the coupled system formed by
+        the disciplines.
 
         :param in_data: input data dict
         :param functions: the functions to differentiate
@@ -509,7 +497,6 @@ class JacobianAssembly(object):
         mode = self._check_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
-        total_derivatives = {}
         if mode == JacobianAssembly.DIRECT_MODE:
             # sparse square matrix dR/dy
             dres_dy = self.dres_dvar(
@@ -555,9 +542,8 @@ class JacobianAssembly(object):
         return self.split_jac(total_derivatives, variables)
 
     def _add_differentiated_inouts(self, functions, variables, couplings):
-        """Adds functions to the list of differentiated
-        outputs of all disciplines
-        wrt couplings, and variables of the discipline
+        """Adds functions to the list of differentiated outputs of all disciplines wrt
+        couplings, and variables of the discipline.
 
         :param functions: the functions to differentiate
         :param variables: the differentiation variables
@@ -580,7 +566,7 @@ class JacobianAssembly(object):
                 discipline.add_differentiated_outputs(outputs)
 
     def split_jac(self, coupled_system, variables):
-        """Splits a Jacobian dict into a dict of dict
+        """Splits a Jacobian dict into a dict of dict.
 
         :param coupled_system: the derivatives to split
         :param variables: variables wrt wich the differentiation is performed
@@ -607,8 +593,8 @@ class JacobianAssembly(object):
         matrix_type=LINEAR_OPERATOR,
         **kwargs
     ):
-        """Compute Newton step for the the coupled system of residuals
-        formed by the disciplines
+        """Compute Newton step for the the coupled system of residuals formed by the
+        disciplines.
 
         :param in_data: input data dict
         :param couplings: the coupling variables
@@ -687,8 +673,8 @@ class JacobianAssembly(object):
         filepath=None,
         markersize=None,
     ):
-        """Plot the Jacobian matrix
-        Nonzero elements of the sparse matrix are represented by blue squares
+        """Plot the Jacobian matrix Nonzero elements of the sparse matrix are
+        represented by blue squares.
 
         :param functions: list of variables (Default value = None)
         :param variables: list of variables (Default value = None)
@@ -751,16 +737,15 @@ class JacobianAssembly(object):
 
 
 class CoupledSystem(object):
-    """This class contains methods that compute coupled (total) derivatives
-    of a system of residuals, using several methods:
+    """This class contains methods that compute coupled (total) derivatives of a system
+    of residuals, using several methods:
+
     - direct or adjoint
     - factorized for multiple RHS
     """
 
     def __init__(self):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.n_linear_resolutions = 0
         self.n_direct_modes = 0
         self.n_adjoint_modes = 0
@@ -780,7 +765,7 @@ class CoupledSystem(object):
         use_lu_fact,
         **kwargs
     ):
-        """Computation of total derivative Jacobian in direct mode
+        """Computation of total derivative Jacobian in direct mode.
 
         :param functions: functions to differentiate
         :param n_variables: number of variables
@@ -822,7 +807,7 @@ class CoupledSystem(object):
         use_lu_fact,
         **kwargs
     ):
-        """Computation of total derivative Jacobian in adjoint mode
+        """Computation of total derivative Jacobian in adjoint mode.
 
         :param functions: functions to differentiate
         :param dres_dx: Jacobian of residuals wrt design variables
@@ -856,7 +841,7 @@ class CoupledSystem(object):
         linear_solver,
         **kwargs
     ):
-        """Computation of total derivative Jacobian in direct mode
+        """Computation of total derivative Jacobian in direct mode.
 
         :param functions: functions to differentiate
         :param n_variables: number of variables
@@ -887,7 +872,7 @@ class CoupledSystem(object):
     def _adjoint_mode(
         self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy, linear_solver, **kwargs
     ):
-        """Computation of total derivative Jacobian in adjoint mode
+        """Computation of total derivative Jacobian in adjoint mode.
 
         :param functions: functions to differentiate
         :param dres_dx: Jacobian of residuals wrt design variables
@@ -923,7 +908,7 @@ class CoupledSystem(object):
     def _direct_mode_lu(
         self, functions, n_variables, n_couplings, dres_dx, dres_dy, dfun_dx, dfun_dy
     ):
-        """Computation of total derivative Jacobian in direct mode
+        """Computation of total derivative Jacobian in direct mode.
 
         :param functions: functions to differentiate
         :param n_variables: number of variables
@@ -932,9 +917,6 @@ class CoupledSystem(object):
         :param dres_dy: Jacobian of residuals wrt coupling variables
         :param dfun_dx: Jacobian of functions wrt design variables
         :param dfun_dy: Jacobian of functions wrt coupling variables
-        :param linear_solver: name of the linear solver
-        :param kwargs: optional parameters
-        :type kwargs: dict
         """
         # compute the total derivative dy/dx, independent of the
         # function to differentiate
@@ -954,11 +936,10 @@ class CoupledSystem(object):
         return jac
 
     def _adjoint_mode_lu(self, functions, dres_dx, dres_dy_t, dfun_dx, dfun_dy):
-        """Computation of total derivative Jacobian in adjoint mode
+        """Computation of total derivative Jacobian in adjoint mode.
 
         :param functions: functions to differentiate
         :param dres_dx: Jacobian of residuals wrt design variables
-        :param dres_dy: Jacobian of residuals wrt coupling variables
         :param dfun_dx: Jacobian of functions wrt design variables
         :param dfun_dy: Jacobian of functions wrt coupling variables
         :param dres_dy_t:

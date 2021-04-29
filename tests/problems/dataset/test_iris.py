@@ -21,11 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.problems.dataset.iris import IrisDataset
-
-standard_library.install_aliases()
 
 
 def test_constructor():

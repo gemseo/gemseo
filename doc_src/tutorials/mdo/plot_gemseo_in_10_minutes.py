@@ -45,7 +45,6 @@ from __future__ import absolute_import, division, unicode_literals
 
 from math import exp, sqrt
 
-from future import standard_library
 from numpy import array, ones
 
 ###############################################################################
@@ -68,8 +67,6 @@ configure_logger()
 # <https://numpy.org/doc/stable/user/quickstart.html>`_.
 
 
-standard_library.install_aliases()
-
 ###############################################################################
 #
 # A simple MDO test case: the Sellar Problem
@@ -90,9 +87,7 @@ standard_library.install_aliases()
 
 
 def f_sellar_system(x_local=1.0, x_shared_1=3.0, y_0=1.0, y_1=1.0):
-    """
-    Objective function
-    """
+    """Objective function."""
     obj = x_local ** 2 + x_shared_1 + y_0 + exp(-y_1)
     c_0 = 1 - y_0 / 3.16
     c_1 = y_1 / 24.0 - 1.0
@@ -100,17 +95,13 @@ def f_sellar_system(x_local=1.0, x_shared_1=3.0, y_0=1.0, y_1=1.0):
 
 
 def f_sellar_0(x_local=1.0, y_1=1.0, x_shared_0=1.0, x_shared_1=3.0):
-    """
-    Function for discipline 0
-    """
+    """Function for discipline 0."""
     y_0 = x_shared_0 ** 2 + x_shared_1 + x_local - 0.2 * y_1
     return y_0
 
 
 def f_sellar_1(y_0=1.0, x_shared_0=1.0, x_shared_1=3.0):
-    """
-    Function for discipline 1
-    """
+    """Function for discipline 1."""
     y_1 = sqrt(y_0) + x_shared_0 + x_shared_1
     return y_1
 

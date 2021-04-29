@@ -26,30 +26,24 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from builtins import super
 
-from future import standard_library
-
 from gemseo.core.chain import MDOChain
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
 
 class DisciplinaryOpt(MDOFormulation):
-    """
-    The disciplinary optimization formulation draws the architecture
-    of a mono disciplinary
-    optimization process from an ordered list of disciplines,
-    an objective function and a design space. The objective function
-    is minimized by default.
+    """The disciplinary optimization formulation draws the architecture of a mono
+    disciplinary optimization process from an ordered list of disciplines, an objective
+    function and a design space.
+
+    The objective function is minimized by default.
     """
 
     def __init__(
         self, disciplines, objective_name, design_space, maximize_objective=False
     ):
-        """
-        Constructor, initializes the objective functions and constraints
+        """Constructor, initializes the objective functions and constraints.
 
         :param disciplines: the disciplines list.
         :type disciplines: list(MDODiscipline)
@@ -76,28 +70,20 @@ class DisciplinaryOpt(MDOFormulation):
         self._build_objective_from_disc(objective_name)
 
     def get_expected_workflow(self):
-        """
-        Returns the expected execution sequence,
-        used for xdsm representation
-        """
+        """Returns the expected execution sequence, used for xdsm representation."""
         if self.chain is None:
             return ExecutionSequenceFactory.serial(self.disciplines[0])
         return self.chain.get_expected_workflow()
 
     def get_expected_dataflow(self):
-        """
-        Returns the expected data exchange sequence,
-        used for xdsm representation
-        """
+        """Returns the expected data exchange sequence, used for xdsm representation."""
         if self.chain is None:
             return []
         return self.chain.get_expected_dataflow()
 
     def get_top_level_disc(self):
-        """Returns the disciplines which inputs are required to run the
-        associated scenario
-        By default, returns all disciplines
-        To be overloaded by subclasses
+        """Returns the disciplines which inputs are required to run the associated
+        scenario By default, returns all disciplines To be overloaded by subclasses.
 
         :returns: the list of top level disciplines
         """
@@ -106,9 +92,7 @@ class DisciplinaryOpt(MDOFormulation):
         return self.disciplines
 
     def _filter_design_space(self):
-        """
-        Filters the design space to keep only available variables
-        """
+        """Filters the design space to keep only available variables."""
         all_inpts = DataConversion.get_all_inputs(self.get_top_level_disc())
         kept = set(self.design_space.variables_names) & set(all_inpts)
         self.design_space.filter(kept)

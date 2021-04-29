@@ -20,20 +20,22 @@
 #        :author: Damien Guenot
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Basic display of optimization history : functions, and x
 ********************************************************
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
+
 import matplotlib.gridspec as gridspec
 import pylab
-from future import standard_library
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatter, MaxNLocator
 from numpy import abs as np_abs
-from numpy import append, arange, argmin, array, atleast_2d, concatenate, hstack, isnan
+from numpy import append, arange, argmin, array, atleast_2d, concatenate
+from numpy import e as npe
+from numpy import hstack, isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
@@ -47,33 +49,26 @@ from gemseo.core.function import MDOFunction
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class OptHistoryView(OptPostProcessor):
-    """
-    The **OptHistoryView** post processing
-    performs separated plots:
-    the design variables history,
-    the objective function history,
-    the history of hessian approximation of the objective,
-    the inequality constraint history,
-    the equality constraint history,
-    and constraints histories.
+    """The **OptHistoryView** post processing performs separated plots: the design
+    variables history, the objective function history, the history of hessian
+    approximation of the objective, the inequality constraint history, the equality
+    constraint history, and constraints histories.
 
-    By default, all design variables are considered.
-    A sublist of design variables can be passed as options.
-    Minimum and maximum values for the plot can be passed as options.
-    The objective function can also be represented in terms of difference
-    w.r.t. the initial value
-    It is possible either to save the plot, to show the plot or both.
+    By default, all design variables are considered. A sublist of design variables can
+    be passed as options. Minimum and maximum values for the plot can be passed as
+    options. The objective function can also be represented in terms of difference
+    w.r.t. the initial value It is possible either to save the plot, to show the plot or
+    both.
     """
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem: the optimization problem to run
         """
@@ -93,13 +88,9 @@ class OptHistoryView(OptPostProcessor):
         obj_relative=False,
         extension="pdf",
     ):
-        """
-        Plots the optimization history:
-        1 plot for the design variables
-        1 plot for the objective function
-        1 plot for the Hessian approximation of the objective
-        1 plot for inequality constraints
-        1 plot for equality constraints
+        """Plots the optimization history: 1 plot for the design variables 1 plot for
+        the objective function 1 plot for the Hessian approximation of the objective 1
+        plot for inequality constraints 1 plot for equality constraints.
 
         :param show: if True, displays the plot windows
         :type show: bool
@@ -168,8 +159,7 @@ class OptHistoryView(OptPostProcessor):
     def _plot_cstr_history(
         self, cstr_names, cstr_type, save, show, file_path, extension
     ):
-        """
-        Create the plot for (in)equality constraints
+        """Create the plot for (in)equality constraints.
 
         :param cstr_names: names of the constraints
         :param cstr_type: type of the constraints in {MDOFunction.TYPE_INEQ,
@@ -192,9 +182,8 @@ class OptHistoryView(OptPostProcessor):
             )
 
     def _get_history(self, fname, variables_names):
-        """
-        Access the optimization history of a function and the design
-        variables at which it was computed
+        """Access the optimization history of a function and the design variables at
+        which it was computed.
 
         :param fname: name of the function
         :param variables_names: list of the names of the variables to display
@@ -221,8 +210,7 @@ class OptHistoryView(OptPostProcessor):
         return f_hist, x_hist, n_iter
 
     def _get_constraints(self, cstr_names):
-        """
-        Extracts a history of constraints
+        """Extracts a history of constraints.
 
         :param cstr_names: names of the constraints
         :returns: bounds of the constraints and history array
@@ -248,8 +236,7 @@ class OptHistoryView(OptPostProcessor):
         return bnd_list, constraints_history
 
     def _normalize_x_hist(self, x_history, variables_names):
-        """
-        Normalizes the design variables history
+        """Normalizes the design variables history.
 
         :param x_history: the history for the design variables
         :param variables_names: list of the names of the variables to display
@@ -266,12 +253,10 @@ class OptHistoryView(OptPostProcessor):
     def _create_variables_plot(
         self, x_history, variables_names, save, show, file_path=None, extension="pdf"
     ):
-        """
-        Creates the design variables plot
+        """Creates the design variables plot.
 
         :param x_history: the design variables history
         :param variables_names: list of the names of the variables to display
-        :param n_variables: number of parameters
         :param save: saves the plot to a file
         :param show: shows the matplotlib figure
         :param file_path: the base paths of the files to export
@@ -307,10 +292,10 @@ class OptHistoryView(OptPostProcessor):
                 name += " (0)"
             y_labels.append(name)
             for i in range(1, size):
-                y_labels.append("(" + str(i) + ")")
+                y_labels.append("({})".format(i))
 
-        ax1.set_yticklabels(y_labels)
         ax1.set_yticks(arange(n_variables))
+        ax1.set_yticklabels(y_labels)
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
@@ -349,8 +334,7 @@ class OptHistoryView(OptPostProcessor):
         obj_relative=False,
         extension="pdf",
     ):
-        """
-        Creates the design variables plot
+        """Creates the design variables plot.
 
         :param obj_history: history of the objective function
         :param n_iter: number of iterations
@@ -430,11 +414,9 @@ class OptHistoryView(OptPostProcessor):
     def _create_x_star_plot(
         self, x_history, n_iter, save, show, file_path=None, extension="pdf"
     ):
-        """
-        Creates the design variables plot
+        """Creates the design variables plot.
 
         :param x_history: history of the design variables
-        :param x_opt: x optimum
         :param n_iter: number of iterations
         :param save: save the figure
         :param show: show the figure
@@ -490,8 +472,7 @@ class OptHistoryView(OptPostProcessor):
 
     @staticmethod
     def _cstr_number(cstr_names, cstr_history):
-        """
-        Computes the total scalar constraints number
+        """Computes the total scalar constraints number.
 
         :param cstr_names: names of the constraints
         :param cstr_history: history of the constraints
@@ -516,8 +497,7 @@ class OptHistoryView(OptPostProcessor):
         file_path=None,
         extension="pdf",
     ):
-        """
-        Creates the constraints plot: 1 line per constraint component
+        """Creates the constraints plot: 1 line per constraint component.
 
         :param cstr_history: history of the constraints
         :param cstr_names: names of the constraints
@@ -536,7 +516,7 @@ class OptHistoryView(OptPostProcessor):
         cstr_labels = []
 
         max_iter = 0
-        for (i, cstr_history_i) in enumerate(cstr_history):
+        for (_, cstr_history_i) in enumerate(cstr_history):
             history_i = atleast_2d(cstr_history_i).T
             if history_i.shape[1] == 1:
                 history_i = history_i.T
@@ -589,8 +569,7 @@ class OptHistoryView(OptPostProcessor):
             pylab.plt.close(fig)
 
     def _build_cstr_fig(self, cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels):
-        """
-        Builds the constraints figure
+        """Builds the constraints figure.
 
         :param cstr_matrix : matrix of constraints values
         :param cstr_labels: labels for the constraints
@@ -616,15 +595,22 @@ class OptHistoryView(OptPostProcessor):
         fig = pylab.plt.figure(figsize=(11, 6))
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         ax1 = fig.add_subplot(grid[0, 0])
-        im1 = ax1.imshow(
-            cstr_matrix,
-            cmap=cmap,
-            interpolation="nearest",
-            vmin=-vmax,
-            vmax=vmax,
-            aspect="auto",
-            norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
-        )
+        if PY2:
+            im1 = ax1.imshow(
+                cstr_matrix,
+                cmap=cmap,
+                interpolation="nearest",
+                aspect="auto",
+                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
+            )
+        else:
+            im1 = ax1.imshow(
+                cstr_matrix,
+                cmap=cmap,
+                interpolation="nearest",
+                aspect="auto",
+                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=npe),
+            )
         if hasnan > 0:
             x_absc_nan = where(idx_nan.any(axis=0))[0]
             for x_i in x_absc_nan:
@@ -675,8 +661,7 @@ class OptHistoryView(OptPostProcessor):
     def _create_hessian_approx_plot(
         self, history, obj_name, save, show, file_path=None, extension="pdf"
     ):
-        """
-        Creates the plot of the Hessian approximation
+        """Creates the plot of the Hessian approximation.
 
         :param history: the optimization history
         :param obj_name: the function name
@@ -689,8 +674,8 @@ class OptHistoryView(OptPostProcessor):
             )
             diag = [ones_like(diag[0])] + diag  # Add first iteration blank
             diag = array(diag).T
-        except ValueError as err:
-            LOGGER.warning("Failed to create Hessian approximation: %s", str(err))
+        except ValueError:
+            LOGGER.warning("Failed to create Hessian approximation", exc_info=True)
             return
 
         # if max problem, plot -Hessian
@@ -707,14 +692,23 @@ class OptHistoryView(OptPostProcessor):
         axe.set_ylabel("Variable id", fontsize=12)
         axe.xaxis.set_major_locator(MaxNLocator(integer=True))
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
-        linthresh = 10 ** ((np_log10(vmax) - 5.0))
-        img = axe.imshow(
-            diag.real,
-            cmap=self.cmap,
-            interpolation="nearest",
-            aspect="auto",
-            norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
-        )
+        linthresh = 10 ** (np_log10(vmax) - 5.0)
+        if PY2:
+            img = axe.imshow(
+                diag.real,
+                cmap=self.cmap,
+                interpolation="nearest",
+                aspect="auto",
+                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
+            )
+        else:
+            img = axe.imshow(
+                diag.real,
+                cmap=self.cmap,
+                interpolation="nearest",
+                aspect="auto",
+                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=npe),
+            )
         axe.invert_yaxis()
 
         # colorbar

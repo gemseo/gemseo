@@ -28,8 +28,6 @@ Dataset consisting of solutions to Burgers' equation.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
@@ -40,8 +38,6 @@ configure_logger()
 # We can easily load this dataset by means of the
 # :meth:`~gemseo.api.load_dataset` function of the API:
 
-
-standard_library.install_aliases()
 
 dataset = load_dataset("BurgersDataset")
 print(dataset)

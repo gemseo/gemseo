@@ -33,8 +33,6 @@ applied to clustering models.
 # ------
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, load_dataset
 from gemseo.mlearning.api import (
     create_clustering_model,
@@ -44,7 +42,6 @@ from gemseo.mlearning.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Get available clustering models

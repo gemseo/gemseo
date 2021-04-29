@@ -22,13 +22,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import os
 import unittest
 
-from future import standard_library
 from numpy import array, float64, linalg, ones
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.mda.newton import MDANewtonRaphson, MDAQuasiNewton
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.wrappers import (
@@ -37,22 +35,17 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
 
 from .test_gauss_seidel import SelfCoupledDisc
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
+DIRNAME = os.path.dirname(__file__)
 
 
 class TestNewton(unittest.TestCase):
-    """Test the Newton-Raphson MDA"""
+    """Test the Newton-Raphson MDA."""
 
-    @link_to("Req-MDO-9.4")
     def test_raphson_sobieski(self):
-        """Test the execution of Gauss-Seidel on Sobieski"""
+        """Test the execution of Gauss-Seidel on Sobieski."""
         disciplines = [
             SobieskiAerodynamics(),
             SobieskiStructure(),
@@ -73,11 +66,11 @@ class TestNewton(unittest.TestCase):
 
     @staticmethod
     def get_sellar_initial():
-        """Generate initial solution"""
+        """Generate initial solution."""
         x_local = array([0.0], dtype=float64)
         x_shared = array([1.0, 0.0], dtype=float64)
-        y_0 = ones((1), dtype=float64)
-        y_1 = ones((1), dtype=float64)
+        y_0 = ones(1, dtype=float64)
+        y_1 = ones(1, dtype=float64)
         return x_local, x_shared, y_0, y_1
 
     def test_wrong_name(self):
@@ -92,12 +85,12 @@ class TestNewton(unittest.TestCase):
 
     @staticmethod
     def get_sellar_initial_input_data():
-        """Build dictionary with initial solution"""
+        """Build dictionary with initial solution."""
         x_local, x_shared, y_0, y_1 = TestNewton.get_sellar_initial()
         return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
 
     def test_raphson_sellar(self):
-        """Test the execution of Newton on Sobieski"""
+        """Test the execution of Newton on Sobieski."""
         disciplines = [Sellar1(), Sellar2()]
         mda = MDANewtonRaphson(disciplines)
         mda.execute()
@@ -131,7 +124,7 @@ class TestNewton(unittest.TestCase):
     # =========================================================================
 
     def test_broyden_sellar(self):
-        """Test the execution of quasi-Newton on Sellar"""
+        """Test the execution of quasi-Newton on Sellar."""
         disciplines = [Sellar1(), Sellar2()]
         mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.BROYDEN1)
         mda.reset_history_each_run = True
@@ -146,7 +139,7 @@ class TestNewton(unittest.TestCase):
         mda.execute({"x_shared": mda.default_inputs["x_shared"] + 0.1})
 
     def test_hybrid_sellar(self):
-        """Test the execution of quasi-Newton on Sellar"""
+        """Test the execution of quasi-Newton on Sellar."""
         disciplines = [Sellar1(), Sellar2()]
         mda = MDAQuasiNewton(
             disciplines, method=MDAQuasiNewton.HYBRID, use_gradient=True
@@ -158,9 +151,8 @@ class TestNewton(unittest.TestCase):
         y_opt = array([mda.local_data["y_0"][0].real, mda.local_data["y_1"][0].real])
         assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
 
-    @link_to("Req-MDO-9.5")
     def test_lm_sellar(self):
-        """Test the execution of quasi-Newton on Sellar"""
+        """Test the execution of quasi-Newton on Sellar."""
         disciplines = [Sellar1(), Sellar2()]
         mda = MDAQuasiNewton(
             disciplines, method=MDAQuasiNewton.LEVENBERG_MARQUARDT, use_gradient=True
@@ -172,7 +164,7 @@ class TestNewton(unittest.TestCase):
         assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-4
 
     def test_dfsane_sellar(self):
-        """Test the execution of quasi-Newton on Sellar"""
+        """Test the execution of quasi-Newton on Sellar."""
         disciplines = [Sellar1(), Sellar2()]
         mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.DF_SANE)
         mda.execute()
@@ -182,12 +174,12 @@ class TestNewton(unittest.TestCase):
         assert linalg.norm(y_ref - y_opt) / linalg.norm(y_ref) < 1e-3
 
     def test_quasi_newton_fake_method(self):
-        """Test the execution of quasi-Newton with fake method"""
+        """Test the execution of quasi-Newton with fake method."""
         with self.assertRaises(Exception):
             MDAQuasiNewton(self.sellar_coupling_structure, method="space_cowboy")
 
     def test_broyden_sellar2(self):
-        """Test the execution of quasi-Newton on Sellar"""
+        """Test the execution of quasi-Newton on Sellar."""
         disciplines = [Sellar1(), SellarSystem()]
         mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.BROYDEN1)
         mda.reset_history_each_run = True

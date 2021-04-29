@@ -19,9 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scatter plot
-============
+r"""Draw a scatter plot from a :class:`.Dataset`.
 
 A :class:`Scatter` plot represents a set of points
 :math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
@@ -29,32 +27,33 @@ where the color of points can be heterogeneous.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+from typing import Mapping
+
 import matplotlib.pyplot as plt
-from future import standard_library
+from matplotlib.figure import Figure
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
 
 class Scatter(DatasetPlot):
-    """ Plot curve y versus x. """
+    """Plot curve y versus x."""
 
-    def _plot(self, x, y, x_comp=0, y_comp=0, color="blue"):
-        """Surface.
-
-        :param x: name of the variable on the x-axis
-        :type x: str
-        :param y: name of the variable on the y-axis
-        :type z: str
-        :param x_comp: x component. Default: 0.
-        :type x_comp: int
-        :param y_comp: y component. Default: 0.
-        :type y_comp: int
-        :param color: point color name. Possibly a list of color names
-           whose length is equal to the number of points. Default: 'blue'.
-        :type color: str or list(str)
+    def _plot(
+        self,
+        properties,  # type: Mapping
+        x,  # type: str
+        y,  # type: str
+        x_comp=0,  # type: str
+        y_comp=0,  # type: str
+    ):  # type: (...) -> Figure
         """
+        Args:
+            x: The name of the variable on the x-axis.
+            y: The name of the variable on the y-axis.
+            x_comp: The component of x.
+            y_comp: The component of y.
+        """
+        color = properties.get(self.COLOR) or "blue"
         x_data = self.dataset[x][x][:, x_comp]
         y_data = self.dataset[y][y][:, y_comp]
 
@@ -62,12 +61,12 @@ class Scatter(DatasetPlot):
         axes = fig.add_subplot(1, 1, 1)
         axes.scatter(x_data, y_data, color=color)
         if self.dataset.sizes[x] == 1:
-            axes.set_xlabel(x)
+            axes.set_xlabel(self.xlabel or x)
         else:
-            axes.set_xlabel(x + "(" + str(x_comp) + ")")
+            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
         if self.dataset.sizes[y] == 1:
-            axes.set_ylabel(y)
+            axes.set_ylabel(self.ylabel or y)
         else:
-            axes.set_ylabel(y + "(" + str(y_comp) + ")")
+            axes.set_ylabel(self.ylabel or "{}({})".format(y, y_comp))
         fig = plt.gcf()
         return fig

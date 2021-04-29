@@ -19,55 +19,44 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Surface plot
-============
+"""Draw surfaces from a :class:`.Dataset`.
 
-A :class:`.Surfaces` plot represents samples of a functional variable
-:math:`z(x,y)` discretized over a 2D mesh. Both evaluations of :math:`z`
-and mesh are stored in a :class:`.Dataset`, :math:`z` as a parameter
-and the mesh as a metadata.
+A :class:`.Surfaces` plot represents samples
+of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
+Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
+:math:`z` as a parameter and the mesh as a metadata.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+from typing import Mapping, Optional, Sequence
+
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-from future import standard_library
+from matplotlib.figure import Figure
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
 
 class Surfaces(DatasetPlot):
-    """ Plot surfaces y_i over the mesh x. """
+    """Plot surfaces y_i over the mesh x."""
 
     def _plot(
         self,
-        mesh,
-        variable,
-        samples=None,
-        colormap="Blues",
-        add_points=False,
-        color="blue",
-    ):
-        """Curve.
-
-        :param mesh: name of the mesh stored in Dataset.metadata.
-        :type mesh: str
-        :param variable: variable name for the x-axis.
-        :type variable: float
-        :param samples: samples indices. If None, plot all samples.
-            Default: None.
-        :type samples: list(int)
-        :param colormap: colormap. Default: 'Blues'.
-        :type color: str
-        :param add_points: display points over the surface plot.
-            Default: False.
-        :type add_points: bool
-        :param color: point color. Default: blue.
-        :type color: str
+        properties,  # type: Mapping
+        mesh,  # type: str
+        variable,  # type: str
+        samples=None,  # type:Optional[Sequence[int]]
+        add_points=False,  # type: bool
+    ):  # type: (...) -> Figure
         """
+        Args:
+            mesh: The name of the dataset metadata corresponding to the mesh.
+            variable: The name of the variable for the x-axis.
+            samples: The indices of the samples to plot. If None, plot all samples.
+            add_points: If True then display the samples over the surface plot.
+        """
+        color = properties.get(self.COLOR) or "blue"
+        colormap = properties.get(self.COLORMAP) or "Blues"
         x_data = self.dataset.metadata[mesh][:, 0]
         y_data = self.dataset.metadata[mesh][:, 1]
         if samples is not None:
@@ -77,14 +66,14 @@ class Surfaces(DatasetPlot):
 
         sample = 0
         fig = []
-        for z_data in outputs:
+        for z_data, variable_component in zip(outputs, self.dataset.row_names):
             fig.append(plt.figure())
             axes = fig[-1].add_subplot(1, 1, 1)
-            triang = mtri.Triangulation(x_data, y_data)
-            tcf = axes.tricontourf(triang, z_data, cmap=colormap)
+            triangle = mtri.Triangulation(x_data, y_data)
+            tcf = axes.tricontourf(triangle, z_data, cmap=colormap)
             if add_points:
                 axes.scatter(x_data, y_data, color=color)
-            axes.set_title(variable)
+            axes.set_title("{} - {}".format(variable, variable_component))
             fig[-1].colorbar(tcf)
             fig[-1] = plt.gcf()
             sample += 1

@@ -32,8 +32,6 @@ on one of the diagonals of its input space.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import (
     configure_logger,
     create_design_space,
@@ -42,8 +40,6 @@ from gemseo.api import (
 )
 
 configure_logger()
-
-standard_library.install_aliases()
 
 
 ###############################################################################

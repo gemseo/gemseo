@@ -18,34 +18,31 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test standard scaler module. """
+"""Test standard scaler module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, arange
 from numpy import mean as npmean
 from numpy import std as npstd
 
 from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def data():
-    """ Test data. """
+    """Test data."""
     return arange(30).reshape((10, 3))
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     scaler = StandardScaler()
     assert scaler.name == "StandardScaler"
 
 
 def test_fit(data):
-    """ Test fit method. """
+    """Test fit method."""
     mean = npmean(data, 0)
     std = npstd(data, 0)
     scaler = StandardScaler()
@@ -55,7 +52,7 @@ def test_fit(data):
 
 
 def test_transform(data):
-    """ Test transform method. """
+    """Test transform method."""
     mean = npmean(data, 0)
     std = npstd(data, 0)
     scaler = StandardScaler()
@@ -69,7 +66,7 @@ def test_transform(data):
 
 
 def test_inverse_transform(data):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     mean = npmean(data, 0)
     std = npstd(data, 0)
     scaler = StandardScaler()

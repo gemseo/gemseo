@@ -20,11 +20,10 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning regression algorithm module. """
+"""Test machine learning regression algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, arange, array, zeros
 
 from gemseo.core.dataset import Dataset
@@ -32,12 +31,10 @@ from gemseo.mlearning.regression.gpr import GaussianProcessRegression
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def io_dataset():
-    """ Build an input-output dataset. """
+    """Build an input-output dataset."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
@@ -48,7 +45,7 @@ def io_dataset():
 
 
 def test_notimplementederror(io_dataset):
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     ml_algo = MLRegressionAlgo(io_dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
@@ -59,7 +56,7 @@ def test_notimplementederror(io_dataset):
 
 
 def test_predict(io_dataset):
-    """ Test prediction. """
+    """Test prediction."""
     ml_algo = GaussianProcessRegression(io_dataset)
     ml_algo.learn()
     input_data = io_dataset.get_data_by_group("inputs", True)
@@ -71,7 +68,7 @@ def test_predict(io_dataset):
 
 
 def test_predict_jacobian():
-    """ Test predict Jacobian. """
+    """Test predict Jacobian."""
     data = array(
         [
             [1.0, 2.0, 3.0, 6.0, -6.0],

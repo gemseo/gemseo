@@ -61,13 +61,12 @@ inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import eye, matmul
 
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import DataConversion
-
-standard_library.install_aliases()
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):
@@ -78,13 +77,53 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     :meth:`!MLRegressionAlgo._predict_jacobian` method if possible.
     """
 
+    DEFAULT_TRANSFORMER = {
+        Dataset.INPUT_GROUP: MinMaxScaler(),
+        Dataset.OUTPUT_GROUP: MinMaxScaler(),
+    }
+
+    def __init__(
+        self,
+        data,
+        transformer=DEFAULT_TRANSFORMER,
+        input_names=None,
+        output_names=None,
+        **parameters
+    ):
+        """Constructor.
+
+        :param Dataset data: learning dataset.
+        :param transformer: transformation strategy for data groups.
+            If None, do not scale data.
+            Default: DEFAULT_TRANSFORMER,
+            which is a min/max scaler applied to the inputs
+            and a min/max scaler applied to the outputs.
+        :type transformer: dict(Transformer)
+        :param input_names: names of the input variables.
+            If None, consider all input variables mentioned in the learning dataset.
+            Default: None.
+        :type input_names: list(str)
+        :param output_names: names of the output variables.
+            If None, consider all input variables mentioned in the learning dataset.
+            Default: None.
+        :type output_names: list(str)
+        :param parameters: algorithm parameters.
+        """
+        super(MLRegressionAlgo, self).__init__(
+            data,
+            transformer=transformer,
+            input_names=input_names,
+            output_names=output_names,
+            **parameters
+        )
+
     class DataFormatters(MLSupervisedAlgo.DataFormatters):
-        """ Machine learning regression model decorators. """
+        """Machine learning regression model decorators."""
 
         @classmethod
         def format_dict_jacobian(cls, predict):
-            """If input_data is passed as a dictionary, then convert it to
-            ndarray, and convert output_data to dictionary. Else, do nothing.
+            """If input_data is passed as a dictionary, then convert it to ndarray, and
+            convert output_data to dictionary. Else, do nothing.
 
             :param predict: Method whose input_data and output_data are to be
                 formatted.
@@ -116,7 +155,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         def transform_jacobian(cls, predict_jac):
             """Apply transform to inputs, and inverse transform to outputs.
 
-            :param predict: Method whose input_data and output_data are to be
+            :param predict_jac: Method whose input_data and output_data are to be
                 formatted.
             """
 
@@ -170,4 +209,5 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         :return: Jacobian matrices (3D, one for each sample).
         :rtype: ndarray
         """
-        raise NotImplementedError
+        name = self.__class__.__name__
+        raise NotImplementedError("Derivatives are not available for {}".format(name))

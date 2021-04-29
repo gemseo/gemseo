@@ -19,47 +19,64 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+
+"""Test the class Curves plotting samples of a 1D variable with curves."""
+
 from __future__ import absolute_import, division, unicode_literals
 
-from os.path import join
-
 import pytest
-from future import standard_library
+from matplotlib.testing.decorators import image_comparison
+from numpy import array
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
-from gemseo.problems.dataset.burgers import BurgersDataset
+from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
+pytestmark = pytest.mark.skipif(
+    PY2, reason="image comparison does not work with python 2"
+)
 
 
-def test_constructor(tmp_path):
+@pytest.fixture(scope="module")
+def dataset():
+    """Dataset: A dataset containing two samples of the 1D variable 'output'.
 
-    dataset = BurgersDataset()
-    plot = Curves(dataset)
-    plot.execute(
-        mesh="x",
-        variable="u_t",
-        save=True,
-        show=False,
-        file_path=join(str(tmp_path), "curves"),
-    )
-    assert len(plot.output_files) == 1
+    This variable is plotted over the 1D mesh: [[0], [1]].
 
-    plot.execute(
-        mesh="x",
-        variable="u_t",
-        samples=[1, 2],
-        save=True,
-        show=False,
-        file_path=join(str(tmp_path), "curves"),
-    )
-    assert len(plot.output_files) == 1
+    The samples are [0., 1.] and [1., 0.].
+    """
+    dataset = Dataset()
+    sample1 = [0.0, 1.0]
+    sample2 = [1.0, 0.0]
+    data_array = array([sample1, sample2])
+    dataset.set_from_array(data_array, variables=["output"], sizes={"output": 2})
+    dataset.metadata["mesh"] = array([[0.0], [1.0]])
+    return dataset
 
-    with pytest.raises(ValueError):
-        plot.execute(
-            mesh="foo",
-            variable="foo",
-            save=True,
-            show=False,
-            file_path=join(str(tmp_path), "curves"),
-        )
+
+# the test parameters, it maps a test name to the inputs and references outputs:
+# - the kwargs to be passed to Curves._plot
+# - the expected file names without extension to be compared
+TEST_PARAMETERS = {
+    "without_option": ({}, ["Curves"]),
+    "with_subsamples": ({"samples": [1]}, ["Curves_with_subsamples"]),
+}
+
+
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+    """Test images created by Curves._plot against references.
+
+    Args:
+        kwargs (dict): The optional arguments to pass to Curves._plot.
+        baseline_images (list): The images to be compared with.
+        dataset (Dataset): A dataset.
+        pyplot_close_all: Prevents figures aggregation.
+    """
+    Curves(dataset)._plot(properties={}, mesh="mesh", variable="output", **kwargs)

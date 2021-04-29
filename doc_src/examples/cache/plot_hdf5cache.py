@@ -28,7 +28,6 @@ In this example, we will see how to use :class:`.HDF5Cache`.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -41,8 +40,6 @@ configure_logger()
 # ------
 # Let's first import the :class:`array` and the :class:`.HDF5Cache` classes.
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create

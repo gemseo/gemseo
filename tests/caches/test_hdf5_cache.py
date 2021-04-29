@@ -25,12 +25,9 @@ from os.path import join
 
 import h5py
 import pytest
-from future import standard_library
 from numpy import ones
 
 from gemseo.caches.cache_factory import CacheFactory
-
-standard_library.install_aliases()
 
 
 def create_cache(tmp_path, h5_node="Dummy"):

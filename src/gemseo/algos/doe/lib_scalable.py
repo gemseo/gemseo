@@ -24,17 +24,14 @@ Build a diagonal DOE for scalable model construction
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import range, super
 
-from future import standard_library
 from numpy import array
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DiagonalDOE(DOELibrary):
@@ -46,9 +43,7 @@ class DiagonalDOE(DOELibrary):
     ALGO_DESC["DiagonalDOE"] = "Diagonal design of experiments"
 
     def __init__(self):
-        """
-        Constructor, initializes the DOE samples
-        """
+        """Constructor, initializes the DOE samples."""
         super(DiagonalDOE, self).__init__()
 
         for algo in self.ALGO_LIST:
@@ -66,9 +61,10 @@ class DiagonalDOE(DOELibrary):
         wait_time_between_samples=0.0,
         n_samples=1,
         reverse=None,
+        max_time=0,
         **kwargs
     ):  # pylint: disable=W0221
-        """Sets the options
+        """Sets the options.
 
         :param eval_jac: evaluate jacobian
         :type eval_jac: bool
@@ -81,8 +77,10 @@ class DiagonalDOE(DOELibrary):
         :param reverse: list of dimensions or variables to sample from their
             upper bounds to their lower bounds. Default: None.
         :type reverse: list(str)
+        :param max_time: maximum runtime in seconds,
+            disabled if 0 (Default value = 0)
+        :type max_time: float
         :param kwargs: additional arguments
-
         """
         wtbs = wait_time_between_samples
         return self._process_options(
@@ -91,12 +89,12 @@ class DiagonalDOE(DOELibrary):
             wait_time_between_samples=wtbs,
             n_samples=n_samples,
             reverse=reverse,
+            max_time=max_time,
             **kwargs
         )
 
     def _generate_samples(self, **options):
-        """
-        Generates the list of x samples
+        """Generates the list of x samples.
 
         :param options: the options dict for the algorithm,
             see associated JSON file

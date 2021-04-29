@@ -49,7 +49,6 @@ import sys
 import textwrap
 import unicodedata
 
-from future import standard_library
 
 from ._compact import (basestring_, escape, itermap, str_types, uni_chr,
                        unicode_)
@@ -58,7 +57,6 @@ from ._compact import (basestring_, escape, itermap, str_types, uni_chr,
 PY2 = sys.version_info.major == 2
 
 
-standard_library.install_aliases()
 
 
 # hrule styles

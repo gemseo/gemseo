@@ -32,7 +32,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import int, range
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import array, hstack, linspace, meshgrid, nonzero, sqrt, zeros
 
 from gemseo.api import configure_logger, load_dataset
@@ -41,7 +40,6 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Dataset (Rosenbrock)

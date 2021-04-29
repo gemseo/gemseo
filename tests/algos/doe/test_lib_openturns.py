@@ -24,23 +24,15 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import unittest
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 from .doe_lib_test_base import DOELibraryTestBase
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_libOpenturns(unittest.TestCase):
-    """ """
+class TestlibOpenturns(unittest.TestCase):
+    """"""
 
     DOE_LIB_NAME = "OpenTURNS"
 
@@ -58,18 +50,18 @@ class Test_libOpenturns(unittest.TestCase):
         )
 
     def test_init(self):
-        """ """
+        """"""
         factory = DOEFactory()
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
     def test_check_float(self):
-        """ """
+        """"""
         dist_name = "Normal"
         self.assertRaises(TypeError, self.__create_distr, dist_name, mu="0.5")
 
     def test_error_level_type(self):
-        """ """
+        """"""
         algo_name = "OT_COMPOSITE"
         dim = 3
         self.assertRaises(
@@ -83,7 +75,7 @@ class Test_libOpenturns(unittest.TestCase):
         )
 
     def test_error_levels(self):
-        """ """
+        """"""
         algo_name = "OT_COMPOSITE"
         dim = 3
         levels = [0.1, 0.2, 1.3]
@@ -115,7 +107,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertRaises(TypeError, lib._OpenTURNS__set_level_option, {"levels": 1})
 
     def test_error_centers(self):
-        """ """
+        """"""
         algo_name = "OT_COMPOSITE"
         dim = 3
         levels = [0.1, 0.2, 0.3]
@@ -155,7 +147,7 @@ class Test_libOpenturns(unittest.TestCase):
         )
 
     def test_composite_centers(self):
-        """ """
+        """"""
         algo_name = "OT_COMPOSITE"
         dim = 2
         levels = [0.1, 0.25, 0.5, 1.0]
@@ -173,7 +165,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_axial_centers(self):
-        """ """
+        """"""
         dim = 2
         levels = [0.1, 0.25, 0.5, 1.0]
         centers = [0.2, 0.3]
@@ -193,7 +185,7 @@ class Test_libOpenturns(unittest.TestCase):
     #
 
     def test_factorial_centers(self):
-        """ """
+        """"""
         dim = 2
         levels = [0.1, 0.25, 0.5, 1.0]
         centers = [0.2, 0.3]
@@ -211,13 +203,13 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_create_uniform(self):
-        """ """
+        """"""
         dist_name = "Uniform"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
         self.__check_dist(distrib, dist_name, 0.28867513)
 
     def test_wrong_distribution(self):
-        """ """
+        """"""
         dist_name = "DoNotExist"
         self.assertRaises(ValueError, self.__create_distr, dist_name)
         factory = DOEFactory()
@@ -230,13 +222,16 @@ class Test_libOpenturns(unittest.TestCase):
         lib = factory.create(self.DOE_LIB_NAME)
         lib.problem = Rosenbrock()
         options = {}
-        self.assertRaises(KeyError, lib._OpenTURNS__check_stratified_options, options)
+        dimension = lib.problem.dimension
+        self.assertRaises(
+            KeyError, lib._OpenTURNS__check_stratified_options, dimension, options
+        )
         options = {"levels": [0.5, 0.2]}
-        options = lib._OpenTURNS__check_stratified_options(options)
+        options = lib._OpenTURNS__check_stratified_options(dimension, options)
         assert lib.CENTER_KEYWORD in options
 
     def test_create_triangular(self):
-        """ """
+        """"""
         dist_name = "Triangular"
         doe_library = self.__create_distr(dist_name)
         distrib = doe_library.get_distributions_list()[0]
@@ -246,7 +241,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertAlmostEqual(np.array(distrib.getMean())[0], 0.533333, places=6)
 
     def test_create_trapezoidal(self):
-        """ """
+        """"""
         dist_name = "Trapezoidal"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
         self.__check_dist(distrib, dist_name, 0.22821773)
@@ -257,7 +252,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertAlmostEqual(np.array(distrib.getMean())[0], 0.50, places=6)
 
     def test_create_beta(self):
-        """ """
+        """"""
         dist_name = "Beta"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
         self.__check_dist(distrib, dist_name, 0.223607)
@@ -280,7 +275,7 @@ class Test_libOpenturns(unittest.TestCase):
         )
 
     def test_create_arcsine(self):
-        """ """
+        """"""
         factory = DOEFactory()
         dist_name = "Arcsine"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
@@ -288,7 +283,7 @@ class Test_libOpenturns(unittest.TestCase):
         factory.create(self.DOE_LIB_NAME).plot_distribution(distrib, show=False)
 
     def test_create_truncnormal(self):
-        """ """
+        """"""
         dist_name = "TruncatedNormal"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
         self.__check_dist(distrib, dist_name, 0.133157)
@@ -298,20 +293,15 @@ class Test_libOpenturns(unittest.TestCase):
         distrib = self.__create_distr(dist_name, sigma=0.5)
 
     def test_create_normal(self):
-        """ """
+        """"""
         dist_name = "Normal"
         distrib = self.__create_distr(dist_name).get_distributions_list()[0]
         self.__check_dist(distrib, dist_name, 0.133333)
 
     def test_dist_list(self):
-        """ """
+        """"""
         doe_library = DOEFactory().create(self.DOE_LIB_NAME)
-        distname_list = [
-            "Normal",
-            "Arcsine",
-            "Uniform",
-            "Uniform",
-        ]
+        distname_list = ["Normal", "Arcsine", "Uniform", "Uniform"]
         for dist_name in distname_list:
             doe_library.create_distribution(distribution_name=dist_name, dim=1)
         doe_library.display_distributions_list()
@@ -322,14 +312,9 @@ class Test_libOpenturns(unittest.TestCase):
             self.assertEqual(np.array(dist_list[i].getMean())[0], 0.5)
 
     def test_composed_dist(self):
-        """ """
+        """"""
         doe_library = DOEFactory().create(self.DOE_LIB_NAME)
-        distname_list = [
-            "Normal",
-            "Arcsine",
-            "Uniform",
-            "Uniform",
-        ]
+        distname_list = ["Normal", "Arcsine", "Uniform", "Uniform"]
         for dist_name in distname_list:
             doe_library.create_distribution(dist_name)
         doe_library.create_composed_distributions()
@@ -339,8 +324,14 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(np.min(mean), 0.5)
         self.assertEqual(np.max(mean), 0.5)
 
+    def test_call(self):
+        """"""
+        algo = DOEFactory().create("OT_LHS")
+        lhs = algo(10, 2)
+        self.assertEqual(lhs.shape, (10, 2))
+
     def test_lhs_ot(self):
-        """ """
+        """"""
         dim = 4
         algo_name = "OT_LHS"
         n_samples_1 = 3 ** dim
@@ -360,8 +351,56 @@ class Test_libOpenturns(unittest.TestCase):
             DOELibraryTestBase.relative_norm(samples_lhs, samples_lhsc), 0.0
         )
 
+        algo_name = "OT_OPT_LHS"
+        doe_library = DOELibraryTestBase.generate_one_test(
+            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples_1
+        )
+        samples_lhs = doe_library.samples
+        self.assertEqual(samples_lhs.shape, (n_samples_1, dim))
+        DOELibraryTestBase.generate_one_test(
+            self.DOE_LIB_NAME,
+            algo_name=algo_name,
+            dim=dim,
+            n_samples=n_samples_1,
+            n_replicates=10,
+        )
+        DOELibraryTestBase.generate_one_test(
+            self.DOE_LIB_NAME,
+            algo_name=algo_name,
+            dim=dim,
+            n_samples=n_samples_1,
+            criterion="PhiP",
+        )
+        self.assertRaises(
+            ValueError,
+            DOELibraryTestBase.generate_one_test,
+            doe_algo_name=self.DOE_LIB_NAME,
+            algo_name=algo_name,
+            dim=dim,
+            n_samples=n_samples_1,
+            criterion="Foo",
+        )
+        doe_library = DOELibraryTestBase.generate_one_test(
+            self.DOE_LIB_NAME,
+            algo_name=algo_name,
+            dim=dim,
+            n_samples=n_samples_1,
+            annealing=True,
+            temperature="Linear",
+        )
+        self.assertRaises(
+            ValueError,
+            DOELibraryTestBase.generate_one_test,
+            doe_algo_name=self.DOE_LIB_NAME,
+            algo_name=algo_name,
+            dim=dim,
+            n_samples=n_samples_1,
+            annealing=True,
+            temperature="Foo",
+        )
+
     def test_random_ot(self):
-        """ """
+        """"""
         dim = 4
         algo_name = "OT_RANDOM"
         n_samples_1 = 3 ** dim
@@ -372,7 +411,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples_1, dim))
 
     def test_fullfact_ot(self):
-        """ """
+        """"""
         dim = 3
         algo_name = "OT_FULLFACT"
         n_samples_1 = 3 ** dim
@@ -383,7 +422,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples_1, dim))
 
     def test_sobol_ot(self):
-        """ """
+        """"""
         dim = 3
         algo_name = "OT_SOBOL"
         n_samples = 20
@@ -394,7 +433,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_lhs(self):
-        """ """
+        """"""
         dim = 4
         n_samples_1 = 3 ** dim
         algo_name = "OT_LHS"
@@ -407,7 +446,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(len(dist_list), 1)
 
     def test_lhs_truncatednormal(self):
-        """ """
+        """"""
         dim = 4
         n_samples_1 = 3 ** dim
         algo_name = "OT_LHS"
@@ -428,7 +467,7 @@ class Test_libOpenturns(unittest.TestCase):
     #
 
     def test_lhs_error_composed(self):
-        """ """
+        """"""
         dim = 3
         n_samples = 150
         algo_name = "OT_LHS"
@@ -477,7 +516,7 @@ class Test_libOpenturns(unittest.TestCase):
         )
 
     def test_lhs_composed(self):
-        """ """
+        """"""
         dim = 5
         n_samples = 150
         algo_name = "OT_LHS"
@@ -519,10 +558,10 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples_lhs.shape, (n_samples, dim))
         self.assertAlmostEqual(np.mean(samples_lhs[:, 2]), 0.5, 3)
         self.assertAlmostEqual(np.mean(samples_lhs[:, 0]), 0.42, 2)
-        self.assertAlmostEqual(np.mean(samples_lhs[:, -1]), 0.4834, 4)
+        self.assertAlmostEqual(np.mean(samples_lhs[:, -1]), 0.4831, 4)
 
     def test_mc(self):
-        """ """
+        """"""
         dim = 4
         n_samples = 20
         algo_name = "OT_MONTE_CARLO"
@@ -535,7 +574,7 @@ class Test_libOpenturns(unittest.TestCase):
         self.assertEqual(samples_lhs.shape, (n_samples, dim))
 
     def test_mc_composed(self):
-        """ """
+        """"""
         dim = 5
         n_samples = 2000
         algo_name = "OT_MONTE_CARLO"
@@ -622,6 +661,6 @@ def get_options(algo_name, dim):
 
 suite_tests = DOELibraryTestBase()
 for test_method in suite_tests.generate_test(
-    Test_libOpenturns.DOE_LIB_NAME, get_expected_nsamples, get_options
+    TestlibOpenturns.DOE_LIB_NAME, get_expected_nsamples, get_options
 ):
-    setattr(Test_libOpenturns, test_method.__name__, test_method)
+    setattr(TestlibOpenturns, test_method.__name__, test_method)

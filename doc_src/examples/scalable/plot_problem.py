@@ -31,17 +31,14 @@ For that, we use the :class:`.ScalableProblem` class.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.problem import ScalableProblem
+from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Define the design problem
@@ -78,7 +75,7 @@ for discipline in disciplines:
 # In a third stage, we instantiate a :class:`.ScalableProblem`
 # from these disciplinary datasets and from the definition of the MDO problem.
 # We also increase the dimension of the sweep parameter.
-datasets = [discipline.cache for discipline in disciplines]
+datasets = [discipline.cache.export_to_dataset() for discipline in disciplines]
 problem = ScalableProblem(
     datasets,
     design_variables,
@@ -111,6 +108,14 @@ problem.plot_n2_chart(save=False, show=True)
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
+
+###############################################################################
+# .. note::
+#
+#    We could also provide options for the scalable models to the constructor
+#    of :class:`.ScalableProblem`, e.g. :code:`fill_factor` in the frame of
+#    the :class:`.ScalableDiagonalModel`.
+#    In this example, we use the standard ones.
 
 ###############################################################################
 # Once the scenario is created, we can execute it as any scenario.

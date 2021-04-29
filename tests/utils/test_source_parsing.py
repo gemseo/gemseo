@@ -25,24 +25,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.formulation import MDOFormulation
 from gemseo.utils.py23_compat import string_types
 from gemseo.utils.source_parsing import SourceParsing
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_SourceParsing(unittest.TestCase):
+class TestSourceParsing(unittest.TestCase):
     def test_get_default_options_values(self):
-
         opts = SourceParsing.get_default_options_values(unittest.TestCase)
         assert opts == {"methodName": "runTest"}
 

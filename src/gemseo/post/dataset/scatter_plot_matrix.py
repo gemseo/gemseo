@@ -19,9 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Scatter matrix
-==============
+r"""Draw a scatter matrix from a :class:`.Dataset`.
 
 The :class:`.ScatterMatrix` class implements the scatter plot matrix,
 which is a way to visualize :math:`n` samples of a
@@ -53,43 +51,42 @@ labeled.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+from typing import Mapping, Optional
+
 import matplotlib.pyplot as plt
-from future import standard_library
+from matplotlib.figure import Figure
+from pandas import DataFrame
+
+from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 try:
     from pandas.plotting import scatter_matrix
 except ImportError:
     from pandas import scatter_matrix
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-standard_library.install_aliases()
-
 
 class ScatterMatrix(DatasetPlot):
-    """ Scatter plot matrix. """
+    """Scatter plot matrix."""
 
     def _plot(
         self,
-        classifier=None,
-        kde=False,
-        size=25,
-        marker="o",
-        figsize_x=10,
-        figsize_y=10,
-    ):
-        """Scatter matrix plot.
-
-        :param classifier: variable name to build the cluster. Default: None
-        :type classifier: str
-        :param kde: if True, plot kernel-density estimator on the diagonal.
-            Otherwise, use histograms. Default: False.
-        :type kde: bool
-        :param figsize_x: size of figure in horizontal direction (inches)
-        :type figsize_x: int
-        :param figsize_y: size of figure in vertical direction (inches)
-        :type figsize_y: int
+        properties,  # type: Mapping
+        classifier=None,  # type: Optional[str]
+        kde=False,  # type: bool
+        size=25,  # type: int
+        marker="o",  # type: str
+    ):  # type: (...) -> Figure
         """
+        Args:
+            classifier: The name of the variable to build the cluster.
+            kde: The type of the distribution representation.
+                If True, plot kernel-density estimator on the diagonal.
+                Otherwise, use histograms.
+            size: The size of the points.
+            marker: The marker for the points.
+        """
+        figsize_x = properties.get(self.FIGSIZE_X) or 10
+        figsize_y = properties.get(self.FIGSIZE_Y) or 10
         if classifier is not None and classifier not in self.dataset.variables:
             raise ValueError(
                 "Classifier must be one of these names: "
@@ -112,27 +109,32 @@ class ScatterMatrix(DatasetPlot):
         return fig
 
     def _scatter_matrix_for_group(
-        self, classifier, dataframe, diagonal, size, marker, figsize_x, figsize_y
-    ):
+        self,
+        classifier,  # type: str
+        dataframe,  # type: DataFrame
+        diagonal,  # type: str
+        size,  # type: int
+        marker,  # type: str
+        figsize_x,  # type: int
+        figsize_y,  # type: int
+    ):  # type: (...) -> None
         """Scatter matrix plot for group.
 
-        :param classifier: variable name to build the cluster. If None,
-            use the first group name if the dataset is a GroupDataset,
-            the first output name if the dataset is an IODataset,
-            otherwise the last parameter name.
-        :type classifier: str
-        :param dataframe: pandas dataframe
-        :param str diagonal: if 'kde', plot kernel-density estimator
-            on the diagonal. If 'hist', use histograms.
-        :param int figsize_x: size of figure in horizontal direction (inches)
-        :param int figsize_y: size of figure in vertical direction (inches)
+        Args:
+            classifier: The name of the variable to group the data.
+            dataframe: The data to plot.
+            diagonal: The type of distribution representation, either "kde" or "hist".
+            size: The size of the points.
+            marker: The marker for the points.
+            figsize_x: The size of the figure in horizontal direction (inches).
+            figsize_y: The size of the figure in vertical direction (inches).
         """
         palette = dict(enumerate("bgrcmyk"))
         groups = self.dataset.get_data_by_names([classifier], False)[:, 0:1]
         colors = [palette[group[0] % len(palette)] for group in groups]
         _, varname = self._get_label(classifier)
         dataframe = dataframe.drop(varname, 1)
-        dataframe.columns = self._get_varnames(dataframe)
+        dataframe.columns = self._get_variables_names(dataframe)
         scatter_matrix(
             dataframe,
             diagonal=diagonal,
@@ -142,16 +144,29 @@ class ScatterMatrix(DatasetPlot):
             figsize=(figsize_x, figsize_y),
         )
 
-    def _scatter_matrix(self, dataframe, diagonal, size, marker, figsize_x, figsize_y):
+    def _scatter_matrix(
+        self,
+        dataframe,  # type: DataFrame
+        diagonal,  # type: str
+        size,  # type: int
+        marker,  # type: str
+        figsize_x,  # type: int
+        figsize_y,  # type: int
+    ):  # type: (...) -> None
         """Scatter matrix plot for group.
 
-        :param dataframe: pandas dataframe
-        :param str diagonal: if 'kde', plot kernel-density estimator
-            on the diagonal. If 'hist', use histograms.
-        :param int figsize_x: size of figure in horizontal direction (inches)
-        :param int figsize_y: size of figure in vertical direction (inches)
+        Args:
+            dataframe: The data to plot.
+            diagonal: The type of distribution representation, either "kde" or "hist".
+            size: The size of the points.
+            marker: The marker for the points.
+            figsize_x: The size of the figure in horizontal direction (inches).
+            figsize_y: The size of the figure in vertical direction (inches).
+
+        Returns:
+            The figure.
         """
-        dataframe.columns = self._get_varnames(dataframe)
+        dataframe.columns = self._get_variables_names(dataframe)
         scatter_matrix(
             dataframe,
             diagonal=diagonal,

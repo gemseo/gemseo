@@ -24,9 +24,9 @@ Use of gradient-based methods implies the computation of the total derivatives o
 
  .. math::
     \frac{d\bf{f}}{d\bf{x}}=\begin{pmatrix}
-    \displaystyle\frac{d f_0}{d x_j} &\ldots&\displaystyle\frac{df_1}{dx_n}\\
+    \displaystyle\frac{df_0}{d x_0} &\ldots&\displaystyle\frac{df_0}{dx_n}\\
     \vdots&\ddots&\vdots\\
-    \displaystyle\frac{d f_N}{d x_0} &\ldots&\displaystyle\frac{d f_N}{dx_n}.
+    \displaystyle\frac{df_N}{d x_0} &\ldots&\displaystyle\frac{df_N}{dx_n}.
     \end{pmatrix}
 
 A new feature of v1.0.0 of |g| is the management of gradients. Compared to v0.1.0, for which only finite differences or

@@ -13,26 +13,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                        initial documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 The Individual Discipline Feasible formulation
 **********************************************
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import str, super
 
-from future import standard_library
 from numpy import abs as np_abs
 from numpy import concatenate, eye, ones_like, zeros
 
-from gemseo import LOGGER
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -40,18 +37,18 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.function import MDOFunction
 from gemseo.mda.mda_chain import MDAChain
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
 class IDF(MDOFormulation):
     """The Individual Discipline Feasible formulation.
 
-    This formulation draws an optimization architecture where the coupling
-    variables of strongly coupled disciplines is made consistent by adding
-    equality constraints on the coupling variables at top level, the
-    optimization problem w.r.t. local, global design variables and coupling
-    variables is made at the top level. Disciplinary analysis is made at a each
-    optimization iteration. Multidisciplinary analysis is made at the optimum.
+    This formulation draws an optimization architecture where the coupling variables of
+    strongly coupled disciplines is made consistent by adding equality constraints on
+    the coupling variables at top level, the optimization problem w.r.t. local, global
+    design variables and coupling variables is made at the top level. Disciplinary
+    analysis is made at a each optimization iteration. Multidisciplinary analysis is
+    made at the optimum.
     """
 
     def __init__(
@@ -65,8 +62,7 @@ class IDF(MDOFormulation):
         use_threading=True,
         start_at_equilibrium=False,
     ):
-        """
-        Constructor, initializes the objective functions and constraints
+        """Constructor, initializes the objective functions and constraints.
 
         :param disciplines: the disciplines list.
         :type disciplines: list(MDODiscipline)
@@ -136,13 +132,8 @@ class IDF(MDOFormulation):
             )
             self.design_space.set_current_variable(name, value)
 
-        # Reset the number of evaluations
-        for disc in self.disciplines:
-            disc.n_calls = 0
-            disc.n_calls_linearize = 0
-
     def _update_design_space(self):
-        """Updates the design space with the required variables"""
+        """Updates the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
         variables_names = set(self.opt_problem.design_space.variables_names)
         if not strong_couplings.issubset(variables_names):
@@ -177,12 +168,9 @@ class IDF(MDOFormulation):
     def _generate_consistency_cstr(self, output_couplings):
         """Generates the consistency constraints for a discipline.
 
-        :param output_coupl: the output coupling variables
-            of the discipline
         :param output_couplings: returns: mdo_c :
             function pointer to consistency constraints
         :returns: mdo_c : function pointer to consistency constraints
-
         """
         coupl_func = self._get_function_from(output_couplings)
         dv_names_of_disc = coupl_func.args
@@ -195,7 +183,6 @@ class IDF(MDOFormulation):
         def coupl_min_x(x_vec):
             """Function to compute consistency constraints.
 
-            :param x: design variable vector
             :param x_vec: returns: value of consistency constraints
                 (=0 if disciplines are at equilibrium)
             :returns: value of consistency constraints
@@ -210,7 +197,6 @@ class IDF(MDOFormulation):
         def coupl_min_x_jac(x_vec):
             """Function to compute consistency constraints gradient.
 
-            :param x: design variable vector
             :param x_vec: returns: gradient of consistency constraints
             :returns: gradient of consistency constraints
             """
@@ -279,17 +265,11 @@ class IDF(MDOFormulation):
                 self.opt_problem.add_eq_constraint(cstr)
 
     def get_expected_workflow(self):
-        """
-        Returns the expected execution sequence,
-        used for xdsm representation
-        See MDOFormulation.get_expected_workflow
-        """
+        """Returns the expected execution sequence, used for xdsm representation See
+        MDOFormulation.get_expected_workflow."""
         return ExecutionSequenceFactory.parallel(self.disciplines)
 
     def get_expected_dataflow(self):
-        """
-        Returns the expected data exchange sequence,
-        used for xdsm representation
-        See MDOFormulation.get_expected_dataflow
-        """
+        """Returns the expected data exchange sequence, used for xdsm representation See
+        MDOFormulation.get_expected_dataflow."""
         return []

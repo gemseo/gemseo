@@ -54,18 +54,14 @@ from __future__ import absolute_import, division, unicode_literals
 
 from os.path import abspath, dirname, join
 
-from future import standard_library
-
 from gemseo.core.dataset import Dataset
-
-standard_library.install_aliases()
 
 
 class IrisDataset(Dataset):
-    """ Iris dataset parametrization. """
+    """Iris dataset parametrization."""
 
     def __init__(self, name="Iris", by_group=True, as_io=False):
-        """ Constructor."""
+        """Constructor."""
         super(IrisDataset, self).__init__(name, by_group)
         dirpath = dirname(abspath(__file__))
         filename = join(dirpath, "iris.data")

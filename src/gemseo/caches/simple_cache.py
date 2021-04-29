@@ -25,29 +25,25 @@ Caching module to avoid multiple evaluations of a discipline
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from copy import deepcopy
-from logging import getLogger
-
-from future import standard_library
 
 from gemseo.core.cache import AbstractCache, check_cache_approx, check_cache_equal
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class SimpleCache(AbstractCache):
-    """
-    Simple discipline cache based on a dictionary.
+    """Simple discipline cache based on a dictionary.
+
     Only caches the last execution.
     """
 
     def __init__(self, tolerance=0.0, name=None):
-        """
-        Initialize cache tolerance.
-        By default, don't use approximate cache.
-        It is up to the user to choose to optimize CPU time with this or not
+        """Initialize cache tolerance. By default, don't use approximate cache. It is up
+        to the user to choose to optimize CPU time with this or not.
+
         could be something like 2 * finfo(float).eps
 
         Parameters
@@ -71,8 +67,7 @@ class SimpleCache(AbstractCache):
         self.__jacobian_cache = None
 
     def clear(self):
-        """
-        Clear the cache.
+        """Clear the cache.
 
         Examples
         --------
@@ -94,8 +89,7 @@ class SimpleCache(AbstractCache):
         self.__jacobian_cache = None
 
     def get_length(self):
-        """
-        Get the length of the cache, ie the number of stored elements.
+        """Get the length of the cache, ie the number of stored elements.
 
         Returns
         -------
@@ -116,9 +110,19 @@ class SimpleCache(AbstractCache):
             return 0
         return 1
 
-    def get_last_cached_inputs(self):
+    @property
+    def max_length(self):
+        """Get the maximal length of the cache (the maximal number of stored elements).
+
+        Returns
+        -------
+        length : int
+            Maximal length of the cache.
         """
-        Retrieve the last execution inputs.
+        return 1
+
+    def get_last_cached_inputs(self):
+        """Retrieve the last execution inputs.
 
         Returns
         -------
@@ -138,8 +142,7 @@ class SimpleCache(AbstractCache):
         return self.__input_cache
 
     def get_last_cached_outputs(self):
-        """
-        Retrieve the last execution outputs
+        """Retrieve the last execution outputs.
 
         Returns
         -------
@@ -173,8 +176,7 @@ class SimpleCache(AbstractCache):
         }
 
     def get_all_data(self, as_iterator=False):
-        """
-        Read all the data in the cache
+        """Read all the data in the cache.
 
         Parameters
         ----------
@@ -204,8 +206,8 @@ class SimpleCache(AbstractCache):
 
     @staticmethod
     def _create_input_cache(input_data, input_names, output_names=None):
-        """
-        Create a cache dict for input data
+        """Create a cache dict for input data.
+
         :param input_data: the input data to cache
         :param input_names: list of input data names
         :param output_names: list of output data names
@@ -254,9 +256,8 @@ class SimpleCache(AbstractCache):
         )
 
     def get_outputs(self, input_data, input_names=None):
-        """Check if the discipline has already been evaluated
-        for the given input data dictionary.
-        If True, return the associated cache, otherwise return None.
+        """Check if the discipline has already been evaluated for the given input data
+        dictionary. If True, return the associated cache, otherwise return None.
 
         Parameters
         ----------
@@ -303,8 +304,8 @@ class SimpleCache(AbstractCache):
         return cached_outs, cached_jac
 
     def _is_cached(self, in_cache, input_names, input_data):
-        """
-        Check if the input_data dictionary is cached
+        """Check if the input_data dictionary is cached.
+
         :param in_cache: cached input dictionary
         :param input_names: list of input names
         :param input_data: input dict of data
@@ -323,7 +324,7 @@ class SimpleCache(AbstractCache):
         return False
 
     def cache_jacobian(self, input_data, input_names, jacobian):
-        """Cache jacobian data to avoid re evaluation
+        """Cache jacobian data to avoid re evaluation.
 
         Parameters
         ----------

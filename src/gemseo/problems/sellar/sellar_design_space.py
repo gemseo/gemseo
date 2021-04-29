@@ -27,11 +27,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import super
 
 import numpy as np
-from future import standard_library
 
 from gemseo.algos.design_space import DesignSpace
-
-standard_library.install_aliases()
 
 
 class SellarDesignSpace(DesignSpace):
@@ -49,8 +46,8 @@ class SellarDesignSpace(DesignSpace):
     """
 
     def __init__(self, dtype="complex128"):
-        """The constructor creates a blank :class:`.DesignSpace`
-        to which it adds all design variables."""
+        """The constructor creates a blank :class:`.DesignSpace` to which it adds all
+        design variables."""
         super(SellarDesignSpace, self).__init__()
 
         # construct a dictionary with initial solution

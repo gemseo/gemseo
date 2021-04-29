@@ -42,10 +42,10 @@ scipy.interpolate.Rbf.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 import pickle
 from os.path import join
 
-from future import standard_library
 from numpy import array, average, exp, finfo, hstack, log, sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
@@ -54,14 +54,11 @@ from six import string_types
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.py23_compat import PY3
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class RBFRegression(MLRegressionAlgo):
-    """ Regression based on radial basis functions. """
+    """Regression based on radial basis functions."""
 
     LIBRARY = "scipy"
     ABBR = "RBF"
@@ -256,12 +253,12 @@ class RBFRegression(MLRegressionAlgo):
         output_data -= self.y_average
         if PY3:
             args = list(input_data.T) + [output_data]
-            self.algo = Rbf(*args, mode="N-D", smooth=0.0, **self.parameters)
+            self.algo = Rbf(*args, mode="N-D", **self.parameters)
         else:
             self.algo = []
             for output in range(output_data.shape[1]):
                 args = hstack([input_data, output_data[:, [output]]])
-                rbf = Rbf(*args.T, smooth=0.0, **self.parameters)
+                rbf = Rbf(*args.T, **self.parameters)
                 self.algo.append(rbf)
 
     def _predict(self, input_data):
@@ -315,7 +312,7 @@ class RBFRegression(MLRegressionAlgo):
         return jacobians
 
     def _check_available_jacobian(self):
-        """ Check if the Jacobian is available for the given setup. """
+        """Check if the Jacobian is available for the given setup."""
         if PY3:
             norm_name = self.algo.norm
         else:
@@ -377,7 +374,7 @@ class RBFRegression(MLRegressionAlgo):
                     self.algo.append(algo_i)
 
     def _get_objects_to_save(self):
-        """ Get objects to save. """
+        """Get objects to save."""
         objects = super(RBFRegression, self)._get_objects_to_save()
         objects["y_average"] = self.y_average
         objects["der_function"] = self.der_function
@@ -404,5 +401,5 @@ class RBFRegression(MLRegressionAlgo):
 
     @classmethod
     def get_available_functions(cls):
-        """ Get available RBFs. """
+        """Get available RBFs."""
         return cls.AVAILABLE_FUNCTIONS

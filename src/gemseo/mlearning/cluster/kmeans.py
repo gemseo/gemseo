@@ -72,21 +72,19 @@ generated/sklearn.cluster.KMeans.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import finfo
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class KMeans(MLClusteringAlgo):
-    """ KMeans clustering algorithm. """
+    """KMeans clustering algorithm."""
 
     ABBR = "KMeans"
 

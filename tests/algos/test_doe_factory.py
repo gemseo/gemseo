@@ -25,27 +25,18 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 class TestDOEFactory(unittest.TestCase):
-    """ """
+    """"""
 
     def test_is_available_error(self):
-        """ """
+        """"""
         factory = DOEFactory()
         self.assertFalse(factory.is_available("None"))
 
     def test_error(self):
-        """ """
+        """"""
         factory = DOEFactory()
         self.assertRaises(Exception, lambda: factory.create("idontexist"))

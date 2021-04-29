@@ -31,7 +31,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import zip
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import linspace
 from numpy import max as npmax
 from numpy import mean
@@ -45,7 +44,6 @@ from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create dataset

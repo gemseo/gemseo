@@ -26,11 +26,11 @@ Factory base class
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import importlib
+import logging
 import os
 import pkgutil
 import sys
 
-from future import standard_library
 from future.utils import with_metaclass
 
 from gemseo.core.json_grammar import JSONGrammar
@@ -38,15 +38,12 @@ from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.singleton import SingleInstancePerAttributeEq
 from gemseo.utils.source_parsing import SourceParsing
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
-    """
-    Factory to create extensions that are known to |g|:
-        can be a MDODiscipline, MDOFormulation... Depending on the subclass
+    """Factory to create extensions that are known to |g|: can be a MDODiscipline,
+    MDOFormulation... Depending on the subclass.
 
     Three types of directories are scanned :
 
@@ -73,13 +70,6 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
             (MDOFormulation, MDODiscipline...) depending on the subclass
         :param internal_modules_paths: import paths (such as gemseo.problems)
             which are already imported
-        :param name: name of the factory to print when configuration
-                     is printed
-        :param possible_plugin_names: tuple of plugins packages names to be
-            scanned if they can be imported. The last plugin name has the
-            priority. For instance, if the same class MDAJacobi exists in
-            gemseo.mda, gemseo_plugins.mda and gemseo_private.mda, the used one will
-            be gemseo_private.mda
         """
         if not isinstance(base_class, type):
             raise TypeError("Class to search must be a class!")
@@ -112,14 +102,13 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
             sys.path.insert(0, path)
         for _, mod_name, _ in pkgutil.iter_modules(path=paths):
             self.__import_modules_from(mod_name)
-        for path in paths:
+        for _ in paths:
             sys.path.pop(0)
 
     def update(self):
         """Update the classes that can be created by the factory.
 
-        In order, scan in the internal modules, then in plugins, then in
-        GEMSEO_PATH.
+        In order, scan in the internal modules, then in plugins, then in GEMSEO_PATH.
         """
         # Scan internal packages
         for mod_name in self.internal_modules_paths:
@@ -136,7 +125,7 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
              variable is now deprecated and it is strongly recommended to use
              the GEMSEO_PATH environment variable instead to register your
              GEMSEO plugins."""
-            LOGGER.warn(msg)
+            LOGGER.warning(msg)
 
         # Scan environment variable paths
         env_variables = [self.GEMSEO_PATH, self.GEMS_PATH]
@@ -164,14 +153,14 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
             try:
                 importlib.import_module(mod_name)
             except Exception as err:  # pylint: disable=(broad-except
-                LOGGER.debug("Failed to import module: %s, %s", mod_name, err)
+                LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
                 self.failed_imports[mod_name] = err
 
     def __get_sub_classes(self, cls):
         """Return all the sub classes of cls.
 
-        The class names are unique, the last imported is kept when more than
-        one class have the same name.
+        The class names are unique, the last imported is kept when more than one class
+        have the same name.
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():
@@ -308,8 +297,8 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
     def __str__(self):
         """Return the representation of a factory.
 
-        Gives the configuration with the successfully loaded modules and
-        failed imports with the reason.
+        Gives the configuration with the successfully loaded modules and failed imports
+        with the reason.
         """
         table = PrettyTable(
             ["Module", "Is available ?", "Purpose or error message"],
@@ -326,7 +315,7 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
                 while msgs and msg == "":
                     msg = msgs[0]
                     del msgs[0]
-            except Exception as err:  # pylint: disable=(broad-except
+            except Exception:  # pylint: disable=broad-except
                 pass
 
             key = cls.__name__

@@ -40,17 +40,14 @@ have zero mean and unit standard deviation.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import mean, std
 from past.utils import old_div
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
-standard_library.install_aliases()
-
 
 class StandardScaler(Scaler):
-    """ Standard scaler. """
+    """Standard scaler."""
 
     def __init__(self, name="StandardScaler", offset=0.0, coefficient=1.0):
         """Constructor.
@@ -63,8 +60,8 @@ class StandardScaler(Scaler):
         super(StandardScaler, self).__init__(name, offset, coefficient)
 
     def fit(self, data):
-        """Fit offset and coefficient terms from a data array. The mean and
-        standard deviation are computed along the first axis of the data.
+        """Fit offset and coefficient terms from a data array. The mean and standard
+        deviation are computed along the first axis of the data.
 
         :param array data: data to be fitted.
         """

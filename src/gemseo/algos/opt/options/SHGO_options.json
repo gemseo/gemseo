@@ -1,0 +1,39 @@
+{
+    "name": "SHGO_options",
+    "required":["max_iter"],
+    "properties": {
+        "xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_iter":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "n":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "iters":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "sampling_method": {"type":"string"}
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "id": "#SHGO"
+}

@@ -21,14 +21,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 from copy import deepcopy
-from os import remove
 from os.path import dirname, join
 
 import pytest
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger, create_discipline
+from gemseo.api import create_discipline
 from gemseo.wrappers.disc_from_exe import (
     OUTPUT_GRAMMAR,
     DiscFromExe,
@@ -41,11 +39,10 @@ from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
 
 DIRNAME = dirname(__file__)
-configure_logger(SOFTWARE_NAME)
 
 
-def test_disc_from_exe_json(tmpdir):
-    workdir = str(tmpdir)
+def test_disc_from_exe_json(tmp_wd):
+    workdir = str(tmp_wd)
     sum_path = join(dirname(__file__), "sum_data.py")
     exec_cmd = "python " + sum_path + " -i input.json -o output.json"
 
@@ -72,8 +69,8 @@ def test_disc_from_exe_json(tmpdir):
     assert abs(out["out"] - (indata["a"] + indata["b"] + indata["c"])) < 1e-8
 
 
-def test_disc_from_exe_cfgobj(tmpdir):
-    workdir = str(tmpdir)
+def test_disc_from_exe_cfgobj(tmp_wd):
+    workdir = str(tmp_wd)
     sum_path = join(dirname(__file__), "cfgobj_exe.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
 
@@ -118,21 +115,19 @@ def test_disc_from_exe_cfgobj(tmpdir):
     disc.execute(indata)
 
 
-def test_exec_cfg(tmpdir):
-    outfile = join(str(tmpdir), "out_dummy.cfg")
+def test_exec_cfg(tmp_wd):
+    outfile = "out_dummy.cfg"
     infile = join(DIRNAME, "input.cfg")
     exec_cfg(infile, outfile)
-    remove(outfile)
 
 
-def test_exec_json(tmpdir):
-    outfile = join(str(tmpdir), "out_dummy.json")
+def test_exec_json(tmp_wd):
+    outfile = "out_dummy.json"
     infile = join(DIRNAME, "input.json")
     exec_sum(infile, outfile)
-    remove(outfile)
 
 
-def test_disc_from_exe_wrong_inputs(tmpdir):
+def test_disc_from_exe_wrong_inputs(tmp_wd):
 
     sum_path = join(dirname(__file__), "cfgobj_exe.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
@@ -142,7 +137,7 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
             "DiscFromExe",
             input_template=join(DIRNAME, "input_template.cfg"),
             output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmpdir),
+            output_folder_basepath=str(tmp_wd),
             executable_command=exec_cmd,
             parse_outfile_method="ERROR",
             input_filename="input.cfg",
@@ -154,7 +149,7 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
             "DiscFromExe",
             input_template=join(DIRNAME, "input_template.cfg"),
             output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmpdir),
+            output_folder_basepath=str(tmp_wd),
             executable_command=exec_cmd,
             write_input_file_method="ERROR",
             input_filename="input.cfg",
@@ -162,7 +157,7 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
         )
 
 
-def test_disc_from_exe_fail_exe(tmpdir):
+def test_disc_from_exe_fail_exe(tmp_wd):
 
     sum_path = join(dirname(__file__), "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
@@ -170,7 +165,7 @@ def test_disc_from_exe_fail_exe(tmpdir):
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmpdir),
+        output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
         parse_outfile_method="KEY_VALUE_PARSER",
         input_filename="input.cfg",

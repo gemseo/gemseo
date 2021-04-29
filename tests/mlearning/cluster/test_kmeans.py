@@ -19,13 +19,10 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Tests for K-means clustering model. """
+"""Tests for K-means clustering model."""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from builtins import range, str
-
 import pytest
-from future import standard_library
 from numpy import allclose, array, integer, ndarray, vstack
 from numpy.linalg import eigvals
 from numpy.random import multivariate_normal, seed
@@ -35,8 +32,6 @@ from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.py23_compat import _long
-
-standard_library.install_aliases()
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
@@ -62,7 +57,7 @@ VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 @pytest.fixture
 def samples():
-    """ Dataset, consisting of three clusters from normal distributions. """
+    """Dataset, consisting of three clusters from normal distributions."""
     # Check that the parameters conform
     assert len(SCALES) == len(LOCS)
     assert len(N_SAMPLES) == len(LOCS)
@@ -73,7 +68,7 @@ def samples():
 
 @pytest.fixture
 def dataset(samples):
-    """ Dataset, consisting of three clusters from normal distributions. """
+    """Dataset, consisting of three clusters from normal distributions."""
 
     # Fix seed for consistency
     seed(12345)
@@ -101,7 +96,7 @@ def dataset(samples):
 
 @pytest.fixture
 def model_with_transform(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     n_clusters = 3
     transformer = {"parameters": MinMaxScaler()}
     kmeans = KMeans(dataset, transformer=transformer, n_clusters=n_clusters)
@@ -111,7 +106,7 @@ def model_with_transform(dataset):
 
 @pytest.fixture
 def model(dataset):
-    """ Define model from data. """
+    """Define model from data."""
     n_clusters = 3
     kmeans = KMeans(dataset, n_clusters=n_clusters)
     kmeans.learn()
@@ -119,14 +114,14 @@ def model(dataset):
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     for n_clusters in [1, 10]:
         kmeans = KMeans(dataset, n_clusters=n_clusters)
         assert kmeans.algo is not None
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     n_clusters = 5
     kmeans = KMeans(dataset, n_clusters=n_clusters)
     another_kmeans = KMeans(dataset, var_names=["x_1"], n_clusters=n_clusters)
@@ -141,7 +136,7 @@ def test_learn(dataset):
 
 
 def test_predict(model):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
     assert isinstance(prediction, (int, _long, integer))
@@ -153,7 +148,7 @@ def test_predict(model):
 
 
 def test_predict_with_transform(model_with_transform):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
     assert isinstance(prediction, (int, _long, integer))
@@ -165,7 +160,7 @@ def test_predict_with_transform(model_with_transform):
 
 
 def test_predict_proba(model):
-    """ Test prediction. """
+    """Test prediction."""
     for hard in [True, False]:
         proba = model.predict_proba(VALUE, hard)
         probas = model.predict_proba(VALUES, hard)
@@ -181,7 +176,7 @@ def test_predict_proba(model):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_clustering_model(dirname)
     out1 = model.predict(VALUE)

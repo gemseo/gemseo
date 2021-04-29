@@ -78,30 +78,27 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from builtins import super
 
-from future import standard_library
 from numpy import array, atleast_2d, complex128, ones
 
 from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
-
 
 def get_inputs(names=None):
-    """Generate initial solution
+    """Generate initial solution.
 
     :param names: input names (Default value = None)
     :type names: list(str)
     """
     inputs = {
-        "drag": ones((1), dtype=complex128),
-        "forces": ones((1), dtype=complex128),
-        "lift": ones((1), dtype=complex128),
-        "mass": ones((1), dtype=complex128),
-        "displ": ones((1), dtype=complex128),
-        "sweep": ones((1), dtype=complex128),
-        "thick_airfoils": ones((1), dtype=complex128),
-        "thick_panels": ones((1), dtype=complex128),
-        "reserve_fact": ones((1), dtype=complex128),
+        "drag": ones(1, dtype=complex128),
+        "forces": ones(1, dtype=complex128),
+        "lift": ones(1, dtype=complex128),
+        "mass": ones(1, dtype=complex128),
+        "displ": ones(1, dtype=complex128),
+        "sweep": ones(1, dtype=complex128),
+        "thick_airfoils": ones(1, dtype=complex128),
+        "thick_panels": ones(1, dtype=complex128),
+        "reserve_fact": ones(1, dtype=complex128),
     }
     if names is None:
         return inputs
@@ -114,7 +111,7 @@ class Mission(MDODiscipline):
     and constraints discipline."""
 
     def __init__(self, r_val=0.5, lift_val=0.5):
-        """Constructor"""
+        """Constructor."""
         super(Mission, self).__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
@@ -122,10 +119,10 @@ class Mission(MDODiscipline):
         self.lift_val = lift_val
 
     def _run(self):
-        """Defines the execution of the process, given that data
-        has been checked.
-        Compute the outputs (= objective value and constraints at system level)
-        of the aerostructure analytical problem.
+        """Defines the execution of the process, given that data has been checked.
+
+        Compute the outputs (= objective value and constraints at system level) of the
+        aerostructure analytical problem.
         """
         lift, mass, drag, reserve_fact = self.get_inputs_by_name(
             ["lift", "mass", "drag", "reserve_fact"]
@@ -173,9 +170,7 @@ class Mission(MDODiscipline):
         return reserve_fact[0] - rf_val
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """
-        Computes the jacobian of [range, c_rf, c_lift]
-        w.r.t [lift, mass, drag, rf]
+        """Computes the jacobian of [range, c_rf, c_lift] w.r.t [lift, mass, drag, rf]
 
         :param inputs: linearization should be performed with respect
             to inputs list. If None, linearization should
@@ -209,10 +204,9 @@ class Aerodynamics(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Defines the execution of the process, given that
-        data has been checked.
-        Solve a coupling equation in functional form and
-        compute coupling variable
+        """Defines the execution of the process, given that data has been checked.
+
+        Solve a coupling equation in functional form and compute coupling variable
         """
         sweep, thick_airfoils, displ = self.get_inputs_by_name(
             ["sweep", "thick_airfoils", "displ"]
@@ -316,10 +310,9 @@ class Structure(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _run(self):
-        """Defines the execution of the process, given
-        that data has been checked.
-        Solve a coupling equation in functional form and compute coupling
-        variables.
+        """Defines the execution of the process, given that data has been checked.
+
+        Solve a coupling equation in functional form and compute coupling variables.
         """
         sweep, thick_panels, forces = self.get_inputs_by_name(
             ["sweep", "thick_panels", "forces"]
@@ -353,7 +346,8 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_rf(sweep, thick_panels, forces):
-        """Compute the coupling
+        """Compute the coupling.
+
         :math:`rf=-3*sweep - 6*thick_panels + 0.1*forces + 55`
 
         :param sweep: sweep
@@ -369,7 +363,8 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_displ(sweep, thick_panels, forces):
-        """Compute the coupling
+        """Compute the coupling.
+
         :math:`displ=2*sweep + 3*thick_panels - 2.*forces`
 
         :param sweep: sweep

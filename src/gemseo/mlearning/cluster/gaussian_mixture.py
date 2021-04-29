@@ -35,9 +35,7 @@ and covariance matrix is the highest:
 
         \\operatorname{cluster}(x) =
             \\underset{i=1,\\cdots,k}{\\operatorname{argmax}}
-            \\mathcal{N}(x; \\mu_i, \\Sigma_i) =
-            \\underset{i=1,\\cdots,k}{\\operatorname{argmin}}
-            \\|x-\\mu_i\\|_{\\Sigma_i^{-1}},
+            \\ \\mathcal{N}(x; \\mu_i, \\Sigma_i)
 
 where :math:`\\mathcal{N}(x; \\mu_i, \\Sigma_i)` is the value of the
 probability density function of a Gaussian random variable
@@ -71,19 +69,17 @@ generated/sklearn.mixture.GaussianMixture.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class GaussianMixture(MLClusteringAlgo):
-    """ Gaussian mixture clustering algorithm. """
+    """Gaussian mixture clustering algorithm."""
 
     ABBR = "GaussMix"
 

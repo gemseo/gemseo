@@ -31,7 +31,6 @@ which a scenario will evaluate a list of disciplines.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import (
@@ -43,7 +42,6 @@ from gemseo.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##########################################################################
 # Create a design space

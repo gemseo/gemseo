@@ -57,7 +57,8 @@ linear_model.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import array, repeat, zeros
 from sklearn.linear_model import ElasticNet, Lasso
 from sklearn.linear_model import LinearRegression as LinReg
@@ -70,14 +71,11 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
 )
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class LinearRegression(MLRegressionAlgo):
-    """ Linear regression """
+    """Linear regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "LinReg"
@@ -125,6 +123,8 @@ class LinearRegression(MLRegressionAlgo):
             l2_penalty_ratio=l2_penalty_ratio,
             **parameters
         )
+        if "degree" in parameters:
+            del parameters["degree"]
 
         if penalty_level == 0.0:
             self.algo = LinReg(
@@ -172,7 +172,10 @@ class LinearRegression(MLRegressionAlgo):
         :return: output prediction (2D).
         :rtype: ndarray.
         """
-        return self.algo.predict(input_data)
+        output_data = self.algo.predict(input_data)
+        if output_data.ndim == 1:
+            output_data = output_data[:, None]
+        return output_data
 
     def _predict_jacobian(self, input_data):
         """Predict Jacobian of the regression model for the given input data.
@@ -186,12 +189,12 @@ class LinearRegression(MLRegressionAlgo):
 
     @property
     def coefficients(self):
-        """ Return the regression coefficients of the linear fit. """
+        """Return the regression coefficients of the linear fit."""
         return self.algo.coef_
 
     @property
     def intercept(self):
-        """ Return the regression intercepts of the linear fit. """
+        """Return the regression intercepts of the linear fit."""
         if self.parameters["fit_intercept"]:
             intercept = self.algo.intercept_
         else:
@@ -199,8 +202,8 @@ class LinearRegression(MLRegressionAlgo):
         return intercept
 
     def get_coefficients(self, as_dict=True):
-        """Return the regression coefficients of the linear fit
-        as a numpy array or as a dict.
+        """Return the regression coefficients of the linear fit as a numpy array or as a
+        dict.
 
         :param bool as_dict: if True, returns coefficients as a dictionary.
             Default: True.
@@ -222,8 +225,8 @@ class LinearRegression(MLRegressionAlgo):
         return coefficients
 
     def get_intercept(self, as_dict=True):
-        """Returns the regression intercept of the linear fit
-        as a numpy array or as a dict.
+        """Returns the regression intercept of the linear fit as a numpy array or as a
+        dict.
 
         :param bool as_dict: if True, returns intercept as a dictionary.
             Default: True.

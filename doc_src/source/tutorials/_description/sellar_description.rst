@@ -17,7 +17,6 @@ The Sellar's problem is considered in different tutorials:
 
 - :ref:`sphx_glr_tutorials_sg_mdo_plot_gemseo_in_10_minutes.py`
 - :ref:`sellar_mdo`
-- :ref:`sellar_scalable`
 
 Description of the problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -25,13 +25,11 @@ Generate a N2 and XDSM from an Excel description of the MDO problem
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from ast import literal_eval
 
-from future import standard_library
 from pandas import read_excel
-from six import string_types
 
-from gemseo import LOGGER
 from gemseo.api import (
     create_design_space,
     create_scenario,
@@ -41,12 +39,11 @@ from gemseo.api import (
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
 class XLSStudyParser(object):
-    """
-    Parse the input excel files that describe the GEMSEO study.
+    """Parse the input excel files that describe the GEMSEO study.
 
     The Excel file must contain one sheet per discipline.
     The name of the sheet is the discipline name.
@@ -66,7 +63,6 @@ class XLSStudyParser(object):
     not necessarily the one of the current sheet
     All Design variables must be inputs of a discipline, not necessarily
     the one of the current sheet
-
     """
 
     SCENARIO_PREFIX = "Scenario"
@@ -80,8 +76,7 @@ class XLSStudyParser(object):
     OPTIONS_VALUES = "Options values"
 
     def __init__(self, xls_study_path):
-        """
-        Initializes the study from the excel specification
+        """Initializes the study from the excel specification.
 
         :param xls_study_path: path to the excel file describing the study
         """
@@ -94,8 +89,8 @@ class XLSStudyParser(object):
             raise
 
         LOGGER.info("Detected the following disciplines: %s", list(self.frames.keys()))
-        self.disciplines = {}
-        self.scenarios = {}
+        self.disciplines = dict()
+        self.scenarios = dict()
         self.inputs = []
         self.outputs = []
 
@@ -106,7 +101,7 @@ class XLSStudyParser(object):
             raise ValueError("Found no scenario in the xls file !")
 
     def _init_disciplines(self):
-        """ Initializes disciplines. """
+        """Initializes disciplines."""
         for disc_name, frame in self.frames.items():
             if disc_name.startswith(self.SCENARIO_PREFIX):
                 continue
@@ -146,9 +141,8 @@ class XLSStudyParser(object):
 
     @staticmethod
     def _get_frame_series_values(frame, series_name, return_none=False):
-        """
-        Gets the data list of a named column
-        Removes empty data
+        """Gets the data list of a named column Removes empty data.
+
         :param frame: the pandas frame of the sheet
         :param series_name: name of the series
         :param return_none: if the series does not exists, returns None
@@ -161,13 +155,11 @@ class XLSStudyParser(object):
             raise ValueError("The sheet has no series named " + str(series_name))
         # Remove empty data
         # pylint: disable=comparison-with-itself
-        return list([val for val in series.tolist() if val == val])
+        return [val for val in series.tolist() if val == val]
 
     def _get_opt_pb_descr(self):
-        """
-        Initilalize the objective function, constraints and design_variables
-        """
-        self.scenarios = {}
+        """Initilalize the objective function, constraints and design_variables."""
+        self.scenarios = dict()
 
         for frame_name, frame in self.frames.items():
             if not frame_name.startswith(self.SCENARIO_PREFIX):
@@ -256,14 +248,15 @@ class XLSStudyParser(object):
 
             formulation = formulation[0]
 
-            scn = {}
-            scn[self.DISCIPLINES] = disciplines
-            scn[self.OBJECTIVE_FUNCTION] = objectives
-            scn[self.CONSTRAINTS] = constraints
-            scn[self.DESIGN_VARIABLES] = design_variables
-            scn[self.FORMULATION] = formulation
-            scn[self.OPTIONS] = options
-            scn[self.OPTIONS_VALUES] = options_values
+            scn = {
+                self.DISCIPLINES: disciplines,
+                self.OBJECTIVE_FUNCTION: objectives,
+                self.CONSTRAINTS: constraints,
+                self.DESIGN_VARIABLES: design_variables,
+                self.FORMULATION: formulation,
+                self.OPTIONS: options,
+                self.OPTIONS_VALUES: options_values,
+            }
 
             self.scenarios[frame_name] = scn
 
@@ -286,9 +279,7 @@ class XLSStudyParser(object):
         formulation,
         scn_name,
     ):
-        """
-        Checks the optimization problem consistency.
-        Raises errors if needed
+        """Checks the optimization problem consistency. Raises errors if needed.
 
         :param objectives: list of objectives
         :param constraints: list of constraints
@@ -296,7 +287,6 @@ class XLSStudyParser(object):
         :param design_variables: list of design varaibles
         :param formulation : mdo formulation name
         :param scn_name: name of the scenario
-
         """
         LOGGER.info("New scenario: %s", scn_name)
         LOGGER.info("Objectives: %s", objectives)
@@ -348,12 +338,10 @@ class XLSStudyParser(object):
 
 
 class StudyAnalysis(object):
-    """
-    Generate a N2 (equivalent to the Design Structure Matrix) diagram,
-    showing the couplings between discipline and
-    XDSM, (Extended Design Structure Matrix), showing the MDO process,
-    from a Excel specification of the inputs, outputs, design variables,
-    objectives and constraints.
+    """Generate a N2 (equivalent to the Design Structure Matrix) diagram, showing the
+    couplings between discipline and XDSM, (Extended Design Structure Matrix), showing
+    the MDO process, from a Excel specification of the inputs, outputs, design
+    variables, objectives and constraints.
 
     The input excel files contains one sheet per discipline.
     The name of the sheet is the discipline name.
@@ -407,13 +395,12 @@ class StudyAnalysis(object):
 
     An arbitrary number of levels can be generated this way
     (three, four levels etc formulations).
-    """
+    """  # noqa: B950
 
     AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 
     def __init__(self, xls_study_path):
-        """
-        Initializes the study from the excel specification
+        """Initializes the study from the excel specification.
 
         :param xls_study_path: path to the excel file describing the study
         """
@@ -422,8 +409,8 @@ class StudyAnalysis(object):
         self.study = XLSStudyParser(self.xls_study_path)
         self.disciplines_descr = self.study.disciplines
         self.scenarios_descr = self.study.scenarios
-        self.disciplines = {}
-        self.scenarios = {}
+        self.disciplines = dict()
+        self.scenarios = dict()
         self.main_scenario = None
         self._create_scenarios()
 
@@ -435,8 +422,7 @@ class StudyAnalysis(object):
         show=False,
         figsize=(15, 10),
     ):
-        """
-        Generate a N2 plot for the disciplines list.
+        """Generate a N2 plot for the disciplines list.
 
         :param file_path: File path of the figure.
         :type file_path: str
@@ -463,8 +449,7 @@ class StudyAnalysis(object):
 
     @staticmethod
     def _create_scenario(disciplines, scenario_descr):
-        """
-        Create a MDO scenario
+        """Create a MDO scenario.
 
         :param disciplines: list of MDODisciplines
         :param scenario_descr: description dict of the scenario
@@ -474,7 +459,7 @@ class StudyAnalysis(object):
         couplings = coupl_struct.get_all_couplings()
         design_space = create_design_space()
         scn_dv = scenario_descr[XLSStudyParser.DESIGN_VARIABLES]
-        for var in set(scn_dv) | set(couplings):
+        for var in sorted(set(scn_dv) | set(couplings)):
             design_space.add_variable(var, size=1)
 
         options = scenario_descr[XLSStudyParser.OPTIONS]
@@ -482,13 +467,13 @@ class StudyAnalysis(object):
         if options is not None:
             options_values = scenario_descr[XLSStudyParser.OPTIONS_VALUES]
             for opt, val in zip(options, options_values):
-                if isinstance(val, string_types):
+                if isinstance(val, str):
                     try:
                         val = literal_eval(val)
-                    except ValueError as err:
-                        LOGGER.error(err)
+                    except ValueError:
+                        LOGGER.exception("")
                         raise ValueError(
-                            "Failed to parse option " + str(opt) + " value :" + str(val)
+                            "Failed to parse option %s value: %s", opt, val
                         )
                 else:
                     pass
@@ -506,10 +491,8 @@ class StudyAnalysis(object):
         return scenario
 
     def _get_disciplines_instances(self, scn):
-        """
-        Returns instances of the disciplines of the scenario,
-        or None if not all available
-        """
+        """Returns instances of the disciplines of the scenario, or None if not all
+        available."""
         discs = []
         for disc_name in scn[XLSStudyParser.DISCIPLINES]:
             disc_inst = self.disciplines_descr.get(disc_name)
@@ -521,12 +504,11 @@ class StudyAnalysis(object):
         return discs
 
     def _create_scenarios(self):
-        """
-        Create the main scenario, eventually including sub scenarios
-        """
+        """Create the main scenario, eventually including sub scenarios."""
         n_scn = len(self.scenarios_descr)
         i = 0
 
+        temp_discs = {}
         while len(self.scenarios) != n_scn and i <= n_scn:
             i += 1
             for name, scn in self.scenarios_descr.items():
@@ -534,7 +516,7 @@ class StudyAnalysis(object):
                 if discs is not None:  # All depdendencies resolved
                     for disc in discs:
                         if not disc.is_scenario():
-                            self.disciplines[disc.name] = disc
+                            temp_discs[disc.name] = disc
 
                     scenario = self._create_scenario(discs, scn)
                     self.scenarios[name] = scenario
@@ -552,9 +534,14 @@ class StudyAnalysis(object):
                 "between scenarios!"
             )
 
+        self.disciplines = dict()
+        # Preserves the order of disciplines in the original Excel file
+        # Important for the N2 generation
+        for disc_name in self.disciplines_descr:
+            self.disciplines[disc_name] = temp_discs[disc_name]
+
     def generate_xdsm(self, output_dir, latex_output=False, open_browser=False):
-        """
-        Creates an xdsm.json file from the current scenario.
+        """Creates an xdsm.json file from the current scenario.
 
         :param output_dir: the directory where XDSM html files are generated
         :param latex_output: build .tex, .tikz and .pdf file
@@ -563,8 +550,8 @@ class StudyAnalysis(object):
             input and output grammars but no _run methods so that can't be executed
         """
         LOGGER.info("Generated the following Scenario:")
-        self.main_scenario.log_me()
-        self.main_scenario.formulation.opt_problem.log_me()
+        LOGGER.info("%s", self.main_scenario)
+        LOGGER.info("%s", self.main_scenario.formulation.opt_problem)
         self.main_scenario.xdsmize(
             outdir=output_dir, latex_output=latex_output, open_browser=open_browser
         )

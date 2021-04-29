@@ -14,9 +14,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-"""
-Copyright ONERA, taken from WhatsOpt-CLI
-https://github.com/OneraHub/WhatsOpt-CLI/blob/master/whatsopt/show_utils.py
+"""Copyright ONERA, taken from WhatsOpt-CLI https://github.com/OneraHub/WhatsOpt-
+CLI/blob/master/whatsopt/show_utils.py.
 
 Distributed under the Apache 2.0 license
 
@@ -64,13 +63,12 @@ HTML_TEMPLATE = """
 
 
 def generate_xdsm_html(xdsm, out_file_path="xdsm.html"):
-    """
-    Generates a self contained HTML file
+    """Generates a self contained HTML file.
 
     :parma xdsm: xdsm dict data
     :param out_file_path: path to the output HTML file
     """
     html = HTML_TEMPLATE.format(css(), bundlejs(), xdsm)
 
-    with open(out_file_path, "w") as stream:
+    with open(str(out_file_path), "w") as stream:
         stream.write(html)

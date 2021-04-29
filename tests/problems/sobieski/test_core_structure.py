@@ -23,34 +23,25 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import unittest
-from builtins import range
 
-from future import standard_library
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.base import SobieskiBase
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.core_structure import SobieskiStructure as CoreStructure
 from gemseo.problems.sobieski.wrappers import SobieskiStructure
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestSobieskiStructure(unittest.TestCase):
-    """ """
+    """"""
 
     def setUp(self):
-        """At creation of unittest, initiate a sobieski problem class"""
+        """At creation of unittest, initiate a sobieski problem class."""
         self.problem = SobieskiProblem("complex128")
         self.threshold = 1e-12
 
     def test_dfuelweightdtoverc(self):
-        """ """
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_structure
         indata = self.problem.get_default_inputs(
@@ -63,8 +54,8 @@ class TestSobieskiStructure(unittest.TestCase):
             lin_wf, sr.compute_fuelwing_weight(x_shared).imag / h, places=8
         )
 
-    def test_dfuelweightdAR(self):
-        """ """
+    def test_dfuelweightd_ar(self):
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_structure
         indata = self.problem.get_default_inputs(
@@ -78,7 +69,7 @@ class TestSobieskiStructure(unittest.TestCase):
         )
 
     def test_dfuelweightdsref(self):
-        """ """
+        """"""
         h = 1e-30
         sr = self.problem.sobieski_structure
         indata = self.problem.get_default_inputs(
@@ -92,7 +83,7 @@ class TestSobieskiStructure(unittest.TestCase):
         )
 
     def test_jac_structure(self):
-        """ """
+        """"""
 
         sr = SobieskiStructure("complex128")
         indata = self.problem.get_default_inputs(names=sr.get_input_data_names())

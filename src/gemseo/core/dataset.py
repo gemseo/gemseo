@@ -50,33 +50,56 @@ It is also possible to export the :class:`.Dataset`
 to an :class:`.AbstractFullCache` or a pandas DataFrame.
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
+import operator
+from builtins import dict, object, range, str
 from numbers import Number
 
-from future import standard_library
-from numpy import array, concatenate, genfromtxt, hstack, ndarray, unique
+from numpy import (
+    array,
+    concatenate,
+    delete,
+    genfromtxt,
+    hstack,
+    isnan,
+    ndarray,
+    unique,
+    where,
+)
 from six import string_types
 
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.post.dataset.factory import DatasetPlotFactory
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.py23_compat import _long
+from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
-from gemseo import LOGGER
+LOGICAL_OPERATORS = {
+    "<=": operator.le,
+    "<": operator.lt,
+    ">=": operator.ge,
+    ">": operator.gt,
+    "==": operator.eq,
+    "!=": operator.ne,
+}
 
 
 class Dataset(object):
-    """A Dataset is an object defined by data stored as a 2D numpy array,
-    whose rows are samples, a.k.a. realizations, and columns are properties,
-    a.k.a. parameters, variables or features. A dataset is also defined by
-    a list of variables names, a dictionary of variables sizes
-    and a dictionary of variables types. We can easily access its length
-    and get the data, either as a 2D array or as a list of dictionaries
-    indexed by the variables names. It is also possible to export the dataset
-    to a :class:`.AbstractFullCache` or a pandas DataFrame."""
+    """A Dataset is an object defined by data stored as a 2D numpy array, whose rows are
+    samples, a.k.a.
+
+    realizations, and columns are properties, a.k.a. parameters, variables or features.
+    A dataset is also defined by a list of variables names, a dictionary of variables
+    sizes and a dictionary of variables types. We can easily access its length and get
+    the data, either as a 2D array or as a list of dictionaries indexed by the variables
+    names. It is also possible to export the dataset to a :class:`.AbstractFullCache` or
+    a pandas DataFrame.
+    """
 
     PARAMETER_GROUP = "parameters"
     DESIGN_GROUP = "design_parameters"
@@ -99,7 +122,7 @@ class Dataset(object):
         """Constructor.
 
         :param str name: dataset name.
-        :param bool group: if True, store the data by group. Otherwise,
+        :param bool by_group: if True, store the data by group. Otherwise,
             store them by variables. Default: True
         """
         self.name = name or self.__class__.__name__
@@ -116,9 +139,75 @@ class Dataset(object):
         self._cached_outputs = []
         self._plot_factory = DatasetPlotFactory()
         self.metadata = {}
+        self.__row_names = None
+
+    def remove(self, entries):
+        """Remove entries.
+
+        :param entries: entries to remove, either a list of entry indices
+            or a boolean 1D array whose length is equal to the number of samples
+            and elements to delete are coded True.
+        :type entries: list(int) or ndarray
+        """
+        if isinstance(entries, ndarray):
+            entries = self.find(entries)
+        self.length -= len(entries)
+        for name, value in list(self.data.items()):
+            self.data[name] = delete(value, entries, 0)
+
+    def find(self, comparison):
+        """Find entries based on a comparison which is a boolean 1D array whose length
+        is equal to the number of entries.
+
+        :param ndarray comparison: comparison.
+        """
+        return where(comparison)[0].tolist()
+
+    def is_nan(self):
+        """Check if an entry contains nan.
+
+        :return: a boolean 1D array whose length is equal to the number of entries.
+        :rtype: ndarray
+        """
+        return isnan(self.get_all_data(False)[0]).any(1)
+
+    def compare(self, value_1, operator, value_2, component_1=0, component_2=0):
+        """Compare either a variable and a value or a variable and another variable.
+
+        :param value_1: first value, either a variable name or a numeric value.
+        :type value_1: str or float
+        :param str operator: logical operator, either "==", "<", "<=", ">" or ">=".
+        :param value_2: second value, either a variable name or a numeric value.
+        :type value_2: str or float
+        :param int component_1: if value_1 is a variable name, component_1 corresponds
+            to its component used in the comparison. Default: 0.
+        :param int component_2: if value_2 is a variable name, component_2 corresponds
+            to its component used in the comparison. Default: 0.
+        :return: a boolean 1D array whose length is equal to the number of entries.
+        :rtype: ndarray
+        """
+        if value_1 not in self.variables and value_2 not in self.variables:
+            raise ValueError(
+                "Either value_1 ({}) or value_2 ({}) "
+                "must be a variable name from the list: {}".format(
+                    value_1, value_2, self.variables
+                )
+            )
+        if value_1 in self.variables:
+            value_1 = self[value_1][value_1][:, component_1]
+        if value_2 in self.variables:
+            value_2 = self[value_2][value_2][:, component_2]
+        try:
+            result = LOGICAL_OPERATORS[operator](value_1, value_2)
+        except KeyError:
+            raise ValueError(
+                "{} is not a logical operator: "
+                "use either '==', '<', '<=', '>' or '>='".format(operator)
+            )
+        return result
 
     def _clean(self):
-        """ Clean dataset. """
+        """Clean dataset."""
         self._names = {}
         self._groups = {}
         self.sizes = {}
@@ -146,7 +235,7 @@ class Dataset(object):
         return variable_name in self._groups
 
     def is_empty(self):
-        """ Returns True if the dataset is empty. """
+        """Returns True if the dataset is empty."""
         return self.n_samples == 0
 
     def get_names(self, group_name):
@@ -165,30 +254,34 @@ class Dataset(object):
 
     @property
     def variables(self):
-        """ Names of variables. """
+        """Names of variables."""
         return sorted(self._groups.keys())
 
     @property
     def groups(self):
-        """ Names of the groups of variables. """
+        """Names of the groups of variables."""
         return sorted(self._names.keys())
 
     def __str__(self):
-        """ String representation. """
-        string = self.name + "\n"
-        string += "| Number of samples: " + str(self.n_samples) + "\n"
-        string += "| Number of variables: " + str(self.n_variables) + "\n"
-        string += "| Variables names and sizes by group: \n"
-        for group, varnames in self._names.items():
-            varnames = [name + " (" + str(self.sizes[name]) + ")" for name in varnames]
-            varnames = ", ".join(varnames) + "\n"
-            if varnames != "\n":
-                string += "| - " + group + ": " + varnames
-        total = str(sum(self.dimension.values()))
-        string += "| Number of dimensions (total = " + total + ") by group:\n"
-        for group, size in self.dimension.items():
-            string += "| - " + group + ": " + str(size) + "\n"
-        return string
+        """String representation."""
+        msg = MultiLineString()
+        msg.add(self.name)
+        msg.indent()
+        msg.add("Number of samples: {}", self.n_samples)
+        msg.add("Number of variables: {}", self.n_variables)
+        msg.add("Variables names and sizes by group:")
+        msg.indent()
+        for group, varnames in sorted(self._names.items()):
+            varnames = ["{} ({})".format(name, self.sizes[name]) for name in varnames]
+            if varnames:
+                msg.add("{}: {}", group, pretty_repr(varnames))
+        total = sum(self.dimension.values())
+        msg.dedent()
+        msg.add("Number of dimensions (total = {}) by group:", total)
+        msg.indent()
+        for group, size in sorted(self.dimension.items()):
+            msg.add("{}: {}", group, size)
+        return str(msg)
 
     def __check_new_variable(self, variable):
         """Raise ValueError if variable is already defined.
@@ -196,9 +289,9 @@ class Dataset(object):
         :param str variable: variable name.
         """
         if self.is_variable(variable):
-            raise ValueError(variable + " is already defined.")
+            raise ValueError("{} is already defined.".format(variable))
         if not isinstance(variable, string_types):
-            raise TypeError("variable name must be a string.")
+            raise TypeError("{} is not a string.".format(variable))
 
     def __check_new_group(self, group):
         """Raise ValueError if group is already defined.
@@ -206,13 +299,13 @@ class Dataset(object):
         :param str group: group name.
         """
         if self.is_group(group):
-            raise ValueError(group + " is already defined.")
+            raise ValueError("{} is already defined.".format(group))
         if not isinstance(group, string_types):
-            raise TypeError("Group name must be a string.")
+            raise TypeError("{} is not a string.".format(group))
 
     def __check_length_consistency(self, length):
-        """Raises ValueError if the length is different from the length of
-        the dataset and if the latter is different from zero.
+        """Raises ValueError if the length is different from the length of the dataset
+        and if the latter is different from zero.
 
         :param int length: length.
         """
@@ -224,8 +317,8 @@ class Dataset(object):
         self.length = length
 
     def __check_data_consistency(self, data):
-        """Raises ValueError if the data is not a 2D numpy array
-        or if its length is different from the length of the dataset.
+        """Raises ValueError if the data is not a 2D numpy array or if its length is
+        different from the length of the dataset.
 
         :param array data: data.
         """
@@ -268,8 +361,8 @@ class Dataset(object):
             )
 
     def __check_variables_sizes(self, variables, sizes, dimension):
-        """Raises ValueError if the sum of the variables sizes is different
-        from the number of data columns.
+        """Raises ValueError if the sum of the variables sizes is different from the
+        number of data columns.
 
         :param list(str) variables: list of variables names.
         :param dict sizes: variables sizes.
@@ -281,7 +374,7 @@ class Dataset(object):
                 self.__check_sizes_format(sizes, variables, dimension)
 
     def __get_default_group_variables(self, group, dimension, varname=None):
-        """ Returns default variables names for a given group."""
+        """Returns default variables names for a given group."""
         default_name = varname or self.DEFAULT_NAMES.get(group) or group
         variables = [default_name + "_" + str(index) for index in range(dimension)]
         sizes = {name: 1 for name in variables}
@@ -289,7 +382,7 @@ class Dataset(object):
         return variables, sizes, groups
 
     def __set_group_data(self, data, group, variables, sizes):
-        """ Set data for a given group. """
+        """Set data for a given group."""
         if self._group:
             self.data[group] = data
         else:
@@ -297,7 +390,7 @@ class Dataset(object):
             self.data.update(array_to_dict(data, variables, sizes))
 
     def __set_variable_data(self, name, data, group):
-        """ Set data for a given group. """
+        """Set data for a given group."""
         if self._group:
             if not self.is_group(group):
                 self.data[group] = data
@@ -307,7 +400,7 @@ class Dataset(object):
             self.data[name] = data
 
     def __set_group_properties(self, group, variables, sizes, cache_as_input):
-        """ Set properties for a given group. """
+        """Set properties for a given group."""
         self.sizes.update(sizes)
         self._groups.update({name: group for name in variables})
         self._names[group] = variables
@@ -323,7 +416,7 @@ class Dataset(object):
                 self._cached_outputs.append(name)
 
     def __set_variable_properties(self, variable, group, size, cache_as_input):
-        """ Set properties for a given variable. """
+        """Set properties for a given variable."""
         self.sizes[variable] = size
         self._groups[variable] = group
         if not self.is_group(group):
@@ -382,7 +475,7 @@ class Dataset(object):
         self.__set_variable_properties(name, group, data.shape[1], cache_as_input)
 
     def __get_strings_encoding(self, data):
-        """ Returns strings encoding. """
+        """Returns strings encoding."""
         self.strings_encoding = {name: {} for name in self._groups}
         encoding = {}
         if str(data.dtype).startswith(("|S", "<U")):
@@ -392,7 +485,7 @@ class Dataset(object):
     def set_from_array(
         self, data, variables=None, sizes=None, groups=None, default_name=None
     ):
-        """Set Dataset from a numpy array or a dictionary of arrays
+        """Set Dataset from a numpy array or a dictionary of arrays.
 
         :param array data: dataset.
         :param list(str) variables: list of variables names.
@@ -419,7 +512,7 @@ class Dataset(object):
         self.__set_data(data, variables, encoding)
 
     def __check_groups_format(self, groups, variables):
-        """ Check groups format and update it if necessary"""
+        """Check groups format and update it if necessary."""
         if not isinstance(groups, dict):
             raise TypeError(
                 "groups must be a dictionary indexed by variables"
@@ -435,10 +528,9 @@ class Dataset(object):
                 )
 
     def __set_data(self, data, variables, encoding):
-        """ Set data. """
+        """Set data."""
         indices = {group: [] for group in self._names}
         start = 0
-        end = 0
         for name in variables:
             end = start + self.sizes[name] - 1
             name_indices = list(range(start, end + 1))
@@ -455,7 +547,7 @@ class Dataset(object):
                 self.data[group] = data[:, indices[group]]
 
     def _set_variables_positions(self):
-        """ Set variables positions. """
+        """Set variables positions."""
         for varnames in self._names.values():
             start = 0
             for varname in varnames:
@@ -554,38 +646,44 @@ class Dataset(object):
 
     def set_metadata(self, name, value):
         """Set metadata attribute.
+
         :param string name: Metadata attribute name.
         :param value: Metadata attribute value.
         """
         self.metadata[name] = value
 
-    def _get_columns_names(self, as_list=False, start=0):
-        """Return the names of the data columns. If dim(x)=1,
-        its column name is 'x' while if dim(y)=2, its columns names
-        are either 'x_0' and 'x_1' or ['x',0] and ['x',1].
+    @property
+    def columns_names(self):
+        """Return the names of the data columns."""
+        return self._get_columns_names()
 
-        :param bool as_tuple: if True, return the name as a tuple.
+    def _get_columns_names(self, as_list=False, start=0):
+        """Return the names of the data columns. If dim(x)=1, its column name is 'x'
+        while if dim(y)=2, its columns names are either 'x_0' and 'x_1' or [group_name,
+        'x', '0'] and [group_name, 'x', '1'].
+
+        :param bool as_list: if True, return the name as a tuple.
             if False, return the name as a string. Default: False.
         :param int start: first index for components of a variable.
             Default: 0 ('x_0', 'x_1', ...).
         """
-        tmp = []
-        for _, names in self._names.items():
+        column_names = []
+        for group, names in self._names.items():
             for name in names:
                 if as_list:
-                    tmp += [
-                        [self._groups[name], name, str(index + start)]
+                    column_names += [
+                        [group, name, str(index + start)]
                         for index in range(self.sizes[name])
                     ]
                 else:
                     if self.sizes[name] == 1:
-                        tmp += [name]
+                        column_names += [name]
                     else:
-                        tmp += [
-                            name + "_" + str(index + start)
+                        column_names += [
+                            "{}_{}".format(name, index + start)
                             for index in range(self.sizes[name])
                         ]
-        return tmp
+        return column_names
 
     def get_data_by_group(self, group, as_dict=False):
         """Returns data associated with a group.
@@ -634,7 +732,7 @@ class Dataset(object):
     def get_all_data(self, by_group=True, as_dict=False):
         """Returns all data.
 
-        :param str group: variable group.
+        :param str by_group: variable group.
         :param bool as_dict: if True, return outputs values as dictionary.
             Default: False.
         """
@@ -661,7 +759,7 @@ class Dataset(object):
 
     @property
     def n_variables(self):
-        """ Return the number of variables. """
+        """Return the number of variables."""
         return len(self._groups)
 
     def n_variables_by_group(self, group):
@@ -673,15 +771,15 @@ class Dataset(object):
 
     @property
     def n_samples(self):
-        """ Return the number of samples. """
+        """Return the number of samples."""
         return self.length
 
     def __len__(self):
-        """ Length of the object """
+        """Length of the object."""
         return self.length
 
     def __bool__(self):
-        """ returns True is the dataset is not empty. """
+        """returns True is the dataset is not empty."""
         return not self.is_empty()
 
     def export_to_dataframe(self, copy=True):
@@ -701,7 +799,9 @@ class Dataset(object):
             row3.append(column[2])
         columns = [array(row1), array(row2), array(row3)]
         data = self.get_all_data(False, False)
-        return DataFrame(data[0], columns=columns, copy=copy)
+        dataframe = DataFrame(data[0], columns=columns, copy=copy)
+        dataframe.index = self.row_names
+        return dataframe
 
     def export_to_cache(
         self,
@@ -741,14 +841,17 @@ class Dataset(object):
         else:
             cache = create_cache(cache_type, **options)
         for sample in range(len(self)):
-            in_values = {name: self[(sample, name)][name][0] for name in inputs}
-            out_values = {name: self[(sample, name)][name][0] for name in outputs}
+            in_values = {name: self[(sample, name)][name] for name in inputs}
+            out_values = {name: self[(sample, name)][name] for name in outputs}
             cache.cache_outputs(in_values, inputs, out_values, outputs)
         return cache
 
+    def get_available_plots(self):
+        return self._plot_factory.plots
+
     def plot(self, name, show=True, save=False, **options):
-        """Finds the appropriate library and executes
-        the post processing on the problem
+        """Finds the appropriate library and executes the post processing on the
+        problem.
 
         :param str name: the post processing name
         :param show: show the figure (default: True)
@@ -776,17 +879,17 @@ class Dataset(object):
                 raise ValueError("{} is not a sample index.".format(index))
         for name in names:
             if name not in self._groups:
-                raise ValueError("{} is not a variable name.".format(name))
+                raise ValueError("'{}' is not a variable name.".format(name))
         item = self.get_data_by_names(names)
         if len(indices) == 1:
             indices = indices[0]
-        item = {name: value[indices, :] for name, value in item.items()}
+        item = {name: value[indices, :] for name, value in list(item.items())}
         return item
 
     def __getitem__(self, key):
-        """Gets item, where key is either int, str, list(int), list(str),
-        (int, str), (int, list(str)), (list(int), str), (int, list(str)),
-        or (list(int), list(str))."""
+        """Gets item, where key is either int, str, list(int), list(str), (int, str),
+        (int, list(str)), (list(int), str), (int, list(str)), or (list(int),
+        list(str))."""
         indices = list(range(0, self.length))
         type_error_msg = "___getitem__ uses one of these argument types: "
         type_error_msg += "int, str, "
@@ -796,7 +899,7 @@ class Dataset(object):
         type_error_msg += "or (list(int), list(str)). "
 
         def getitem_list(index):
-            """ Gets item when index is a list."""
+            """Gets item when index is a list."""
             if all(isinstance(elem, string_types) for elem in index):
                 item = self.__getitem(indices, index)
             elif all(isinstance(elem, Number) for elem in index):
@@ -806,7 +909,7 @@ class Dataset(object):
             return item
 
         def getitem_tuple(tpl):
-            """ Gets item when index is a tuple."""
+            """Gets item when index is a tuple."""
             if isinstance(tpl[0], Number):
                 indices = [tpl[0]]
             elif isinstance(tpl[0], slice):
@@ -842,3 +945,50 @@ class Dataset(object):
         else:
             raise TypeError(type_error_msg)
         return item
+
+    @property
+    def row_names(self):
+        """Return row names."""
+        return self.__row_names or [str(val) for val in range(len(self))]
+
+    @row_names.setter
+    def row_names(self, names):
+        """Set row names.
+
+        :param list(str) names: list of names.
+        """
+        self.__row_names = names
+
+    def get_parameter_space(self, groups=None, uncertain=False):
+        """Get parameter space.
+
+        :param list(str) groups: groups of parameters. If None, consider all groups;
+            Default: None.
+        :param bool uncertain: if True, add parameters as random variables. Otherwise,
+            add parameters as deterministic variables. Default: False.
+        :return: parameter space.
+        :rtype: ParameterSpace
+        """
+        parameter_space = ParameterSpace()
+        groups = groups or self.groups
+        for group in groups:
+            for name in self.get_names(group):
+                data = self.get_data_by_names(name)[name]
+                l_b = data.min(0)
+                u_b = data.max(0)
+                value = (l_b + u_b) / 2
+                size = len(l_b)
+                if uncertain:
+                    dist = "OTUniformDistribution"
+                    for idx in range(size):
+                        name_idx = "{}_{}".format(name, idx)
+                        parameter_space.add_random_variable(
+                            name_idx,
+                            dist,
+                            1,
+                            minimum=float(l_b[idx]),
+                            maximum=float(u_b[idx]),
+                        )
+                else:
+                    parameter_space.add_variable(name, size, "float", l_b, u_b, value)
+        return parameter_space

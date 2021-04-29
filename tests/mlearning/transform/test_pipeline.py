@@ -18,28 +18,25 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test transformer pipeline module. """
+"""Test transformer pipeline module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, arange, array, diag, eye
 
 from gemseo.mlearning.transform.pipeline import Pipeline
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def data():
-    """ Test data. """
+    """Test data."""
     return arange(30).reshape((10, 3))
 
 
 @pytest.fixture
 def transformers():
-    """Transformers for pipeline. """
+    """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 
 
@@ -51,7 +48,7 @@ C_3 = array([5, 1, 2])
 
 @pytest.fixture
 def other_transformers():
-    """Transformers for pipeline. """
+    """Transformers for pipeline."""
     return [
         Scaler(coefficient=C_1),
         Scaler(offset=OFF_2),
@@ -60,7 +57,7 @@ def other_transformers():
 
 
 def test_constructor(transformers, other_transformers):
-    """ Test constructor. """
+    """Test constructor."""
     pipeline = Pipeline()
     assert pipeline.name == "Pipeline"
     assert pipeline.transformers == []
@@ -71,7 +68,7 @@ def test_constructor(transformers, other_transformers):
 
 
 def test_duplicate(data, transformers):
-    """ Test pipeline duplicate method. """
+    """Test pipeline duplicate method."""
     pipeline = Pipeline()
     pipeline.fit(data)
     pipeline_dup = pipeline.duplicate()
@@ -90,7 +87,7 @@ def test_duplicate(data, transformers):
 
 
 def test_fit(data, transformers, other_transformers):
-    """ Test fit method. """
+    """Test fit method."""
     pipeline = Pipeline()
     pipeline.fit(data)
 
@@ -102,7 +99,7 @@ def test_fit(data, transformers, other_transformers):
 
 
 def test_transform(data, transformers, other_transformers):
-    """ Test transform method. """
+    """Test transform method."""
     pipeline = Pipeline()
     pipeline.fit(data)
     transformed_data = pipeline.transform(data)
@@ -120,7 +117,7 @@ def test_transform(data, transformers, other_transformers):
 
 
 def test_inverse_transform(data, transformers, other_transformers):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     pipeline = Pipeline()
     pipeline.fit(data)
     transformed_data = pipeline.inverse_transform(data)
@@ -138,7 +135,7 @@ def test_inverse_transform(data, transformers, other_transformers):
 
 
 def test_compute_jacobian(data, transformers, other_transformers):
-    """ Test compute_jacobian method. """
+    """Test compute_jacobian method."""
     iden = eye(data.shape[1])
 
     pipeline = Pipeline()
@@ -158,7 +155,7 @@ def test_compute_jacobian(data, transformers, other_transformers):
 
 
 def test_compute_jacobian_inverse(data, transformers, other_transformers):
-    """ Test compute_jacobian_inverse method. """
+    """Test compute_jacobian_inverse method."""
     iden = eye(data.shape[1])
 
     pipeline = Pipeline()

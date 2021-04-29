@@ -48,6 +48,7 @@ import sys
 from pathlib import Path
 
 import six
+from sphinx.ext.napoleon.docstring import GoogleDocstring
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
@@ -69,9 +70,19 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.napoleon",
     "sphinx_gallery.gen_gallery",
+    "autodocsumm",
     "add_toctree_functions",
     "gemseo_pre_processor",
 ]
+
+autodoc_default_options = {
+    "inherited-members": True,
+    "autosummary": True,
+}
+
+autodoc_typehints = "description"
+autoclass_content = "both"
+napoleon_use_ivar = True
 
 apidoc_module_dir = "../../src/gemseo"
 apidoc_output_dir = "_modules"
@@ -433,3 +444,39 @@ mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
 rst_prolog = """
 .. |g| replace:: GEMSEO
 """
+
+# -- Extensions to the  Napoleon GoogleDocstring class ---------------------
+
+
+# first, we define new methods for any new sections and add them to the class
+def parse_keys_section(self, section):
+    return self._format_fields("Keys", self._consume_fields())
+
+
+GoogleDocstring._parse_keys_section = parse_keys_section
+
+
+def parse_attributes_section(self, section):
+    return self._format_fields("Attributes", self._consume_fields())
+
+
+GoogleDocstring._parse_attributes_section = parse_attributes_section
+
+
+def parse_class_attributes_section(self, section):
+    return self._format_fields("Class Attributes", self._consume_fields())
+
+
+GoogleDocstring._parse_class_attributes_section = parse_class_attributes_section
+
+
+def patched_parse(self):
+    # we now patch the parse method to guarantee that the the above methods are
+    # assigned to the _section dict
+    self._sections["keys"] = self._parse_keys_section
+    self._sections["class attributes"] = self._parse_class_attributes_section
+    self._unpatched_parse()
+
+
+GoogleDocstring._unpatched_parse = GoogleDocstring._parse
+GoogleDocstring._parse = patched_parse

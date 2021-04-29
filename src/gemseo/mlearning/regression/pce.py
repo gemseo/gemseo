@@ -78,7 +78,8 @@ of the `openturns library <http://openturns.github.io/openturns/1.9/user_manual
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import all as np_all
 from numpy import array, concatenate, isin, zeros, zeros_like
 from openturns import (
@@ -87,12 +88,12 @@ from openturns import (
     CleaningStrategy,
     ComposedDistribution,
     CorrectedLeaveOneOut,
-    EnumerateFunction,
     FixedStrategy,
     Function,
     FunctionalChaosAlgorithm,
     FunctionalChaosSobolIndices,
     GaussProductExperiment,
+    HyperbolicAnisotropicEnumerateFunction,
     IntegrationStrategy,
     LeastSquaresMetaModelSelectionFactory,
     LeastSquaresStrategy,
@@ -103,16 +104,14 @@ from openturns import (
     StandardDistributionPolynomialFactory,
 )
 
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class PCERegression(MLRegressionAlgo):
-    """ Polynomial chaos expansion. """
+    """Polynomial chaos expansion."""
 
     LIBRARY = "openturns"
     ABBR = "PCE"
@@ -184,8 +183,6 @@ class PCERegression(MLRegressionAlgo):
         )
         self.prob_space = prob_space
         self.discipline = discipline
-        if transformer is not None and transformer != {}:
-            raise ValueError("PCERegression does not support transformers.")
         try:
             if data:
                 u_names = set(prob_space.variables_names)
@@ -196,10 +193,13 @@ class PCERegression(MLRegressionAlgo):
             raise ValueError(
                 "Data inputs names are %s "
                 "while probability distributions are defined "
-                "%s." % (self.input_names, list(prob_space.marginals.keys()))
+                "%s." % (self.input_names, list(prob_space.distributions.keys()))
             )
+        forbidden_names = set(self.input_names).union(set([Dataset.INPUT_GROUP]))
+        if set(list(self.transformer.keys())).intersection(forbidden_names):
+            raise ValueError("PCERegression does not support input transformers.")
 
-        self.distributions = prob_space.marginals
+        self.distributions = prob_space.distributions
         self.sparse_param = sparse_param or {}
         self.input_dim = sum([dist.dimension for _, dist in self.distributions.items()])
         self.strategy = strategy
@@ -217,7 +217,9 @@ class PCERegression(MLRegressionAlgo):
         ]
         self.dist = ComposedDistribution(self.ot_distributions)
         hyper_factor = self.sparse_param.get("hyper_factor", 1.0)
-        self.enumerate_function = EnumerateFunction(self.input_dim, hyper_factor)
+        self.enumerate_function = HyperbolicAnisotropicEnumerateFunction(
+            self.input_dim, hyper_factor
+        )
         self.basis = self._get_basis()
         self.n_basis = self._get_basis_size()
         self.trunc_strategy = self._get_trunc_strategy()
@@ -250,23 +252,38 @@ class PCERegression(MLRegressionAlgo):
         """
         return array(self.algo.getMetaModel()(input_data))
 
-    def compute_sobol(self):
-        """Compute first and total Sobol' indices
+    @property
+    def first_sobol_indices(self):
+        """Return first Sobol' indices.
 
-        :returns: first and total SObol' indices
-        :rtype: list, list
+        :returns: first Sobol' indices
+        :rtype: dict
         """
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
-        dimension = len(self.input_names)
-        first_order = [sensitivity_analysis.getSobolIndex(i) for i in range(dimension)]
-        total_order = [
-            sensitivity_analysis.getSobolTotalIndex(i) for i in range(dimension)
-        ]
-        return first_order, total_order
+        first_order = {
+            name: sensitivity_analysis.getSobolIndex(index)
+            for index, name in enumerate(self.input_names)
+        }
+        return first_order
+
+    @property
+    def total_sobol_indices(self):
+        """Return total Sobol' indices.
+
+        :returns: total Sobol' indices
+        :rtype: dict
+        """
+        sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
+        LOGGER.info(str(sensitivity_analysis))
+        total_order = {
+            name: sensitivity_analysis.getSobolTotalIndex(index)
+            for index, name in enumerate(self.input_names)
+        }
+        return total_order
 
     def _build_pce(self, x_learn, weights, y_learn):
-        """Build PCE"""
+        """Build PCE."""
         pce_algo = FunctionalChaosAlgorithm(
             x_learn, weights, y_learn, self.dist, self.trunc_strategy
         )
@@ -275,7 +292,7 @@ class PCERegression(MLRegressionAlgo):
         return pce_algo.getResult()
 
     def _get_basis(self):
-        """Get basis function for PCE construction"""
+        """Get basis function for PCE construction."""
         if self.stieltjes:
             # Tend to result in performance issue
             basis = OrthogonalProductPolynomialFactory(
@@ -298,11 +315,11 @@ class PCERegression(MLRegressionAlgo):
         return basis
 
     def _get_basis_size(self):
-        """Get basis size for PCE construction"""
+        """Get basis size for PCE construction."""
         return self.enumerate_function.getStrataCumulatedCardinal(self.degree)
 
     def _get_quadrature_points(self):
-        """Get quadrature points for PCE construction"""
+        """Get quadrature points for PCE construction."""
         measure = self.basis.getMeasure()
         if self.n_quad is not None:
             degree_by_dim = int(self.n_quad ** (1.0 / self.input_dim))
@@ -356,7 +373,7 @@ class PCERegression(MLRegressionAlgo):
         return sample, weights, proj_strategy
 
     def _get_trunc_strategy(self):
-        """Get truncation strategy for PCE construction"""
+        """Get truncation strategy for PCE construction."""
         if self.strategy in [self.LS_STRATEGY, self.QUAD_STRATEGY]:
             trunc_strategy = FixedStrategy(self.basis, self.n_basis)
         elif self.strategy == self.SPARSE_STRATEGY:
@@ -376,7 +393,7 @@ class PCERegression(MLRegressionAlgo):
         return trunc_strategy
 
     def _get_proj_strategy(self, x_learn, y_learn):
-        """Get projection strategy for PCE construction
+        """Get projection strategy for PCE construction.
 
         :param x_learn: input data
         :type x_learn: array
@@ -393,12 +410,12 @@ class PCERegression(MLRegressionAlgo):
         return proj_strategy
 
     def _get_ls_weights(self):
-        """Get LS weights for PCE construction"""
+        """Get LS weights for PCE construction."""
         _, weights = self.proj_strategy.getExperiment().generateWithWeights()
         return weights
 
     def _get_quad_weights(self, x_learn):
-        """Get quadrature weights for PCE construction"""
+        """Get quadrature weights for PCE construction."""
         sample = zeros_like(self.sample)
         common_len = len(x_learn)
         sample[:common_len] = x_learn

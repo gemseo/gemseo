@@ -26,7 +26,6 @@ from __future__ import absolute_import, division, unicode_literals
 
 import atexit
 
-from future import standard_library
 from numpy import array
 
 try:
@@ -36,8 +35,6 @@ except ImportError:
     xlwings = None
 
 from gemseo.core.discipline import MDODiscipline
-
-standard_library.install_aliases()
 
 
 class XLSDiscipline(MDODiscipline):

@@ -24,28 +24,21 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import os
 import unittest
-from builtins import open, str
 
 import numpy as np
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics, SobieskiMission
 
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
-
 DIRNAME = os.path.dirname(__file__)
 
 
-class Test_JacobianAssembly(unittest.TestCase):
+@pytest.mark.usefixtures("tmp_wd")
+class TestJacobianAssembly(unittest.TestCase):
     def test_check_inputs(self):
         disc = [SobieskiAerodynamics(), SobieskiMission()]
         assembly = JacobianAssembly(MDOCouplingStructure(disc))
@@ -69,76 +62,41 @@ class Test_JacobianAssembly(unittest.TestCase):
         )
 
         with self.assertRaises(Exception):
-            assembly._JacobianAssembly__check_inputs(
-                [
-                    "Y5",
-                ],
-                [
-                    "x_3",
-                ],
-                coupl_vars=[],
-            )
+            assembly._JacobianAssembly__check_inputs(["Y5"], ["x_3"], coupl_vars=[])
+        with self.assertRaises(Exception):
+            assembly._JacobianAssembly__check_inputs(["y_4"], ["X5"], coupl_vars=[])
         with self.assertRaises(Exception):
             assembly._JacobianAssembly__check_inputs(
-                [
-                    "y_4",
-                ],
-                [
-                    "X5",
-                ],
-                coupl_vars=[],
-            )
-        with self.assertRaises(Exception):
-            assembly._JacobianAssembly__check_inputs(
-                [
-                    "y_4",
-                ],
-                [
-                    "x_3",
-                ],
-                coupl_vars=[
-                    "x_3",
-                ],
+                ["y_4"], ["x_3"], coupl_vars=["x_3"]
             )
 
     def test_linear_solver(self):
-        """ """
+        """"""
         mda = SobieskiMDAGaussSeidel()
         with self.assertRaises(AttributeError):
             mda.assembly._JacobianAssembly__check_linear_solver("bidon")
 
     @staticmethod
     def __compare_mda_jac_ref(comp_jac):
-        """
-        Compare a given Jacobian with reference Jacobian in file
-        """
+        """Compare a given Jacobian with reference Jacobian in file."""
         with open(os.path.join(DIRNAME, "mda_grad_sob.json"), "r") as inf:
             refjac = json.load(inf)
             for ykey, jac_dict in refjac.items():
                 if ykey not in comp_jac:
-                    LOGGER.error("jacobian output not linearized !" + str(ykey))
                     return False
                 for xkey, jac_loc in jac_dict.items():
                     if xkey not in comp_jac[ykey]:
-                        LOGGER.error("jacobian input not linearized !" + str(xkey))
                         return False
                     close = np.allclose(
                         np.array(jac_loc), comp_jac[ykey][xkey], atol=1e-1
                     )
                     if not close:
-                        LOGGER.error("jacobian is wrong on var" + str(xkey))
-                        LOGGER.error("ref jac " + str(np.array(jac_loc)))
-                        LOGGER.error("computed " + str(comp_jac[ykey][xkey]))
                         return False
         return True
 
     def test_sobieski_all_modes(self):
-        """Test Sobieski's coupled derivatives computed in all modes
-        (sparse direct, sparse adjoint, linear operator direct,
-        linear operator adjoint)
-
-
-        """
+        """Test Sobieski's coupled derivatives computed in all modes (sparse direct,
+        sparse adjoint, linear operator direct, linear operator adjoint)"""
         mda = SobieskiMDAGaussSeidel("complex128")
         mda.tolerance = 1e-14
         mda.max_iter = 100
@@ -159,7 +117,8 @@ class Test_JacobianAssembly(unittest.TestCase):
         matrix_types = (JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR)
 
         # j = mda.assembly.total_derivatives(indata, functions, variables,
-        #                                   couplings, mode=JacobianAssembly.DIRECT_MODE,
+        #                                   couplings,
+        #                                   mode=JacobianAssembly.DIRECT_MODE,
         #                                   matrix_type=JacobianAssembly.SPARSE)
         # self.__save_jac_to_json(j, "mda_grad_sob.json")
 
@@ -187,20 +146,10 @@ class Test_JacobianAssembly(unittest.TestCase):
                             + " and use_lu_fact ="
                             + str(use_lu_fact)
                         )
-                    else:
-                        LOGGER.info(
-                            "Linearization mode '"
-                            + str(mode)
-                            + " ' Ok for matrix type "
-                            + str(matrix_type)
-                            + " and use_lu_fact ="
-                            + str(use_lu_fact)
-                        )
         filepath = mda.assembly.plot_dependency_jacobian(
             functions, variables, save=True, show=False, filepath="depmat"
         )
         assert os.path.exists(filepath)
-        os.remove(filepath)
 
         jac = mda.assembly.total_derivatives(
             indata,

@@ -18,32 +18,29 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test min-max scaler module. """
+"""Test min-max scaler module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, arange
 
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def data():
-    """ Test data. """
+    """Test data."""
     return arange(30).reshape((10, 3))
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     scaler = MinMaxScaler()
     assert scaler.name == "MinMaxScaler"
 
 
 def test_fit(data):
-    """ Test fit method. """
+    """Test fit method."""
     left = data.min(0)
     right = data.max(0)
     scaler = MinMaxScaler()
@@ -53,7 +50,7 @@ def test_fit(data):
 
 
 def test_transform(data):
-    """ Test transform method. """
+    """Test transform method."""
     left = data.min(0)
     right = data.max(0)
     scaler = MinMaxScaler()
@@ -67,7 +64,7 @@ def test_transform(data):
 
 
 def test_inverse_transform(data):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     left = data.min(0)
     right = data.max(0)
     scaler = MinMaxScaler()

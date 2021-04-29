@@ -66,7 +66,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pandas-logo.svg
         :target: https://pandas.pydata.org/
 
-`pathlib <https://pathlib.readthedocs.io/>`_
+`pathlib2 <https://github.com/mcmtroffaes/pathlib2>`_
     MIT
 
 `pyDOE <https://github.com/tisimst/pyDOE>`_

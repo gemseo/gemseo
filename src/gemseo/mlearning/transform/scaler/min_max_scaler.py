@@ -40,15 +40,11 @@ corresponds to 0 and the maximum to 1.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.mlearning.transform.scaler.scaler import Scaler
-
-standard_library.install_aliases()
 
 
 class MinMaxScaler(Scaler):
-    """ Min-max scaler. """
+    """Min-max scaler."""
 
     def __init__(self, name="MinMaxScaler", offset=0.0, coefficient=1.0):
         """Constructor.
@@ -62,8 +58,8 @@ class MinMaxScaler(Scaler):
         super(MinMaxScaler, self).__init__(name, offset, coefficient)
 
     def fit(self, data):
-        """Fit offset and coefficient terms from a data array. The min and the
-        max are computed along the first axis of the data.
+        """Fit offset and coefficient terms from a data array. The min and the max are
+        computed along the first axis of the data.
 
         :param array data: data to be fitted.
         """

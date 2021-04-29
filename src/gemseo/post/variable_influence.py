@@ -25,23 +25,21 @@ Plot the partial sensitivity of the functions
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from matplotlib import pyplot
 from numpy import absolute, arange, argsort, array, atleast_2d, savetxt, stack
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class VariableInfluence(OptPostProcessor):
-    """
-    The **VariableInfluence** post processing
-    performs first order variable influence analysis
+    """The **VariableInfluence** post processing performs first order variable influence
+    analysis.
+
     by computing df/dxi * (xi* - xi0)
     where xi0 is the initial value of the variable
     and xi* is the optimal value of the variable
@@ -66,8 +64,7 @@ class VariableInfluence(OptPostProcessor):
         file_path="var_infl",
         extension="pdf",
     ):
-        """
-        Plots the ScatterPlotMatrix graph
+        """Plots the ScatterPlotMatrix graph.
 
         :param figsize_x: size of figure in horizontal direction (inches)
         :type figsize_x: int
@@ -129,9 +126,8 @@ class VariableInfluence(OptPostProcessor):
         )
 
     def __get_quantile(self, sensor, func, quant=0.99, save_var_files=False):
-        """
-        Computes the number of variables to keep that explain quant fraction
-        of the variation
+        """Computes the number of variables to keep that explain quant fraction of the
+        variation.
 
         :param sensor: the numpy array containing the sensitivity
         :param func: the function name
@@ -187,10 +183,8 @@ class VariableInfluence(OptPostProcessor):
         log_scale=False,
         save_var_files=False,
     ):
-        """
-        Generates the gradient sub plots from the data
+        """Generates the gradient sub plots from the data.
 
-        :param x_ref: reference value for x
         :param sens_dict: dict of sensors to plot
         :param figsize_x: size of figure in horizontal direction (inches)
         :param figsize_y: size of figure in vertical direction (inches)

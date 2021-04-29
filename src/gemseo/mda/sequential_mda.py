@@ -26,20 +26,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from builtins import super
 
-from future import standard_library
-
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.mda import MDA
 from gemseo.mda.newton import MDANewtonRaphson
 
-standard_library.install_aliases()
-
 
 class MDASequential(MDA):
-    """
-    Perform a MDA defined as a sequence of elementary MDAs.
-    """
+    """Perform a MDA defined as a sequence of elementary MDAs."""
 
     def __init__(
         self,
@@ -52,10 +46,8 @@ class MDASequential(MDA):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
     ):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
@@ -80,10 +72,6 @@ class MDASequential(MDA):
         :type linear_solver_tolerance: float
         :param use_lu_fact: use LU factorization
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
         """
         super(MDASequential, self).__init__(
             disciplines,
@@ -93,7 +81,6 @@ class MDASequential(MDA):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
-            norm0=norm0,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -104,13 +91,13 @@ class MDASequential(MDA):
             mda.reset_history_each_run = True
 
     def _initialize_grammars(self):
-        """Defines all inputs and outputs"""
+        """Defines all inputs and outputs."""
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
     def _run(self):
-        """Runs the MDAs in a sequential way
+        """Runs the MDAs in a sequential way.
 
         :returns: the local data
         """
@@ -127,9 +114,7 @@ class MDASequential(MDA):
 
 
 class GSNewtonMDA(MDASequential):
-    """
-    Perform some GaussSeidel iterations and then NewtonRaphson iterations.
-    """
+    """Perform some GaussSeidel iterations and then NewtonRaphson iterations."""
 
     def __init__(
         self,
@@ -144,11 +129,9 @@ class GSNewtonMDA(MDASequential):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
         **newton_mda_options
     ):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
@@ -183,10 +166,6 @@ class GSNewtonMDA(MDASequential):
         :type use_lu_fact: bool
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
         """
         mda_gs = MDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=None)
         mda_gs.tolerance = tolerance
@@ -198,7 +177,6 @@ class GSNewtonMDA(MDASequential):
             grammar_type=grammar_type,
             linear_solver=linear_solver,
             use_lu_fact=use_lu_fact,
-            norm0=norm0,
             **newton_mda_options
         )
         sequence = [mda_gs, mda_newton]

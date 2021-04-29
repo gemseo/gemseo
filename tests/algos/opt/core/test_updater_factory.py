@@ -24,16 +24,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from unittest import TestCase
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.core.updater_factory import UpdaterFactory
-from gemseo.api import configure_logger
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 
 class TestUpdaterFactory(TestCase):

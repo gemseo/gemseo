@@ -30,24 +30,19 @@ SSBJ Propulsion computations
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from math import pi
 
-from future import standard_library
 from numpy import append, array, atleast_2d, zeros
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 DEG_TO_RAD = pi / 180.0
 
 
 class SobieskiPropulsion(object):
-    """Class defining propulsion analysis for Sobieski problem and
-    related method to the propulsion problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining propulsion analysis for Sobieski problem and related method to the
+    propulsion problem such as disciplines computation, constraints, reference
+    optimum."""
 
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
@@ -57,9 +52,7 @@ class SobieskiPropulsion(object):
     TEMPERATURE_LIMIT = 1.02
 
     def __init__(self, sobieski_base):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.base = sobieski_base
         self.constants = self.base.default_constants()
         (
@@ -109,9 +102,7 @@ class SobieskiPropulsion(object):
         self.throttle_coeff = self.dtype(16168.6)
 
     def __set_coeff_temp(self, x_shared, x_3):
-        """
-        Prepare settings of polynomial function
-        for temperature
+        """Prepare settings of polynomial function for temperature.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -129,7 +120,7 @@ class SobieskiPropulsion(object):
         return s_initial, s_new, flag, bound
 
     def compute_dim_throttle(self, adim_throttle):
-        """Compute a dimensioned value of throttle from adim value
+        """Compute a dimensioned value of throttle from adim value.
 
         :param adim_throttle: local design vector
         :type adim_throttle: numpy array
@@ -139,8 +130,8 @@ class SobieskiPropulsion(object):
         return adim_throttle * self.throttle_coeff
 
     def compute_sfc(self, x_shared, adim_throttle):
-        """Compute Specific Fuel Consumption (SFC) from global design variables
-        (M, h,) and local design variable (throttle) by polynomial function
+        """Compute Specific Fuel Consumption (SFC) from global design variables (M, h,)
+        and local design variable (throttle) by polynomial function.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -165,8 +156,7 @@ class SobieskiPropulsion(object):
         return sfc
 
     def compute_throttle_ua(self, x_shared):
-        """Compute throttle upper limit from global design variables
-        (M, h,)
+        """Compute throttle upper limit from global design variables (M, h,)
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -184,8 +174,8 @@ class SobieskiPropulsion(object):
         return throttle_ua
 
     def compute_throttle_constraint(self, x_shared, adim_throttle):
-        """Compute throttle constraint
-        (M, h,) and local design variable (throttle) by polynomial function
+        """Compute throttle constraint (M, h,) and local design variable (throttle) by
+        polynomial function.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -200,19 +190,18 @@ class SobieskiPropulsion(object):
         return throttle_constraint
 
     def compute_dthrconst_dthrottle(self, x_shared):
-        """Compute derivative of throttle constraint wrt throttle
+        """Compute derivative of throttle constraint wrt throttle.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
         :returns: dthrottle_constraint_dthrottle
         :rtype: numpy array
-
         """
         throttle_ua = self.compute_throttle_ua(x_shared)
         return self.throttle_coeff / throttle_ua
 
     def compute_dthrcons_dh(self, x_shared, adim_throttle):
-        """Compute derivative of throttle constraint wrt altitude
+        """Compute derivative of throttle constraint wrt altitude.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -231,7 +220,7 @@ class SobieskiPropulsion(object):
         return -throttle * dthrottle_ua_dh / (throttle_ua * throttle_ua)
 
     def compute_dthrconst_dmach(self, x_shared, adim_throttle):
-        """Compute derivative of throttle constraint wrt Mach number
+        """Compute derivative of throttle constraint wrt Mach number.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -250,7 +239,7 @@ class SobieskiPropulsion(object):
         return -throttle * dthrottle_ua_dmach / (throttle_ua * throttle_ua)
 
     def compute_esf(self, drag, adim_throttle):
-        """Compute engine scale factor
+        """Compute engine scale factor.
 
         :param drag: drag
         :type drag: float
@@ -262,18 +251,17 @@ class SobieskiPropulsion(object):
         return drag / (3.0 * self.compute_dim_throttle(adim_throttle))
 
     def compute_desf_ddrag(self, adim_throttle):
-        """Compute derivative of ESF wrt aero drag
+        """Compute derivative of ESF wrt aero drag.
 
         :param adim_throttle: local design variables
         :type adim_throttle: numpy array
         :returns: derivative of ESF wrt drag
         :rtype: numpy array
-
         """
         return 1.0 / (3 * self.compute_dim_throttle(adim_throttle))
 
     def compute_desf_dthrottle(self, drag, adim_throttle):
-        """Compute derivative of ESF wrt aero drag
+        """Compute derivative of ESF wrt aero drag.
 
         :param drag: coupling design variables
         :type drag: numpy array
@@ -286,7 +274,7 @@ class SobieskiPropulsion(object):
         return -self.throttle_coeff * drag / (3.0 * throttle ** 2)
 
     def compute_temp(self, x_shared, x_3):
-        """Compute engine temperature
+        """Compute engine temperature.
 
         :param x_3: local design vector
         :type x_3: numpy array
@@ -299,18 +287,17 @@ class SobieskiPropulsion(object):
         return self.base.poly_approx(s_initial, s_new, flag, bound)
 
     def compute_engine_weight(self, esf):
-        """Compute engine weight
+        """Compute engine weight.
 
         :param esf: engine scale factor
         :returns: engine weight
         :rtype: numpy array
-
         """
         return self.constants[3] * (esf ** 1.05) * 3
 
     def blackbox_propulsion(self, x_shared, y_23, x_3, true_cstr=False):
-        """This function calculates fuel comsumption, engine weight and
-        engine scale factor
+        """This function calculates fuel comsumption, engine weight and engine scale
+        factor.
 
         :param x_shared: shared design variable vector:
 
@@ -345,13 +332,12 @@ class SobieskiPropulsion(object):
                 - g_3[2]: throttle setting constraint
 
         :rtype: numpy array, numpy array, numpy array, numpy array, numpy array
-
         """
-        y_3 = zeros((3), dtype=self.dtype)
-        g_3 = zeros((3), dtype=self.dtype)
-        y_31 = zeros((1), dtype=self.dtype)
-        y_32 = zeros((1), dtype=self.dtype)
-        y_34 = zeros((1), dtype=self.dtype)
+        y_3 = zeros(3, dtype=self.dtype)
+        g_3 = zeros(3, dtype=self.dtype)
+        y_31 = zeros(1, dtype=self.dtype)
+        y_32 = zeros(1, dtype=self.dtype)
+        y_34 = zeros(1, dtype=self.dtype)
 
         esf = self.compute_esf(y_23[0], x_3[0])
         y_3[2] = esf
@@ -383,8 +369,7 @@ class SobieskiPropulsion(object):
         return y_3, y_34, y_31, y_32, g_3
 
     def compute_dengineweight_dvar(self, esf, desf_dx):
-        """Computes derivative of engine weight wrt to
-        a variable(drag or throttle)
+        """Computes derivative of engine weight wrt to a variable(drag or throttle)
 
         :param esf: ESF
         :type esf: float
@@ -396,7 +381,7 @@ class SobieskiPropulsion(object):
         return 3 * self.constants[3] * 1.05 * desf_dx * esf ** 0.05
 
     def compute_dsfc_dthrottle(self, x_shared, adim_throttle):
-        """Compute derivative of sfc constraint wrt throttle
+        """Compute derivative of sfc constraint wrt throttle.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -416,7 +401,7 @@ class SobieskiPropulsion(object):
         return dsfc_dthrottle
 
     def compute_dsfc_dh(self, x_shared, adim_throttle):
-        """Compute derivative of sfc constraint wrt altitude
+        """Compute derivative of sfc constraint wrt altitude.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -435,7 +420,7 @@ class SobieskiPropulsion(object):
         return dsfc_dh
 
     def compute_dsfc_dmach(self, x_shared, adim_throttle):
-        """Compute derivative of sfc constraint wrt Mach number
+        """Compute derivative of sfc constraint wrt Mach number.
 
         :param x_shared: global design vector
         :type x_shared: numpy array
@@ -454,9 +439,8 @@ class SobieskiPropulsion(object):
         return dsfc_dmach
 
     def __dadimthrottle_dthrottle(self, x_3):
-        """
-        Compute partial derivative of adim throttle of polynomial
-        function wrt throttle
+        """Compute partial derivative of adim throttle of polynomial function wrt
+        throttle.
 
         :param x_3: local design variables
         :type x_3: numpy array
@@ -466,9 +450,8 @@ class SobieskiPropulsion(object):
         return self.base.derive_normalize_s(self.throttle_initial, x_3[0])
 
     def __compute_dadimh_dh(self, x_shared):
-        """
-        Compute partial derivative of adim throttle of polynomial
-        function wrt altitude
+        """Compute partial derivative of adim throttle of polynomial function wrt
+        altitude.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -478,9 +461,8 @@ class SobieskiPropulsion(object):
         return self.base.derive_normalize_s(self.h_initial, x_shared[1])
 
     def __compute_dadimmach_dmach(self, x_shared):
-        """
-        Compute partial derivative of adim throttle of polynomial
-        function wrt Mach number
+        """Compute partial derivative of adim throttle of polynomial function wrt Mach
+        number.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -490,8 +472,7 @@ class SobieskiPropulsion(object):
         return self.base.derive_normalize_s(self.mach_initial, x_shared[2])
 
     def __initialize_jacobian(self, true_cstr):
-        """
-        Initialization of jacobian matrix
+        """Initialization of jacobian matrix.
 
         :param true_cstr:
         :type true_cstr: logical
@@ -499,12 +480,7 @@ class SobieskiPropulsion(object):
         :rtype: dict of dict of numpy array
         """
         # Jacobian matrix as a dictionary
-        jacobian = {}
-        jacobian["y_3"] = {}
-        jacobian["g_3"] = {}
-        jacobian["y_31"] = {}
-        jacobian["y_32"] = {}
-        jacobian["y_34"] = {}
+        jacobian = {"y_3": {}, "g_3": {}, "y_31": {}, "y_32": {}, "y_34": {}}
 
         jacobian["y_3"]["x_3"] = zeros((3, 1), dtype=self.dtype)
         jacobian["y_3"]["x_shared"] = zeros((3, 6), dtype=self.dtype)
@@ -520,7 +496,7 @@ class SobieskiPropulsion(object):
         return jacobian
 
     def derive_blackbox_propulsion(self, x_shared, y_23, x_3, true_cstr=False):
-        """Compute jacobian matrix of propulsion analysis
+        """Compute jacobian matrix of propulsion analysis.
 
         :param x_shared: shared design variable vector:
 
@@ -655,9 +631,7 @@ class SobieskiPropulsion(object):
 
     @staticmethod
     def __set_coupling_jacobian(jacobian):
-        """
-        Set jacobian of coupling variables
-        """
+        """Set jacobian of coupling variables."""
         jacobian["y_31"]["x_3"] = atleast_2d(jacobian["y_3"]["x_3"][1, :])
         jacobian["y_31"]["x_shared"] = atleast_2d(jacobian["y_3"]["x_shared"][1, :])
         jacobian["y_31"]["y_23"] = atleast_2d(jacobian["y_3"]["y_23"][1, :])

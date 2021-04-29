@@ -36,8 +36,6 @@ For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegress
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 ###############################################################################
 # Import
 # ------
@@ -53,8 +51,6 @@ from gemseo.api import (
 
 configure_logger()
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create the discipline to learn

@@ -30,25 +30,20 @@ SSBJ Aerodynamics computation
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import range
 from math import pi
 
-from future import standard_library
 from numpy import array, atleast_2d, cos, sin, sqrt, zeros
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 DEG_TO_RAD = pi / 180.0
 
 
 class SobieskiAerodynamics(object):
-    """Class defining aerodynamical analysis for Sobieski problem and
-    related method to the aerodynamical problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining aerodynamical analysis for Sobieski problem and related method to
+    the aerodynamical problem such as disciplines computation, constraints, reference
+    optimum."""
 
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
@@ -56,9 +51,7 @@ class SobieskiAerodynamics(object):
     PRESSURE_GRADIENT_LIMIT = 1.04
 
     def __init__(self, sobieski_base):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.base = sobieski_base
         self.constants = self.base.default_constants()
         (
@@ -78,8 +71,7 @@ class SobieskiAerodynamics(object):
         self.math = self.base.math
 
     def __set_coeff_drag_f1(self, y_32, x_2):
-        """
-        Setting of flags used for determination of polynomial coefficients
+        """Setting of flags used for determination of polynomial coefficients.
 
         :param y_32: shared variables coming from blackbox_propulsion
 
@@ -105,8 +97,7 @@ class SobieskiAerodynamics(object):
         return s_initial, s_new, flag, bound
 
     def __set_coeff_drag_f2(self, y_12):
-        """
-        Setting of flags used for determination of polynomial coefficients
+        """Setting of flags used for determination of polynomial coefficients.
 
         :param y_12: shared variables coming from blackbox_structure
         :type y_12: numpy array
@@ -124,8 +115,7 @@ class SobieskiAerodynamics(object):
         return s_initial, s_new, flag, bound
 
     def __set_coeff_drag_f3(self, x_shared):
-        """
-        Setting of flags used for determination of polynomial coefficients
+        """Setting of flags used for determination of polynomial coefficients.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -175,7 +165,7 @@ class SobieskiAerodynamics(object):
 
     @staticmethod
     def compute_dk_aero_dsweep(x_shared):
-        """Computation of a derivative of k_aero wrt sweep
+        """Computation of a derivative of k_aero wrt sweep.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -201,7 +191,7 @@ class SobieskiAerodynamics(object):
 
     @staticmethod
     def compute_dk_aero_dmach(x_shared):
-        """Computation of a derivative of k_aero wrt Mach
+        """Computation of a derivative of k_aero wrt Mach.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -223,8 +213,8 @@ class SobieskiAerodynamics(object):
         return dk_aero_dmach
 
     def compute_dadimcf_dcf(self, x_2):
-        """Computation of a derivative of adim friction coeff of polynomial
-        wrt friction coeff
+        """Computation of a derivative of adim friction coeff of polynomial wrt friction
+        coeff.
 
         :param x_2: local design variables
         :type x_2: numpy array
@@ -236,7 +226,7 @@ class SobieskiAerodynamics(object):
         return dadimcf_dcf
 
     def compute_dadimtwist_dtwist(self, y_12):
-        """Computation of a derivative of adim twist of polynomial wrt twist
+        """Computation of a derivative of adim twist of polynomial wrt twist.
 
         :param y_12: coupling variable from weight analysis
         :type y_12: numpy array
@@ -247,7 +237,7 @@ class SobieskiAerodynamics(object):
         return dadimtwist_dtwist
 
     def compute_dadimesf_desf(self, y_32):
-        """Computation of a derivative of adim ESF of polynomial wrt ESF
+        """Computation of a derivative of adim ESF of polynomial wrt ESF.
 
         :param y_32: coupling variable from propulsion analysis
         :type y_32: numpy array
@@ -257,8 +247,8 @@ class SobieskiAerodynamics(object):
         return self.base.derive_normalize_s(self.esf_initial, y_32[0])
 
     def compute_dadimtaper_dtaper(self, x_shared):
-        """Computation of a derivative of adim taper-ratio of
-        polynomial wrt taper-ratio
+        """Computation of a derivative of adim taper-ratio of polynomial wrt taper-
+        ratio.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -268,7 +258,7 @@ class SobieskiAerodynamics(object):
         return self.base.derive_normalize_s(self.tc_initial, x_shared[0])
 
     def compute_cd_min(self, x_shared, fo1):
-        """Computation of a 2D minimum drag coefficient
+        """Computation of a 2D minimum drag coefficient.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -287,7 +277,7 @@ class SobieskiAerodynamics(object):
 
     @staticmethod
     def compute_dcdmin_dsweep(x_shared):
-        """Computation of derivative of 2D minimum drag coefficient wrt sweep
+        """Computation of derivative of 2D minimum drag coefficient wrt sweep.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -305,7 +295,7 @@ class SobieskiAerodynamics(object):
         )
 
     def compute_cd(self, x_shared, lift_coeff, fo1, fo2):
-        """Computation of total drag coefficient
+        """Computation of total drag coefficient.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -323,7 +313,7 @@ class SobieskiAerodynamics(object):
         return fo2 * (cdmin + k_aero * lift_coeff * lift_coeff)
 
     def compute_drag(self, drag_coeff, x_shared):
-        """Computation of drag from drag coefficient
+        """Computation of drag from drag coefficient.
 
         :param drag_coeff: lift coefficient
         :type drag_coeff: numpy array
@@ -335,7 +325,7 @@ class SobieskiAerodynamics(object):
         return self.compute_force(drag_coeff, x_shared[5], x_shared[2], x_shared[1])
 
     def compute_dcd_dsweep(self, x_shared, lift_coeff, fo2):
-        """Computation of derivative of drag coefficient wrt sweep
+        """Computation of derivative of drag coefficient wrt sweep.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -351,7 +341,7 @@ class SobieskiAerodynamics(object):
         return fo2 * (dcdmin_dsweep + lift_coeff * lift_coeff * dk_dsweep)
 
     def compute_dcd_dsref(self, x_shared, y_12, fo2):
-        """Computation of derivative of drag coefficient wrt sweep
+        """Computation of derivative of drag coefficient wrt sweep.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -368,7 +358,7 @@ class SobieskiAerodynamics(object):
         return 2 * k_aero * lift_coeff * dcl_dsref * fo2
 
     def compute_dcd_dmach(self, x_shared, y_12, fo2):
-        """Computation of derivative of drag coefficient wrt Mach
+        """Computation of derivative of drag coefficient wrt Mach.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -386,7 +376,7 @@ class SobieskiAerodynamics(object):
         return (2.0 * k_aero * dcl_dmach + lift_coeff * dk_dmach) * lift_coeff * fo2
 
     def compute_cl(self, x_shared, y_12):
-        """Computation of lift coefficient
+        """Computation of lift coefficient.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -398,7 +388,7 @@ class SobieskiAerodynamics(object):
         return self.compute_adim_coeff(y_12[0], x_shared[5], x_shared[2], x_shared[1])
 
     def compute_dcl_dh(self, x_shared, y_12):
-        """Computation of derivative of lift coefficient wrt altitude
+        """Computation of derivative of lift coefficient wrt altitude.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -412,7 +402,7 @@ class SobieskiAerodynamics(object):
         return -2 * y_12[0] / x_shared[5] * drhov2_dh / (rhov2 ** 2)
 
     def compute_dcl_dmach(self, x_shared, y_12):
-        """Computation of derivative of lift coefficient wrt reference surface
+        """Computation of derivative of lift coefficient wrt reference surface.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -432,7 +422,7 @@ class SobieskiAerodynamics(object):
         return dcl_dmach
 
     def compute_dcl_dsref(self, x_shared, y_12):
-        """Computation of derivative of lift coefficient wrt Mach number
+        """Computation of derivative of lift coefficient wrt Mach number.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -455,7 +445,7 @@ class SobieskiAerodynamics(object):
         return rho * velocity * velocity
 
     def compute_drhov2_dh(self, x_shared):
-        """Computation of derivative of rhoV**2 wrt altitude
+        """Computation of derivative of rhoV**2 wrt altitude.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -467,7 +457,7 @@ class SobieskiAerodynamics(object):
         return drho_dh * velocity * velocity + 2.0 * rho * dv_dh * velocity
 
     def compute_drhov2_dmach(self, x_shared):
-        """Computation of derivative of rhoV**2 wrt Mach
+        """Computation of derivative of rhoV**2 wrt Mach.
 
         :param x_shared: global design variables
         :type x_shared: numpy array
@@ -479,7 +469,7 @@ class SobieskiAerodynamics(object):
         return 2.0 * rho * dv_dmach * velocity
 
     def compute_rho_v(self, mach, altitude):
-        """From given Mach number and altitude, compute velocity and density
+        """From given Mach number and altitude, compute velocity and density.
 
         :param mach: Mach number
         :type mach: float
@@ -493,11 +483,11 @@ class SobieskiAerodynamics(object):
             rho = 2.377e-3 * (1 - 6.875e-6 * altitude) ** 4.2561
         else:
             velocity = mach * 968.1
-            rho = (2.377e-3) * 0.2971 * self.math.exp((36089.0 - altitude) / 20806.7)
+            rho = 2.377e-3 * 0.2971 * self.math.exp((36089.0 - altitude) / 20806.7)
         return rho, velocity
 
     def compute_dv_dmach(self, altitude):
-        """Computation of derivative of velocity wrt Mach
+        """Computation of derivative of velocity wrt Mach.
 
         :param altitude: altitude
         :type altitude: numpy array
@@ -511,7 +501,7 @@ class SobieskiAerodynamics(object):
         return dv_dmach
 
     def compute_drho_dh_dv_dh(self, mach, altitude):
-        """Compute derivative of velocity and density wrt altitude
+        """Compute derivative of velocity and density wrt altitude.
 
         :param mach: Mach number
         :type mach: float
@@ -555,7 +545,7 @@ class SobieskiAerodynamics(object):
         return force / (0.5 * rho * velocity * velocity * sref)
 
     def compute_force(self, adim_coeff, sref, mach, altitude):
-        """Compute force (lift or drag) from adim coeff
+        """Compute force (lift or drag) from adim coeff.
 
         :param adim_coeff: force coefficient
         :type adim_coeff: float
@@ -618,11 +608,11 @@ class SobieskiAerodynamics(object):
         :rtype: numpy array, numpy array, numpy array, numpy array, numpy array
         """
 
-        y_2 = zeros((3), dtype=self.dtype)
-        y_23 = zeros((1), dtype=self.dtype)
-        y_24 = zeros((1), dtype=self.dtype)
-        y_21 = zeros((1), dtype=self.dtype)
-        g_2 = zeros((1), dtype=self.dtype)
+        y_2 = zeros(3, dtype=self.dtype)
+        y_23 = zeros(1, dtype=self.dtype)
+        y_24 = zeros(1, dtype=self.dtype)
+        y_21 = zeros(1, dtype=self.dtype)
+        g_2 = zeros(1, dtype=self.dtype)
 
         lift_coeff = self.compute_cl(x_shared, y_12)
 
@@ -657,8 +647,7 @@ class SobieskiAerodynamics(object):
 
     @staticmethod
     def __derive_liftoverdrag(cl_cd, lift_jacobian, drag_jacobian, inv_drag):
-        """
-        Compute lift over drag jacobian terms
+        """Compute lift over drag jacobian terms.
 
         :param cl_cd: lift over drag
         :type cl_cd: numpy array
@@ -673,9 +662,7 @@ class SobieskiAerodynamics(object):
 
     @staticmethod
     def __set_coupling_jacobian(jacobian):
-        """
-        Set jacobian of coupling variables
-        """
+        """Set jacobian of coupling variables."""
         jacobian["y_21"]["x_2"] = atleast_2d(jacobian["y_2"]["x_2"][0, :])
         jacobian["y_21"]["x_shared"] = atleast_2d(jacobian["y_2"]["x_shared"][0, :])
         jacobian["y_21"]["y_12"] = atleast_2d(jacobian["y_2"]["y_12"][0, :])
@@ -693,18 +680,12 @@ class SobieskiAerodynamics(object):
         return jacobian
 
     def __initialize_jacobian(self):
-        """
-        Initialization of jacobian matrix
+        """Initialization of jacobian matrix.
 
         :returns:  jacobian
         :rtype: dict(dict(ndarray))
         """
-        jacobian = {}
-        jacobian["y_2"] = {}
-        jacobian["g_2"] = {}
-        jacobian["y_21"] = {}
-        jacobian["y_23"] = {}
-        jacobian["y_24"] = {}
+        jacobian = {"y_2": {}, "g_2": {}, "y_21": {}, "y_23": {}, "y_24": {}}
 
         jacobian["y_2"]["x_shared"] = zeros((3, 6), dtype=self.dtype)
         jacobian["y_2"]["x_2"] = zeros((3, 1), dtype=self.dtype)

@@ -25,16 +25,13 @@ from os.path import dirname, exists, join
 
 import pytest
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.utils.study_analysis import StudyAnalysis
+
+INPUT_DIR = join(dirname(__file__), "study_inputs")
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 6), reason="study analysis requires python 3.6 or higher"
 )
-
-configure_logger(SOFTWARE_NAME)
-INPUT_DIR = join(dirname(__file__), "study_inputs")
 
 try:
     skip_condition = shutil.which("pdflatex") is None
@@ -70,16 +67,31 @@ def test_xdsm_mdf_special_characters(tmpdir):
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_idf(tmpdir):
     study = StudyAnalysis(join(INPUT_DIR, "disciplines_spec2.xlsx"))
+    dnames = ["Discipline1", "Discipline2"]
+    assert list(study.disciplines_descr.keys()) == dnames
+
+    disc_names = [d.name for d in study.disciplines.values()]
+    assert disc_names == disc_names
     study.generate_xdsm(str(tmpdir), latex_output=True)
 
 
-def test_xdsm_Bilevel(tmpdir):
+def test_xdsm_bilevel(tmpdir):
     study = StudyAnalysis(join(INPUT_DIR, "study_bielvel_sobieski.xlsx"))
-    study.generate_n2(join(str(tmpdir), "n2.pdf"))  # str(tmpdir)
+    dnames = [
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+        "SobieskiMission",
+    ]
+    assert list(study.disciplines_descr.keys()) == dnames
+
+    disc_names = [d.name for d in study.disciplines.values()]
+    assert dnames == disc_names
+    study.generate_n2(join(str(tmpdir), "n2.pdf"))
     study.generate_xdsm(str(tmpdir), latex_output=False)
 
 
-def test_xdsm_Bilevel_d(tmpdir):
+def test_xdsm_bilevel_d(tmpdir):
     study = StudyAnalysis(join(INPUT_DIR, "bilevel_d.xlsx"))
     study.generate_n2(join(str(tmpdir), "n2_d.pdf"))
     study.generate_xdsm(str(tmpdir), latex_output=False)

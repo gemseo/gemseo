@@ -28,7 +28,6 @@ cache only stores the last inputs and outputs stored.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -42,8 +41,6 @@ configure_logger()
 # In the following lines, we import the `array` and the :class:`.SimpleCache`
 # classes.
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create

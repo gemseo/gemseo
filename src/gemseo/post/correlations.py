@@ -26,38 +26,32 @@ Correlations in the optimization database
 
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 from os.path import basename, dirname, join, splitext
 
 import matplotlib.gridspec as gridspec
 import numpy as np
 import pylab
-from future import standard_library
 from matplotlib import ticker
 from numpy import atleast_2d
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Correlations(OptPostProcessor):
-    """
-    The **Correlations** post processing
-    builds scatter plots of correlated variables among design
-    variables, outputs functions and constraints
+    """The **Correlations** post processing builds scatter plots of correlated variables
+    among design variables, outputs functions and constraints.
 
-    The plot method considers all variable correlations
-    greater than 95%. An other level value, a sublist of variable names
-    or both can be passed as options. The x- and y- figure sizes
-    can also be modified in option.
-    It is possible either to save the plot, to show the plot or both.
+    The plot method considers all variable correlations greater than 95%. An other level
+    value, a sublist of variable names or both can be passed as options. The x- and y-
+    figure sizes can also be modified in option. It is possible either to save the plot,
+    to show the plot or both.
     """
 
     def _run(self, **options):
-        """Visualizes the optimization history
+        """Visualizes the optimization history.
 
         :param options: options for the post processing,
             see associated JSON file
@@ -77,8 +71,7 @@ class Correlations(OptPostProcessor):
         file_path=None,
         extension="pdf",
     ):
-        """
-        Plots the correlations graph
+        """Plots the correlations graph.
 
         :param coeff_limit: if the correlation between the variables
             is lower than coeff_limit, the plot is not made
@@ -175,7 +168,7 @@ class Correlations(OptPostProcessor):
         values_array,
         variables_names,
     ):
-        """Creates a correlation plot"""
+        """Creates a correlation plot."""
         gs_curr = spec[int(plot_index / n_plot_v), plot_index % n_plot_h]
         ax1 = fig.add_subplot(gs_curr)
         x_plt = values_array[:, i_ind]
@@ -199,6 +192,6 @@ class Correlations(OptPostProcessor):
 
     @classmethod
     def __compute_correlations(cls, values_array):
-        """Compute correlations"""
+        """Compute correlations."""
         ccoeff = np.corrcoef(values_array.astype(float), rowvar=False)
         return np.tril(atleast_2d(ccoeff))  # Keep upper diagonal only

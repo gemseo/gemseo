@@ -27,9 +27,9 @@ SNOPT optimization library wrapper
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from builtins import range, str, super
 
-from future import standard_library
 from numpy import append, array, concatenate
 from numpy import float as np_float
 from numpy import float64, hstack
@@ -41,11 +41,7 @@ from optimize.snopt7 import SNOPT_solver
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 INFINITY = 1e30
 
 
@@ -94,8 +90,7 @@ class SnOpt(OptimizationLibrary):
     }
 
     def __init__(self):
-        """
-        Constructor
+        """Constructor.
 
         Generate the library dict, contains the list
         of algorithms with their characteristics:
@@ -119,12 +114,25 @@ class SnOpt(OptimizationLibrary):
 
     def _get_options(
         self,
+        ftol_rel=1e-9,
+        ftol_abs=1e-9,
+        xtol_rel=1e-9,
+        xtol_abs=1e-9,
+        max_time=0,
         max_iter=999,  # pylint: disable=W0221
         normalize_design_space=True,
         **kwargs
     ):
-        """Sets the options
+        """Sets the options.
 
+        :param ftol_abs: Objective function tolerance
+        :type ftol_abs: float
+        :param xtol_abs: Design parameter tolerance
+        :type xtol_abs: float
+        :param iprint: Default value = 1000)
+        :type iprint: int
+        :param max_time: Maximum time
+        :type max_time: float
         :param max_iter: Default value = 999)
         :type max_iter: int
         :param kwargs: additional options
@@ -132,14 +140,19 @@ class SnOpt(OptimizationLibrary):
         """
         nds = normalize_design_space
         return self._process_options(
-            max_iter=max_iter, normalize_design_space=nds, **kwargs
+            max_iter=max_iter,
+            normalize_design_space=nds,
+            ftol_rel=ftol_rel,
+            ftol_abs=ftol_abs,
+            xtol_rel=xtol_rel,
+            xtol_abs=xtol_abs,
+            max_time=max_time,
+            **kwargs
         )
 
     @staticmethod
     def __eval_func(func, xn_vect):
-        """
-        Evaluates a function
-        Trys to call it, if it fails, returns a -1 status
+        """Evaluates a function Trys to call it, if it fails, returns a -1 status.
 
         :param func: the function to call
         :param xn_vect : the arguments for evaluation
@@ -206,8 +219,8 @@ class SnOpt(OptimizationLibrary):
         return status, obj_f, obj_df
 
     def __snoptb_create_c(self, xn_vect):
-        """Private function that returns evaluation of
-        constraints at design vector xn_vect
+        """Private function that returns evaluation of constraints at design vector
+        xn_vect.
 
         :param xn_vect: normalized design variable vector
         :returns: evaluation of constraints at xn_vect
@@ -228,8 +241,8 @@ class SnOpt(OptimizationLibrary):
         return cstr, 1
 
     def __snoptb_create_dc(self, xn_vect):
-        """Private function that returns evaluation of
-        constraints gradient at design vector xn_vect
+        """Private function that returns evaluation of constraints gradient at design
+        vector xn_vect.
 
         :param xn_vect: normalized design variable vector
         :returns: evaluation of constraints gradient at xn_vect
@@ -262,9 +275,8 @@ class SnOpt(OptimizationLibrary):
     # cb_ means callback and avoids pylint to raise warnings
     # about unused arguments
     def cb_opt_constraints_snoptb(self, mode, nn_con, nn_jac, ne_jac, xn_vect, n_state):
-        """Constraints function + constraints gradient
-        of the optimizer for snOpt
-        (from web.stanford.edu/group/SOL/guides/sndoc7.pdf)
+        """Constraints function + constraints gradient of the optimizer for snOpt (from
+        web.stanford.edu/group/SOL/guides/sndoc7.pdf)
 
         :param mode: indicates whether obj or gradient or both must
             be assigned during the present call of function (0 ≤ mode ≤ 2).
@@ -293,7 +305,6 @@ class SnOpt(OptimizationLibrary):
             cstr: constraints function (except perhaps if mode = 1)
             dcstr constraints jacobian array (except perhaps if mode = 0)
         :rtype: integer, np array, np array
-
         """
         if mode == 0:
             cstr, status = self.__snoptb_create_c(xn_vect)
@@ -325,7 +336,7 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     @staticmethod
     def cb_snopt_dummy_func(mode, nn_con, nn_jac, ne_jac, xn_vect, n_state):
-        """Dummy function required for unconstrained problem
+        """Dummy function required for unconstrained problem.
 
         :param mode: param nn_con:
         :param nn_jac: param ne_jac:
@@ -333,14 +344,11 @@ class SnOpt(OptimizationLibrary):
         :param nn_con:
         :param ne_jac:
         :param n_state:
-
         """
         return 1.0
 
     def __preprocess_snopt_constraints(self, names):
-        """
-        Private function to set snopt parameters according
-        to constraints.
+        """Private function to set snopt parameters according to constraints.
 
         :param names: numpy array of string which store
             design variable names and constraint names in snopt
@@ -382,11 +390,10 @@ class SnOpt(OptimizationLibrary):
         return funcon, blc, buc, names, n_constraints
 
     def _run(self, **options):
-        """Runs the algorim, to be overloaded by subclasses
+        """Runs the algorim, to be overloaded by subclasses.
 
         :param options: the options dict for the algorithm,
             see associated JSON file
-
         """
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the  bounds anx x0

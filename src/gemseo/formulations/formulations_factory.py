@@ -25,26 +25,21 @@ A factory to instantiate formulation from their class names
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MDOFormulationsFactory(object):
-    """MDO Formulations factory to create the formulation from a name
-    or a class.
-    """
+    """MDO Formulations factory to create the formulation from a name or a class."""
 
     def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of MDOFormulation.
+        """Initializes the factory: scans the directories to search for subclasses of
+        MDOFormulation.
+
         Searches in "GEMSEO_PATH" and gemseo.formulations
         """
         # Defines the benchmark problems to be imported
@@ -53,8 +48,7 @@ class MDOFormulationsFactory(object):
     def create(
         self, formulation_name, disciplines, objective_name, design_space, **options
     ):
-        """
-        Create a formulation from its name
+        """Create a formulation from its name.
 
         :param formulation_name: the formulation name,
             the class name of the formulation in gemseo.formulations
@@ -73,18 +67,16 @@ class MDOFormulationsFactory(object):
 
     @property
     def formulations(self):
-        """
-        Lists the available classes
+        """Lists the available classes.
 
         :returns : the list of classes names
         """
         return self.factory.classes
 
     def is_available(self, formulation_name):
-        """
-        Checks the availability of a formulation
+        """Checks the availability of a formulation.
 
-        :param name : formulation_name of the formulation
+        :param formulation_name : formulation_name of the formulation
         :returns: True if the formulation is available
         """
         return self.factory.is_available(formulation_name)

@@ -45,21 +45,20 @@ and machine learning algorithm. The inputs of this discipline are
 hyperparameters of the machine learning algorithm while the output is
 the quality criterion.
 """
+
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-from numpy import argmin, array
+from numpy import argmax, argmin, array
 
+from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mlearning.core.factory import MLAlgoFactory
 
-standard_library.install_aliases()
-
 
 class MLAlgoAssessor(MDODiscipline):
-    """ Discipline assessing the quality of a machine learning algorithm """
+    """Discipline assessing the quality of a machine learning algorithm."""
 
     def __init__(
         self,
@@ -71,7 +70,7 @@ class MLAlgoAssessor(MDODiscipline):
         transformer=None,
         **algo_options
     ):
-        """Constructor
+        """Constructor.
 
         :param str algo: machine learning algorithm name.
         :param Dataset dataset: learning dataset.
@@ -93,8 +92,15 @@ class MLAlgoAssessor(MDODiscipline):
         self.transformer = transformer
         self.algos = []
 
+        if "multioutput" in measure_options and measure_options["multioutput"]:
+            raise ValueError(
+                "MLAlgoAssessor does not support multioutput. "
+                "The measure shall return one value."
+            )
+        measure_options["multioutput"] = False
+
     def _run(self):
-        """ run method. """
+        """run method."""
         inputs = self.get_input_data()
         for index in inputs:
             if len(inputs[index]) == 1:
@@ -107,13 +113,13 @@ class MLAlgoAssessor(MDODiscipline):
         algo.learn()
         measure = self.measure(algo)
         learning = measure.evaluate(multioutput=False)
-        criterion = measure.evaluate(multioutput=False, **self.measure_options)
+        criterion = measure.evaluate(**self.measure_options)
         self.store_local_data(criterion=array([criterion]), learning=array([learning]))
         self.algos.append(algo)
 
 
 class MLAlgoCalibration(object):
-    """ Calibration of a machine learning algorithm """
+    """Calibration of a machine learning algorithm."""
 
     CRITERION = "criterion"
 
@@ -126,10 +132,9 @@ class MLAlgoCalibration(object):
         measure,
         measure_options=None,
         transformer=None,
-        use_doe=True,
         **algo_options
     ):
-        """Constructor
+        """Constructor.
 
         :param str algo: machine learning algorithm name.
         :param Dataset dataset: learning dataset.
@@ -152,19 +157,15 @@ class MLAlgoCalibration(object):
             transformer,
             **algo_options
         )
+        self.algo_assessor = disc
+        self.calibration_space = calibration_space
+        self.maximize_objective = not measure.SMALLER_IS_BETTER
         disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
-        if use_doe:
-            self.scenario = DOEScenario(
-                [disc], "DisciplinaryOpt", self.CRITERION, calibration_space
-            )
-        else:
-            self.scenario = MDOScenario(
-                [disc], "DisciplinaryOpt", self.CRITERION, calibration_space
-            )
         self.dataset = None
         self.optimal_parameters = None
         self.optimal_criterion = None
         self.optimal_algorithm = None
+        self.scenario = None
 
     def execute(self, input_data):
         """Execute the calibration from optimization or DOE data.
@@ -173,13 +174,34 @@ class MLAlgoCalibration(object):
         :return: optimal hyperparameters, optimal criterion.
         :rtype: dict, ndarray
         """
+        doe_factory = DOEFactory()
+
+        if doe_factory.is_available(input_data["algo"]):
+            self.scenario = DOEScenario(
+                [self.algo_assessor],
+                "DisciplinaryOpt",
+                self.CRITERION,
+                self.calibration_space,
+                maximize_objective=self.maximize_objective,
+            )
+        else:
+            self.scenario = MDOScenario(
+                [self.algo_assessor],
+                "DisciplinaryOpt",
+                self.CRITERION,
+                self.calibration_space,
+                maximize_objective=self.maximize_objective,
+            )
         self.scenario.disciplines[0].cache.clear()
         self.scenario.execute(input_data)
         x_opt = self.scenario.design_space.get_current_x_dict()
         f_opt = self.scenario.get_optimum().f_opt
         cache = self.scenario.disciplines[0].cache
         self.dataset = cache.export_to_dataset(by_group=False)
-        algo_opt = self.algos[argmin(self.get_history(self.CRITERION))]
+        if self.maximize_objective:
+            algo_opt = self.algos[argmax(self.get_history(self.CRITERION))]
+        else:
+            algo_opt = self.algos[argmin(self.get_history(self.CRITERION))]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
         self.optimal_algorithm = algo_opt
@@ -197,5 +219,5 @@ class MLAlgoCalibration(object):
 
     @property
     def algos(self):
-        """ List of trained algorithms. """
+        """List of trained algorithms."""
         return self.scenario.disciplines[0].algos

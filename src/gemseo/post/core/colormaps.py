@@ -27,17 +27,11 @@
 #
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-"""
-Custom color maps for plots
-"""
+"""Custom color maps for plots."""
 from __future__ import absolute_import, division, unicode_literals
 
 import matplotlib as mpl
-from future import standard_library
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
-
-standard_library.install_aliases()
-
 
 __all__ = ["MAGMA", "INFERNO", "PLASMA", "VIRIDIS", "PARULA", "RG_SEISMIC"]
 

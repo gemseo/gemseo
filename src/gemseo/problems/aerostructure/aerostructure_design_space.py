@@ -27,11 +27,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from builtins import super
 
 import numpy as np
-from future import standard_library
 
 from gemseo.algos.design_space import DesignSpace
-
-standard_library.install_aliases()
 
 
 class AerostructureDesignSpace(DesignSpace):
@@ -51,7 +48,7 @@ class AerostructureDesignSpace(DesignSpace):
     """
 
     def __init__(self):
-        """ Constructor"""
+        """Constructor."""
         super(AerostructureDesignSpace, self).__init__()
 
         # construct a dictionary with initial solution

@@ -19,10 +19,9 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning algorithm calibration. """
+"""Test machine learning algorithm calibration."""
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import allclose, array, array_equal
 
 from gemseo.algos.design_space import DesignSpace
@@ -30,11 +29,9 @@ from gemseo.mlearning.core.calibration import MLAlgoAssessor, MLAlgoCalibration
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 
-standard_library.install_aliases()
-
 
 def test_discipline():
-    """ Test discipline. """
+    """Test discipline."""
     dataset = RosenbrockDataset(opt_naming=False)
     measure_options = {"method": "loo"}
     disc = MLAlgoAssessor(
@@ -49,7 +46,7 @@ def test_discipline():
 
 
 def test_calibration():
-    """ Test calibration. """
+    """Test calibration."""
     dataset = RosenbrockDataset(opt_naming=False)
     calibration_space = DesignSpace()
     calibration_space.add_variable("degree", 1, "integer", 1, 10, 1)

@@ -30,13 +30,10 @@ from the disk.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
-
 from gemseo.api import configure_logger, export_design_space, read_design_space
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Read a design space from a file

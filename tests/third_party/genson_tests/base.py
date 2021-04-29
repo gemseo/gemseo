@@ -1,19 +1,4 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2014 Jon Wolverton github.com/wolverdude
@@ -41,9 +26,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys
 import unittest
 
-from future import standard_library
-
-from gemseo.api import configure_logger
 from gemseo.third_party.genson_generator import Schema
 
 if sys.version_info.major == 2:
@@ -52,16 +34,12 @@ if sys.version_info.major == 2:
 else:
     from fastjsonschema import compile
     from fastjsonschema.exceptions import JsonSchemaException
-from gemseo import SOFTWARE_NAME
-
-standard_library.install_aliases()
-configure_logger(SOFTWARE_NAME)
 
 
 class SchemaTestCase(unittest.TestCase):
-    """ """
+    """"""
 
-    def assertGenSchema(self, instance, options, expected):
+    def assert_gen_schema(self, instance, options, expected):
         """
 
         :param instance: param options:
@@ -70,21 +48,21 @@ class SchemaTestCase(unittest.TestCase):
 
         """
         actual = Schema(**options).add_object(instance).to_dict()
-        self.assertSchema(actual, expected)
-        self.assertObjectValid(instance, actual)
+        self.assert_schema(actual, expected)
+        self.assert_object_valid(instance, actual)
         return actual
 
-    def assertSchema(self, actual, expected):
+    def assert_schema(self, actual, expected):
         """
 
         :param actual: param expected:
         :param expected:
 
         """
-        self.assertValidSchema(actual)
+        self.assert_valid_schema(actual)
         self.assertEqual(actual, expected)
 
-    def assertValidSchema(self, schema):
+    def assert_valid_schema(self, schema):
         """
 
         :param schema:
@@ -92,7 +70,7 @@ class SchemaTestCase(unittest.TestCase):
         """
         compile(schema)
 
-    def assertObjectValid(self, data, schema):
+    def assert_object_valid(self, data, schema):
         """
 
         :param data: param schema:
@@ -101,7 +79,7 @@ class SchemaTestCase(unittest.TestCase):
         """
         compile(schema)(data)
 
-    def assertObjectInvalid(self, data, schema):
+    def assert_object_invalid(self, data, schema):
         """
 
         :param data: param schema:

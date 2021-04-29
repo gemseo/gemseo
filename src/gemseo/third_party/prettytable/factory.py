@@ -43,13 +43,11 @@ from __future__ import (absolute_import, division, print_function,
 from builtins import int, map, next, range
 import csv
 
-from future import standard_library
 
 from ._compact import HTMLParser
 from .prettytable import PrettyTable
 
 
-standard_library.install_aliases()
 
 
 def from_csv(filepath, field_names=None, **kwargs):

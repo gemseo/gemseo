@@ -28,22 +28,21 @@ and then executes the weakly coupled ones
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+from os import name as os_name
 
 from gemseo.api import configure_logger, create_discipline, create_mda
-from gemseo.utils.testing_utils import IS_NT
+
+IS_NT = os_name == "nt"
 
 configure_logger()
-
-standard_library.install_aliases()
 
 
 #############################################################################
 # Define a way to display results
 # -------------------------------
 def display_result(res, mda_name):
-    """
-    Display coupling and output variables in logger
+    """Display coupling and output variables in logger.
+
     @param res: result (dict) of MDA
     @param mda_name: name of the current MDA
     """

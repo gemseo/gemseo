@@ -24,10 +24,10 @@ Finite differences & complex step approximations
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import logging
 from itertools import chain
 from multiprocessing import cpu_count
 
-from future import standard_library
 from matplotlib import pyplot
 from numpy import (
     absolute,
@@ -54,23 +54,20 @@ from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.py23_compat import xrange
 
-standard_library.install_aliases()
 EPSILON = finfo(float).eps
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ComplexStep(object):
-    """Complex step, second order gradient calculation.
-    Enables a much lower step than real finite differences,
-    typically fd_step=1e-30 since there is no
-    cancellation error due to a difference calculation
+    """Complex step, second order gradient calculation. Enables a much lower step than
+    real finite differences, typically fd_step=1e-30 since there is no cancellation
+    error due to a difference calculation.
 
     grad = Imaginary part(f(x+j*fd_step)/(fd_step))
     """
 
     def __init__(self, f_pointer, step=1e-20, parallel=False, **parallel_args):
-        """
-        Constructor
+        """Constructor.
 
         :param f_pointer: pointer on function to derive
         :param step: differentiation step
@@ -87,7 +84,7 @@ class ComplexStep(object):
             self.step = step
 
     def f_gradient(self, x_vect, step=None, **kwargs):
-        """Compute gradient by complex step
+        """Compute gradient by complex step.
 
         :param x_vect: design vector
         :type x_vect: numpy array
@@ -109,11 +106,11 @@ class ComplexStep(object):
         if self.__parallel:
 
             def func_noargs(xval):
-                """Function calling the f_pointer
-                without explicitly passed arguments"""
+                """Function calling the f_pointer without explicitly passed
+                arguments."""
                 return self.f_pointer(xval, **kwargs)
 
-            function_list = [func_noargs] * (n_dim)
+            function_list = [func_noargs] * n_dim
             parallel_execution = ParallelExecution(function_list, **self.__par_args)
 
             all_x = [x_vect + x_p_arr[:, i] for i in xrange(n_dim)]
@@ -121,18 +118,18 @@ class ComplexStep(object):
 
             for i in xrange(n_dim):
                 f_p = output_list[i]
-                grad.append(f_p.imag / (x_p_arr[i, i].imag))
+                grad.append(f_p.imag / x_p_arr[i, i].imag)
         else:
 
             for i in xrange(n_dim):
                 x_p = x_vect + x_p_arr[:, i]
                 f_p = self.f_pointer(x_p, **kwargs)
-                grad.append(f_p.imag / (x_p_arr[i, i].imag))
+                grad.append(f_p.imag / x_p_arr[i, i].imag)
         return array(grad, dtype=float64).T
 
     def generate_perturbations(self, n_dim, x_vect, step=None):
-        """Generates the perturbations x_perturb which will be used
-        to compute f(x_vect+x_perturb)
+        """Generates the perturbations x_perturb which will be used to compute
+        f(x_vect+x_perturb)
 
         :param n_dim: dimension
         :type n_dim: integer
@@ -156,8 +153,7 @@ class FirstOrderFD(object):
     """
 
     def __init__(self, f_pointer, step=1e-6, parallel=False, **parallel_args):
-        """
-        Constructor
+        """Constructor.
 
         :param f_pointer: pointer on function to derive
         :param step: differentiation step
@@ -171,7 +167,7 @@ class FirstOrderFD(object):
         self.__parallel = parallel
 
     def f_gradient(self, x_vect, step=None, **kwargs):
-        """Compute gradient by real step
+        """Compute gradient by real step.
 
         :param x_vect: design vector
         :type x_vect: numpy array
@@ -191,8 +187,8 @@ class FirstOrderFD(object):
         if self.__parallel:
 
             def func_noargs(xval):
-                """Function calling the f_pointer
-                without explicitly passed arguments"""
+                """Function calling the f_pointer without explicitly passed
+                arguments."""
                 return self.f_pointer(xval, **kwargs)
 
             function_list = [func_noargs] * (n_dim + 1)
@@ -216,10 +212,8 @@ class FirstOrderFD(object):
         return array(grad, dtype=float64).T
 
     def _get_opt_step(self, f_p, f_0, f_m, numerical_error=EPSILON):
-        """
-        Compute the optimal step, f may be a vector function
-        In this case, take the worst case
-
+        """Compute the optimal step, f may be a vector function In this case, take the
+        worst case.
 
         :param f_0: f(x)
         :param f_m: f(x-e)
@@ -255,7 +249,7 @@ class FirstOrderFD(object):
         return error, opt_step
 
     def compute_optimal_step(self, x_vect, numerical_error=EPSILON, **kwargs):
-        """Compute gradient by real step
+        """Compute gradient by real step.
 
         :param x_vect: design vector
         :type x_vect: numpy array
@@ -276,8 +270,8 @@ class FirstOrderFD(object):
         if self.__parallel:
 
             def func_noargs(xval):
-                """Function calling the f_pointer
-                without explicitly passed arguments"""
+                """Function calling the f_pointer without explicitly passed
+                arguments."""
                 return self.f_pointer(xval, **kwargs)
 
             function_list = [func_noargs] * (n_dim + 1)
@@ -310,10 +304,9 @@ class FirstOrderFD(object):
         return opt_steps, errors
 
     def generate_perturbations(self, n_dim, x_vect, step=None):
-        """Generates the perturbations x_perturb which will be used
-        to compute f(x_vect+x_perturb)
-        Generates the perturbations x_perturb which will be used
-        to compute f(x_vect+x_perturb)
+        """Generates the perturbations x_perturb which will be used to compute
+        f(x_vect+x_perturb) Generates the perturbations x_perturb which will be used to
+        compute f(x_vect+x_perturb)
 
         :param n_dim: dimension
         :type n_dim: integer
@@ -333,10 +326,7 @@ class FirstOrderFD(object):
 
 
 class DisciplineJacApprox(object):
-    """
-    Approximates a discipline Jacobian using finite differences
-    or Complex step
-    """
+    """Approximates a discipline Jacobian using finite differences or Complex step."""
 
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
@@ -387,8 +377,7 @@ class DisciplineJacApprox(object):
         self.__parallel = parallel
 
     def _create_approximator(self, outputs, inputs):
-        """
-        Creates the approximation class for the function jacobian
+        """Creates the approximation class for the function jacobian.
 
         :param inputs: derive outputs wrt inputs
         :param outputs: outputs to be derived
@@ -412,12 +401,11 @@ class DisciplineJacApprox(object):
     def auto_set_step(
         self, outputs, inputs, print_errors=True, numerical_error=EPSILON
     ):
-        """
-        Compute optimal step for a forward first order finite differences
-        gradient approximation Requires a first evaluation of perturbed
-        functions values.  The optimal step is reached when the truncation
-        error (cut in the Taylor development), and the numerical cancellation
-        errors (roundoff when doing f(x+step)-f(x)) are equal.
+        """Compute optimal step for a forward first order finite differences gradient
+        approximation Requires a first evaluation of perturbed functions values.  The
+        optimal step is reached when the truncation error (cut in the Taylor
+        development), and the numerical cancellation errors (roundoff when doing
+        f(x+step)-f(x)) are equal.
 
         :param outputs: the list of outputs to compute the derivative
         :param inputs: this list of outputs to derive wrt
@@ -463,8 +451,7 @@ class DisciplineJacApprox(object):
         return x_vect
 
     def compute_approx_jac(self, outputs, inputs):
-        """
-        Computes the approximation
+        """Computes the approximation.
 
         :param inputs: derive outputs wrt inputs
         :param outputs: outputs to be derived
@@ -482,7 +469,7 @@ class DisciplineJacApprox(object):
         else:
             step = self.step
 
-        if hasattr(step, "len") and len(step) > 1 and len(x_vect) != len(step):
+        if hasattr(step, "len") and 1 < len(step) != len(x_vect):
             raise ValueError(
                 "Inconsistent step size, expected "
                 + str(len(x_vect))
@@ -508,7 +495,7 @@ class DisciplineJacApprox(object):
         figsize_x=10,
         figsize_y=10,
     ):
-        """Checks if the jacobian provided by the linearize() method is correct
+        """Checks if the jacobian provided by the linearize() method is correct.
 
         :param analytic_jacobian: jacobian to validate
         :param inputs: list of inputs wrt which to differentiate
@@ -586,9 +573,7 @@ class DisciplineJacApprox(object):
 
     @staticmethod
     def __format_jac_as_grad_dict(computed_jac, approx_jac):
-        """
-        Formats the approximate jacobian dict as a dict of
-        gradients
+        """Formats the approximate jacobian dict as a dict of gradients.
 
         :param computed_jac: reference computed jac dict of dicts
         :param approx_jac: dict of gradients
@@ -636,8 +621,7 @@ class DisciplineJacApprox(object):
         figsize_x=10,
         figsize_y=10,
     ):
-        """
-        Generate a plot of the exact vs approximate jacobian
+        """Generate a plot of the exact vs approximate jacobian.
 
         :param computed_jac: computed jacobianfrom linearize method
         :param approx_jac: finite differences approximate jacobian
@@ -712,12 +696,10 @@ class DisciplineJacApprox(object):
 
 
 def comp_best_step(f_p, f_x, f_m, step, epsilon_mach=EPSILON):
-    """
-    Compute optimal step for a forward first order finite differences gradient
-    approximation Requires a first evaluation of perturbed functions values.
-    The optimal step is reached when the truncation error (cut in the Taylor
-    development), and the numerical cancellation errors (roundoff when doing
-    f(x+step)-f(x)) are equal.
+    """Compute optimal step for a forward first order finite differences gradient
+    approximation Requires a first evaluation of perturbed functions values. The optimal
+    step is reached when the truncation error (cut in the Taylor development), and the
+    numerical cancellation errors (roundoff when doing f(x+step)-f(x)) are equal.
 
     See:
     https://en.wikipedia.org/wiki/Numerical_differentiation
@@ -744,9 +726,8 @@ def comp_best_step(f_p, f_x, f_m, step, epsilon_mach=EPSILON):
 
 
 def compute_truncature_error(hess, step):
-    """
-    Computes the truncation error estimation for a first order finite
-    differences scheme
+    """Computes the truncation error estimation for a first order finite differences
+    scheme.
 
     :param hess: second order derivative (d²f/dx²)
     :param step: step of the finite differences used for the derivatives
@@ -759,8 +740,7 @@ def compute_truncature_error(hess, step):
 
 
 def compute_cancellation_error(f_x, step, epsilon_mach=EPSILON):
-    """
-    Compute the cancellation error, ie roundoff when doing f(x+step)-f(x)
+    """Compute the cancellation error, ie roundoff when doing f(x+step)-f(x)
 
     :param f_x: value of the function at current point
     :param step: step used for the calculations of perturbed functions values
@@ -774,8 +754,7 @@ def compute_cancellation_error(f_x, step, epsilon_mach=EPSILON):
 
 
 def approx_hess(f_p, f_x, f_m, step):
-    """
-    Second order approximation of the hessian (d²f/dx²)
+    """Second order approximation of the hessian (d²f/dx²)
 
     :param f_p: f(x+step)
     :param f_x: f(x)

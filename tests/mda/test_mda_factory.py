@@ -24,25 +24,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestMDAFactory(unittest.TestCase):
-    """Tests of MDA factory"""
+    """Tests of MDA factory."""
 
     def test_jacobi_sobieski(self):
-        """Test the execution of Jacobi on Sobieski"""
+        """Test the execution of Jacobi on Sobieski."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         mda = MDAFactory().create("MDAJacobi", disciplines, max_mda_iter=2)
         mda.execute()

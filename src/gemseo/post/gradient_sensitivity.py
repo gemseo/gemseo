@@ -25,27 +25,23 @@ Plot the derivatives of the functions
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from matplotlib import pyplot
 from numpy import arange, atleast_2d
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class GradientSensitivity(OptPostProcessor):
-    """
-    The **GradientSensitivity** post processing
-    builds histograms of derivatives of objective and constraints
+    """The **GradientSensitivity** post processing builds histograms of derivatives of
+    objective and constraints.
 
-    The plot method considers the derivatives at the last iteration.
-    The iteration can be changed in option. The x- and y- figure sizes
-    can also be modified in option.
-    It is possible either to save the plot, to show the plot or both.
+    The plot method considers the derivatives at the last iteration. The iteration can
+    be changed in option. The x- and y- figure sizes can also be modified in option. It
+    is possible either to save the plot, to show the plot or both.
     """
 
     def _plot(
@@ -58,8 +54,7 @@ class GradientSensitivity(OptPostProcessor):
         file_path="gradient_sensitivity",
         extension="pdf",
     ):
-        """
-        Plots the GradientSensitivity graph
+        """Plots the GradientSensitivity graph.
 
         :param iteration:  the iteration to plot sensitivities, if negative,
             use optimum
@@ -101,8 +96,7 @@ class GradientSensitivity(OptPostProcessor):
 
     @staticmethod
     def __generate_subplots(x_ref, grad_dict, figsize_x=10, figsize_y=10):
-        """
-        Generates the gradient sub plots from the data
+        """Generates the gradient sub plots from the data.
 
         :param x_ref: reference value for x
         :param grad_dict : dict of gradients to plot

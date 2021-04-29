@@ -19,19 +19,14 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from os.path import join
 
 import pytest
-from future import standard_library
 from numpy import array
 
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, make_fpath
 from gemseo.post.dataset.yvsx import YvsX
-
-standard_library.install_aliases()
+from gemseo.utils.py23_compat import Path
 
 
 def test_empty_dataset():
@@ -46,7 +41,7 @@ def test_plot_notimplementederror():
     dataset.set_from_array(array([[1, 2]]))
     post = DatasetPlot(dataset)
     with pytest.raises(NotImplementedError):
-        post._plot()
+        post._plot({})
 
 
 def test_get_label():
@@ -58,3 +53,65 @@ def test_get_label():
     assert varname == ("parameters", "x", "0")
     with pytest.raises(TypeError):
         label, varname = post._get_label(123)
+
+
+def test_custom():
+    dataset = Dataset()
+    dataset.set_from_array(array([[1, 2]]), variables=["x"], sizes={"x": 2})
+    plot = DatasetPlot(dataset)
+    assert plot.font_size == 10
+    assert plot.title is None
+    assert plot.xlabel is None
+    assert plot.ylabel is None
+    assert plot.zlabel is None
+    plot.title = "title"
+    assert plot.title == "title"
+    plot.xlabel = "xlabel"
+    assert plot.xlabel == "xlabel"
+    plot.ylabel = "ylabel"
+    assert plot.ylabel == "ylabel"
+    plot.zlabel = "zlabel"
+    assert plot.zlabel == "zlabel"
+    plot.font_size = 2
+    assert plot.font_size == 2
+    plot.font_size *= 2
+    assert plot.font_size == 4
+
+
+def assert_path_equal(path1, path2):
+    """Check that 2 paths are pointing to the same location."""
+    assert str(path1) == str(path2)
+
+
+def test_make_fpath(tmp_path):
+    with pytest.raises(TypeError):
+        make_fpath(123)
+
+    assert_path_equal(make_fpath("DatasetPlot"), Path.cwd() / "DatasetPlot.pdf")
+    assert_path_equal(
+        make_fpath("DatasetPlot", file_format="png"), Path.cwd() / "DatasetPlot.png"
+    )
+
+    expected = "foo is not a directory"
+    with pytest.raises(ValueError, match=expected):
+        make_fpath("DatasetPlot", "foo/fname")
+
+    file_path = tmp_path / "fname"
+    assert_path_equal(
+        make_fpath("DatasetPlot", file_path), file_path.with_suffix(".pdf")
+    )
+
+    file_format = "png"
+    assert_path_equal(
+        make_fpath("DatasetPlot", file_path, file_format), file_path.with_suffix(".png")
+    )
+
+    file_path = tmp_path / "fname.png"
+    assert_path_equal(
+        make_fpath("DatasetPlot", file_path), file_path.with_suffix(".png")
+    )
+
+    file_format = "jpg"
+    assert_path_equal(
+        make_fpath("DatasetPlot", file_path, file_format), file_path.with_suffix(".png")
+    )

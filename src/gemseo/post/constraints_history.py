@@ -24,33 +24,28 @@ A constraints plot
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
+
 import numpy as np
-from future import standard_library
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
 
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ConstraintsHistory(OptPostProcessor):
-    """
-    The **ConstraintsHistory** post processing
-    plots the constraints functions history in lines charts
-    with violation indication by color on background.
+    """The **ConstraintsHistory** post processing plots the constraints functions
+    history in lines charts with violation indication by color on background.
 
-    The plot method requires the list of constraint names to plot.
-    It is possible either to save the plot, to show the plot or both.
+    The plot method requires the list of constraint names to plot. It is possible either
+    to save the plot, to show the plot or both.
     """
 
     def __init__(self, opt_problem):
-        """
-        Constructor
+        """Constructor.
 
         :param opt_problem: the optimization problem to run
         """
@@ -67,9 +62,7 @@ class ConstraintsHistory(OptPostProcessor):
         file_path="constraints_history",
         extension="pdf",
     ):
-        """
-        Plots the optimization history:
-        1 plot for the constraints
+        """Plots the optimization history: 1 plot for the constraints.
 
         :param constraints_list: list of constraint names
         :type constraints_list: list(str)
@@ -79,8 +72,6 @@ class ConstraintsHistory(OptPostProcessor):
         :type save: bool
         :param file_path: the base paths of the files to export
         :type file_path: str
-        :param variables_list: list of the constraints (func name)
-        :type variables_list: list(str)
         :param extension: file extension
         :type extension: str
         """
@@ -155,11 +146,9 @@ class ConstraintsHistory(OptPostProcessor):
 
             # plot vertical line the last time that g(x)=0
             indices = np.where(np.diff(np.sign(values)))[0]
-            if indices != []:
+            if indices.size != 0:
                 ind = indices[-1]
-                x_lim = np.interp(
-                    y_lim, values[ind - 1 : ind + 1], x_iter[ind - 1 : ind + 1]
-                )
+                x_lim = np.interp(y_lim, values[ind : ind + 2], x_iter[ind : ind + 2])
                 axe.axvline(x_lim, color="k", linewidth=2)
 
         self._save_and_show(

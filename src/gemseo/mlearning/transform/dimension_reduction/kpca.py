@@ -33,18 +33,15 @@ generated/sklearn.decomposition.PCA.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from sklearn.decomposition import KernelPCA
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 
-standard_library.install_aliases()
-
 
 class KPCA(DimensionReduction):
-    """ Kernel principal component dimension reduction algorithm. """
+    """Kernel principal component dimension reduction algorithm."""
 
     def __init__(
         self,

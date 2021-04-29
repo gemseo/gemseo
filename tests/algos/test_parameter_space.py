@@ -23,13 +23,10 @@
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, ndarray
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.distributions.distribution import ComposedDistribution
-
-standard_library.install_aliases()
+from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 
 def test_constructor():
@@ -43,7 +40,7 @@ def test_add_variable():
     space.add_variable("x")
     assert space.is_deterministic("x")
     assert not space.is_uncertain("x")
-    assert "x" not in space.marginals
+    assert "x" not in space.distributions
 
 
 def test_add_random_variable():
@@ -54,7 +51,26 @@ def test_add_random_variable():
     assert space.is_uncertain("y")
     assert space.variables_names == ["x", "y"]
     assert space.uncertain_variables == ["y"]
-    assert "y" in space.marginals
+    assert space.deterministic_variables == ["x"]
+    assert "y" in space.distributions
+
+    space.add_random_variable(
+        "z", "OTDistribution", interfaced_distribution="Dirac", parameters=([10.0])
+    )
+    res = space.get_range("z")
+    assert 10.0 == res[0][0]
+    assert 10.0 == res[0][1]
+
+
+def test_extract_subspaces():
+    space = ParameterSpace()
+    space.add_variable("x1")
+    space.add_variable("x2", value=0.0)
+    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
+    deterministic_space = space.extract_deterministic_space()
+    uncertain_space = space.extract_uncertain_space()
+    assert uncertain_space.variables_names == ["y"]
+    assert deterministic_space.variables_names == ["x1", "x2"]
 
 
 def test_remove_variable():
@@ -69,41 +85,29 @@ def test_remove_variable():
     space.remove_variable("y1")
     assert space.variables_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
-    assert "y1" not in space.marginals
+    assert "y1" not in space.distributions
 
 
 def test_copula():
-    space = ParameterSpace(copula=ComposedDistribution.INDEPENDENT_COPULA)
+    space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("z", "SPUniformDistribution", lower=0.0, upper=1.0)
+    space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
     with pytest.raises(ValueError):
         space = ParameterSpace(copula="dummy")
 
 
-def test_get_composed_distribution():
-    space = ParameterSpace(copula=ComposedDistribution.INDEPENDENT_COPULA)
-    space.add_random_variable("x", "SPNormalDistribution", mu=0.0, sigma=1.0, size=2)
-    space.get_composed_distribution("x")
-
-
-def test_get_marginal_distributions():
-    space = ParameterSpace(copula=ComposedDistribution.INDEPENDENT_COPULA)
-    space.add_random_variable("x", "SPNormalDistribution", mu=0.0, sigma=1.0, size=2)
-    space.get_marginal_distributions("x")
-
-
-def test_get_sample():
+def test_compute_samples():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
     space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0, size=3)
-    sample = space.get_sample(2, False)
+    sample = space.compute_samples(2, False)
     assert len(sample) == 2
     assert isinstance(sample, ndarray)
     assert sample.shape == (2, 4)
-    sample = space.get_sample(2, True)
+    sample = space.compute_samples(2, True)
     assert len(sample) == 2
     for idx in [0, 1]:
         assert "x1" not in sample[idx]
@@ -114,14 +118,16 @@ def test_get_sample():
         assert len(sample[idx]["y2"]) == 3
 
 
-def test_get_cdf():
+def test_evaluate_cdf():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
     space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0, size=3)
-    cdf = space.get_cdf({"y1": array([0.0]), "y2": array([0.0] * 3)})
-    inv_cdf = space.get_cdf({"y1": array([0.5]), "y2": array([0.5] * 3)}, True)
+    cdf = space.evaluate_cdf({"y1": array([0.0]), "y2": array([0.0] * 3)})
+    inv_cdf = space.evaluate_cdf({"y1": array([0.5]), "y2": array([0.5] * 3)}, True)
+    with pytest.raises(TypeError):
+        space.evaluate_cdf(array([0.5] * 4), True)
     assert isinstance(cdf, dict)
     assert isinstance(inv_cdf, dict)
     assert allclose(cdf["y1"], array([0.5]), 1e-3)
@@ -134,7 +140,7 @@ def test_range():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", lower=0.0, upper=2.0)
+    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
     expectation = array([0.0, 2.0])
     assert allclose(expectation, space.get_range("y1")[0], 1e-3)
@@ -150,7 +156,7 @@ def test_normalize():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", lower=0.0, upper=2.0)
+    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
     vector = array([0.5] * 6)
     u_vector = space.normalize_vect(vector)
@@ -162,7 +168,7 @@ def test_unnormalize():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", lower=0.0, upper=2.0)
+    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
     u_vector = array([0.5] * 2 + [0.25] + [0.598706] * 3)
     vector = space.unnormalize_vect(u_vector)
@@ -175,28 +181,32 @@ def test_update_parameter_space():
     space.add_variable("x1", l_b=0.0, u_b=1.0)
     assert space.get_lower_bound("x1")[0] == 0.0
     assert space.get_upper_bound("x1")[0] == 1.0
-    space.add_random_variable("x1", "OTUniformDistribution", 1, lower=0.0, upper=2.0)
+    space.add_random_variable(
+        "x1", "OTUniformDistribution", 1, minimum=0.0, maximum=2.0
+    )
     assert space.get_lower_bound("x1")[0] == 0.0
     assert space.get_upper_bound("x1")[0] == 2.0
 
 
-def test_set_dependence():
-    with pytest.raises(NotImplementedError):
-        ParameterSpace().set_dependence(["x_1", "x_2"], "gaussian")
-
-
-def test_str():
-    space = ParameterSpace(copula=ComposedDistribution.INDEPENDENT_COPULA)
+def test_str_and_tabularview():
+    space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("z", "SPUniformDistribution", lower=0.0, upper=1.0)
+    space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
     assert "Parameter space" in str(space)
+    tabular_view = space.get_tabular_view()
+    assert "Parameter space" in tabular_view
+    assert space._TRANSFORMATION in tabular_view
+    assert space._SUPPORT in tabular_view
+    assert space._MEAN in tabular_view
+    assert space._STANDARD_DEVIATION in tabular_view
+    assert space._RANGE in tabular_view
 
 
 def test_unnormalize_vect():
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", lower=0.0, mode=0.5, upper=2.0
+        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(space.unnormalize_vect(array([0.5])), array([2.0 - 1.5 ** 0.5]))
     assert space.unnormalize_vect(array([0.5]), use_dist=False)[0] == 1.0
@@ -205,23 +215,23 @@ def test_unnormalize_vect():
 def test_normalize_vect():
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", lower=0.0, mode=0.5, upper=2.0
+        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(space.normalize_vect(array([2.0 - 1.5 ** 0.5])), array([0.5]))
     assert space.normalize_vect(array([1.0]), use_dist=True)[0] == 0.5
 
 
-def test_get_cdf_raising_errors():
+def test_evaluate_cdf_raising_errors():
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", lower=0.0, mode=0.5, upper=2.0
+        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     value = {"x": 1}
     with pytest.raises(TypeError):
-        space.get_cdf(value, inverse=True)
+        space.evaluate_cdf(value, inverse=True)
     value = {"x": array([0.5] * 2)}
     with pytest.raises(ValueError):
-        space.get_cdf(value, inverse=True)
+        space.evaluate_cdf(value, inverse=True)
     value = {"x": array([1.5])}
     with pytest.raises(ValueError):
-        space.get_cdf(value, inverse=True)
+        space.evaluate_cdf(value, inverse=True)

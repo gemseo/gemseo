@@ -35,7 +35,6 @@ Rosenbrock dataset (two inputs and one output).
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import hstack, linspace, meshgrid, sin
 
 from gemseo.api import configure_logger, load_dataset
@@ -46,7 +45,6 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Test on 1D dataset

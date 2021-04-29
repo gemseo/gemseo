@@ -26,22 +26,19 @@ Run a DOE from a file containing samples values
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import atleast_2d, loadtxt
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class CustomDOE(DOELibrary):
 
-    """Class used for creation of DOE samples provided by user
-    This samples are provided as file in text or csv format.
-    """
+    """Class used for creation of DOE samples provided by user This samples are provided
+    as file in text or csv format."""
 
     ALGO_LIST = ["CustomDOE"]
     DELIMITER_KEYWORD = "delimiter"
@@ -49,11 +46,11 @@ class CustomDOE(DOELibrary):
     DOE_FILE = "doe_file"
 
     def __init__(self):
-        """
-        Constructor, initializes the DOE samples
-        For this class of DOE library, samples are provided as file
-        in text or csv format. csv file format is assume to have a header
-        whereas text file (extension .txt) has not.
+        """Constructor, initializes the DOE samples For this class of DOE library,
+        samples are provided as file in text or csv format.
+
+        csv file format is assume to have a header whereas text file (extension .txt)
+        has not.
         """
         super(CustomDOE, self).__init__()
         self.file_dv_names_list = None
@@ -77,12 +74,13 @@ class CustomDOE(DOELibrary):
         delimiter=",",  # pylint: disable=W0221
         comments="#",
         skiprows=0,
+        max_time=0,
         eval_jac=False,
         n_processes=1,
         wait_time_between_samples=0.0,
         **kwargs
     ):
-        """Sets the options
+        """Sets the options.
 
         :param doe_file: path and name of file
         :type doe_file: str
@@ -99,11 +97,14 @@ class CustomDOE(DOELibrary):
         :type n_processes: int
         :param wait_time_between_samples: waiting time between two samples
         :type wait_time_between_samples: float
+        :param max_time: maximum runtime in seconds,
+            disabled if 0 (Default value = 0)
+        :type max_time: float
         :param kwargs: additional arguments
-
         """
         wtbs = wait_time_between_samples
         return self._process_options(
+            max_time=max_time,
             doe_file=doe_file,
             delimiter=delimiter,
             comments=comments,
@@ -115,7 +116,7 @@ class CustomDOE(DOELibrary):
         )
 
     def read_file(self, doe_file, delimiter=",", comments="#", skiprows=0):
-        """Read a file containing a DOE
+        """Read a file containing a DOE.
 
         :param doe_file: path and name of file
         :type doe_file: str
@@ -156,10 +157,8 @@ class CustomDOE(DOELibrary):
         return samples
 
     def __check_input_dv_lenght(self, samples):
-        """
-        Check that file contains all variables given as design variable
-        at initialization
-        """
+        """Check that file contains all variables given as design variable at
+        initialization."""
         dim = self.problem.dimension
         if samples.shape[1] != dim:
             raise ValueError(
@@ -170,8 +169,7 @@ class CustomDOE(DOELibrary):
             )
 
     def _generate_samples(self, **options):
-        """
-        Generates the list of x samples
+        """Generates the list of x samples.
 
         :param options: the options dict for the algorithm,
             see associated JSON file

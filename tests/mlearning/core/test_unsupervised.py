@@ -19,23 +19,20 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test unsupervised machine learning algorithm module. """
+"""Test unsupervised machine learning algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def dataset():
-    """ Create dataset with two variables. """
+    """Create dataset with two variables."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
@@ -45,14 +42,14 @@ def dataset():
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     ml_algo = MLUnsupervisedAlgo(dataset)
     assert ml_algo.algo is None
     assert ml_algo.var_names == dataset.get_names(dataset.DEFAULT_GROUP)
 
 
 def test_notimplementederror(dataset):
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     ml_algo = MLUnsupervisedAlgo(dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
@@ -63,7 +60,7 @@ def test_notimplementederror(dataset):
 
 
 def test_variable_limitation(dataset):
-    """ Test specifying learning variables."""
+    """Test specifying learning variables."""
     transformer = {"x_1": MinMaxScaler(), "x_2": MinMaxScaler()}
     ml_algo_limited = MLUnsupervisedAlgo(
         dataset, transformer=transformer, var_names=["x_1"]

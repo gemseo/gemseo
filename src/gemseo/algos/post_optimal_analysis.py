@@ -24,16 +24,14 @@ Post-optimal analysis
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import atleast_1d, dot, hstack, ndarray, vstack, zeros_like
 from numpy.linalg.linalg import norm
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class PostOptimalAnalysis(object):
@@ -81,8 +79,7 @@ class PostOptimalAnalysis(object):
     MULT_DOT_CONSTR_JAC = "mult_dot_constr_jac"
 
     def __init__(self, opt_problem, ineq_tol=None):
-        """
-        Constructor.
+        """Constructor.
 
         :param opt_problem: solved optimization problem to be analyzed
         :type opt_problem: OptimizationProblem
@@ -106,8 +103,7 @@ class PostOptimalAnalysis(object):
             self.ineq_tol = ineq_tol
 
     def check_validity(self, total_jac, partial_jac, parameters, threshold):
-        """
-        Checks whether the assumption for post-optimal validity holds.
+        """Checks whether the assumption for post-optimal validity holds.
 
         :param total_jac: total derivatives of the post-optimal constraints
         :type total_jac: dict(dict(ndarray))
@@ -165,8 +161,7 @@ class PostOptimalAnalysis(object):
         return valid, ineq_corr, eq_corr
 
     def _compute_validity(self, total_jac, partial_jac, multipliers, parameters):
-        """
-        Computes the arrays necessary to the validity check.
+        """Computes the arrays necessary to the validity check.
 
         :param total_jac: total derivatives of the post-optimal constraints
         :type total_jac: dict(dict(ndarray))
@@ -198,8 +193,7 @@ class PostOptimalAnalysis(object):
         return total_prod, partial_prod, corrections
 
     def execute(self, outputs, inputs, functions_jac):
-        """
-        Performs the post-optimal analysis.
+        """Performs the post-optimal analysis.
 
         :param outputs: names list of the outputs to differentiate
         :type outputs: list(str)
@@ -235,8 +229,7 @@ class PostOptimalAnalysis(object):
 
     @staticmethod
     def _check_jacobians(functions_jac, func_names, inputs):
-        """
-        Checks the consistency of the Jacobians with the required inputs.
+        """Checks the consistency of the Jacobians with the required inputs.
 
         :param functions_jac: Jacobians of the optimization function w.r.t. the
             differentiation inputs
@@ -279,14 +272,11 @@ class PostOptimalAnalysis(object):
                     )
 
     def _compute_lagrange_multipliers(self):
-        """
-        Computes the Lagrange multipliers at the solution.
-        """
+        """Computes the Lagrange multipliers at the solution."""
         self.lagrange_computer.compute(self.x_opt, self.ineq_tol)
 
     def compute_lagrangian_jac(self, functions_jac, inputs):
-        """
-        Computes the Jacobian of the Lagrangian.
+        """Computes the Jacobian of the Lagrangian.
 
         :param functions_jac: Jacobians of the optimization function w.r.t. the
             differentiation inputs
@@ -332,8 +322,7 @@ class PostOptimalAnalysis(object):
         return jac
 
     def _get_act_ineq_jac(self, jacobians, inputs):
-        """
-        Builds the Jacobian of the active inequality constraints.
+        """Builds the Jacobian of the active inequality constraints.
 
         :param jacobians: Jacobians of the inequality constraints w.r.t. the
             differentiation inputs
@@ -362,8 +351,7 @@ class PostOptimalAnalysis(object):
         return jac_dict
 
     def _get_eq_jac(self, jacobians, inputs):
-        """
-        Builds the Jacobian of the equality constraints.
+        """Builds the Jacobian of the equality constraints.
 
         :param jacobians: Jacobians of the equality constraints w.r.t. the
             differentiation inputs

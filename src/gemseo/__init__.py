@@ -13,12 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+"""|g| main package."""
+
 import logging
 
 from ._version import get_versions
 
-SOFTWARE_NAME = "GEMSEO"
-LOGGER = logging.getLogger(SOFTWARE_NAME)
+# by default no logging is produced
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+del logging
 
 __version__ = get_versions()["version"]
 del get_versions

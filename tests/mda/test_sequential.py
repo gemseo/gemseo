@@ -27,27 +27,21 @@ import unittest
 from os.path import exists
 
 import numpy as np
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
-from gemseo.third_party.junitxmlreq import link_to
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
+DIRNAME = os.path.dirname(__file__)
 
 
+@pytest.mark.usefixtures("tmp_wd")
 class TestSequential(unittest.TestCase):
-    """Test the sequential MDA"""
+    """Test the sequential MDA."""
 
     @staticmethod
-    @link_to("Req-MDO-9.6")
     def test_sequential_mda_sellar():
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
@@ -69,7 +63,6 @@ class TestSequential(unittest.TestCase):
         mda3.plot_residual_history(show=False, save=True, filename=filename)
 
         assert exists(filename)
-        os.remove(filename)
         y_opt = np.array(
             [mda3.local_data["y_0"][0].real, mda3.local_data["y_1"][0].real]
         )

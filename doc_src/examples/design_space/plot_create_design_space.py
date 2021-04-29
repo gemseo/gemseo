@@ -29,14 +29,12 @@ In this example, we will see how to create and how to manipulate an instance of
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger, create_design_space
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create a parameter space

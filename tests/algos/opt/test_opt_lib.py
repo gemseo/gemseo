@@ -25,19 +25,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from unittest import TestCase
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
 
-standard_library.install_aliases()
-configure_logger(SOFTWARE_NAME)
 
-
-class Test_OptLib(TestCase):
-    """ """
+class TestOptLib(TestCase):
+    """"""
 
     OPT_LIB_NAME = "ScipyOpt"
 

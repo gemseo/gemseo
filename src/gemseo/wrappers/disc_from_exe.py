@@ -25,6 +25,7 @@ Make a discipline from an executable
 """
 from __future__ import absolute_import, division, unicode_literals
 
+import logging
 import re
 import subprocess
 from ast import literal_eval
@@ -34,22 +35,15 @@ from os import listdir, mkdir
 from os.path import join
 from uuid import uuid1
 
-from future import standard_library
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
 from gemseo.utils.py23_compat import xrange
 
-standard_library.install_aliases()
-
-configure_logger(SOFTWARE_NAME)
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 INPUT_TAG = "GEMSEO_INPUT"
 OUTPUT_TAG = "GEMSEO_OUTPUT"
@@ -77,11 +71,11 @@ class DiscFromExe(MDODiscipline):
 
     .. code::
 
-        {
-        "a": 1.01515112125,
-        "b": 2.00151511213,
-        "c": 3.00151511213
-        }
+       {
+       "a": 1.01515112125,
+       "b": 2.00151511213,
+       "c": 3.00151511213
+       }
 
     A template that declares the inputs must be generated under this format,
     where "a" is the name of the input, and "1.0" is the default input.
@@ -89,28 +83,25 @@ class DiscFromExe(MDODiscipline):
 
     .. code::
 
-        {
-        "a": GEMSEO_INPUT{a::1.0},
-        "b": GEMSEO_INPUT{b::2.0},
-        "c": GEMSEO_INPUT{c::3.0}
-        }
-
+       {
+       "a": GEMSEO_INPUT{a::1.0},
+       "b": GEMSEO_INPUT{b::2.0},
+       "c": GEMSEO_INPUT{c::3.0}
+       }
 
     Current limitations :
 
-        Only one input and one output file, otherwise, inherit from this class
-        and modify the parsers.
-        Only limited input writing and output parser strategies
-        are implemented. To change that, you can pass custom parsing and
-        writing methods to the constructor.
-
-        The only limitation in the current file format is that
-        it must be a plain text file and not a binary file.
-        In this case, the way of interfacing it is
-        to provide a specific parser to the DiscFromExe,
-        with the write_input_file_method
-        and parse_outfile_method arguments of the constructor.
-
+    - Only one input and one output file, otherwise, inherit from this class
+      and modify the parsers.
+      Only limited input writing and output parser strategies
+      are implemented. To change that, you can pass custom parsing and
+      writing methods to the constructor.
+    - The only limitation in the current file format is that
+      it must be a plain text file and not a binary file.
+      In this case, the way of interfacing it is
+      to provide a specific parser to the DiscFromExe,
+      with the write_input_file_method
+      and parse_outfile_method arguments of the constructor.
     """
 
     NUMBERED = "numbered"
@@ -163,7 +154,7 @@ class DiscFromExe(MDODiscipline):
             folders. If NUMBERED the generated output folders
             will be "output_folder_basepath"+str(i+1),
             where i is the maximum value of the already existing
-            "output_folder_basepath"+str(i) folders.
+             "output_folder_basepath"+str(i) folders.
             Otherwise, a unique number based on the UUID function is
             generated. This last option shall be used if multiple MDO
             processes are runned in the same work directory.
@@ -193,12 +184,15 @@ class DiscFromExe(MDODiscipline):
             )
         else:
             self.parse_outfile = parse_outfile_method
-        if not hasattr(self.parse_outfile, "__call__"):
+
+        if not callable(self.parse_outfile):
             raise TypeError("The parse_outfile_method must be callable")
 
         self.write_input_file = write_input_file_method or write_input_file
-        if not hasattr(self.write_input_file, "__call__"):
+
+        if not callable(self.write_input_file):
             raise TypeError("The write_input_file_method must be callable")
+
         self.lock = Lock()
         self.folders_iter = folders_iter
         self.output_folder_basepath = output_folder_basepath
@@ -224,7 +218,6 @@ class DiscFromExe(MDODiscipline):
             Initialize the attributes : self._in_lines, self._out_lines,
             self._out_pos, self._out_pos
             self.default_inputs
-
         """
         with open(self.input_template, "r") as infile:
             self._in_lines = infile.readlines()
@@ -465,10 +458,9 @@ def parse_outfile(output_positions, out_lines):
             if char not in NUMERICS:
                 break
             if i == maxi - 1:
-                print("IBRAEAU")
                 break
         outv = out_text[pos[0] : i]
 
-        LOGGER.info('Parsed "' + name + '" got output ' + outv)
+        LOGGER.info("Parsed %s got output %s", name, outv)
         values[name] = array([float(outv)])
     return values

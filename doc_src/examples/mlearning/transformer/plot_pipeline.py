@@ -29,7 +29,6 @@ In this example, we will create a pipeline of transformers.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import allclose, linspace, matmul, sin
 
 from gemseo.api import configure_logger
@@ -38,7 +37,6 @@ from gemseo.mlearning.transform.scaler.scaler import Scaler
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create dataset

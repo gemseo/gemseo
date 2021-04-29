@@ -20,22 +20,19 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning clustering algorithm module. """
+"""Test machine learning clustering algorithm module."""
 from __future__ import absolute_import, division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange, zeros
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
 def dataset():
-    """ Build an input-output dataset. """
+    """Build an input-output dataset."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
@@ -46,10 +43,10 @@ def dataset():
 
 @pytest.fixture
 def new_algo():
-    """ Create new machine learning algorithm. """
+    """Create new machine learning algorithm."""
 
     class NewAlgo(MLClusteringAlgo):
-        """ New machine learning algorithm class. """
+        """New machine learning algorithm class."""
 
         def _fit(self, data):
             pass
@@ -64,7 +61,7 @@ def new_algo():
 
 
 def test_notimplementederror(dataset):
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     ml_algo = MLClusteringAlgo(dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
@@ -77,7 +74,7 @@ def test_notimplementederror(dataset):
 
 
 def test_labels(dataset, new_algo):
-    """ Test clustering labels. """
+    """Test clustering labels."""
     algo = new_algo(dataset)
     with pytest.raises(ValueError):
         algo.learn()

@@ -32,15 +32,11 @@ reduction.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
-
 from gemseo.mlearning.transform.transformer import Transformer
-
-standard_library.install_aliases()
 
 
 class DimensionReduction(Transformer):
-    """ Dimension reduction. """
+    """Dimension reduction."""
 
     def __init__(self, name="DimensionReduction", n_components=5, **parameters):
         """Constructor.
@@ -53,7 +49,7 @@ class DimensionReduction(Transformer):
             name, n_components=n_components, **parameters
         )
 
-    def fit(self, data):
+    def fit(self, data, *args):
         """Fit dimension reduction algorithm to data.
 
         :param ndarray data: data to be fitted.
@@ -62,5 +58,5 @@ class DimensionReduction(Transformer):
 
     @property
     def n_components(self):
-        """ Number of components """
+        """Number of components."""
         return self.parameters["n_components"]

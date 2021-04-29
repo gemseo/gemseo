@@ -25,32 +25,29 @@ A scatter plot matrix to display optimization history
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
+import logging
+
 from matplotlib import pyplot
 from pandas.core.frame import DataFrame
+
+from gemseo.post.opt_post_processor import OptPostProcessor
 
 try:
     from pandas.tools.plotting import scatter_matrix
 except ImportError:
     from pandas.plotting import scatter_matrix
 
-from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ScatterPlotMatrix(OptPostProcessor):
-    """
-    The **ScatterPlotMatrix** post processing
-    builds scatter plot matrix  among design
-    variables, outputs functions and constraints.
+    """The **ScatterPlotMatrix** post processing builds scatter plot matrix  among
+    design variables, outputs functions and constraints.
 
-    The list of variable names has to be passed as arguments
-    of the plot method. x- and y- figure sizes can be changed in option.
-    It is possible either to save the plot, to show the plot or both.
+    The list of variable names has to be passed as arguments of the plot method. x- and
+    y- figure sizes can be changed in option. It is possible either to save the plot, to
+    show the plot or both.
     """
 
     def _plot(
@@ -63,8 +60,7 @@ class ScatterPlotMatrix(OptPostProcessor):
         file_path="scatter_mat",
         extension="pdf",
     ):
-        """
-        Plots the ScatterPlotMatrix graph
+        """Plots the ScatterPlotMatrix graph.
 
         :param variables_list: the functions names or design variables to plot
         :type variables_list: list(str)
@@ -85,7 +81,6 @@ class ScatterPlotMatrix(OptPostProcessor):
         add_dv = False
         all_funcs = self.opt_problem.get_all_functions_names()
         all_dv_names = self.opt_problem.design_space.variables_names
-        design_variables = None
         if not variables_list:
             # function list only contains design variables
             vals = self.database.get_x_history()
@@ -109,13 +104,12 @@ class ScatterPlotMatrix(OptPostProcessor):
                     add_dv = True
                     variables_list.remove(func)
                     design_variables.append(func)
-            if design_variables == []:
+            if not design_variables:
                 design_variables = None
             vals, vname, _ = self.database.get_history_array(
                 variables_list, design_variables, add_dv=add_dv
             )
         # Next line is a trick for a bug workaround in numpy/matplotlib
-        # https://stackoverflow.com/questions/39180873/pandas-dataframe-valueerror-num-must-be-1-num-0-not-1
         vals = (list(x) for x in vals)
         frame = DataFrame(vals, columns=vname)
         scatter_matrix(frame, alpha=1.0, figsize=(figsize_x, figsize_y), diagonal="kde")

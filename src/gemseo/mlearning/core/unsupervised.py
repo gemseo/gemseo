@@ -32,12 +32,9 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 from numpy import hstack
 
 from gemseo.mlearning.core.ml_algo import MLAlgo
-
-standard_library.install_aliases()
 
 
 class MLUnsupervisedAlgo(MLAlgo):
@@ -55,8 +52,9 @@ class MLUnsupervisedAlgo(MLAlgo):
         :param Dataset data: learning dataset
         :param transformer: transformation strategy for data groups.
             If None, do not scale data. Default: None.
-        :type transformer: dict(str)
-        :param var_names: names of the variables to consider.
+        :type transformer: dict(Transformer)
+        :param var_names: names of the variables to consider. If None, consider all
+            the variables mentioned in the learning dataset. Default: None.
         :type var_names: list(str)
         :param parameters: algorithm parameters
         """
@@ -68,7 +66,6 @@ class MLUnsupervisedAlgo(MLAlgo):
     def learn(self, samples=None):
         """Train machine learning algorithm on learning set.
 
-        :param list(str) names: learning variables. Default: None.
         :param list(int) samples: training samples (indices). Default: None.
         """
         if set(self.var_names) == set(self.learning_set.variables):

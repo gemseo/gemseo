@@ -25,27 +25,21 @@ Caching module to avoid multiple evaluations of a discipline
 """
 from __future__ import absolute_import, division, unicode_literals
 
-from logging import getLogger
-
-from future import standard_library
+import logging
 
 from gemseo.core.cache import AbstractFullCache
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MemoryFullCache(AbstractFullCache):
-    """
-    Cache using memory to cache all data.
-    """
+    """Cache using memory to cache all data."""
 
     def __init__(self, tolerance=0.0, name=None):
-        """
-        Initialize a dictionary to cache data.
+        """Initialize a dictionary to cache data.
 
         Initialize cache tolerance.
         By default, don't use approximate cache.
@@ -81,8 +75,8 @@ class MemoryFullCache(AbstractFullCache):
         self._data[sample_id] = template
 
     def _set_lock(self):
-        """Sets a lock for multithreading,
-        either from an external object or internally by using RLock()."""
+        """Sets a lock for multithreading, either from an external object or internally
+        by using RLock()."""
         return RLock()
 
     def _has_group(self, sample_id, var_group):
@@ -97,8 +91,7 @@ class MemoryFullCache(AbstractFullCache):
 
     @synchronized
     def clear(self):
-        """
-        Clear the cache
+        """Clear the cache.
 
         Examples
         --------
@@ -118,8 +111,7 @@ class MemoryFullCache(AbstractFullCache):
         self._data = self._manager.dict()
 
     def _read_data(self, group_number, group_name):
-        """
-        Read a data dict in the hdf
+        """Read a data dict in the hdf.
 
         :param group_name: name of the group where data is written
         :param group_number: number of the group
@@ -131,8 +123,8 @@ class MemoryFullCache(AbstractFullCache):
         return result
 
     def _write_data(self, values, names, var_group, sample_id):
-        """Writes data associated with a variables group
-        and a sample ID into the dataset.
+        """Writes data associated with a variables group and a sample ID into the
+        dataset.
 
         :param dict values: data dictionary where keys are variables names
             and values are variables values (numpy arrays).
@@ -148,7 +140,7 @@ class MemoryFullCache(AbstractFullCache):
 
     @property
     def copy(self):
-        """ Copy cache. """
+        """Copy cache."""
         cache = self._duplicate_from_scratch()
         cache.merge(self)
         return cache
