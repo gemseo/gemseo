@@ -19,7 +19,7 @@
 #                           documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""PDFO optimization library wrapper See www.pdfo.net."""
+"""PDFO optimization library wrapper, see `PDFO website <https://www.pdfo.net/>`_."""
 from __future__ import absolute_import, division, print_function
 
 import logging
@@ -111,7 +111,7 @@ class PDFOOpt(OptimizationLibrary):
         r"""Sets the options default values
 
         To get the best and up to date information about algorithms options,
-        go to pdfo documentation (www.pdfo.net)
+        go to pdfo documentation on the `PDFO website <https://www.pdfo.net/>`_.
 
         :param ftol_rel: stop criteria, relative tolerance on the
                objective function,

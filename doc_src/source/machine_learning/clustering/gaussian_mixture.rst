@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.cluster.gaussian_mixture
    :noindex:
 
-.. autoclass:: gemseo.mlearning.cluster.gaussian_mixture.GaussianMixture
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/clustering_model/plot_gaussian_mixture.html" role="button">Example</a></div>

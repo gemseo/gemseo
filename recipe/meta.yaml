@@ -64,7 +64,7 @@ about:
   summary: Generic Engine for Multi-disciplinary Scenarios, Exploration and Optimization
   home: https://gitlab.com/gemseo
   doc_url: https://gemseo.readthedocs.io
-  dev_url: https://gitlab.com/gemseo/gemseo
+  dev_url: https://gitlab.com/gemseo/dev/gemseo
 extra:
   recipe-maintainers:
     - AntoineD

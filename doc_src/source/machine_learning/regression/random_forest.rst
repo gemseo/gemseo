@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.regression.random_forest
    :noindex:
 
-.. autoclass:: gemseo.mlearning.regression.random_forest.RandomForestRegressor
-   :noindex:
-
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_random_forest.html" role="button">Example</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_random_forest_regression.html" role="button">Example</a></div>

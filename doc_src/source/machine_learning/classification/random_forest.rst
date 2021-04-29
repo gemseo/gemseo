@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.classification.random_forest
    :noindex:
 
-.. autoclass:: gemseo.mlearning.classification.random_forest.RandomForestClassifier
-   :noindex:
-
 .. raw:: html
 
-   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/classification_model/plot_random_forest.html" role="button">Example</a></div>
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/classification_model/plot_random_forest_classification.html" role="button">Example</a></div>
