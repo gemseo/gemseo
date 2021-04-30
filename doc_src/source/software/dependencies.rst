@@ -69,4 +69,5 @@ All these tools are open source with non-viral licenses
    - xlwings <=0.21.4: excel reading with pandas
    - graphviz <=2.42.3: coupling graph generation
    - nlopt >=2.4.2,<=2.6.2: optimization library
+   - pdfo == 1.0: optimization library
    - pyside2 <=5.15.2: grammar editor GUI

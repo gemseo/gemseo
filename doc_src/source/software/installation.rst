@@ -48,7 +48,7 @@ Environment
 -----------
 
 This step is optional
-and only required on windows or for python 2.7.
+and only required on Windows or for Python 2.7.
 
 Download :download:`this file <../../../environment-py3.yml>`
 and create an anaconda environment for |g| with
@@ -61,10 +61,10 @@ This will install Python 3.8
 and minimum common set of |g| dependencies on any platform
 (Linux, Windows, MacOS) in an environment named *gemseo*.
 You may edit :file:`environment-py3.yml`
-to change the environment name or the python version
+to change the environment name or the Python version
 (3.6, 3.7 or 3.8).
 
-For python 2, use :download:`this file <../../../environment-py2.yml>`.
+For Python 2, use :download:`this file <../../../environment-py2.yml>`.
 
 Then,
 activate this environment with:
