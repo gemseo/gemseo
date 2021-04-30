@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.cluster.kmeans
    :noindex:
 
-.. autoclass:: gemseo.mlearning.cluster.kmeans.KMeans
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/clustering_model/plot_kmeans.html" role="button">Example</a></div>

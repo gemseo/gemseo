@@ -19,7 +19,7 @@ it features:
   scilab, executables, ...
 - A Python library, standalone and easy to embed in simulation platforms
 - Built on NumPy, SciPy and matplotlib
-- Open-source LGPL-3.0 licence
+- Open-source LGPL-3.0 license
 
 Documentation
 -------------

@@ -62,7 +62,7 @@ General Usage
    When used on a document or web page,
    an attribution statement should be included at or near the mention of the GEMSEO mark as follows:
    **“GEMSEO” is a registered mark of IRT Antoine de Saint Exupéry**
-   and it should point to the following URL: `www.gemseo.org <https://www.gemseo.org>`_.
+   and it should point to the following URL: `gemseo.org <https://gemseo.org>`_.
    You must always use the GEMSEO mark when referring to the GEMSEO products or services.
    The GEMSEO mark must be used unaltered, without additional or missing elements,
    with its original colors and original typography.

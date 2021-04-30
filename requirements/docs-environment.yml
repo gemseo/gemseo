@@ -1,0 +1,11 @@
+name: gemseo-docs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  # The following dependencies must be the same as in requirements/gemseo-conda-python3.txt
+  - python-graphviz <=0.15
+  - pdfo
+  - pip:
+    - "-r doc.txt"
+

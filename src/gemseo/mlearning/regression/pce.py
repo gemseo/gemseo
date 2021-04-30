@@ -73,8 +73,8 @@ sparse least square regression or quadrature.
 Dependence
 ----------
 The PCE model relies on the FunctionalChaosAlgorithm class
-of the `openturns library <http://openturns.github.io/openturns/1.9/user_manual
-/response_surface/_generated/openturns.FunctionalChaosAlgorithm.html>`_.
+of the `openturns library <https://openturns.github.io/openturns/latest/user_manual/
+response_surface/_generated/openturns.FunctionalChaosAlgorithm.html>`_.
 """
 from __future__ import absolute_import, division, unicode_literals
 

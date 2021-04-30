@@ -18,12 +18,6 @@ Mixture of experts
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_moe.html" role="button">Example</a></div>
 
-Constructor
------------
-
-.. autoclass:: gemseo.mlearning.regression.moe.MixtureOfExperts
-   :noindex:
-
 Conception
 ----------
 

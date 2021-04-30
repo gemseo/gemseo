@@ -10,6 +10,3 @@
 
 .. automodule:: gemseo.mlearning.classification.svm
    :noindex:
-
-.. autoclass:: gemseo.mlearning.classification.svm.SVMClassifier
-   :noindex:
