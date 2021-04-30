@@ -26,14 +26,13 @@ BiLevel-based DOE on the Sobieski SSBJ test case
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
-
-from future import standard_library
+from os import name as os_name
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.utils.testing_utils import IS_NT
 
-standard_library.install_aliases()
+IS_NT = os_name == "nt"
+
 configure_logger()
 
 ##############################################################################
