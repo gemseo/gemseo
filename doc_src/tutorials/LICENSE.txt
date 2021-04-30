@@ -1,5 +1,5 @@
 ..
-   Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+   Copyright 2021 IRT Saint ExupÃ©ry, https://www.irt-saintexupery.com
 
    This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
    International License. To view a copy of this license, visit

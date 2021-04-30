@@ -42,7 +42,7 @@ History
          <div class="col-8">
 
 |g| was initially created in 2015 by François Gallard
-within the `Multidisciplinary Design Optimization (MDO) Competence Center <https://www.irt-saintexupery.com/expertise/systems-engineering-modeling-domain/mdo-competence-center/>`_
+within the Multidisciplinary Design Optimization (MDO) Competence Center
 of `IRT Saint Exupéry <https://www.irt-saintexupery.com/>`_.
 This team, under the leadership of Anne Gazaix, is dedicated to the development of process automation technologies
 encompassing a wide range of disciplines, and their usage in a range of applications.
@@ -154,7 +154,7 @@ Open source
 ***********
 
 Since 2021, |g| is open source, under the `LGPL v3 license <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_.
-The project is hosted on: https://gitlab.com/gemseo/gemseo.git
+The project is hosted on `gitlab <https://gitlab.com/gemseo>`_.
 
 Roadmap
 *******

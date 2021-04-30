@@ -42,23 +42,29 @@ it does not require any administrator privilege.
 You may install `Anaconda`_
 and `learn`_ how to use it.
 
+.. _environment:
+
 Environment
 -----------
 
-Create an anaconda environment for |g| with:
+This step is optional
+and only required on Windows or for Python 2.7.
+
+Download :download:`this file <../../../environment-py3.yml>`
+and create an anaconda environment for |g| with
 
 .. code-block:: console
 
     conda env create -f environment-py3.yml
 
 This will install Python 3.8
-and all the |g| dependencies on any platform
+and minimum common set of |g| dependencies on any platform
 (Linux, Windows, MacOS) in an environment named *gemseo*.
 You may edit :file:`environment-py3.yml`
-to change the environment name or the python version
+to change the environment name or the Python version
 (3.6, 3.7 or 3.8).
 
-For python 2, use :file:`environment-py2.yml`.
+For Python 2, use :download:`this file <../../../environment-py2.yml>`.
 
 Then,
 activate this environment with:
@@ -69,7 +75,7 @@ activate this environment with:
 
 and you can now proceed with the installation of |g|.
 
-You may leave the anaconda environment with:
+You may leave the anaconda environment with
 
 .. code-block:: console
 
@@ -81,10 +87,36 @@ Installation
 You can install |g| with either the core or the full features set.
 See :ref:`optional-dependencies` for more information about the differences.
 
+There are different ways to install |g| depending on you platform.
+
+Linux or MacOS
+--------------
+
+This is the easiest way of installing |g|.
+
+Install the full feature set in an anaconda environment named *gemseo* for python 3.8 with
+
+.. code-block:: console
+
+    conda create -c conda-forge -n gemseo python=3.8 gemseo
+
+You can also change the python version to 3.6 or 3.7.
+For python 2.7, see :ref:`pypi`
+(this method also works for any python version
+but is slightly more complex).
+
+Windows
+-------
+
+See :ref:`pypi`.
+
+.. _pypi:
+
 Install from Pypi
 -----------------
 
-Install the core features of the latest version with
+Create an :ref:`environment`,
+then install the core features of the latest version with
 
 .. code-block:: console
 
@@ -99,7 +131,8 @@ or the full features with
 Install from an archive
 -----------------------
 
-Install the core features from an archive with
+Create an :ref:`environment`,
+then install the core features from an archive with
 
 .. code-block:: console
 
@@ -111,20 +144,21 @@ or the full features with
 
     pip install gemseo-x.y.z.zip[all]
 
-Install a development version
------------------------------
+Install the development version
+-------------------------------
 
-Install the core features of the development version with
+Create an :ref:`environment`,
+then install the core features of the development version with
 
 .. code-block:: console
 
-    pip install git+https://gitlab.com/gemseo/gemseo@develop
+    pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 
 or the full features with
 
 .. code-block:: console
 
-    pip install git+https://gitlab.com/gemseo/gemseo@develop#egg=gemseo[all]
+    pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop#egg=gemseo[all]
 
 Install plugins
 ---------------
@@ -133,8 +167,8 @@ You may install |g| plugins with pip,
 otherwise see :ref:`extending-gemseo`
 for using plugins without installation.
 
-Test installation
-*****************
+Test the installation
+*********************
 
 Basic test
 ----------
@@ -183,10 +217,3 @@ Run the tests with:
 Please have a look at the
 :ref:`contributing <dev>`
 section for more information on testing.
-
-Uninstall
-*********
-
-.. code-block:: console
-
-    pip uninstall gemseo

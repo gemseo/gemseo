@@ -13,7 +13,7 @@ Contributing
 
 Since 2021, |g| is open source,
 under the `LGPL v3 license <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_.
-The project is hosted on: https://gitlab.com/gemseo/gemseo.git
+The project is hosted on `gitlab <https://gitlab.com/gemseo>`_.
 
 Contributions
 -------------

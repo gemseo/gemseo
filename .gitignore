@@ -12,16 +12,19 @@ tags
 
 doc_src/build
 doc_src/source/_modules
-doc_src/source/algorithms
-!doc_src/source/algorithms/gen_opts
+doc_src/source/algorithms/**/*.*
+!doc_src/source/algorithms/gen_opts/*.tmpl
 !doc_src/source/algorithms/mlearning_algos.rst
 doc_src/source/examples
 doc_src/source/tutorials_sg
 doc_src/examples/**/*.*
 !doc_src/examples/**/*.py
 !doc_src/examples/**/*.sh
-!doc_src/examples/**/LICENSE.txt
+!doc_src/examples/**/*.xlsx
 !doc_src/examples/**/README.rst
+!doc_src/examples/LICENSE.txt
+!doc_src/examples/design_space/design_space.txt
+!doc_src/examples/doe/doe.txt
 /doc
 
 htmlcov

@@ -52,6 +52,8 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 sys.path.append(os.path.abspath("_ext"))
 
 extensions = [
@@ -147,7 +149,7 @@ copyright = "{}, IRT Saint Exupéry".format(datetime.datetime.now().year)
 # built documents.
 #
 # The short X.Y version.
-version = gemseo.__version__
+version = "3.0.2"
 # The full version, including alpha/beta/rc tags.
 
 release = version
