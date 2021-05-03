@@ -29,6 +29,7 @@
 .. _editable mode: https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
 .. _google docstrings: https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html
 .. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 
 .. _dev:
 
@@ -36,6 +37,8 @@ Developer information
 =====================
 
 This page contains information about |g| development and how to contribute to it.
+The source code of |g| is available on `gitlab`_,
+this is the place where code contributions shall be submitted.
 Note also that it is required to accompany any contribution with a Developer Certificate of Origin,
 certifying that the contribution is compatible with |g| software licence.
 
