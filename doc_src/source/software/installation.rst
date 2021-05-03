@@ -21,6 +21,9 @@
 Installation
 ============
 
+You may install the core or the full features set of |g|.
+See :ref:`dependencies` for more information.
+
 Requirements
 ************
 
@@ -159,13 +162,6 @@ or the full features with
 .. code-block:: console
 
     pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop#egg=gemseo[all]
-
-Install plugins
----------------
-
-You may install |g| plugins with pip,
-otherwise see :ref:`extending-gemseo`
-for using plugins without installation.
 
 Test the installation
 *********************

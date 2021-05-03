@@ -24,10 +24,11 @@ coverage so that you can fully check your configuration.
 
    Fully check your configuration with :ref:`test_gemseo`.
 
-Mandatory dependencies
-**********************
+Core features
+*************
 
-The minimal dependencies are (shown here for python 3):
+The minimal dependencies provide the core features of |g|,
+these are (shown here for python 3):
 
    - custom_inherit ==2.3.1
    - fastjsonschema <=2.14.5
@@ -48,8 +49,8 @@ but not all post processing tools will be available.
 
 .. _optional-dependencies:
 
-Optional dependencies
-*********************
+Full features
+*************
 
 Some packages are not required to execute basic scenarios,
 but provide additional features,
@@ -57,6 +58,8 @@ they are listed below.
 The dependencies are independent,
 and can be installed one by one to activate
 the dependent features of listed in the same table.
+Installing all those dependencies will provide the
+full features set of |g|.
 All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
