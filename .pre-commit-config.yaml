@@ -84,7 +84,7 @@ repos:
         - --license-filepath
         - LICENSES/headers/BSD-0-Clause.txt
     - id: insert-license
-      name: insert CC-BY-SA license
+      name: insert CC BY-SA license
       files: (\.rst|\.rst\.txt)$
       args:
         - --license-filepath
