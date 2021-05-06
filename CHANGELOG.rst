@@ -17,6 +17,15 @@ and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
 
+Version 3.0.3 (May 2021)
+************************
+
+Changed
+-------
+
+- Documentation fixes and improvements.
+
+
 Version 3.0.2 (April 2021)
 **************************
 

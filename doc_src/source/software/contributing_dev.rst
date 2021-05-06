@@ -31,6 +31,7 @@
 .. _mypy: http://mypy-lang.org
 .. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
 .. _pytest-cov: https://pytest-cov.readthedocs.io
+.. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 
 .. _dev:
 
@@ -38,6 +39,8 @@ Developer information
 =====================
 
 This page contains information about |g| development and how to contribute to it.
+The source code of |g| is available on `gitlab`_,
+this is the place where code contributions shall be submitted.
 Note also that it is required to accompany any contribution with a Developer Certificate of Origin,
 certifying that the contribution is compatible with |g| software licence.
 

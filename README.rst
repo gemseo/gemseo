@@ -46,7 +46,7 @@ The GEMSEO examples are distributed under the BSD 0-Clause, a permissive
 license that allows to copy paste the code of examples without preserving the
 copyright mentions.
 
-The GEMSEO documentation is distributed under the CB-BY-SA 4.0 license.
+The GEMSEO documentation is distributed under the CC BY-SA 4.0 license.
 
 The GEMSEO product depends on other software which have various licenses.
 The list of dependencies with their licenses is given in the CREDITS.rst file.
