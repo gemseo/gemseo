@@ -34,18 +34,3 @@ This package contains:
 Lastly, the class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from data based on OpenTURNS.
 """
-
-from gemseo.uncertainty.distributions.factory import DistributionFactory  # noqa: F401
-from gemseo.uncertainty.distributions.openturns import (  # noqa: F401
-    OTDistributionFitter,
-    OTExponentialDistribution,
-    OTNormalDistribution,
-    OTTriangularDistribution,
-    OTUniformDistribution,
-)
-from gemseo.uncertainty.distributions.scipy import (  # noqa: F401
-    SPExponentialDistribution,
-    SPNormalDistribution,
-    SPTriangularDistribution,
-    SPUniformDistribution,
-)

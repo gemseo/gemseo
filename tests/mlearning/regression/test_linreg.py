@@ -21,7 +21,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test linear regression module."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import Tuple
 
 import pytest
 from numpy import allclose, array
@@ -29,6 +31,7 @@ from sklearn.linear_model import ElasticNet, Lasso, Ridge
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.linreg import LinearRegression
@@ -40,8 +43,8 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():
-    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -54,16 +57,16 @@ def dataset():
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> LinearRegression
+    """A trained LinearRegression."""
     linreg = LinearRegression(dataset)
     linreg.learn()
     return linreg
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model with transformers from data."""
+def model_with_transform(dataset):  # type: (...) -> LinearRegression
+    """A trained LinearRegression with inputs and outputs scaling."""
     linreg = LinearRegression(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
@@ -72,8 +75,10 @@ def model_with_transform(dataset):
 
 
 @pytest.fixture
-def models_with_pls(dataset):
-    """Define model with transformers from data."""
+def models_with_pls(
+    dataset,
+):  # type: (...) -> Tuple[ LinearRegression,LinearRegression]
+    """Two trained LinearRegression with inputs or outputs scaling."""
     linreg1 = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
     linreg1.learn()
     linreg2 = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
@@ -86,14 +91,18 @@ def test_constructor(dataset):
     assert model_.algo is not None
 
 
-def test_constructor_penalty(dataset):
+@pytest.mark.parametrize(
+    "l2_penalty_ratio,type",
+    [(0.0, Lasso), (1.0, Ridge), (0.5, ElasticNet)],
+)
+def test_constructor_penalty(dataset, l2_penalty_ratio, type):
     """Test construction."""
-    model_ = LinearRegression(dataset, penalty_level=0.1, l2_penalty_ratio=0.0)
-    assert isinstance(model_.algo, Lasso)
-    model_ = LinearRegression(dataset, penalty_level=0.1, l2_penalty_ratio=1.0)
-    assert isinstance(model_.algo, Ridge)
-    model_ = LinearRegression(dataset, penalty_level=0.1, l2_penalty_ratio=0.5)
-    assert isinstance(model_.algo, ElasticNet)
+    model_ = LinearRegression(
+        dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
+    )
+    assert isinstance(model_.algo, type)
+    model_.learn()
+    assert model_._predict(array([[1, 2]])).shape == (1, 2)
 
 
 def test_learn(dataset):
@@ -124,7 +133,14 @@ def test_coefficients_with_transform(dataset, model_with_transform):
     )
     model_with_pca.learn()
     model_with_pca.get_coefficients(as_dict=False)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Coefficients are only representable in dictionary "
+            "form if the transformers do not change the "
+            "dimensions of the variables."
+        ),
+    ):
         model_with_pca.get_coefficients(as_dict=True)
 
 
@@ -133,6 +149,21 @@ def test_intercept(model):
     intercept = model.get_intercept()
     assert allclose(intercept["y_1"], array([1.0]))
     assert allclose(intercept["y_2"], array([-1.0]))
+
+
+def test_intercept_with_output_dimension_change(dataset):
+    """Verify that an error is raised."""
+    model = LinearRegression(dataset, transformer={"outputs": PCA(n_components=2)})
+    model.learn()
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Intercept is only representable in dictionary "
+            "form if the transformers do not change the "
+            "dimensions of the output variables."
+        ),
+    ):
+        model.get_intercept(as_dict=True)
 
 
 def test_prediction(model):

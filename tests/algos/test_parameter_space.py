@@ -20,22 +20,25 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose, array, ndarray
+from numpy import allclose, arange, array, concatenate, ndarray
 
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
 
 def test_constructor():
+    """Check that a ParameterSpace is empty after initialization."""
     space = ParameterSpace()
     assert not space.is_deterministic("x")
     assert not space.is_uncertain("x")
 
 
 def test_add_variable():
+    """Check that add_variable adds a deterministic variable."""
     space = ParameterSpace()
     space.add_variable("x")
     assert space.is_deterministic("x")
@@ -44,6 +47,7 @@ def test_add_variable():
 
 
 def test_add_random_variable():
+    """Check that add_random_variable adds a random variable."""
     space = ParameterSpace()
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
@@ -63,6 +67,10 @@ def test_add_random_variable():
 
 
 def test_extract_subspaces():
+    """Check that extract_{type}_space extracts a sub-ParameterSpace.
+
+    The latter must contain only {type} variables.
+    """
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2", value=0.0)
@@ -74,6 +82,7 @@ def test_extract_subspaces():
 
 
 def test_remove_variable():
+    """Check that remove_variable removes correctly variables (deterministic+random)."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -89,15 +98,17 @@ def test_remove_variable():
 
 
 def test_copula():
+    """Check the copula feature works correctly."""
     space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
-    with pytest.raises(ValueError):
-        space = ParameterSpace(copula="dummy")
+    with pytest.raises(ValueError, match="foo is not a copula name"):
+        ParameterSpace(copula="foo")
 
 
 def test_compute_samples():
+    """Check that compute_samples works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -119,6 +130,7 @@ def test_compute_samples():
 
 
 def test_evaluate_cdf():
+    """Check that evaluate_cdf works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -137,6 +149,7 @@ def test_evaluate_cdf():
 
 
 def test_range():
+    """Check that range works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -153,6 +166,7 @@ def test_range():
 
 
 def test_normalize():
+    """Check that normalize works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -165,6 +179,7 @@ def test_normalize():
 
 
 def test_unnormalize():
+    """Check that unnormalize works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -177,6 +192,7 @@ def test_unnormalize():
 
 
 def test_update_parameter_space():
+    """Check the redefinition of a variable."""
     space = ParameterSpace()
     space.add_variable("x1", l_b=0.0, u_b=1.0)
     assert space.get_lower_bound("x1")[0] == 0.0
@@ -189,6 +205,7 @@ def test_update_parameter_space():
 
 
 def test_str_and_tabularview():
+    """Check that str and unnormalize_vect work correctly."""
     space = ParameterSpace(copula=ComposedDistribution._INDEPENDENT_COPULA)
     space.add_variable("x")
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
@@ -204,6 +221,7 @@ def test_str_and_tabularview():
 
 
 def test_unnormalize_vect():
+    """Check that unnormalize_vect works correctly."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
@@ -213,6 +231,7 @@ def test_unnormalize_vect():
 
 
 def test_normalize_vect():
+    """Check that normalize_vect works correctly."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
@@ -222,16 +241,94 @@ def test_normalize_vect():
 
 
 def test_evaluate_cdf_raising_errors():
+    """Check that evaluate_cdf raises errors."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
-    value = {"x": 1}
-    with pytest.raises(TypeError):
-        space.evaluate_cdf(value, inverse=True)
-    value = {"x": array([0.5] * 2)}
-    with pytest.raises(ValueError):
-        space.evaluate_cdf(value, inverse=True)
-    value = {"x": array([1.5])}
-    with pytest.raises(ValueError):
-        space.evaluate_cdf(value, inverse=True)
+
+    expected = (
+        r"obj must be a dictionary whose keys are the variables "
+        "names and values are arrays whose dimensions are the "
+        r"variables ones and components are in \[0, 1\]"
+    )
+
+    with pytest.raises(TypeError, match=expected):
+        space.evaluate_cdf({"x": 1}, inverse=True)
+
+    with pytest.raises(ValueError, match=expected):
+        space.evaluate_cdf({"x": array([0.5] * 2)}, inverse=True)
+
+    with pytest.raises(ValueError, match=expected):
+        space.evaluate_cdf({"x": array([1.5])}, inverse=True)
+
+
+@pytest.fixture
+def io_dataset():  # type: (...) -> Dataset
+    """An input-output dataset."""
+    inputs = arange(50).reshape(10, 5)
+    outputs = arange(20).reshape(10, 2)
+    data = concatenate([inputs, outputs], axis=1)
+    variables = ["in_1", "in_2", "out_1"]
+    sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
+    groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
+    dataset = Dataset()
+    dataset.set_from_array(data, variables, sizes, groups)
+    return dataset
+
+
+def test_init_from_dataset_default(io_dataset):
+    """Check the default initialization from a dataset.
+
+    Args:
+        io_dataset (Dataset): An input-output dataset.
+    """
+    parameter_space = ParameterSpace.init_from_dataset(io_dataset)
+    for name in ["in_1", "in_2", "out_1"]:
+        assert name in parameter_space
+        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
+        assert name in parameter_space.deterministic_variables
+    assert parameter_space["in_1"][parameter_space.SIZE_GROUP] == 2
+    ref = io_dataset["in_1"]["in_1"].min(0)
+    assert (parameter_space["in_1"][parameter_space.LB_GROUP] == ref).all()
+    ref = io_dataset["in_1"]["in_1"].max(0)
+    assert (parameter_space["in_1"][parameter_space.UB_GROUP] == ref).all()
+    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
+    assert (parameter_space["in_1"][parameter_space.VALUE_GROUP] == ref).all()
+    assert parameter_space["in_2"][parameter_space.SIZE_GROUP] == 3
+    assert parameter_space["out_1"][parameter_space.SIZE_GROUP] == 2
+
+
+def test_init_from_dataset_uncertain(io_dataset):
+    """Check the initialization from a dataset with uncertain variables.
+
+    Args:
+        io_dataset (Dataset): An input-output dataset.
+    """
+    parameter_space = ParameterSpace.init_from_dataset(
+        io_dataset, uncertain={"in_1": True}
+    )
+    assert "in_1_0" in parameter_space.uncertain_variables
+    assert "in_1_1" in parameter_space.uncertain_variables
+    assert "in_2_0" not in parameter_space.uncertain_variables
+
+
+def test_init_from_dataset_group(io_dataset):
+    """Check the initialization from a dataset when groups are specified.
+
+    Args:
+        io_dataset (Dataset): An input-output dataset.
+    """
+    parameter_space = ParameterSpace.init_from_dataset(
+        io_dataset, groups=[io_dataset.INPUT_GROUP]
+    )
+    for name in ["in_1", "in_2"]:
+        assert name in parameter_space
+    assert "out_1" not in parameter_space
+
+    parameter_space = ParameterSpace.init_from_dataset(
+        io_dataset, groups=[io_dataset.OUTPUT_GROUP]
+    )
+    for name in ["in_1", "in_2"]:
+        assert name not in parameter_space
+    assert "out_1" in parameter_space

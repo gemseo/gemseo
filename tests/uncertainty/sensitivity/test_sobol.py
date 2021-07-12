@@ -19,10 +19,9 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from os import chdir, remove
-from os.path import exists
+from os import remove
 
 import pytest
 from numpy import pi
@@ -43,7 +42,6 @@ def test_sobol(tmp_path):
     discipline = create_discipline(
         "AnalyticDiscipline", expressions_dict=expressions, name="Ishigami"
     )
-    expressions = {"z": "x1"}
     space = ParameterSpace()
     for name in varnames:
         space.add_random_variable(
@@ -85,16 +83,22 @@ def test_sobol(tmp_path):
     for name in varnames:
         assert intervals["y"][0][name].shape == (2,)
 
-    chdir(str(tmp_path))
-    sobol.plot("y", save=True, show=False)
-    assert exists("sobol_analysis.pdf")
-    remove("sobol_analysis.pdf")
-    sobol.plot("y", save=True, show=False, sort=False)
-    assert exists("sobol_analysis.pdf")
-    remove("sobol_analysis.pdf")
-    sobol.plot("y", save=True, show=False, sort=False, sort_by_total=False)
-    assert exists("sobol_analysis.pdf")
-    remove("sobol_analysis.pdf")
+    sobol.plot("y", save=True, show=False, directory_path=tmp_path)
+    assert (tmp_path / "sobol_analysis.png").exists()
+    remove(str(tmp_path / "sobol_analysis.png"))
+    sobol.plot("y", save=True, show=False, sort=False, directory_path=tmp_path)
+    assert (tmp_path / "sobol_analysis.png").exists()
+    remove(str(tmp_path / "sobol_analysis.png"))
+    sobol.plot(
+        "y",
+        save=True,
+        show=False,
+        sort=False,
+        sort_by_total=False,
+        directory_path=tmp_path,
+    )
+    assert (tmp_path / "sobol_analysis.png").exists()
+    remove(str(tmp_path / "sobol_analysis.png"))
 
 
 def test_sobol_outputs(tmp_path):

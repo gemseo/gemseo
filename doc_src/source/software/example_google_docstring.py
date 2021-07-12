@@ -125,8 +125,8 @@ class ExampleClass:
     in the property's getter method.
 
     Attributes:
-        attr1: Description of `attr1`.
-        attr2: Description of `attr2`.
+        attr1 (int): Description of `attr1`.
+        attr2 (int): Description of `attr2`.
     """
 
     def __init__(

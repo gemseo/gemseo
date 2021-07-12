@@ -64,19 +64,3 @@ The class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from :code:`numpy.array` data,
 based on the OpenTURNS capabilities.
 """
-
-from gemseo.uncertainty.distributions.openturns.exponential import (  # noqa: F401
-    OTExponentialDistribution,
-)
-from gemseo.uncertainty.distributions.openturns.fitting import (  # noqa: F401
-    OTDistributionFitter,
-)
-from gemseo.uncertainty.distributions.openturns.normal import (  # noqa: F401
-    OTNormalDistribution,
-)
-from gemseo.uncertainty.distributions.openturns.triangular import (  # noqa: F401
-    OTTriangularDistribution,
-)
-from gemseo.uncertainty.distributions.openturns.uniform import (  # noqa: F401
-    OTUniformDistribution,
-)

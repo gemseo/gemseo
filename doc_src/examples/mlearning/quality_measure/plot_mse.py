@@ -29,9 +29,7 @@ into two sets. We measure the quality of the regression by comparing the
 predictions with the output on the test set.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import int
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
 from numpy import arange, argmin, hstack, linspace, sort

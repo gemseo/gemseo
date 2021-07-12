@@ -23,7 +23,7 @@
 Scalable study
 ==============
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import os
@@ -584,13 +584,13 @@ class TMScalableStudy(object):
         :return: string representation
         :rtype: str
         """
-        msg = ["Scalable study"]
-        msg.append(".... {} disciplines".format(self.n_disciplines))
-        msg.append(".... {} shared design parameters".format(self.n_shared))
-        msg.append(
-            ".... {} local design parameters per discipline".format(self.n_local)
-        )
-        msg.append(".... {} coupling variables per discipline".format(self.n_coupling))
+        msg = [
+            "Scalable study",
+            ".... {} disciplines".format(self.n_disciplines),
+            ".... {} shared design parameters".format(self.n_shared),
+            ".... {} local design parameters per discipline".format(self.n_local),
+            ".... {} coupling variables per discipline".format(self.n_coupling),
+        ]
         if self.formulations:
             msg.append("MDO formulations")
         for formulation in self.formulations:

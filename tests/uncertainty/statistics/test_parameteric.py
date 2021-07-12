@@ -19,7 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import numbers
 
@@ -29,6 +29,9 @@ from numpy.random import exponential, lognormal, normal, rand, seed, weibull
 
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    ToleranceIntervalSide,
+)
 
 
 @pytest.fixture(scope="module")
@@ -145,17 +148,12 @@ def test_distfitstats_tolint(random_sample):
         stats.compute_tolerance_interval(1.5)
     with pytest.raises(ValueError):
         stats.compute_tolerance_interval(0.1, confidence=-1.6)
-    with pytest.raises(ValueError):
-        stats.compute_tolerance_interval(0.1, side="dummy")
-    stats = ParametricStatistics(dataset, ["ChiSquare"])
-    with pytest.raises(ValueError):
-        stats.compute_tolerance_interval(0.1)
     for dist in ["Normal", "Uniform", "LogNormal", "WeibullMin", "Exponential"]:
         stats = ParametricStatistics(dataset, [dist])
         stats.compute_tolerance_interval(0.1)
-        stats.compute_tolerance_interval(0.1, side="both")
-        stats.compute_tolerance_interval(0.1, side="upper")
-        stats.compute_tolerance_interval(0.1, side="lower")
+        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
+        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
+        stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
 
 
 def test_distfitstats_tolint_normal():
@@ -166,11 +164,11 @@ def test_distfitstats_tolint_normal():
     dataset = Dataset()
     dataset.set_from_array(normal_rand)
     stats = ParametricStatistics(dataset, ["Normal"])
-    limits = stats.compute_tolerance_interval(0.1, side="both")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="upper")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="lower")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
     assert limits["x_0"][1][0] == inf
 
@@ -183,11 +181,11 @@ def test_distfitstats_tolint_uniform():
     dataset = Dataset()
     dataset.set_from_array(uniform_rand)
     stats = ParametricStatistics(dataset, ["Uniform"])
-    limits = stats.compute_tolerance_interval(0.1, side="both")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="upper")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="lower")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
     assert limits["x_0"][1][0] == inf
 
@@ -201,11 +199,11 @@ def test_distfitstats_tolint_lognormal():
     dataset = Dataset()
     dataset.set_from_array(lognormal_rand)
     stats = ParametricStatistics(dataset, ["LogNormal"])
-    limits = stats.compute_tolerance_interval(0.1, side="both")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="upper")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="lower")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
     assert limits["x_0"][1][0] == inf
 
@@ -220,13 +218,17 @@ def test_distfitstats_tolint_weibull(random_sample):
     dataset = Dataset()
     dataset.set_from_array(weibull_rand)
     stats = ParametricStatistics(dataset, ["WeibullMin"])
-    limits = stats.compute_tolerance_interval(0.3, side="both")
+    limits = stats.compute_tolerance_interval(0.3, side=ToleranceIntervalSide.BOTH)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="upper")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="lower")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
     assert limits["x_0"][1][0] == inf
+
+    b_value = stats.compute_tolerance_interval(0.9, side=ToleranceIntervalSide.LOWER)
+    a_value = stats.compute_tolerance_interval(0.95, side=ToleranceIntervalSide.LOWER)
+    assert b_value["x_0"][0][0] >= a_value["x_0"][0][0]
 
 
 def test_distfitstats_tolint_exponential(random_sample):
@@ -238,11 +240,11 @@ def test_distfitstats_tolint_exponential(random_sample):
     dataset = Dataset()
     dataset.set_from_array(exp_rand)
     stats = ParametricStatistics(dataset, ["Exponential"])
-    limits = stats.compute_tolerance_interval(0.1, side="both")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.BOTH)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="upper")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.UPPER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
-    limits = stats.compute_tolerance_interval(0.1, side="lower")
+    limits = stats.compute_tolerance_interval(0.1, side=ToleranceIntervalSide.LOWER)
     assert limits["x_0"][0][0] <= limits["x_0"][1][0]
     assert limits["x_0"][1][0] == inf
 
@@ -270,9 +272,13 @@ def test_distfitstats_available(random_sample):
 def test_expression():
     assert (
         ParametricStatistics.compute_expression(
-            "X", "tolerance_interval", coverage=0.9, tolerance=0.99, side="lower"
+            "X",
+            "tolerance_interval",
+            coverage=0.9,
+            tolerance=0.99,
+            side=ToleranceIntervalSide.LOWER,
         )
-        == "TI[X; 0.9, lower, 0.99]"
+        == "TI[X; 0.9, LOWER, 0.99]"
     )
     assert (
         ParametricStatistics.compute_expression(
@@ -281,9 +287,9 @@ def test_expression():
             show_name=True,
             coverage=0.9,
             tolerance=0.99,
-            side="lower",
+            side=ToleranceIntervalSide.LOWER,
         )
-        == "TI[X; coverage=0.9, side=lower, tolerance=0.99]"
+        == "TI[X; coverage=0.9, side=LOWER, tolerance=0.99]"
     )
     assert ParametricStatistics.compute_expression("X", "a_value") == "Aval[X]"
     assert ParametricStatistics.compute_expression("X", "b_value") == "Bval[X]"

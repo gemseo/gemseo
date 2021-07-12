@@ -41,11 +41,10 @@ which is composed of a :class:`.ScalableDiagonalApproximation`.
 With regard to the diagonal DOE, |g| proposes the
 :class:`.DiagonalDOE` class.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from numbers import Number
-from os.path import join
 
 import matplotlib.pyplot as plt
 from numpy import arange, argsort, array, array_equal, atleast_1d, hstack
@@ -60,6 +59,8 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -266,16 +267,15 @@ class ScalableDiagonalModel(ScalableModel):
                     med = median(dependency_matrix[:, j] * 100)
                     col = "white" if val > med else "black"
                     axes.text(j, i, val, ha="center", va="center", color=col)
-        fname = None
         if save:
-            extension = ".png" if png else ".pdf"
-            fname = join(directory, self.name + "_dependency" + extension)
-            plt.savefig(fname)
-        if show:
-            plt.show()
+            extension = "png" if png else "pdf"
+            file_path = Path(directory) / "{}_dependency.{}".format(
+                self.name, extension
+            )
         else:
-            plt.close(fig)
-        return fname
+            file_path = None
+        save_show_figure(fig, show, file_path)
+        return str(file_path)
 
     def plot_1d_interpolations(
         self, save=False, show=False, step=0.01, varnames=None, directory=".", png=False
@@ -340,17 +340,16 @@ class ScalableDiagonalModel(ScalableModel):
                 plt.xlabel("Scaled abscissa", fontsize=18)
                 plt.ylabel("Interpolation value", fontsize=18)
                 plt.title("1D interpolation of " + self.name + "." + func)
+                fig = plt.gcf()
                 if save:
-                    extension = ".png" if png else ".pdf"
-                    fname = self.name + "_" + func + "_1D_interpolation_"
-                    fname += str(index)
-                    fname = join(directory, fname + extension)
-                    plt.savefig(fname)
-                    fnames.append(fname)
-                if show:
-                    plt.show()
+                    extension = "png" if png else "pdf"
+                    file_path = Path(directory) / "{}_{}_1D_interpolation_{}.{}".format(
+                        self.name, func, index, extension
+                    )
+                    fnames.append(str(file_path))
                 else:
-                    plt.close()
+                    file_path = None
+                save_show_figure(fig, show, file_path)
         return fnames
 
     def generate_random_dependency(self):

@@ -26,9 +26,9 @@ A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
 :points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation is
 relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
@@ -50,7 +50,7 @@ class ZvsXY(DatasetPlot):
         y_comp=0,  # type: int
         z_comp=0,  # type: int
         add_points=False,  # type: bool
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             x: The name of the variable on the x-axis.
@@ -86,5 +86,4 @@ class ZvsXY(DatasetPlot):
         else:
             axes.set_title(self.zlabel or "{}({})".format(z, z_comp))
         fig.colorbar(tcf)
-        fig = plt.gcf()
-        return fig
+        return [fig]

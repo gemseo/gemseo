@@ -19,55 +19,58 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Unsupervised machine learning algorithm
-=======================================
+"""This module contains the base class for the unsupervised machine learning algorithms.
 
-The :mod:`~gemseo.mlearning.core.unsupervised` module implements the concept of
-unsupervised machine learning models, where the data has no notion of
-input or output.
+The :mod:`~gemseo.mlearning.core.unsupervised` module implements
+the concept of unsupervised machine learning models,
+where the data has no notion of input or output.
 
 This concept is implemented through the :class:`.MLUnsupervisedAlgo` class,
 which inherits from the :class:`.MLAlgo` class.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import hstack
+from typing import Iterable, List, NoReturn, Optional
 
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from numpy import hstack, ndarray
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
 
 
 class MLUnsupervisedAlgo(MLAlgo):
     """Unsupervised machine learning algorithm.
 
-    Inheriting classes should overload the
+    Inheriting classes shall overload the
     :meth:`!MLUnsupervisedAlgo._fit` method.
+
+    Attributes:
+        input_names (List[str]): The names of the variables.
     """
 
     ABBR = "MLUnupervisedAlgo"
 
-    def __init__(self, data, transformer=None, var_names=None, **parameters):
-        """Constructor.
-
-        :param Dataset data: learning dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not scale data. Default: None.
-        :type transformer: dict(Transformer)
-        :param var_names: names of the variables to consider. If None, consider all
-            the variables mentioned in the learning dataset. Default: None.
-        :type var_names: list(str)
-        :param parameters: algorithm parameters
+    def __init__(
+        self,
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        var_names=None,  # type: Optional[Iterable[str]]
+        **parameters  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
+        """
+        Args:
+            var_names: The names of the variables.
+                If None, consider all variables mentioned in the learning dataset.
         """
         super(MLUnsupervisedAlgo, self).__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
         self.var_names = var_names or data.variables
 
-    def learn(self, samples=None):
-        """Train machine learning algorithm on learning set.
-
-        :param list(int) samples: training samples (indices). Default: None.
-        """
+    def learn(
+        self,
+        samples=None,  # type: Optional[List[int]]
+    ):  # type: (...) -> None
         if set(self.var_names) == set(self.learning_set.variables):
             data = []
             for group in self.learning_set.groups:
@@ -91,9 +94,13 @@ class MLUnsupervisedAlgo(MLAlgo):
         self._fit(data)
         self._trained = True
 
-    def _fit(self, data):
+    def _fit(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
         """Fit model on data.
 
-        :param ndarray data: training data (2D).
+        Args:
+            data: The data with shape (n_samples, n_variables).
         """
         raise NotImplementedError

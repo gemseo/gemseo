@@ -19,16 +19,16 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test min-max scaler module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose, arange
+from numpy import allclose, arange, ndarray
 
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 
 @pytest.fixture
-def data():
+def data():  # type: (...) -> ndarray
     """Test data."""
     return arange(30).reshape((10, 3))
 

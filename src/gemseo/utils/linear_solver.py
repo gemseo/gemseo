@@ -22,10 +22,9 @@
 Linear solvers wrapper
 **********************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import str
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
@@ -114,7 +113,9 @@ class LinearSolver(object):
             total_msg = base_msg + "--- trying bicgstab method"
             LOGGER.warning(total_msg)
 
-            sol, info = bicgstab(a_mat, b_vec, sol, maxiter=50 * len(b_vec))
+            sol, info = bicgstab(
+                a_mat, b_vec, sol, maxiter=50 * len(b_vec), atol=kwargs_lin["atol"]
+            )
             diff = a_mat.dot(sol) - b_vec.T
             res = np.sqrt(np.sum(diff))
 
@@ -127,7 +128,9 @@ class LinearSolver(object):
                 total_msg = "{} --- trying cgs method".format(base_msg)
                 LOGGER.warning(total_msg)
 
-                sol, info = cgs(a_mat, b_vec, sol, maxiter=50 * len(b_vec))
+                sol, info = cgs(
+                    a_mat, b_vec, sol, maxiter=50 * len(b_vec), atol=kwargs_lin["atol"]
+                )
                 diff = a_mat.dot(sol) - b_vec.T
                 res = np.sqrt(np.sum(diff))
 

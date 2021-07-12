@@ -29,7 +29,7 @@ design space, which is a key element to represent the space of parameters on
 which a scenario will evaluate a list of disciplines.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import array
 

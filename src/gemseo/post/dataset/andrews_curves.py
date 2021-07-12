@@ -56,15 +56,15 @@ by means of the :code:`classifier` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class AndrewsCurves(DatasetPlot):
@@ -72,9 +72,9 @@ class AndrewsCurves(DatasetPlot):
 
     def _plot(
         self,
-        properties,  # type: Mapping
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
         classifier,  # type: str
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             classifier: The name of the variable to group the data.
@@ -93,5 +93,4 @@ class AndrewsCurves(DatasetPlot):
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
         andrews_curves(dataframe, varname)
-        fig = plt.gcf()
-        return fig
+        return [plt.gcf()]

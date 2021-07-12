@@ -28,7 +28,7 @@ In this example, we will discover the different functions of the API
 related to MDO formulations: their names, their options and their sub-options.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import (
     configure_logger,

@@ -24,7 +24,7 @@
 Create a discipline from an external executable
 ===============================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 import subprocess

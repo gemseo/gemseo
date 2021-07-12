@@ -21,9 +21,12 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test partial least square regression."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import Tuple
 
 import pytest
+from numpy import ndarray
 from numpy import sum as npsum
 from numpy.random import rand
 
@@ -34,8 +37,8 @@ N_FEATURES = 8
 
 
 @pytest.fixture
-def data():
-    """Build an input-output dataset."""
+def data():  # type: (...) -> Tuple[ndarray,ndarray]
+    """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = rand(N_SAMPLES, N_FEATURES)
     output_data = npsum(input_data, 1)[:, None]
     return input_data, output_data

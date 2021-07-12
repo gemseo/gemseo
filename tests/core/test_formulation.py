@@ -19,7 +19,7 @@
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import math
 import unittest
@@ -28,7 +28,7 @@ import numpy as np
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.function import MDOFunction, MDOFunctionGenerator
+from gemseo.core.function import MDOFunction
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
@@ -43,19 +43,9 @@ class TestMDOFormulation(unittest.TestCase):
         sm = SobieskiMission()
         ds = SobieskiProblem().read_design_space()
         f = MDOFormulation([sm], "y_4", ds)
-        sm_gen = MDOFunctionGenerator(sm)
-
-        gen = f._get_generator_with_inputs(input_names=["x_shared"])
-        assert gen == sm_gen
-        gen2 = f._get_generator_with_inputs(
-            input_names=["x_shared"], top_level_disc=True
-        )
-        assert gen == gen2
-
         args = ["toto"]
         self.assertRaises(Exception, f._get_generator_with_inputs, *args)
 
-        assert sm_gen == f._get_generator_from(["y_4"])
         self.assertRaises(Exception, f._get_generator_from, *args)
 
     def test_cstrs(self):

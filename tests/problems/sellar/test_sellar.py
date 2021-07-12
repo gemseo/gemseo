@@ -19,7 +19,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 import unittest
@@ -31,7 +31,18 @@ import pytest
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import (
+    C_1,
+    C_2,
+    OBJ,
+    X_LOCAL,
+    X_SHARED,
+    Y_1,
+    Y_2,
+    Sellar1,
+    Sellar2,
+    SellarSystem,
+)
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -52,35 +63,35 @@ class TestSellar(unittest.TestCase):
     def get_input_data_linearization():
         """Generate a point at which the problem is linearized."""
         return {
-            "x_local": np.array([2.1]),
-            "x_shared": np.array([1.2, 3.4]),
-            "y_0": np.array([2.135]),
-            "y_1": np.array([3.584]),
+            X_LOCAL: np.array([2.1]),
+            X_SHARED: np.array([1.2, 3.4]),
+            Y_1: np.array([2.135]),
+            Y_2: np.array([3.584]),
         }
 
     def test_run_1(self):
         """Evaluate discipline 1."""
         discipline1 = Sellar1()
         discipline1.execute()
-        y_0 = discipline1.get_outputs_by_name("y_0")
-        self.assertAlmostEqual(y_0[0], 0.89442719, 8)
+        y_1 = discipline1.get_outputs_by_name(Y_1)
+        self.assertAlmostEqual(y_1[0], 0.89442719, 8)
 
     def test_run_2(self):
         """Evaluate discipline 2."""
         discipline2 = Sellar2()
         discipline2.execute()
-        y_1 = discipline2.get_outputs_by_name("y_1")
-        self.assertAlmostEqual(y_1[0], 2.0, 10)
+        y_2 = discipline2.get_outputs_by_name(Y_2)
+        self.assertAlmostEqual(y_2[0], 2.0, 10)
 
     def test_run_obj(self):
         """Evaluate objective function."""
         system = SellarSystem()
         design_space = SellarDesignSpace()
         indata = design_space.get_current_x_dict()
-        indata["y_0"] = np.ones([1])
-        indata["y_1"] = np.ones([1])
+        indata[Y_1] = np.ones([1])
+        indata[Y_2] = np.ones([1])
         system.execute(indata)
-        obj = system.get_outputs_by_name("obj")
+        obj = system.get_outputs_by_name(OBJ)
         self.assertAlmostEqual(obj, 2 ** 2 + 1 + exp(-1.0), 10)
 
     def test_serialize(self):
@@ -94,8 +105,8 @@ class TestSellar(unittest.TestCase):
         """Test linearization of objective and constraints."""
         system = SellarSystem()
         indata = TestSellar.get_input_data_linearization()
-        indata["y_0"] = np.ones([1])
-        indata["y_1"] = np.ones([1])
+        indata[Y_1] = np.ones([1])
+        indata[Y_2] = np.ones([1])
         assert system.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
     def test_jac_sellar1(self):
@@ -114,12 +125,12 @@ class TestSellar(unittest.TestCase):
             indata, derr_approx="complex_step", step=1e-30
         )
 
-        indata["y_0"] = -np.ones([1])
+        indata[Y_1] = -np.ones([1])
         assert discipline2.check_jacobian(
             indata, derr_approx="complex_step", step=1e-30
         )
 
-        indata["y_0"] = np.zeros([1])
+        indata[Y_1] = np.zeros([1])
         assert discipline2.check_jacobian(
             indata, derr_approx="complex_step", step=1e-30
         )
@@ -130,8 +141,8 @@ class TestSellar(unittest.TestCase):
         discipline2 = Sellar2()
         system = SellarSystem()
         indata = TestSellar.get_input_data_linearization()
-        indata["y_0"] = np.ones([1])
-        indata["y_1"] = np.ones([1])
+        indata[Y_1] = np.ones([1])
+        indata[Y_2] = np.ones([1])
 
         disciplines = [discipline1, discipline2, system]
         mda = MDAGaussSeidel(
@@ -156,8 +167,8 @@ class TestSellar(unittest.TestCase):
         discipline2 = Sellar2()
         system = SellarSystem()
         indata = self.get_input_data_linearization()
-        indata["y_0"] = np.ones([1])
-        indata["y_1"] = np.ones([1])
+        indata[Y_1] = np.ones([1])
+        indata[Y_2] = np.ones([1])
 
         disciplines = [discipline1, discipline2, system]
         mda = MDAJacobi(disciplines)
@@ -174,8 +185,8 @@ class TestSellar(unittest.TestCase):
         system = SellarSystem()
         disciplines = [d1, d2, system]
         indata = self.get_input_data_linearization()
-        indata["y_0"] = np.ones([1])
-        indata["y_1"] = np.ones([1])
+        indata[Y_1] = np.ones([1])
+        indata[Y_2] = np.ones([1])
         for disc in disciplines:
             assert disc.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
@@ -248,16 +259,16 @@ class TestSellarScenarios(unittest.TestCase):
         run_inputs = {"max_iter": 10, "algo": algo}
 
         # add constraints
-        scenario.add_constraint("c_1", "ineq")
-        scenario.add_constraint("c_2", "ineq")
+        scenario.add_constraint(C_1, "ineq")
+        scenario.add_constraint(C_2, "ineq")
         # run the optimizer
         scenario.execute(run_inputs)
 
         obj_opt = scenario.optimization_result.f_opt
         x_opt = scenario.design_space.get_current_x_dict()
 
-        x_local = x_opt["x_local"]
-        x_shared = x_opt["x_shared"]
+        x_local = x_opt[X_LOCAL]
+        x_shared = x_opt[X_SHARED]
         x_opt = np.concatenate((x_local, x_shared))
 
         # scenario.post_process("OptHistoryView", show=False, save=True,

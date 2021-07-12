@@ -20,7 +20,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import exists
 
@@ -29,8 +29,9 @@ import pytest
 from numpy import ones
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.grammar import SimpleGrammar
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.wrappers import (
@@ -39,6 +40,8 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+
+from .test_mda import analytic_disciplines_from_desc
 
 DISC_DESCR_16D = [
     ("A", ["a"], ["b"]),
@@ -176,3 +179,38 @@ def test_mix_sim_jsongrammar():
     out_2 = mda_chain.execute()
 
     assert out_1["obj"] == out_2["obj"]
+
+
+@pytest.mark.parametrize(
+    "matrix_type", [JacobianAssembly.SPARSE, JacobianAssembly.LINEAR_OPERATOR]
+)
+@pytest.mark.parametrize(
+    "linearization_mode",
+    [
+        JacobianAssembly.AUTO_MODE,
+        JacobianAssembly.DIRECT_MODE,
+        JacobianAssembly.ADJOINT_MODE,
+    ],
+)
+def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
+    """Tests a particular coupling structure."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"c1": "x+1.-0.2*c1"},
+            {"obj": "x+c1"},
+        )
+    )
+    mda = MDAChain(disciplines)
+    mda.matrix_type = matrix_type
+    assert mda.check_jacobian(
+        inputs=["x"], outputs=["obj"], linearization_mode=linearization_mode
+    )
+
+    assert mda.normed_residual == mda.sub_mda_list[0].normed_residual
+
+
+def test_no_coupling_jac():
+    """Tests a particular coupling structure."""
+    disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
+    mda = MDAChain(disciplines)
+    assert mda.check_jacobian(inputs=["x"], outputs=["obj"])

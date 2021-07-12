@@ -20,7 +20,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test unsupervised machine learning algorithm module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange
@@ -31,8 +31,8 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 
 @pytest.fixture
-def dataset():
-    """Create dataset with two variables."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the unsupervised machine learning algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}

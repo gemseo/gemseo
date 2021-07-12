@@ -19,38 +19,46 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Clustering measure
-==================
+"""Here is the baseclass to measure the quality of machine learning algorithms.
 
-The :mod:`~gemseo.mlearning.qual_measure.cluster_measure` module implements
-the concept of clustering measures for machine learning algorithms.
-
-This concept is implemented through the :class:`.MLClusteringMeasure` class
-and implements the different evaluation methods.
+The concept of clustering quality measure is implemented with the
+:class:`.MLClusteringMeasure` class and proposes different evaluation methods.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import Dict, List, NoReturn, Optional, Union
 
 from numpy import arange, array_split
 from numpy import delete as npdelete
+from numpy import ndarray, unique
 from numpy.random import choice
 
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.cluster.cluster import (
+    MLClusteringAlgo,
+    MLPredictiveClusteringAlgo,
+)
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 
 class MLClusteringMeasure(MLQualityMeasure):
-    """Clustering measure for machine learning."""
+    """An abstract clustering measure for clustering algorithms."""
 
-    def evaluate_learn(self, samples=None, multioutput=True):
-        """Evaluate quality measure using the learning dataset.
-
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
+    def __init__(
+        self,
+        algo,  # type: MLClusteringAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for clustering.
+        """
+        super(MLClusteringMeasure, self).__init__(algo)
+
+    def evaluate_learn(
+        self,
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
         if not self.algo.is_trained:
             self.algo.learn(samples)
@@ -59,21 +67,56 @@ class MLClusteringMeasure(MLQualityMeasure):
         measure = self._compute_measure(data, labels, multioutput)
         return measure
 
-    def evaluate_test(self, test_data, samples=None, multioutput=True):
-        """Evaluate quality measure using a test dataset.
+    def _compute_measure(
+        self,
+        data,  # type: ndarray
+        labels,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
+        """Compute the quality measure.
 
-        Only works if clustering algorithm has a predict method.
+        Args:
+            data: The reference data.
+            labels: The predicted labels.
+            multioutput: If True, return the quality measure for each
+                output component. Otherwise, average these measures.
 
-        :param Dataset test_data: test data.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
+        Returns:
+            The value of the quality measure.
         """
+        raise NotImplementedError
+
+    def _get_data(self):  # type: (...) -> Dict[str,ndarray]
+        """Get data.
+
+        Returns:
+            The learning data indexed by the names of the variables.
+        """
+        names = self.algo.var_names
+        data = self.algo.learning_set.get_data_by_names(names, False)
+        return data
+
+
+class MLPredictiveClusteringMeasure(MLClusteringMeasure):
+    """An abstract clustering measure for predictive clustering algorithms."""
+
+    def __init__(
+        self,
+        algo,  # type: MLPredictiveClusteringAlgo
+    ):  # type: (...) -> None
+        """
+        Args:
+            algo: A machine learning algorithm for predictive clustering.
+        """
+        super(MLPredictiveClusteringMeasure, self).__init__(algo)
+
+    def evaluate_test(
+        self,
+        test_data,  # type:Dataset
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
-        self._check_predict()
         if not self.algo.is_trained:
             self.algo.learn(samples)
         names = self.algo.var_names
@@ -82,100 +125,86 @@ class MLClusteringMeasure(MLQualityMeasure):
         measure = self._compute_measure(data, predictions, multioutput)
         return measure
 
-    def evaluate_kfolds(self, n_folds=5, samples=None, multioutput=True):
-        """Evaluate quality measure using the k-folds technique.
-
-        Only works if clustering algorithm has a predict method.
-
-        :param int n_folds: number of folds. Default: 5.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
-        samples = self._assure_samples(samples)
-        self._check_predict()
-        inds = samples
-        folds = array_split(inds, n_folds)
+    def evaluate_kfolds(
+        self,
+        n_folds=5,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
+        indices = self._assure_samples(samples)
+        folds = array_split(indices, n_folds)
 
         data = self._get_data()
 
         qualities = []
         for n_fold in range(n_folds):
-            fold = folds[n_fold]
-            train = npdelete(inds, fold)
-            self.algo.learn(samples=train)
-            testdata = data[fold]
-            predictions = self.algo.predict(testdata)
-
-            quality = self._compute_measure(testdata, predictions, multioutput)
+            test_indices = folds[n_fold]
+            train_indices = npdelete(indices, test_indices)
+            self.algo.learn(samples=train_indices)
+            test_data = data[test_indices]
+            predictions = self.algo.predict(test_data)
+            quality = self._compute_measure(test_data, predictions, multioutput)
             qualities.append(quality)
 
         quality = sum(qualities) / len(qualities)
 
         return quality
 
-    def evaluate_bootstrap(self, n_replicates=100, samples=None, multioutput=True):
-        """Evaluate quality measure using the bootstrap technique.
-
-        Only works if clustering algorithm has a predict method.
-
-        :param int n_replicates: number of bootstrap replicates. Default: 100.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_bootstrap(
+        self,
+        n_replicates=100,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
-        self._check_predict()
         if isinstance(samples, list):
             n_samples = len(samples)
         else:
             n_samples = samples.size
-        inds = arange(n_samples)
+        indices = arange(n_samples)
 
         data = self._get_data()
 
         qualities = []
         for _ in range(n_replicates):
-            train = choice(n_samples, n_samples)
-            test = npdelete(inds, train)
-            self.algo.learn(samples=samples[train])
-            testdata = data[samples[test]]
-            predictions = self.algo.predict(testdata)
+            train_indices = unique(choice(n_samples, n_samples))
+            test_indices = npdelete(indices, train_indices)
+            self.algo.learn(samples=[samples[index] for index in train_indices])
+            test_data = data[[samples[index] for index in test_indices]]
+            predictions = self.algo.predict(test_data)
 
-            quality = self._compute_measure(testdata, predictions, multioutput)
+            quality = self._compute_measure(test_data, predictions, multioutput)
             qualities.append(quality)
 
         quality = sum(qualities) / len(qualities)
 
         return quality
 
-    def _compute_measure(self, data, labels, multioutput=True):
-        """Compute error measure.
+    def _compute_measure(
+        self,
+        data,  # type: ndarray
+        labels,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> NoReturn
+        """Compute the quality measure.
 
-        :param ndarray data: reference data.
-        :param ndarray labels: predicted labels.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: measure value.
-        :rtype: float or ndarray(float)
+        Args:
+            data: The reference data.
+            labels: The predicted labels.
+            multioutput: If True, return the quality measure for each
+                output component. Otherwise, average these measures.
+
+        Returns:
+            The value of the quality measure.
         """
         raise NotImplementedError
 
-    def _get_data(self):
-        """Get data."""
+    def _get_data(self):  # type: (...) -> Dict[str,ndarray]
+        """Get data.
+
+        Returns:
+            The learning data indexed by the names of the variables.
+        """
         names = self.algo.var_names
         data = self.algo.learning_set.get_data_by_names(names, False)
         return data
-
-    def _check_predict(self):
-        """Check if clustering algorithm has predict method."""
-        if not hasattr(self.algo, "predict"):
-            raise NotImplementedError(
-                "Clustering algorithm does not provide " "a predict method."
-            )

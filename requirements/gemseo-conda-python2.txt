@@ -1,5 +1,5 @@
 # These dependencies must be compatible with the ones in setup.cfg/options.extras_require
 # provides both graphviz and dot
 pyside2 <=5.15.2
-python-graphviz <=0.15
+python-graphviz <=0.16
 nlopt >=2.4.2,<=2.6.2

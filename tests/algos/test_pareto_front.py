@@ -20,40 +20,141 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import exists, join
 
 import pytest
 from matplotlib import pyplot as plt
-from numpy import array
+from numpy import array, ndarray
 from numpy.random import rand, seed
+from numpy.testing import assert_array_equal
 
-from gemseo.algos.pareto_front import generate_pareto_plots, select_pareto_optimal
+from gemseo.algos.pareto_front import (
+    compute_pareto_optimal_points,
+    generate_pareto_plots,
+)
+from gemseo.utils.py23_compat import Path
 
 
-def test_pareto_front(tmp_path):
-    objs = array([[1, 2], [1.4, 1.7], [1.6, 1.6], [2, 1], [2, 2], [1.5, 1.5], [2, 0.5]])
+@pytest.fixture()
+def objective_points():  # type: (...) -> ndarray
+    """Return points.
 
-    inds = select_pareto_optimal(objs)
-    assert (inds == array([True, True, False, False, False, True, True])).all()
+    Returns:
+         The objective points.
+    """
+    return array([[1, 2], [1.4, 1.7], [1.6, 1.6], [2, 1], [2, 2], [1.5, 1.5], [2, 0.5]])
 
-    generate_pareto_plots(objs, range(2))
+
+@pytest.fixture()
+def non_feasible_points():  # type: (...) -> ndarray
+    """Return a non-feasible point mask.
+
+    Returns:
+         The non-feasible points.
+    """
+    return array([False, True, False, True, False, True, False])
+
+
+def test_select_pareto_optimal(
+    tmp_path,  # type: Path
+    objective_points,  # type: objective_points
+):
+    """Test the selection of Pareto optimal points.
+
+    Args:
+        tmp_path: Temporary path fixture.
+        objective_points: Points fixture on which the test shall be applied.
+    """
+    inds = compute_pareto_optimal_points(objective_points)
+    assert_array_equal(inds, array([True, True, False, False, False, True, True]))
+
+
+def test_select_pareto_optimal_w_non_feasible_points(
+    tmp_path,  # type: Path
+    objective_points,  # type: objective_points
+    non_feasible_points,  # type: non_feasible_points
+):
+    """Test the selection of Pareto optimal points, with non-feasible points.
+
+    Args:
+        tmp_path: Temporary path fixture.
+        objective_points: Points fixture on which the test shall be applied.
+        non_feasible_points: Mask fixture of non-feasible points.
+    """
+    inds = compute_pareto_optimal_points(
+        objective_points, feasible_points=~non_feasible_points
+    )
+    assert_array_equal(inds, array([True, False, True, False, False, False, True]))
+
+
+def test_pareto_front(tmp_path, objective_points):
+    """Test the generation of Pareto fronts.
+
+    Args:
+    tmp_path: Temporary path fixture
+    objective_points: points on which the test shall be applied
+    """
+    generate_pareto_plots(objective_points, ["0", "1"])
     outfile = join(str(tmp_path), "Pareto_2d.png")
     plt.savefig(outfile)
     plt.close()
     assert exists(outfile)
-    with pytest.raises(ValueError):
-        generate_pareto_plots(objs, range(3))
+
+
+def test_raise_error_if_dimension_mismatch(tmp_path, objective_points):
+    """Check that a value error is raised if there is a mismatch between the objective
+    values and the objective names.
+
+    Args:
+    tmp_path: Temporary path fixture
+    objective_points: points on which the test shall be applied
+    """
+    expect_msg = (
+        "^Inconsistent objective values size and objective names: \\d+ != \\d+$"
+    )
+    with pytest.raises(ValueError, match=expect_msg):
+        generate_pareto_plots(objective_points, ["0", "1", "2"])
+
+
+@pytest.mark.parametrize("show_non_feasible", (True, False))
+def test_pareto_front_w_non_feasible(
+    tmp_path, objective_points, non_feasible_points, show_non_feasible
+):
+    """Generate Pareto fronts with non-feasible points.
+
+    Args:
+    tmp_path: Temporary path fixture
+    objective_points: points on which the test shall be applied
+    non_feasible_points: mask of non-feasible points
+    show_non_feasible: if True, show the non-feasible points in the plot
+    """
+    generate_pareto_plots(
+        objective_points,
+        ["0", "1"],
+        non_feasible_samples=non_feasible_points,
+        show_non_feasible=show_non_feasible,
+    )
+    outfile = join(str(tmp_path), "Pareto_2d_non_feasible_not_shown.png")
+    plt.savefig(outfile)
+    plt.close()
+    assert exists(outfile)
 
 
 def test_5d(tmp_path):
+    """Generate a Pareto Front using random points.
+
+    Args:
+        tmp_path: Temporary path fixture
+    """
     seed(1)
     n_obj = 5
     objs = rand(100, n_obj)
-    inds = select_pareto_optimal(objs)
+    inds = compute_pareto_optimal_points(objs)
     assert sum(inds) > 0
-    generate_pareto_plots(objs, range(n_obj))
+    names = [str(i) for i in range(n_obj)]
+    generate_pareto_plots(objs, names)
     outfile = join(str(tmp_path), "Pareto_5d.png")
     plt.savefig(outfile)
     plt.close()

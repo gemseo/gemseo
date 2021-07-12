@@ -91,16 +91,14 @@ Additional ones are:
   this method plots the criterion values for a given variable.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import os
 from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
-import openturns as ot
-from numpy import array, exp, inf, linspace, log, ndarray
-from past.utils import old_div
+from numpy import array, linspace, ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
@@ -109,8 +107,11 @@ from gemseo.uncertainty.distributions.openturns.fitting import (
     MeasureType,
     OTDistributionFitter,
 )
-from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    ToleranceIntervalFactory,
+    ToleranceIntervalSide,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -292,11 +293,14 @@ class ParametricStatistics(Statistics):
             show: If True, show the plot.
             n_legend_cols: The number of text columns in the upper legend.
             directory: The directory path, either absolute or relative.
+
+        Raises:
+            ValueError: If the variable is missing from the dataset.
         """
         if variable not in self.names:
             raise ValueError(
-                variable + " is not a variable of the dataset."
-                "Available ones are:" + ", ".join(self.names)
+                "The variable '{}' is missing from the dataset."
+                "Available ones are: {}.".format(variable, ", ".join(self.names))
             )
         criteria, is_p_value = self.get_criteria(variable)
         x_values = []
@@ -469,280 +473,21 @@ class ParametricStatistics(Statistics):
         self,
         coverage,  # type: float
         confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]# noqa: D102
-        if side not in ["upper", "lower", "both"]:
-            raise ValueError(
-                "The argument 'side' represents the type"
-                "of tolerance bounds. Available ones are: 'upper'"
-                "'lower' and 'both'."
-            )
+        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
+    ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]
+        # noqa: D102 D205 D212 D415
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be number in [0,1].")
         if not 0.0 <= confidence <= 1.0:
             raise ValueError("The argument 'confidence' must be number in [0,1].")
         limits = {}
+        factory = ToleranceIntervalFactory()
         for variable in self.names:
-            distribution_name = self.distributions[variable]["name"]
-            distribution = self.distributions[variable]["value"]
-            if distribution_name == "Normal":
-                lower, upper = self._compute_normal_tolerance_interval(
-                    distribution, coverage, confidence, side
-                )
-            elif distribution_name == "Uniform":
-                lower, upper = self._compute_uniform_tolerance_interval(
-                    distribution, coverage, confidence, side
-                )
-            elif distribution_name == "LogNormal":
-                lower, upper = self._compute_lognormal_tolerance_interval(
-                    distribution, coverage, confidence, side
-                )
-            elif distribution_name == "WeibullMin":
-                lower, upper = self._weibull_tolerance_interval(
-                    distribution, coverage, confidence, side
-                )
-            elif distribution_name == "Exponential":
-                lower, upper = self._compute_exponential_tolerance_interval(
-                    distribution, coverage, confidence, side
-                )
-            else:
-                raise ValueError(
-                    "Tolerance interval is not implemented "
-                    "for 'distribution {}.".format(distribution_name)
-                )
-            limits[variable] = (lower, upper)
-        return limits
-
-    def _weibull_tolerance_interval(
-        self,
-        dist,  # type: ot.WeibullMin
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray] # noqa: D102
-        """Compute the tolerance interval (TI) for the Weibull distribution.
-
-        Args:
-            dist: An OpenTURNS WeibullMin distribution.
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI, 'upper' for upper-sided TI
-                or 'both for both-sided TI.
-
-        Returns:
-            The tolerance limits.
-        """
-        alpha = dist.marginals[0].getParameter()[0]
-        beta = dist.marginals[0].getParameter()[1]
-        gamma = dist.marginals[0].getParameter()[2]
-        x_i = log(beta)
-        delta = 1.0 / alpha
-        if side == "upper":
-            lbd = log(-log(1 - coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            upper = delta * student.computeQuantile(confidence)[0]
-            upper /= (self.n_samples - 1) ** 0.5
-            upper = x_i - upper
-            lower = -inf
-        elif side == "lower":
-            lbd = log(-log(coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            lower = delta * student.computeQuantile(1 - confidence)[0]
-            lower /= (self.n_samples - 1) ** 0.5
-            lower = x_i - lower
-            upper = inf
-        else:
-            coverage = (coverage + 1.0) / 2.0
-            alpha = (1 - confidence) / 2.0
-            dof = self.n_samples - 1
-            # lower bound
-            offset = -self.n_samples ** 0.5 * log(-log(coverage))
-            student = ot.Student(dof, offset)
-            lower = delta * student.computeQuantile(alpha)[0] / dof ** 0.5
-            lower = x_i - lower
-            # upper bound
-            offset = -self.n_samples ** 0.5 * log(-log(1 - coverage))
-            student = ot.Student(dof, offset)
-            upper = delta * student.computeQuantile(1 - alpha)[0] / dof ** 0.5
-            upper = x_i - upper
-        limits = (array([exp(lower) + gamma]), array([exp(upper) + gamma]))
-        return limits
-
-    def _compute_uniform_tolerance_interval(
-        self,
-        dist,  # type: ot.Uniform
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray] # noqa: D102
-        """Compute the tolerance interval (TI) for the uniform distribution.
-
-        Args:
-            dist: An OpenTURNS uniform distribution.
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI, 'upper' for upper-sided TI
-                or 'both for both-sided TI.
-
-        Returns:
-            The tolerance limits.
-        """
-        minimum = dist.marginals[0].getParameter()[0]
-        maximum = dist.marginals[0].getParameter()[1]
-        if side == "upper":
-            upper = (maximum - minimum) * coverage
-            upper /= (1 - confidence) ** (1.0 / self.n_samples)
-            upper += minimum
-            limits = (array([-inf]), array([upper]))
-        elif side == "lower":
-            lower = (maximum - minimum) * (1 - coverage)
-            lower /= confidence ** (1.0 / self.n_samples)
-            lower += minimum
-            limits = (array([lower]), array([inf]))
-        else:
-            upper = (maximum - minimum) * (coverage + 1) / 2.0
-            upper /= ((1 - confidence) / 2.0) ** (1.0 / self.n_samples)
-            upper += minimum
-            lower = (maximum - minimum) * (1 - (coverage + 1) / 2.0)
-            lower /= (1 - (1 - confidence) / 2.0) ** (1.0 / self.n_samples)
-            lower += minimum
-            limits = (array([lower]), array([upper]))
-        return limits
-
-    def _compute_exponential_tolerance_interval(
-        self,
-        dist,  # type: ot.Exponential
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray] # noqa: D102
-        """Compute the tolerance interval (TI) for the exponential distribution.
-
-        Args:
-            dist: An OpenTURNS exponential distribution.
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI, 'upper' for upper-sided TI
-                or 'both for both-sided TI.
-
-        Returns:
-            The tolerance limits.
-        """
-        lmbda = dist.marginals[0].getParameter()[0]
-        gamma = dist.marginals[0].getParameter()[1]
-        if side == "upper":
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(confidence)[0]
-            upper = -2 * self.n_samples * log(coverage) * lmbda
-            upper /= chisq
-            lower = 0.0
-        elif side == "lower":
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(confidence)[0]
-            lower = -2 * self.n_samples * log(1 - coverage) * lmbda
-            lower /= chisq
-            upper = inf
-        else:
-            coverage = (coverage + 1) / 2.0
-            alpha = (1 - confidence) / 2.0
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(1 - alpha)[0]
-            upper = -2 * self.n_samples * log(1 - coverage) * lmbda
-            upper /= chisq
-            lower = -2 * self.n_samples * log(coverage) * lmbda
-            lower /= chisq
-
-        limits = (array([lower + gamma]), array([upper + gamma]))
-        return limits
-
-    def _compute_normal_tolerance_interval(
-        self,
-        dist,  # type: ot.Normal
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray] # noqa: D102
-        """Compute the tolerance interval (TI) for the Normal distribution.
-
-        Args:
-            dist: An OpenTURNS normal distribution.
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI, 'upper' for upper-sided TI
-                or 'both for both-sided TI.
-
-        Returns:
-            The tolerance limits.
-        """
-        mean = dist.marginals[0].getParameter()[0]
-        std = dist.marginals[0].getParameter()[1]
-        if side in ["upper", "lower"]:
-            z_p = ot.Normal().computeQuantile(coverage)[0]
-            delta = z_p * self.n_samples ** 0.5
-            dof = self.n_samples - 1
-            student = ot.Student(dof, delta)
-            student_quantile = student.computeQuantile(confidence)[0]
-            tolerance_factor = old_div(student_quantile, self.n_samples ** 0.5)
-            if side == "upper":
-                upper = mean + tolerance_factor * std
-                limits = (array([-inf]), array([upper]))
-            else:
-                lower = mean - tolerance_factor * std
-                limits = (array([lower]), array([inf]))
-        else:
-            z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
-            left = (1 + 1.0 / self.n_samples) ** 0.5 * z_p
-            chisq = ot.ChiSquare(self.n_samples - 1)
-            right = old_div(
-                (self.n_samples - 1), chisq.computeQuantile(1 - confidence)[0]
-            )
-            right = right ** 0.5
-            weight = self.n_samples - 3 - chisq.computeQuantile(1 - confidence)[0]
-            weight /= 2 * (self.n_samples + 1) ** 2
-            weight = (1 + weight) ** 0.5
-            tolerance_factor = left * right * weight
-            lower = mean - tolerance_factor * std
-            upper = mean + tolerance_factor * std
-            limits = (array([lower]), array([upper]))
-        return limits
-
-    def _compute_lognormal_tolerance_interval(
-        self,
-        dist,  # type: ot.LogNormal
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side="both",  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray] # noqa: D102
-        """Compute the tolerance interval (TI) for the lognormal distribution.
-
-        Args:
-            dist: An OpenTURNS lognormal distribution.
-            coverage: A minimum percentage of belonging to the TI.
-            confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI, 'upper' for upper-sided TI
-                or 'both for both-sided TI.
-
-        Returns:
-            The tolerance limits.
-        """
-        dist = OTNormalDistribution(
-            "x",
-            dist.marginals[0].getParameter()[0],
-            dist.marginals[0].getParameter()[1],
-        )
-        lower, upper = self._compute_normal_tolerance_interval(
-            dist, coverage, confidence, side
-        )
-        limits = (exp(lower), exp(upper))
+            distribution = self.distributions[variable]
+            cls = factory.get_class(distribution["name"])
+            parameters = distribution["value"].marginals[0].getParameter()
+            tolerance_interval = cls(self.n_samples, *parameters)
+            limits[variable] = tolerance_interval.compute(coverage, confidence, side)
         return limits
 
     def compute_quantile(

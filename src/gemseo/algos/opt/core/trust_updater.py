@@ -25,10 +25,9 @@ Updates a trust parameter according to a decreases ratio
 ********************************************************
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import str, super
 
 from numpy import divide, maximum, minimum, multiply
 

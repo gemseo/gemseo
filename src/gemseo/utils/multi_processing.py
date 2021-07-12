@@ -21,12 +21,11 @@
 
 """Wrapper of the multiprocessing module in order to circumvent the issues encountered
 on Windows with the multiprocessing."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import os
 import threading
-from builtins import dict, int
 
 LOGGER = logging.getLogger(__name__)
 

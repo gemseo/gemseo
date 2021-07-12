@@ -19,7 +19,7 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 from os.path import dirname, exists, join
@@ -29,7 +29,6 @@ import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_post
-from gemseo.core.grammar import InvalidDataException
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -79,16 +78,6 @@ class TestPlotHistoryViews(unittest.TestCase):
         )
         for full_path in view.output_files:
             assert exists(full_path)
-
-    def test_opt_errors(self):
-        """"""
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        view = OptHistoryView(problem)
-        self.assertRaises(InvalidDataException, view.execute)
-        self.assertRaises(InvalidDataException, view.execute, save="toto")
-        self.assertRaises(InvalidDataException, view.execute, save=True, file_path=True)
-        self.assertRaises(InvalidDataException, view.execute, save=False, show=1)
 
     def test_nans(self):
 

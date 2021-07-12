@@ -19,96 +19,149 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Data transformer
-================
+"""A transformer to apply operations on NumPy arrays.
 
-The abstract :class:`.Transformer` class implements the concept of a data
-transformer. Inheriting classes should implement the
-:meth:`.Transformer.fit`, :meth:`.Transformer.transform` and
-possibly :meth:`.Transformer.inverse_transform` methods.
+The abstract :class:`.Transformer` class implements the concept of a data transformer.
+Inheriting classes shall implement the :meth:`.Transformer.fit`,
+:meth:`.Transformer.transform`
+and possibly :meth:`.Transformer.inverse_transform` methods.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.transform.scaler.scaler`
    :mod:`~gemseo.mlearning.transform.dimension_reduction.dimension_reduction`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import NoReturn, Optional, Union
+
+import six
+from custom_inherit import DocInheritMeta
+from numpy import ndarray
+
+TransformerFitOptionType = Union[float, int, str]
 
 
+@six.add_metaclass(
+    DocInheritMeta(
+        abstract_base_class=True,
+        style="google_with_merge",
+    )
+)
 class Transformer(object):
-    """Transformer baseclass."""
+    """Transformer baseclass.
+
+    Attributes:
+        name (str): The name of the transformer.
+        parameters (str): The parameters of the transformer.
+    """
 
     CROSSED = False
 
-    def __init__(self, name="Transformer", **parameters):
-        """Constructor.
-
-        :param str name: transformer name. Default: 'Transformer'.
-        :param parameters: transformer parameters.
+    def __init__(
+        self,
+        name="Transformer",  # type: str
+        **parameters  # type: Optional[Union[float,int,str,bool]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            name: A name for this transformer.
+            **parameters: The parameters of the transformer.
         """
         self.name = name
         self.parameters = parameters
 
-    def duplicate(self):
-        """Duplicate the constructor."""
+    def duplicate(self):  # type: (...) -> Transformer
+        """Duplicate the current object.
+
+        Returns:
+            A deepcopy of the current instance.
+        """
         return self.__class__(self.name, **self.parameters)
 
-    def fit(self, data, *args):
-        """Fit transformer to data.
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> NoReturn
+        """Fit the transformer to the data.
 
-        :param ndarray data: data to be fitted.
+        Args:
+            data: The data to be fitted.
         """
         raise NotImplementedError
 
-    def transform(self, data):
-        """Transform data.
+    def transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
+        """Transform the data.
 
-        :param ndarray data: data  to be transformed.
-        :return: transformed data.
-        :rtype: ndarray
+        Args:
+            data: The data to be transformed.
+
+        Returns:
+            The transformed data.
         """
         raise NotImplementedError
 
-    def inverse_transform(self, data):
+    def inverse_transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
         """Perform an inverse transform on the data.
 
-        :param ndarray data: data to be inverse transformed.
-        :return: inverse transformed data.
-        :rtype: ndarray
+        Args:
+            data: The data to be inverse transformed.
+
+        Returns:
+            The inverse transformed data.
         """
         raise NotImplementedError
 
-    def fit_transform(self, data, *args):
-        """Fit transformer to data and transform data.
+    def fit_transform(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> ndarray
+        """Fit the transformer to the data and transform the data.
 
-        :param ndarray data: data to be fitted and transformed.
-        :return: transformed data.
-        :rtype: ndarray
+        Args:
+            data: The data to be transformed.
+
+        Returns:
+            The transformed data.
         """
         self.fit(data, *args)
-        transformed_data = self.transform(data)
-        return transformed_data
+        return self.transform(data)
 
-    def compute_jacobian(self, data):
-        """Compute Jacobian of the transformer transform.
+    def compute_jacobian(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
+        """Compute Jacobian of transformer.transform().
 
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
+        Args:
+            data: The data where the Jacobian is to be computed.
+
+        Returns:
+            The Jacobian matrix.
         """
         raise NotImplementedError
 
-    def compute_jacobian_inverse(self, data):
-        """Compute Jacobian of the transformer inverse_transform.
+    def compute_jacobian_inverse(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
+        """Compute Jacobian of the transformer.inverse_transform().
 
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
+        Args:
+            data: The data where the Jacobian is to be computed.
+
+        Returns:
+            The Jacobian matrix.
         """
         raise NotImplementedError
 
-    def __str__(self):
-        """String representation for end user."""
-        string = self.__class__.__name__
-        return string
+    def __str__(self):  # type: (...) -> str
+        return self.__class__.__name__

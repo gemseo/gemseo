@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Linear regression
-=================
+r"""The linear model algorithm for regression.
 
 The linear regression surrogate discipline expresses the model output
 as a weighted sum of the model inputs:
@@ -55,16 +53,18 @@ The linear model relies on the LinearRegression, Ridge, Lasso and ElasticNet
 classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Dict, Iterable, Optional, Union
 
-from numpy import array, repeat, zeros
+from numpy import array, ndarray, repeat, zeros
 from sklearn.linear_model import ElasticNet, Lasso
 from sklearn.linear_model import LinearRegression as LinReg
 from sklearn.linear_model import Ridge
 
 from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
@@ -82,36 +82,25 @@ class LinearRegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        fit_intercept=True,
-        penalty_level=0.0,
-        l2_penalty_ratio=1.0,
-        **parameters
-    ):
-        """Constructor.
-
-        :param data: learning dataset.
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param fit_intercept: if True, fit intercept. Default: True.
-        :type fit_intercept: bool
-        :param penalty_level: penalty level greater or equal to 0.
-            If 0, there is no penalty. Default: 0.
-        :type penalty_level: float
-        :param l2_penalty_ratio: penalty ratio related to the l2
-            regularization. If 1, the penalty is the Ridge penalty. If 0,
-            this is the Lasso penalty. Between 0 and 1, the penalty is the
-            ElasticNet penalty. Default: None.
-        :type l2_penalty_ratio: float
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        fit_intercept=True,  # type: bool
+        penalty_level=0.0,  # type: float
+        l2_penalty_ratio=1.0,  # type: float
+        **parameters  # type: Optional[Union[float,int,str,bool]]
+    ):  # type: (...) ->None
+        """
+        Args:
+            fit_intercept: If True, fit intercept.
+            penalty_level: The penalty level greater or equal to 0.
+                If 0, there is no penalty.
+            l2_penalty_ratio: The penalty ratio related to the l2 regularization.
+                If 1, use the Ridge penalty.
+                If 0, use the Lasso penalty.
+                Between 0 and 1, use the ElasticNet penalty.
+            **parameters: The parameters of the machine learning algorithm.
         """
         super(LinearRegression, self).__init__(
             data,
@@ -157,56 +146,56 @@ class LinearRegression(MLRegressionAlgo):
                     **parameters
                 )
 
-    def _fit(self, input_data, output_data):
-        """Fit the regression model.
-
-        :param ndarray input_data: input data (2D).
-        :param ndarray output_data: output data (2D).
-        """
+    def _fit(
+        self,
+        input_data,  # type: ndarray
+        output_data,  # type: ndarray
+    ):  # type: (...) -> None
         self.algo.fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output for given input data.
+    def _predict(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        return self.algo.predict(input_data)
 
-        :param ndarray input_data: input data (2D).
-        :return: output prediction (2D).
-        :rtype: ndarray.
-        """
-        output_data = self.algo.predict(input_data)
-        if output_data.ndim == 1:
-            output_data = output_data[:, None]
-        return output_data
-
-    def _predict_jacobian(self, input_data):
-        """Predict Jacobian of the regression model for the given input data.
-
-        :param ndarray input_data: input_data (2D).
-        :return: Jacobian matrices (3D, one for each sample).
-        :rtype: ndarray
-        """
+    def _predict_jacobian(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         n_samples = input_data.shape[0]
         return repeat(self.algo.coef_[None], n_samples, axis=0)
 
     @property
-    def coefficients(self):
-        """Return the regression coefficients of the linear fit."""
+    def coefficients(self):  # type: (...) ->ndarray
+        """The regression coefficients of the linear model."""
         return self.algo.coef_
 
     @property
-    def intercept(self):
-        """Return the regression intercepts of the linear fit."""
+    def intercept(self):  # type: (...) ->ndarray
+        """The regression intercepts of the linear model."""
         if self.parameters["fit_intercept"]:
             intercept = self.algo.intercept_
         else:
             intercept = zeros(self.algo.coef_.shape[0])
         return intercept
 
-    def get_coefficients(self, as_dict=True):
-        """Return the regression coefficients of the linear fit as a numpy array or as a
-        dict.
+    def get_coefficients(
+        self,
+        as_dict=True,  # type: bool
+    ):  # type: (...) -> DataType
+        """Return the regression coefficients of the linear model.
 
-        :param bool as_dict: if True, returns coefficients as a dictionary.
-            Default: True.
+        Args:
+            as_dict: If True, return the coefficients as a dictionary.
+                Otherwise, return the coefficients as a numpy.array
+
+        Returns:
+            The regression coefficients of the linear model.
+
+        Raises:
+            ValueError: If the coefficients are required as a dictionary
+                even though the transformers change the variables dimensions.
         """
         coefficients = self.coefficients
         if as_dict:
@@ -217,25 +206,35 @@ class LinearRegression(MLRegressionAlgo):
                 ]
             ):
                 raise ValueError(
-                    "Coefficients are only representable in dict "
+                    "Coefficients are only representable in dictionary "
                     "form if the transformers do not change the "
                     "dimensions of the variables."
                 )
             coefficients = self.__convert_array_to_dict(coefficients)
         return coefficients
 
-    def get_intercept(self, as_dict=True):
-        """Returns the regression intercept of the linear fit as a numpy array or as a
-        dict.
+    def get_intercept(
+        self,
+        as_dict=True,  # type:bool
+    ):  # type: (...) -> DataType
+        """Return the regression intercepts of the linear model.
 
-        :param bool as_dict: if True, returns intercept as a dictionary.
-            Default: True.
+        Args:
+            as_dict: If True, return the intercepts as a dictionary.
+                Otherwise, return the intercepts as a numpy.array
+
+        Returns:
+            The regression intercepts of the linear model.
+
+        Raises:
+            ValueError: If the coefficients are required as a dictionary
+                even though the transformers change the variables dimensions.
         """
         intercept = self.intercept
         if as_dict:
             if Dataset.OUTPUT_GROUP in self.transformer:
                 raise ValueError(
-                    "Intercept is only representable in dict "
+                    "Intercept is only representable in dictionary "
                     "form if the transformers do not change the "
                     "dimensions of the output variables."
                 )
@@ -246,10 +245,17 @@ class LinearRegression(MLRegressionAlgo):
             intercept = {key: list(val) for key, val in intercept.items()}
         return intercept
 
-    def __convert_array_to_dict(self, data):
+    def __convert_array_to_dict(
+        self,
+        data,  # type:ndarray
+    ):  # type: (...) -> Dict[str,ndarray]
         """Convert a data array into a dictionary.
 
-        :param ndarray data: data.
+        Args:
+            data: The data to be converted.
+
+        Returns:
+            The converted data.
         """
         varsizes = self.learning_set.sizes
         data = [

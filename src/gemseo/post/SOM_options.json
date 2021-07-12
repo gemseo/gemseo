@@ -1,6 +1,6 @@
 {
     "name": "OptHistoryView_options",
-    "required": ["save"],
+    "required": [],
     "properties": {
         "n_x": {
             "type": "integer",
@@ -18,20 +18,8 @@
             "type": "integer",
             "min":1
         },
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
         "annotate": {
             "type": "boolean"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
         }
     },
     "additionalProperties": false,

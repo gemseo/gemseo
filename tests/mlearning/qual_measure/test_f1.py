@@ -20,7 +20,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test F1 measure."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange, array
@@ -32,8 +32,8 @@ from gemseo.mlearning.qual_measure.f1_measure import F1Measure
 
 
 @pytest.fixture
-def dataset():
-    """Data points."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
     dataset_ = Dataset()
@@ -43,8 +43,8 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_test():
-    """Data points."""
+def dataset_test():  # type: (...) -> Dataset
+    """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)
     dataset_ = Dataset()

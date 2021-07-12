@@ -21,7 +21,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning regression algorithm module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, arange, array, zeros
@@ -34,7 +34,7 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 @pytest.fixture
 def io_dataset():
-    """Build an input-output dataset."""
+    """The dataset used to train the regression algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}

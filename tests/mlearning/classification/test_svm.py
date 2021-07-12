@@ -20,7 +20,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test svmClassifier."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, array_equal, linspace, ndarray, zeros
@@ -45,8 +45,8 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():
-    """Dataset."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the SVMClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 1))
     output_data[::4, 0] = 1
@@ -62,16 +62,16 @@ def dataset():
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> SVMClassifier
+    """A trained SVMClassifier with two outputs, y_1 and y_2."""
     svm = SVMClassifier(dataset, probability=True)
     svm.learn()
     return svm
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model from data."""
+def model_with_transform(dataset):  # type: (...) -> SVMClassifier
+    """A trained SVMClassifier using input scaling."""
     svm = SVMClassifier(
         dataset, transformer={"inputs": MinMaxScaler()}, probability=True
     )

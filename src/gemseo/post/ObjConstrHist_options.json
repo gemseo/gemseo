@@ -1,19 +1,7 @@
 {
     "name": "OptHistoryView_options",
-    "required": ["save"],
+    "required": [],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
-        },
         "constr_names": {
             "type": "array"
         }

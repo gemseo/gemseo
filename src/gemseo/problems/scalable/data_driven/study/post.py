@@ -19,22 +19,8 @@
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
 
-import logging
-from builtins import int
-
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-from numpy import array, atleast_3d, median, poly1d, polyfit
-
-from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path, string_types
-from gemseo.utils.string_tools import MultiLineString
-
-"""
-Scalability study - Post-processing
-===================================
+"""Post-processing for scalability study.
 
 The :class:`.PostScalabilityStudy` class implements the way as the set of
 :class:`.ScalabilityResult`-based result files
@@ -58,6 +44,19 @@ of the true problem.
    to carefully define these cost functions.
 """
 
+from __future__ import division, unicode_literals
+
+import logging
+
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from numpy import array, atleast_3d
+from numpy import bool as np_bool
+from numpy import median, poly1d, polyfit
+
+from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
+from gemseo.utils.py23_compat import Path, string_types
+from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -458,6 +457,11 @@ class PostScalabilityStudy(object):
         """
         if len(data.shape) == 3:
             data = data[0, :, :]
+
+        if data.dtype == np_bool:
+            # To prevent error when arrays are substracted with recent numpy
+            data = data.astype(int)
+
         boxplot = plt.boxplot(
             data.T,
             patch_artist=True,

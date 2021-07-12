@@ -6,6 +6,9 @@ include src/gemseo/problems/*/*.json
 include src/gemseo/uncertainty/*/*.json
 include src/gemseo/problems/*/*_design_space.txt
 include src/gemseo/*/*/LICENSE.txt
-include src/gemseo/third_party/pyxdsm/diagram_styles.tex
 include src/gemseo/problems/dataset/iris.data
 include src/gemseo/wrappers/icons/*.png
+include src/gemseo/utils/n2d3/js/*.js
+include src/gemseo/utils/n2d3/css/*.css
+include src/gemseo/utils/n2d3/n2_html.tmpl
+include src/gemseo/wrappers/matlab/engine/matlab_files/*.m

@@ -20,12 +20,13 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mean squared error measure."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
@@ -42,8 +43,8 @@ ATOL = 1e-12
 
 
 @pytest.fixture
-def dataset():
-    """Data points."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -53,8 +54,8 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_test():
-    """Data points."""
+def dataset_test():  # type: (...) -> Dataset
+    """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -103,7 +104,7 @@ def test_evaluate_test(dataset, dataset_test):
     mse_test = measure.evaluate("test", test_data=dataset_test)
     assert mse_test < TOL_DEG_2
     measure = RMSEMeasure(algo)
-    rmse_test = measure.evaluate("learn")
+    rmse_test = measure.evaluate("test", test_data=dataset_test)
 
     assert abs(mse_test ** 0.5 - rmse_test) < 1e-6
 
@@ -171,6 +172,8 @@ def test_evaluate_bootstrap(dataset):
     assert mse_bootstrap < TOL_DEG_2
     measure = RMSEMeasure(algo)
     rmse_bootstrap = measure.evaluate("bootstrap")
+    rmse_bootstrap_2 = measure.evaluate("bootstrap", samples=list(range(20)))
+    assert abs(rmse_bootstrap - rmse_bootstrap_2) < 1e-6
     assert abs(mse_bootstrap ** 0.5 - rmse_bootstrap) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)

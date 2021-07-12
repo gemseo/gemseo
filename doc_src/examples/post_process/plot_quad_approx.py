@@ -27,7 +27,9 @@ Quadratic approximations
 In this example, we illustrate the use of the :class:`.QuadApprox` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -87,4 +89,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # plot which performs a quadratic approximation of a given function
 # from an optimization history and plot the results as cuts of the
 # approximation.
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

@@ -19,7 +19,7 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import json
 import unittest
@@ -79,7 +79,7 @@ from gemseo.api import (
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
@@ -109,6 +109,7 @@ class TestAPI(unittest.TestCase):
         assert exists(file_path)
 
     def test_generate_coupling_graph(self):
+        # TODO: reuse data and checks from test_dependency_graph
         disciplines = create_discipline(
             [
                 "SobieskiMission",
@@ -117,12 +118,10 @@ class TestAPI(unittest.TestCase):
                 "SobieskiPropulsion",
             ]
         )
-        base_path = "coupl"
-        gv_path = "coupl.gv"
-        file_path = base_path + ".pdf"
+        file_path = "coupl.pdf"
         generate_coupling_graph(disciplines, file_path)
         assert exists(file_path)
-        assert exists(gv_path)
+        assert exists("coupl.dot")
 
     def test_get_algorithm_options_schema(self):
         schema_dict = get_algorithm_options_schema("SLSQP")
@@ -408,12 +407,7 @@ class TestAPI(unittest.TestCase):
 
     def test_get_post_processing_options_schema(self):
         for post in get_available_post_processings():
-            schema = get_post_processing_options_schema(post)
-            if post != "KMeans":
-                assert "show" in schema["properties"]
-            else:
-                assert "n_clusters" in schema["properties"]
-            schema = get_post_processing_options_schema(post, pretty_print=True)
+            get_post_processing_options_schema(post)
 
     def test_get_formulation_options_schema(self):
         mdf_schema = get_formulation_options_schema("MDF")
@@ -494,7 +488,8 @@ class TestAPI(unittest.TestCase):
 
     def test_get_available_caches(self):
         caches = get_available_caches()
-        assert "AbstractFullCache" in caches
+        # plugins may add classes
+        assert set(caches) <= set(["HDF5Cache", "MemoryFullCache", "SimpleCache"])
 
     def test_load_dataset(self):
         burgers = load_dataset("BurgersDataset")

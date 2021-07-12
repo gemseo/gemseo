@@ -92,9 +92,10 @@ for the different variables:
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
+from enum import Enum
 from typing import Dict, Iterable, Optional, Tuple
 
 import six
@@ -102,6 +103,9 @@ from custom_inherit import DocInheritMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    ToleranceIntervalSide,
+)
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -163,9 +167,9 @@ class Statistics(object):
         self,
         coverage,  # type: float
         confidence=0.95,  # type: float
-        side="both",  # type: str
+        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
     ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]# noqa: D102
-        """Compute a tolerance interval (TI) for a given coverage level.
+        r"""Compute a tolerance interval (TI) for a given coverage level.
 
         This coverage level is the minimum percentage of belonging to the TI.
         The tolerance interval is computed with a confidence level
@@ -174,10 +178,11 @@ class Statistics(object):
         Args:
             coverage: A minimum percentage of belonging to the TI.
             confidence: A level of confidence in [0,1].
-            side: A type of interval,
-                either 'lower' for lower-sided TI,
-                'upper' for upper-sided TI
-                or 'both for both-sided TI.
+            side: The type of the tolerance interval
+                characterized by its *sides* of interest,
+                either a lower-sided tolerance interval :math:`[a, +\infty[`,
+                an upper-sided tolerance interval :math:`]-\infty, b]`,
+                or a two-sided tolerance interval :math:`[c, d]`.
 
         Returns:
             The tolerance limits of the different variables.
@@ -192,7 +197,9 @@ class Statistics(object):
         Returns:
             The A-value of the different variables.
         """
-        result = self.compute_tolerance_interval(1 - 0.1, 0.99, "lower")
+        result = self.compute_tolerance_interval(
+            1 - 0.1, 0.99, ToleranceIntervalSide.LOWER
+        )
         result = {name: value[0] for name, value in result.items()}
         return result
 
@@ -204,7 +211,9 @@ class Statistics(object):
         Returns:
             The B-value of the different variables.
         """
-        result = self.compute_tolerance_interval(1 - 0.1, 0.95, "lower")
+        result = self.compute_tolerance_interval(
+            1 - 0.1, 0.95, ToleranceIntervalSide.LOWER
+        )
         result = {name: value[0] for name, value in result.items()}
         return result
 
@@ -421,11 +430,17 @@ class Statistics(object):
         elif function == "probability":
             middle = ">="
         if show_name:
-            value = ", ".join(
-                ["{}={}".format(name, options[name]) for name in sorted(options)]
-            )
+            value = []
+            for name in sorted(options):
+                value.append("{}={}".format(name, options[name]))
         else:
-            value = ", ".join([str(options[name]) for name in sorted(options)])
+            value = []
+            for name in sorted(options):
+                if isinstance(options[name], Enum):
+                    value.append(str(options[name].name))
+                else:
+                    value.append(str(options[name]))
+        value = ", ".join(value)
         if value != "" and middle == "":
             middle = "; "
         return "{}[{}{}{}]".format(cls.SYMBOLS[function], variable, middle, value)

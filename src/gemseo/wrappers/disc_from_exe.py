@@ -23,37 +23,45 @@
 Make a discipline from an executable
 ************************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import re
 import subprocess
+import sys
 from ast import literal_eval
 from copy import deepcopy
 from multiprocessing import Lock, Manager
 from os import listdir, mkdir
 from os.path import join
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 from uuid import uuid1
 
-from numpy import array
+from numpy import array, ndarray
 
+from gemseo.core.data_processor import DataProcessor  # noqa: F401
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
-from gemseo.utils.py23_compat import xrange
+from gemseo.utils.py23_compat import Path, xrange
 
 LOGGER = logging.getLogger(__name__)
 
-INPUT_TAG = "GEMSEO_INPUT"
-OUTPUT_TAG = "GEMSEO_OUTPUT"
-INPUT_RE = INPUT_TAG + r"\{(.*)\}"
-OUTPUT_RE = OUTPUT_TAG + r"\{(.*)\}"
-
-INPUT_GRAMMAR = JSONGrammar.INPUT_GRAMMAR
-OUTPUT_GRAMMAR = JSONGrammar.OUTPUT_GRAMMAR
-
 NUMERICS = [str(j) for j in xrange(10)]
+INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
+OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
+
+
+class FoldersIter(BaseEnum):
+    NUMBERED = 0
+    UUID = 1
+
+
+class Parsers(BaseEnum):
+    KEY_VALUE_PARSER = 0
+    TEMPLATE_PARSER = 1
+    CUSTOM_CALLABLE = 2
 
 
 class DiscFromExe(MDODiscipline):
@@ -66,124 +74,144 @@ class DiscFromExe(MDODiscipline):
     :mod:`~gemseo.wrappers.template_grammar_editor` to open a GUI.
 
 
-    It requires the creation of templates for input and output file,
-    for instance, from the following input JSON file:
+     It requires the creation of templates for input and output file,
+     for instance, from the following input JSON file:
 
-    .. code::
+     .. code::
 
-       {
-       "a": 1.01515112125,
-       "b": 2.00151511213,
-       "c": 3.00151511213
-       }
+        {
+        "a": 1.01515112125,
+        "b": 2.00151511213,
+        "c": 3.00151511213
+        }
 
-    A template that declares the inputs must be generated under this format,
-    where "a" is the name of the input, and "1.0" is the default input.
-    GEMSEO_INPUT declares an input, GEMSEO_OUTPUT declares an output, similarly.
+     A template that declares the inputs must be generated under this format,
+     where "a" is the name of the input, and "1.0" is the default input.
+     GEMSEO_INPUT declares an input, GEMSEO_OUTPUT declares an output, similarly.
 
-    .. code::
+     .. code::
 
-       {
-       "a": GEMSEO_INPUT{a::1.0},
-       "b": GEMSEO_INPUT{b::2.0},
-       "c": GEMSEO_INPUT{c::3.0}
-       }
+        {
+        "a": GEMSEO_INPUT{a::1.0},
+        "b": GEMSEO_INPUT{b::2.0},
+        "c": GEMSEO_INPUT{c::3.0}
+        }
 
     Current limitations :
 
-    - Only one input and one output file, otherwise, inherit from this class
-      and modify the parsers.
-      Only limited input writing and output parser strategies
-      are implemented. To change that, you can pass custom parsing and
-      writing methods to the constructor.
+    - Only one input and one output file, otherwise,
+     inherit from this class and modify the parsers.
+     Only limited input writing and output parser strategies
+     are implemented. To change that, you can pass custom parsing and
+     writing methods to the constructor.
     - The only limitation in the current file format is that
-      it must be a plain text file and not a binary file.
-      In this case, the way of interfacing it is
-      to provide a specific parser to the DiscFromExe,
-      with the write_input_file_method
-      and parse_outfile_method arguments of the constructor.
-    """
+     it must be a plain text file and not a binary file.
+     In this case, the way of interfacing it is
+     to provide a specific parser to the DiscFromExe,
+     with the write_input_file_method
+     and parse_outfile_method arguments of the constructor.
 
-    NUMBERED = "numbered"
-    UUID = "uuid"
-    KEY_VALUE_PARSER = "KEY_VALUE_PARSER"
-    TEMPLATE_PARSER = "TEMPLATE_PARSER"
+    Attributes:
+        input_template (str): The path to the input template file.
+        ouput_template (str): The path to the output template file.
+        input_filename (str): The name of the input file.
+        output_filename (str): The name of the ouput file.
+        executable_command (str): The executable command.
+        parse_outfile (Callable[Mapping[str, Tuple[int]], Sequence[str]]):
+            The function used to parse the output file.
+        write_input_file
+            (Callable[str, Mapping[str, ndarray], Mapping[str, Tuple[int]], Sequence[int], str):
+            The function used to write the input file.
+        folder_iter (str): The method to be used to name new execution directories.
+        output_folder_basepath (str): The base path of the execution directories.
+        data_processor (DataProcessor): A data processor to be used before the execution
+            of the discipline.
+    """
 
     def __init__(
         self,
-        input_template,
-        output_template,
-        output_folder_basepath,
-        executable_command,
-        input_filename,
-        output_filename,
-        folders_iter=NUMBERED,
-        name=None,
-        parse_outfile_method=TEMPLATE_PARSER,
-        write_input_file_method=None,
-        parse_out_separator="=",
-    ):
-        """Constructor.
-
-        Create the discipline from the inputs, outputs wrapper and
-        the executable command.
-
-        :param str input_template: path to the input file template.
-            The input locations in the file are marked
-            by GEMSEO_INPUT{input_name::1.0},
-            where "input_name" is the input name, and 1.0 is here
-            the default input
-        :param str output_template: path to the output file template.
-            The input locations in the file are marked
-            by GEMSEO_OUTPUT{output_name::1.0},
-            where "output_name" is the input name
-        :param str output_folder_basepath: path to the output folder,
-            in which the executions will be performed
-        :param str executable_command: command to run the executable.
-            Will be called through a system call.
-            Example: "python myscript.py -i input.txt -o output.txt
-        :param str input_filename: name of the input file.
-            This will determine the name
-            of the input file generated in the output folder.
-            Example "input.txt"
-        :param str output_filename: name of the output file.
-            This will determine the name
-            of the output file generated in the output folder.
-            Example "output.txt"
-        :param str folders_iter: type of unique identifiers for the output
-            folders. If NUMBERED the generated output folders
-            will be "output_folder_basepath"+str(i+1),
-            where i is the maximum value of the already existing
-             "output_folder_basepath"+str(i) folders.
-            Otherwise, a unique number based on the UUID function is
-            generated. This last option shall be used if multiple MDO
-            processes are runned in the same work directory.
-        :param str parse_outfile_method: optional method that can be provided
-            by the user to parse the output file. To see the signature of
-            the method, see the parse_outfile method of this file.
-        :param str parse_out_separator: if the KEY_VALUE_PARSER is used as
-            output parser, specify the separator key (default : "=").
-        :param str write_input_file_method: method to write the input file,
-            if None, use this modules' write_input_file. To see the signature
-            of the method, see the write_input_file method of this file.
+        input_template,  # type: str
+        output_template,  # type: str
+        output_folder_basepath,  # type: str
+        executable_command,  # type: str
+        input_filename,  # type: str
+        output_filename,  # type: str
+        folders_iter=FoldersIter.NUMBERED,  # type: Union[str, FoldersIter]
+        name=None,  # type: Optional[str]
+        parse_outfile_method=Parsers.TEMPLATE_PARSER,  # type: Union[str, Parsers]
+        write_input_file_method=None,  # type: Optional[str]
+        parse_out_separator="=",  # type: str
+        use_shell=True,  # type: bool
+    ):  # type: (...) -> None
         """
+        Args:
+            input_template: The path to the input file template.
+                The input locations in the file are marked
+                by GEMSEO_INPUT{input_name::1.0},
+                where "input_name" is the input name, and 1.0 is here
+                the default input.
+            output_template: The path to the output file template.
+                The input locations in the file are marked
+                by GEMSEO_OUTPUT{output_name::1.0},
+                where "output_name" is the input name.
+            output_folcer_basepath: The path to the output folder,
+                in which the executions will be performed.
+            executable_command: The command to run the executable.
+                Will be called through a system call.
+                Example: "python myscript.py -i input.txt -o output.txt
+            input_filename: The name of the input file.
+                This will determine the name
+                of the input file generated in the output folder.
+                Example "input.txt".
+            output_filename: The name of the output file.
+                This will determine the name
+                of the output file generated in the output folder.
+                Example "output.txt".
+            folders_iter (Union[str, FoldersIter]: The type of unique identifiers
+                for the output folders. If NUMBERED the generated output folders
+                will be "output_folder_basepath"+str(i+1),
+                where i is the maximum value of the already existing
+                "output_folder_basepath"+str(i) folders.
+                Otherwise, a unique number based on the UUID function is
+                generated. This last option shall be used if multiple MDO
+                processes are runned in the same work directory.
+            name: the name of the discipline. If None,
+                use the class name.
+            parse_outfile_method: The optional method that can be provided
+                by the user to parse the output file. To see the signature of
+                the method, see the parse_outfile method of this file.
+                If the KEY_VALUE_PARSER is used as
+                output parser, specify the separator key (default : "=").
+            write_input_file_method: The method to write the input file.
+                If None, use this modules' write_input_file. To see the signature
+                of the method, see the write_input_file method of this file.
+            parse_out_separator: The separator used for the output parser.
+            use_shell: If True, run the command using the default shell. Otherwise,
+                run directly the command.
 
+        Raises:
+            TypeError: If the provided write_input_file_method is not callable.
+        """
         super(DiscFromExe, self).__init__(name=name)
         self.input_template = input_template
         self.output_template = output_template
         self.input_filename = input_filename
         self.output_filename = output_filename
         self.executable_command = executable_command
+        self.__use_shell = use_shell
 
-        use_template_parse = parse_outfile_method == self.TEMPLATE_PARSER
+        use_template_parse = parse_outfile_method == Parsers.TEMPLATE_PARSER
         if parse_outfile_method is None or use_template_parse:
             self.parse_outfile = parse_outfile
-        elif parse_outfile_method == self.KEY_VALUE_PARSER:
+            self._parse_outfile_method = Parsers.TEMPLATE_PARSER
+        elif parse_outfile_method == Parsers.KEY_VALUE_PARSER:
             self.parse_outfile = lambda a, b: parse_key_value_file(
                 a, b, parse_out_separator
             )
+            self._parse_outfile_method = Parsers.KEY_VALUE_PARSER
         else:
             self.parse_outfile = parse_outfile_method
+            self._parse_outfile_method = Parsers.CUSTOM_CALLABLE
 
         if not callable(self.parse_outfile):
             raise TypeError("The parse_outfile_method must be callable")
@@ -193,9 +221,14 @@ class DiscFromExe(MDODiscipline):
         if not callable(self.write_input_file):
             raise TypeError("The write_input_file_method must be callable")
 
-        self.lock = Lock()
+        self.__lock = Lock()
+
+        self.__folders_iter = None
         self.folders_iter = folders_iter
+
         self.output_folder_basepath = output_folder_basepath
+
+        self.__check_basepath_on_windows()
 
         self._out_pos = None
         self._in_dict = None
@@ -204,30 +237,69 @@ class DiscFromExe(MDODiscipline):
         self._out_lines = None
 
         n_dirs = self._get_max_outdir()
-        self.counter = Manager().Value("i", n_dirs)
+        self._counter = Manager().Value("i", n_dirs)
 
         self.data_processor = FloatDataProcessor()
 
-        self._parse_templates()
+        self.__parse_templates_and_set_grammars()
 
-    def _parse_templates(self):
-        """Parse the templates.
+    @property
+    def folders_iter(self):  # type: (...) -> FoldersIter
+        """Getter/Setter for folders_iter.
 
-        Parse the templates and:
-            Initialize the grammars
-            Initialize the attributes : self._in_lines, self._out_lines,
-            self._out_pos, self._out_pos
-            self.default_inputs
+        The setter will check that the value provided for folder_iter is valid.
+        This check is done by checking its presence in FOLDERS_ITER.
+
+        Raises:
+            ValueError: If the value provided to the setter is not present
+                in the accepted list of folders_iters list.
         """
+        return self.__folders_iter
+
+    @folders_iter.setter
+    def folders_iter(
+        self,
+        value,  # type: Union[str, FoldersIter]
+    ):  # type: (...) -> None
+        if value not in FoldersIter:
+            msg = "{} is not a valid folder_iter value.".format(value)
+            raise ValueError(msg)
+        self.__folders_iter = FoldersIter.get_member_from_name(value)
+
+    def __check_basepath_on_windows(self):  # type: (...) -> None
+        """Check that the basepath can be used.
+
+        If the user use shell=True under Windows with a basepath
+            that is on a network location, raise an error.
+
+        Raises:
+            ValueError: The basepath is located on a network location
+                and cannot be run with cmd.exe.
+        """
+        if sys.platform.startswith("win") and self.__use_shell:
+            resolved_basepath = Path(self.output_folder_basepath).resolve()
+            if not resolved_basepath.parts[0].startswith("\\\\"):
+                return
+
+            msg = (
+                "A network basepath and use_shell cannot be used together"
+                " under Windows, as cmd.exe cannot change the current directory"
+                " to a UNC path."
+                " Please try use_shell=False or use a local base path."
+            )
+            raise ValueError(msg)
+
+    def __parse_templates_and_set_grammars(self):  # type: (...) -> None
+        """Parse the templates and set the grammar of the discipline."""
         with open(self.input_template, "r") as infile:
             self._in_lines = infile.readlines()
         with open(self.output_template, "r") as outfile:
             self._out_lines = outfile.readlines()
 
-        self._in_dict, self._in_pos = parse_template(self._in_lines, INPUT_GRAMMAR)
+        self._in_dict, self._in_pos = parse_template(self._in_lines, True)
         self.input_grammar.initialize_from_data_names(self._in_dict.keys())
 
-        out_dict, self._out_pos = parse_template(self._out_lines, OUTPUT_GRAMMAR)
+        out_dict, self._out_pos = parse_template(self._out_lines, False)
 
         self.output_grammar.initialize_from_data_names(out_dict.keys())
 
@@ -245,7 +317,7 @@ class DiscFromExe(MDODiscipline):
             k: array([literal_eval(v)]) for k, v in self._in_dict.items()
         }
 
-    def _run(self):
+    def _run(self):  # type: (...) -> None
         """Run the wrapper."""
         uuid = self.generate_uid()
 
@@ -258,8 +330,16 @@ class DiscFromExe(MDODiscipline):
             input_file_path, self.local_data, self._in_pos, self._in_lines
         )
 
+        if self.__use_shell:
+            executable_command = self.executable_command
+        else:
+            executable_command = self.executable_command.split()
+
         err = subprocess.call(
-            self.executable_command, shell=True, stderr=subprocess.STDOUT, cwd=out_dir
+            executable_command,
+            shell=self.__use_shell,
+            stderr=subprocess.STDOUT,
+            cwd=out_dir,
         )
         if err != 0:
             raise RuntimeError("Execution failed and returned error code : " + str(err))
@@ -276,61 +356,81 @@ class DiscFromExe(MDODiscipline):
         out_vals = self.parse_outfile(self._out_pos, out_lines)
         self.local_data.update(out_vals)
 
-    def generate_uid(self):
-        """Generate an UUID.
+    def generate_uid(self):  # type: (...) -> str
+        """Generate an unique identifier for the execution directory.
 
-        Generate a unique identifier for the current execution If the
-        folders_iter strategy is NUMBERED, the successive iterations are named
-        by an integer 1, 2, 3 etc. This is multiprocess safe.  Otherwise, a
-        unique number based on the UUID function is generated.  This last
-        option shall be used if multiple MDO processes are runned in the same
-        workdir.
+        Generate a unique identifier for the current execution.
+        If the folders_iter strategy is NUMBERED,
+        the successive iterations are named by an integer 1, 2, 3 etc.
+        This is multiprocess safe.
+        Otherwise, a unique number based on the UUID function is generated.
+        This last option shall be used if multiple MDO processes are runned
+        in the same workdir.
 
-        :returns: a unique string identifier
-        :rtype: str
+        Returns:
+            An unique string identifier (either a number or a UUID).
         """
-        if self.folders_iter == self.NUMBERED:
-            with self.lock:
-                self.counter.value += 1
-                return str(self.counter.value)
-        return str(uuid1()).split("-")[-1]
+        if self.folders_iter == FoldersIter.NUMBERED:
+            with self.__lock:
+                self._counter.value += 1
+                return str(self._counter.value)
+        elif self.folders_iter == FoldersIter.UUID:
+            return str(uuid1()).split("-")[-1]
+        else:
+            msg = (
+                "{} is not a valid method for creating the execution"
+                " directories.".format(self.folders_iter)
+            )
+            raise ValueError(msg)
 
-    def _list_out_dirs(self):
-        """List the directories in the output folder path."""
+    def _list_out_dirs(self):  # type: (...) -> List[str]
+        """Return the directories in the output folder path.
+
+        Returns:
+             The list of the directories in the output folder path.
+        """
         return listdir(self.output_folder_basepath)
 
-    def _get_max_outdir(self):
-        """Get the maximum current index of output folders."""
+    def _get_max_outdir(self):  # type: (...) -> int
+        """Get the maximum current index of output folders.
+
+        Returns:
+             The maximum index in the output folders.
+        """
         outs = list(self._list_out_dirs())
         if not outs:
             return 0
         return max([literal_eval(n) for n in outs])
 
 
-def parse_template(template_lines, grammar_type=INPUT_GRAMMAR):
+def parse_template(
+    template_lines,  # type: Sequence[str]
+    grammar_is_input,  # type: bool
+):  # type: (...) -> Tuple[Dict[str, ndarray], Dict[str, Tuple[int]]]
     """Parse the input or output template.
 
-    :param template_lines: list of lines of the file template
-        (result of file.readlines())
-    :param grammar_type: INPUT_GRAMMAR or OUTPUT_GRAMMAR
-    :returns: data_dict, pos_dict, where data_dict is the {name:value} dict,
-        where name is the data name and value is the parsed input or output
-        value in the template pos_dict in the format dictionary
-        containing the information from the template
-        format {data_name:(start,end,line_number)}, where
-        name is the name of the input
-        data, start is the index of the starting point
-        in the input file template.
+    Args:
+        template_lines: The lines of the template file.
+        grammar_is_input: True for an input template, False otherwise.
+
+    This function parses the input (or output) template.
+    It returns the tuple (data_dict, pos_dict), where:
+
+    - `data_dict` is the `{name:value}` dict:
+       - name is the data name
+       - value is the parsed input or output value in the template
+    - `pos_dict` describes the template format {data_name:(start,end,line_number)}:
+       - `data_name` is the name of the input data
+       - `start` is the index of the starting point in the input file template.
         This index is a line index (character number on the line)
-        end is the index of the end character in the template
-        line_number is the index of the line in the file
+       - `end` is the index of the end character in the template
+       - `line_number` is the index of the line in the file
+
+    Returns:
+        A data structure containing the parsed inpout or output template.
     """
-    if grammar_type == INPUT_GRAMMAR:
-        pattern_re = INPUT_RE
-    elif grammar_type == OUTPUT_GRAMMAR:
-        pattern_re = OUTPUT_RE
-    else:
-        raise ValueError("Unknown grammar type " + str(grammar_type))
+    pattern_re = INPUT_REGEX if grammar_is_input else OUTPUT_REGEX
+
     regex = re.compile(pattern_re)  # , re.MULTILINE
     data_dict = OrderedDict()
     pos_dict = OrderedDict()
@@ -343,7 +443,7 @@ def parse_template(template_lines, grammar_type=INPUT_GRAMMAR):
             val = spl[1]
             data_dict[name] = val
             # When input mode: erase the template value
-            if grammar_type == INPUT_GRAMMAR:
+            if grammar_is_input:
                 start, end = match.start(), match.end()
             else:
                 # In output mode : catch all
@@ -357,23 +457,25 @@ def parse_template(template_lines, grammar_type=INPUT_GRAMMAR):
 
 
 def write_input_file(
-    input_file_path, data, input_positions, input_lines, float_format="{:1.18g}"
-):
+    input_file_path,  # type: str
+    data,  # type: Mapping[str, ndarray]
+    input_positions,  # type: Mapping[str, Tuple[int]]
+    input_lines,  # type: Sequence[int]
+    float_format="{:1.18g}",  # type: str
+):  # type: (...) -> None
     """Write the input file from the input data.
 
-    :param input_file_path: absolute path to the file to be written
-    :param data: data dictionary, ie the local data of the discipline
-    :param input_positions: dictionary containing the information
-        from the template format {data_name:(start,end,line_number)}, where
-        name is the name of the input
-        data, start is the index of the starting point
-        in the input file template.
-        This index is a line index (character number on the line)
-        end is the index of the end character in the template
-        line_number is the index of the line in the file
-    :param input_lines: list of lines of the input file template
-        (result of file.readlines())
-    :param float_format: formating of the input data in the file
+    Args:
+        input_file_path: The absolute path to the file to be written.
+        data: The local data of the discipline.
+        input_positions: The information from the template
+         format {data_name:(start,end,line_number)}, where name is the name of the input data,
+         start is the index of the starting point in the input file template.
+         This index is a line index (character number on the line).
+         end is the index of the end character in the template,
+         line_number is the index of the line in the file.
+        input_lines: The lines of the input file template.
+        float_format: The formating of the input data in the file (Default value = "{:1.18g}").
     """
     f_text = deepcopy(input_lines)
     for name, pos in input_positions.items():
@@ -386,13 +488,19 @@ def write_input_file(
         infile_o.writelines(f_text)
 
 
-def parse_key_value_file(_, out_lines, separator="="):
+def parse_key_value_file(
+    _,
+    out_lines,  # type: Sequence[str]
+    separator="=",  # type: str
+):  # type: (...) -> Dict[str, ndarray]
     """Parse the output file from the expected text positions.
 
-    :param out_lines: list of lines of the output file template
-        (result of file.readlines())
-    :param separator: separating characters of the key=value format
-    :returns: the values dictionary in dict of numpy array formats
+    Args:
+        out_lines: The lines of the output file template.
+        separator: The separating characters of the key=value format.
+
+    Returns:
+        The output data in `.MDODiscipline` friendly data structure (e.g. Dict[str, ndarray]).
     """
     data = {}
     for line in out_lines:
@@ -409,20 +517,26 @@ def parse_key_value_file(_, out_lines, separator="="):
     return data
 
 
-def parse_outfile(output_positions, out_lines):
+def parse_outfile(
+    output_positions,  # type: Mapping[str, Tuple[int]]
+    out_lines,  # type: Sequence[str]
+):  # type: (...) -> Dict[str, ndarray]
     """Parse the output file from the expected text positions.
 
-    :param output_positions: dictionary containing the information
-        from the template format {data_name:(start,end,dictionary)}, where
-        name is the name of the output
-        data, start is the index of the starting point
-        in the input file template.
-        This index is a line index (character number on the line)
-        end is the index of the end character in the template
-        line_number is the index of the line in the file
-    :param out_lines: list of lines of the output file template
-        (result of file.readlines())
-    :returns: the values dictionary in dict of numpy array formats
+    Args:
+        output_positions: The output position for each data name.
+         The information from the template format
+         {data_name:(start,end,dictionary)}, where
+         name is the name of the output
+         data, start is the index of the starting point
+         in the input file template.
+         This index is a line index (character number on the line)
+         end is the index of the end character in the template
+         line_number is the index of the line in the file
+        out_lines: The lines of the output file template.
+
+    Returns:
+        The output data in `.MDODiscipline` friendly data structure (e.g. Dict[str, ndarray]).
     """
     values = {}
     for name, pos in output_positions.items():

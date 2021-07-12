@@ -19,7 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 import timeit
@@ -516,11 +516,9 @@ class TestOptProblem(unittest.TestCase):
 
         def check_pb(imp_pb):
             assert exists(file_path)
-            repr_pb = str(problem)
-            repr_sol = str(problem.solution)
             imp_pb = OptimizationProblem.import_hdf(file_path)
-            assert str(imp_pb) == repr_pb
-            assert str(imp_pb.solution) == repr_sol
+            assert str(imp_pb) == str(problem)
+            assert str(imp_pb.solution) == str(problem.solution)
             assert exists(file_path)
 
             assert problem.get_eq_cstr_total_dim() == 1
@@ -656,3 +654,10 @@ class TestOptProblem(unittest.TestCase):
         obs_data = func_data.get("design norm")
         assert obs_data is not None
         assert func_data["design norm"][:, 0].tolist() == iter_norms
+        assert dataset.GRADIENT_GROUP not in dataset.groups
+        dataset = problem.export_to_dataset("dataset", export_gradients=True)
+        assert dataset.GRADIENT_GROUP in dataset.groups
+        name = Database.get_gradient_name("pow2")
+        n_iter = len(database)
+        n_var = problem.design_space.dimension
+        assert dataset.get_data_by_names(name, as_dict=False).shape == (n_iter, n_var)

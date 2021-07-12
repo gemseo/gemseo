@@ -20,10 +20,9 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PDFO optimization library wrapper, see `PDFO website <https://www.pdfo.net/>`_."""
-from __future__ import absolute_import, division, print_function
+from __future__ import division
 
 import logging
-from builtins import super, zip
 
 from numpy import inf, isfinite, real
 from pdfo import pdfo

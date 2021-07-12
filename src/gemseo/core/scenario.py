@@ -19,15 +19,15 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import inspect
 import logging
-from builtins import str, super
 from os import remove
 from os.path import abspath, basename
 from os.path import dirname as pdirname
 from os.path import exists
+from typing import Mapping, Union
 
 from six import string_types
 
@@ -46,6 +46,8 @@ Base class for all Scenarios
 
 
 LOGGER = logging.getLogger(__name__)
+
+ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, float]]]]
 
 
 class Scenario(MDODiscipline):
@@ -230,6 +232,25 @@ class Scenario(MDODiscipline):
             value=value,
             positive=positive,
             **kwargs
+        )
+
+    def add_observable(self, output_names, observable_name=None, discipline=None):
+        """Add observable to the optimization problem. The repartition strategy of the
+        observable is defined in the formulation class. When more than one output name
+        is provided, the observable function returns a concatenated array of the output
+        values.
+
+        :param output_names: names of the outputs to observe
+        :param observable_name: name of the observable, optional. If None, the
+            output name is used by default.
+        :type observable_name: str
+        :param discipline: if None, detected from inner disciplines, otherwise
+            the discipline used to build the function
+            (Default value = None)
+        :type discipline: MDODiscipline
+        """
+        return self.formulation.add_observable(
+            output_names, observable_name, discipline
         )
 
     def _init_formulation(

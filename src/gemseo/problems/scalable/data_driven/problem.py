@@ -46,7 +46,7 @@ on the problem dimension.
 .. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import os
@@ -161,7 +161,6 @@ class ScalableProblem(object):
     def plot_coupling_graph(self):
         """Plot a coupling graph."""
         generate_coupling_graph(self.scaled_disciplines)
-        os.remove("coupling_graph.gv")
 
     def plot_1d_interpolations(
         self, save=True, show=False, step=0.01, varnames=None, directory=".", png=False
@@ -294,7 +293,7 @@ class ScalableProblem(object):
         sub_scenarios = []
         sub_inputs = []
         for discipline in st_cpl_disciplines:
-            cplt_disciplines = list(set(disciplines) - set([discipline]))
+            cplt_disciplines = list(set(disciplines) - {discipline})
             sub_disciplines = [discipline] + wk_cpl_disciplines
             design_space = DesignSpace()
             inputs = get_all_inputs([discipline])

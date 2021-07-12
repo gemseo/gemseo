@@ -51,15 +51,15 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Radar(DatasetPlot):
@@ -67,9 +67,9 @@ class Radar(DatasetPlot):
 
     def _plot(
         self,
-        properties,  # type: Mapping
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
         classifier,  # type: str
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             classifier: The name of the variable to group the data.
@@ -89,5 +89,4 @@ class Radar(DatasetPlot):
                     dataframe.loc[dataframe[column] == key, column] = value
         dataframe.columns = self._get_variables_names(dataframe)
         radviz(dataframe, label)
-        fig = plt.gcf()
-        return fig
+        return [plt.gcf()]

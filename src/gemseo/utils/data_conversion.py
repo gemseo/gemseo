@@ -19,9 +19,8 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import str
 from copy import deepcopy
 from functools import reduce as f_reduce
 

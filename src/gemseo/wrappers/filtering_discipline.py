@@ -83,7 +83,8 @@ class FilteringDiscipline(MDODiscipline):
             for input_name in self.get_input_data_names():
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
-    def __filter(self, data, keys):
+    @staticmethod
+    def __filter(data, keys):
         """Filter a data dictionary by names.
 
         :param dict data: data dictionary.

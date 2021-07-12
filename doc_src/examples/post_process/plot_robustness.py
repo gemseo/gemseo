@@ -27,7 +27,9 @@ Robustness
 In this example, we illustrate the use of the :class:`.Robustness` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -91,4 +93,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # deviation which is a percentage of the mean passed in option (default: 1%)
 # and plot the corresponding output boxplot. plots any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
-scenario.post_process("Robustness", save=False, show=True)
+scenario.post_process("Robustness", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

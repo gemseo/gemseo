@@ -1,2 +1,4 @@
 pytest
 pytest-cov
+pytest-xdist
+backports.unittest-mock ; python_version<'3'

@@ -21,7 +21,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning classification algorithm module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange, zeros
@@ -31,8 +31,8 @@ from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
 
 @pytest.fixture
-def dataset():
-    """Build an input-output dataset."""
+def dataset():  # type: (...) -> Dataset
+    """A dataset used to train the classification algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}

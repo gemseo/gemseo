@@ -20,10 +20,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 from os.path import dirname, join
+
+from numpy import array
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 
@@ -41,7 +43,7 @@ class TestCustomLib(unittest.TestCase):
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
-    def test_missing_file_except(self):
+    def test_missing_option_except(self):
         """"""
         dim = 3
         self.assertRaises(
@@ -85,6 +87,27 @@ class TestCustomLib(unittest.TestCase):
             self.DOE_LIB_NAME,
             dim=dim,
             doe_file=doe_file,
+        )
+
+    def test_array(self):
+        """"""
+        dim = 3
+        samples = array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]])
+        doe_library = DOELibraryTestBase.generate_one_test(
+            self.DOE_LIB_NAME, dim=dim, samples=samples
+        )
+        samples = doe_library.samples
+        self.assertEqual(samples.shape, (2, 3))
+
+    def test_array_file_error(self):
+        """"""
+        self.assertRaises(
+            ValueError,
+            DOELibraryTestBase.generate_one_test,
+            self.DOE_LIB_NAME,
+            dim=3,
+            doe_file="foo.txt",
+            samples=array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]]),
         )
 
 

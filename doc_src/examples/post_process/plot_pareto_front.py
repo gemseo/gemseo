@@ -27,7 +27,9 @@ Pareto front
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -88,4 +90,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # 2 objectives, plots in red the locally non dominated points for the current
 # two objectives, plots in green the globally (all objectives) Pareto optimal
 # points.
-scenario.post_process("ParetoFront", objectives=["g_3", "-y_4"], save=False, show=True)
+scenario.post_process("ParetoFront", objectives=["g_3", "-y_4"], save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

@@ -23,10 +23,9 @@
 The Rosenbrock analytic problem
 *******************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, str, super
 
 from numpy import array, atleast_2d, ones, zeros
 from scipy.optimize import rosen, rosen_der

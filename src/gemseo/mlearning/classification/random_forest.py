@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Random forest classification model
-==================================
+"""The random forest algorithm for classification.
 
 The random forest classification model uses averaging methods on an ensemble
 of decision trees.
@@ -32,47 +30,39 @@ The classifier relies on the RandomForestClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Iterable, Optional, Union
 
-from numpy import stack
+from numpy import ndarray, stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.core.ml_algo import TransformerType
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RandomForestClassifier(MLClassificationAlgo):
-    """Random forest classification algorithm."""
+    """The random forest classification algorithm."""
 
     LIBRARY = "scikit-learn"
     ABBR = "RandomForestClassifier"
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        n_estimators=100,
-        **parameters
-    ):
-        """Constructor.
-
-        :param data: learning dataset.
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param n_estimators: number of trees in the forest.
-        :type n_estimators: int
-        :param parameters: other keyword arguments for sklearn rand. forest.
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        n_estimators=100,  # type: int
+        **parameters  # type: Optional[Union[int,float,bool,str]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            n_estimators: The number of trees in the forest.
         """
         super(RandomForestClassifier, self).__init__(
             data,
@@ -84,37 +74,28 @@ class RandomForestClassifier(MLClassificationAlgo):
         )
         self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
 
-    def _fit(self, input_data, output_data):
-        """Fit the classification model.
-
-        :param ndarray input_data: input data (2D).
-        :param ndarray(int) output_data: output data.
-        """
+    def _fit(
+        self,
+        input_data,  # type:ndarray
+        output_data,  # type:ndarray
+    ):  # type: (...) -> None
         if output_data.shape[1] == 1:
             output_data = output_data.ravel()
         self.algo.fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output data from input data.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: output data (n_samples, n_outputs).
-        :rtype: ndarray(int)
-        """
+    def _predict(
+        self,
+        input_data,  # type:ndarray
+    ):  # type: (...) -> ndarray
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
             output_data = output_data[:, None]
         return output_data
 
-    def _predict_proba_soft(self, input_data):
-        """Predict probability of belonging to each class.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: probabilities of belonging to each class
-            (n_samples, n_outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
-        """
+    def _predict_proba_soft(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...)-> ndarray
         probas = self.algo.predict_proba(input_data)
         if len(probas[0].shape) == 1:
             probas = probas[..., None]

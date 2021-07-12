@@ -49,9 +49,9 @@ by means of the :code:`classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping, Optional
+from typing import List, Mapping, Optional
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -75,7 +75,7 @@ class ScatterMatrix(DatasetPlot):
         kde=False,  # type: bool
         size=25,  # type: int
         marker="o",  # type: str
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             classifier: The name of the variable to build the cluster.
@@ -105,8 +105,7 @@ class ScatterMatrix(DatasetPlot):
             self._scatter_matrix_for_group(
                 classifier, dataframe, diagonal, size, marker, figsize_x, figsize_y
             )
-        fig = plt.gcf()
-        return fig
+        return [plt.gcf()]
 
     def _scatter_matrix_for_group(
         self,

@@ -20,17 +20,17 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import os
 from os.path import dirname, join
 
 import numpy as np
 import pytest
 from numpy import array
 
-from gemseo.core.grammar import InvalidDataException, SimpleGrammar
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 
 def get_indict():
@@ -42,11 +42,6 @@ def get_indict():
         "Navier-Stokes": True,
         "bounds": np.array([1.0, 2.0]),
     }
-
-
-def test_instanciation():
-    """"""
-    SimpleGrammar(name="empty")
 
 
 def get_base_grammar_from_inherit():
@@ -180,19 +175,6 @@ def test_invalid_data():
     gram.data_types = ["x"]
     with pytest.raises(TypeError):
         gram.load_data({"X": 1.1})
-
-
-def test_default_data():
-    """"""
-    fpath = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "data", "grammar_test2.json"
-    )
-    assert os.path.exists(fpath)
-    gram = SimpleGrammar(name="toto")
-    gram.defaults["X"] = 1
-    d = gram.load_data({})
-    assert "X" in d
-    assert d["X"] == 1
 
 
 def test_is_alldata_exist():

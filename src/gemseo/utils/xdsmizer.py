@@ -33,7 +33,7 @@ A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matri
 the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
 Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import webbrowser
@@ -69,6 +69,8 @@ USER_NAME = USER_ID = "_U_"
 EdgeType = Dict[str, Union[MDODiscipline, List[str]]]
 NodeType = Dict[str, str]
 IdsType = Any
+
+XdsmType = Dict[str, Any]
 
 
 class XDSMizer(object):
@@ -195,7 +197,7 @@ class XDSMizer(object):
         html_output=True,  # type: bool
         json_output=False,  # type: bool
         open_browser=False,  # type: bool
-    ):  # type: (...) -> Dict[str,Any]
+    ):  # type: (...) -> XdsmType
         """Generate a XDSM diagram from the process.
 
         By default,

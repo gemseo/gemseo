@@ -19,35 +19,204 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import unittest
-from os.path import exists
+from __future__ import division, unicode_literals
 
 import pytest
+from matplotlib.testing.decorators import image_comparison
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
+from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import PY2, mock
+
+# - the kwargs to be passed to ParetoFront._plot
+# - the expected file names without extension to be compared
+TEST_PARAMETERS = {
+    "default": ({}, ["ParetoFront"]),
+}
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestParetoFrontPost(unittest.TestCase):
-    def test_pareto(self):
-        factory = PostFactory()
-        if not factory.is_available("ScatterPlotMatrix"):
-            return
+TEST_PARAMETERS_BINHKORN = {
+    "show_non_feasible_True": (
+        {"show_non_feasible": True},
+        ["ParetoFront_BinhKorn_NonFeasible_True"],
+    ),
+    "show_non_feasible_False": (
+        {"show_non_feasible": False},
+        ["ParetoFront_BinhKorn_NonFeasible_False"],
+    ),
+}
 
-        problem = Power2()
-        DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
-        file_path = "power"
-        post = factory.execute(
+IS_SCATTER_PLOT_NOT_AVAIL = not PostFactory().is_available("ScatterPlotMatrix")
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
+@pytest.mark.skipif(
+    IS_SCATTER_PLOT_NOT_AVAIL,
+    reason="ScatterPlotMatrix plot is not available.",
+)
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_pareto(
+    tmp_wd,
+    kwargs,
+    baseline_images,
+    pyplot_close_all,
+):
+    """Test the generation of Pareto front plots."""
+    problem = Power2()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    # TODO: remove pyplot.close patch when it will be possible to disable
+    #  automatic fig close after save_and_show.
+    with mock.patch("matplotlib.pyplot.close"):
+        PostFactory().execute(
             problem,
             "ParetoFront",
             save=True,
-            file_path=file_path,
+            show=False,
+            file_path="power",
             objectives=problem.get_all_functions_names(),
+            **kwargs
         )
-        assert len(post.output_files) == 1
-        for outf in post.output_files:
-            assert exists(outf)
+
+
+def test_pareto_minimize(
+    tmp_wd,
+):
+    """Test the generation of Pareto front plots."""
+    problem = Power2()
+    problem.change_objective_sign()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    # TODO: remove pyplot.close patch when it will be possible to disable
+    #  automatic fig close after save_and_show.
+    PostFactory().execute(
+        problem,
+        "ParetoFront",
+        save=True,
+        show=False,
+        file_path="power",
+        objectives=["pow2", "ineq1"],
+    )
+
+
+def test_pareto_incorrect_objective_list():
+    """Test that an error is raised if the objective labels len is not consistent."""
+    problem = Power2()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    msg = "objective_labels shall have the same dimension as vname."
+    with pytest.raises(ValueError, match=msg):
+        PostFactory().execute(
+            problem,
+            "ParetoFront",
+            show=False,
+            save=False,
+            objectives=problem.get_all_functions_names(),
+            objectives_labels=["fake_label"],
+            file_path="power",
+        )
+
+
+def test_pareto_incorrect_objective_names():
+    """Test that an error is raised if the objective labels len is not consistent."""
+    problem = Power2()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    msg = (
+        "Cannot build Pareto front, Function \\w* is neither among"
+        " optimization problem functions:.*\\.$"
+    )
+    with pytest.raises(ValueError, match=msg):
+        PostFactory().execute(
+            problem,
+            "ParetoFront",
+            show=False,
+            save=False,
+            objectives=["fake_obj"],
+            file_path="power",
+        )
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
+@pytest.mark.skipif(
+    IS_SCATTER_PLOT_NOT_AVAIL,
+    reason="ScatterPlotMatrix plot is not available.",
+)
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    TEST_PARAMETERS_BINHKORN.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS_BINHKORN.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_pareto_binhkorn(
+    tmp_wd,
+    kwargs,
+    baseline_images,
+    pyplot_close_all,
+):
+    """Test the generation of Pareto front plots using the Binh-Korn problem."""
+    problem = BinhKorn()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    with mock.patch("matplotlib.pyplot.close"):
+        PostFactory().execute(
+            problem,
+            "ParetoFront",
+            save=True,
+            show=False,
+            file_path="binh_korn",
+            objectives=["compute_binhkorn"],
+            **kwargs
+        )
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
+@pytest.mark.skipif(
+    IS_SCATTER_PLOT_NOT_AVAIL,
+    reason="ScatterPlotMatrix plot is not available.",
+)
+@image_comparison(["binh_korn_design_variable"], extensions=["png"])
+def test_pareto_binhkorn_design_variable(
+    tmp_wd,
+    pyplot_close_all,
+):
+    """Test the generation of Pareto front plots using the Binh-Korn problem."""
+    problem = BinhKorn()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    with mock.patch("matplotlib.pyplot.close"):
+        PostFactory().execute(
+            problem,
+            "ParetoFront",
+            save=True,
+            show=False,
+            file_path="binh_korn_design_variable",
+            objectives=["x", "compute_binhkorn"],
+            objectives_labels=["xx", "compute_binhkorn1", "compute_binhkorn2"],
+        )
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
+@pytest.mark.skipif(
+    IS_SCATTER_PLOT_NOT_AVAIL,
+    reason="ScatterPlotMatrix plot is not available.",
+)
+@image_comparison(["binh_korn_no_obj"], extensions=["png"])
+def test_pareto_binhkorn_no_obj(
+    tmp_wd,
+    pyplot_close_all,
+):
+    """Test the generation of Pareto front plots using the Binh-Korn problem."""
+    problem = BinhKorn()
+    DOEFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    with mock.patch("matplotlib.pyplot.close"):
+        PostFactory().execute(
+            problem,
+            "ParetoFront",
+            save=True,
+            show=False,
+            file_path="binh_korn_no_obj",
+        )

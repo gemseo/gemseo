@@ -1,14 +1,14 @@
 {
     "name": "Sellar1_output",
-    "required": ["y_0","r_0"],
+    "required": ["y_1","r_1"],
     "properties": {
-        "y_0": {
+        "y_1": {
             "items": {
                 "type": "number"
             },
             "type": "array"
         },
-        "r_0": {
+        "r_1": {
             "items": {
                 "type": "number"
             },

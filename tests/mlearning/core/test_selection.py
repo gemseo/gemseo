@@ -20,7 +20,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm selection module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import numpy as np
 import pytest
@@ -36,8 +36,8 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 @pytest.fixture
-def dataset():
-    """Create dataset with two variables."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T
     variables = ["x_1", "x_2"]
@@ -100,8 +100,8 @@ def test_select(dataset):
     """Test select method."""
     measure = MSEMeasure
     selector = MLAlgoSelection(dataset, measure)
-    selector.add_candidate("LinearRegression")
     selector.add_candidate("PolynomialRegression", degree=[1, 2])
+    selector.add_candidate("LinearRegression")
     selector.add_candidate("RBFRegression", smooth=[0, 0.1, 1, 10])
     algo = selector.select(True)
     assert isinstance(algo, tuple)

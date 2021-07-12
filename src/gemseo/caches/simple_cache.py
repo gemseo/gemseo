@@ -23,7 +23,7 @@
 Caching module to avoid multiple evaluations of a discipline
 ************************************************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy

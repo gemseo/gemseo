@@ -22,7 +22,7 @@ Machine learning algorithm selection example
 In this example we use the :class:`.MLAlgoSelection` class to perform a grid
 search over different algorithms and hyperparameter values.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
 import numpy as np

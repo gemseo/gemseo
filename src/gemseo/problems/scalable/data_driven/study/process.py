@@ -47,11 +47,10 @@ the concept of scalability study:
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import numbers
-from builtins import int
 from copy import deepcopy
 
 from numpy import inf
@@ -199,7 +198,8 @@ class ScalabilityStudy(object):
         msg.add("Early stopping: {}", self.early_stopping)
         LOGGER.info("%s", msg)
 
-    def __mkdir(self, directory):
+    @staticmethod
+    def __mkdir(directory):
         """Create directory if not exist.
 
         :param Path directory: directory name.

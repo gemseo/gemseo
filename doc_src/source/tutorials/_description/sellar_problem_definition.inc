@@ -9,14 +9,15 @@
 .. math::
 
    \begin{aligned}
-   \text{minimize the objective function }&obj=x_{local}^2 + x_{shared,1} +y_0+e^{-y_1} \\
+   \text{minimize the objective function }&obj=x_{local}^2 + x_{shared,2}
+   +y_1^2+e^{-y_2} \\
    \text{with respect to the design variables }&x_{shared},\,x_{local} \\
    \text{subject to the general constraints }
    & c_1 \leq 0\\
    & c_2 \leq 0\\
    \text{subject to the bound constraints }
-   & -10 \leq x_{shared,0} \leq 10\\
-   & 0 \leq x_{shared,1} \leq 10\\
+   & -10 \leq x_{shared,1} \leq 10\\
+   & 0 \leq x_{shared,2} \leq 10\\
    & 0 \leq x_{local} \leq 10.
    \end{aligned}
 
@@ -24,18 +25,19 @@ where the coupling variables are
 
 .. math::
 
-	\text{Discipline 0: } y_0 = x_{shared,0}^2 + x_{shared,1} + x_{local} - 0.2\,y_1,
+    \text{Discipline 1: } y_1 = \sqrt{x_{shared,1}^2 + x_{shared,2} +
+     x_{local} - 0.2\,y_2},
 
 and
 
 .. math::
 
-	\text{Discipline 1: }y_1 = \sqrt{y_0} + x_{shared,0} + x_{shared,1}.
+    \text{Discipline 2: }y_2 = |y_1| + x_{shared,1} + x_{shared,2}.
 
 and where the general constraints are
 
 .. math::
 
-   c_0 = 1-y_0/{3.16}
+   c_1 = 3.16 - y_1^2
 
-   c_1 = y_1/{24.} - 1
+   c_2 = y_2 - 24.

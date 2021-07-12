@@ -1,21 +1,7 @@
 {
 	"name": "VariableInfluence_options",
-	"required": [
-		"save"
-	],
+	"required": [],
 	"properties": {
-		"save": {
-			"type": "boolean"
-		},
-		"show": {
-			"type": "boolean"
-		},
-		"file_path": {
-			"type": "string"
-		},
-        "extension": {
-            "type": "string"
-        },
 		"figsize_x": {
 			"type": "number",
 			"minimum": 4

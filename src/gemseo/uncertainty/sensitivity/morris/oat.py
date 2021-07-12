@@ -48,10 +48,9 @@ From these elementary effects, we can compare their absolute values
 :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import super
 from copy import deepcopy
 from typing import Dict, Mapping, Tuple
 

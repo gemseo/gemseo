@@ -23,7 +23,7 @@
 Caching module to avoid multiple evaluations of a discipline
 ************************************************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from os.path import exists
@@ -36,9 +36,7 @@ from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, 
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import PY2
-from gemseo.utils.py23_compat import long as _long
-from gemseo.utils.py23_compat import string_array, string_dtype
+from gemseo.utils.py23_compat import PY2, long, string_array, string_dtype
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 LOGGER = logging.getLogger(__name__)
@@ -186,19 +184,17 @@ class HDF5Cache(AbstractFullCache):
         :return: input data, output data and jacobian.
         :rtype: dict
         """
-        h5file = h5py.File(self._hdf_file.hdf_file_path, "a")
-        datum = super(HDF5Cache, self).get_data(index, h5_open_file=h5file)
-        h5file.close()
+        with h5py.File(self._hdf_file.hdf_file_path, "a") as h5file:
+            datum = super(HDF5Cache, self).get_data(index, h5_open_file=h5file)
         return datum
 
     @synchronized
     def _get_all_data(self):
         """Same as _all_data() but first open a file, then pass the opened file to the
         generator and lastly, close the file."""
-        h5file = h5py.File(self._hdf_file.hdf_file_path, "a")
-        for data in self._all_data(h5_open_file=h5file):
-            yield data
-        h5file.close()
+        with h5py.File(self._hdf_file.hdf_file_path, "a") as h5file:
+            for data in self._all_data(h5_open_file=h5file):
+                yield data
 
 
 class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
@@ -261,9 +257,10 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
                         )
                     else:
                         io_group.create_dataset(data_name, data=to_real(val))
-        except (RuntimeError, OSError):
+
+        # IOError and RuntimeError are for python 2.7
+        except (RuntimeError, IOError, ValueError):
             h5file.close()
-            LOGGER.exception("")
             raise RuntimeError(
                 "Failed to cache dataset %s.%s.%s in file: %s",
                 hdf_node_path,
@@ -271,6 +268,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
                 group_name,
                 self.hdf_file_path,
             )
+
         if h5_open_file is None:
             h5file.close()
 
@@ -299,7 +297,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         data = {key: array(val) for key, val in values_group.items()}
         if group_name == self.INPUTS_GROUP:
             read_hash = number_dataset[self.HASH_TAG]
-            data_hash = _long(array(read_hash)[0])
+            data_hash = long(array(read_hash)[0])
         else:
             data_hash = None
 
@@ -344,9 +342,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         :param hdf_node_path: name of the main HDF group
         :returns: True if the group exists
         """
-        h5file = h5py.File(self.hdf_file_path, "r")
-        has_grp = self._has_group(group_number, group_name, hdf_node_path, h5file)
-        h5file.close()
+        with h5py.File(self.hdf_file_path, "r") as h5file:
+            has_grp = self._has_group(group_number, group_name, hdf_node_path, h5file)
         return has_grp
 
     def read_hashes(self, hashes_dict, hdf_node_path):
@@ -358,22 +355,29 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         """
         if not exists(self.hdf_file_path):
             return 0
+
         # We must lock so that no data is added to the cache meanwhile
-        h5file = h5py.File(self.hdf_file_path, "r")
-        node_group = h5file.get(hdf_node_path)
-        if node_group is None:
-            return 0
-        max_group = 0
-        for group_num, group in node_group.items():
-            group_num = int(group_num)
-            read_hash = group[self.HASH_TAG]
-            hash_value = _long(array(read_hash)[0])
-            get_hash = hashes_dict.get(hash_value)
-            if get_hash is None:
-                hashes_dict[hash_value] = array([group_num])
-            else:
-                hashes_dict[hash_value] = append(get_hash, array([group_num]))
-            max_group = max(max_group, group_num)
+        with h5py.File(self.hdf_file_path, "r") as h5file:
+            node_group = h5file.get(hdf_node_path)
+
+            if node_group is None:
+                return 0
+
+            max_group = 0
+
+            for group_num, group in node_group.items():
+                group_num = int(group_num)
+                read_hash = group[self.HASH_TAG]
+                hash_value = long(array(read_hash)[0])
+                get_hash = hashes_dict.get(hash_value)
+
+                if get_hash is None:
+                    hashes_dict[hash_value] = array([group_num])
+                else:
+                    hashes_dict[hash_value] = append(get_hash, array([group_num]))
+
+                max_group = max(max_group, group_num)
+
         return max_group
 
     def clear(self, hdf_node_path):
@@ -381,6 +385,5 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
         :param hdf_node_path: node path to clear
         """
-        h5file = h5py.File(self.hdf_file_path, "a")
-        del h5file[hdf_node_path]
-        h5file.close()
+        with h5py.File(self.hdf_file_path, "a") as h5file:
+            del h5file[hdf_node_path]

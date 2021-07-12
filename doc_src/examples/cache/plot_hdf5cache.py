@@ -26,7 +26,7 @@ HDF5 cache
 
 In this example, we will see how to use :class:`.HDF5Cache`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import array
 

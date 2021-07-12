@@ -35,11 +35,10 @@ variable property. Lastly, an instance of :class:`.DesignSpace` can be stored
 in a txt or HDF file.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
-from os.path import exists
 
 import h5py
 from numpy import abs as np_abs
@@ -68,7 +67,8 @@ from six import string_types
 
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.py23_compat import string_array, to_unicode_list
+from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.py23_compat import string_array, strings_to_unicode_list
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1078,68 +1078,56 @@ class DesignSpace(object):
         :param file_path: path to file to write
         :param append: if True, appends the data in the file
         """
-        if append:
-            mode = "a"
-        else:
-            mode = "w"
-        h5file = h5py.File(file_path, mode)
-        design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
-        design_vars_grp.create_dataset(
-            self.NAMES_GROUP, data=array(self.variables_names, dtype=string_)
-        )
-        for name in self.variables_names:
-            var_grp = design_vars_grp.require_group(name)
-            var_grp.create_dataset(self.SIZE_GROUP, data=self.variables_sizes[name])
-            l_b = self._lower_bounds.get(name)
-            if l_b is not None:
-                var_grp.create_dataset(self.LB_GROUP, data=l_b)
-            u_b = self._upper_bounds.get(name)
-            if u_b is not None:
-                var_grp.create_dataset(self.UB_GROUP, data=u_b)
-            var_type = self.variables_types[name]
-            if var_type is not None:
-                data_array = string_array(var_type)
-                dtype = data_array.dtype
-                var_grp.create_dataset(
-                    self.VAR_TYPE_GROUP, data=data_array, dtype=dtype
-                )
-            value = self._current_x.get(name)
-            if value is not None:
-                var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
-        h5file.close()
+        mode = "a" if append else "w"
+
+        with h5py.File(file_path, mode) as h5file:
+            design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
+            design_vars_grp.create_dataset(
+                self.NAMES_GROUP, data=array(self.variables_names, dtype=string_)
+            )
+
+            for name in self.variables_names:
+                var_grp = design_vars_grp.require_group(name)
+                var_grp.create_dataset(self.SIZE_GROUP, data=self.variables_sizes[name])
+
+                l_b = self._lower_bounds.get(name)
+                if l_b is not None:
+                    var_grp.create_dataset(self.LB_GROUP, data=l_b)
+
+                u_b = self._upper_bounds.get(name)
+                if u_b is not None:
+                    var_grp.create_dataset(self.UB_GROUP, data=u_b)
+
+                var_type = self.variables_types[name]
+                if var_type is not None:
+                    data_array = string_array(var_type)
+                    var_grp.create_dataset(
+                        self.VAR_TYPE_GROUP, data=data_array, dtype=data_array.dtype
+                    )
+
+                value = self._current_x.get(name)
+                if value is not None:
+                    var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
 
     def import_hdf(self, file_path):
         """Imports design space from hdf file.
 
         :param file_path:
         """
-        if not exists(file_path):
-            raise ValueError("Input hdf file does not exist ! " + str(file_path))
+        with h5py.File(file_path, "r") as h5file:
+            design_vars_grp = get_hdf5_group(h5file, self.DESIGN_SPACE_GROUP)
+            variables_names = get_hdf5_group(design_vars_grp, self.NAMES_GROUP)
 
-        h5file = h5py.File(file_path, "r")
-        try:
-            design_vars_grp = h5file[self.DESIGN_SPACE_GROUP]
-            variables_names = design_vars_grp[
-                self.NAMES_GROUP
-            ].value  # pylint: disable=E1101
             for name in variables_names:
                 name = name.decode()
-                var_group = design_vars_grp[name]
+                var_group = get_hdf5_group(design_vars_grp, name)
                 l_b = self.__read_opt_attr_array(var_group, self.LB_GROUP)
                 u_b = self.__read_opt_attr_array(var_group, self.UB_GROUP)
                 var_type = self.__read_opt_attr_array(var_group, self.VAR_TYPE_GROUP)
                 value = self.__read_opt_attr_array(var_group, self.VALUE_GROUP)
-                size = var_group[self.SIZE_GROUP].value
+                size = get_hdf5_group(var_group, self.SIZE_GROUP)[()]
                 self.add_variable(name, size, var_type, l_b, u_b, value)
-        except KeyError as err:
-            h5file.close()
-            raise KeyError(
-                "Invalid design space hdf5 file "
-                + str(file_path)
-                + " missing dataset. "
-                + str(err.args[0])
-            )
-        h5file.close()
+
         self.check()
 
     @staticmethod
@@ -1191,7 +1179,7 @@ class DesignSpace(object):
         float_data = genfromtxt(input_file, dtype="float")
         str_data = genfromtxt(input_file, dtype="str")
         if header is None:
-            header = to_unicode_list(str_data[0, :].tolist())
+            header = strings_to_unicode_list(str_data[0, :].tolist())
             start_read = 1
         else:
             start_read = 0
@@ -1206,7 +1194,7 @@ class DesignSpace(object):
                 + str(header)
             )
         col_map = {field: i for i, field in enumerate(header)}
-        var_names = to_unicode_list(str_data[start_read:, 0].tolist())
+        var_names = strings_to_unicode_list(str_data[start_read:, 0].tolist())
         unique_names = []
         prev_name = None
         for name in var_names:  # set([]) does not preserve order !

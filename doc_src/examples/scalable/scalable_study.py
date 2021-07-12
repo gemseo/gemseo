@@ -29,7 +29,7 @@ with respect to the problem dimension for the aerostructure problem.
 For that,
 we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (

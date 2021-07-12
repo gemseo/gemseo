@@ -25,7 +25,9 @@ Plot - Scatter matrix
 =====================
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, load_dataset
 
@@ -44,4 +46,6 @@ iris = load_dataset("IrisDataset")
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-iris.plot("ScatterMatrix", classifier="specy", kde=True)
+iris.plot("ScatterMatrix", classifier="specy", kde=True, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

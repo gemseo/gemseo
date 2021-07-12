@@ -19,15 +19,15 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Generate a N2 and XDSM from an Excel description of the MDO problem
-*******************************************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
+MDO problem."""
+from __future__ import division, unicode_literals
 
 import logging
 from ast import literal_eval
+from typing import Iterable, List, Mapping, Optional, Tuple
 
+from pandas import DataFrame  # noqa F401
 from pandas import read_excel
 
 from gemseo.api import (
@@ -38,16 +38,18 @@ from gemseo.api import (
 )
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
 
 LOGGER = logging.getLogger(__name__)
 
 
 class XLSStudyParser(object):
-    """Parse the input excel files that describe the GEMSEO study.
+    """Parse the input Excel file that describe the GEMSEO study.
 
     The Excel file must contain one sheet per discipline.
-    The name of the sheet is the discipline name.
-    The sheet has at least two columns, one for inputs and one for outputs,
+    The name of the sheet shall have the name of the discipline.
+    The sheet shall have at least two columns,
+    one for the inputs and one for the outputs,
     with the following format:
 
     +--------+---------+----------------+--------------------+----------------+
@@ -59,10 +61,19 @@ class XLSStudyParser(object):
     +--------+---------+----------------+--------------------+----------------+
 
     Empty lines are ignored.
-    All Objective functions and constraints must be outputs of a discipline,
-    not necessarily the one of the current sheet
-    All Design variables must be inputs of a discipline, not necessarily
-    the one of the current sheet
+    All the objective functions and constraints must be outputs of a discipline,
+    not necessarily the one of the current sheet.
+    All the design variables must be inputs of a discipline,
+    not necessarily the one of the current sheet.
+
+    Attributes:
+        xls_study_path (str): The path to the Excel file.
+        frames (Dict[str,DataFrame]): The data frames created from the Excel file.
+        disciplines (Dict[str,MDODiscipline]): The disciplines.
+        scenarios (Dict[str,Dict[str,Union[str,List[str]]]]): The descriptions
+            of the scenarios parsed in the Excel file.
+        inputs (Set[str]): The input variables.
+        outputs (Set[str]): The output variables.
     """
 
     SCENARIO_PREFIX = "Scenario"
@@ -75,90 +86,121 @@ class XLSStudyParser(object):
     OPTIONS = "Options"
     OPTIONS_VALUES = "Options values"
 
-    def __init__(self, xls_study_path):
-        """Initializes the study from the excel specification.
+    def __init__(
+        self, xls_study_path  # type: str
+    ):  # type (..) -> None
+        """Initialize the study from the Excel specification.
 
-        :param xls_study_path: path to the excel file describing the study
+        Args:
+            xls_study_path: The path to the Excel file describing the study.
+
+        Raises:
+            IOError: If the Excel file cannot be opened.
+            ValueError: If no scenario has been found in Excel file.
         """
-
         self.xls_study_path = xls_study_path
         try:
             self.frames = read_excel(xls_study_path, sheet_name=None, engine="openpyxl")
         except IOError:
-            LOGGER.error("Failed to open study file !")
+            LOGGER.error("Failed to open the study file: %s", xls_study_path)
             raise
 
         LOGGER.info("Detected the following disciplines: %s", list(self.frames.keys()))
         self.disciplines = dict()
         self.scenarios = dict()
-        self.inputs = []
-        self.outputs = []
+        self.inputs = dict()
+        self.outputs = dict()
 
         self._init_disciplines()
         self._get_opt_pb_descr()
 
         if not self.scenarios:
-            raise ValueError("Found no scenario in the xls file !")
+            raise ValueError("No scenario found in the xls file")
 
-    def _init_disciplines(self):
-        """Initializes disciplines."""
+    def _init_disciplines(self):  # type: (...) -> None
+        """Initialize the disciplines.
+
+        Raises:
+            ValueError: If the discipline has no input column or output column.
+        """
+        all_inputs = []
+        all_outputs = []
         for disc_name, frame in self.frames.items():
             if disc_name.startswith(self.SCENARIO_PREFIX):
                 continue
             LOGGER.info("Parsing discipline %s", disc_name)
 
+            missing_column_msg = (
+                "The sheet of the discipline '{}' must have a column '{}'"
+            )
+
             try:
                 inputs = self._get_frame_series_values(frame, "Inputs")
             except ValueError:
-                raise ValueError(
-                    "Discipline "
-                    + str(disc_name)
-                    + "'s sheet must have an Inputs column !"
-                )
-            self.inputs += inputs
+                raise ValueError(missing_column_msg.format(disc_name, "Inputs"))
+
+            all_inputs += inputs
             try:
                 outputs = self._get_frame_series_values(frame, "Outputs")
             except ValueError:
-                raise ValueError(
-                    "Discipline "
-                    + str(disc_name)
-                    + "'s sheet must have an Outputs column !"
-                )
+                raise ValueError(missing_column_msg.format(disc_name, "Outputs"))
 
-            if not outputs:
-                raise ValueError("Discipline " + str(disc_name) + " has no Outputs")
-            self.outputs += outputs
+            all_outputs += outputs
             disc = MDODiscipline(disc_name)
             disc.input_grammar.initialize_from_data_names(inputs)
             disc.output_grammar.initialize_from_data_names(outputs)
-            LOGGER.info("Inputs : %s", inputs)
-            LOGGER.info("Outputs : %s", outputs)
+            LOGGER.info("Inputs: %s", inputs)
+            LOGGER.info("Outputs: %s", outputs)
 
             self.disciplines[disc_name] = disc
 
-        self.inputs = set(self.inputs)
-        self.outputs = set(self.outputs)
+        self.inputs = set(all_inputs)
+        self.outputs = set(all_outputs)
 
     @staticmethod
-    def _get_frame_series_values(frame, series_name, return_none=False):
-        """Gets the data list of a named column Removes empty data.
+    def _get_frame_series_values(
+        frame,  # type: DataFrame
+        series_name,  # type: str
+        return_none=False,  # type: Optional[bool]
+    ):  # type: (...) -> None
+        """Return the data of a named column.
 
-        :param frame: the pandas frame of the sheet
-        :param series_name: name of the series
-        :param return_none: if the series does not exists, returns None
-             instead of raising a ValueError
+        Removes empty data.
+
+        Args:
+            frame: The pandas frame of the sheet.
+            series_name: The name of the series.
+            return_none: If the series does not exists, returns None
+                instead of raising a ValueError.
+
+        Returns:
+            The list of a named column.
+
+        Raises:
+            ValueError: If the sheet has no name.
         """
         series = frame.get(series_name)
         if series is None:
             if return_none:
                 return None
-            raise ValueError("The sheet has no series named " + str(series_name))
+            raise ValueError("The sheet has no serie named '{}'".format(series_name))
         # Remove empty data
         # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
 
-    def _get_opt_pb_descr(self):
-        """Initilalize the objective function, constraints and design_variables."""
+    def _get_opt_pb_descr(self):  # type: (...) -> None
+        """Initialize the objective function, constraints and design_variables.
+
+        Raises:
+            ValueError: If at least one of following elements is missing:
+                * ``disciplines`` column,
+                * ``design variables`` column,
+                * ``objectives`` column,
+                * ``constraints`` column,
+                * ``formulations`` column,
+                * if a scenario has more than one formulation,
+                * if a scenario has different number of option values.
+        """
         self.scenarios = dict()
 
         for frame_name, frame in self.frames.items():
@@ -166,60 +208,45 @@ class XLSStudyParser(object):
                 continue
             LOGGER.info("Detected scenario in sheet: %s", frame_name)
 
+            missing_column_msg = "Scenario {} has no {} column!"
+
             try:
                 disciplines = self._get_frame_series_values(frame, self.DISCIPLINES)
             except ValueError:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " has no "
-                    + self.DISCIPLINES
-                    + " column !"
+                    missing_column_msg.format(frame_name, self.DISCIPLINES)
                 )
+
             try:
                 design_variables = self._get_frame_series_values(
                     frame, self.DESIGN_VARIABLES
                 )
             except ValueError:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " has no "
-                    + self.DESIGN_VARIABLES
-                    + " column !"
+                    missing_column_msg.format(frame_name, self.DESIGN_VARIABLES)
                 )
+
             try:
                 objectives = self._get_frame_series_values(
                     frame, self.OBJECTIVE_FUNCTION
                 )
             except ValueError:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " has no "
-                    + self.OBJECTIVE_FUNCTION
-                    + " column !"
+                    missing_column_msg.format(frame_name, self.OBJECTIVE_FUNCTION)
                 )
+
             try:
                 constraints = self._get_frame_series_values(frame, self.CONSTRAINTS)
             except ValueError:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " has no "
-                    + self.CONSTRAINTS
-                    + " column !"
+                    missing_column_msg.format(frame_name, self.CONSTRAINTS)
                 )
 
             try:
                 formulation = self._get_frame_series_values(frame, self.FORMULATION)
             except ValueError:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " has no "
-                    + self.FORMULATION
-                    + " column !"
+                    missing_column_msg.format(frame_name, self.FORMULATION)
                 )
 
             options = self._get_frame_series_values(frame, self.OPTIONS, True)
@@ -229,21 +256,16 @@ class XLSStudyParser(object):
 
             if len(formulation) != 1:
                 raise ValueError(
-                    "Scenario "
-                    + str(frame_name)
-                    + " must have 1 "
-                    + self.FORMULATION
-                    + " value !"
+                    "Scenario {} must have one {} value!".format(
+                        str(frame_name), self.FORMULATION
+                    )
                 )
 
             if options is not None:
                 if len(options) != len(options_values):
                     raise ValueError(
-                        "Options "
-                        + str(options)
-                        + " and Options values "
-                        + str(options_values)
-                        + " must have the same length!"
+                        "Options {} and Options values {} "
+                        "must have the same length!".format(options, options_values)
                     )
 
             formulation = formulation[0]
@@ -272,21 +294,30 @@ class XLSStudyParser(object):
 
     def _check_opt_pb(
         self,
-        objectives,
-        constraints,
-        disciplines,
-        design_variables,
-        formulation,
-        scn_name,
-    ):
-        """Checks the optimization problem consistency. Raises errors if needed.
+        objectives,  # type: Iterable[str]
+        constraints,  # type: Iterable[str]
+        disciplines,  # type: Iterable[str]
+        design_variables,  # type: Iterable[str]
+        formulation,  # type: str
+        scn_name,  # type: str
+    ):  # type: (...) -> None
+        """Checks the optimization problem consistency.
 
-        :param objectives: list of objectives
-        :param constraints: list of constraints
-        :param disciplines: list of MDODisciplines
-        :param design_variables: list of design varaibles
-        :param formulation : mdo formulation name
-        :param scn_name: name of the scenario
+        Args:
+            objectives: The names of the objectives.
+            constraints: The names of the constraints.
+            disciplines: The names of the disciplines.
+            design_variables: The names of the design variables.
+            formulation: The name of the MDO formulation.
+            scn_name: The name of the scenario.
+
+        Raises:
+            ValueError: If at least one of following situation happens:
+                * design variables in the scenario are not input of any discipline,
+                * some disciplines do not exist in the scenario,
+                * some constraints are not outputs of any discipline,
+                * the objective function is not an output of any discipline,
+                * the formulation is unknown.
         """
         LOGGER.info("New scenario: %s", scn_name)
         LOGGER.info("Objectives: %s", objectives)
@@ -298,8 +329,8 @@ class XLSStudyParser(object):
         missing = set(design_variables) - self.inputs
         if missing:
             raise ValueError(
-                scn_name + " : some design variables are "
-                "not the inputs of any discipline :" + str(list(missing))
+                "{}: some design variables are not "
+                "the inputs of any discipline: {}".format(scn_name, list(missing))
             )
 
         missing = (
@@ -309,102 +340,123 @@ class XLSStudyParser(object):
         )
         if missing:
             raise ValueError(
-                scn_name + " : some disciplines dont exist :" + str(list(missing))
+                "{}: some disciplines don't exist: {}".format(
+                    scn_name, str(list(missing))
+                )
             )
 
         missing = set(constraints) - self.outputs
         if missing:
             raise ValueError(
-                scn_name + " : some constraints are not "
-                "the outputs of any discipline :" + str(list(missing))
+                "Some constraints of {} are not outputs of any discipline: {}".format(
+                    scn_name, list(missing)
+                )
             )
 
         missing = set(objectives) - self.outputs
         if missing:
             raise ValueError(
-                scn_name + " : some objectives are not "
-                "the outputs of any discipline :" + str(list(missing))
+                "Some objectives of {} are not "
+                "outputs of any discipline: {}".format(scn_name, list(missing))
             )
         if not objectives:
-            raise ValueError(scn_name + " : no objectives are defined!")
+            raise ValueError("No objectives of {} are defined".format(scn_name))
 
         if formulation not in get_available_formulations():
             raise ValueError(
-                "Unknown formulation "
-                + str(formulation)
-                + " Use one of "
-                + str(get_available_formulations())
+                "Unknown formulation '{}'; use one of: {}".format(
+                    formulation, get_available_formulations()
+                )
             )
 
 
 class StudyAnalysis(object):
-    """Generate a N2 (equivalent to the Design Structure Matrix) diagram, showing the
-    couplings between discipline and XDSM, (Extended Design Structure Matrix), showing
-    the MDO process, from a Excel specification of the inputs, outputs, design
-    variables, objectives and constraints.
+    """A MDO study analysis from an Excel specification.
 
-    The input excel files contains one sheet per discipline.
-    The name of the sheet is the discipline name.
-    The sheet has at least two columns, one for inputs and one for outputs,
+    Generate a N2 (equivalent to the Design Structure Matrix) diagram,
+    showing the couplings between the disciplines,
+    and a XDSM (Extended Design Structure Matrix),
+    showing the MDO process,
+    from an Excel specification of the inputs, outputs, design variables,
+    objectives and constraints.
+
+    The input Excel files contains one sheet per discipline.
+    The name of the sheet shall have the discipline name.
+    The sheet shall have at least two columns,
+    one for inputs and one for outputs,
     with the following format:
 
+    .. table:: Disc1
 
-    +--------+---------+
-    | Inputs | Outputs |
-    +========+=========+
-    |  in1   |  out1   |
-    +--------+---------+
-    |  in2   |  out2   |
-    +--------+---------+
-
-    [Disc1]
+        +--------+---------+
+        | Inputs | Outputs |
+        +========+=========+
+        |  in1   |  out1   |
+        +--------+---------+
+        |  in2   |  out2   |
+        +--------+---------+
 
     Empty lines are ignored.
-
 
     The scenarios (at least one, or multiple for distributed formulations)
     must appear in a Excel sheet name starting by "Scenario".
 
-    The sheet has the following columns, with some constraints :
-    All of them are mandatory, even if empty for the Constraints
-    The order may be any
-    1 and only 1 formulation must be declared
-    At least 1 objective must be provided, and 1 design variable
+    The sheet shall have the following columns,
+    with some constraints :
 
-    +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-    |Design variables| Objective function |  Constraints   |  Disciplines   |  Formulation   |  Options       | Options values |
-    +================+====================+================+================+================+================+================+
-    |      in1       |       out1         |     out2       |     Disc1      |     MDF        |  tolerance     |     0.1        |
-    +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
-    |                |                    |                |     Disc2      |                |                |                |
-    +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+    - All of them are mandatory, even if empty for the constraints.
+    - The order does not matter.
+    - One and only one formulation must be declared.
+    - At least one objective must be provided, and one design variable.
 
-    [Scenario1]
+    .. table:: Scenario1
 
-    All Objective functions and constraints must be outputs of a discipline,
+        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+        |Design variables| Objective function |  Constraints   |  Disciplines   |  Formulation   |  Options       | Options values |
+        +================+====================+================+================+================+================+================+
+        |      in1       |       out1         |     out2       |     Disc1      |     MDF        |  tolerance     |     0.1        |
+        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+        |                |                    |                |     Disc2      |                | main_mda_class |   MDAJacobi    |
+        +----------------+--------------------+----------------+----------------+----------------+----------------+----------------+
+
+    All the objective functions and constraints must be outputs of a discipline,
     not necessarily the one of the current sheet.
-    All Design variables must be inputs of a discipline, not necessarily
-    the one of the current sheet.
+    All the design variables must be inputs of a discipline,
+    not necessarily the one of the current sheet.
 
-    The Options and Options values columns are used to pass
-    the formulation options
+    The columns 'Options' and 'Options values' are used to pass the formulation options.
+    Note that for string type 'Option values',
+    the value can be written with or without the "" characters.
 
-    To use multi level MDO formulations, create multiple scenarios,
+    To use multi level MDO formulations,
+    create multiple scenarios,
     and add the name of the sub scenarios
     in the list of disciplines of the main (system) scenario.
 
     An arbitrary number of levels can be generated this way
     (three, four levels etc formulations).
+
+    Attributes:
+        xls_study_path (str): The path of the Excel file.
+        study (XLSStudyParser): The XLSStudyParser instance built from the Excel file.
+        disciplines_descr (Dict[str,MDODiscipline]): The descriptions of the disciplines
+            (including sub-scenario) parsed in the Excel file.
+        scenarios_descr (Dict[str,Dict[str,Union[str,List[str]]]]): The descriptions
+            of the scenarios parsed in the Excel file.
+        disciplines (Dict[str,MDODiscipline]): The disciplines.
+        scenarios (Dict[str,MDOScenario]): The scenarios.
     """  # noqa: B950
 
     AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 
-    def __init__(self, xls_study_path):
-        """Initializes the study from the excel specification.
+    def __init__(
+        self, xls_study_path  # type: str
+    ):  # type: (...) -> None
+        """Initialize the study from the Excel specification.
 
-        :param xls_study_path: path to the excel file describing the study
+        Args:
+            xls_study_path: The path to the Excel file describing the study.
         """
-
         self.xls_study_path = xls_study_path
         self.study = XLSStudyParser(self.xls_study_path)
         self.disciplines_descr = self.study.disciplines
@@ -416,27 +468,24 @@ class StudyAnalysis(object):
 
     def generate_n2(
         self,
-        file_path="n2.pdf",
-        show_data_names=True,
-        save=True,
-        show=False,
-        figsize=(15, 10),
-    ):
+        file_path="n2.pdf",  # type: str
+        show_data_names=True,  # type: bool
+        save=True,  # type: bool
+        show=False,  # type:bool
+        figsize=(15, 10),  # type: Tuple[float, float]
+    ):  # type: (...) -> None
         """Generate a N2 plot for the disciplines list.
 
-        :param file_path: File path of the figure.
-        :type file_path: str
-        :param show_data_names: If true, the names of the
-            coupling data is shown
-            otherwise, circles are drawn, which size depend on the
-            number of coupling names.
-        :type show_data_names: bool
-        :param save: If True, saved the figure to file_path.
-        :type save: bool
-        :param show: If True, shows the plot.
-        :type show: bool
-        :param figsize: Size of the figure.
-        :type figsize: tuple(float)
+        Args:
+            file_path: The file path of the figure.
+            show_data_names: If true,
+                the names of the coupling data is shown;
+                otherwise,
+                circles are drawn,
+                which size depends on the number of coupling names.
+            save: If True, save the figure to file_path.
+            show: If True, show the plot.
+            figsize: The size of the figure.
         """
         generate_n2_plot(
             list(self.disciplines.values()),
@@ -448,12 +497,18 @@ class StudyAnalysis(object):
         )
 
     @staticmethod
-    def _create_scenario(disciplines, scenario_descr):
+    def _create_scenario(
+        disciplines,  # type: Iterable[MDODiscipline]
+        scenario_descr,  # type: Mapping[str, Iterable[str]]
+    ):  # type: (...) -> MDOScenario
         """Create a MDO scenario.
 
-        :param disciplines: list of MDODisciplines
-        :param scenario_descr: description dict of the scenario
-        :returns: the MDOScenario
+        Args:
+            disciplines: The discipline.
+            scenario_descr: The description of the scenario.
+
+        Returns:
+            A MDO scenario.
         """
         coupl_struct = MDOCouplingStructure(disciplines)
         couplings = coupl_struct.get_all_couplings()
@@ -471,10 +526,7 @@ class StudyAnalysis(object):
                     try:
                         val = literal_eval(val)
                     except ValueError:
-                        LOGGER.exception("")
-                        raise ValueError(
-                            "Failed to parse option %s value: %s", opt, val
-                        )
+                        pass
                 else:
                     pass
                 options_dict[opt] = val
@@ -490,9 +542,17 @@ class StudyAnalysis(object):
             scenario.add_constraint(cstr)
         return scenario
 
-    def _get_disciplines_instances(self, scn):
-        """Returns instances of the disciplines of the scenario, or None if not all
-        available."""
+    def _get_disciplines_instances(
+        self, scn  # type: Mapping[str, Iterable[str]]
+    ):  # type: (...) -> List[MDODiscipline]
+        """Get the instances of the disciplines from a scenario.
+
+        Args:
+            scn: The description of the scenario.
+
+        Returns:
+            The instances of the disciplines of the scenario.
+        """
         discs = []
         for disc_name in scn[XLSStudyParser.DISCIPLINES]:
             disc_inst = self.disciplines_descr.get(disc_name)
@@ -503,8 +563,12 @@ class StudyAnalysis(object):
             discs.append(disc_inst)
         return discs
 
-    def _create_scenarios(self):
-        """Create the main scenario, eventually including sub scenarios."""
+    def _create_scenarios(self):  # type: (...) -> None
+        """Create the main scenario, eventually including sub scenarios.
+
+        Raises:
+            ValueError: If crossed dependencies exist between scenarios.
+        """
         n_scn = len(self.scenarios_descr)
         i = 0
 
@@ -529,9 +593,8 @@ class StudyAnalysis(object):
         # scenarios
         if len(self.scenarios) != n_scn:
             raise ValueError(
-                "Scenarios dependencies cannot be resolved,"
-                " check for cycling dependencies "
-                "between scenarios!"
+                "Scenarios dependencies cannot be resolved, "
+                "check for cycling dependencies between scenarios!"
             )
 
         self.disciplines = dict()
@@ -540,12 +603,21 @@ class StudyAnalysis(object):
         for disc_name in self.disciplines_descr:
             self.disciplines[disc_name] = temp_discs[disc_name]
 
-    def generate_xdsm(self, output_dir, latex_output=False, open_browser=False):
-        """Creates an xdsm.json file from the current scenario.
+    def generate_xdsm(
+        self,
+        output_dir,  # type: str
+        latex_output=False,  # type: bool
+        open_browser=False,  # type: bool
+    ):  # type: (...) -> MDOScenario
+        """Create an xdsm.json file from the current scenario.
 
-        :param output_dir: the directory where XDSM html files are generated
-        :param latex_output: build .tex, .tikz and .pdf file
-        :returns: the MDOScenario, that contains the DesignSpace, the
+        Args:
+            output_dir: The directory where the XDSM html files are generated.
+            latex_output: If True, build the .tex, .tikz and .pdf files.
+            open_browser: If True, open in a web browser.
+
+        Returns:
+            The MDOScenario that contains the DesignSpace, the
             formulation, but the disciplines have only correct
             input and output grammars but no _run methods so that can't be executed
         """

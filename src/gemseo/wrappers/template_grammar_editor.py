@@ -24,13 +24,13 @@
 
 Run this file with no argument to open the GUI
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import sys
 from os.path import dirname, exists, join
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger(__name__)
 
 try:
     from PySide2.QtCore import QRegExp

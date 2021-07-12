@@ -28,10 +28,3 @@ This package contains:
   - :class:`.MorrisAnalysis`,
   - :class:`.SobolAnalysis` (based on OpenTURNS capabilities),
 """
-
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis  # noqa: F401
-from gemseo.uncertainty.sensitivity.factory import (  # noqa: F401
-    SensitivityAnalysisFactory,
-)
-from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis  # noqa: F401
-from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis  # noqa: F401

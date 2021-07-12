@@ -30,7 +30,9 @@ and used by the :class:`.ScalableDiagonalModel`.
 The idea is to sample the discipline by varying its inputs proportionally
 on one of the diagonals of its input space.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 from gemseo.api import (
     configure_logger,
@@ -78,7 +80,7 @@ scenario = create_scenario(
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 
 dataset = discipline.cache.export_to_dataset()
-dataset.plot("ScatterMatrix", save=False, show=True)
+dataset.plot("ScatterMatrix", save=False, show=False)
 
 ###############################################################################
 # Sample with reverse mode for :math:`y`
@@ -99,4 +101,6 @@ scenario.execute(
 )
 
 dataset = discipline.cache.export_to_dataset()
-dataset.plot("ScatterMatrix", save=False, show=True)
+dataset.plot("ScatterMatrix", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

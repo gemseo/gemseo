@@ -37,7 +37,7 @@
 """
 A pretty table in the shell or in a file
 """
-from __future__ import (absolute_import, division, print_function,
+from __future__ import ( division, 
                         unicode_literals)
 
 

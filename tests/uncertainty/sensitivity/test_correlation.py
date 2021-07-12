@@ -19,10 +19,7 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from os import chdir, remove
-from os.path import exists
+from __future__ import division, unicode_literals
 
 import pytest
 
@@ -57,10 +54,8 @@ def test_correlation(tmp_path):
     with pytest.raises(NotImplementedError):
         correlation.main_method = "foo"
 
-    chdir(str(tmp_path))
-    correlation.plot("y1", save=True, show=False)
-    assert exists("correlation_indices.pdf")
-    remove("correlation_indices.pdf")
+    correlation.plot("y1", save=True, show=False, directory_path=tmp_path)
+    assert (tmp_path / "correlation_analysis.png").exists()
 
 
 def test_correlation_outputs(tmp_path):

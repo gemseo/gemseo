@@ -13,10 +13,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, super
 from copy import deepcopy
 from multiprocessing import cpu_count
 
@@ -136,6 +135,23 @@ class MDAJacobi(MDA):
         self.parallel_execution = DiscParallelExecution(
             disciplines, n_processes, use_threading
         )
+
+    def _compute_input_couplings(self):
+        """Compute all the coupling variables that are inputs of the MDA.
+
+        This must be overloaded here because the Jacobi algorithm induces a delay
+        between the couplings, the strong couplings may be fully resolved but the weak
+        ones may need one more iteration. The base MDA class uses strong couplings only
+        which is not satisfying here if all disciplines are not strongly coupled
+        """
+        if len(self.coupling_structure.strongly_coupled_disciplines()) == len(
+            self.disciplines
+        ):
+            return super(MDAJacobi, self)._compute_input_couplings()
+
+        inputs = self.get_input_data_names()
+        strong_cpl = self.coupling_structure.get_all_couplings()
+        self._input_couplings = set(strong_cpl) & set(inputs)
 
     def _initialize_grammars(self):
         """Defines all inputs and outputs of the chain."""

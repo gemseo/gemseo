@@ -21,7 +21,7 @@
 
 """Provide routines for XDSM and tikz."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from pyxdsm.XDSM import XDSM
 

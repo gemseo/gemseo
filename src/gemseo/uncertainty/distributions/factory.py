@@ -22,7 +22,7 @@
 
 """Module containing a factory to create an instance of :class:`.Distribution`."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from typing import List, Optional, Union
 

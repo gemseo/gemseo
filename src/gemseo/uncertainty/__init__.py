@@ -46,7 +46,7 @@ This sub-package is based in particular on OpenTURNS.
     :class:`.SobolAnalysis`
 
 The sub-package **statistics** offers an abstract level for statistics,
-as well as parametric and empirical version.
+as well as parametric and empirical versions.
 Empirical statistics are estimated from a :class:`.Dataset`
 while parametric statistics are analytical properties of a :class:`.Distribution`
 fitted from a :class:`.Dataset`.

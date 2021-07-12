@@ -22,7 +22,7 @@
 Parallel execution of disciplines and functions using multiprocessing
 *********************************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import multiprocessing as mp
@@ -31,7 +31,6 @@ import queue
 import threading as th
 import time
 import traceback
-from builtins import range, str, zip
 
 LOGGER = logging.getLogger(__name__)
 

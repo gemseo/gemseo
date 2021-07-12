@@ -24,10 +24,9 @@ SSBJ Disciplines wrappers
 *************************
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import time
-from builtins import super
 from numbers import Number
 
 from gemseo.core.discipline import MDODiscipline

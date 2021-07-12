@@ -50,7 +50,7 @@ based on scalable disciplines.
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy

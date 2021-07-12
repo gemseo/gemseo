@@ -20,9 +20,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a radar chart from a :class:`.Dataset`. """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -40,7 +40,7 @@ class RadarChart(DatasetPlot):
         display_zero=True,  # type: bool
         connect=False,  # type: bool
         radial_ticks=False,  # type: bool
-    ):  # type: (...) ->Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             display_zero: If True, display the line where the output is equal to zero.
@@ -134,4 +134,4 @@ class RadarChart(DatasetPlot):
             bbox_to_anchor=(0.5, -0.05),
             ncol=5,
         )
-        return fig
+        return [fig]

@@ -52,7 +52,7 @@ Extending |g|
 -------------
 
 |g| features can be extended with external python modules. All kinds of
-additionnal features can be implemented: disciplines, algorithms, formulations,
+additional features can be implemented: disciplines, algorithms, formulations,
 post-processings, surrogate models, ... There are 2 ways to extend |g| with a
 directory that contains the python modules:
 
@@ -158,10 +158,11 @@ Surrogates
 API functions
 *************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import re
+from typing import List, Optional  # noqa F401
 
 from six import string_types
 
@@ -186,6 +187,7 @@ def generate_n2_plot(
     save=True,
     show=False,
     figsize=(15, 10),
+    open_browser=False,
 ):
     """Generate a N2 plot for the disciplines list.
 
@@ -204,6 +206,8 @@ def generate_n2_plot(
     :type show: bool
     :param figsize: Size of the figure.
     :type figsize: tuple(float)
+    :param open_browser: If True, open the browser and display the N2.
+    :type open_browser: bool
 
     Examples
     --------
@@ -220,16 +224,21 @@ def generate_n2_plot(
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
     coupling_structure = MDOCouplingStructure(disciplines)
-    coupling_structure.plot_n2_chart(file_path, show_data_names, save, show, figsize)
+    coupling_structure.plot_n2_chart(
+        file_path, show_data_names, save, show, figsize, open_browser
+    )
 
 
-def generate_coupling_graph(disciplines, file_path="coupling_graph.pdf"):
+def generate_coupling_graph(disciplines, file_path="coupling_graph.pdf", full=True):
     """Generate a graph of the couplings for the disciplines list.
 
     :param disciplines: List of disciplines to analyze.
     :type disciplines: list(MDODiscipline)
     :param file_path: File path of the figure.
     :type file_path: str
+    :param full: If True, generate the full coupling graph.
+        Otherwise, generate the condensed one.
+    :type full: bool
 
     Examples
     --------
@@ -246,7 +255,10 @@ def generate_coupling_graph(disciplines, file_path="coupling_graph.pdf"):
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
     coupling_structure = MDOCouplingStructure(disciplines)
-    coupling_structure.graph.export_initial_graph(file_path)
+    if full:
+        coupling_structure.graph.export_initial_graph(file_path)
+    else:
+        coupling_structure.graph.export_reduced_graph(file_path)
 
 
 def get_available_formulations():
@@ -1660,7 +1672,7 @@ def create_dataset(
 
 
 def load_dataset(dataset, **options):
-    """Create a dataset from an exsting subclass of Dataset. Typically, benchmark
+    """Create a dataset from an existing subclass of Dataset. Typically, benchmark
     datasets can be found in gemseo.problems.dataset.
 
     :param str dataset: dataset name (its classname).

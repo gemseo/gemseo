@@ -21,16 +21,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
+
 """
 A database of function calls and design variables
 *************************************************
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from ast import literal_eval
-from builtins import isinstance
 from hashlib import sha1
 from itertools import chain, islice
 from xml.etree.ElementTree import parse as parse_element
@@ -41,7 +41,8 @@ from numpy.linalg import norm
 from six import string_types
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
-from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
+from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.py23_compat import OrderedDict
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,10 +83,10 @@ class Database(object):
         """
         if not isinstance(key, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if not isinstance(value, dict):
-            raise TypeError("Optimization history values must" + " be data dictionary")
+            raise TypeError("Optimization history values must be data dictionary")
         if isinstance(key, HashableNdarray):
             self.__dict[key] = value
         else:
@@ -100,28 +101,28 @@ class Database(object):
         """
         if not isinstance(x_vect, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if isinstance(x_vect, ndarray):
             return HashableNdarray(x_vect)
         return x_vect
 
     def __getitem__(self, x_vect):
-        hashed = Database.__get_hashed_key(x_vect)
+        hashed = self.__get_hashed_key(x_vect)
         return self.__dict[hashed]
 
     def __delitem__(self, x_vect):
-        hashed = Database.__get_hashed_key(x_vect)
+        hashed = self.__get_hashed_key(x_vect)
         del self.__dict[hashed]
 
     def setdefault(self, key, default):
         """Sets a default database entry."""
         if not isinstance(key, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if not isinstance(default, dict):
-            raise TypeError("Optimization history values must" + " be data dictionary")
+            raise TypeError("Optimization history values must be data dictionary")
         return self.__dict.setdefault(key, default)
 
     def __len__(self):
@@ -208,7 +209,6 @@ class Database(object):
         for i, key in enumerate(self.__dict.keys()):
             if i == iteration:
                 return key.unwrap()
-        return None  # pep8 requirement
 
     def clear(self):
         """Clears the database."""
@@ -285,7 +285,8 @@ class Database(object):
             (Default value = False)
         :returns: the jacobian history list
         """
-        return self.get_func_history(funcname=self.GRAD_TAG + funcname, x_hist=x_hist)
+        gradient_name = self.get_gradient_name(funcname)
+        return self.get_func_history(funcname=gradient_name, x_hist=x_hist)
 
     def is_func_grad_history_empty(self, funcname):
         """Check if history is empty.
@@ -325,7 +326,7 @@ class Database(object):
         """Return the value for key if key is in the dictionary, else default."""
         if not isinstance(x_vect, (HashableNdarray, ndarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if isinstance(x_vect, ndarray):
             x_vect = HashableNdarray(x_vect)
@@ -492,70 +493,72 @@ class Database(object):
         :param append: if True, appends the data in the file
             (Default value = False)
         """
-        if append:
-            mode = "a"
-        else:
-            mode = "w"
-        h5file = h5py.File(file_path, mode)
-        design_vars_grp = h5file.require_group("x")
-        keys_group = h5file.require_group("k")
-        values_group = h5file.require_group("v")
-        iterated = self.items()
-        i = 0
-        if append and design_vars_grp:
-            iterated = islice(iterated, len(design_vars_grp), len(self.__dict))
-            i = len(design_vars_grp)
+        mode = "a" if append else "w"
 
-        for key, val in iterated:
-            design_vars_grp.create_dataset(str(i), data=key.unwrap())
-            keys_data = array(list(val.keys()), dtype=string_)
-            locvalues_scalars = []
-            argrp = None
-            for ind, locval in enumerate(val.values()):
-                if isinstance(locval, (ndarray, list)):
-                    if argrp is None:
-                        argrp = values_group.require_group("arr_" + str(i))
-                    argrp.create_dataset(str(ind), data=self.__to_real(locval))
-                else:
-                    locvalues_scalars.append(locval)
-            keys_group.create_dataset(str(i), data=keys_data)
-            values_group.create_dataset(str(i), data=self.__to_real(locvalues_scalars))
-            i += 1
+        with h5py.File(file_path, mode) as h5file:
+            design_vars_grp = h5file.require_group("x")
+            keys_group = h5file.require_group("k")
+            values_group = h5file.require_group("v")
+            iterated = self.items()
+            i = 0
 
-        h5file.close()
+            if append and design_vars_grp:
+                iterated = islice(iterated, len(design_vars_grp), len(self.__dict))
+                i = len(design_vars_grp)
+
+            for key, val in iterated:
+                design_vars_grp.create_dataset(str(i), data=key.unwrap())
+                keys_data = array(list(val.keys()), dtype=string_)
+                locvalues_scalars = []
+                argrp = None
+
+                for ind, locval in enumerate(val.values()):
+                    if isinstance(locval, (ndarray, list)):
+                        if argrp is None:
+                            argrp = values_group.require_group("arr_" + str(i))
+                        argrp.create_dataset(str(ind), data=self.__to_real(locval))
+                    else:
+                        locvalues_scalars.append(locval)
+
+                keys_group.create_dataset(str(i), data=keys_data)
+                values_group.create_dataset(
+                    str(i), data=self.__to_real(locvalues_scalars)
+                )
+                i += 1
 
     def import_hdf(self, filename="optimization_history.h5"):
         """Imports a database from hdf file.
 
         :param filename: Default value = 'optimization_history.h5')
         """
-        h5file = h5py.File(filename, "r")
-        try:
+        with h5py.File(filename, "r") as h5file:
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]
             values_group = h5file["v"]
-            ndata = len(design_vars_grp)  # keys , and subdict
-            for idata in range(ndata):
-                x_vect = design_vars_grp[str(idata)]
-                keys = keys_group[str(idata)]
-                keys = [k.decode() for k in keys]
-                vec_dict = {}
-                if "arr_" + str(idata) in values_group:
-                    argrp = values_group["arr_" + str(idata)]
+
+            for raw_index in range(len(design_vars_grp)):
+                str_index = str(raw_index)
+                keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
+
+                array_name = "arr_{}".format(str_index)
+
+                if array_name in values_group:
+                    argrp = values_group[array_name]
                     vec_dict = {keys[int(k)]: array(v) for k, v in argrp.items()}
-                locvalues_scalars = values_group[str(idata)]
+                else:
+                    vec_dict = {}
+
+                locvalues_scalars = get_hdf5_group(values_group, str_index)
                 scalar_keys = (k for k in keys if k not in vec_dict)
+
                 scalar_dict = dict(
                     ((k, v) for k, v in zip(scalar_keys, locvalues_scalars))
                 )
                 scalar_dict.update(vec_dict)
 
-                self.store(array(x_vect), scalar_dict, add_iter=False)
-        except KeyError as err:
-            h5file.close()
-            raise KeyError(
-                "Invalid database hdf5 file, missing dataset. " + err.args[0]
-            )
+                self.store(
+                    array(design_vars_grp[str_index]), scalar_dict, add_iter=False
+                )
 
     @staticmethod
     def set_dv_names(n_dv):
@@ -580,10 +583,8 @@ class Database(object):
             design_variables_names, tuple
         ):
             raise TypeError(
-                "design_variables_names must be a list or a "
-                + "tuple: a "
-                + str(type(design_variables_names))
-                + " is provided"
+                "design_variables_names must be a list or a tuple: "
+                "a {} is provided".format(type(design_variables_names))
             )
         return design_variables_names
 
@@ -719,6 +720,25 @@ class Database(object):
             for key, value in data["dy"].items():
                 data_reformat["@" + key[1:]] = array(value)
             self.store(x_vect, data_reformat)
+
+    @classmethod
+    def get_gradient_name(
+        cls,
+        name,  # type: str
+    ):  # type: (...) -> str
+        """Return the name of the gradient related to a function.
+
+        This name is the concatenation of a GRAD_TAG, e.g. '@',
+        and the name of the function, e.g. 'f'.
+        With this example, the name of the gradient is '@f'.
+
+        Args:
+            name: The name of a function.
+
+        Returns:
+            The name of the gradient based on the name of the function.
+        """
+        return "{}{}".format(cls.GRAD_TAG, name)
 
 
 class HashableNdarray(object):

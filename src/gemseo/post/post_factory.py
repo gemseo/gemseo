@@ -19,82 +19,115 @@
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A factory to execute post processings from their class name
-***********************************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""A factory to create or execute a post-processor from its class name."""
+from __future__ import division, unicode_literals
 
 import logging
+from typing import List, Optional, Set, Union
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.factory import Factory
-from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import string_types
+from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.utils.py23_compat import Path, string_types
 
 LOGGER = logging.getLogger(__name__)
 
 
 class PostFactory(object):
-    """Post processing factory to run optimization post processings Lists available post
-    processings on the current configuration, executes them on demand.
+    """Post-processing factory to run optimization post-processors.
 
-    Works both from memory, from a ran optimization problem, and from disk, from a
-    serialized optimization problem.
+    List the available post-processors on the current configuration
+    and execute them on demand.
+
+    Work both from memory, from a ran optimization problem,
+    and from disk, from a serialized optimization problem.
     """
 
     def __init__(self):
-        """Initializes the factory: scans the directories to search for subclasses of
-        OptPostProcessor.
-
-        Searches in "GEMSEO_PATH" and gemseo.post
-        """
         self.factory = Factory(OptPostProcessor, ("gemseo.post",))
         self.executed_post = []
 
     @property
-    def posts(self):
-        """Lists the available post processings.
-
-        :returns: the list of methods
-        """
+    def posts(self):  # type: (...) -> List[str]
+        """The available post processors."""
         return self.factory.classes
 
-    def is_available(self, name):
-        """Checks the availability of a post processing name.
+    def is_available(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> bool
+        """Check the availability of a post-processor.
 
-        :param name: the name of the post processing
-        :returns: True if the post step is installed
+        Args:
+            name: The name of the post-processor.
+
+        Returns:
+            Whether the post-processor is available.
         """
         return self.factory.is_available(name)
 
-    def create(self, opt_problem, post_name):
-        """Factory method to create a post processing subclass from post_name which is a
-        class name.
+    def create(
+        self,
+        opt_problem,  # type: OptimizationProblem
+        post_name,  # type: str
+    ):  # type: (...) -> OptPostProcessor
+        """Create a post-processor from its class name.
 
-        :param opt_problem: the optimization problem on which to run
-            the post processing
-        :param post_name: the post processing name
+        Args:
+            opt_problem: The optimization problem to be post-processed.
+            post_name: The name of the post-processor.
         """
         return self.factory.create(post_name, opt_problem=opt_problem)
 
-    def execute(self, opt_problem, post_name, **options):
-        """Finds the appropriate library and executes the post processing on the
-        problem.
+    def execute(
+        self,
+        opt_problem,  # type: Union[str,OptimizationProblem]
+        post_name,  # type: str
+        save=True,  # type: bool
+        show=False,  # type: bool
+        file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
+        file_extension=None,  # type: Optional[str]
+        **options  # type: OptPostProcessorOptionType
+    ):  # type: (...) -> OptPostProcessor
+        """Post-process an optimization problem.
 
-        :param opt_problem: the optimization problem on which to run
-            the post procesing
-        :param post_name: the post processing name
+        Args:
+            opt_problem: The optimization problem to be post-processed.
+            post_name: The name of the post-processor.
+            save: If True, save the figure.
+            show: If True, display the figure.
+            file_path: The path of the file to save the figures.
+                If the extension is missing, use ``file_extension``.
+                If None,
+                create a file path
+                from ``directory_path``, ``file_name`` and ``file_extension``.
+            directory_path: The path of the directory to save the figures.
+                If None, use the current working directory.
+            file_name: The name of the file to save the figures.
+                If None, use a default one generated by the post-processing.
+            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
+                If None, use a default file extension.
+            **options: The options of the post-processor.
         """
         if isinstance(opt_problem, string_types):
             opt_problem = OptimizationProblem.import_hdf(opt_problem)
         post = self.create(opt_problem, post_name)
-        post.execute(**options)
+        post.execute(
+            save=save,
+            show=show,
+            file_path=file_path,
+            file_name=file_name,
+            file_extension=file_extension,
+            directory_path=directory_path,
+            **options
+        )
         self.executed_post.append(post)
         return post
 
-    def list_generated_plots(self):
-        """Lists the generated plot files."""
+    def list_generated_plots(self):  # type:(...) -> Set[str]
+        """The generated plot files."""
         plots = []
         for post in self.executed_post:
             plots.extend(post.output_files)

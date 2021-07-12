@@ -50,7 +50,7 @@ or classification ones.
 <https://en.wikipedia.org/wiki/Iris_flower_data_set>`_
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import abspath, dirname, join
 

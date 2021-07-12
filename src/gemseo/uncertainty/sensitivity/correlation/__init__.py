@@ -18,7 +18,3 @@
 
 The main class is :class:`.CorrelationAnalysis` (based on OpenTURNS capabilities).
 """
-
-from gemseo.uncertainty.sensitivity.correlation.analysis import (  # noqa: F401
-    CorrelationAnalysis,
-)

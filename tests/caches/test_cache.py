@@ -19,7 +19,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import sys
 import unittest
@@ -37,7 +37,7 @@ from gemseo.core.cache import hash_data_dict, to_real
 from gemseo.core.chain import MDOParallelChain
 from gemseo.problems.sellar.sellar import Sellar1, SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.utils.py23_compat import _long, xrange
+from gemseo.utils.py23_compat import long, xrange
 
 DIRNAME = dirname(__file__)
 
@@ -55,12 +55,13 @@ class TestCaches(unittest.TestCase):
         )
         s_cache = factory.create("SimpleCache", tolerance=0.0)
         m_cache = factory.create("MemoryFullCache")
-        return s_cache, h_cache, m_cache
+        m_cache_loc = factory.create("MemoryFullCache", is_memory_shared=False)
+        return s_cache, h_cache, m_cache, m_cache_loc
 
     def test_jac_and_outputs_caching(self):
-        s_cache, h_cache, m_cache = self.get_caches()
+        s_cache, h_cache, m_cache, m_cache_loc = self.get_caches()
 
-        for cache in [s_cache, h_cache, m_cache]:
+        for cache in [s_cache, h_cache, m_cache, m_cache_loc]:
             assert cache.get_length() == 0
             assert not cache
             assert cache.get_last_cached_inputs() is None
@@ -94,7 +95,7 @@ class TestCaches(unittest.TestCase):
 
         assert s_cache.get_length() == 1
 
-        for cache in [s_cache, h_cache, m_cache]:
+        for cache in [s_cache, h_cache, m_cache, m_cache_loc]:
 
             assert cache.get_last_cached_inputs() is not None
             assert cache.get_last_cached_outputs() is not None
@@ -195,7 +196,7 @@ class TestCaches(unittest.TestCase):
     def test_hash_data_dict(self):
         input_data = {"i": 10 * arange(3)}
         hash_0 = hash_data_dict(input_data)
-        assert isinstance(hash_0, _long)
+        assert isinstance(hash_0, long)
         assert hash_0 == hash_data_dict(input_data)
         assert hash_0 == hash_data_dict({"i": 10 * arange(3), "t": None})
         assert hash_0 == hash_data_dict({"i": 10 * arange(3), "j": None})
@@ -251,10 +252,10 @@ class TestCaches(unittest.TestCase):
         cache._read_group([1], input_data)
 
     def test_get_all_data(self):
-        s_cache, h_cache, m_cache = self.get_caches()
+        s_cache, h_cache, m_cache, m_cache_loc = self.get_caches()
         inputs = {"x": arange(3), "y": arange(3)}
         outputs = {"f": array([1])}
-        for cache in [s_cache, h_cache, m_cache]:
+        for cache in [s_cache, h_cache, m_cache, m_cache_loc]:
 
             cache.cache_outputs(inputs, ["x", "y"], outputs, ["f"])
             all_data = cache.get_all_data()
@@ -269,8 +270,8 @@ class TestCaches(unittest.TestCase):
         h_cache.cache_jacobian({"x": arange(3), "y": arange(3)}, ["x", "y"], jac)
 
     def test_all_data(self):
-        _, h_cache, m_cache = self.get_caches()
-        for cache in [h_cache, m_cache]:
+        _, h_cache, m_cache, m_cache_loc = self.get_caches()
+        for cache in [h_cache, m_cache, m_cache_loc]:
             cache.cache_outputs(
                 {"x": arange(3), "y": arange(3)}, ["x", "y"], {"f": array([1])}, ["f"]
             )
@@ -326,7 +327,7 @@ class TestCaches(unittest.TestCase):
         self.assert_items_equal(data["outputs"], {"f": array([2])})
 
     def test_duplicate_from_scratch(self):
-        _, h_cache, m_cache = self.get_caches()
+        _, h_cache, m_cache, _ = self.get_caches()
         h_cache._duplicate_from_scratch()
         m_cache._duplicate_from_scratch()
 
@@ -365,7 +366,7 @@ class TestCaches(unittest.TestCase):
             assert nexec_2 == s_s.n_calls
 
     def test_copy(self):
-        _, _, m_cache = self.get_caches()
+        _, _, m_cache, _ = self.get_caches()
         input_data = {"i": arange(3)}
         data_out = {"o": arange(4)}
         m_cache.cache_outputs(input_data, input_data.keys(), data_out)
@@ -389,8 +390,9 @@ class TestCaches(unittest.TestCase):
         singleton = HDF5FileSingleton(file_path)
         data = {"x": array([0.0])}
         singleton.write_data(data, ["x"], HDF5Cache.INPUTS_GROUP, 1, node)
+
         self.assertRaises(
-            (RuntimeError, IOError),
+            RuntimeError,
             singleton.write_data,
             data,
             ["x"],
@@ -401,7 +403,8 @@ class TestCaches(unittest.TestCase):
 
     def test_cache_max_length(self):
         """Tests the maximum length getter."""
-        s_cache, h_cache, m_cache = self.get_caches()
+        s_cache, h_cache, m_cache, m_cache_loc = self.get_caches()
         assert s_cache.max_length == 1
         assert h_cache.max_length == sys.maxsize
         assert m_cache.max_length == sys.maxsize
+        assert m_cache_loc.max_length == sys.maxsize

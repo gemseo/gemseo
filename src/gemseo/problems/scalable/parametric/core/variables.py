@@ -23,7 +23,7 @@
 Scalable problem - Variables
 ****************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 X_LOCAL_NAME_BASIS = "x_local"
 U_LOCAL_NAME_BASIS = "u_local"

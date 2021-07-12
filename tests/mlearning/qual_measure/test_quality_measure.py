@@ -20,30 +20,33 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test quality measure module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
+from numpy import array
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 
-def test_constructor():
+@pytest.fixture(scope="module")
+def measure():  # type: (...) -> MLQualityMeasure
+    """The quality measure related to an trained machine learning algorithm."""
+    dataset = Dataset("the_dataset")
+    dataset.add_variable("x", array([[1]]))
+    return MLQualityMeasure(MLAlgo(dataset))
+
+
+def test_constructor(measure):
     """Test construction."""
-    dataset = Dataset()
-    algo = MLAlgo(dataset)
-    measure = MLQualityMeasure(algo)
     assert measure.algo is not None
-    assert measure.algo.learning_set is dataset
+    assert measure.algo.learning_set.name == "the_dataset"
 
 
-def test_evaluate():
+def test_evaluate(measure):
     """Test evaluation of quality measure."""
-    dataset = Dataset()
     test_dataset = Dataset()
-    algo = MLAlgo(dataset)
-    measure = MLQualityMeasure(algo)
     with pytest.raises(NotImplementedError):
         measure.evaluate()
     with pytest.raises(NotImplementedError):
@@ -56,3 +59,22 @@ def test_evaluate():
         measure.evaluate(MLQualityMeasure.KFOLDS, n_folds=5)
     with pytest.raises(NotImplementedError):
         measure.evaluate(MLQualityMeasure.BOOTSTRAP, n_replicates=100)
+
+    with pytest.raises(ValueError, match="The method 'foo' is not available"):
+        measure.evaluate("foo")
+
+
+def test_is_better():
+    class MLQualityMeasureToMinimize(MLQualityMeasure):
+        SMALLER_IS_BETTER = True
+
+    class MLQualityMeasureToMaximize(MLQualityMeasure):
+        SMALLER_IS_BETTER = False
+
+    assert MLQualityMeasureToMinimize.is_better(1, 2)
+    assert MLQualityMeasureToMaximize.is_better(2, 1)
+
+
+def test_assure_samples(measure):
+    assert measure._assure_samples([1, 2]) == [1, 2]
+    assert measure._assure_samples(None) == array([0])

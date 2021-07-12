@@ -25,8 +25,9 @@ Plot - Bars
 ===========
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from matplotlib import pyplot as plt
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -51,4 +52,6 @@ dataset.row_names = ["series_1", "series_2"]
 # We can use the :class:`.BarPlot` plot
 plot = BarPlot(dataset)
 plot.colormap = "PiYG"
-plot.execute(False, True)
+plot.execute(save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

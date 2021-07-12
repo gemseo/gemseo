@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClassificationModelFactory class in
 gemseo.mlearning.classification.factory."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 
@@ -30,8 +30,8 @@ from gemseo.problems.dataset.iris import IrisDataset
 
 
 @pytest.fixture
-def dataset():
-    """Iris dataset."""
+def dataset():  # type: (...) ->IrisDataset
+    """The Iris dataset used to train the classification algorithms."""
     iris = IrisDataset(as_io=True)
     return iris
 
@@ -39,8 +39,14 @@ def dataset():
 def test_constructor():
     """Test factory constructor."""
     factory = ClassificationModelFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning.classification" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        [
+            "KNNClassifier",
+            "RandomForestClassifier",
+            "SVMClassifier",
+        ]
+    )
 
 
 def test_create(dataset):

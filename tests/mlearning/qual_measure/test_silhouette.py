@@ -20,20 +20,19 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test silhouette measure."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.kmeans import KMeans
-from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 
 
 @pytest.fixture
-def dataset():
-    """Data points."""
+def dataset():  # type: (...)-> Dataset
+    """The dataset used to train the regression algorithms."""
     data = arange(60).reshape((20, 3))
     dataset_ = Dataset()
     dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
@@ -41,60 +40,64 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_test():
-    """Data points."""
+def dataset_test():  # type: (...)-> Dataset
+    """The dataset used to test the performance of the clustering algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
     dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
     return dataset_
 
 
-def test_constructor(dataset):
+@pytest.fixture
+def measure(dataset):  # type: (...) -> SilhouetteMeasure
+    """A silhouette measure."""
+    algo = KMeans(dataset, n_clusters=3)
+    return SilhouetteMeasure(algo)
+
+
+def test_constructor(measure, dataset):
     """Test construction."""
-    algo = MLAlgo(dataset)
-    measure = SilhouetteMeasure(algo)
     assert measure.algo is not None
     assert measure.algo.learning_set is dataset
 
 
-def test_evaluate_learn(dataset):
+def test_evaluate_learn(measure):
     """Test evaluate learn method."""
-    algo = KMeans(dataset, n_clusters=3)
-    measure = SilhouetteMeasure(algo)
     quality = measure.evaluate("learn", multioutput=False)
     assert quality > 0
 
 
-def test_evaluate_test(dataset, dataset_test):
+def test_evaluate_learn_fail(measure):
+    """Test evaluate learn method; should fail if multioutput is True."""
+    with pytest.raises(
+        NotImplementedError,
+        match="The SilhouetteMeasure does not support the multioutput case.",
+    ):
+        measure.evaluate("learn", multioutput=True)
+
+
+def test_evaluate_test(measure, dataset_test):
     """Test evaluate test method."""
-    algo = KMeans(dataset, n_clusters=3)
-    measure = SilhouetteMeasure(algo)
     with pytest.raises(NotImplementedError):
         measure.evaluate("test", test_data=dataset_test, multioutput=False)
 
 
-def test_evaluate_loo(dataset):
+def test_evaluate_loo(measure):
     """Test evaluate leave one out method."""
-    algo = KMeans(dataset, n_clusters=3)
-    measure = SilhouetteMeasure(algo)
     with pytest.raises(NotImplementedError):
         quality = measure.evaluate("loo", multioutput=False)
         assert quality > 0
 
 
-def test_evaluate_kfolds(dataset):
+def test_evaluate_kfolds(measure):
     """Test evaluate k-folds method."""
-    algo = KMeans(dataset, n_clusters=3)
-    measure = SilhouetteMeasure(algo)
     with pytest.raises(NotImplementedError):
         quality = measure.evaluate("kfolds", multioutput=False)
         assert quality > 0
 
 
-def test_evaluate_bootstrap(dataset):
+def test_evaluate_bootstrap(measure):
     """Test evaluate bootstrap method."""
-    algo = KMeans(dataset, n_clusters=3)
-    measure = SilhouetteMeasure(algo)
     with pytest.raises(NotImplementedError):
         quality = measure.evaluate("bootstrap", multioutput=False)
         assert quality > 0

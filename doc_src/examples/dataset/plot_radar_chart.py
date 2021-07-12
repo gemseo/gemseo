@@ -25,8 +25,9 @@ Plot - Radard chart
 ===================
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from matplotlib import pyplot as plt
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -52,4 +53,6 @@ dataset.row_names = ["series_1", "series_2"]
 plot = RadarChart(dataset)
 plot.rmin = -0.5
 plot.rmax = 1.0
-plot.execute(False, True, connect=True, radial_ticks=True)
+plot.execute(show=False, save=False, connect=True, radial_ticks=True)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

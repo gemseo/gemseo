@@ -23,7 +23,7 @@
 Scalable problem - Models
 *************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 
@@ -100,7 +100,7 @@ class TMMainModel(object):
         if x_shared is None:
             x_shared = self.default_inputs[X_SHARED_NAME]
         if coupling is None:
-            names = set(self.inputs_names) - set([X_SHARED_NAME])
+            names = set(self.inputs_names) - {X_SHARED_NAME}
             coupling = {name: self.default_inputs[name] for name in names}
         if jacobian:
             result = self._compute_jacobian(x_shared, coupling)
@@ -139,8 +139,7 @@ class TMMainModel(object):
             (one element per sub-discipline).
         """
         tmp = old_div(2 * x_shared, len(x_shared))
-        jacobian = {}
-        jacobian[OBJECTIVE_NAME] = {}
+        jacobian = {OBJECTIVE_NAME: {}}
         jacobian[OBJECTIVE_NAME][X_SHARED_NAME] = atleast_2d(tmp)
         for index in range(self.n_submodels):
             constraint = get_constraint_name(index)
@@ -282,8 +281,7 @@ class TMSubModel(object):
         norm += npsum(self.c_shared, 1).reshape((-1, 1))
         norm += npsum(self.c_local, 1).reshape((-1, 1))
         der = old_div(-self.c_local, norm)
-        jacobian = {}
-        jacobian[coupling_name] = {}
+        jacobian = {coupling_name: {}}
         jacobian[coupling_name][x_local_name] = der
         jacobian[coupling_name][u_local_name] = eye(der.shape[0])
         der = old_div(-self.c_shared, norm)

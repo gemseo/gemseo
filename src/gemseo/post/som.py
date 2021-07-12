@@ -18,12 +18,9 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Self Organizing Maps plots to display high dimensional design spaces
-********************************************************************
-"""
+"""Self Organizing Maps to display high dimensional design spaces."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from math import floor, sqrt
@@ -36,6 +33,7 @@ from numpy import min as np_min
 from numpy import ndarray, nonzero, unique, where, zeros
 from pylab import plt
 
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.third_party import sompy
@@ -44,80 +42,39 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SOM(OptPostProcessor):
-    """The **SOM** post processing perform a self organizing map clustering on
-    optimization history.
+    """Self organizing map clustering optimization history.
 
-    Options of the plot method are the figure width and height, and the x- and y- number
-    of cells in the SOM. It is also possible either to save the plot, to show the plot
-    or both.
+    Options of the plot method are the figure width and height, and the x- and y-
+    numbers of cells in the SOM.
     """
 
-    def __init__(self, opt_problem):
-        """Constructor.
-
-        :param opt_problem : the optimization problem to run
-        """
+    def __init__(
+        self,
+        opt_problem,  # type: OptimizationProblem
+    ):  # type: (...) -> None
         super(SOM, self).__init__(opt_problem)
         self.som = None
         self.cmap = PARULA
 
-    def _run(
-        self,
-        n_x=4,
-        n_y=4,
-        save=False,
-        show=False,
-        file_path="SOM",
-        annotate=False,
-        width=12,
-        height=18,
-        extension="pdf",
-    ):
-        """Computes the clustering.
-
-        :param n_x: x-size
-        :type n_x: int
-        :param n_y: y-size
-        :type n_y: int
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param annotate: add label of neuron value to SOM plot
-        :param width: figure width
-        :param height: figure height
-        :param extension: file extension
-        :type extension: str
-        """
-
-        criteria = [
-            self.opt_problem.get_objective_name()
-        ] + self.opt_problem.get_constraints_names()
-        all_data = self.database.get_all_data_names()
-        # Ensure that the data is available in the database
-        for crit in criteria:
-            if crit not in all_data:
-                criteria.remove(crit)
-        figure = self._plot(
-            criteria, n_x, n_y, annotate=annotate, width=width, height=height
-        )
-        self._save_and_show(
-            figure, save=save, show=show, file_path=file_path, extension=extension
-        )
-
     @staticmethod
     def __build_som_from_vars(
-        x_vars, som_grid_nx=5, som_grid_ny=5, initmethod="pca", verbose="off"
-    ):
+        x_vars,  # type: ndarray
+        som_grid_nx=5,  # type:int
+        som_grid_ny=5,  # type:int
+        initmethod="pca",  # type:str
+        verbose="off",  # type:str
+    ):  # type: (...) -> SOM
         """Builds the SOM from the design variables history.
 
-        :param x_vars:  the design variables history numpy array (n_iter,n_dv)
-        :param som_grid_nx: number of neurons in the x direction
-        :param som_grid_ny: number of neurons in the y direction
-        :param initmethod: initialization method for the SOM
-        :param verbose: verbose for SOM training
+        Args:
+            x_vars: The design variables history (n_iter,n_dv).
+            som_grid_nx: The number of neurons in the x direction.
+            som_grid_ny: The number of neurons in the y direction.
+            initmethod: The initialization method for the SOM.
+            verbose: The verbose for SOM training.
+
+        Returns:
+            The self organizing map
         """
 
         LOGGER.info("Building Self Organizing Map from optimization history:")
@@ -134,14 +91,30 @@ class SOM(OptPostProcessor):
         var_som.train(n_job=1, shared_memory="no", verbose=verbose)
         return var_som
 
-    def _plot(self, criteria_list, n_x, n_y, width=12, height=18, annotate=False):
-        """Shows the SOM view after computation for a given criteria list.
-
-        :param criteria_list: the criteria to show
-        :param n_x: number of grids in x
-        :param n_y: number of grids in y
-        :param annotate: add label of neuron value to SOM plot
+    def _plot(
+        self,
+        n_x=4,  # type: int
+        n_y=4,  # type: int
+        width=12,  # type: int
+        height=18,  # type: int
+        annotate=False,  # type: bool
+    ):  # type: (...) -> None
         """
+        Args:
+            n_x: The number of grids in x.
+            n_y: The number of grids in y.
+            width: The width of the figure (in inches).
+            height: The height of the figure (in inches).
+            annotate: If True, add label of neuron value to SOM plot.
+        """
+        criteria_list = [
+            self.opt_problem.get_objective_name()
+        ] + self.opt_problem.get_constraints_names()
+        all_data = self.database.get_all_data_names()
+        # Ensure that the data is available in the database
+        for crit in criteria_list:
+            if crit not in all_data:
+                criteria_list.remove(crit)
         figure = plt.figure(figsize=(width, height), dpi=80)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
@@ -197,25 +170,27 @@ class SOM(OptPostProcessor):
                     annotate=annotate,
                 )
                 fig_indx += 1
-        return figure
+
+        self._add_figure(figure)
 
     def __plot_som_from_scalar_data(
         self,
-        f_hist_scalar,
-        criteria,
-        fig_indx,
-        grid_size_x=3,
-        grid_size_y=20,
-        annotate=False,
+        f_hist_scalar,  # type: ndarray
+        criteria,  # type: str
+        fig_indx,  # type: int
+        grid_size_x=3,  # type: int
+        grid_size_y=20,  # type: int
+        annotate=False,  # type: bool
     ):
         """Builds the SOM plot after computation for a given criteria.
 
-        :param criteria: the criteria to show
-        :param f_hist_scalar: the scalar data to show
-        :param fig_indx: the axe index in the figure
-        :param grid_size_x: number of SOMs in the grid on the x axis
-        :param grid_size_y: number of SOMs in the grid on the y axis
-        :param annotate: add label with average value of neural
+        Args:
+            criteria: The criteria to show.
+            f_hist_scalar: The scalar data to show.
+            fig_indx: The axe index in the figure.
+            grid_size_x: The number of SOMs in the grid on the x axis.
+            grid_size_y: The number of SOMs in the grid on the y axis.
+            annotate: If True, add label with average value of neural.
         """
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])
@@ -267,11 +242,16 @@ class SOM(OptPostProcessor):
         im1.axes.get_yaxis().set_visible(False)
         return axe
 
-    def __compute(self, som_grid_nx=5, som_grid_ny=5):
-        """Builds the SOM from optimization history.
+    def __compute(
+        self,
+        som_grid_nx=5,  # type: int
+        som_grid_ny=5,  # type: int
+    ):
+        """Build the SOM from optimization history.
 
-        :param som_grid_nx: number of neurons in the x direction
-        :param som_grid_ny: number of neurons in the y direction
+        Args:
+            som_grid_nx: The number of neurons in the x direction.
+            som_grid_ny: The number of neurons in the y direction.
         """
         x_history = self.database.get_x_history()
         x_vars = array(x_history).real
@@ -293,16 +273,19 @@ class SOM(OptPostProcessor):
             )
 
     @staticmethod
-    def __coord2d_to_coords_offsets(som_coord, max_ofset=0.6):
+    def __coord2d_to_coords_offsets(
+        som_coord,  # type: ndarray
+        max_ofset=0.6,  # type: float
+    ):  # type: (...) -> ndarray
         """Takes a coord array from SOM and adds an offset to the coordinates of the
         elements in the cluster so that they can be distinguished at display.
 
-        :param som_coord: the SOM coords array
-        :paramtype som_coord: ndarray
-        :param max_ofset: the maximum offset of the grid
-        :paramtype: max_ofset: float
-        :returns: a coordinate array
-        :rtype: ndarray
+        Args:
+            som_coord: The SOM coordinates.
+            max_ofset: The maximum offset of the grid.
+
+        Returns:
+            The coordinates.
         """
         coord_2d = som_coord[:, :2]
         coord_2d_offset = array(coord_2d, dtype=float64)

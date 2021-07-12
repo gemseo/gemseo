@@ -19,10 +19,7 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from os import chdir
-from os.path import exists
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import pi
@@ -68,9 +65,8 @@ def test_morris(tmp_path):
 
     assert morris.main_indices == indices["mu_star"]
 
-    chdir(str(tmp_path))
-    morris.plot("y", save=True, show=False)
-    assert exists("morris_analysis.pdf")
+    morris.plot("y", save=True, show=False, directory_path=tmp_path)
+    assert (tmp_path / "morris_analysis.png").exists()
     assert isinstance(morris.sort_parameters("y"), list)
     assert set(morris.sort_parameters("y")) == set(varnames)
 

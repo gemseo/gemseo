@@ -53,7 +53,7 @@ The user only needs to provide:
 The :class:`.ScalableModel` parameters can also be filled in,
 otherwise the model uses default values.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 

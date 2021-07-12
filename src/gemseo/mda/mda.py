@@ -22,10 +22,9 @@
 Base class for all Multi-disciplinary Design Analysis
 *****************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, super
 from multiprocessing import cpu_count
 
 import matplotlib.pyplot as plt
@@ -100,6 +99,50 @@ class MDA(MDODiscipline):
         self.use_lu_fact = use_lu_fact
         # By default dont use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
+
+        self._check_consistency()
+
+    def _check_consistency(self):
+        """Checks if there are not more than 1 equation per variable, for instance if a
+        strong coupling is not also a self coupling."""
+        strong_c_disc = self.coupling_structure.strongly_coupled_disciplines(
+            add_self_coupled=False
+        )
+        also_strong = [
+            disc
+            for disc in strong_c_disc
+            if self.coupling_structure.is_self_coupled(disc)
+        ]
+        if also_strong:
+            for disc in also_strong:
+                in_outs = set(disc.get_input_data_names()) & set(
+                    disc.get_output_data_names()
+                )
+                LOGGER.warning(
+                    "Self coupling variables in discipline %s are: %s",
+                    disc.name,
+                    in_outs,
+                )
+
+            also_strong_n = [disc.name for disc in also_strong]
+            raise ValueError(
+                "Too many coupling constraints. The following disciplines"
+                " are self coupled and also strongly coupled "
+                "with other disciplines: {}".format(also_strong_n)
+            )
+
+        all_outs = {}
+        multiple_outs = []
+        for disc in self.disciplines:
+            for out in disc.get_output_data_names():
+                if out in all_outs:
+                    multiple_outs.append(out)
+                all_outs[out] = disc
+
+        if multiple_outs:
+            raise ValueError(
+                "Outputs are defined multiple times: {}".format(multiple_outs)
+            )
 
     def _run(self):
         """Run the MDA."""
@@ -221,7 +264,7 @@ class MDA(MDODiscipline):
             self.local_data,
             outputs,
             inputs,
-            self.strong_couplings,
+            self.coupling_structure.get_all_couplings(),
             tol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
@@ -250,6 +293,8 @@ class MDA(MDODiscipline):
         normed_residual = norm((current_couplings - new_couplings).real)
         if self.norm0 is None:
             self.norm0 = normed_residual
+        if self.norm0 == 0:
+            self.norm0 = 1
         self.normed_residual = normed_residual / self.norm0
 
         if store_it:
@@ -314,13 +359,14 @@ class MDA(MDODiscipline):
         if inputs is None:
             inputs = self.get_input_data_names()
         inputs = list(iter(inputs))
-        for str_cpl in self.strong_couplings:
+        all_couplings = self.coupling_structure.get_all_couplings()
+        for str_cpl in all_couplings:
             if str_cpl in inputs:
                 inputs.remove(str_cpl)
         if outputs is None:
             outputs = self.get_output_data_names()
         outputs = list(iter(outputs))
-        for str_cpl in self.strong_couplings:
+        for str_cpl in all_couplings:
             if str_cpl in outputs:
                 outputs.remove(str_cpl)
 

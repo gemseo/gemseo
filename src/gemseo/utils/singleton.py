@@ -23,9 +23,8 @@
 Singletons implementation and variants
 **************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import str
 from os.path import realpath
 
 from gemseo.utils.py23_compat import string_types

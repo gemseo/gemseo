@@ -1,0 +1,114 @@
+{
+	"name": "PSEVEN_options",
+	"properties": {
+		"max_iter": {
+			"type": "integer",
+			"minimum": 1
+		},
+		"evaluation_cost_type": {
+			"type": "object"
+		},
+		"expensive_evaluations": {
+			"type": "object"
+		},
+		"sample_x": {
+			"type": "array"
+		},
+		"sample_f": {
+			"type": "array"
+		},
+		"sample_c": {
+			"type": "array"
+		},
+		"constraints_smoothness": {
+			"type": "string"
+		},
+		"global_phase_intensity": {
+			"type": "number",
+			"minimum": 0.0,
+			"maximum": 1.0
+		},
+		"max_expensive_func_iter": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 2147483647
+		},
+		"max_func_iter": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 4294967294
+		},
+		"objectives_smoothness": {
+			"type": "string"
+		},
+		"deterministic": {
+			"type": "boolean"
+		},
+		"log_level": {
+			"type": "string"
+		},
+		"verbose_log" : {
+			"type": "boolean"
+		},
+		"max_threads": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 512
+		},
+		"seed": {
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 2147483646
+		},
+		"time_limit": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 4294967294
+		},
+		"grad_tol": {
+			"type": "number",
+			"minimum": 0.0,
+			"maximum": 1.0
+		},
+		"grad_tol_is_abs": {
+			"type": "boolean"
+		},
+		"max_batch_size": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 65536
+		},
+		"detect_nan_clusters": {
+			"type": "boolean"
+		},
+		"diff_scheme": {
+			"type": "string"
+		},
+		"diff_type": {
+			"type": "string"
+		},
+		"diff_step" : {
+			"type": "number",
+			"minimum": 1.1920929e-07,
+			"maximum": 1.0
+		},
+		"ensure_feasibility": {
+			"type": "boolean"
+		},
+		"local_search": {
+			"type": "boolean"
+		},
+		"restore_analytic_func": {
+			"type": "boolean"
+		},
+		"globalization_method": {
+			"type": "string"
+		},
+		"surrogate_based": {
+			"type": "boolean"
+		}
+	},
+	"$schema": "http://json-schema.org/draft-04/schema",
+	"additionalProperties": false,
+	"type": "object"
+}

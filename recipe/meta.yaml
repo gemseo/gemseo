@@ -26,8 +26,10 @@ requirements:
     - python  # [py==27 or py==36 or py==37 or py==38]
     - python-fastjsonschema <=2.14.5  # [py3k]
     - future
+    - genson ==1.2.2
     - h5py >=2.3,<=2.10.0
     - matplotlib >=2,<=3.3.3
+    - networkx <=2.5
     - numpy >=1.10,<=1.19.3  # [win]
     - numpy >=1.10,<=1.19.4  # [not win]
     - pathlib2  # [py2k]

@@ -69,10 +69,9 @@ where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
 This methodology relies on the :class:`.MorrisAnalysis` class.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import super
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -272,6 +271,8 @@ class MorrisAnalysis(SensitivityAnalysis):
         save=True,  # type: bool
         show=False,  # type: bool
         file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         offset=1,  # type: float
         lower_mu=None,  # type: Optional[float]
@@ -296,7 +297,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         names = self._filter_names(names, inputs)
         x_val = [self.mu_star[output[0]][output[1]][name] for name in names]
         y_val = [self.sigma[output[0]][output[1]][name] for name in names]
-        _, ax = plt.subplots()
+        fig, ax = plt.subplots()
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
@@ -312,4 +313,12 @@ class MorrisAnalysis(SensitivityAnalysis):
         y_offset = offset * (max(y_val) - min(y_val)) / 100.0
         for index, txt in enumerate(names):
             ax.annotate(txt, (x_val[index] + x_offset, y_val[index] + y_offset))
-        self._save_show_plot(save, show, file_path, file_format)
+        self._save_show_plot(
+            fig,
+            save=save,
+            show=show,
+            file_path=file_path,
+            file_name=file_name,
+            file_format=file_format,
+            directory_path=directory_path,
+        )

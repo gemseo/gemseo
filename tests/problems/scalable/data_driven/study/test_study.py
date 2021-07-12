@@ -19,7 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 
@@ -29,7 +29,15 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import (
+    OBJ,
+    X_LOCAL,
+    X_SHARED,
+    Y_1,
+    Sellar1,
+    Sellar2,
+    SellarSystem,
+)
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -66,8 +74,8 @@ def sellar_use_case(tmp_wd):
             [discipline], "DisciplinaryOpt", objective_name, design_space
         )
         scenario.execute({"algo": "DiagonalDOE", "n_samples": n_samples})
-    design_variables = ["x_shared", "x_local"]
-    objective_name = "obj"
+    design_variables = [X_SHARED, X_LOCAL]
+    objective_name = OBJ
     os.mkdir("study_1")
     os.mkdir("study_2")
     os.makedirs("empty_dir/results")
@@ -76,7 +84,7 @@ def sellar_use_case(tmp_wd):
 
 def test_scalabilitystudy1(sellar_use_case):
     design_variables, objective, f_name, disciplines_names = sellar_use_case
-    variables = [{"x_shared": i} for i in range(1, 2)]
+    variables = [{X_SHARED: i} for i in range(1, 2)]
     directory = "study_1"
     ScalabilityStudy(
         objective,
@@ -88,26 +96,26 @@ def test_scalabilitystudy1(sellar_use_case):
     for discipline_name in disciplines_names:
         study.add_discipline(HDF5Cache(f_name, discipline_name).export_to_dataset())
     assert disciplines_names == study.disciplines_names
-    study.set_input_output_dependency("SellarSystem", "obj", ["y_0"])
+    study.set_input_output_dependency("SellarSystem", OBJ, [Y_1])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency("SellarSystem", "obj", "y_0")
+        study.set_input_output_dependency("SellarSystem", OBJ, Y_1)
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("SellarSystem", "obj", ["dummy"])
+        study.set_input_output_dependency("SellarSystem", OBJ, ["dummy"])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency("SellarSystem", "obj", [1])
+        study.set_input_output_dependency("SellarSystem", OBJ, [1])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency("SellarSystem", ["obj"], ["y_0"])
+        study.set_input_output_dependency("SellarSystem", [OBJ], [Y_1])
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("SellarSystem", "dummy", ["y_0"])
+        study.set_input_output_dependency("SellarSystem", "dummy", [Y_1])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency(["SellarSystem"], "obj", ["y_0"])
+        study.set_input_output_dependency(["SellarSystem"], OBJ, [Y_1])
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("dummy", "obj", ["y_0"])
-    study.set_fill_factor("SellarSystem", "obj", 0.4)
+        study.set_input_output_dependency("dummy", OBJ, [Y_1])
+    study.set_fill_factor("SellarSystem", OBJ, 0.4)
     with pytest.raises(TypeError):
-        study.set_fill_factor("SellarSystem", "obj", "high")
+        study.set_fill_factor("SellarSystem", OBJ, "high")
     with pytest.raises(TypeError):
-        study.set_fill_factor("SellarSystem", "obj", 1.4)
+        study.set_fill_factor("SellarSystem", OBJ, 1.4)
     with pytest.raises(ValueError):
         study.execute(1)
     study.add_optimization_strategy(
@@ -121,7 +129,7 @@ def test_scalabilitystudy1(sellar_use_case):
     tol = 1e-4
     algo_options = {"ftol_rel": tol, "xtol_rel": tol, "ftol_abs": tol, "xtol_abs": tol}
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_options=algo_options)
-    variables = [{"x_shared": i} for i in range(1, 3)]
+    variables = [{X_SHARED: i} for i in range(1, 3)]
 
     with pytest.raises(ValueError):
         PostScalabilityStudy("dummy")
@@ -154,7 +162,7 @@ def test_scalabilitystudy1(sellar_use_case):
 
 def test_scalabilitystudy2(sellar_use_case):
     design_variables, objective, f_name, disciplines_names = sellar_use_case
-    variables = [{"x_shared": i} for i in range(1, 3)]
+    variables = [{X_SHARED: i} for i in range(1, 3)]
     study = ScalabilityStudy(objective, design_variables, "study_2")
     for discipline_name in disciplines_names:
         study.add_discipline(HDF5Cache(f_name, discipline_name).export_to_dataset())

@@ -48,7 +48,7 @@ while each feature corresponds to a given spatial point :math:`x`.
 `More information about Burgers' equation
 <https://en.wikipedia.org/wiki/Burgers%27_equation>`_
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import exp, hstack, linspace, pi, square
 

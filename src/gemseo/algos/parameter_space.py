@@ -67,11 +67,14 @@ The :class:`.ParameterSpace` also provides the following methods:
 - :meth:`.is_uncertain`: checks if a parameter is uncertain,
 - :meth:`.is_deterministic`: checks if a parameter is deterministic.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
 
 from numpy import array, ndarray
 
@@ -120,7 +123,7 @@ class ParameterSpace(DesignSpace):
         self.distributions = {}
         self.distribution = None
         if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
-            raise ValueError("{} is not an available copula.".format(copula))
+            raise ValueError("{} is not a copula name".format(copula))
         self._copula = copula
 
     def is_uncertain(
@@ -326,7 +329,7 @@ class ParameterSpace(DesignSpace):
         error_msg = (
             "obj must be a dictionary whose keys are the variables "
             "names and values are arrays whose dimensions are the "
-            "variables ones and components are in [0, 1]."
+            "variables ones and components are in [0, 1]"
         )
         if not isinstance(obj, dict):
             raise TypeError(error_msg)
@@ -528,3 +531,48 @@ class ParameterSpace(DesignSpace):
             deterministic_space.set_lower_bound(name, self.get_lower_bound(name))
             deterministic_space.set_upper_bound(name, self.get_upper_bound(name))
         return deterministic_space
+
+    @staticmethod
+    def init_from_dataset(
+        dataset,  # type: Dataset
+        groups=None,  # type: Optional[Iterable[str]]
+        uncertain=None,  # type: Optional[Mapping[str,bool]]
+        copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
+    ):  # type: (...) -> ParameterSpace
+        """Initialize the parameter space from a dataset.
+
+        Args:
+            dataset: The dataset used for the initialization.
+            groups: The groups of the dataset to be considered.
+                If None, consider all the groups.
+            uncertain: Whether the variables should be uncertain or not.
+            copula: A name of copula defining the dependency between random variables.
+        """
+        parameter_space = ParameterSpace(copula=copula)
+
+        if uncertain is None:
+            uncertain = {}
+
+        if groups is None:
+            groups = dataset.groups
+        for group in groups:
+            for name in dataset.get_names(group):
+                data = dataset.get_data_by_names(name)[name]
+                l_b = data.min(0)
+                u_b = data.max(0)
+                value = (l_b + u_b) / 2
+                size = len(l_b)
+
+                if uncertain.get(name, False):
+                    for idx in range(size):
+                        parameter_space.add_random_variable(
+                            "{}_{}".format(name, idx),
+                            "OTUniformDistribution",
+                            1,
+                            minimum=float(l_b[idx]),
+                            maximum=float(u_b[idx]),
+                        )
+                else:
+                    parameter_space.add_variable(name, size, "float", l_b, u_b, value)
+
+        return parameter_space

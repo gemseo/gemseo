@@ -46,7 +46,7 @@ this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from typing import Dict, Iterable, Optional

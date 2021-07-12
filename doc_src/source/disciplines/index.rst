@@ -29,10 +29,10 @@ A discipline is a set of calculations that:
 - from a dictionary of arrays as inputs
 - using either a Python function, or equations or an external software, or a :term:`workflow engine`.
 
-How is a discipline implemented in discipline?
+How is a discipline implemented in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Programmatically speaking, disciplines are implemented in discipline through the :class:`.MDODiscipline` class.
+Programmatically speaking, disciplines are implemented in |g| through the :class:`.MDODiscipline` class.
 They are defined by three elements:
 
 - the :attr:`.MDODiscipline.input_grammar` attribute: the set of rules that defines valid input data,
@@ -49,7 +49,7 @@ derives from the :class:`.AbstractGrammar` class.
 
 .. note::
 
-   The :term:`grammar` is a very powerful and key concept. There are multiple ways of creating grammars in discipline.
+   The :term:`grammar` is a very powerful and key concept. There are multiple ways of creating grammars in |g|.
    The preferred one for integrating simulation processes is the use of a :term:`JSON schema`, but is not detailed here for the sake of simplicity.
    For more explanations about grammars, see :ref:`software_connection`.
 
@@ -57,7 +57,7 @@ derives from the :class:`.AbstractGrammar` class.
 
    **All the inputs and outputs names of the disciplines in a scenario shall be consistent**.
 
-   - discipline assumes that the data are tagged by their names with a global convention in the whole process.
+   - |g| assumes that the data are tagged by their names with a global convention in the whole process.
    - What two disciplines call "X" shall be the same "X". The coupling variables for instance, are detected thanks to these conventions.
 
 Inheritance
@@ -69,7 +69,7 @@ To be used, if your :class:`.MDODiscipline` of interest does not exist, you must
 
 - define a class inheriting from :class:`.MDODiscipline`,
 - define the input and output grammars in the constructor,
-- implement the :meth:`!MDODiscipline._run` method which defined the way in which the output set values are obtained from the input set values.
+- implement the :meth:`!MDODiscipline._run` method which defines the way in which the output set values are obtained from the input set values.
 
 .. note::
 
@@ -83,12 +83,12 @@ To be used, if your :class:`.MDODiscipline` of interest does not exist, you must
     folder as your subclass module and named :code:`"CLASSNAME_input.json"` and :code:`"CLASSNAME_output.json"`
     and the :code:`auto_detect_grammar_files` option is :code:`True`.
 
-What are the API functions in discipline?
+What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once a sub-class of :class:`.MDODiscipline`, an instance of this discipline can be created from the :meth:`~gemseo.api.create_discipline` API function.
+Once a sub-class of :class:`.MDODiscipline` is defined, an instance of this discipline can be created from the :meth:`~gemseo.api.create_discipline` API function.
 
-Furthermore, many disciplines inheriting from :class:`.MDODiscipline` are already implemented in discipline.
+Furthermore, many disciplines inheriting from :class:`.MDODiscipline` are already implemented in |g|.
 Use the :meth:`~gemseo.api.get_available_disciplines` API function to discover them:
 
 .. code::
@@ -107,7 +107,7 @@ which results in:
 
    These available :class:`.MDODiscipline` can be classified into different categories:
 
-   - classes implementing scenario, a key concept in discipline: :class:`.Scenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
+   - classes implementing scenario, a key concept in |g|: :class:`.Scenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
    - classes implementing MDO problem disciplines:
 
        - Sobieski's SSBJ problem: :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiBaseWrapper`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiStructure` and :class:`~gemseo.problems.sobieski.wrappers.SobieskiPropulsion`,
@@ -118,7 +118,7 @@ which results in:
    - classes implementing special disciplines: :class:`.MDOParallelChain`, :class:`.MDOChain`, :class:`.ScalableDiscipline` and :class:`.MDOScenarioAdapter`.
    - classes implementing optimization discipline: :class:`.RosenMF`.
 
-How to instantiate an existing :class:`.MDODiscipline`
+How to instantiate an existing :class:`.MDODiscipline`?
 ***************************************************************************
 
 We can easily instantiate an internal discipline by means of the :meth:`~gemseo.api.create_discipline`, e.g.:
@@ -199,7 +199,7 @@ or the HDF5 cache strategy with a user-defined name as node name (here :code:`no
    which represents the tolerance for the approximate cache maximal relative norm difference to consider that two input arrays are equal.
 
    By default, :code:`cache_tolerance` is equal to zero. We can get its value by means of the :attr:`.MDODiscipline.cache_tol` getter
-   and can change iuts value by means of the :attr:`.MDODiscipline.cache_tol` setter.
+   and change its value by means of the :attr:`.MDODiscipline.cache_tol` setter.
 
 How to execute a :class:`.MDODiscipline`?
 *****************************************
@@ -215,23 +215,23 @@ which results in:
 
 .. code::
 
-   {'obj': array([ 1.36787944+0.j]), 'y_1': array([ 1.+0.j]), 'y_0': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
+   {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
 
 
-or with user-defined values, defined into a :code:`dict` indexed by input data names with numpy array values, e.g.:
+or with user-defined values, defined into a :code:`dict` indexed by input data names with NumPy array values, e.g.:
 
 .. code::
 
    import numpy as np
 
-   input_data = {'y_0': array([ 2.]), 'x_shared': array([ 1.,  0.]), 'y_1': array([ 1.]), 'x_local': array([ 0.])}
+   input_data = {'y_1': array([ 2.]), 'x_shared': array([ 1.,  0.]), 'y_2': array([ 1.]), 'x_local': array([ 0.])}
    sellar_system.execute(input_data)
 
 which results in:
 
 .. code::
 
-   {'obj': array([ 4.36787944+0.j]), 'y_1': array([ 1.]), 'y_0': array([ 2.]), 'c_1': array([-0.84+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.,  0.]), 'x_local': array([ 0.])}
+   {'obj': array([ 4.36787944+0.j]), 'y_2': array([ 1.]), 'y_1': array([ 2.]), 'c_1': array([-0.84+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.,  0.]), 'x_local': array([ 0.])}
 
 How to get information about an instantiated :class:`.MDODiscipline`?
 *********************************************************************
@@ -249,7 +249,7 @@ which results in:
 
 .. parsed-literal::
 
-    ['y_0', 'x_shared', 'y_1', 'x_local'] ['c_1', 'c_2', 'obj']
+    ['y_1', 'x_shared', 'y_2', 'x_local'] ['c_1', 'c_2', 'obj']
 
 5.b. How to check the validity of input or output data?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -314,7 +314,7 @@ The :code:`list` returned by :code:`sellar_system.get_all_inputs()` (resp. :code
 All input or output data values as a large array
 ------------------------------------------------
 
-This :code:`list` of numpy arrays can be converted into a large numpy array by means of :meth:`.MDODiscipline.get_inputs_asarray` method (resp. :meth:`.MDODiscipline.get_outputs_asarray`), e.g.
+This :code:`list` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.MDODiscipline.get_inputs_asarray` method (resp. :meth:`.MDODiscipline.get_outputs_asarray`), e.g.
 
 .. code::
 
@@ -383,6 +383,6 @@ from input or output grammars, or data for other variables, e.g.:
 .. code::
 
    print(sellar_system.local_data)
-   {'obj': array([ 1.36787944+0.j]), 'y_1': array([ 1.+0.j]), 'y_0': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
+   {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
    sellar_system.store_local_data(**{'obj': array([1.]), 'new_variable': 'value'})
-   {'obj': array([ 1.]), 'new_variable': 'value', 'y_1': array([ 1.+0.j]), 'y_0': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
+   {'obj': array([ 1.]), 'new_variable': 'value', 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}

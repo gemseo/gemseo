@@ -28,12 +28,11 @@
 SSBJ base class
 ***************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import cmath
 import logging
 import math
-from builtins import range, str
 
 from numpy import array, asarray, complex128, concatenate, dot, float64, zeros
 from numpy.linalg import lstsq

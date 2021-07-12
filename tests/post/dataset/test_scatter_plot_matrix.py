@@ -22,7 +22,7 @@
 
 """Test the class ScatterMatrix plotting variables versus themselves."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from matplotlib.testing.decorators import image_comparison
@@ -55,7 +55,7 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None, extensions=["png"], tol=0.025)
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):  # noqa: F811
     """Test images created by ScatterMatrix._plot against references.
 

@@ -26,7 +26,7 @@ MDAChain
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_mda
 

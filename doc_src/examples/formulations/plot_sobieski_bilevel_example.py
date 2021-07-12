@@ -27,6 +27,8 @@ from __future__ import division, unicode_literals
 
 from copy import deepcopy
 
+from matplotlib import pyplot as plt
+
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
@@ -147,13 +149,15 @@ system_scenario.execute(
 # Plot the history of the MDA residuals
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For the first MDA:
-system_scenario.formulation.mda1.plot_residual_history(show=True, save=False)
+system_scenario.formulation.mda1.plot_residual_history(show=False, save=False)
 # For the second MDA:
-system_scenario.formulation.mda2.plot_residual_history(show=True, save=False)
+system_scenario.formulation.mda2.plot_residual_history(show=False, save=False)
 
 ##############################################################################
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("OptHistoryView", show=True, save=False)
+system_scenario.post_process("OptHistoryView", show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()
 for disc in [propu, aero, mission, struct]:
     print("{}: {} calls.".format(disc.name, disc.n_calls))

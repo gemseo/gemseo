@@ -20,14 +20,18 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import Dict, List, Tuple
 
 import pytest
-from numpy import arange, array, atleast_2d, hstack
+from numpy import arange, array, atleast_2d, hstack, ndarray
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_dataset
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import (
     create_classification_model,
@@ -47,6 +51,7 @@ from gemseo.mlearning.api import (
     import_mlearning_model,
     import_regression_model,
 )
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [
@@ -62,8 +67,8 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
 @pytest.fixture
-def dataset():
-    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the machine learning algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -76,8 +81,8 @@ def dataset():
 
 
 @pytest.fixture
-def classification_data():
-    """Dataset for classification."""
+def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,str]]
+    """The dataset used to train the classification algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
     )
@@ -88,8 +93,8 @@ def classification_data():
 
 
 @pytest.fixture
-def cluster_data():
-    """Dataset for clustering."""
+def cluster_data():  # type:(...) -> Tuple[ndarray,List[str]]
+    """The dataset used to train the clustering algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
     )
@@ -150,6 +155,21 @@ def test_create_regression_model(dataset):
     """Test creation of regression model."""
     model = create_regression_model("LinearRegression", dataset)
     assert model.algo is not None
+
+    probability_space = ParameterSpace()
+    probability_space.add_random_variable(
+        "x_1", "OTUniformDistribution", minimum=0, maximum=1
+    )
+    probability_space.add_random_variable(
+        "x_2", "OTUniformDistribution", minimum=0, maximum=1
+    )
+    model = create_regression_model(
+        "PCERegression",
+        dataset,
+        probability_space=probability_space,
+        transformer={"inputs": MinMaxScaler()},
+    )
+    assert not model.transformer
 
 
 def test_create_classification_model(classification_data):

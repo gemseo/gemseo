@@ -26,9 +26,9 @@ of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 :math:`z` as a parameter and the mesh as a metadata.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping, Optional, Sequence
+from typing import List, Mapping, Optional, Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
@@ -47,7 +47,7 @@ class Surfaces(DatasetPlot):
         variable,  # type: str
         samples=None,  # type:Optional[Sequence[int]]
         add_points=False,  # type: bool
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.

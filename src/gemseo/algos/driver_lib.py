@@ -19,6 +19,7 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+
 """
 Driver library
 ==============
@@ -37,13 +38,13 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
-from __future__ import absolute_import, division, unicode_literals
+
+from __future__ import division, unicode_literals
 
 import inspect
 import io
 import logging
 import string
-from builtins import str
 from os.path import dirname, exists, join
 from time import time
 
@@ -63,7 +64,7 @@ from gemseo.algos.stop_criteria import (
 )
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.source_parsing import SourceParsing
+from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
@@ -123,10 +124,10 @@ class DriverLib(object):
     """Abstract class for DOE & optimization libraries interfaces.
 
     Lists available methods in the library for the proposed
-    problem to be solved
+    problem to be solved.
 
     To integrate an optimization package, inherit from this class
-    and put your file in gemseo.algos.doe or gemseo.algo.opt packages
+    and put your file in gemseo.algos.doe or gemseo.algo.opt packages.
     """
 
     USER_DEFINED_GRADIENT = OptimizationProblem.USER_GRAD
@@ -199,12 +200,11 @@ class DriverLib(object):
                 msg += lib_schema_file + " not found either."
                 raise ValueError(msg)
 
+        descr_dict = get_options_doc(self.__class__._get_options)
         self.opt_grammar = JSONGrammar(
-            algo_name, schema_file=schema_file, grammar_type="input"
+            algo_name, schema_file=schema_file, descriptions=descr_dict
         )
 
-        descr_dict = SourceParsing.get_options_doc(self.__class__._get_options)
-        self.opt_grammar.add_description(descr_dict)
         return self.opt_grammar
 
     @property
@@ -215,8 +215,7 @@ class DriverLib(object):
     def init_iter_observer(self, max_iter, message):
         """Initialize the iteration observer.
 
-        It will handle the stopping criterion and the logging of the progress
-        bar.
+        It will handle the stopping criterion and the logging of the progress bar.
 
         :param max_iter: maximum number of calls
         :param message: message to display at the beginning
@@ -244,7 +243,7 @@ class DriverLib(object):
         """Callback called at each new iteration, ie every time a design vector that is
         not already in the database is proposed by the optimizer.
 
-        Iterates the progress bar, implements the stop criteria
+        Iterates the progress bar, implements the stop criteria.
         """
         # First check if the max_iter is reached and update the progress bar
         self.__iter += 1
@@ -269,8 +268,7 @@ class DriverLib(object):
 
         :param problem: the problem to be solved
         :param algo_name: name of the algorithm
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        :param options: the options dict for the algorithm, see associated JSON file
         """
         self._start_time = time()
         self._max_time = options.get(self.MAX_TIME, 0.0)
@@ -282,8 +280,7 @@ class DriverLib(object):
         :param problem: the problem to be solved
         :param algo_name: name of the algorithm
         :param result: result of the run such as an OptimizationResult
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        :param options: the options dict for the algorithm, see associated JSON file
         """
         LOGGER.info("%s", result)
         problem.solution = result
@@ -306,7 +303,6 @@ class DriverLib(object):
 
         :param options: driver options
         """
-
         for option_key in list(options.keys()):  # Copy keys on purpose
             # Remove extra options added in the _get_option method of the
             # driver
@@ -336,8 +332,7 @@ class DriverLib(object):
         return options
 
     def _check_ignored_options(self, options):
-        """Checks that the user did not passed options that do not exist for this
-        driver.
+        """Check that the user did not passed options that do not exist for this driver.
 
         Raises a warning if it is the case
         :param options: options dict
@@ -357,7 +352,6 @@ class DriverLib(object):
             which may have been set by the factory (Default value = None)
         :param options: the options dict for the algorithm
         """
-
         self.problem = problem
         if algo_name is not None:
             self.algo_name = algo_name

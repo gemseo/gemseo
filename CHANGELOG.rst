@@ -6,6 +6,15 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+..
+   Changelog titles are:
+   - Added for new features.
+   - Changed for changes in existing functionality.
+   - Deprecated for soon-to-be removed features.
+   - Removed for now removed features.
+   - Fixed for any bug fixes.
+   - Security in case of vulnerabilities.
+
 Changelog
 =========
 
@@ -15,6 +24,76 @@ The format is based on
 `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
+
+
+Unreleased
+**********
+
+Changed
+-------
+
+- Faster JSON schema and dependency graph creation.
+- The Gradient Sensitivity post processor is now able to scale gradients.
+- MemoryFullCache can now use standard memory as well as shared memory.
+- Sellar1 and Sellar2 compute y_1 and y_2 respectively, for consistency of naming.
+- Improve checks of MDA structure.
+- IDF: add option to start at equilibrium with an MDA.
+- Improve doc of GEMSEO study.
+- Unified drivers stop criteria computed by GEMSEO (xtol_rel, xtol_abs, ftol_rel, ftom_abs).
+- SimpleGrammars supported for all processes (MDOChain, MDAChain etc.).
+- JSONGrammar can be converted to SimpleGrammar.
+- DiscFromExe can now run executables without using the shell.
+- It is now possible to add observable variables to the scenario class.
+- ParetoFront post-processing improvements: legends have been added,
+  it is now possible to hide the non-feasible points in the plots.
+- The Gradient Sensitivity, Variable Influence and Correlations post processors
+  now show variables names instead of hard-coded names.
+- The Correlations post processor now allows the user to select a subset of functions to plot.
+- The Correlations post processor now allows the user to select the figure size.
+- Documentation improvements.
+
+Added
+-----
+
+- Support for Python 3.9.
+- Support for fastjsonschema up to 2.15.1.
+- Support for h5py up to 3.2.1.
+- Support for numpy up to 1.20.3.
+- Support for pyxdsm up to 2.2.0.
+- Support for scipy to 1.6.3.
+- Support for tqdm up to 4.61.0.
+- Support for xdsmjs up to 1.0.1.
+- Support for openturns up to 1.16.
+- Support for pandas up to 1.2.4.
+- Support for scikit-learn up to 0.24.2.
+- Support for openpyxl up to 3.0.7.
+- Support for nlopt up to 2.7.0.
+- Constraint aggregation methods (KS, IKS, max, sum).
+- N2: an interactive web N2 chart allowing to expand or collapse the groups of strongly coupled disciplines.
+- Uncertainty: user interface for easy access.
+- Sensitivity analysis: an abstract class with sorting, plotting and comparison methods,
+  with a dedicated factory and new features (correlation coefficients and Morris indices).
+- Sensitivity analysis: examples.
+- ConcatenationDiscipline: a new discipline to concatenate inputs variables into a single one.
+- Gantt chart generation to visualize the disciplines execution time.
+- An interactive web N2 chart allowing to expand or collapse the groups of strongly coupled disciplines.
+
+Fixed
+-----
+
+- The greatest value that OT_LHSC can generate must not be 0.5 but 1.
+- Internally used HDF5 file left open.
+- The Scatter Plot Matrix post processor now plots the correct values for a subset of variables or functions.
+- MDA Jacobian fixes in specific cases (self-coupled, no strong couplings, etc).
+- Strong coupling definition.
+- Bi-level formulation implementation, following the modification of the strong coupling definition.
+- Graphviz package is no longer mandatory.
+- XDSM pdf generation bug.
+- DiscFromExe tests do not fail anymore under Windows,
+  when using a network directory for the pytest base temporary directory.
+- No longer need quotation marks on gemseo-study string option values.
+- XDSM file generated with the right name given with outfilename.
+- SellarSystem works now in the Sphinx-Gallery documentation (plot_sellar.py).
 
 
 Version 3.0.3 (May 2021)
@@ -56,7 +135,7 @@ Version 3.0.0 (January 2021)
 Added
 -----
 
-- Licenses materials
+- Licenses materials.
 
 Changed
 -------
@@ -249,7 +328,7 @@ Version 1.1.0 (April 2018)
 Added
 -----
 
-- Mix finite differences in the disicipline derivation and analytical jacobians or complex step to compute chain rule or adjoint method when not all disciplines' analytical derivatives are available
+- Mix finite differences in the discipline derivation and analytical jacobians or complex step to compute chain rule or adjoint method when not all disciplines' analytical derivatives are available
 - Ability to handle design spaces with integer variables
 - Analytic discipline based on symbolic calculation to easily create disciplines from analytic formulas
 - A scalable surrogate approximation of a discipline to benchmark MDO formulations
@@ -258,12 +337,12 @@ Added
 - Parallel (multiprocessing and / or multithreading) execution of disciplines and or call to functions
 - New constraints plot visualizations (radar chart) and constraints plot with values
 - Visualization to plot the distance to the best value in log scale ||x-x*||
-- Possibility to choose to nomalize the design space or not for each variable
+- Possibility to choose to normalize the design space or not for each variable
 - IDF improved for weakly coupled problems
 - On the fly backup of the optimization history (HDF5), in "append" mode
 - We can now monitor the convergence on the fly by creating optimization history plots at each iteration
 - Famous N2 plot in the CouplingStructure
-- Sphinx generated documention in HTML (open doc/index.html), with:
+- Sphinx generated documentation in HTML (open doc/index.html), with:
 
 	- GEMS in a nutshell tutorial
 	- Discipline integration tutorial

@@ -20,24 +20,26 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian process regression algorithm module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.gpr import GaussianProcessRegression
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.utils.data_conversion import DataConversion
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():
-    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -50,16 +52,16 @@ def dataset():
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> GaussianProcessRegression
+    """A trained GaussianProcessRegression."""
     gpr = GaussianProcessRegression(dataset)
     gpr.learn()
     return gpr
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model from data."""
+def model_with_transform(dataset):  # type: (...) -> GaussianProcessRegression
+    """A trained GaussianProcessRegression with inputs scaling."""
     gpr = GaussianProcessRegression(dataset, transformer={"inputs": Scaler()})
     gpr.learn()
     return gpr
@@ -100,6 +102,8 @@ def test_predict_std(model):
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
     assert prediction_std > 0
+    input_value = DataConversion.dict_to_array(input_value, model.input_names)
+    assert model.predict_std(input_value) == prediction_std
 
 
 def test_predict_std_with_transform(model_with_transform):

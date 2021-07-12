@@ -19,71 +19,112 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Clustering algorithm
-====================
+"""This module contains the base classes for clustering algorithms.
 
 The :mod:`~gemseo.mlearning.cluster.cluster` module
 implements the concept of clustering models,
-a kind of unsupervised machine learning algorithm where the goal is
-to group data into clusters.
-Wherever it is possible, these methods should be able to predict the class of
-new data, as well as the probability of belonging to each class.
+a kind of unsupervised machine learning algorithm
+where the goal is to group data into clusters.
+Wherever possible,
+these methods should be able to predict the class of the new data,
+as well as the probability of belonging to each class.
 
-This concept is implemented through the :class:`.MLClusteringAlgo` class
-which inherits from the :class:`.MLUnsupervisedAlgo` class.
+This concept is implemented
+through the :class:`.MLClusteringAlgo` class,
+which inherits from the :class:`.MLUnsupervisedAlgo` class,
+and through the :class:`.MLPredictiveClusteringAlgo` class
+which inherits from :class:`.MLClusteringAlgo`.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import atleast_2d, unique, zeros
+from typing import Dict, Iterable, List, NoReturn, Optional, Union
 
+from numpy import atleast_2d, ndarray, unique, zeros
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
 from gemseo.utils.data_conversion import DataConversion
+
+SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 
 
 class MLClusteringAlgo(MLUnsupervisedAlgo):
     """Clustering algorithm.
 
-    Inheriting class should overload the
-    :meth:`!MLUnsupervisedAlgo._fit` method, and the
-    :meth:`!MLClusteringAlgo._predict` and
-    :meth:`!MLClusteringAlgo._predict_proba` methods if possible.
+    The inheriting classes shall overload the
+    :meth:`!MLUnsupervisedAlgo._fit` method.
+
+    Attributes:
+        labels (List(int)): The indices of the clusters for the different samples.
+        n_clusters (int): The number of clusters.
     """
 
-    def __init__(self, data, transformer=None, var_names=None, **parameters):
-        """Constructor.
-
-        :param Dataset data: learning dataset.
-        :param transformer: transformation strategy for data groups.
-            If None, do not scale data. Default: None.
-        :type transformer: dict(str)
-        :param var_names: names of the variables to consider.
-        :type var_names: list(str)
-        :param parameters: algorithm parameters.
-        """
+    def __init__(
+        self,
+        data,  # type:Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        var_names=None,  # type: Optional[Iterable[str]]
+        **parameters  # type:MLAlgoParameterType
+    ):  # type: (...) -> None
         super(MLClusteringAlgo, self).__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
         self.labels = None
         self.n_clusters = None
 
-    def learn(self, samples=None):
-        """Overriding learn function for assuring that labels are defined.
-
-        Identify number of clusters.
-        """
+    def learn(
+        self,
+        samples=None,  # type: Optional[List[int]]
+    ):  # type: (...) -> None
         super(MLClusteringAlgo, self).learn(samples=samples)
         if self.labels is None:
-            raise ValueError("self._fit() should assign labels.")
+            raise ValueError("self._fit() shall assign labels.")
         self.n_clusters = unique(self.labels).shape[0]
 
-    def predict(self, data):
-        """Predict cluster of data.
+    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
+        objects = super(MLClusteringAlgo, self)._get_objects_to_save()
+        objects["labels"] = self.labels
+        objects["n_clusters"] = self.n_clusters
+        return objects
 
-        :param data: data (1D or 2D).
-        :type data: dict(ndarray) or ndarray
-        :return: clusters of data ("0D" or 1D).
-        :rtype: int or ndarray(int)
+
+class MLPredictiveClusteringAlgo(MLClusteringAlgo):
+    """Predictive clustering algorithm.
+
+    The inheriting classes shall overload the
+    :meth:`!MLUnsupervisedAlgo._fit` method, and the
+    :meth:`!MLClusteringAlgo._predict` and
+    :meth:`!MLClusteringAlgo._predict_proba` methods if possible.
+    """
+
+    def predict(
+        self,
+        data,  # type: DataType
+    ):  # type: (...) -> Union[int,ndarray]
+        """Predict the clusters from the input data.
+
+        The user can specify these input data either as a NumPy array,
+        e.g. :code:`array([1., 2., 3.])`
+        or as a dictionary,
+        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+
+        If the numpy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the numpy arrays are of dimension 1,
+        there is a single sample.
+
+        The type of the output data and the dimension of the output arrays
+        will be consistent
+        with the type of the input data and the dimension of the input arrays.
+
+        Args:
+            data: The input data.
+
+        Returns:
+            The predicted cluster for each input data sample.
         """
         as_dict = isinstance(data, dict)
         if as_dict:
@@ -98,24 +139,47 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
             clusters = clusters[0]
         return clusters
 
-    def _predict(self, data):
-        """Predict cluster of data.
+    def _predict(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
+        """Predict the clusters from input data.
 
-        :param ndarray data: data (2D).
-        :return: clusters of data (1D).
-        :rtype: ndarray(int)
+        Args:
+            data: The input data with the shape (n_samples, n_inputs).
+
+        Returns:
+            The predicted clusters with shape (n_samples,).
         """
         raise NotImplementedError
 
-    def predict_proba(self, data, hard=True):
-        """Predict probability of belonging to each cluster.
+    def predict_proba(
+        self,
+        data,  # type: DataType
+        hard=True,  # type: bool
+    ):  # type: (...)-> ndarray
+        """Predict the probability of belonging to each cluster from input data.
 
-        :param data: data (1D or 2D).
-        :type data: dict(ndarray) or ndarray
-        :param bool hard: indicator for hard or soft clustering. Default: True.
-        :return: probabilities of belonging to each cluster (1D or 2D, same
-            as data).
-        :rtype: ndarray
+        The user can specified these input data either as a numpy array,
+        e.g. :code:`array([1., 2., 3.])`
+        or as a dictionary,
+        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+
+        If the numpy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the numpy arrays are of dimension 1,
+        there is a single sample.
+
+        The dimension of the output array
+        will be consistent with the dimension of the input arrays.
+
+        Args:
+            data: The input data.
+            hard: Whether clustering should be hard (True) or soft (False).
+
+        Returns:
+            The probability of belonging to each cluster,
+            with shape (n_samples, n_clusters) or (n_clusters,).
         """
         as_dict = isinstance(data, dict)
         if as_dict:
@@ -127,14 +191,20 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
             probas = probas.ravel()
         return probas
 
-    def _predict_proba(self, data, hard=True):
-        """Predict probability of belonging to each cluster.
+    def _predict_proba(
+        self,
+        data,  # type: ndarray
+        hard=True,  # type: bool
+    ):  # type: (...)-> ndarray
+        """Predict the probability of belonging to each cluster.
 
-        :param ndarray data: data (2D).
-        :param bool hard: indicator for hard or soft clustering. Default: True.
-        :return: probabilities of belonging to each cluster (2D). The sum of
-            each row is one.
-        :rtype: ndarray
+        Args:
+            data: The input data with shape (n_samples, n_inputs).
+            hard: Whether clustering should be hard (True) or soft (False).
+
+        Returns:
+            The probability of belonging to each cluster
+                with shape (n_samples, n_clusters).
         """
         if hard:
             probas = self._predict_proba_hard(data)
@@ -142,13 +212,18 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
             probas = self._predict_proba_soft(data)
         return probas
 
-    def _predict_proba_hard(self, data):
-        """Create cluster indicator of input data.
+    def _predict_proba_hard(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...)-> ndarray
+        """Return 1 if the data belongs to a cluster, 0 otherwise.
 
-        :param ndarray data: input data (2D).
-        :return: cluster indicators for each sample (2D). The sum of
-            each row is one.
-        :rtype: ndarray
+        Args:
+            data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The indicator of belonging to each cluster
+                with shape (n_samples, n_clusters).
         """
         prediction = self._predict(data)
         probas = zeros((data.shape[0], self.n_clusters))
@@ -156,23 +231,17 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
             probas[i, pred] = 1
         return probas
 
-    def _predict_proba_soft(self, data):
-        """Predict probability of belonging to each cluster.
+    def _predict_proba_soft(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...)-> NoReturn
+        """Predict the probability of belonging to each cluster.
 
-        :param ndarray data: data (2D).
-        :return: probabilities for each cluster for each sample (2D). The sum
-            of each row is one.
-        :rtype: ndarray
+        Args:
+            The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The probability of belonging to each cluster
+                with shape (n_samples, n_clusters).
         """
         raise NotImplementedError
-
-    def _get_objects_to_save(self):
-        """Get objects to save.
-
-        :return: objects to save.
-        :rtype: dict
-        """
-        objects = super(MLClusteringAlgo, self)._get_objects_to_save()
-        objects["labels"] = self.labels
-        objects["n_clusters"] = self.n_clusters
-        return objects

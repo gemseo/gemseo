@@ -28,7 +28,7 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """Custom color maps for plots."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap

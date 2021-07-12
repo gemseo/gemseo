@@ -1,19 +1,7 @@
 {
     "name": "LineChart_options",
-    "required": ["save", "constraints_list"],
+    "required": ["constraints_list"],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
-        },
         "constraints_list":{
         	"items": {
                 "type": "string",

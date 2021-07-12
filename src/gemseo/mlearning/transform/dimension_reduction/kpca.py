@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Kernel Principal Component Analysis
-===================================
+"""The Kernel Principal Component Analysis (KPCA) to reduce the dimension of a variable.
 
 The :class:`KPCA` class implements the KCPA wraps the KPCA from Scikit-learn.
 
@@ -31,13 +29,17 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from typing import Optional, Union
+
+from numpy import ndarray
 from sklearn.decomposition import KernelPCA
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class KPCA(DimensionReduction):
@@ -45,21 +47,19 @@ class KPCA(DimensionReduction):
 
     def __init__(
         self,
-        name="KPCA",
-        n_components=5,
-        fit_inverse_transform=True,
-        kernel="linear",
-        **parameters
+        name="KPCA",  # type: str
+        n_components=5,  # type: int
+        fit_inverse_transform=True,  # type: bool
+        kernel="linear",  # type: str
+        **parameters  # type: Optional[Union[float,int,str]]
     ):
-        """Constructor.
-
-        :param str name: transformer name. Default: 'KPCA'.
-        :param int n_components: number of components. Default: 5.
-        :param bool fit_inverse_transform: Learn the inverse transform for
-            non-precomputed kernels. Default: True.
-        :param str kernel: kernel name ('linear', 'poly', 'rbf',
-            'sigmoid', 'cosine' or 'precomputed'). Default: 'linear'.
-        :param parameters: Optional parameters for sklearn KPCA constructor.
+        """
+        Args:
+            fit_inverse_transform: If True, learn the inverse transform
+                for non-precomputed kernels.
+            kernel: The name of the kernel,
+                either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.
+            **parameters: The optional parameters for sklearn KPCA constructor.
         """
         super(KPCA, self).__init__(name, n_components=n_components, **parameters)
         self.algo = KernelPCA(
@@ -69,27 +69,21 @@ class KPCA(DimensionReduction):
             **parameters
         )
 
-    def fit(self, data):
-        """Fit transformer to data.
-
-        :param ndarray data: data to be fitted.
-        """
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> None
         self.algo.fit(data)
 
-    def transform(self, data):
-        """Transform data.
-
-        :param ndarray data: data  to be transformed.
-        :return: transformed data.
-        :rtype: ndarray
-        """
+    def transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.transform(data)
 
-    def inverse_transform(self, data):
-        """Perform an inverse transform on the data.
-
-        :param ndarray data: data to be inverse transformed.
-        :return: inverse transformed data.
-        :rtype: ndarray
-        """
+    def inverse_transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.inverse_transform(data)

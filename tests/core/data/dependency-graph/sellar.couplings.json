@@ -1,0 +1,30 @@
+[
+    [
+        "Sellar1",
+        "Sellar2",
+        [
+            "y_1"
+        ]
+    ],
+    [
+        "Sellar1",
+        "SellarSystem",
+        [
+            "y_1"
+        ]
+    ],
+    [
+        "Sellar2",
+        "Sellar1",
+        [
+            "y_2"
+        ]
+    ],
+    [
+        "Sellar2",
+        "SellarSystem",
+        [
+            "y_2"
+        ]
+    ]
+]

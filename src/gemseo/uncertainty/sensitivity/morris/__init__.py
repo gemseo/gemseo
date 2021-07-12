@@ -18,5 +18,3 @@
 
 The main class is :class:`.MorrisAnalysis`, which relies on :class:`.OATSensitivity`.
 """
-
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis  # noqa: F401

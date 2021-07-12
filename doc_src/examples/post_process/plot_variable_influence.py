@@ -27,7 +27,9 @@ Variables influence
 In this example, we illustrate the use of the :class:`.VariableInfluence` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -89,5 +91,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # and xi* is the optimal value of the variable plots any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
 scenario.post_process(
-    "VariableInfluence", save=False, show=True, figsize_x=15, figsize_y=12
+    "VariableInfluence", save=False, show=False, figsize_x=15, figsize_y=12
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

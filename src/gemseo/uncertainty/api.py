@@ -20,7 +20,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The API for uncertainty quantification and management."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from typing import Iterable, List, Optional, Sequence
 
@@ -28,6 +28,8 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis  # noqa: F401
+from gemseo.uncertainty.statistics.statistics import Statistics
 
 
 def get_available_distributions():  # type: (...) -> List[str]
@@ -92,7 +94,7 @@ def create_statistics(
     selection_criterion="best",
     level=0.05,  # type: float
     name=None,  # type: Optional[str]
-):  # type (...) -> Statistics
+):  # type: (...) -> Statistics
     """Create a statistics toolbox, either parametric or empirical.
 
     If parametric, the toolbox selects a distribution from candidates,
@@ -182,7 +184,7 @@ def create_sensitivity_analysis(
     discipline,  # type: MDODiscipline
     parameter_space,  # type: ParameterSpace
     **options
-):  # type (...) -> SensitivityIndices
+):  # type: (...) -> SensitivityAnalysis
     """Create the sensitivity analysis.
 
     Args:

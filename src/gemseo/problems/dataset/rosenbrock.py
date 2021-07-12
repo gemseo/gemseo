@@ -39,7 +39,7 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import hstack, linspace, meshgrid
 

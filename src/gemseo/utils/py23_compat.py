@@ -21,32 +21,21 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Python2 and Python3 compatibility layer."""
 
+import operator
 import sys
+from typing import Callable, Iterable, List, Tuple
 
-from numpy import array
+from numpy import array, ndarray
 from six import PY2, PY3, string_types  # noqa: F401
 
-PY36 = PY3 and sys.version_info.minor >= 6
-
-if PY3:
-    from builtins import int as _long
-
-    string_dtype = "bytes"
-    from builtins import range as xrange
-    from inspect import getfullargspec as _getfullargspec
-    from pathlib import Path
-
-    from fastjsonschema import compile as compile_schema
-    from fastjsonschema.exceptions import JsonSchemaException
-
-else:
-    from builtins import long as _long
-    from builtins import xrange  # noqa: F401
-
+if PY2:
     string_dtype = "string"
-    from builtins import next  # noqa: F401
+    xrange = xrange  # noqa: F821
+    long = long  # noqa: F821
+
     from inspect import getargspec as _getfullargspec
 
+    from backports.functools_lru_cache import lru_cache  # noqa: F401
     from pathlib2 import Path  # noqa: F401
 
     from gemseo.third_party.fastjsonschema import (  # noqa: F401
@@ -56,37 +45,93 @@ else:
         JsonSchemaException,
     )
 
-if PY36:
-    OrderedDict = dict
+    getargspec = _getfullargspec
+
+    def strings_to_unicode_list(
+        iterable,  # type: Iterable[str]
+    ):  # type: (...) -> List[str]
+        """Convert a list of strings to a list of unicode strings."""
+        return [s.decode("utf-8") for s in iterable]
+
+    import backports.unittest_mock
+
+    backports.unittest_mock.install()
+    from unittest import mock
+
+
 else:
+    string_dtype = "bytes"
+    long = int
+    xrange = range
+
+    from functools import lru_cache  # noqa: F401
+    from inspect import getfullargspec as _getfullargspec
+    from pathlib import Path  # noqa: F401
+    from unittest import mock  # noqa: F401
+
+    from fastjsonschema import compile as compile_schema  # noqa: F401
+    from fastjsonschema.exceptions import JsonSchemaException  # noqa: F401
+
+    def getargspec(
+        func,  # type: Callable
+    ):  # type: (...) -> Tuple[str]
+        """Get arguments specifications."""
+        return _getfullargspec(func)[:4]
+
+    def strings_to_unicode_list(
+        iterable,  # type: Iterable[str]
+    ):  # type: (...) -> Iterable[str]
+        """Convert a list of strings to a list of unicode strings."""
+        return iterable
+
+
+if sys.version_info < (3, 6):
     from collections import OrderedDict  # noqa: F401
+else:
+    OrderedDict = dict
 
 
-def long(data):
-    """Return a long from data, performs casting."""
-    return _long(data)
-
-
-def string_array(data):
+def string_array(
+    data,  # type: ndarray
+):  # type: (...) -> ndarray
     """Creates a numpy array of strings from data the dtype is adjusted (bytes in py3,
     string in py2)"""
     return array(data, dtype=string_dtype)
 
 
-if PY2:
-    getargspec = _getfullargspec
+if sys.version_info < (3, 8):
 
-    def to_unicode_list(iterable):
-        """Convert a list of strings to a list of unicode strings."""
-        return [s.decode("utf-8") for s in iterable]
+    def accumulate(iterable, func=operator.add, initial=None):
+        """Accumulate implementation in plain Python.
+
+        Args:
+            iterable: An iterable sequence.
+            func: An operator to apply on each element of the sequence.
+            initial: The inital value of the accumulator.
+
+        Yields:
+            The accumulated item.
+
+        Example:
+            >>> accumulate([1,2,3,4,5])
+            1 3 6 10 15
+            >>> accumulate([1,2,3,4,5], initial=100)
+            100 101 103 106 110 115
+            >>> accumulate([1,2,3,4,5], operator.mul)
+            1 2 6 24 120
+        """
+        it = iter(iterable)
+        total = initial
+        if initial is None:
+            try:
+                total = next(it)
+            except StopIteration:
+                return
+        yield total
+        for element in it:
+            total = func(total, element)
+            yield total
 
 
 else:
-
-    def getargspec(func):
-        """Get arguments specifications."""
-        return _getfullargspec(func)[:4]
-
-    def to_unicode_list(iterable):
-        """Convert a list of strings to a list of unicode strings."""
-        return iterable
+    from itertools import accumulate  # noqa: F401

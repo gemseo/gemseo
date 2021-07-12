@@ -28,13 +28,12 @@
 SSBJ core computations
 **********************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import cmath
 import logging
 import math
 import random
-from builtins import str
 from os.path import dirname, join
 from random import uniform
 

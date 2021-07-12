@@ -20,12 +20,13 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test R2 error measure module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
@@ -42,8 +43,8 @@ ATOL = 1e-12
 
 
 @pytest.fixture
-def dataset():
-    """Data points."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
@@ -53,8 +54,8 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_test():
-    """Data points."""
+def dataset_test():  # type: (...) -> Dataset
+    """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)

@@ -26,9 +26,7 @@ KL-SVD on Burgers equation
 
 Example using KL-SVD on solutions of the Burgers equation.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import next, range
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
 

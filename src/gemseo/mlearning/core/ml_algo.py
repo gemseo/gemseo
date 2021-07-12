@@ -20,39 +20,41 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Machine learning algorithm baseclass
-====================================
+"""This module contains the base class for machine learning algorithms.
 
 Machine learning is the art of building models from data,
 the latter being samples of properties of interest
 that can sometimes be sorted by group, such as inputs, outputs, categories, ...
 
-In the absence of such groups, the data can be analyzed through a study of
-commonalities, leading to plausible clusters. This is referred to as
-clustering, a branch of unsupervised learning dedicated to the detection
-of patterns in unlabeled data.
+In the absence of such groups,
+the data can be analyzed through a study of commonalities,
+leading to plausible clusters.
+This is referred to as clustering,
+a branch of unsupervised learning
+dedicated to the detection of patterns in unlabeled data.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.unsupervised`,
    :mod:`~gemseo.mlearning.cluster.cluster`
 
-When data can be separated into at least two categories by a human, supervised
-learning can start with classification whose purpose is to model the relation
-between these categories and the properties of interest. Once trained,
-a classification model can predict the category corresponding to new
-property values.
+When data can be separated into at least two categories by a human,
+supervised learning can start with classification
+whose purpose is to model the relations
+between these categories and the properties of interest.
+Once trained,
+a classification model can predict the category
+corresponding to new property values.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.supervised`,
    :mod:`~gemseo.mlearning.classification.classification`
 
-When the distinction between inputs and outputs can be made among the data
-properties, another branch of supervised learning can be called: regression
-modeling. Once trained, a regression model can predict the outputs
-corresponding to new inputs values.
+When the distinction between inputs and outputs can be made among the data properties,
+another branch of supervised learning can be considered: regression modeling.
+Once trained,
+a regression model can predict the outputs corresponding to new inputs values.
 
 .. seealso::
 
@@ -60,19 +62,23 @@ corresponding to new inputs values.
    :mod:`~gemseo.mlearning.regression.regression`
 
 The quality of a machine learning algorithm can be measured
-using a :class:`.MLQualityMeasure` either with respect to the learning dataset
-or to a test dataset or using resampling methods, such as K-folds or
-leave-one-out cross-validation techniques. The challenge is to avoid
-over-learning the learning data leading to a loss of generality.
-We often want to build models that are not too dataset-dependent. For that,
+using a :class:`.MLQualityMeasure`
+either with respect to the learning dataset
+or to a test dataset or using resampling methods,
+such as K-folds or leave-one-out cross-validation techniques.
+The challenge is to avoid over-learning the learning data
+leading to a loss of generality.
+We often want to build models that are not too dataset-dependent.
+For that,
 we want to maximize both a learning quality and a generalization quality.
-In unsupervised learning, a quality measure can represent the robustness of
-clusters definition while in supervised learning, a quality measure can be
-interpreted as an error, whether it is a misclassification in the case of the
-classification algorithms or a prediction one in the case of the regression
-algorithms. This quality can often be improved by building machine learning
-models from standardized data in such a way that the data properties have the
-same order of magnitude.
+In unsupervised learning,
+a quality measure can represent the robustness of clusters definition
+while in supervised learning, a quality measure can be interpreted as an error,
+whether it is a misclassification in the case of the classification algorithms
+or a prediction one in the case of the regression algorithms.
+This quality can often be improved
+by building machine learning models from standardized data
+in such a way that the data properties have the same order of magnitude.
 
 
 .. seealso::
@@ -80,56 +86,98 @@ same order of magnitude.
    :mod:`~gemseo.mlearning.qual_measure.quality_measure`,
    :mod:`~gemseo.mlearning.transform.transformer`
 
-Lastly, a machine learning algorithm often depends on hyperparameters to
-carefully tune in order to maximize the generalization power of the model.
+Lastly,
+a machine learning algorithm often depends on hyperparameters
+to be carefully tuned in order to maximize the generalization power of the model.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.calibration`
    :mod:`~gemseo.mlearning.core.selection`
-
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import pickle
 import re
 from os import makedirs
 from os.path import exists, join
+from typing import Any, Dict, List, Optional, Union
 
+import six
+from custom_inherit import DocInheritMeta
+from numpy import ndarray
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
+TransformerType = Dict[str, Transformer]
+SavedObjectType = Union[Dataset, TransformerType, str, bool]
+DataType = Union[ndarray, Dict[str, ndarray]]
+MLAlgoParameterType = Optional[Any]
 
+
+@six.add_metaclass(
+    DocInheritMeta(
+        abstract_base_class=True,
+        style="google_with_merge",
+    )
+)
 class MLAlgo(object):
-    """The :class:`.MLAlgo` abstract class implements the concept of machine learning
-    algorithm.
+    """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,
     data transformation options and parameters. This abstract class defines the
     :meth:`.MLAlgo.learn`, :meth:`.MLAlgo.save` methods and the boolean
     property, :attr:`!MLAlgo.is_trained`. It also offers a string
-    representation for end user.
-    Inheriting classes should overload the :meth:`.MLAlgo.learn`,
+    representation for end users.
+    Derived classes shall overload the :meth:`.MLAlgo.learn`,
     :meth:`!MLAlgo._save_algo` and :meth:`!MLAlgo._load_algo` methods.
+
+    Attributes:
+        learning_set (Dataset): The learning dataset.
+        parameters (Dict[str,MLAlgoParameterType]): The parameters
+            of the machine learning algorithm.
+        transformer (Dict[str,Transformer]): The strategies to transform the variables.
+            The values are instances of :class:`.Transformer`
+            while the keys are the names of
+            either the variables
+            or the groups of variables,
+            e.g. "inputs" or "outputs" in the case of the regression algorithms.
+            If a group is specified,
+            the :class:`.Transformer` will be applied
+            to all the variables of this group.
+            If None, do not transform the variables.
+        algo (Any): The interfaced machine learning algorithm.
     """
 
     LIBRARY = None
     ABBR = "MLAlgo"
     FILENAME = "ml_algo.pkl"
 
-    def __init__(self, data, transformer=None, **parameters):
-        """Constructor.
-
-        :param Dataset data: learning dataset
-        :param transformer: transformation strategy for data groups. If None,
-            do not transform data. The dictionary keys are the groups to
-            transform. The dictionary items are the transformers, either
-            referenced by their names as strings, or provided directly.
-            Default: None.
-        :param transformer: dict(Transformer)
-        :param parameters: algorithm parameters
+    def __init__(
+        self,
+        data,  # type:Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        **parameters  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
+        """
+        Args:
+            data: The learning dataset.
+            transformer: The strategies to transform the variables.
+                The values are instances of :class:`.Transformer`
+                while the keys are the names of
+                either the variables
+                or the groups of variables,
+                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                If a group is specified,
+                the :class:`.Transformer` will be applied
+                to all the variables of this group.
+                If None, do not transform the variables.
+            **parameters: The parameters of the machine learning algorithm.
         """
         self.learning_set = data
         self.parameters = parameters
@@ -143,26 +191,26 @@ class MLAlgo(object):
         self._trained = False
 
     class DataFormatters(object):
-        """Decorators for internal MLAlgo methods."""
+        """Decorators for the internal MLAlgo methods."""
 
     @property
-    def is_trained(self):
-        """Check if algorithm is trained.
-
-        :return: bool
-        """
+    def is_trained(self):  # type: (...) -> bool
+        """Return whether the algorithm is trained."""
         return self._trained
 
-    def learn(self, samples=None):
-        """Train machine learning algorithm on learning set, possibly filtered using the
-        given parameters.
+    def learn(
+        self,
+        samples=None,  # type: List[int]
+    ):  # type: (...) -> None
+        """Train the machine learning algorithm from the learning dataset.
 
-        :param list(int) samples: indices of training samples.
+        Args:
+            samples: The indices of the learning samples.
+                If None, use the whole learning dataset.
         """
         raise NotImplementedError
 
-    def __str__(self):
-        """String representation for end user."""
+    def __str__(self):  # type: (...) -> str
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
         msg.indent()
@@ -171,13 +219,22 @@ class MLAlgo(object):
         msg.add("built from {} learning samples", self.learning_set.length)
         return str(msg)
 
-    def save(self, directory=None, path=".", save_learning_set=False):
+    def save(
+        self,
+        directory=None,  # type: Optional[str]
+        path=".",  # type: str
+        save_learning_set=False,  # type: bool
+    ):  # type: (...) -> str
         """Save the machine learning algorithm.
 
-        :param str directory: directory name
-        :param str path: path name
-        :return: location of saved file
-        :rtype: str
+        Args:
+            directory: The name of the directory to save the algorithm.
+            path: The path to parent directory where to create the directory.
+            save_learning_set: If False, do not save the learning set
+                to lighten the saved files.
+
+        Returns:
+            The path to the directory where the algorithm is saved.
         """
         if not save_learning_set:
             self.learning_set.data = {}
@@ -200,19 +257,29 @@ class MLAlgo(object):
 
         return directory
 
-    def _save_algo(self, directory):
-        """Save external machine learning algorithm.
+    def _save_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
+        """Save the interfaced machine learning algorithm.
 
-        :param str directory: algorithm directory.
+        Args:
+            directory: The path to the directory
+                where to save the interfaced machine learning algorithm.
         """
         filename = join(directory, "algo.pkl")
         with open(filename, "wb") as handle:
             pickle.dump(self.algo, handle)
 
-    def load_algo(self, directory):
-        """Load external machine learning algorithm.
+    def load_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
+        """Load a machine learning algorithm from a directory.
 
-        :param str directory: algorithm directory.
+        Args:
+            directory: The path to the directory
+                where the machine learning algorithm is saved.
         """
 
         filename = join(directory, "algo.pkl")
@@ -220,11 +287,11 @@ class MLAlgo(object):
             algo = pickle.load(handle)
         self.algo = algo
 
-    def _get_objects_to_save(self):
-        """Get objects to save.
+    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
+        """Return the objects to save.
 
-        :return: objects to save.
-        :rtype: dict
+        Returns:
+            The objects to save.
         """
         objects = {
             "data": self.learning_set,

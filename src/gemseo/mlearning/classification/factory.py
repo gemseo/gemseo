@@ -19,17 +19,15 @@
 #                           documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Classification model factory
-============================
+"""A factory to create classification models.
 
 This module contains a factory to instantiate a :class:`.MLClassificationAlgo`
-from its class name. The class can be internal to |g| or located in an
-external module whose path is provided to the constructor. It also provides a
-list of available classification models and allows you to test if a
-classification model type is available.
+from its class name.
+
+It also provides a list of available classification models
+and allows to test if a classification model type is available.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 
@@ -43,16 +41,15 @@ LOGGER = logging.getLogger(__name__)
 class ClassificationModelFactory(MLAlgoFactory):
     """This factory instantiates a :class:`.MLRegressionAlgo` from its class name.
 
-    The class can be internal to |g| or located in an external module whose path is
-    provided to the constructor.
+    The class can be either internal to |g| or external. In this second case, it can be
+    either implemented in a module referenced in the "GEMSEO_PATH" or in a module The
+    class can be either internal to |g| or external. In the second case, it can be
+    either implemented in a module referenced in the GEMSEO_PATH environment variable or
+    in a module starting with "gemseo_" and referenced in the PYTHONPATH environment
+    variable.
     """
 
-    def __init__(self):
-        """Initializes the factory: scans the directories to search for subclasses of
-        :class:`.MLClassificationAlgo`.
-
-        Searches in "GEMSEO_PATH" and gemseo.mlearning.classification.
-        """
+    def __init__(self):  # type: (...) -> None
         super(ClassificationModelFactory, self).__init__()
         self.factory = Factory(
             MLClassificationAlgo, ("gemseo.mlearning.classification",)

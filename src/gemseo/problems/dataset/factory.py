@@ -29,7 +29,7 @@ The class can be internal to |g| or located in an external module whose path
 is provided to the constructor. It also provides a list of available cache
 types and allows you to test if a cache type is available.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 

@@ -19,11 +19,10 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-MDODiscipline builder from a python function
-********************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+
+"""MDODiscipline builder from a python function."""
+
+from __future__ import division, unicode_literals
 
 import logging
 import re
@@ -96,14 +95,15 @@ class AutoPyDiscipline(MDODiscipline):
         self.use_arrays = use_arrays
         self.py_jac = py_jac
 
-        wr_s = write_schema
         args_in = getargspec(py_func)[0]  # pylint: disable=deprecated-method
         self.in_names = args_in
-        self.input_grammar.initialize_from_data_names(self.in_names, write_schema=wr_s)
+        self.input_grammar.initialize_from_data_names(self.in_names)
         self.out_names = self._get_return_spec(py_func)
-        self.output_grammar.initialize_from_data_names(
-            self.out_names, write_schema=wr_s
-        )
+        self.output_grammar.initialize_from_data_names(self.out_names)
+
+        if write_schema:
+            self.input_grammar.write_schema()
+            self.output_grammar.write_schema()
 
         if not use_arrays:
             self.data_processor = AutoDiscDataProcessor(self.out_names)
@@ -208,7 +208,7 @@ class AutoDiscDataProcessor(DataProcessor):
     converts all discipline output data to numpy arrays."""
 
     def __init__(self, out_names):
-        """Construcor.
+        """Constructor.
 
         :param out_names: names of the outputs
         :type out_names: list(str)

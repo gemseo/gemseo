@@ -22,7 +22,7 @@
 
 """Tests for the class SensitivityIndices."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import array, linspace, pi, sin
@@ -38,8 +38,8 @@ from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
 
 
 @pytest.fixture

@@ -99,10 +99,9 @@ The computation relies on
 `OpenTURNS capabilities <http://www.openturns.org/>`_.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import getattr, int
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -365,6 +364,8 @@ class SobolAnalysis(SensitivityAnalysis):
         save=True,  # type: bool
         show=False,  # type: bool
         file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         sort=True,  # type:bool
         sort_by_total=True,  # type:bool
@@ -383,7 +384,7 @@ class SobolAnalysis(SensitivityAnalysis):
         """
         if not isinstance(output, tuple):
             output = (output, 0)
-        _, ax = plt.subplots()
+        fig, ax = plt.subplots()
         if sort_by_total:
             indices = self.total_order_indices
         else:
@@ -453,4 +454,12 @@ class SobolAnalysis(SensitivityAnalysis):
         )
         output = "{}({})".format(output[0], output[1])
         ax.set_title(title or "Sobol indices for the output {}".format(output))
-        self._save_show_plot(save, show, file_path, file_format)
+        self._save_show_plot(
+            fig,
+            save=save,
+            show=show,
+            file_path=file_path,
+            file_name=file_name,
+            file_format=file_format,
+            directory_path=directory_path,
+        )

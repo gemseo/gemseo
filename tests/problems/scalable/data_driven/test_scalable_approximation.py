@@ -20,7 +20,7 @@
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import dirname, join
 

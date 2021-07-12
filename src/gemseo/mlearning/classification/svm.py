@@ -19,13 +19,12 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-SVM Classifier
-==============
+"""The Support Vector Machine algorithm for classification.
 
-This module implements the SVMClassifier class. A support vector machine (SVM) passes
-the data through a kernel in order to increase its dimension and thereby make the
-classes linearly separable.
+This module implements the SVMClassifier class.
+A support vector machine (SVM) passes the data through a kernel
+in order to increase its dimension
+and thereby make the classes linearly separable.
 
 Dependence
 ----------
@@ -33,108 +32,80 @@ The classifier relies on the SVC class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.svm.SVC.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Callable, Iterable, Optional, Union
 
-from numpy import stack
+from numpy import ndarray
 from sklearn.svm import SVC
 
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.core.ml_algo import TransformerType
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SVMClassifier(MLClassificationAlgo):
-    """K nearest neighbors classification algorithm."""
+    """The Support Vector Machine algorithm for classification."""
 
     LIBRARY = "scikit-learn"
     ABBR = "SVM"
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        c=1.0,
-        kernel="rbf",
-        probability=False,
-        **parameters
-    ):
-        """Constructor.
-
-        :param data: learning dataset.
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param C: inverse L2 regularization parameter. Higher values give less
-            regularization. Default: 1.0.
-        :type C: float
-        :param kernel: kernel for SVM. Examples: "linear", "poly", "rbf", "sigmoid",
-            "precomputed" or a callable. Default: "rbf".
-        :type kernel: str or callable
-        :param probability: toggles the availability of the predict_proba(x, hard=False)
-            method. The algorithm is faster if set to False. Default: False.
-        :type probability: bool
-        :param parameters: other keyword arguments for sklearn SVC.
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        C=1.0,  # noqa: N803 # type: float
+        kernel="rbf",  # type: Optional[str,Callable]
+        probability=False,  # type: bool
+        **parameters  # type: Optional[Union[int,float,bool,str]]
+    ):  # type: (...) -> None
+        """# noqa: D205,D212,D415
+        Args:
+            C: The inverse L2 regularization parameter.
+                   Higher values give less regularization.
+            kernel: The name of the kernel or a callable for the SVM.
+                Examples: "linear", "poly", "rbf", "sigmoid", "precomputed"
+                or a callable.
+            probability: Whether to enable the probability estimates.
+                The algorithm is faster if set to False.
         """
         super(SVMClassifier, self).__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
-            c=c,
+            C=C,
             kernel=kernel,
             probability=probability,
             **parameters
         )
-        self.algo = SVC(C=c, kernel=kernel, probability=probability, **parameters)
+        self.algo = SVC(C=C, kernel=kernel, probability=probability, **parameters)
 
-    def _fit(self, input_data, output_data):
-        """Fit the classification model.
+    def _fit(
+        self,
+        input_data,  # type:ndarray
+        output_data,  # type:ndarray
+    ):  # type: (...) -> None
+        self.algo.fit(input_data, output_data.ravel())
 
-        :param ndarray input_data: input data (2D).
-        :param ndarray(int) output_data: output data.
-        """
-        if output_data.shape[1] == 1:
-            output_data = output_data.ravel()
-        self.algo.fit(input_data, output_data)
+    def _predict(
+        self,
+        input_data,  # type:ndarray
+    ):  # type: (...) -> ndarray
+        return self.algo.predict(input_data)[:, None].astype(int)
 
-    def _predict(self, input_data):
-        """Predict output data from input data.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: output data (n_samples, n_outputs).
-        :rtype: ndarray(int)
-        """
-        output_data = self.algo.predict(input_data).astype(int)
-        if len(output_data.shape) == 1:
-            output_data = output_data[:, None]
-        return output_data
-
-    def _predict_proba_soft(self, input_data):
-        """Predict probability of belonging to each class.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: probabilities of belonging to each class
-            (n_samples, n_outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
-        """
+    def _predict_proba_soft(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...)-> ndarray
         if not self.parameters["probability"]:
             raise NotImplementedError(
                 "SVMClassifier soft probability prediction is only available if the "
                 "parameter 'probability' is set to True."
             )
-        probas = self.algo.predict_proba(input_data)
-        if len(probas[0].shape) == 1:
-            probas = probas[..., None]
-        else:
-            probas = stack(probas, axis=-1)
-        return probas
+        return self.algo.predict_proba(input_data)[..., None]

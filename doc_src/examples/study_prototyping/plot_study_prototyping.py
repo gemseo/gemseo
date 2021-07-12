@@ -23,7 +23,7 @@
 Generate a N2 and XDSM from an Excel description of the MDO problem
 ===================================================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from os import mkdir
 from os.path import exists, join

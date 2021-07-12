@@ -25,8 +25,9 @@ Plot - Scatter
 ==============
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from matplotlib import pyplot as plt
 from numpy import linspace, pi, sin
 
 from gemseo.api import configure_logger
@@ -50,4 +51,6 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # Plot y vs x
 # -----------
 # We can use the :class:`.Scatter` plot
-dataset.plot("Scatter", x="x", y="y", properties={"color": color})
+dataset.plot("Scatter", x="x", y="y", properties={"color": color}, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

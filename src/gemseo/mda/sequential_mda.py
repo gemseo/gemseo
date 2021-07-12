@@ -22,9 +22,7 @@
 A chain of MDAs to build hybrids of MDA algorithms sequentially
 ***************************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import super
+from __future__ import division, unicode_literals
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel

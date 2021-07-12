@@ -23,10 +23,9 @@
 PyDOE algorithms wrapper
 ************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import int, round, super
 
 from numpy.random import RandomState
 from numpy.random import seed as set_seed

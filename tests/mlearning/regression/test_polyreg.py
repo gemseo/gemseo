@@ -20,7 +20,7 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial regression module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, hstack, linspace, meshgrid, sqrt, zeros
@@ -83,8 +83,8 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_from_cache():
-    """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
+def dataset_from_cache():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {
         "y_1": "1 + x_1 + x_2**2",
         "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
@@ -102,23 +102,22 @@ def dataset_from_cache():
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> PolynomialRegression
+    """A trained PolynomialRegression."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE)
     polyreg.learn()
     return polyreg
 
 
 @pytest.fixture
-def model_without_intercept(dataset):
-    """Define model from data."""
+def model_without_intercept(dataset):  # type: (...) -> PolynomialRegression
+    """A trained PolynomialRegression without intercept fitting."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE, fit_intercept=False)
     polyreg.learn()
     return polyreg
 
 
 def test_constructor(dataset):
-    """Test construction."""
     model_ = PolynomialRegression(dataset, degree=2)
     assert model_.algo is not None
 
@@ -137,9 +136,15 @@ def test_learn(dataset):
 
 
 def test_get_coefficients(model):
-    """Test get_coefficients."""
-    with pytest.raises(NotImplementedError):
-        model.get_coefficients()
+    """Verify that an error is raised when getting coefficients as a dictionary."""
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            "For now the coefficients can only be obtained "
+            "in the form of a NumPy array"
+        ),
+    ):
+        model.get_coefficients(as_dict=True)
 
 
 def test_intercept(model, model_without_intercept):

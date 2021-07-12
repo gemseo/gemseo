@@ -19,7 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.formulations.mdf import MDF
@@ -36,15 +36,6 @@ from .formulations_basetest import FormulationsBaseTest
 
 class TestMDFFormulation(FormulationsBaseTest):
     """"""
-
-    def test_init_mdf(self):
-        """"""
-        scs = [self.build_mdo_scenario("MDF")]
-        for scenario in scs:
-            coupl = scenario.formulation.mda.coupling_structure.strong_couplings()
-            assert len(coupl) == 8
-            for c in coupl:
-                assert c.startswith("y")
 
     # Complex step mdf already tested on propane, lighter
     def build_and_run_mdf_scenario_with_constraints(

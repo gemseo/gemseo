@@ -57,16 +57,3 @@ based on the SciPy library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
-
-from gemseo.uncertainty.distributions.scipy.exponential import (  # noqa: F401
-    SPExponentialDistribution,
-)
-from gemseo.uncertainty.distributions.scipy.normal import (  # noqa: F401
-    SPNormalDistribution,
-)
-from gemseo.uncertainty.distributions.scipy.triangular import (  # noqa: F401
-    SPTriangularDistribution,
-)
-from gemseo.uncertainty.distributions.scipy.uniform import (  # noqa: F401
-    SPUniformDistribution,
-)

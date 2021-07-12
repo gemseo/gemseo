@@ -22,9 +22,7 @@
 A Gauss Seidel algorithm for solving MDAs
 *****************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import super
+from __future__ import division, unicode_literals
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline

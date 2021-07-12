@@ -20,27 +20,30 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Regression model
-================
+"""This module contains the baseclass for regression algorithms.
 
 The :mod:`~gemseo.mlearning.regression.regression` module
-implements regression algorithms, where the goal is to find relationships
-between continuous input and output variables. After being fitted to a learning
-set, Regression algorithms can predict output values of new input data.
+implements regression algorithms,
+where the goal is to find relationships
+between continuous input and output variables.
+After being fitted to a learning set,
+the regression algorithms can predict output values of new input data.
 
 A regression algorithm consists of identifying a function
 :math:`f: \\mathbb{R}^{n_{\\textrm{inputs}}} \\to
-\\mathbb{R}^{n_{\\textrm{outputs}}}`. Given an input point
-:math:`x \\in \\mathbb{R}^{n_{\\textrm{inputs}}}`, the predict method of the
-regression algorithm will return the output point
-:math:`y = f(x) \\in \\mathbb{R}^{n_{\\textrm{outputs}}}`. See
-:mod:`~gemseo.mlearning.core.supervised` for more information.
+\\mathbb{R}^{n_{\\textrm{outputs}}}`.
+Given an input point
+:math:`x \\in \\mathbb{R}^{n_{\\textrm{inputs}}}`,
+the predict method of the regression algorithm will return
+the output point :math:`y = f(x) \\in \\mathbb{R}^{n_{\\textrm{outputs}}}`.
+See :mod:`~gemseo.mlearning.core.supervised` for more information.
 
-Wherever possible, regression algorithms should also be able to compute the
-Jacobian matrix of the function it has learned to represent. Given an input
-point :math:`x \\in \\mathbb{R}^{n_{\\textrm{inputs}}}`, the Jacobian predict
-method of the regression algorithm should thus return the matrix
+Wherever possible,
+the regression algorithms should also be able
+to compute the Jacobian matrix of the function it has learned to represent.
+Thus,
+given an input point :math:`x \\in \\mathbb{R}^{n_{\\textrm{inputs}}}`,
+the Jacobian prediction method of the regression algorithm should return the matrix
 
 .. math::
 
@@ -55,15 +58,17 @@ method of the regression algorithm should thus return the matrix
     \\end{pmatrix}
     \\in \\mathbb{R}^{n_{\\textrm{outputs}}\\times n_{\\textrm{inputs}}}.
 
-This concept is implemented through
-the :class:`.MLRegressionAlgo` class which
-inherits from the :class:`.MLSupervisedAlgo` class.
+This concept is implemented through the :class:`.MLRegressionAlgo` class
+which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import eye, matmul
+from typing import Callable, Iterable, NoReturn, Optional
+
+from numpy import eye, matmul, ndarray
 
 from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import DataConversion
@@ -72,7 +77,7 @@ from gemseo.utils.data_conversion import DataConversion
 class MLRegressionAlgo(MLSupervisedAlgo):
     """Machine Learning Regression Model Algorithm.
 
-    Inheriting classes should implement the :meth:`!MLSupervisedAlgo._fit` and
+    Inheriting classes shall implement the :meth:`!MLSupervisedAlgo._fit` and
     :meth:`!MLSupervisedAlgo._predict` methods, and
     :meth:`!MLRegressionAlgo._predict_jacobian` method if possible.
     """
@@ -84,31 +89,12 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def __init__(
         self,
-        data,
-        transformer=DEFAULT_TRANSFORMER,
-        input_names=None,
-        output_names=None,
-        **parameters
-    ):
-        """Constructor.
-
-        :param Dataset data: learning dataset.
-        :param transformer: transformation strategy for data groups.
-            If None, do not scale data.
-            Default: DEFAULT_TRANSFORMER,
-            which is a min/max scaler applied to the inputs
-            and a min/max scaler applied to the outputs.
-        :type transformer: dict(Transformer)
-        :param input_names: names of the input variables.
-            If None, consider all input variables mentioned in the learning dataset.
-            Default: None.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-            If None, consider all input variables mentioned in the learning dataset.
-            Default: None.
-        :type output_names: list(str)
-        :param parameters: algorithm parameters.
-        """
+        data,  # type: Dataset
+        transformer=DEFAULT_TRANSFORMER,  # type: TransformerType
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        **parameters  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
         super(MLRegressionAlgo, self).__init__(
             data,
             transformer=transformer,
@@ -121,22 +107,55 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         """Machine learning regression model decorators."""
 
         @classmethod
-        def format_dict_jacobian(cls, predict):
-            """If input_data is passed as a dictionary, then convert it to ndarray, and
-            convert output_data to dictionary. Else, do nothing.
+        def format_dict_jacobian(
+            cls,
+            predict_jac,  # type: Callable[[ndarray],ndarray]
+        ):  # type: (...) -> Callable[[DataType],DataType]
+            """Wrap an array-based function to make it callable with a dictionary of
+            NumPy arrays.
 
-            :param predict: Method whose input_data and output_data are to be
-                formatted.
+            Args:
+                predict_jac: The function to be called;
+                    it takes a NumPy array in input and returns a NumPy array.
+
+            Returns:
+                The wrapped 'predict_jac' function, callable with
+                either a NumPy data array
+                or a dictionary of numpy data arrays indexed by variables names.
+                The return value will have the same type as the input data.
             """
 
             def wrapper(self, input_data, *args, **kwargs):
+                """Evaluate 'predict_jac' with either array or dictionary-based data.
+
+                Firstly,
+                the pre-processing stage converts the input data to a NumPy data array,
+                if these data are expressed as a dictionary of NumPy data arrays.
+
+                Then,
+                the processing evaluates the function 'predict_jac'
+                from this NumPy input data array.
+
+                Lastly,
+                the post-processing transforms the output data
+                to a dictionary of output NumPy data array
+                if the input data were passed as a dictionary of NumPy data arrays.
+
+                Args:
+                    input_data: The input data.
+                    *args: The positional arguments of the function 'predict_jac'.
+                    **kwargs: The keyword arguments of the function 'predict_jac'.
+
+                Returns:
+                    The output data with the same type as the input one.
+                """
                 as_dict = isinstance(input_data, dict)
                 if as_dict:
                     input_data = DataConversion.dict_to_array(
                         input_data, self.input_names
                     )
                 single_sample = len(input_data.shape) == 1
-                jacobians = predict(self, input_data, *args, **kwargs)
+                jacobians = predict_jac(self, input_data, *args, **kwargs)
                 if as_dict:
                     varsizes = self.learning_set.sizes
                     if single_sample:
@@ -152,14 +171,42 @@ class MLRegressionAlgo(MLSupervisedAlgo):
             return wrapper
 
         @classmethod
-        def transform_jacobian(cls, predict_jac):
-            """Apply transform to inputs, and inverse transform to outputs.
+        def transform_jacobian(
+            cls,
+            predict_jac,  # type: Callable[[ndarray],ndarray]
+        ):  # type: (...) -> Callable[[ndarray],ndarray]
+            """Apply transformation to inputs and inverse transformation to outputs.
 
-            :param predict_jac: Method whose input_data and output_data are to be
-                formatted.
+            Args:
+                predict_jac: The function of interest to be called.
+
+            Returns:
+                A function evaluating the function 'predict_jac',
+                after transforming its input data
+                and/or before transforming its output data.
             """
 
             def wrapper(self, input_data, *args, **kwargs):
+                """Evaluate 'predict_jac' after or before data transformation.
+
+                Firstly,
+                the pre-processing stage transforms the input data if required.
+
+                Then,
+                the processing evaluates the function 'predict_jac'.
+
+                Lastly,
+                the post-processing stage transforms the output data if required.
+
+                Args:
+                    input_data: The input data.
+                    *args: The positional arguments of the function.
+                    **kwargs: The keyword arguments of the function.
+
+                Returns:
+                    Either the raw output data of 'predict_jac'
+                    or a transformed version according to the requirements.
+                """
                 inputs = self.learning_set.INPUT_GROUP
                 if inputs in self.transformer:
                     jac = self.transformer[inputs].compute_jacobian(input_data)
@@ -180,34 +227,62 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
             return wrapper
 
-    def predict_raw(self, input_data):
-        """Predict output data from input data, assuming both are 2D.
+    def predict_raw(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Predict output data from input data.
 
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: output data (n_samples, n_outputs).
-        :rtype: ndarray(int)
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The predicted output data with shape (n_samples, n_outputs).
         """
         return self._predict(input_data)
 
     @DataFormatters.format_dict_jacobian
     @DataFormatters.format_samples
     @DataFormatters.transform_jacobian
-    def predict_jacobian(self, input_data):
-        """Predict Jacobian of the regression model of input_data.
+    def predict_jacobian(
+        self,
+        input_data,  # type: DataType
+    ):  # type: (...) -> NoReturn
+        """Predict the Jacobians of the regression model at input_data.
 
-        :param input_data: 1D input data.
-        :type input_data: dict(ndarray) or ndarray
-        :return: Jacobian for given input data.
-        :rtype: dict(dict(ndarray)) or ndarray
+        The user can specify these input data either as a NumPy array,
+        e.g. :code:`array([1., 2., 3.])`
+        or as a dictionary,
+        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+
+        If the NumPy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the NumPy arrays are of dimension 1,
+        there is a single sample.
+
+        The type of the output data and the dimension of the output arrays
+        will be consistent
+        with the type of the input data and the size of the input arrays.
+
+        Args:
+            input_data: The input data.
+
+        Returns:
+            The predicted Jacobian data.
         """
         return self._predict_jacobian(input_data)
 
-    def _predict_jacobian(self, input_data):
-        """Predict Jacobian of the regression model for the given input data.
+    def _predict_jacobian(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> NoReturn
+        """Predict the Jacobian matrices of the regression model at input_data.
 
-        :param ndarray input_data: input_data (2D).
-        :return: Jacobian matrices (3D, one for each sample).
-        :rtype: ndarray
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The predicted Jacobian data with shape (n_samples, n_outputs, n_inputs).
         """
         name = self.__class__.__name__
         raise NotImplementedError("Derivatives are not available for {}".format(name))

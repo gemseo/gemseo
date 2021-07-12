@@ -41,9 +41,9 @@
 # The first imports (__future__ and future) enable to run the tutorial
 # using either a Python 2 or a Python 3 interpreter.
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from math import exp, sqrt
+from math import exp
 
 from numpy import array, ones
 
@@ -86,41 +86,41 @@ configure_logger()
 # definitions read:
 
 
-def f_sellar_system(x_local=1.0, x_shared_1=3.0, y_0=1.0, y_1=1.0):
+def f_sellar_system(x_local=1.0, x_shared_2=3.0, y_1=1.0, y_2=1.0):
     """Objective function."""
-    obj = x_local ** 2 + x_shared_1 + y_0 + exp(-y_1)
-    c_0 = 1 - y_0 / 3.16
-    c_1 = y_1 / 24.0 - 1.0
-    return obj, c_0, c_1
+    obj = x_local ** 2 + x_shared_2 + y_1 ** 2 + exp(-y_2)
+    c_1 = 3.16 - y_1 ** 2
+    c_2 = y_2 - 24.0
+    return obj, c_1, c_2
 
 
-def f_sellar_0(x_local=1.0, y_1=1.0, x_shared_0=1.0, x_shared_1=3.0):
-    """Function for discipline 0."""
-    y_0 = x_shared_0 ** 2 + x_shared_1 + x_local - 0.2 * y_1
-    return y_0
-
-
-def f_sellar_1(y_0=1.0, x_shared_0=1.0, x_shared_1=3.0):
+def f_sellar_1(x_local=1.0, y_2=1.0, x_shared_1=1.0, x_shared_2=3.0):
     """Function for discipline 1."""
-    y_1 = sqrt(y_0) + x_shared_0 + x_shared_1
+    y_1 = (x_shared_1 ** 2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
     return y_1
+
+
+def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
+    """Function for discipline 2."""
+    y_2 = abs(y_1) + x_shared_1 + x_shared_2
+    return y_2
 
 
 ###############################################################################
 # These Python functions can be easily converted into |g|
 # :class:`.MDODiscipline` objects by using the :class:`.AutoPyDiscipline`
-# discipline. It enables to automatically wrap a Python function into a
+# discipline. It enables the automatic wrapping of a Python function into a
 # |g|
 # :class:`.MDODiscipline` by only passing a reference to the function to be
 # wrapped. |g| handles the wrapping and the grammar creation under the
-# hood. The :class:`.AutoPyDiscipline` discipline can be instanciated using the
+# hood. The :class:`.AutoPyDiscipline` discipline can be instantiated using the
 # :func:`.create_discipline` function from the |g| :term:`API`:
 
 disc_sellar_system = create_discipline("AutoPyDiscipline", py_func=f_sellar_system)
 
-disc_sellar_0 = create_discipline("AutoPyDiscipline", py_func=f_sellar_0)
-
 disc_sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
+
+disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
 ###############################################################################
 # Note that it is possible to define the Sellar disciplines by subclassing the
@@ -129,15 +129,15 @@ disc_sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
 # flexibily and more options. This method is illustrated in the :ref:`Sellar
 # from scratch tutorial <sellar_from_scratch>`.
 
-# We then create a list of disciplines, which will be used later to create a
+# We then create a list of disciplines, which will be used later to create an
 # :class:`.MDOScenario`:
-disciplines = [disc_sellar_system, disc_sellar_0, disc_sellar_1]
+disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
 ###############################################################################
 # .. note::
 #
 #    For the sake of clarity, these disciplines are overly simple.
-#    Yet, |g| enables to define much more complex disciplines,
+#    Yet, |g| enables the definition of much more complex disciplines,
 #    such as wrapping complex :term:`COTS`.
 #    Check out the other :ref:`tutorials <tutorials_sg>` and
 #    our :ref:`publications list <references>` for more information.
@@ -151,10 +151,10 @@ disciplines = [disc_sellar_system, disc_sellar_0, disc_sellar_1]
 
 design_space = create_design_space()
 design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
-design_space.add_variable("x_shared_0", 1, l_b=-10, u_b=10.0, value=array([4.0]))
-design_space.add_variable("x_shared_1", 1, l_b=0.0, u_b=10.0, value=array([3.0]))
-design_space.add_variable("y_0", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("x_shared_1", 1, l_b=-10, u_b=10.0, value=array([4.0]))
+design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3.0]))
 design_space.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
 
 ###############################################################################
 # Definition of the MDO scenario
@@ -182,7 +182,7 @@ scenario = create_scenario(
 #
 # - the workflow is determined from the MDO formulation used.
 # - the dataflow is determined from the variable names used in the disciplines.
-#   Then, it is of utermost importance to be consistant while choosing and
+#   Then, it is of uttermost importance to be consistent while choosing and
 #   using the variable names in the disciplines.
 #
 # .. warning::
@@ -200,8 +200,8 @@ scenario = create_scenario(
 # In our problem, we have two inequality constraints,
 # and their declaration reads:
 
-scenario.add_constraint("c_0", "ineq")
 scenario.add_constraint("c_1", "ineq")
+scenario.add_constraint("c_2", "ineq")
 
 ###############################################################################
 # Execution of the scenario
@@ -220,49 +220,45 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 #
 # .. code:: bash
 #
-#    *** Start MDO Scenario execution ***
-#    MDOScenario:
-#    Disciplines: f_sellar_system f_sellar_0 f_sellar_1
-#    MDOFormulation: MDF
-#    Algorithm: SLSQP
-#
-#    Optimization problem:
-#          Minimize: obj(x_local, x_shared_0, x_shared_1)
-#    With respect to:
-#        x_local, x_shared_0, x_shared_1
-#    Subject to constraints:
-#    c_0(x_local, x_shared_0, x_shared_1) <= 0
-#    c_1(x_local, x_shared_0, x_shared_1) <= 0
-#    Design Space:
-#    +------------+-------------+-------+-------------+-------+
-#    | name       | lower_bound | value | upper_bound | type  |
-#    +------------+-------------+-------+-------------+-------+
-#    | x_local    |      0      |   1   |      10     | float |
-#    | x_shared_0 |     -10     |   4   |      10     | float |
-#    | x_shared_1 |      0      |   3   |      10     | float |
-#    +------------+-------------+-------+-------------+-------+
-#    Optimization: |          | 0/10   0% [elapsed: 00:00 left: ?, ? iters/sec]
-#    Optimization: |██████    | 6/10  60% [elapsed: 00:00 left: 00:00, 56.08
-#    iters/sec obj:  3.18 ]
-#    Optimization result:
-#    Objective value = 3.18339398657
-#    The result is feasible.
-#    Status: 0
-#    Optimizer message: Optimization terminated successfully.
-#    Number of calls to the objective function by the optimizer: 7
-#    Constraints values:
-#     c_1 = -0.843530155261
-#     c_0 = 1.59205981731e-13
-#
-#     Design Space:
-#    +------------+-------------+-----------------------+-------------+-------+
-#    | name       | lower_bound |         value         | upper_bound | type  |
-#    +------------+-------------+-----------------------+-------------+-------+
-#    | x_local    |      0      |           0           |      10     | float |
-#    | x_shared_0 |     -10     |    1.97763739026546   |      10     | float |
-#    | x_shared_1 |      0      | 5.698379135171542e-13 |      10     | float |
-#    +------------+-------------+-----------------------+-------------+-------+
-#    *** MDO Scenario run terminated in 0:00:00.118049 ***
+#       *** Start MDO Scenario execution ***
+#       MDOScenario
+#          Disciplines: f_sellar_system f_sellar_1 f_sellar_2
+#          MDOFormulation: MDF
+#          Algorithm: SLSQP
+#       Optimization problem:
+#          Minimize: obj(x_local, x_shared_1, x_shared_2)
+#          With respect to: x_local, x_shared_1, x_shared_2
+#          Subject to constraints:
+#             c_1(x_local, x_shared_1, x_shared_2) <= 0.0
+#             c_2(x_local, x_shared_1, x_shared_2) <= 0.0
+#       Design Space:
+#       +------------+-------------+-------+-------------+-------+
+#       | name       | lower_bound | value | upper_bound | type  |
+#       +------------+-------------+-------+-------------+-------+
+#       | x_local    |      0      |   1   |      10     | float |
+#       | x_shared_1 |     -10     |   4   |      10     | float |
+#       | x_shared_2 |      0      |   3   |      10     | float |
+#       +------------+-------------+-------+-------------+-------+
+#       Optimization:   0%|          | 0/10 [00:00<?, ?it]
+#       Optimization:  70%|███████   | 7/10 [00:00<00:00, 109.54 it/sec, obj=3.18]
+#       Optimization result:
+#       Objective value = 3.1833939865673546
+#       The result is feasible.
+#       Status: 8
+#       Optimizer message: Positive directional derivative for linesearch
+#       Number of calls to the objective function by the optimizer: 8
+#       Constraints values w.r.t. 0:
+#          c_1 = 5.140776693224325e-12
+#          c_2 = -20.24472372627405
+#       Design Space:
+#       +------------+-------------+-------------------+-------------+-------+
+#       | name       | lower_bound |       value       | upper_bound | type  |
+#       +------------+-------------+-------------------+-------------+-------+
+#       | x_local    |      0      |         0         |      10     | float |
+#       | x_shared_1 |     -10     | 1.977637390264277 |      10     | float |
+#       | x_shared_2 |      0      |         0         |      10     | float |
+#       +------------+-------------+-------------------+-------------+-------+
+#       *** MDO Scenario run terminated in 0:00:00.099332 ***
 #
 # .. note::
 #

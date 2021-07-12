@@ -1,0 +1,2 @@
+class ProblemGeneric:
+    pass

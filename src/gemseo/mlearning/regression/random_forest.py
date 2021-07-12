@@ -19,12 +19,9 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Random forest regression
-========================
+"""The random forest for regression.
 
-The random forest regression uses averaging methods on an ensemble
-of decision trees.
+The random forest regression uses averaging methods on an ensemble of decision trees.
 
 Dependence
 ----------
@@ -32,12 +29,16 @@ The regression model relies on the RandomForestRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Iterable, Optional, Union
 
+from numpy import ndarray
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 LOGGER = logging.getLogger(__name__)
@@ -51,27 +52,16 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        n_estimators=100,
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        n_estimators=100,  # type: int
         **parameters
-    ):
-        """Constructor.
-
-        :param data: learning dataset.
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param n_estimators: number of trees in the forest.
-        :type n_estimators: int
-        :param parameters: other keyword arguments for the sklearn algo.
+    ):  # type: (...) -> None
+        """
+        Args:
+            n_estimators (int, optional): The number of trees in the forest.
         """
         super(RandomForestRegressor, self).__init__(
             data,
@@ -79,16 +69,15 @@ class RandomForestRegressor(MLRegressionAlgo):
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
-            **parameters
+            **parameters  # type: Optional[Union[bool,int,float,str]]
         )
         self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
 
-    def _fit(self, input_data, output_data):
-        """Fit the regression model.
-
-        :param ndarray input_data: input data (2D)
-        :param ndarray output_data: output data (2D)
-        """
+    def _fit(
+        self,
+        input_data,  # type: ndarray
+        output_data,  # type: ndarray
+    ):  # type: (...) -> None
         # SKLearn RandomForestReressor does not like output
         # shape (n_samples, 1), prefers (n_samples,).
         # The shape (n_samples, n_outputs) with n_outputs >= 2 is fine.
@@ -96,13 +85,10 @@ class RandomForestRegressor(MLRegressionAlgo):
             output_data = output_data[:, 0]
         self.algo.fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output for given input data.
-
-        :param ndarray input_data: input data (2D).
-        :return: output prediction (2D).
-        :rtype: ndarray
-        """
+    def _predict(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         output_data = self.algo.predict(input_data)
 
         # n_outputs=1 => output_shape=(n_samples,). Convert to (n_samples, 1).

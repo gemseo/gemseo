@@ -26,5 +26,6 @@ User guide
    mdo.rst
    machine_learning.rst
    surrogate.rst
+   uncertainty.rst
    scalable.rst
    list_algorithms_options.rst

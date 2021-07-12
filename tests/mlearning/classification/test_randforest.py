@@ -20,7 +20,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest classification module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, array_equal, linspace, ndarray, zeros
@@ -47,7 +47,7 @@ INPUT_VALUES = {
 
 @pytest.fixture
 def dataset():
-    """Dataset."""
+    """The dataset used to train the RandomForestClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 3))
     output_data[::4, 0] = 1
@@ -66,40 +66,40 @@ def dataset():
 
 
 @pytest.fixture
-def model_1d(dataset):
-    """Define model from data."""
-    rfc = RandomForestClassifier(dataset, output_names=["y_1"])
-    rfc.learn()
-    return rfc
+def model_1d(dataset):  # type: (...) -> RandomForestClassifier
+    """A trained RandomForestClassifier with y_1 as single output."""
+    algo = RandomForestClassifier(dataset, output_names=["y_1"])
+    algo.learn()
+    return algo
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
-    rfc = RandomForestClassifier(dataset)
-    rfc.learn()
-    return rfc
+def model(dataset):  # type: (...) -> RandomForestClassifier
+    """A trained KNNClassifier with two outputs, y_1 and y_2."""
+    algo = RandomForestClassifier(dataset)
+    algo.learn()
+    return algo
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model from data."""
-    rfc = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
-    rfc.learn()
-    return rfc
+def model_with_transform(dataset):  # type: (...) -> RandomForestClassifier
+    """A trained KNNClassifier using input scaling."""
+    algo = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
+    algo.learn()
+    return algo
 
 
 def test_constructor(dataset):
     """Test construction."""
-    rfc = RandomForestClassifier(dataset)
-    assert rfc.algo is not None
+    algo = RandomForestClassifier(dataset)
+    assert algo.algo is not None
 
 
 def test_learn(dataset):
     """Test learn."""
-    rfc = RandomForestClassifier(dataset)
-    rfc.learn()
-    assert rfc.algo is not None
+    algo = RandomForestClassifier(dataset)
+    algo.learn()
+    assert algo.algo is not None
 
 
 def test_predict_1d(model_1d):

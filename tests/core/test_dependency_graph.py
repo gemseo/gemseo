@@ -19,17 +19,16 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
 
-import unittest
+from __future__ import unicode_literals
+
+import json
 
 import pytest
 from numpy import ones
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.coupling_structure import DependencyGraph, MDOCouplingStructure
+from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -37,143 +36,173 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.py23_compat import PY2, Path
 
-DESC_LIST_5_DISC = [
-    ("A", ["b"], ["a", "c"]),
-    ("B", ["a"], ["b"]),
-    ("C", ["c", "e"], ["d"]),
-    ("D", ["d"], ["e", "f"]),
-    ("E", ["f"], []),
-]
+DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
-DESC_LIST_16_DISC = [
-    ("A", ["a"], ["b"]),
-    ("B", ["c"], ["a", "n"]),
-    ("C", ["b", "d"], ["c", "e"]),
-    ("D", ["f"], ["d", "g"]),
-    ("E", ["e"], ["f", "h", "o"]),
-    ("F", ["g", "j"], ["i"]),
-    ("G", ["i", "h"], ["k", "l"]),
-    ("H", ["k", "m"], ["j"]),
-    ("I", ["l"], ["m", "w"]),
-    ("J", ["n", "o"], ["p", "q"]),
-    ("K", ["y"], ["x"]),
-    ("L", ["w", "x"], ["y", "z"]),
-    ("M", ["p", "s"], ["r"]),
-    ("N", ["r"], ["t", "u"]),
-    ("O", ["q", "t"], ["s", "v"]),
-    ("P", ["u", "v", "z"], ["obj"]),
-]
+DISC_DESCRIPTIONS = {
+    "3-weak": {
+        "A": (["x"], ["a"]),
+        "B": (["x", "a"], ["b"]),
+        "C": (["x", "a"], ["c"]),
+    },
+    "4-weak": {
+        "A": (["x"], ["a"]),
+        "B": (["x", "a"], ["b"]),
+        "C": (["x", "a"], ["c"]),
+        "D": (["b", "c"], ["d"]),
+    },
+    "5": {
+        "A": (["b"], ["a", "c"]),
+        "B": (["a"], ["b"]),
+        "C": (["c", "e"], ["d"]),
+        "D": (["d"], ["e", "f"]),
+        "E": (["f"], []),
+    },
+    "16": {
+        "A": (["a"], ["b"]),
+        "B": (["c"], ["a", "n"]),
+        "C": (["b", "d"], ["c", "e"]),
+        "D": (["f"], ["d", "g"]),
+        "E": (["e"], ["f", "h", "o"]),
+        "F": (["g", "j"], ["i"]),
+        "G": (["i", "h"], ["k", "l"]),
+        "H": (["k", "m"], ["j"]),
+        "I": (["l"], ["m", "w"]),
+        "J": (["n", "o"], ["p", "q"]),
+        "K": (["y"], ["x"]),
+        "L": (["w", "x"], ["y", "z"]),
+        "M": (["p", "s"], ["r"]),
+        "N": (["r"], ["t", "u"]),
+        "O": (["q", "t"], ["s", "v"]),
+        "P": (["u", "v", "z"], ["obj"]),
+    },
+    # to avoid memory and cpu overhead, only instantiate the objects when they
+    # are needed, not here
+    "sellar": (Sellar1, Sellar2, SellarSystem),
+    "sobieski": (
+        SobieskiAerodynamics,
+        SobieskiStructure,
+        SobieskiPropulsion,
+        SobieskiMission,
+    ),
+}
 
 
-DESC_LIST_3_DISC_WEAK = [
-    ("A", ["x"], ["a"]),
-    ("B", ["x", "a"], ["b"]),
-    ("C", ["x", "a"], ["c"]),
-]
+def create_disciplines_from_desc(disc_desc):
+    """Return the disciplines from their descriptions.
 
-DESC_LIST_4_DISC_WEAK = [
-    ("A", ["x"], ["a"]),
-    ("B", ["x", "a"], ["b"]),
-    ("C", ["x", "a"], ["c"]),
-    ("D", ["b", "c"], ["d"]),
-]
-
-
-def generate_disciplines_from_desc(description_list):
+    Args:
+        disc_desc: The disc_desc of a discipline, either a list of classes or a dict.
     """
-    :param description_list:
+    if isinstance(disc_desc, tuple):
+        # these are disciplines classes
+        return [cls() for cls in disc_desc]
 
-    """
     disciplines = []
     data = ones(1)
-    for desc in description_list:
-        name = desc[0]
-        input_d = {k: data for k in desc[1]}
-        output_d = {k: data for k in desc[2]}
+
+    if PY2:
+        # python 2 dictionaries are not ordered, neither the OrderedDict ctor
+        disc_desc_items = sorted(disc_desc.items())
+    else:
+        disc_desc_items = disc_desc.items()
+
+    for name, io_names in disc_desc_items:
         disc = MDODiscipline(name)
+        input_d = {k: data for k in io_names[0]}
         disc.input_grammar.initialize_from_base_dict(input_d)
+        output_d = {k: data for k in io_names[1]}
         disc.output_grammar.initialize_from_base_dict(output_d)
-        disciplines.append(disc)
+        disciplines += [disc]
+
     return disciplines
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestDependencyGraph(unittest.TestCase):
-    """"""
+@pytest.fixture(params=DISC_DESCRIPTIONS.items(), ids=DISC_DESCRIPTIONS.keys())
+def name_and_graph(request):
+    """Return the name and graph from the full description."""
+    name, disc_desc = request.param
+    disciplines = create_disciplines_from_desc(disc_desc)
+    graph = DependencyGraph(disciplines)
+    return name, graph
 
-    def test_couplings_sellar(self):
-        """"""
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        coupling_structure = MDOCouplingStructure(disciplines)
 
-        assert coupling_structure.graph.execution_sequence == [[(1, 0)], [(2,)]]
-        coupling_structure.graph.export_initial_graph(file_path="_initial_graph.pdf")
-        coupling_structure.graph.export_reduced_graph(file_path="_reduced_graph.pdf")
+def assert_dot_file(file_name):
+    """Assert the contents of the dot file given a pdf file."""
+    assert_file(Path(file_name).with_suffix(".dot"))
 
-    def test_couplings_sobieski(self):
-        """"""
-        disciplines = [
-            SobieskiAerodynamics(),
-            SobieskiStructure(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-        coupling_structure = MDOCouplingStructure(disciplines)
 
-        assert coupling_structure.graph.execution_sequence == [[(2, 1, 0)], [(3,)]]
-        coupling_structure.graph.export_initial_graph(file_path="_initial_graph.pdf")
-        coupling_structure.graph.export_reduced_graph(file_path="_reduced_graph.pdf")
+def assert_file(file_path):
+    """Assert the contents of the file against its reference."""
+    # strip because some reference files are stripped by our pre-commit hooks
+    assert file_path.read_text().strip() == (DATA_PATH / file_path).read_text().strip()
 
-    def test_graph_disciplines_couplings(self):
-        disciplines = generate_disciplines_from_desc(DESC_LIST_5_DISC)
-        graph = DependencyGraph(disciplines)
-        couplings = graph.get_disciplines_couplings()
-        expected = [
-            (disciplines[0], disciplines[1], ["a"]),
-            (disciplines[1], disciplines[0], ["b"]),
-            (disciplines[0], disciplines[2], ["c"]),
-            (disciplines[2], disciplines[3], ["d"]),
-            (disciplines[3], disciplines[2], ["e"]),
-            (disciplines[3], disciplines[4], ["f"]),
-        ]
-        assert len(expected) == len(couplings)
-        for ref in expected:
-            assert ref in couplings
-        # self.assertEqual(sorted(expected), sorted(couplings))
 
-    def export_graphs(self, spec):
-        disciplines = generate_disciplines_from_desc(spec)
-        coupling_structure = MDOCouplingStructure(disciplines)
-        coupling_structure.graph.export_initial_graph(file_path="_initial_graph.pdf")
-        coupling_structure.graph.export_reduced_graph(file_path="_reduced_graph.pdf")
+def test_write_full_graph(tmp_wd, name_and_graph):
+    """Test writing the full graph to disk.
 
-    def test_graph_4disciplines_weak(self):
-        self.export_graphs(DESC_LIST_4_DISC_WEAK)
+    This also checks the expected contents of a graph.
+    """
+    name, graph = name_and_graph
+    file_name = "{}.full_graph.pdf".format(name)
+    graph.write_full_graph(file_name)
+    assert_dot_file(file_name)
 
-    def test_graph_3disciplines_weak(self):
-        self.export_graphs(DESC_LIST_3_DISC_WEAK)
 
-    def test_5_disc(self):
-        self.export_graphs(DESC_LIST_5_DISC)
+def test_write_condensed_graph(tmp_wd, name_and_graph):
+    """Test writing the condensed graph to disk.
 
-    def test_5_disc_parallel(self):
-        self.export_graphs(DESC_LIST_5_DISC)
+    This also checks the expected contents of a graph.
+    """
+    name, graph = name_and_graph
+    file_name = "{}.condensed_graph.pdf".format(name)
+    graph.write_condensed_graph(file_name)
+    assert_dot_file(file_name)
 
-    def test_16_disc_parallel(self):
-        disciplines = generate_disciplines_from_desc(DESC_LIST_16_DISC)
 
-        design_space = DesignSpace()
-        scenario = MDOScenario(
-            disciplines, "MDF", objective_name="obj", design_space=design_space
+def test_couplings(tmp_wd, name_and_graph):
+    """Test the couplings against references stored in json files."""
+    name, graph = name_and_graph
+    couplings = graph.get_disciplines_couplings()
+    file_path = Path("{}.couplings.json".format(name))
+
+    # dump a json of the couplings where the Discipline objects have been converted to
+    # a string to allow dumping and comparison
+
+    if PY2:
+        # workaround, see https://stackoverflow.com/a/36003774
+        x = json.dumps(
+            couplings,
+            ensure_ascii=False,
+            cls=DisciplineEncoder,
+            indent=4,
         )
-        mda = scenario.formulation.mda
+        if isinstance(x, str):
+            x = unicode(x, "UTF-8")  # noqa: F821
+        file_path.write_text(x)
+    else:
+        json.dump(
+            couplings,
+            file_path.open("w", encoding="utf-8"),
+            cls=DisciplineEncoder,
+            indent=4,
+        )
 
-        mda.coupling_structure.graph.export_initial_graph(
-            file_path="_initial_graph.pdf"
-        )
-        mda.coupling_structure.graph.export_reduced_graph(
-            file_path="_reduced_graph.pdf"
-        )
-        XDSMizer(scenario).run()
+    # read back the just created json and the reference
+    couplings = json.load(file_path.open())
+    ref_couplings = json.load((DATA_PATH / file_path).open())
+
+    assert couplings == ref_couplings
+
+
+class DisciplineEncoder(json.JSONEncoder):
+    """JSON encoder that handles discipline objects.
+
+    MDODiscipline objects are stringyfied.
+    """
+
+    def default(self, o):
+        if isinstance(o, MDODiscipline):
+            return str(o)
+        return super(DisciplineEncoder, self).default(o)

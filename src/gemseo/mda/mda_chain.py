@@ -22,8 +22,9 @@
 An advanced MDA splitting algorithm based on graphs
 ***************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from multiprocessing import cpu_count
 from os.path import join, split
 
@@ -33,6 +34,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.mda import MDA
 
+LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
@@ -100,8 +102,14 @@ class MDAChain(MDA):
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
         )
-        sequence = self.coupling_structure.graph.execution_sequence
-        self.execution_sequence = sequence
+
+        if (
+            not self.coupling_structure.get_all_couplings()
+            and not self.__chain_linearize
+        ):
+            LOGGER.warning("No coupling in MDA, switching chain_linearize to True")
+            self.__chain_linearize = True
+
         self._create_mdo_chain(
             disciplines, sub_mda_class=sub_mda_class, **sub_mda_options
         )
@@ -124,18 +132,24 @@ class MDAChain(MDA):
         """
         chained_disciplines = []
         self.sub_mda_list = []
-        for parallel_tasks in self.execution_sequence:
+
+        for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
-                # several disciplines coupled
-                if len(coupled_disciplines) > 1:
+                first_disc = coupled_disciplines[0]
+                if len(coupled_disciplines) > 1 or (
+                    len(coupled_disciplines) == 1
+                    and self.coupling_structure.is_self_coupled(first_disc)
+                ):
+                    # several disciplines coupled
+
                     # order the MDA disciplines the same way as the
                     # original disciplines
                     sub_mda_disciplines = []
-                    for (i, disc_i) in enumerate(disciplines):
-                        if i in coupled_disciplines:
-                            sub_mda_disciplines.append(disc_i)
+                    for disc in disciplines:
+                        if disc in coupled_disciplines:
+                            sub_mda_disciplines.append(disc)
 
                     # create a sub-MDA
                     sub_mda = create_mda(
@@ -150,11 +164,10 @@ class MDAChain(MDA):
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)
-                # single discipline
                 else:
-                    disc_index = coupled_disciplines[0]
-                    single_discipline = disciplines[disc_index]
-                    chained_disciplines.append(single_discipline)
+                    # single discipline
+                    chained_disciplines.append(first_disc)
+
         # create the MDO chain that sequentially evaluates the sub-MDAs and the
         # single disciplines
         self.mdo_chain = MDOChain(
@@ -218,6 +231,22 @@ class MDAChain(MDA):
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self.__chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
+
+    @property
+    def normed_residual(self):
+        """Accessor to the normed_residuals, computed from the sub_mdas residuals."""
+        return sum((mda.normed_residual ** 2 for mda in self.sub_mda_list)) ** 0.5
+
+    @normed_residual.setter
+    def normed_residual(self, normed_residual):
+        """Set the normed_residual.
+
+        Has no effect, since the normed residuals are defined by sub mdas residuals
+        (see associated property)
+
+        Here for compatibility with mother class.
+        """
+        pass
 
     def get_expected_dataflow(self):
         """Get the expected dataflow.

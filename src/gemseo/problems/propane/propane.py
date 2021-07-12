@@ -94,9 +94,8 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import super
 from cmath import sqrt
 from os.path import dirname, join
 

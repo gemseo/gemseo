@@ -19,17 +19,14 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Mean squared error measure
-==========================
+"""The mean squared error to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.qual_measure.mse_measure` module
 implements the concept of mean squared error measures
 for machine learning algorithms.
 
-This concept is implemented through the
-:class:`.MSEMeasure` class and
-overloads the :meth:`!MLErrorMeasure._compute_measure` method.
+This concept is implemented through the :class:`.MSEMeasure` class
+and overloads the :meth:`!MLErrorMeasure._compute_measure` method.
 
 The mean squared error (MSE) is defined by
 
@@ -37,29 +34,37 @@ The mean squared error (MSE) is defined by
 
     \\operatorname{MSE}(\\hat{y})=\\frac{1}{n}\\sum_{i=1}^n(\\hat{y}_i-y_i)^2,
 
-where
-:math:`\\hat{y}` are the predictions and
-:math:`y` are the data points.
+where :math:`\\hat{y}` are the predictions and :math:`y` are the data points.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from typing import Union
+
+from numpy import ndarray
 from sklearn.metrics import mean_squared_error
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class MSEMeasure(MLErrorMeasure):
-    """Mean Squared Error measure for machine learning."""
+    """The Mean Squared Error measure for machine learning."""
 
-    def _compute_measure(self, outputs, predictions, multioutput=True):
-        """Compute MSE.
-
-        :param ndarray outputs: reference outputs.
-        :param ndarray predictions: predicted outputs.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: MSE value.
-        :rtype: float or ndarray(float)
+    def __init__(
+        self,
+        algo,  # type: MLRegressionAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for regression.
+        """
+        super(MSEMeasure, self).__init__(algo)
+
+    def _compute_measure(
+        self,
+        outputs,  # type: ndarray
+        predictions,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         multioutput = "raw_values" if multioutput else "uniform_average"
         return mean_squared_error(outputs, predictions, multioutput=multioutput)

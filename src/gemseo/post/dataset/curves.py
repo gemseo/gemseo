@@ -26,9 +26,9 @@ A :class:`.Curves` plot represents samples of a functional variable
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
 and the mesh as a metadata.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping, Optional, Sequence
+from typing import List, Mapping, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -45,7 +45,7 @@ class Curves(DatasetPlot):
         mesh,  # type: str
         variable,  # type: str
         samples=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
@@ -84,4 +84,4 @@ class Curves(DatasetPlot):
         plt.legend(loc=self.legend_location)
         fig = plt.gcf()
         fig.set_size_inches(*self.figsize)
-        return fig
+        return [fig]

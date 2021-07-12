@@ -20,32 +20,142 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
+from __future__ import division, unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+import pytest
 
-import unittest
+from gemseo.utils.source_parsing import (
+    get_default_options_values,
+    get_options_doc,
+    parse_google,
+    parse_rest,
+)
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.py23_compat import string_types
-from gemseo.utils.source_parsing import SourceParsing
+
+def function_with_google_docstring(arg1, arg2):
+    """Compute the sum of two elements.
+
+    Args:
+        arg1: The first element.
+        arg2: The second element.
+
+    Returns:
+        The sum of the elements.
+    """
 
 
-class TestSourceParsing(unittest.TestCase):
-    def test_get_default_options_values(self):
-        opts = SourceParsing.get_default_options_values(unittest.TestCase)
-        assert opts == {"methodName": "runTest"}
+class ClassWithGoogleDocstring(object):
+    """A class doing nothing."""
 
-        SourceParsing.get_default_options_values(MDOFormulation)
+    def __init__(self, arg1=0.0, arg2=1.0):
+        """
+        Args:
+            arg1: The first argument.
+            arg2: The second argument.
+        """
 
-    def test_get_options_doc(self):
-        opts_doc = SourceParsing.get_options_doc(MDODiscipline.__init__)
-        assert "name" in opts_doc
-        for v in opts_doc.values():
-            assert isinstance(v, string_types)
 
-    def test_emptydoc(self):
-        def f(x):
-            return 2 * x
+def test_get_default_options_values():
+    """Check the function getting the default values of the __init__'s options."""
 
-        self.assertRaises(ValueError, SourceParsing.get_options_doc, f)
+    assert get_default_options_values(ClassWithGoogleDocstring) == {
+        "arg1": 0.0,
+        "arg2": 1.0,
+    }
+
+
+def test_get_options_doc():
+    """Check the function getting the documentation of the options of a function."""
+
+    assert get_options_doc(function_with_google_docstring) == {
+        "arg1": "The first element.",
+        "arg2": "The second element.",
+    }
+
+
+DOCSTRINGS = (
+    """
+Args:
+    arg1: A one-line description.
+    arg2: A multi-line
+        description.
+    *arg3: A description with a first paragraph.
+
+        And a second one.
+        **arg4: An over-indented one-line description.
+
+Returns:
+    The description of the returned object.
+
+Raises:
+    Error: If bla.
+""",
+    """
+Parameters:
+    arg1: A one-line description.
+    arg2: A multi-line
+        description.
+    arg3: A description with a first paragraph.
+
+        And a second one.
+        arg4: An over-indented one-line description.
+""",
+)
+
+
+@pytest.mark.parametrize("docstring", DOCSTRINGS)
+def test_google(docstring):
+    """Test that the Google docstrings are correctly parsed.
+
+    Args:
+        args_section_title: The title of the section dedicated.
+    """
+    parsed_docstring = parse_google(docstring)
+    assert parsed_docstring == {
+        "arg1": "A one-line description.",
+        "arg2": "A multi-line description.",
+        "arg3": "A description with a first paragraph. And a second one.",
+        "arg4": "An over-indented one-line description.",
+    }
+    assert parsed_docstring
+
+
+def test_rest():
+    """Test that the reST docstrings are correctly parsed."""
+    docstring = (
+        ":param arg1: A one-line description.\n"
+        ":param arg2: A multi-line\n"
+        "    description.\n"
+        ":param arg3: A description with a first paragraph.\n"
+        "\n"
+        "    And a second one.\n\n"
+    )
+    assert parse_rest(docstring) == {
+        "arg1": "A one-line description.",
+        "arg2": "A multi-line description.",
+        "arg3": "A description with a first paragraph.\n\nAnd a second one.",
+    }
+
+
+def test_google_without_parameters_block():
+    """Test that the arguments docstring cannot be parsed wo 'Parameters' or 'Args'."""
+    parsed_docstring = parse_google(DOCSTRINGS[0].replace("Args", "Foo"))
+    assert not parsed_docstring
+
+
+def function_with_malformed_docstring(x):
+    """Function.
+
+    Foo:
+        x: Description.
+    """
+
+
+def test_parsing_with_malformed_docstring():
+    """Test an invalid docstring."""
+    expected = (
+        "The docstring of the arguments is malformed: "
+        "please use Google style docstrings"
+    )
+    with pytest.raises(ValueError, match=expected):
+        get_options_doc(function_with_malformed_docstring)

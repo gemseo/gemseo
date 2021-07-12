@@ -27,7 +27,8 @@ where ``f=x*z`` and ``f=x*(z+1)^2``.
 Overloading the :class:`.MDODiscipline`'s constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First of all, we overload the :class:`.MDODiscipline` constructor. For that,
+First of all, we overload the :class:`.MDODiscipline` constructor.
+For that,
 we call the :class:`.MDODiscipline` superconstructor:
 
 .. code::
@@ -71,7 +72,7 @@ Setting the grammars from JSON files
 
 A more complicated approach is to define the grammar into JSON input and output files
 with name :code:`'NewDiscipline_inputs.json'` and :code:`'NewDiscipline_outputs.json'`,
-put these file in the same directory as the module implementing the :code:`NewDiscipline` and
+put these files in the same directory as the module implementing the :code:`NewDiscipline` and
 pass an optional argument to the superconstructor:
 
 .. code::
@@ -177,7 +178,7 @@ which results in:
     Grammar named :NewDiscipline_input, schema = {"required": ["x", "z"], "type": "object", "properties": {"x": {"items": {"type": "number"}, "type": "array"}, "z": {"items": {"type": "number"}, "type": "array"}}}
 
 
-Numpy arrays
+NumPy arrays
 ^^^^^^^^^^^^
 
 Discipline inputs and outputs shall be `numpy <http://www.numpy.org/>`_ arrays of real numbers or integers.
@@ -220,11 +221,12 @@ the discipline to define how outputs are computed from inputs.
 Getting the input values from :attr:`!MDODiscipline.local_data` of the discipline
 ---------------------------------------------------------------------------------
 
-First, the data values shall be retrieved. For each input declared in the input grammar,
+First, the data values shall be retrieved.
+For each input declared in the input grammar,
 |g| will pass the values as arrays to the :class:`.MDODiscipline` during the execution of the process.
 There are different methods to get these values within the :meth:`!MDODiscipline._run` method of the discipline:
 
-- as a dictionary through the :meth:`.MDODiscipline.get_input_data` method, which are also already accessible in the :attr:`!MDODiscipline.local_data` attribute of the :class:`.MDODiscipline`
+- as a dictionary through the :meth:`.MDODiscipline.get_input_data` method, which is also already accessible in the :attr:`!MDODiscipline.local_data` attribute of the :class:`.MDODiscipline`
 - or here as a list of values using :meth:`.MDODiscipline.get_inputs_by_name` with the data names passed as a list.
 
 .. code::
@@ -273,6 +275,8 @@ or by means of the :meth:`.MDODiscipline.store_local_data` method:
             self.store_local_data(f=f)
             self.store_local_data(g=g)
 
+.. _discipline_compute_jacobian:
+
 Overloading the :meth:`!MDODiscipline._compute_jacobian` method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -283,12 +287,15 @@ For a vector of inputs :math:`x` and a vector of outputs :math:`y`, the Jacobian
 
 The discipline shall provide a method to compute the Jacobian for a given set of inputs.
 This is made by overloading the abstract :meth:`!MDODiscipline._compute_jacobian` method of :class:`.MDODiscipline`.
-The discipline may have multiple inputs and multiple outputs. To store the multiple Jacobian matrices associated to all the inputs and outputs,
-|g| uses a dictionary of dictionaries structure. This data structure is sparse and makes easy the access and the iteration over the elements
+The discipline may have multiple inputs and multiple outputs.
+To store the multiple Jacobian matrices associated to all the inputs and outputs,
+|g| uses a dictionary of dictionaries structure.
+This data structure is sparse and makes easy the access and the iteration over the elements
 of the Jacobian.
 
 The method :meth:`!MDODiscipline._init_jacobian` fills the :code:`dict` of :code:`dict` structure
-with dense null matrices of the right sizes. Note that all Jacobians must be 2D matrices, which avoids
+with dense null matrices of the right sizes.
+Note that all Jacobians must be 2D matrices, which avoids
 ambiguity.
 
 .. code::

@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-F1 error measure
-================
+"""The F1 to measure the quality of a classification algorithm.
 
 The F1 is defined by
 
@@ -31,33 +29,43 @@ The F1 is defined by
         {\\mathit{precision}+\\mathit{recall}}
 
 where
-:math:`\\mathit{precision}` is the number of correctly predicted positives divided by
-the total number of predicted positives and
-:math:`\\mathit{recall}` is the number of correctly predicted positives divided by the
-total number of true positives.
+:math:`\\mathit{precision}` is the number of correctly predicted positives
+divided by the total number of *predicted* positives
+and :math:`\\mathit{recall}` is the number of correctly predicted positives
+divided by the total number of *true* positives.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from typing import Union
+
+from numpy import ndarray
 from sklearn.metrics import f1_score
 
+from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 
 
 class F1Measure(MLErrorMeasure):
-    """F1 measure for machine learning."""
+    """The F1 measure for machine learning."""
 
     SMALLER_IS_BETTER = False
 
-    def _compute_measure(self, outputs, predictions, multioutput=False, **options):
-        """Compute MSE.
-
-        :param ndarray outputs: reference outputs.
-        :param ndarray predictions: predicted outputs.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: MSE value.
-        :rtype: float or ndarray(float)
+    def __init__(
+        self,
+        algo,  # type: MLClassificationAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for classification.
+        """
+        super(F1Measure, self).__init__(algo)
+
+    def _compute_measure(
+        self,
+        outputs,  # type: ndarray
+        predictions,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         if multioutput:
             raise NotImplementedError("F1 is only defined for single target.")
         return f1_score(outputs, predictions, average="weighted")

@@ -22,7 +22,7 @@
 Coupled derivatives calculations
 ********************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from collections import defaultdict
 
@@ -123,13 +123,12 @@ class JacobianAssembly(object):
                 )
             )
 
-        for coupling in couplings:
-            if coupling in variables:
-                raise ValueError(
-                    "Variable "
-                    + str(coupling)
-                    + " is both a coupling and a design variable"
-                )
+        for coupling in set(couplings) & set(variables):
+            raise ValueError(
+                "Variable "
+                + str(coupling)
+                + " is both a coupling and a design variable"
+            )
 
         if matrix_type not in self.AVAILABLE_MAT_TYPES:
             raise ValueError(
@@ -182,6 +181,10 @@ class JacobianAssembly(object):
                             self.sizes[variable] = jac.shape[1]
                             self.disciplines[variable] = discipline
                             break
+            if variable not in self.sizes:
+                raise ValueError(
+                    "Failed to determine the size of input variable {}".format(variable)
+                )
 
     @staticmethod
     def _check_mode(mode, n_variables, n_functions):
@@ -297,6 +300,10 @@ class JacobianAssembly(object):
                         # residual Yi-Yi: (-I).x = -x
                         sub_x = x_array[out_j : out_j + variable_size]
                         result[out_i : out_i + residual_size] -= sub_x
+                        if self.coupling_structure.is_self_coupled(discipline):
+                            jac = residual_jac.get(variable, None)
+                            if jac is not None:
+                                result[out_i : out_i + residual_size] += jac.dot(sub_x)
                     else:
                         # block Jacobian
                         jac = residual_jac.get(variable, None)
@@ -345,6 +352,12 @@ class JacobianAssembly(object):
                         # residual Yi-Yi: (-I).x = -x
                         sub_x = x_array[out_j : out_j + residual_size]
                         result[out_i : out_i + variable_size] -= sub_x
+                        if self.coupling_structure.is_self_coupled(discipline):
+                            jac = residual_jac.get(variable, None)
+                            if jac is not None:
+                                result[out_i : out_i + residual_size] += jac.T.dot(
+                                    sub_x
+                                )
                     else:
                         # block Jacobian
                         jac = residual_jac.get(variable, None)
@@ -564,6 +577,13 @@ class JacobianAssembly(object):
             if inputs and outputs:
                 discipline.add_differentiated_inputs(inputs)
                 discipline.add_differentiated_outputs(outputs)
+            if outputs and not inputs:
+                base_msg = (
+                    "Discipline '{}' has the outputs '{}' that must be "
+                    "differenciated, but no coupling or design "
+                    "variables as inputs"
+                )
+                raise ValueError(base_msg.format(discipline.name, outputs))
 
     def split_jac(self, coupled_system, variables):
         """Splits a Jacobian dict into a dict of dict.

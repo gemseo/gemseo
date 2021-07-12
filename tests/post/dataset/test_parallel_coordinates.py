@@ -22,7 +22,7 @@
 
 """Test the class ParallelCoordinates plotting samples with True/False lines."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from matplotlib.testing.decorators import image_comparison

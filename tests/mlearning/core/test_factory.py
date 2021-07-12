@@ -20,7 +20,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange
@@ -32,8 +32,8 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():
-    """Simple dataset."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
     dataset_.add_group(Dataset.INPUT_GROUP, data[:, :2])
@@ -44,8 +44,29 @@ def dataset():
 def test_constructor():
     """Test factory constructor."""
     factory = MLAlgoFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        [
+            "GaussianMixture",
+            "GaussianProcessRegression",
+            "KMeans",
+            "KNNClassifier",
+            "LinearRegression",
+            "MLClassificationAlgo",
+            "MLClusteringAlgo",
+            "MLPredictiveClusteringAlgo",
+            "MLRegressionAlgo",
+            "MLSupervisedAlgo",
+            "MLUnsupervisedAlgo",
+            "MixtureOfExperts",
+            "PCERegression",
+            "PolynomialRegression",
+            "RBFRegression",
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "SVMClassifier",
+        ]
+    )
 
 
 def test_create(dataset):

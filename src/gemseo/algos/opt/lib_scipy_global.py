@@ -20,10 +20,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """scipy.optimize global optimization library wrapper."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import super, zip
 
 from numpy import isfinite, real
 from scipy import optimize

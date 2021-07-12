@@ -49,7 +49,7 @@ The constructor has also optional arguments:
   (default: use :code:`parameters`).
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from typing import Callable, Iterable, List, Mapping, Optional, Union

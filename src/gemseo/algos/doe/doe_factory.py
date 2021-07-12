@@ -23,7 +23,7 @@
 A factory to execute DOE algorithms from their class names
 **********************************************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.driver_factory import DriverFactory

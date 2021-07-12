@@ -1,0 +1,8 @@
+digraph "Dependency graph" {
+	Sellar1 -> Sellar2 [label=y_1]
+	Sellar1 -> SellarSystem [label=y_1]
+	Sellar2 -> Sellar1 [label=y_2]
+	Sellar2 -> SellarSystem [label=y_2]
+	_SellarSystem [shape=point style=invis]
+	SellarSystem -> _SellarSystem [label="c_1,c_2,obj"]
+}

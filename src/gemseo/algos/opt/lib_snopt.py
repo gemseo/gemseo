@@ -25,10 +25,9 @@ SNOPT optimization library wrapper
 **********************************
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, str, super
 
 from numpy import append, array, concatenate
 from numpy import float as np_float

@@ -35,7 +35,9 @@ and a weakly one, with the following properties:
 
 We would like to solve this MDO problem by means of a MDF formulation.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_scenario, generate_n2_plot
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
@@ -66,4 +68,6 @@ scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 #######################################################################################
 # Post-process the results
 # ------------------------
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

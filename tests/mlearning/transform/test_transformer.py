@@ -19,16 +19,16 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from numpy import arange
+from numpy import arange, ndarray
 
 from gemseo.mlearning.transform.transformer import Transformer
 
 
 @pytest.fixture
-def data():
+def data():  # type: (...) -> ndarray
     """Test data."""
     return arange(30).reshape((10, 3))
 

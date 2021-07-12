@@ -17,20 +17,17 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A radar plot of constraints
-***************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""A radar plot of constraints."""
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Sequence
 
 from numpy import vstack, zeros
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,29 +44,17 @@ class RadarChart(OptPostProcessor):
 
     def _plot(
         self,
-        constraints_list,
-        iteration=-1,
-        show=False,
-        save=False,
-        file_path="radar_chart",
-        extension="pdf",
-        figsize_x=8,
-        figsize_y=8,
-    ):
-        """Plot radar graph.
-
-        :param constraints_list: list of constraints names
-        :type constraints_list: list(str)
-        :param iteration: number of iteration to post process
-        :type iteration: int
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param extension: file extension
-        :type extension: str
+        constraints_list,  # type: Sequence[str]
+        iteration=-1,  # type: int
+        figsize_x=8,  # type: int
+        figsize_y=8,  # type: int
+    ):  # type: (...) -> None
+        """
+        Args:
+            constraints_list: The names of the constraints.
+            iteration: The number of iteration to post-process.
+            figsize_x: The size of the figure in horizontal direction (inches).
+            figsize_y: The size of the figure in vertical direction (inches).
         """
         # retrieve the constraints values
         add_dv = False
@@ -113,6 +98,6 @@ class RadarChart(OptPostProcessor):
             radar.title = "Constraints at iteration {}".format(iteration)
         radar.figsize_x = figsize_x
         radar.figsize_y = figsize_y
-        fpath = Path(file_path).with_suffix(".{}".format(extension))
-        fpath = radar.execute(save, show, fpath, display_zero=False)
-        self.output_files.append(fpath)
+        figures = radar.execute(save=False, show=False, display_zero=False)
+        for figure in figures:
+            self._add_figure(figure)

@@ -19,9 +19,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import exists
+from typing import Sequence
 
 import pytest
 from numpy import array
@@ -104,11 +105,10 @@ def test_add_user_defined_constraint_error(mdf_scenario):
 
 
 def test_init_mdf(mdf_scenario):
-    """"""
-    assert len(mdf_scenario.formulation.mda.strong_couplings) == 8
-
-    for coupling in mdf_scenario.formulation.mda.strong_couplings:
-        assert coupling.startswith("y_")
+    assert (
+        sorted(["y_12", "y_21", "y_23", "y_31", "y_32"])
+        == mdf_scenario.formulation.mda.strong_couplings
+    )
 
 
 def test_basic_idf(tmp_wd, idf_scenario):
@@ -295,3 +295,33 @@ def test_xdsm_filename(tmp_path, idf_scenario):
         outdir=tmp_path, outfilename=outfilename, latex_output=False, html_output=True
     )
     assert (tmp_path / outfilename).is_file()
+
+
+@pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
+def test_add_observable(
+    mdf_scenario,  # type: MDOScenario
+    observables,  # type: Sequence[str]
+):
+    """Test adding observables from discipline outputs.
+
+    Args:
+         mdf_scenario: A fixture for the MDOScenario.
+         observables: A list of observables.
+    """
+    mdf_scenario.add_observable(observables)
+    new_observables = mdf_scenario.formulation.opt_problem.observables
+    for new_observable, expected_observable in zip(new_observables, observables):
+        assert new_observable.name == expected_observable
+
+
+def test_add_observable_not_available(
+    mdf_scenario,  # type: MDOScenario
+):
+    """Test adding an observable which is not available in any discipline.
+
+    Args:
+         mdf_scenario: A fixture for the MDOScenario.
+    """
+    msg = "^No discipline known by formulation MDF has all outputs named .*"
+    with pytest.raises(ValueError, match=msg):
+        mdf_scenario.add_observable("toto")

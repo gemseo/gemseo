@@ -21,6 +21,13 @@ Distributed under the Apache 2.0 license
 
 Minor modifications by Francois Gallard : merge the two methods an comment
 """
+from typing import TYPE_CHECKING, Union
+
+from gemseo.utils.py23_compat import Path
+
+if TYPE_CHECKING:
+    from gemseo.utils.xdsmizer import XdsmType
+
 from xdsmjs import bundlejs, css
 
 HTML_TEMPLATE = """
@@ -62,13 +69,15 @@ HTML_TEMPLATE = """
 """
 
 
-def generate_xdsm_html(xdsm, out_file_path="xdsm.html"):
-    """Generates a self contained HTML file.
+def generate_xdsm_html(
+    xdsm,  # type: XdsmType
+    file_path="xdsm.html",  # type: Union[str,Path]
+):  # type: (...) -> None
+    """Generate a HTML file to visualize a dynamic and interactive XDSM.
 
-    :parma xdsm: xdsm dict data
-    :param out_file_path: path to the output HTML file
+    Args:
+        xdsm: The XDSM structure.
+        file_path: The name of the path to the output HTML file.
     """
-    html = HTML_TEMPLATE.format(css(), bundlejs(), xdsm)
-
-    with open(str(out_file_path), "w") as stream:
-        stream.write(html)
+    with open(str(file_path), "w") as stream:
+        stream.write(HTML_TEMPLATE.format(css(), bundlejs(), xdsm))

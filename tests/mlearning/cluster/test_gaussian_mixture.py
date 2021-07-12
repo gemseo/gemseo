@@ -20,7 +20,9 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian Mixture clustering model."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, Tuple
 
 import pytest
 from numpy import allclose, array, integer, ndarray, vstack
@@ -31,7 +33,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import _long
+from gemseo.utils.py23_compat import long
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
@@ -56,8 +58,11 @@ VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
 @pytest.fixture
-def samples():
-    """Dataset, consisting of three clusters from normal distributions."""
+def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
+    """The description of the samples used to generate the learning dataset.
+
+    It consists of three clusters from normal distributions.
+    """
     # Check that the parameters conform
     assert len(SCALES) == len(LOCS)
     assert len(N_SAMPLES) == len(LOCS)
@@ -67,8 +72,11 @@ def samples():
 
 
 @pytest.fixture
-def dataset(samples):
-    """Dataset, consisting of three clusters from normal distributions."""
+def dataset(samples):  # type: (...) -> Dataset
+    """The dataset used to train the GaussianMixture.
+
+    It consists of three clusters from normal distributions.
+    """
 
     # Fix seed for consistency
     seed(12345)
@@ -94,8 +102,8 @@ def dataset(samples):
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> GaussianMixture
+    """A trained GaussianMixture."""
     n_components = 3
     gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
     gaussian_mixture.learn()
@@ -103,8 +111,8 @@ def model(dataset):
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model from data."""
+def model_with_transform(dataset):  # type: (...) -> GaussianMixture
+    """A trained GaussianMixture with parameters scaling."""
     n_components = 3
     transformer = {"parameters": MinMaxScaler()}
     gaussian_mixture = GaussianMixture(
@@ -148,7 +156,7 @@ def test_predict(model):
     """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
-    assert isinstance(prediction, (int, _long, integer))
+    assert isinstance(prediction, (int, long, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]
@@ -160,7 +168,7 @@ def test_predict_with_transform(model_with_transform):
     """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
-    assert isinstance(prediction, (int, _long, integer))
+    assert isinstance(prediction, (int, long, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]

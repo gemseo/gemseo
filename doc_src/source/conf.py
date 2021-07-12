@@ -53,6 +53,22 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
 
+# add faked packages for missing deps
+try:
+    from optimize.snopt7 import SNOPT_solver  # noqa: F401
+except ImportError:
+    sys.path.append(os.path.abspath("fake_packages/snopt"))
+
+try:
+    import matlab  # noqa: F401
+except ImportError:
+    sys.path.append(os.path.abspath("fake_packages/matlab"))
+
+try:
+    import da  # noqa: F401
+except ImportError:
+    sys.path.append(os.path.abspath("fake_packages/pseven"))
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(os.path.abspath("_ext"))
@@ -87,6 +103,13 @@ autoclass_content = "both"
 napoleon_use_ivar = True
 
 apidoc_module_dir = "../../src/gemseo"
+apidoc_excluded_paths = [
+    "utils/n2d3/js",
+    "utils/n2d3/css",
+    "core/grammar.py",
+    "core/json_grammar.py",
+    "third_party/fastjsonschema/version.py",
+]
 apidoc_output_dir = "_modules"
 apidoc_separate_modules = True
 apidoc_module_first = True
@@ -113,6 +136,7 @@ examples_dirs = tmp1 + tmp2
 tmp1 = [os.path.join(examples_dir, subdir) for subdir in examples_subdirs]
 tmp2 = [os.path.join(tutorials_dir + "_sg", subdir) for subdir in tutorials_subdirs]
 gallery_dirs = tmp1 + tmp2
+
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": examples_dirs,
@@ -121,6 +145,7 @@ sphinx_gallery_conf = {
     "default_thumb_file": Path(__file__).parent / "_static/icon.png",
     "within_subsection_order": ExampleTitleSortKey,
     "ignore_pattern": r"run\.py",
+    "only_warn_on_example_error": True,
 }
 
 napoleon_include_private_with_doc = False
@@ -208,31 +233,7 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# html_theme = 'default'
-# html_theme = 'sphinx_rtd_theme'
 html_theme = "scikit-learn-modern"
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-# html_theme_options = {}
-if html_theme == "sphinx_rtd_theme":
-    html_theme_options = {
-        "canonical_url": "",
-        "logo_only": False,
-        "display_version": True,
-        "prev_next_buttons_location": "bottom",
-        # Toc options
-        "collapse_navigation": False,
-        "sticky_navigation": True,
-        "navigation_depth": 4,
-    }
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-# html_theme_options = {'oldversion': False, 'collapsiblesidebar': True,
-#                      'surveybanner': False, 'sprintbanner': True}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ["themes"]

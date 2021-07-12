@@ -23,14 +23,14 @@
 
 A :class:`.Lines` plot represents variables vs samples using lines.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping, Optional, Sequence
+from typing import List, Mapping, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Lines(DatasetPlot):
@@ -38,9 +38,9 @@ class Lines(DatasetPlot):
 
     def _plot(
         self,
-        properties,  # type: Mapping
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
         variables=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             variables: The names of the variables to plot.
@@ -65,5 +65,8 @@ class Lines(DatasetPlot):
                 label=name,
             )
             index += 1
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.title)
         plt.legend(loc=self.legend_location)
-        return plt.gcf()
+        return [plt.gcf()]

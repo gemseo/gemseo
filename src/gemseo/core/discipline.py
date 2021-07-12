@@ -19,24 +19,25 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Abstraction of processes
-************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+
+"""Abstraction of processes."""
+
+from __future__ import division, unicode_literals
 
 import inspect
 import logging
+import os
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Value, cpu_count
+from multiprocessing import Manager, Value, cpu_count
 from multiprocessing.sharedctypes import Synchronized
 from os.path import abspath, dirname, join
 from timeit import default_timer as timer
 
+import six
+from custom_inherit import DocInheritMeta
 from numpy import concatenate, empty, zeros
-from six import string_types
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.grammar import InvalidDataException, SimpleGrammar
@@ -60,6 +61,7 @@ def default_dict_factory():
     return defaultdict(None)
 
 
+@six.add_metaclass(DocInheritMeta())
 class MDODiscipline(object):
     """A software integrated in the workflow.
 
@@ -108,6 +110,9 @@ class MDODiscipline(object):
     RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
     N_CPUS = cpu_count()
 
+    __time_stamps_mp_manager = None
+    time_stamps = None
+
     def __init__(
         self,
         name=None,
@@ -139,7 +144,6 @@ class MDODiscipline(object):
         :param cache_file_path: the file to store the data,
             mandatory when HDF caching is used
         """
-
         self.input_grammar = None  # : input grammar
         self.output_grammar = None  # : output grammar
         self.grammar_type = grammar_type
@@ -183,7 +187,6 @@ class MDODiscipline(object):
         self._cache_file_path = cache_file_path
         self._cache_tolerance = 0.0
         self._cache_hdf_node_name = None
-        self._cache_factory = CacheFactory()
         # By default, dont use approximate cache
         # It is up to the user to choose to optimize CPU time with this or not
         self.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_file_path)
@@ -370,6 +373,7 @@ class MDODiscipline(object):
         cache_tolerance=0.0,
         cache_hdf_file=None,
         cache_hdf_node_name=None,
+        is_memory_shared=True,
     ):
         """Set the type of cache to use and the tolerance level.
 
@@ -393,8 +397,16 @@ class MDODiscipline(object):
         :param str cache_hdf_node_name: name of the HDF
             dataset to store the discipline
             data. If None, self.name is used
+        :param bool is_memory_shared:
+            If True, a shared memory dict is used to store the data,
+            which makes the cache compatible with multiprocessing.
+            WARNING: if set to False, and multiple disciplines point to
+            the same cache or the process is multiprocessed, there may
+            be duplicate computations because the cache will not be
+            shared among the processes.
         """
-        create_cache = self._cache_factory.create
+
+        create_cache = CacheFactory().create
 
         if cache_type == self.HDF5_CACHE:
             not_same_file = cache_hdf_file != self._cache_file_path
@@ -417,9 +429,17 @@ class MDODiscipline(object):
                 self._cache_file_path = cache_hdf_file
 
         elif cache_type != self._cache_type or self.cache is None:
-            self.cache = create_cache(
-                cache_type, tolerance=cache_tolerance, name=self.name
-            )
+            if cache_type == self.MEMORY_FULL_CACHE:
+                self.cache = create_cache(
+                    cache_type,
+                    tolerance=cache_tolerance,
+                    name=self.name,
+                    is_memory_shared=is_memory_shared,
+                )
+            else:
+                self.cache = create_cache(
+                    cache_type, tolerance=cache_tolerance, name=self.name
+                )
         else:
             LOGGER.warning(
                 "Cache policy is already set to %s. To clear the"
@@ -474,12 +494,10 @@ class MDODiscipline(object):
             self.input_grammar = JSONGrammar(
                 name=self.name + "_input",
                 schema_file=input_grammar_file,
-                grammar_type="input",
             )
             self.output_grammar = JSONGrammar(
                 name=self.name + "_output",
                 schema_file=output_grammar_file,
-                grammar_type="output",
             )
         elif grammar_type == self.SIMPLE_GRAMMAR_TYPE:
             self.input_grammar = SimpleGrammar(name=self.name + "_input")
@@ -708,11 +726,30 @@ class MDODiscipline(object):
         with self._n_calls_linearize.get_lock():
             self._n_calls_linearize.value += 1
 
-    def __increment_exec_time(self, t_0):
-        """Increment the execution time."""
+    def __increment_exec_time(self, t_0, linearize=False):
+        """Increment the execution time.
+
+        :param t_0: The time of the execution start.
+        :type t_0: float
+        :param linearize: The switch to declare if it is an execution
+            or a linearization.
+        :type linearize: boolean
+        """
         curr_t = timer()
         with self._exec_time.get_lock():
             self._exec_time.value += curr_t - t_0
+
+            time_stamps = MDODiscipline.time_stamps
+            if time_stamps is not None:
+                disc_stamps = time_stamps.get(self.name)
+                if disc_stamps is None:
+                    if os.name == "nt":
+                        disc_stamps = []
+                    else:
+                        disc_stamps = MDODiscipline.__time_stamps_mp_manager.list()
+                stamp = (t_0, curr_t, linearize)
+                disc_stamps.append(stamp)
+                time_stamps[self.name] = disc_stamps
 
     def _retreive_diff_inouts(self, force_all=False):
         """Get the list of outputs to be differentiated wrt inputs.
@@ -728,6 +765,26 @@ class MDODiscipline(object):
             inputs = self._differentiated_inputs
             outputs = self._differentiated_outputs
         return inputs, outputs
+
+    @classmethod
+    def activate_time_stamps(cls):
+        """Activate the time stamps.
+
+        For storing start and end times of execution and linearizations.
+        """
+        if os.name == "nt":  # No multiprocessing under windows
+            MDODiscipline.time_stamps = {}
+        else:
+            manager = Manager()
+            MDODiscipline.__time_stamps_mp_manager = manager
+            MDODiscipline.time_stamps = manager.dict()
+
+    @classmethod
+    def deactivate_time_stamps(cls):
+        """Deactivate the time stamps for storing start and end times of execution and
+        linearizations."""
+        MDODiscipline.time_stamps = None
+        MDODiscipline.__time_stamps_mp_manager = None
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False):
         """Execute the linearized version of the code.
@@ -787,14 +844,13 @@ class MDODiscipline(object):
         t_0 = timer()
         approximate_jac = self.linearization_mode in self.APPROX_MODES
 
-        if approximate_jac:
+        if approximate_jac:  # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
             self._compute_jacobian(inputs, outputs)
+            self.__increment_exec_time(t_0, linearize=True)
 
         self.__increment_n_calls_lin()
-        if not approximate_jac:  # Time already counted in execute()
-            self.__increment_exec_time(t_0)
 
         self._check_jacobian_shape(inputs, outputs)
         # Cache the Jacobian matrix
@@ -1507,7 +1563,6 @@ class MDODiscipline(object):
             "exec_time",
             "_cache_type",
             "_cache_file_path",
-            "_cache_factory",
             "_cache_tolerance",
             "_cache_hdf_node_name",
             "_linearize_on_last_state",
@@ -1602,6 +1657,6 @@ class MDODiscipline(object):
         :param data_dict: the dict to get the data from
         :returns: a data or a generator of data
         """
-        if isinstance(keys, string_types):
+        if isinstance(keys, six.string_types):
             return data_dict[keys]
         return (data_dict[name] for name in keys)

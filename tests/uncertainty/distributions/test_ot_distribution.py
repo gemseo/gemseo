@@ -19,9 +19,7 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from os.path import exists
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, inf, ndarray
@@ -204,12 +202,10 @@ def test_triangular():
 
 def test_plot(tmp_wd):
     distribution = OTTriangularDistribution("x", dimension=2)
-    distribution.plot_all(False, True)
-    assert exists("distribution_x_0.pdf")
-    assert exists("distribution_x_1.pdf")
-    distribution.plot_all(False, True, "prefix")
-    assert exists("prefix_distribution_x_0.pdf")
-    assert exists("prefix_distribution_x_1.pdf")
+    figures = distribution.plot_all(False, True, directory_path=tmp_wd)
+    assert (tmp_wd / "distribution_x_0.png").exists()
+    assert (tmp_wd / "distribution_x_1.png").exists()
+    assert len(figures) == 2
 
 
 @pytest.fixture

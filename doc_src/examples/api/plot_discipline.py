@@ -24,7 +24,7 @@
 Discipline
 ==========
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import array
 
@@ -130,7 +130,10 @@ print(get_discipline_options_defaults("SobieskiMission"))
 # -----------------------
 # The :meth:`~gemseo.api.generate_coupling_graph` function plots the
 # coupling graph of a set of :class:`.MDODiscipline`:
-generate_coupling_graph(disciplines)
+generate_coupling_graph(disciplines, file_path="full_coupling_graph.pdf")
+generate_coupling_graph(
+    disciplines, file_path="condensed_coupling_graph.pdf", full=False
+)
 
 ##########################################################################
 # The :meth:`~gemseo.api.generate_n2_plot` function plots the N2 diagram of

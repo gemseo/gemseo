@@ -22,10 +22,9 @@
 Build a diagonal DOE for scalable model construction
 ****************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, super
 
 from numpy import array
 
@@ -39,8 +38,7 @@ class DiagonalDOE(DOELibrary):
     """Class used for creation of a diagonal DOE."""
 
     ALGO_LIST = ["DiagonalDOE"]
-    ALGO_DESC = {}
-    ALGO_DESC["DiagonalDOE"] = "Diagonal design of experiments"
+    ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
 
     def __init__(self):
         """Constructor, initializes the DOE samples."""

@@ -20,7 +20,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial chaos expansion regression module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array
@@ -37,17 +37,15 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def discipline():
+def discipline():  # type: (...) -> AnalyticDiscipline
     """Discipline from R^2 to R^2."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline_ = AnalyticDiscipline("func", expressions_dict)
-    return discipline_
+    return AnalyticDiscipline("func", expressions_dict)
 
 
 @pytest.fixture
-def dataset(discipline):
-    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
-
+def dataset(discipline):  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
@@ -58,16 +56,16 @@ def dataset(discipline):
 
 
 @pytest.fixture
-def model(dataset, prob_space):
-    """Define model from data."""
+def model(dataset, prob_space):  # type:(...) -> PCERegression
+    """A trained LinearRegression."""
     pce = PCERegression(dataset, prob_space)
     pce.learn()
     return pce
 
 
 @pytest.fixture
-def prob_space():
-    """Probability space."""
+def prob_space():  # type: (...) -> ParameterSpace
+    """A probability space describing the uncertain variables."""
     space = ParameterSpace()
     space.add_random_variable("x_1", "OTUniformDistribution")
     space.add_random_variable("x_2", "OTUniformDistribution")
@@ -79,7 +77,7 @@ def test_constructor(dataset, prob_space):
     model_ = PCERegression(dataset, prob_space)
     assert model_.algo is None
     model_ = PCERegression(dataset, prob_space, strategy="Quad")
-    assert model_.proj_strategy is not None
+    assert model_._proj_strategy is not None
     with pytest.raises(ValueError):
         PCERegression(dataset, prob_space, strategy="foo")
     prob_space.remove_variable("x_1")
@@ -124,9 +122,9 @@ def test_prediction_quad(prob_space, discipline):
     assert not dataset_
     model = PCERegression(dataset_, prob_space, strategy="Quad")
     assert dataset_
-    assert model.sample.shape == (9, 2)
+    assert model._sample.shape == (9, 2)
     model = PCERegression(dataset_, prob_space, strategy="Quad", n_quad=4)
-    assert model.sample.shape == (4, 2)
+    assert model._sample.shape == (4, 2)
     model_ = PCERegression(
         Dataset(), prob_space, discipline=discipline, strategy="Quad"
     )
@@ -147,9 +145,11 @@ def test_prediction_quad(prob_space, discipline):
     assert allclose(prediction["y_2"], array([-9.0]))
 
 
-def test_prediction_sparse(dataset, prob_space):
+def test_prediction_sparse_ls(dataset, prob_space):
     """Test prediction."""
-    PCERegression(dataset, prob_space, strategy="SparseLS")
+    model = PCERegression(dataset, prob_space, strategy="SparseLS")
+    model.learn()
+    assert model._strategy == model.SPARSE_STRATEGY
 
 
 def test_prediction_wrong_strategy(dataset, prob_space):

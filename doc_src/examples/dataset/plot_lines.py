@@ -25,8 +25,9 @@ Plot - Lines
 ============
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from matplotlib import pyplot as plt
 from numpy import cos, linspace, pi, sin
 
 from gemseo.api import configure_logger
@@ -53,4 +54,6 @@ dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
 # --------------
 # We can use the :class:`.Lines` plot.
 plot = Lines(dataset)
-plot.execute(save=False, show=True, variables=["y1", "y2"])
+plot.execute(save=False, show=False, variables=["y1", "y2"])
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

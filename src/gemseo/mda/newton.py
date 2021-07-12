@@ -30,10 +30,9 @@ Root finding methods include:
 Each of these methods is implemented by a class in this module.
 Both inherits from a common abstract cache.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import str, super
 from copy import deepcopy
 
 from numpy.linalg import norm

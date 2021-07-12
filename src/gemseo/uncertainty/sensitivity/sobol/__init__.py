@@ -18,5 +18,3 @@
 
 The main class is :class:`.SobolAnalysis` (based on OpenTURNS capabilities).
 """
-
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis  # noqa: F401

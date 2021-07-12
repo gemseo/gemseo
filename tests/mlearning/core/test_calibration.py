@@ -20,8 +20,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm calibration."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+import pytest
 from numpy import allclose, array, array_equal
 
 from gemseo.algos.design_space import DesignSpace
@@ -30,9 +31,46 @@ from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 
 
-def test_discipline():
+@pytest.fixture(scope="module")
+def dataset():  # type: (...) -> RosenbrockDataset
+    """The dataset used to train the regression algorithms."""
+    return RosenbrockDataset(opt_naming=False)
+
+
+def test_discipline_multioutput_fail(dataset):
+    """Verify that MLAlgoAssessor raises an error if multioutput option is True."""
+    with pytest.raises(
+        ValueError,
+        match=("MLAlgoAssessor does not support multioutput."),
+    ):
+        MLAlgoAssessor(
+            "PolynomialRegression",
+            dataset,
+            ["degree"],
+            MSEMeasure,
+            {"method": "loo", "multioutput": True},
+        )
+
+
+@pytest.mark.parametrize(
+    "options",
+    [{"method": "loo", "multioutput": False}, {"method": "loo"}],
+)
+def test_discipline_multioutput(dataset, options):
+    """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
+    assessor = MLAlgoAssessor(
+        "PolynomialRegression",
+        dataset,
+        ["degree"],
+        MSEMeasure,
+        options,
+    )
+    assert not assessor.measure_options["multioutput"]
+    assert not options["multioutput"]
+
+
+def test_discipline(dataset):
     """Test discipline."""
-    dataset = RosenbrockDataset(opt_naming=False)
     measure_options = {"method": "loo"}
     disc = MLAlgoAssessor(
         "PolynomialRegression", dataset, ["degree"], MSEMeasure, measure_options
@@ -45,31 +83,43 @@ def test_discipline():
     assert array_equal(result["degree"], array([3]))
 
 
-def test_calibration():
-    """Test calibration."""
-    dataset = RosenbrockDataset(opt_naming=False)
+@pytest.fixture(scope="module")
+def calibration_space():  # type: (...) -> DesignSpace
+    """The space of the parameters to be calibrated."""
     calibration_space = DesignSpace()
-    calibration_space.add_variable("degree", 1, "integer", 1, 10, 1)
-    measure_options = {"method": "loo"}
+    calibration_space.add_variable("penalty_level", 1, "float", 0.0, 1.0, 0.5)
+    return calibration_space
+
+
+@pytest.mark.parametrize(
+    "algo", [("fullfact", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
+)
+def test_calibration(dataset, calibration_space, algo):
+    """Test calibration."""
+    n_samples = 2
     calibration = MLAlgoCalibration(
         "PolynomialRegression",
         dataset,
-        ["degree"],
+        ["penalty_level"],
         calibration_space,
         MSEMeasure,
-        measure_options,
+        {"method": "loo"},
+        degree=2,
     )
-    calibration.execute({"algo": "fullfact", "n_samples": 10})
+
+    assert calibration.get_history("learning") is None
+
+    calibration.execute({"algo": algo[0], algo[1]: n_samples})
     x_opt = calibration.optimal_parameters
     f_opt = calibration.optimal_criterion
     algo_opt = calibration.optimal_algorithm
-    assert allclose(f_opt, array([0.0]))
-    assert not array_equal(x_opt["degree"], array([1]))
-    assert algo_opt.parameters["degree"] == x_opt["degree"]
-    degree = calibration.get_history("degree")
-    criterion = calibration.get_history("criterion")
-    train = calibration.get_history("learning")
-    assert degree.shape == (10, 1)
-    assert criterion.shape == (10, 1)
-    assert train.shape == (10, 1)
-    assert len(calibration.algos) == 10
+
+    assert algo_opt.parameters["penalty_level"] == x_opt["penalty_level"]
+    assert calibration.get_history("penalty_level").shape == (n_samples, 1)
+    assert calibration.get_history("criterion").shape == (n_samples, 1)
+    assert calibration.get_history("learning").shape == (n_samples, 1)
+    assert len(calibration.algos) == n_samples
+
+    calibration.maximize_objective = True
+    calibration.execute({"algo": algo[0], algo[1]: n_samples})
+    assert calibration.optimal_criterion > f_opt

@@ -29,7 +29,7 @@ by means of the :class:`.MDF` formulation
 with a higher dimension for the sweep parameter.
 For that, we use the :class:`.ScalableProblem` class.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (

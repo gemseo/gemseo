@@ -19,7 +19,7 @@
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import json
 import unittest
@@ -39,8 +39,6 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 from gemseo.utils.xdsmizer import XDSMizer, expand
-
-INPUT_DIR = join(dirname(__file__), "xdsm_ref_data")
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -258,27 +256,13 @@ class TestXDSMizer(unittest.TestCase):
         xdsmizer.run(**options)
         self._assert_xdsm_file_ok(fname)
 
-    def _assert_xdsm_json(self, fname, xdsm_json):
-        """Tests XDSM equality taking file 'ref_<fname> as reference and given xdsm_json
-        string.
-
-        :param fname: filename containing generated XDSM
-        """
-        ref_filepath = join(dirname(abspath(__file__)), "ref_" + fname)
-        assert exists(ref_filepath)
-        with open(ref_filepath, "r") as ref_file:
-            xdsm_str = ref_file.read()
-        expected = json.loads(xdsm_str)
-
-        self._assert_xdsm_equal(expected, xdsm_json)
-
     def _assert_xdsm_file_ok(self, fname):
         """Tests XDSM equality taking file 'ref_<fname> as reference and new generated
         file <fname>
 
         :param fname: filename containing generated XDSM
         """
-        ref_filepath = join(dirname(abspath(__file__)), "xdsm_ref_data", "ref_" + fname)
+        ref_filepath = join(dirname(abspath(__file__)), "data", fname)
         # Erase reference files
         #         import shutil
         #         shutil.copyfile(fname, ref_filepath)

@@ -26,7 +26,7 @@ Simple cache
 This example shows the manipulation of :class:`.SimpleCache` instances. This
 cache only stores the last inputs and outputs stored.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import array
 

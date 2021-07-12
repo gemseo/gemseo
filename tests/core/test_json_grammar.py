@@ -20,7 +20,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numbers import Number
 from os.path import dirname, exists, join
@@ -45,18 +45,14 @@ def get_indict():
 
 def get_indict_grammar():
     g = JSONGrammar(name="basic")
-    g.initialize_from_base_dict(typical_data_dict=get_indict(), schema_file=None)
+    g.initialize_from_base_dict(typical_data_dict=get_indict())
     return g
-
-
-def test_instanciation():
-    JSONGrammar(name="empty")
 
 
 def test_basic_grammar_init_from_dict():
     g = get_indict_grammar()
     g.load_data(get_indict())
-    g_str = str(g)
+    g_str = repr(g)
     assert "properties" in g_str
     assert "required" in g_str
     for k in get_indict():
@@ -65,12 +61,12 @@ def test_basic_grammar_init_from_dict():
     array_dct = get_indict()
     array_dct["bounds"] = array(array_dct["bounds"])
     g2 = JSONGrammar(name="basic2")
-    g2.initialize_from_base_dict(typical_data_dict=array_dct, schema_file=None)
+    g2.initialize_from_base_dict(typical_data_dict=array_dct)
 
     for k in g.get_data_names():
         assert k in g2.get_data_names()
 
-    g2_str = str(g2)
+    g2_str = repr(g2)
     assert "properties" in g2_str
     assert "required" in g2_str
     for k in get_indict():
@@ -130,15 +126,12 @@ def test_init_from_datanames():
 @pytest.mark.usefixtures("tmp_wd")
 def test_init_from_base_dict():
     grammar = JSONGrammar("test_gram")
-    typical_data_dict = {"a": [1], "b": "b"}
-    grammar.initialize_from_base_dict(
-        typical_data_dict, schema_file=None, write_schema=True
-    )
+    grammar.initialize_from_base_dict({"a": [1], "b": "b"})
 
 
 def test_update_from():
     g = get_indict_grammar()
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         g.update_from({})
     ge = JSONGrammar(name="empty")
     ge.update_from(g)
@@ -167,40 +160,30 @@ def test_update_from_if_not_in():
     g1 = JSONGrammar(name="basic")
     g1.initialize_from_base_dict(
         typical_data_dict=dct_1,
-        schema_file=None,
         description_dict=description_dict_1,
     )
 
     g2 = JSONGrammar(name="basic")
-    g2.initialize_from_base_dict(typical_data_dict=dct_2, schema_file=None)
+    g2.initialize_from_base_dict(typical_data_dict=dct_2)
 
     ge = JSONGrammar(name="empty")
     ge.update_from_if_not_in(g1, g2)
 
     assert sorted(ge.get_data_names()) == sorted(["bounds", "Navier-Stokes"])
 
-    assert ge.schema.to_dict()["properties"]["Navier-Stokes"]["description"] is not None
+    assert (
+        ge.schema.to_schema()["properties"]["Navier-Stokes"]["description"] is not None
+    )
 
 
 @pytest.mark.usefixtures("tmp_wd")
 def test_update_from_dict():
     g1 = JSONGrammar("g1")
     typical_data_dict = {"max_iter": 1}
-    g1.initialize_from_base_dict(
-        typical_data_dict, schema_file="test.json", write_schema=True
-    )
+    g1.initialize_from_base_dict(typical_data_dict)
 
     g2 = JSONGrammar(name="basic_str", schema=g1.schema)
-    assert "max_iter" in g2.properties
-
-
-def test_update_descr():
-    g1 = JSONGrammar("g1")
-    key = "max_iter"
-    g1.initialize_from_base_dict({key: 1})
-    descr = "max number of iterations"
-    g1.add_description({key: descr})
-    assert g1.schema.to_dict()["properties"][key]["description"] == descr
+    assert "max_iter" in g2.get_data_names()
 
 
 def test_invalid_data():
@@ -225,9 +208,8 @@ def test_init_from_unexisting_schema():
 def test_write_schema():
     g = JSONGrammar(name="toto")
     fpath = "out_test.json"
-    g.initialize_from_base_dict(
-        typical_data_dict={"X": 1}, schema_file=fpath, write_schema=True
-    )
+    g.initialize_from_base_dict(typical_data_dict={"X": 1})
+    g.write_schema(fpath)
     assert exists(fpath)
 
 
@@ -279,7 +261,7 @@ def test_to_simple_grammar_array_number():
     simp = grammar.to_simple_grammar()
 
     if PY2:
-        # workaround the vendored genson that uses unordered dict
+        # workaround for genson that uses unordered dict
         assert set(simp.data_types) == {Number, ndarray}
     else:
         assert simp.data_types == [Number, ndarray]

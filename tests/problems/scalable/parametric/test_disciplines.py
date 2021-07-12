@@ -19,9 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
-
-from builtins import isinstance
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import array

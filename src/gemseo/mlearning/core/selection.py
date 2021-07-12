@@ -20,59 +20,91 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Machine learning algorithm selection
-====================================
+"""This module contains a class to select a machine learning algorithm from a list.
 
 Machine learning is used to find relations or underlying structures in data.
-There is however no algorithm that is universally better than the others for
-an arbitrary problem (see "No free lunch theorem"). Provided a quality measure,
+There is however no algorithm that is universally better than the others
+for an arbitrary problem.
+As for optimization, there is *no free lunch* for machine learning [wolpert]_.
+
+.. [wolpert] Wolpert, David H.
+   "The lack of a priori distinctions between learning algorithms."
+   Neural computation 8.7 (1996): 1341-1390.
+
+Provided a quality measure,
 one can thus compare the performances of different machine learning algorithms.
 
 This process can be easily performed using the class :class:`.MLAlgoSelection`.
 
-A machine learning algorithm is built using a set of (hyper)parameters, before
-learning takes place. In order to choose the best hyperparameters, a simple
-grid search over different values may be sufficient. The
-:class:`.MLAlgoSelection` does this. It can also perform a more advanced form
-of optimization than a simple grid search over predefined values, using the
-class :class:`.MLAlgoCalibration`.
+A machine learning algorithm is built using a set of (hyper)parameters,
+before the learning takes place.
+In order to choose the best hyperparameters,
+a simple grid search over different values may be sufficient.
+The :class:`.MLAlgoSelection` does this.
+It can also perform a more advanced form of optimization
+than a simple grid search over predefined values,
+using the class :class:`.MLAlgoCalibration`.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
-
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from itertools import product
+from typing import Optional, Sequence, Tuple, Union
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.dataset import Dataset
+from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
+from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import (
+    OptionType as MeasureOptionType,
+)
 
 
 class MLAlgoSelection(object):
-    """Machine learning algorithm selector."""
+    """Machine learning algorithm selector.
+
+    Attributes:
+        dataset (Dataset): The learning dataset.
+        measure (str): The name of a quality measure
+            to measure the quality of the machine learning algorithms.
+        measure_options (Dict[str,Union[int,Dataset]]): The options for the method
+            to evaluate the quality measure.
+        factory (MLAlgoFactory): The factory
+            used for the instantiation of machine learning algorithms.
+        candidates (List[Tuple[MLAlgo,float]]): The candidate machine learning
+            algorithms, after possible calibration, and their quality measures.
+    """
 
     def __init__(
         self,
-        dataset,
-        measure,
-        eval_method=MLQualityMeasure.LEARN,
-        samples=None,
-        **measure_options
-    ):
-        """Constructor.
+        dataset,  # type: Dataset
+        measure,  # type: str
+        eval_method=MLQualityMeasure.LEARN,  # type: str
+        samples=None,  # type: Optional[Sequence[int]]
+        **measure_options  # type:MeasureOptionType
+    ):  # type: (...) -> None
+        """
+        Args:
+            dataset: The learning dataset.
+            measure: The name of a quality measure
+                to measure the quality of the machine learning algorithms.
+            eval_method: The name of the method to evaluate the quality measure.
+            samples: The indices of the learning samples to consider.
+                Other indices are neither used for training nor for testing.
+                If None, use all the samples.
+            **measure_options: The options for the method
+                to evaluate the quality measure.
+                The option 'multioutput' will be set to False.
 
-        :param str measure: MLQualityMeasure.
-        :param list(int) samples: Indices of samples to consider. Other indices
-            are neither used for training nor for testing. If None, use all
-            samples. Default: None.
-        :param str eval_method: Method for MLQalityMeasure.evaluate() method.
-        :param dict measure_options: options for MLQalityMeasure.evaluate()
-            method. The option multioutput will be set to False.
+        Raises:
+            ValueError: If the unsupported "multioutput" option is enabled.
         """
         self.dataset = dataset
         self.measure = measure
@@ -90,19 +122,39 @@ class MLAlgoSelection(object):
             )
         self.measure_options["multioutput"] = False
 
-    def add_candidate(self, name, calib_space=None, calib_algo=None, **option_lists):
-        """Add machine learning algorithm candidate.
+    def add_candidate(
+        self,
+        name,  # type:str
+        calib_space=None,  # type: Optional[DesignSpace]
+        calib_algo=None,  # type: Optional[ScenarioInputDataType]
+        **option_lists
+    ):  # type: (...) -> None
+        """Add a machine learning algorithm candidate.
 
-        :param str name: Class name of MLAlgo.
-        :param DesignSpace calib_space: Design space for parameters to be
-            calibrated with an MLAlgoCalibration. If None, do not perform
-            calibration. Default: None.
-        :param dict calib_algo: Dictionary containing optimization algorithm
-            and parameters (example: {"algo": "fullfact", "n_samples": 10}).
-            If None, do not perform calibration. Default: None.
-        :param dict option_lists: Parameters for the MLAlgo candidate. Each
-            parameter has to be enclosed within a list. The list may contain
-            different values to try out for the given parameter, or only one.
+        Args:
+            name: The name of a machine learning algorithm.
+            calib_space: The design space
+                defining the parameters to be calibrated
+                with a :class:`.MLAlgoCalibration`.
+                If None, do not perform calibration.
+            calib_algo: The name and the parameters
+                of the optimization algorithm,
+                e.g. {"algo": "fullfact", "n_samples": 10}).
+                If None, do not perform calibration.
+            **option_lists: The parameters
+                for the machine learning algorithm candidate.
+                Each parameter has to be enclosed within a list.
+                The list may contain different values
+                to try out for the given parameter,
+                or only one.
+
+        Examples:
+            >>> selector.add_candidate(
+            >>>     "LinearRegression",
+            >>>     penalty_level=[0, 0.1, 1, 10, 20],
+            >>>     l2_penalty_ratio=[0, 0.5, 1],
+            >>>     fit_intercept=[True],
+            >>> )
         """
         keys, values = option_lists.keys(), option_lists.values()
 
@@ -140,17 +192,22 @@ class MLAlgoSelection(object):
 
         self.candidates.append((algo, quality))
 
-    def select(self, return_quality=False):
-        """Select best model.
+    def select(
+        self,
+        return_quality=False,  # type:bool
+    ):  # type: (...) -> Union[MLAlgo,Tuple[MLAlgo,float]]
+        """Select the best model.
 
-        The model is chosen through a grid search over candidates and their
-        options, as well as an eventual optimization over the parameters in
-        the calibration space.
+        The model is chosen through a grid search
+        over candidates and their options,
+        as well as an eventual optimization over the parameters
+        in the calibration space.
 
-        :param bool return_quality: indicator for whether to return the
-            quality of the best model.
-        :return: best model and its quality if indicated.
-        :rtype: MLAlgo or tuple(MLAlgo, float)
+        Args:
+            return_quality: If True, the quality of the best model will be returned.
+
+        Returns:
+            The best model and its quality if required.
         """
         candidate = self.candidates[0]
         for new_candidate in self.candidates[1:]:

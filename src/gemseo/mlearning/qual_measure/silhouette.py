@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Silhouette coefficient clustering measure
-=========================================
+r"""The silhouette coefficient to measure the quality of a clustering algorithm.
 
 The :mod:`~gemseo.mlearning.qual_measure.silhouette` module implements the
 concept of silhouette coefficient measure for machine learning algorithms.
@@ -30,94 +28,90 @@ This concept is implemented through the
 :class:`.SilhouetteMeasure` class and
 overloads the :meth:`!MLClusteringMeasure._compute_measure` method.
 
-The silhouette coefficient is defined for each point as the difference between
-the average distance from the point to each of the other points in its cluster
-and the average distance from the point to each of the points in the the
-nearest cluster different from its own.
+The silhouette coefficient is defined for each point as the difference
+between the average distance from the point to each of the other points in its cluster
+and the average distance from the point to each of the points
+in the nearest cluster different from its own.
 
-More formally, the silhouette coefficient :math:`s_i` of a point :math:`x_i`
-is given by
+More formally,
+the silhouette coefficient :math:`s_i` of a point :math:`x_i` is given by
 
 .. math::
 
-    a_i = \\frac{1}{|C_{k_i}|} \\sum_{j\\in\\C_{k_i}} \\|x_i-x_j\\|\\\\
+    a_i = \\frac{1}{|C_{k_i}| - 1} \\sum_{j\\in C_{k_i}\setminus\{i\} } \\|x_i-x_j\\|\\\\
     b_i = \\underset{\\ell=1,\\cdots,K\\atop{\\ell\\neq k_i}}{\\min}\\
-        \\frac{1}{|C_\\ell|} \\sum_{j\\in\\C_\\ell} \\|x_i-x_j\\|\\\\
+        \\frac{1}{|C_\\ell|} \\sum_{j\\in C_\\ell} \\|x_i-x_j\\|\\\\
     s_i = \\frac{b_i-a_i}{\\max(b_i,a_i)}
 
 where
+:math:`k_i` is the index of the cluster to which :math:`x_i` belongs,
 :math:`K` is the number of clusters,
-:math:`C_k` is the set of indices of points belonging to
-cluster :math:`k\\ k=1,\\cdots,K` and
-:math:`|C_k| = \\sum_{j\\in C_i} 1` is the number of points in
-cluster :math:`k\\ k=1,\\cdots,K`.
+:math:`C_k` is the set of indices of points
+belonging to the cluster :math:`k` (:math:`k=1,\\cdots,K`),
+and :math:`|C_k| = \\sum_{j\\in C_k} 1` is the number of points
+in the cluster :math:`k`, :math:`k=1,\\cdots,K`.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from sklearn.metrics import silhouette_samples, silhouette_score
+from typing import List, Optional, Union
 
-from gemseo.mlearning.qual_measure.cluster_measure import MLClusteringMeasure
+from numpy import ndarray
+from sklearn.metrics import silhouette_score
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
+from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
 
 
-class SilhouetteMeasure(MLClusteringMeasure):
-    """Silhouette coefficient measure for machine learning."""
+class SilhouetteMeasure(MLPredictiveClusteringMeasure):
+    """The silhouette coefficient measure for machine learning."""
 
     SMALLER_IS_BETTER = False
 
-    def evaluate_test(self, test_data, samples=None, multioutput=True):
-        """Evaluate quality measure using a test dataset.
-
-        Only works if clustering algorithm has a predict method.
-
-        :param Dataset test_data: test data.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
+    def __init__(
+        self,
+        algo,  # type: MLPredictiveClusteringAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for clustering.
+        """
+        super(SilhouetteMeasure, self).__init__(algo)
+
+    def evaluate_test(
+        self,
+        test_data,  # type:Dataset
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 
-    def evaluate_kfolds(self, n_folds=5, samples=None, multioutput=True):
-        """Evaluate quality measure using the k-folds technique.
-
-        Only works if clustering algorithm has a predict method.
-
-        :param int n_folds: number of folds. Default: 5.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        """
+    def evaluate_kfolds(
+        self,
+        n_folds=5,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 
-    def evaluate_bootstrap(self, n_replicates=100, samples=None, multioutput=True):
-        """Evaluate quality measure using the bootstrap technique.
-
-        Only works if clustering algorithm has a predict method.
-
-        :param int n_replicates: number of bootstrap replicates. Default: 100.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: quality measure value.
-        """
+    def evaluate_bootstrap(
+        self,
+        n_replicates=100,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 
-    def _compute_measure(self, data, labels, multioutput=True):
-        """Compute Silhouette coefficient(s).
-
-        :param ndarray data: reference data.
-        :param ndarray labels: predicted labels.
-        :param bool multioutput: if True, return the quality measure for each
-            output component. Otherwise, average these measures. Default: True.
-        :return: measure value.
-        """
+    def _compute_measure(
+        self,
+        data,  # type: ndarray
+        labels,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         if multioutput:
-            measure = silhouette_samples(data, labels)
-        else:
-            measure = silhouette_score(data, labels)
+            raise NotImplementedError(
+                "The SilhouetteMeasure does not support the multioutput case."
+            )
+        measure = silhouette_score(data, labels)
 
         return measure

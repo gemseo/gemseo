@@ -34,7 +34,14 @@ from gemseo.core.parallel_execution import (
     DiscParallelLinearization,
     ParallelExecution,
 )
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem, get_inputs
+from gemseo.problems.sellar.sellar import (
+    X_SHARED,
+    Y_1,
+    Sellar1,
+    Sellar2,
+    SellarSystem,
+    get_inputs,
+)
 
 
 class CallableWorker(object):
@@ -108,7 +115,7 @@ class TestParallelExecution(unittest.TestCase):
         input_list = []
         for i in range(n):
             inpts = get_inputs()
-            inpts["x_shared"][0] = i
+            inpts[X_SHARED][0] = i
             input_list.append(inpts)
 
         t_0 = timer()
@@ -121,7 +128,7 @@ class TestParallelExecution(unittest.TestCase):
         assert s_1.n_calls == n
 
         func_gen = MDOFunctionGenerator(s_1)
-        y_0_func = func_gen.get_function(["x_shared"], ["y_0"])
+        y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
         parallel_execution = ParallelExecution([y_0_func] * n)
         input_list = [array([i, 0.0], dtype=complex128) for i in range(n)]
@@ -129,10 +136,10 @@ class TestParallelExecution(unittest.TestCase):
 
         for i in range(n):
             inpts = get_inputs()
-            inpts["x_shared"][0] = i
+            inpts[X_SHARED][0] = i
             s_1.execute(inpts)
-            assert s_1.local_data["y_0"] == outs[i]["y_0"]
-            assert s_1.local_data["y_0"] == output_list[i]
+            assert s_1.local_data[Y_1] == outs[i][Y_1]
+            assert s_1.local_data[Y_1] == output_list[i]
 
     @pytest.mark.skip_under_windows
     def test_parallel_lin(self):
@@ -142,7 +149,7 @@ class TestParallelExecution(unittest.TestCase):
         input_list = []
         for i in range(3):
             inpts = get_inputs()
-            inpts["x_shared"][0] = i + 1
+            inpts[X_SHARED][0] = i + 1
             input_list.append(inpts)
         outs = parallel_execution.execute(input_list)
 
@@ -150,7 +157,7 @@ class TestParallelExecution(unittest.TestCase):
 
         for i, disc in enumerate(disciplines):
             inpts = get_inputs()
-            inpts["x_shared"][0] = i + 1
+            inpts[X_SHARED][0] = i + 1
 
             j_ref = disciplines2[i].linearize(inpts)
 
@@ -190,7 +197,7 @@ class TestParallelExecution(unittest.TestCase):
     def test_async_call(self):
 
         disc = create_discipline("SobieskiMission")
-        func = MDOFunctionGenerator(disc).get_function(["x_shared"], ["y_4"])
+        func = MDOFunctionGenerator(disc).get_function([X_SHARED], ["y_4"])
 
         x_list = [i * ones(6) for i in range(4)]
 

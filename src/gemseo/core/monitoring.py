@@ -22,9 +22,7 @@
 Monitoring mechanism to track |g| execution (update events)
 ***********************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import str
+from __future__ import division, unicode_literals
 
 from future.utils import with_metaclass
 

@@ -15,9 +15,12 @@
 Tutorial: Build a scalable model
 ====================================
 
-In this tutorial, we are going to build a scalable version of the :class:`.Sellar1` :class:`.MDODiscipline`:. As a reminder, its expression reads:
+In this tutorial,
+we are going to build a scalable version
+of the :class:`.Sellar1` :class:`.MDODiscipline`.
+As a reminder, its expression reads:
 
-:math:`y_0(x_{shared},x_{local},y_1)=x_{shared,0}^2+x_{shared,1}+x_{local,1}-0.2y_1`.
+:math:`y_1(x_{shared},x_{local},y_2)=\sqrt{x_{shared,1}^2+x_{shared,2}+x_{local}-0.2y_2`}.
 
 .. seealso::
 
@@ -28,7 +31,7 @@ In this tutorial, we are going to build a scalable version of the :class:`.Sella
 -----------
 
 The expected outputs sizes are specified in a dictionary. The keys are the output names and the values are the sizes.
-Here, we take 5 for the dimension of all outputs (here "y\_0", which is of dimension 1 in the standard :class:`.Sellar1`).
+Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimension 1 in the standard :class:`.Sellar1`).
 
 2. Creation of the discipline
 -----------------------------
@@ -138,7 +141,14 @@ From this, we can create the :class:`.ScalableDiscipline` by means of the API fu
 3. Run the scalable discipline
 ------------------------------
 
-After its creation, the scalable discipline can be executed by means of the :meth:`.MDODiscipline.execute` method. For this, we build an input dictionary. Remind that the inputs and outputs shall all be in :math:`(0,1)` (see :ref:`scalable`). Here we take :math:`( 0. ,  0.2,  0.4,  0.6,  0.8)` for all inputs of the discipline ("x\_shared", "x\_local", and "y\_1").
+After its creation,
+the scalable discipline can be executed
+by means of the :meth:`.MDODiscipline.execute` method.
+For this,
+we build an input dictionary.
+Remember that the inputs and outputs shall all be in :math:`(0,1)` (see :ref:`scalable`).
+Here we take :math:`( 0. ,  0.2,  0.4,  0.6,  0.8)`
+for all inputs of the discipline ("x\_shared", "x\_local", and "y\_2").
 
 .. code::
 
@@ -146,7 +156,7 @@ After its creation, the scalable discipline can be executed by means of the :met
 
    input_data = {name: arange(variables_sizes) / float(variables_sizes)
 	             for name in input_names}
-   print(scalable_sellar.execute(input_data)['y_0'])
+   print(scalable_sellar.execute(input_data)['y_1'])
 
 The output of the discipline is:
 
@@ -170,7 +180,7 @@ Arbitrary input dimensions arrays can be provided. Here, only three components f
     input_data = {name: arange(variables_sizes) / float(variables_sizes)
                   for name in input_names}
 
-    print(scalable_sellar.execute(input_data)['y_0'])
+    print(scalable_sellar.execute(input_data)['y_1'])
 
 The scalable discipline outputs different values :
 

@@ -103,7 +103,7 @@ associated with the criterion and a criterion selection:
   greater (or lower, depending on the criterion) than the level.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from typing import Callable, List, Mapping, Sequence, Tuple, Union

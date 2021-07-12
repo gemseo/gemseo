@@ -27,7 +27,9 @@ Gradient Sensitivity
 In this example, we illustrate the use of the :class:`.GradientSensitivity`
 plot on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -85,4 +87,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.GradientSensitivity`
 # plot which builds histograms of derivatives of objective and constraints.
-scenario.post_process("GradientSensitivity", save=False, show=True)
+scenario.post_process("GradientSensitivity", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

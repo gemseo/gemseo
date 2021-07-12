@@ -20,47 +20,52 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
-"""
-Run a DOE from a file containing samples values
-***********************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Design of experiments from custom data."""
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Dict, List, Optional, Sequence, TextIO, Union
 
-from numpy import atleast_2d, loadtxt
+from numpy import apply_along_axis, atleast_2d, loadtxt, ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.utils.py23_compat import Path
+
+OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
 
 class CustomDOE(DOELibrary):
+    """A design of experiments from samples provided as a file or an array.
 
-    """Class used for creation of DOE samples provided by user This samples are provided
-    as file in text or csv format."""
+    The samples are provided
+    either as a file in text or csv format
+    or as a sequence of sequences of numbers,
+    e.g. a 2D numpy array.
+
+    A csv file format is assumed to have a header
+    whereas a text file (extension .txt) does not.
+    """
 
     ALGO_LIST = ["CustomDOE"]
+    COMMENTS_KEYWORD = "comments"
     DELIMITER_KEYWORD = "delimiter"
     SKIPROWS_KEYWORD = "skiprows"
     DOE_FILE = "doe_file"
+    SAMPLES = "samples"
 
-    def __init__(self):
-        """Constructor, initializes the DOE samples For this class of DOE library,
-        samples are provided as file in text or csv format.
-
-        csv file format is assume to have a header whereas text file (extension .txt)
-        has not.
-        """
+    def __init__(self):  # type: (...) -> None
         super(CustomDOE, self).__init__()
         self.file_dv_names_list = None
 
-        desc = {}
-        desc["CustomDOE"] = (
-            "The **CustomDOE** class is used for creation"
-            " of DOE samples provided by user. This samples"
-            " are provided as file in text or csv format."
-        )
+        desc = {
+            "CustomDOE": (
+                "This samples are provided "
+                "either as a file in text or csv format "
+                "or as a sequence of sequences of numbers."
+            )
+        }
         for algo in self.ALGO_LIST:
             self.lib_dict[algo] = {
                 DOELibrary.LIB: self.__class__.__name__,
@@ -70,24 +75,29 @@ class CustomDOE(DOELibrary):
 
     def _get_options(
         self,
-        doe_file,
-        delimiter=",",  # pylint: disable=W0221
-        comments="#",
-        skiprows=0,
-        max_time=0,
-        eval_jac=False,
-        n_processes=1,
-        wait_time_between_samples=0.0,
+        doe_file=None,  # type: Optional[Union[str, Path, TextIO]]
+        samples=None,  # type: Optional[ndarray]
+        delimiter=",",  # type: Optional[str]
+        comments="#",  # type: Optional[Union[str,Sequence[str]]]
+        skiprows=0,  # type: int
+        max_time=0,  # type: float
+        eval_jac=False,  # type: bool
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
         **kwargs
-    ):
+    ):  # type: (...) -> Dict[str,OptionType]
         """Sets the options.
 
-        :param doe_file: path and name of file
+        :param doe_file: Either the file, the filename, or the generator to read.
         :type doe_file: str
+        :param samples: The samples.
+        :type samples: array
         :param delimiter: The string used to separate values.
+            If None, use whitespace.
         :type delimiter: str
-        :param comments:  the characters or list of characters used to
-            indicate the start of a comment
+        :param comments:  The characters or list of characters
+            used to indicate the start of a comment.
+            None implies no comments.
         :type comments: str
         :param skiprows: skip the first `skiprows` lines
         :type skiprows: int
@@ -106,6 +116,7 @@ class CustomDOE(DOELibrary):
         return self._process_options(
             max_time=max_time,
             doe_file=doe_file,
+            samples=samples,
             delimiter=delimiter,
             comments=comments,
             skiprows=skiprows,
@@ -115,20 +126,26 @@ class CustomDOE(DOELibrary):
             **kwargs
         )
 
-    def read_file(self, doe_file, delimiter=",", comments="#", skiprows=0):
-        """Read a file containing a DOE.
+    def read_file(
+        self,
+        doe_file,  # type: Union[str, Path, TextIO]
+        delimiter=",",  # type: Optional[str]
+        comments="#",  # type: Optional[Union[str,Sequence[str]]]
+        skiprows=0,  # type: int
+    ):  # type: (...) -> ndarray
+        """Read a file containing several samples (one per line) and return them.
 
-        :param doe_file: path and name of file
-        :type doe_file: str
-        :param delimiter: The string used to separate values.
-        :type delimiter: str
-        :param comments:  the characters or list of characters used to
-            indicate the start of a comment
-        :type comments: str
-        :param skiprows: skip the first `skiprows` lines
-        :type skiprows: int
-        :returns: sample (an array of samples)
-        :rtype: numpy array
+        Args:
+            doe_file: Either the file, the filename, or the generator to read.
+            delimiter: The string used to separate values.
+                If None, use whitespace.
+            comments:  The characters or list of characters
+                used to indicate the start of a comment.
+                None implies no comments.
+            skiprows: Skip the first `skiprows` lines.
+
+        Returns:
+            The samples.
         """
         try:
             samples = loadtxt(
@@ -145,39 +162,45 @@ class CustomDOE(DOELibrary):
             ):
                 samples = samples.T
         except ValueError:
-            LOGGER.error("Failed to load DOE input file : %s", str(doe_file))
+            LOGGER.error("Failed to load DOE input file: %s", doe_file)
             raise
-        self.__check_input_dv_lenght(samples)
-
-        # Normalize samples
-        normalize_vect = self.problem.design_space.normalize_vect
-        for i in range(samples.shape[0]):
-            samples[i, :] = normalize_vect(samples[i, :])
 
         return samples
 
-    def __check_input_dv_lenght(self, samples):
-        """Check that file contains all variables given as design variable at
-        initialization."""
-        dim = self.problem.dimension
-        if samples.shape[1] != dim:
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """
+        Raises:
+            ValueError: If the dimension is different from the problem one.
+        """
+        error_message = (
+            "The algorithm CustomDOE requires "
+            "either 'doe_file' or 'samples' as option"
+        )
+        samples = options.get(self.SAMPLES)
+        if samples is None:
+            doe_file = options.get(self.DOE_FILE)
+            if doe_file is None:
+                raise ValueError(error_message)
+            samples = self.read_file(
+                doe_file,
+                comments=options[self.COMMENTS_KEYWORD],
+                delimiter=options[self.DELIMITER_KEYWORD],
+                skiprows=options[self.SKIPROWS_KEYWORD],
+            )
+        else:
+            if options.get(self.DOE_FILE) is not None:
+                raise ValueError(error_message)
+
+        if samples.shape[1] != self.problem.dimension:
             raise ValueError(
-                "Mismatch between problem design variables "
-                + str(dim)
-                + " and doe input file dimension : "
-                + str(samples.shape[1])
+                "Dimension mismatch between the problem ({}) and "
+                " the samples ({})".format(self.problem.dimension, samples.shape[1])
             )
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
-
-        :param options: the options dict for the algorithm,
-            see associated JSON file
-        """
-
-        samples = self.read_file(
-            options[self.DOE_FILE],
-            delimiter=options[self.DELIMITER_KEYWORD],
-            skiprows=options[self.SKIPROWS_KEYWORD],
+        samples = apply_along_axis(
+            self.problem.design_space.normalize_vect, axis=1, arr=samples
         )
+
         return samples

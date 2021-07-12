@@ -20,16 +20,14 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Box plots to quantify optimum robustness
-****************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Box plots to quantify optimum robustness."""
+from __future__ import division, unicode_literals
 
 import logging
 from math import sqrt
 
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from numpy import zeros
 from numpy.random import normal
 
@@ -40,43 +38,39 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Robustness(OptPostProcessor):
-    """The **Robustness** post processing performs a quadratic approximation from an
-    optimization history, and plot the results as cuts of the approximation computes the
-    quadratic approximations of all the output functions, propagate analytically a
-    normal distribution centered on the optimal design variable with a standard
-    deviation which is a percentage of the mean passed in option (default: 1%) and plot
-    the corresponding output boxplot.
+    """Uncertainty quantification at the optimum.
 
-    It is possible either to save the plot, to show the plot or both.
+    Compute the quadratic approximations of all the output functions,
+    propagate analytically a normal distribution centered
+    on the optimal design variables
+    with a standard deviation which is a percentage of the mean passed in option
+    (default: 1%)
+    and plot the corresponding output boxplot.
     """
 
     SR1_APPROX = "SR1"
 
     def _plot(
-        self, save=True, show=False, stddev=0.01, file_path="boxplot", extension="pdf"
-    ):
-        """Builds the plot and saves it.
-
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param stddev: standard deviation of inputs as fraction of x bounds
-        :type stddev: float
-        :param extension: file extension
-        :type extension: str
+        self,
+        stddev=0.01,  # type: float
+    ):  # type: (...) -> None
         """
-        fig = self.__boxplot(stddev)
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+        Args:
+            stddev: The standard deviation of the inputs as fraction of x bounds.
+        """
+        self._add_figure(self.__boxplot(stddev))
 
-    def __boxplot(self, stddev=0.01):
-        """Plots the Hessian of the function.
+    def __boxplot(
+        self,
+        stddev=0.01,  # type: float
+    ):  # type: (...) -> Figure
+        """Plot the Hessian of the function.
 
-        :param stddev : standard deviation of inputs as fraction of x bounds
+        Args:
+            stddev: The standard deviation of the inputs as fraction of x bounds.
+
+        Returns:
+            A plot of the Hessian of the function.
         """
         robustness = RobustnessQuantifier(self.database, "SR1")
         n_x = self.opt_problem.get_dimension()
@@ -112,8 +106,7 @@ class Robustness(OptPostProcessor):
         fig = plt.figure()
         fig.suptitle(
             "Box plot of the optimization functions "
-            + "with normalized stddev "
-            + str(stddev)
+            "with normalized stddev {}".format(stddev)
         )
         plt.boxplot(data, showfliers=False, labels=funcs_names)
 

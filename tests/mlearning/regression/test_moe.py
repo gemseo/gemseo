@@ -20,7 +20,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mixture of experts regression module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, hstack, linspace, meshgrid, ones_like
@@ -38,6 +38,7 @@ ROOT_LEARNING_SIZE = 6
 LEARNING_SIZE = ROOT_LEARNING_SIZE ** 2
 
 INPUT_VALUE = {"x_1": array([1.0]), "x_2": array([2.0])}
+ARRAY_INPUT_VALUE = array([1.0, 2.0])
 INPUT_VALUES = {
     "x_1": array([[1.0], [0.0], [-1.0], [0.5], [0.1], [1.0]]),
     "x_2": array([[2.0], [0.0], [1.0], [-0.7], [0.4], [0.5]]),
@@ -49,8 +50,8 @@ RTOL = 1e-5
 
 
 @pytest.fixture
-def dataset():
-    """Dataset from a R^2 -> R function sampled over [0,1]^2."""
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
     x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
     grid_x_1, grid_x_2 = meshgrid(x_1, x_2)
@@ -70,8 +71,8 @@ def dataset():
 
 
 @pytest.fixture
-def model(dataset):
-    """Define model from data."""
+def model(dataset):  # type: (...) -> MixtureOfExperts
+    """A trained MixtureOfExperts."""
     moe = MixtureOfExperts(dataset)
     moe.set_clusterer("KMeans", n_clusters=2)
     moe.learn()
@@ -79,8 +80,8 @@ def model(dataset):
 
 
 @pytest.fixture
-def model_soft(dataset):
-    """Define model from data."""
+def model_soft(dataset):  # type: (...) -> MixtureOfExperts
+    """A trained MixtureOfExperts with soft classification."""
     moe = MixtureOfExperts(dataset, hard=False)
     moe.set_clusterer("KMeans", n_clusters=2)
     moe.learn()
@@ -88,8 +89,8 @@ def model_soft(dataset):
 
 
 @pytest.fixture
-def model_with_transform(dataset):
-    """Define model from data."""
+def model_with_transform(dataset):  # type: (...) -> MixtureOfExperts
+    """A trained MixtureOfExperts with inputs and outputs scaling."""
     moe = MixtureOfExperts(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
@@ -136,10 +137,11 @@ def test_set_algos(dataset):
 
 
 def test_predict_class(model, model_with_transform):
-    """Test class predicition."""
+    """Test class prediction."""
     prediction = model.predict_class(INPUT_VALUE)
     assert isinstance(prediction, dict)
     assert prediction["labels"].shape == (1,)
+    assert model.predict_class(ARRAY_INPUT_VALUE) == prediction["labels"]
 
     prediction = model.predict_class(INPUT_VALUES)
     assert isinstance(prediction, dict)
@@ -213,3 +215,26 @@ def test_str(model):
     assert "Local model 0" in repres
     assert "Local model 1" in repres
     assert "Local model 2" not in repres
+
+
+def test_moe_with_candidates(dataset):
+    moe = MixtureOfExperts(dataset)
+
+    assert not moe.cluster_cands
+    assert not moe.regress_cands
+    assert not moe.classif_cands
+
+    moe.add_clusterer_candidate("GaussianMixture", n_components=[5])
+    assert len(moe.cluster_cands) == 1
+
+    moe.add_classifier_candidate("SVMClassifier", kernel=["rbf"])
+    assert len(moe.classif_cands) == 1
+
+    moe.add_regressor_candidate("PolynomialRegression", degree=[2])
+    assert len(moe.regress_cands) == 1
+
+    moe.learn()
+    assert moe.classifier.__class__.__name__ == "SVMClassifier"
+    assert moe.clusterer.__class__.__name__ == "GaussianMixture"
+    for regression_model in moe.regress_models:
+        assert regression_model.__class__.__name__ == "PolynomialRegression"

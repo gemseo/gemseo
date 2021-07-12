@@ -23,15 +23,16 @@
 OpenTUNRS DOE algorithms wrapper
 ********************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 
 import openturns
 from matplotlib import pyplot as plt
-from numpy import array, empty_like
+from numpy import array
 from numpy import max as np_max
 from numpy import min as np_min
+from numpy import ndarray
 from openturns.viewer import View
 
 from gemseo.algos.doe.doe_lib import DOELibrary
@@ -741,12 +742,24 @@ class OpenTURNS(DOELibrary):
 
         samples = array(design)
         if self.algo_name == self.OT_LHSC:
-            centered_samples = empty_like(samples)
-            for i, sample in enumerate(samples):
-                spl = 0.5 * ((sample[:] // (1.0 / n_samples) + 1.0) - 0.5) / n_samples
-                centered_samples[i, :] = spl
-            samples = centered_samples
+            samples = self.__compute_centered_lhs(samples)
         return samples
+
+    @staticmethod
+    def __compute_centered_lhs(
+        samples,  # type:ndarray
+    ):  # type:(...) ->ndarray
+        """Center the samples resulting from a Latin hypercube sampling.
+
+        Args:
+            samples: The samples resulting from a Latin hypercube sampling.
+
+        Returns:
+            The centered version of the initial samples.
+        """
+        n_samples = len(samples)
+        centered_samples = (samples // (1.0 / n_samples) + 0.5) / n_samples
+        return centered_samples
 
     def __generate_mc(
         self, n_samples, dimension, distribution_name="Uniform", **options

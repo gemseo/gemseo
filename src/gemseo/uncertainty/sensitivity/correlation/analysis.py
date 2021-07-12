@@ -22,7 +22,7 @@
 
 """Class for the estimation of various correlation coefficients."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
@@ -42,7 +42,6 @@ from openturns import (
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
-from gemseo.post.dataset.dataset_plot import make_fpath
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import (
     IndicesType,
@@ -315,6 +314,8 @@ class CorrelationAnalysis(SensitivityAnalysis):
         save=True,  # type: bool
         show=False,  # type: bool
         file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
     ):  # type: (...) -> None # noqa: D417,D102
         if not isinstance(output, tuple):
@@ -336,8 +337,20 @@ class CorrelationAnalysis(SensitivityAnalysis):
         plot.title = title or "Correlation indices for the output {}".format(output)
         plot.rmin = -1.0
         plot.rmax = 1.0
-        file_path = make_fpath("correlation_indices", file_path, file_format)
-        plot.execute(save, show, file_path, file_format)
+        file_path = self._file_path_manager.create_file_path(
+            file_path=file_path,
+            directory_path=directory_path,
+            file_name=file_name,
+            file_extension=file_format,
+        )
+        plot.execute(
+            save=save,
+            show=show,
+            file_path=file_path,
+            file_name=file_name,
+            file_format=file_format,
+            directory_path=directory_path,
+        )
 
     def plot_radar(
         self,
@@ -347,6 +360,8 @@ class CorrelationAnalysis(SensitivityAnalysis):
         save=True,  # type: bool
         show=False,  # type: bool
         file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         min_radius=-1.0,  # type: float
         max_radius=1.0,  # type: float
@@ -354,13 +369,15 @@ class CorrelationAnalysis(SensitivityAnalysis):
     ):  # type: (...) -> RadarChart #noqa: D102
         return super(CorrelationAnalysis, self).plot_radar(
             outputs,
-            inputs,
-            title,
-            save,
-            show,
-            file_path,
-            file_format,
-            min_radius,
-            max_radius,
+            inputs=inputs,
+            title=title,
+            save=save,
+            show=show,
+            file_path=file_path,
+            file_name=file_name,
+            file_format=file_format,
+            directory_path=directory_path,
+            min_radius=min_radius,
+            max_radius=max_radius,
             **options
         )

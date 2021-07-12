@@ -73,7 +73,7 @@ which results in:
 
 .. code::
 
-   ["MDO", "DOE")
+   ["MDO", "DOE"]
 
 
 2. How to create a scenario?
@@ -289,7 +289,7 @@ or sampling the problem, e.g.
 
 .. code::
 
-   scenario = create_scenario(
+   doe_scenario = create_scenario(
        disciplines=disciplines,
        formulation=formulation,
        objective_name=objective_name,
@@ -311,9 +311,9 @@ or sampling the problem, e.g.
 
 .. seealso::
 
-   We can print scenario information (disciplines, MDO formulation and algorithm)::
+   We can print scenario information (disciplines, MDO formulation and algorithm):
 
-   .. code::
+    .. code::
 
       repr(scenario)
 

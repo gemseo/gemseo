@@ -40,7 +40,7 @@ based on the SciPy library and from a copula name.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from typing import TYPE_CHECKING, Callable, Iterable, Sequence
 

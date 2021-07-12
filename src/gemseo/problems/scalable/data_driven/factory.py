@@ -32,7 +32,7 @@ of available scalable models
 and to check is a type of scalable model is available
 (see :meth:`.ScalableModelFactory.is_available` method)
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 

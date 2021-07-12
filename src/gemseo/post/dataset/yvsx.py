@@ -25,9 +25,9 @@ A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of p
 whose values are stored in a :class:`.Dataset`. The user can select the style of line or
 markers, as well as the color.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -45,7 +45,7 @@ class YvsX(DatasetPlot):
         y,  # type: str
         x_comp=0,  # type: int
         y_comp=0,  # type: int
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             x: The name of the variable on the x-axis.
@@ -69,5 +69,4 @@ class YvsX(DatasetPlot):
             axes.set_ylabel(self.ylabel or y)
         else:
             axes.set_ylabel("{}({})".format(y, y_comp))
-        fig = plt.gcf()
-        return fig
+        return [fig]

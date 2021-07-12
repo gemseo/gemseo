@@ -21,7 +21,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test supervised machine learning algorithm module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange, array, array_equal, ndarray, zeros
@@ -29,27 +29,16 @@ from numpy import arange, array, array_equal, ndarray, zeros
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
 
 @pytest.fixture
-def io_dataset():
-    """Build an input-output dataset."""
+def io_dataset():  # type: (...) -> Dataset
+    """The dataset used to train the supervised machine learning algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
-    groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    dataset = Dataset("dataset_name")
-    dataset.set_from_array(data, variables, sizes, groups)
-    return dataset
-
-
-@pytest.fixture
-def io_dataset_w_scalout():
-    """Build an input-output dataset."""
-    data = arange(40).reshape(10, 4)
-    variables = ["x_1", "x_2", "y_1"]
-    sizes = {"x_1": 1, "x_2": 2, "y_1": 1}
     groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
     dataset = Dataset("dataset_name")
     dataset.set_from_array(data, variables, sizes, groups)
@@ -62,6 +51,21 @@ def test_constructor(io_dataset):
     assert ml_algo.algo is None
     assert ml_algo.input_names == io_dataset.get_names("inputs")
     assert ml_algo.output_names == io_dataset.get_names("outputs")
+
+
+@pytest.mark.parametrize(
+    "in_transformer,n_in", [({}, 3), ({"inputs": PCA(n_components=2)}, 2)]
+)
+@pytest.mark.parametrize(
+    "out_transformer,n_out", [({}, 3), ({"outputs": PCA(n_components=1)}, 1)]
+)
+def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out):
+    """Verify the raw input and output shapes of the algorithm."""
+    transformer = {}
+    transformer.update(in_transformer)
+    transformer.update(out_transformer)
+    algo = MLSupervisedAlgo(io_dataset, transformer=transformer)
+    assert algo._get_raw_shapes() == (n_in, n_out)
 
 
 def test_notimplementederror(io_dataset):

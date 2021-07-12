@@ -19,64 +19,104 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import unittest
-from os.path import dirname, exists, join
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import repeat
 
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
+from gemseo.problems.sobieski.wrappers import SobieskiProblem, SobieskiStructure
+from gemseo.utils.py23_compat import Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
-SSBJ = join(dirname(__file__), "mdf_backup.h5")
+POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
+SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestVariableInfluence(unittest.TestCase):
-    """"""
+def test_variable_influence(tmp_wd, pyplot_close_all):
+    """Test the variable influence post-processing.
 
-    def test_gradient_sensitivity(self):
-        """"""
-        if PostFactory().is_available("VariableInfluence"):
-            problem = OptimizationProblem.import_hdf(POWER2)
-            post = PostFactory().execute(
-                problem, "VariableInfluence", file_path="var_infl", save=True
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
-            database = problem.database
-            database.filter(["pow2", "@pow2"])
-            problem.constraints = []
-            for k in list(database.keys()):
-                v = database.pop(k)
-                v["@pow2"] = repeat(v["@pow2"], 60)
-                database[repeat(k.wrapped, 60)] = v
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+        pyplot_close_all : Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    factory = PostFactory()
+    if factory.is_available("VariableInfluence"):
+        problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+        post = factory.execute(
+            problem, "VariableInfluence", file_path="var_infl", save=True
+        )
+        assert len(post.output_files) == 1
+        for outf in post.output_files:
+            assert Path(outf).exists()
+        database = problem.database
+        database.filter(["pow2", "@pow2"])
+        problem.constraints = []
+        for k in list(database.keys()):
+            v = database.pop(k)
+            v["@pow2"] = repeat(v["@pow2"], 60)
+            database[repeat(k.wrapped, 60)] = v
 
-            post = PostFactory().execute(
-                problem, "VariableInfluence", file_path="var_infl2", save=True
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
+        post = factory.execute(
+            problem, "VariableInfluence", file_path="var_infl2", save=True
+        )
+        assert len(post.output_files) == 1
+        for outf in post.output_files:
+            assert Path(outf).exists()
 
-    def test_gradient_sensitivity_ssbj(self):
-        if PostFactory().is_available("VariableInfluence"):
-            problem = OptimizationProblem.import_hdf(SSBJ)
-            post = PostFactory().execute(
-                problem,
-                "VariableInfluence",
-                file_path="ssbj",
-                log_scale=True,
-                absolute_value=False,
-                quantile=0.98,
-                save=True,
-                figsize_y=12,
-                save_var_files=True,
-            )
-            assert len(post.output_files) == 14
-            for outf in post.output_files:
-                assert exists(outf)
+
+def test_variable_influence_doe(tmp_wd, pyplot_close_all):
+    """Test the variable influence post-processing on a DOE.
+
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+        pyplot_close_all : Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    disc = SobieskiStructure()
+    design_space = SobieskiProblem().read_design_space()
+    inputs = disc.get_input_data_names()
+    design_space.filter(inputs)
+    doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
+    doe_scenario.execute(
+        {
+            "algo": "DiagonalDOE",
+            "n_samples": 10,
+            "algo_options": {"eval_jac": False},
+        }
+    )
+    with pytest.raises(ValueError, match="No gradients to plot at current iteration!"):
+        doe_scenario.post_process(
+            "VariableInfluence",
+            file_path="doe",
+            save=True,
+        )
+
+
+def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
+    """Test the variable influence post-processing on the SSBJ problem.
+
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+        pyplot_close_all : Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    factory = PostFactory()
+    if factory.is_available("VariableInfluence"):
+        problem = OptimizationProblem.import_hdf(str(SSBJ_HDF5_PATH))
+        post = factory.execute(
+            problem,
+            "VariableInfluence",
+            file_path="ssbj",
+            log_scale=True,
+            absolute_value=False,
+            quantile=0.98,
+            save=True,
+            figsize_y=12,
+            save_var_files=True,
+        )
+        assert len(post.output_files) == 14
+        for outf in post.output_files:
+            assert Path(outf).exists()

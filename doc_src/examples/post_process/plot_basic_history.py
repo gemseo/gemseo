@@ -27,7 +27,9 @@ Basic history
 In this example, we illustrate the use of the :class:`.BasicHistory` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -91,3 +93,5 @@ scenario.post_process("BasicHistory", data_list=["-y_4"], save=False, show=True)
 scenario.post_process(
     "BasicHistory", data_list=["g_1", "g_2", "g_3"], save=False, show=True
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

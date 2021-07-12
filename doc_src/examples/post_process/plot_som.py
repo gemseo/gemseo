@@ -27,7 +27,9 @@ Self-Organizing Map
 In this example, we illustrate the use of the :class:`~gemseo.post.som.SOM` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -86,4 +88,6 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 # Lastly, we post-process the scenario by means of the
 # :class:`~gemseo.post.som.SOM` plot which performs a self organizing map
 # clustering on optimization history.
-scenario.post_process("SOM", save=False, show=True)
+scenario.post_process("SOM", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

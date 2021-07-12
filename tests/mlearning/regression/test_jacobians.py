@@ -28,7 +28,7 @@ combinations of datasets (scalar and vector inputs and outputs), transformers an
 parameters.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 from numpy import arange, array
@@ -133,7 +133,7 @@ def _get_dataset_name(dataset_description):
     params=DATASETS_DESCRIPTIONS,
     ids=map(_get_dataset_name, DATASETS_DESCRIPTIONS),
 )
-def dataset(request):
+def dataset(request):  # type: (...) -> Dataset
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
     return dataset_factory(*request.param)
 

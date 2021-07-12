@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Standard data scaler
-====================
+"""Scaling a variable with a statistical linear transformation.
 
 The :class:`.StandardScaler` class implements the Standard scaling method
 applying to some parameter :math:`z`:
@@ -34,38 +32,42 @@ applying to some parameter :math:`z`:
 where :math:`\\text{offset}=-\\text{mean}(z)/\\text{std}(z)` and
 :math:`\\text{coefficient}=1/\\text{std}(z)`.
 
-In this Standard scaling method, the scaling operation linearly transforms the
-original variable math:`z` such that in the scaled space, the original data
-have zero mean and unit standard deviation.
+In this standard scaling method,
+the scaling operation linearly transforms the original variable math:`z`
+such that in the scaled space,
+the original data have zero mean and unit standard deviation.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import mean, std
+from numpy import mean, ndarray, std
 from past.utils import old_div
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class StandardScaler(Scaler):
     """Standard scaler."""
 
-    def __init__(self, name="StandardScaler", offset=0.0, coefficient=1.0):
-        """Constructor.
-
-        :param str name: name of the scaler. Default: 'StandardScaler'.
-        :param float offset: offset of the linear transformation. Default: 0.
-        :param float coefficient: coefficient of the linear transformation.
-            Default: 1.
+    def __init__(
+        self,
+        name="StandardScaler",  # type: str
+        offset=0.0,  # type: float
+        coefficient=1.0,  # type: float
+    ):  # type: (...) -> None
+        """
+        Args:
+            name: A name for this transformer.
+            offset: The offset of the linear transformation.
+            coefficient: The coefficient of the linear transformation.
         """
         super(StandardScaler, self).__init__(name, offset, coefficient)
 
-    def fit(self, data):
-        """Fit offset and coefficient terms from a data array. The mean and standard
-        deviation are computed along the first axis of the data.
-
-        :param array data: data to be fitted.
-        """
-        super(StandardScaler, self).fit(data)
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> None
         average = mean(data, 0)
         std_ = std(data, 0)
         self.offset = old_div(-average, std_)

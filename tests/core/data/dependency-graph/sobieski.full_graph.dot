@@ -1,0 +1,12 @@
+digraph "Dependency graph" {
+	SobieskiAerodynamics -> SobieskiStructure [label=y_21]
+	SobieskiAerodynamics -> SobieskiPropulsion [label=y_23]
+	SobieskiAerodynamics -> SobieskiMission [label=y_24]
+	SobieskiStructure -> SobieskiAerodynamics [label=y_12]
+	SobieskiStructure -> SobieskiMission [label=y_14]
+	SobieskiPropulsion -> SobieskiAerodynamics [label=y_32]
+	SobieskiPropulsion -> SobieskiStructure [label=y_31]
+	SobieskiPropulsion -> SobieskiMission [label=y_34]
+	_SobieskiMission [shape=point style=invis]
+	SobieskiMission -> _SobieskiMission [label=y_4]
+}

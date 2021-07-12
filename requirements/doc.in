@@ -1,10 +1,10 @@
 # This file contains the dependencies used for generating the doc
 
 -c test-python3.txt
+
 pillow
 pyenchant
-# autodocsumm is broken for sphinx >=3.5
-sphinx <3.5
+sphinx
 sphinx_gallery
 sphinxcontrib.bibtex <2
 sphinxcontrib.plantuml

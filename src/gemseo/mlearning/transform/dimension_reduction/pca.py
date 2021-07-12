@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Principal component dimension reduction algorithm
-=================================================
+"""The Principal Component Analysis (PCA) to reduce the dimension of a variable.
 
 The :class:`PCA` class wraps the PCA from Scikit-learn.
 
@@ -31,73 +29,67 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import sqrt
+from typing import Optional, Union
+
+from numpy import ndarray, sqrt
 from sklearn.decomposition import PCA as SKLPCA
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class PCA(DimensionReduction):
     """Principal component dimension reduction algorithm."""
 
-    def __init__(self, name="PCA", n_components=5, **parameters):
-        """Constructor.
-
-        :param str name: transformer name. Default: 'PCA'.
-        :param int n_components: number of components. Default: 5.
-        :param parameters: Optional parameters for sklearn PCA constructor.
+    def __init__(
+        self,
+        name="PCA",  # type: str,
+        n_components=5,  # type: int
+        **parameters  # type: Optional[Union[float,int,str,bool]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            **parameters: The optional parameters for sklearn PCA constructor.
         """
         super(PCA, self).__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
 
-    def fit(self, data):
-        """Fit transformer to data.
-
-        :param ndarray data: data to be fitted.
-        """
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> None
         self.algo.fit(data)
 
-    def transform(self, data):
-        """Transform data.
-
-        :param ndarray data: data  to be transformed.
-        :return: transformed data.
-        :rtype: ndarray
-        """
+    def transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.transform(data)
 
-    def inverse_transform(self, data):
-        """Perform an inverse transform on the data.
-
-        :param ndarray data: data to be inverse transformed.
-        :return: inverse transformed data.
-        :rtype: ndarray
-        """
+    def inverse_transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.inverse_transform(data)
 
-    def compute_jacobian(self, data):
-        """Compute Jacobian of the pca transform.
-
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
-        """
+    def compute_jacobian(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.components_
 
-    def compute_jacobian_inverse(self, data):
-        """Compute Jacobian of the pca inverse_transform.
-
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
-        """
+    def compute_jacobian_inverse(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         return self.algo.components_.T
 
     @property
-    def components(self):
-        """Components."""
+    def components(self):  # type: (...) -> ndarray
+        """The principal components."""
         return sqrt(self.algo.singular_values_) * self.algo.components_.T

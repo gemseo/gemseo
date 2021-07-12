@@ -214,13 +214,12 @@
 Self Organizing Maps
 ********************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import  division, unicode_literals
 
 import itertools
 import logging
 import os
 import tempfile
-from builtins import int, range, round, str
 from timeit import default_timer as timer
 
 import matplotlib

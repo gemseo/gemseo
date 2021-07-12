@@ -22,6 +22,7 @@ import sys
 import matplotlib.pyplot as plt
 import pytest
 
+from gemseo.core.factory import Factory
 from gemseo.utils.py23_compat import PY2, Path
 
 
@@ -80,6 +81,14 @@ def baseline_images(request):
 def pyplot_close_all():
     """Fixture that prevents figures aggregation with matplotlib pyplot."""
     plt.close("all")
+
+
+@pytest.fixture
+def reset_factory():
+    """Reset the factory cache."""
+    Factory.cache_clear()
+    yield
+    Factory.cache_clear()
 
 
 if PY2:

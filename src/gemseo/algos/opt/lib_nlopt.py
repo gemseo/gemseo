@@ -22,10 +22,9 @@
 #         Francois Gallard : refactoring for v1, May 2016
 """NLOPT library wrapper."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import range, str, super
 
 import nlopt
 from nlopt import RoundoffLimited

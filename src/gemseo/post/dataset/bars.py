@@ -20,15 +20,15 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a bar plot from a :class:`.Dataset`. """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import arange, linspace
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class BarPlot(DatasetPlot):
@@ -36,9 +36,9 @@ class BarPlot(DatasetPlot):
 
     def _plot(
         self,
-        properties,  # type: Mapping
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
         n_digits=1,  # type: int
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             n_digits: The number of digits to print the different bar values.
@@ -97,4 +97,4 @@ class BarPlot(DatasetPlot):
         axe.set_xticklabels(variables_names)
         axe.set_title(self.title, fontsize=self.font_size * 1.2)
         axe.legend(fontsize=self.font_size)
-        return fig
+        return [fig]

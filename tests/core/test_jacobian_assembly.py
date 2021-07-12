@@ -19,7 +19,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import json
 import os
@@ -69,6 +69,27 @@ class TestJacobianAssembly(unittest.TestCase):
             assembly._JacobianAssembly__check_inputs(
                 ["y_4"], ["x_3"], coupl_vars=["x_3"]
             )
+
+    def test_check_errors_consistency(self):
+        disciplines = [SobieskiAerodynamics(), SobieskiMission()]
+        for disc in disciplines:
+            disc.linearize(force_all=True)
+        assembly = JacobianAssembly(MDOCouplingStructure(disciplines))
+
+        err_var = "IDONTEXIST"
+        with self.assertRaises(ValueError) as cm:
+            assembly.compute_sizes(["y_4"], [err_var], ["y_24"])
+        self.assertEqual(
+            "Failed to determine the size of input variable " + err_var,
+            str(cm.exception),
+        )
+
+        with self.assertRaises(ValueError) as cm:
+            assembly._add_differentiated_inouts(["y_4"], ["x_4"], [])
+
+        message = cm.exception.args[0]
+        assert "'SobieskiMission' has the outputs" in message
+        assert "but no coupling or design" in message
 
     def test_linear_solver(self):
         """"""

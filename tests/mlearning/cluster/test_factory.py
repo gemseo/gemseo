@@ -21,7 +21,7 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for ClusteringModelFactory class in gemseo.mlearning.cluster.factory."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
 
@@ -32,17 +32,18 @@ N_CLUSTERS = 3
 
 
 @pytest.fixture
-def dataset():
-    """Dataset from Iris Dataset."""
-    iris = IrisDataset()
-    return iris
+def dataset():  # type: (...) -> IrisDataset
+    """The dataset used to train the clustering algorithms."""
+    return IrisDataset()
 
 
 def test_constructor():
     """Test ClusteringModelFactory constructor."""
     factory = ClusteringModelFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning.cluster" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        ["GaussianMixture", "KMeans", "MLPredictiveClusteringAlgo"]
+    )
 
 
 def test_create(dataset):

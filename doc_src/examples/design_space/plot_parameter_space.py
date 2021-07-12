@@ -26,7 +26,7 @@ Parameter space
 
 In this example, we will see the basics of :class:`.ParameterSpace`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import configure_logger, create_discipline, create_scenario

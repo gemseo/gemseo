@@ -18,72 +18,123 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Calibration of a machine learning algorithm
-===========================================
+"""Calibration of a machine learning algorithm.
 
-A machine learning algorithm depends on hyperparameters,
-e.g. number of clusters for a clustering algorithm,
-regularization constant for a regression model,
-kernel for a Gaussian process regression, ...
-Its quality of generalization depends on the values of these hyperparameters.
-Thus, the hyperparameters minimizing the learning quality measure are rarely
-those minimizing the generalization one. Classically, the generalization one
-decreases before growing again as the model becomes more complex,
-while the learning error keeps decreasing. This phenomenon is called the
-curse of dimensionality.
+A machine learning algorithm depends on hyper-parameters,
+e.g. the number of clusters for a clustering algorithm,
+the regularization constant for a regression model,
+the kernel for a Gaussian process regression, ...
+Its ability to generalize the information learned during the training stage,
+and thus to avoid over-fitting,
+which is an over-reliance on the learning data set,
+depends on the values of these hyper-parameters.
+Thus,
+the hyper-parameters minimizing the learning quality measure are rarely
+those minimizing the generalization one.
+Classically,
+the generalization one decreases before growing again as the model becomes more complex,
+while the learning error keeps decreasing.
+This phenomenon is called the curse of dimensionality.
 
-In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the
-hyperparameters in order to minimize this generalization quality measure
-over a calibration parameter space. This class relies on the
-:class:`.MLAlgoAssessor` class which is a discipline
-(:class:`.MDODiscipline`)
+In this module,
+the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-parameters
+in order to minimize this measure of the generalization quality
+over a calibration parameter space.
+This class relies on the :class:`.MLAlgoAssessor` class
+which is a discipline (:class:`.MDODiscipline`)
 built from a machine learning algorithm (:class:`.MLAlgo`),
-a dataset (:class:`.Dataset`), a quality measure (:class:`.MLQualityMeasure`)
-and various options for data scaling, quality measure
-and machine learning algorithm. The inputs of this discipline are
-hyperparameters of the machine learning algorithm while the output is
-the quality criterion.
+a dataset (:class:`.Dataset`),
+a quality measure (:class:`.MLQualityMeasure`)
+and various options for the data scaling,
+the quality measure
+and the machine learning algorithm.
+The inputs of this discipline are hyper-parameters of the machine learning algorithm
+while the output is the quality criterion.
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from numpy import argmax, argmin, array
+from typing import Dict, Iterable, Optional, Union
 
+from numpy import argmax, argmin, array, ndarray
+
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.factory import MLAlgoFactory
+from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+
+MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
 
 
 class MLAlgoAssessor(MDODiscipline):
-    """Discipline assessing the quality of a machine learning algorithm."""
+    """Discipline assessing the quality of a machine learning algorithm.
+
+    This quality depends on the values of parameters to calibrate
+    with the :class:`.MLAlgoCalibration`.
+
+    Attributes:
+        algo (str): The name of a machine learning algorithm.
+        measure (MLQualityMeasure): The measure
+            to assess the machine learning algorithm.
+        measure_options (Dict[str,Union[int,Dataset]]): The options
+            of the quality measure.
+        parameters (List(str)): The parameters of the machine learning algorithm
+            to calibrate.
+        dataset (Dataset): The learning dataset.
+        transformer (TransformerType): The transformation strategy for data groups.
+        algos (List(MLAlgo)): The instances of the machine learning algorithm
+            (one per execution of the machine learning algorithm assessor).
+    """
+
+    CRITERION = "criterion"
+    LEARNING = "learning"
+    MULTIOUTPUT = "multioutput"
 
     def __init__(
         self,
-        algo,
-        dataset,
-        parameters,
-        measure,
-        measure_options=None,
-        transformer=None,
-        **algo_options
-    ):
-        """Constructor.
+        algo,  # type: str
+        dataset,  # type: Dataset
+        parameters,  # type: Iterable[str]
+        measure,  # type: MLQualityMeasure
+        measure_options=None,  # type: Optional[MeasureOptionsType]
+        transformer=None,  # type: Optional[TransformerType]
+        **algo_options  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
+        """
+        Args:
+            algo: The name of a machine learning algorithm.
+            dataset: A learning dataset.
+            parameters: The parameters of the machine learning algorithm to calibrate.
+            measure: A measure to assess the machine learning algorithm.
+            measure_options: The options of the quality measure.
+                If "multioutput" is missing,
+                it is added with False as value.
+                If None, do not use quality measure options.
+            transformer (Dict[str,Transformer]): The strategies
+                to transform the variables.
+                The values are instances of :class:`.Transformer`
+                while the keys are the names of
+                either the variables
+                or the groups of variables,
+                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                If a group is specified,
+                the :class:`.Transformer` will be applied
+                to all the variables of this group.
+                If None, do not transform the variables.
+            **options: The options of the machine learning algorithm.
 
-        :param str algo: machine learning algorithm name.
-        :param Dataset dataset: learning dataset.
-        :param list(str) parameters: parameters.
-        :param MLQualityMeasure measure: quality measure.
-        :param dict measure_options: options of the quality measures.
-        :param dict(str) transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :param algo_options: options of the machine learning algorithm.
+        Raises:
+            ValueError: If the measure option "multioutput" is True.
         """
         super(MLAlgoAssessor, self).__init__()
         self.input_grammar.initialize_from_data_names(parameters)
-        self.output_grammar.initialize_from_data_names(["criterion", "learning"])
+        self.output_grammar.initialize_from_data_names([self.CRITERION, self.LEARNING])
         self.algo = algo
         self.measure = measure
         self.measure_options = measure_options or {}
@@ -93,14 +144,17 @@ class MLAlgoAssessor(MDODiscipline):
         self.algos = []
 
         if "multioutput" in measure_options and measure_options["multioutput"]:
-            raise ValueError(
-                "MLAlgoAssessor does not support multioutput. "
-                "The measure shall return one value."
-            )
-        measure_options["multioutput"] = False
+            raise ValueError("MLAlgoAssessor does not support multioutput.")
+        measure_options[self.MULTIOUTPUT] = False
 
-    def _run(self):
-        """run method."""
+    def _run(self):  # type: (...) -> None
+        """Run method.
+
+        This method creates a new instance of the machine learning algorithm, from the
+        hyper-parameters stored in the local_data attribute of the
+        :class:`.MLAlgoAssessor`. It trains it on the learning dataset and measures its
+        quality with the :class:`.MLQualityMeasure`.
+        """
         inputs = self.get_input_data()
         for index in inputs:
             if len(inputs[index]) == 1:
@@ -119,34 +173,45 @@ class MLAlgoAssessor(MDODiscipline):
 
 
 class MLAlgoCalibration(object):
-    """Calibration of a machine learning algorithm."""
+    """Calibration of a machine learning algorithm.
 
-    CRITERION = "criterion"
+    Attributes:
+        algo_assessor (MLAlgoAssessor): The assessor for the machine learning algorithm.
+        calibration_space (DesignSpace): The space defining the calibration variables.
+        maximize_objective (bool): If True, seek to maximize the quality measure.
+        dataset (Dataset): The learning dataset.
+        optimal_parameters (Dict[str,ndarray]): The optimal parameters
+            for the machine learning algorithm.
+        optimal_criterion (float): The optimal quality measure.
+        optimal_algorithm (MLAlgo): The optimal machine learning algorithm.
+        scenario (Scenario): The scenario
+            used to calibrate the machine learning algorithm.
+    """
 
     def __init__(
         self,
-        algo,
-        dataset,
-        parameters,
-        calibration_space,
-        measure,
-        measure_options=None,
-        transformer=None,
-        **algo_options
-    ):
-        """Constructor.
-
-        :param str algo: machine learning algorithm name.
-        :param Dataset dataset: learning dataset.
-        :param list(str) parameters: parameters.
-        :param DesignSpace calibration_space: calibration space.
-        :param MLQualityMeasure measure: quality measure.
-        :param dict measure_options: options of the quality measures.
-        :param dict(str) transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :param bool use_doe: if True, use a DOEScenario to calibrate
-            the ML algorithm. Otherwise, use a MDOScenario. Default: True.
-        :param algo_options: options of the machine learning algorithm.
+        algo,  # type: str
+        dataset,  # type: Dataset
+        parameters,  # type: Iterable[str]
+        calibration_space,  # type: DesignSpace
+        measure,  # type: MLQualityMeasure
+        measure_options=None,  # type: Optional[MeasureOptionsType]
+        transformer=None,  # type: Optional[TransformerType]
+        **algo_options  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
+        """
+        Args:
+            algo: The name of a machine learning algorithm.
+            dataset: A learning dataset.
+            parameters: The parameters of the machine learning algorithm
+                to calibrate.
+            calibration_space: The space defining the calibration variables.
+            measure: A measure to assess the machine learning algorithm.
+            measure_options: The options of the quality measure.
+                If None, do not use the quality measure options.
+            transformer: The transformation strategy for the data groups.
+                If None, do not transform data.
+            **algo_options: The options of the machine learning algorithm.
         """
         disc = MLAlgoAssessor(
             algo,
@@ -167,12 +232,16 @@ class MLAlgoCalibration(object):
         self.optimal_algorithm = None
         self.scenario = None
 
-    def execute(self, input_data):
-        """Execute the calibration from optimization or DOE data.
+    def execute(
+        self,
+        input_data,  # type: ScenarioInputDataType
+    ):  # type: (...) -> None
+        """Calibrate the machine learning algorithm from a driver.
 
-        :param dict input_data: optimization or DOE data.
-        :return: optimal hyperparameters, optimal criterion.
-        :rtype: dict, ndarray
+        The driver can be either a DOE or an optimizer.
+
+        Args:
+            input_data: The driver properties.
         """
         doe_factory = DOEFactory()
 
@@ -180,7 +249,7 @@ class MLAlgoCalibration(object):
             self.scenario = DOEScenario(
                 [self.algo_assessor],
                 "DisciplinaryOpt",
-                self.CRITERION,
+                self.algo_assessor.CRITERION,
                 self.calibration_space,
                 maximize_objective=self.maximize_objective,
             )
@@ -188,7 +257,7 @@ class MLAlgoCalibration(object):
             self.scenario = MDOScenario(
                 [self.algo_assessor],
                 "DisciplinaryOpt",
-                self.CRITERION,
+                self.algo_assessor.CRITERION,
                 self.calibration_space,
                 maximize_objective=self.maximize_objective,
             )
@@ -199,25 +268,33 @@ class MLAlgoCalibration(object):
         cache = self.scenario.disciplines[0].cache
         self.dataset = cache.export_to_dataset(by_group=False)
         if self.maximize_objective:
-            algo_opt = self.algos[argmax(self.get_history(self.CRITERION))]
+            algo_opt = self.algos[
+                argmax(self.get_history(self.algo_assessor.CRITERION))
+            ]
         else:
-            algo_opt = self.algos[argmin(self.get_history(self.CRITERION))]
+            algo_opt = self.algos[
+                argmin(self.get_history(self.algo_assessor.CRITERION))
+            ]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
         self.optimal_algorithm = algo_opt
 
-    def get_history(self, name):
-        """Get history of a given variable.
+    def get_history(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> ndarray
+        """Return the history of a variable.
 
-        :param str name: variable name.
-        :return: history of the variable.
-        :rtype: ndarray
+        Args:
+            name: The name of the variable.
+
+        Returns:
+            The history of the variable.
         """
         if self.dataset is not None:
-            data = self.dataset.data[name]
-        return data
+            return self.dataset.data[name]
 
     @property
-    def algos(self):
-        """List of trained algorithms."""
+    def algos(self):  # type: (...) -> MLAlgo
+        """The trained machine learning algorithms."""
         return self.scenario.disciplines[0].algos

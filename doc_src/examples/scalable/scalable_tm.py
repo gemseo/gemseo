@@ -26,7 +26,7 @@ Scalable problem of Tedford and Martins, 2010
 =============================================
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from numpy import array
 from numpy.random import rand

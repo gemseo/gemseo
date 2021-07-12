@@ -18,25 +18,21 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
+"""Test the dataset module."""
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import join
 
+import numpy as np
 import pytest
-from numpy import allclose, arange, array, concatenate, nan, savetxt
+from numpy import allclose, arange, array, concatenate, nan, ones, savetxt, zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.utils.string_tools import MultiLineString
-
-""" Test the dataset module. """
-
-
-def assert_allclose(a, b):
-    assert allclose(a, b)
 
 
 @pytest.fixture
@@ -332,7 +328,7 @@ def test_add_group(dataset, ungroup_dataset):
     assert "func_0" in dataset.variables
     assert "func_1" in dataset.variables
     assert "func_2" in dataset.variables
-    dataset.add_group("grp3", arange(30).reshape(10, 3), varname="x")
+    dataset.add_group("grp3", arange(30).reshape(10, 3), pattern="x")
     assert "grp3" in dataset.groups
     assert dataset.data["grp3"].shape[0] == 10
     assert dataset.data["grp3"].shape[1] == 3
@@ -502,34 +498,34 @@ def test_getitem(dataset, data):
     with pytest.raises(ValueError):
         dataset[1000]
     res = dataset["var_1"]
-    assert_allclose(res["var_1"], data[:, 0:1])
+    assert allclose(res["var_1"], data[:, 0:1])
     res = dataset["var_2"]
-    assert_allclose(res["var_2"], data[:, 1:3])
+    assert allclose(res["var_2"], data[:, 1:3])
     res = dataset[["var_1", "var_2"]]
-    assert_allclose(res["var_1"], data[:, 0:1])
-    assert_allclose(res["var_2"], data[:, 1:3])
+    assert allclose(res["var_1"], data[:, 0:1])
+    assert allclose(res["var_2"], data[:, 1:3])
     res = dataset[2]
-    assert_allclose(res["var_1"], data[2:3, 0:1])
-    assert_allclose(res["var_2"], data[2:3, 1:3])
+    assert allclose(res["var_1"], data[2:3, 0:1])
+    assert allclose(res["var_2"], data[2:3, 1:3])
     res = dataset[[2, 3]]
-    assert_allclose(res["var_1"], data[2:4, 0:1])
-    assert_allclose(res["var_2"], data[2:4, 1:3])
+    assert allclose(res["var_1"], data[2:4, 0:1])
+    assert allclose(res["var_2"], data[2:4, 1:3])
     res = dataset[2:4]
-    assert_allclose(res["var_1"], data[2:4, 0:1])
-    assert_allclose(res["var_2"], data[2:4, 1:3])
+    assert allclose(res["var_1"], data[2:4, 0:1])
+    assert allclose(res["var_2"], data[2:4, 1:3])
     res = dataset[(2, "var_1")]
-    assert_allclose(res["var_1"], data[2:3, 0:1])
+    assert allclose(res["var_1"], data[2:3, 0:1])
     res = dataset[(2, ["var_1", "var_2"])]
-    assert_allclose(res["var_1"], data[2:3, 0:1])
-    assert_allclose(res["var_2"], data[2:3, 1:3])
+    assert allclose(res["var_1"], data[2:3, 0:1])
+    assert allclose(res["var_2"], data[2:3, 1:3])
     res = dataset[([2, 3], "var_1")]
-    assert_allclose(res["var_1"], data[2:4, 0:1])
+    assert allclose(res["var_1"], data[2:4, 0:1])
     res = dataset[([2, 3], ["var_1", "var_2"])]
-    assert_allclose(res["var_1"], data[2:4, 0:1])
-    assert_allclose(res["var_2"], data[2:4, 1:3])
+    assert allclose(res["var_1"], data[2:4, 0:1])
+    assert allclose(res["var_2"], data[2:4, 1:3])
     res = dataset[(slice(2, 4), ["var_1", "var_2"])]
-    assert_allclose(res["var_1"], data[2:4, 0:1])
-    assert_allclose(res["var_2"], data[2:4, 1:3])
+    assert allclose(res["var_1"], data[2:4, 0:1])
+    assert allclose(res["var_2"], data[2:4, 1:3])
 
 
 def test_plot(dataset, tmp_path):
@@ -573,46 +569,32 @@ def test_row_names(io_dataset):
     assert io_dataset.row_names == io_dataset.row_names
 
 
-def test_parameter_space(io_dataset):
-    parameter_space = io_dataset.get_parameter_space()
-    for name in ["in_1", "in_2", "out_1"]:
-        assert name in parameter_space
-        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
-    assert parameter_space["in_1"][parameter_space.SIZE_GROUP] == 2
-    ref = io_dataset["in_1"]["in_1"].min(0)
-    assert (parameter_space["in_1"][parameter_space.LB_GROUP] == ref).all()
-    ref = io_dataset["in_1"]["in_1"].max(0)
-    assert (parameter_space["in_1"][parameter_space.UB_GROUP] == ref).all()
-    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
-    assert (parameter_space["in_1"][parameter_space.VALUE_GROUP] == ref).all()
-    assert parameter_space["in_2"][parameter_space.SIZE_GROUP] == 3
-    assert parameter_space["out_1"][parameter_space.SIZE_GROUP] == 2
+@pytest.mark.parametrize(
+    "excluded_variables", [None, ["in_1"], ["in_2"], ["out_1"], ["in_1", "out_1"]]
+)
+@pytest.mark.parametrize(
+    "excluded_groups", [None, ["inputs"], ["outputs"], ["inputs", "outputs"]]
+)
+def test_get_normalized_dataset(io_dataset, excluded_groups, excluded_variables):
+    """Check the normalization of a dataset.
 
-    parameter_space = io_dataset.get_parameter_space(uncertain=True)
-    names = ["in_1_0", "in_1_1", "in_2_0", "in_2_1", "in_2_2"]
-    names += ["out_1_0", "out_1_1"]
-    for name in names:
-        assert name in parameter_space
-        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
+    Args:
+        io_dataset (Dataset): The original dataset.
+        excluded_groups (Optional[Sequence[str]]): The groups not to be normalized.
+        excluded_variables (Optional[Sequence[str]]): The names not to be normalized.
+    """
+    excluded_groups = excluded_groups or []
+    excluded_variables = excluded_variables or []
+    for group in excluded_groups:
+        excluded_variables += io_dataset._names[group]
 
-    assert parameter_space["in_1_0"][parameter_space.SIZE_GROUP] == 1
-    assert parameter_space["in_1_1"][parameter_space.SIZE_GROUP] == 1
-    ref = io_dataset["in_1"]["in_1"].min(0)
-    assert parameter_space["in_1_0"][parameter_space.LB_GROUP] == ref[0]
-    assert parameter_space["in_1_1"][parameter_space.LB_GROUP] == ref[1]
-    ref = io_dataset["in_1"]["in_1"].max(0)
-    assert parameter_space["in_1_0"][parameter_space.UB_GROUP] == ref[0]
-    assert parameter_space["in_1_1"][parameter_space.UB_GROUP] == ref[1]
-    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
-    assert parameter_space["in_1_0"][parameter_space.VALUE_GROUP] == ref[0]
-    assert parameter_space["in_1_1"][parameter_space.VALUE_GROUP] == ref[1]
+    dataset = io_dataset.get_normalized_dataset(excluded_variables, excluded_groups)
+    all_data = dataset.get_all_data(by_group=False, as_dict=True)
 
-    parameter_space = io_dataset.get_parameter_space([io_dataset.INPUT_GROUP])
-    for name in ["in_1", "in_2"]:
-        assert name in parameter_space
-    assert "out_1" not in parameter_space
-
-    parameter_space = io_dataset.get_parameter_space([io_dataset.OUTPUT_GROUP])
-    for name in ["in_1", "in_2"]:
-        assert name not in parameter_space
-    assert "out_1" in parameter_space
+    for name, data in all_data.items():
+        if name in excluded_variables:
+            assert not allclose(np.min(data, 0), zeros(data.shape[1]))
+            assert not allclose(np.max(data, 0), ones(data.shape[1]))
+        else:
+            assert allclose(np.min(data, 0), zeros(data.shape[1]))
+            assert allclose(np.max(data, 0), ones(data.shape[1]))

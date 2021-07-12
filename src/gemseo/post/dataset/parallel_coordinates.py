@@ -48,11 +48,10 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import inf
 from pandas.plotting import parallel_coordinates
@@ -70,7 +69,7 @@ class ParallelCoordinates(DatasetPlot):
         lower=-inf,  # type: float
         upper=inf,  # type: float
         **kwargs
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             classifier: The name of the variable to group the data.
@@ -94,13 +93,12 @@ class ParallelCoordinates(DatasetPlot):
             cluster = "{} < {} < {}".format(lower, label, upper)
             cluster = ("classifiers", cluster, "0")
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
-        p_c = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
-        p_c.set_xticklabels(self._get_variables_names(columns))
+        axes = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
+        axes.set_xticklabels(self._get_variables_names(columns))
         if lower != -inf or upper != inf:
             default_title = "Cobweb plot based on the classifier: {}".format(cluster[1])
         else:
             default_title = None
-            plt.gca().get_legend().remove()
-        plt.title(self.title or default_title)
-        fig = plt.gcf()
-        return fig
+            axes.get_legend().remove()
+        axes.set_title(self.title or default_title)
+        return [axes.figure]

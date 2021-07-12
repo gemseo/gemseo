@@ -16,16 +16,21 @@ External Dependencies
 
 GEMSEO depends on software with compatible licenses that are listed below.
 
-`Python <http://python.org/>`_
-    Python Software License
+`backports.functools-lru-cache <https://github.com/jaraco/backports.functools_lru_cache>`_
+    MIT
 
-    .. image:: /_static/dependencies/python-logo.svg
-        :target: https://www.python.org/
+`custom-inherit <https://github.com/rsokl/custom_inherit>`_
+    MIT
 
+`enum34 <https://pypi.org/project/enum34/>`_
+    BSD
 
 `Fast JSON schema <https://github.com/horejsek/python-fastjsonschema>`_
     BSD 3-Clause
     (Only for Python 3, for Python 2.7, FastJsonschema is embedded in GEMSEO source code)
+
+`genson <https://github.com/wolverdude/genson/>`_
+    MIT
 
 `Graphviz <https://github.com/xflr6/graphviz>`_
     MIT
@@ -36,11 +41,17 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `H5py <https://www.h5py.org/>`_
     BSD 3-Clause
 
+`jinja2 <https://palletsprojects.com/p/jinja/>`_
+    BSD 3-Clause
+
 `matplotlib <https://matplotlib.org/>`_
     matplotlib License
 
     .. image:: /_static/dependencies/matplotlib-logo.svg
         :target: https://matplotlib.org/
+
+`NetworkX <https://networkx.org/>`_
+    BSD 3-Clause
 
 `nlopt <https://github.com/stevengj/nlopt>`_
     GNU LGPL v2.1
@@ -91,6 +102,12 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pytest-logo.svg
         :target: https://pytest.org
 
+`Python <http://python.org/>`_
+    Python Software License
+
+    .. image:: /_static/dependencies/python-logo.svg
+        :target: https://www.python.org/
+
 `Python-future <https://github.com/PythonCharmers/python-future>`_
     MIT
 
@@ -115,7 +132,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/scipy-logo.png
         :target: https://www.scipy.org/scipylib/
 
-
 `setuptools <https://setuptools.readthedocs.io/>`_
     MIT
 
@@ -131,6 +147,9 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/sympy-logo.svg
         :target: https://www.sympy.org/
 
+`typing <https://github.com/python/typing>`_
+    Python Software License
+
 `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
     Apache v2.0
 
@@ -139,7 +158,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
 
     .. image:: /_static/dependencies/xlwings-logo.svg
         :target: https://www.xlwings.org/
-
 
 Internal Dependencies
 ---------------------
@@ -153,10 +171,10 @@ colormap
     MIT
     (Only used in Python 2.7, otherwise it is an external dependency)
 
-`GenSON <https://github.com/wolverdude/GenSON>`_
-    MIT
-
 `prettytable <https://github.com/kxxoling/PTable>`_
+    BSD 3-Clause
+
+`Reorder.js <https://github.com/jdfekete/reorder.js>`_
     BSD 3-Clause
 
 `pyXDSM <https://github.com/mdolab/pyXDSM>`_
@@ -164,12 +182,6 @@ colormap
 
 `SOMPY <https://github.com/sevamoo/SOMPY>`_
     Apache v2.0
-
-`tqdm <https://github.com/noamraph/tqdm>`_
-    MIT
-
-    .. image:: /_static/dependencies/tqdm-logo.gif
-        :target: https://github.com/noamraph/tqdm
 
 `versioneer <https://github.com/python-versioneer/python-versioneer>`_
     CC0 1.0

@@ -24,9 +24,8 @@ import pytest
 from numpy import array
 
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot, make_fpath
+from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.yvsx import YvsX
-from gemseo.utils.py23_compat import Path
 
 
 def test_empty_dataset():
@@ -76,42 +75,3 @@ def test_custom():
     assert plot.font_size == 2
     plot.font_size *= 2
     assert plot.font_size == 4
-
-
-def assert_path_equal(path1, path2):
-    """Check that 2 paths are pointing to the same location."""
-    assert str(path1) == str(path2)
-
-
-def test_make_fpath(tmp_path):
-    with pytest.raises(TypeError):
-        make_fpath(123)
-
-    assert_path_equal(make_fpath("DatasetPlot"), Path.cwd() / "DatasetPlot.pdf")
-    assert_path_equal(
-        make_fpath("DatasetPlot", file_format="png"), Path.cwd() / "DatasetPlot.png"
-    )
-
-    expected = "foo is not a directory"
-    with pytest.raises(ValueError, match=expected):
-        make_fpath("DatasetPlot", "foo/fname")
-
-    file_path = tmp_path / "fname"
-    assert_path_equal(
-        make_fpath("DatasetPlot", file_path), file_path.with_suffix(".pdf")
-    )
-
-    file_format = "png"
-    assert_path_equal(
-        make_fpath("DatasetPlot", file_path, file_format), file_path.with_suffix(".png")
-    )
-
-    file_path = tmp_path / "fname.png"
-    assert_path_equal(
-        make_fpath("DatasetPlot", file_path), file_path.with_suffix(".png")
-    )
-
-    file_format = "jpg"
-    assert_path_equal(
-        make_fpath("DatasetPlot", file_path, file_format), file_path.with_suffix(".png")
-    )

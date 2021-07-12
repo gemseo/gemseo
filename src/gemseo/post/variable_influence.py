@@ -19,16 +19,15 @@
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Plot the partial sensitivity of the functions
-*********************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Plot the partial sensitivity of the functions."""
+from __future__ import division, unicode_literals
 
 import logging
+from typing import Mapping, Tuple
 
 from matplotlib import pyplot
-from numpy import absolute, arange, argsort, array, atleast_2d, savetxt, stack
+from matplotlib.figure import Figure
+from numpy import absolute, argsort, array, atleast_2d, ndarray, savetxt, stack
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.py23_compat import PY2
@@ -37,58 +36,35 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VariableInfluence(OptPostProcessor):
-    """The **VariableInfluence** post processing performs first order variable influence
-    analysis.
+    """First order variable influence analysis.
 
-    by computing df/dxi * (xi* - xi0)
+    This post-processing computes df/dxi * (xi* - xi0)
     where xi0 is the initial value of the variable
-    and xi* is the optimal value of the variable
+    and xi* is the optimal value of the variable.
 
     Options of the plot method are the x- and y- figure sizes,
     the quantile level, the use of a logarithmic scale and
-    the possibility to save the influent variables indices
-    as a numpy file
-    It is also possible either to save the plot, to show the plot or both.
+    the possibility to save the influent variables indices as a NumPy file.
     """
 
     def _plot(
         self,
-        figsize_x=20,
-        figsize_y=5,
-        quantile=0.99,
-        absolute_value=False,
-        log_scale=False,
-        save_var_files=False,
-        show=False,
-        save=False,
-        file_path="var_infl",
-        extension="pdf",
-    ):
-        """Plots the ScatterPlotMatrix graph.
-
-        :param figsize_x: size of figure in horizontal direction (inches)
-        :type figsize_x: int
-        :param figsize_y: size of figure in vertical direction (inches)
-        :type figsize_y: int
-        :param quantile: between 0 and  1, proportion of the total
-            sensitivity to use as a threshold to filter the variables
-        :type quantile: float
-        :param log_scale: if True, use a logarithmic scale
-        :type log_scale: bool
-        :param absolute_value: if true, plot the absolute value of the
-            influence
-        :type absolute_value: bool
-        :param save_var_files: save the influent variables indices as a numpy
-            file
-        :type save_var_files: bool
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param extension: file extension
-        :type extension: str
+        figsize_x=20,  # type: int
+        figsize_y=5,  # type: int
+        quantile=0.99,  # type: float
+        absolute_value=False,  # type: bool
+        log_scale=False,  # type: bool
+        save_var_files=False,  # type: bool
+    ):  # type: (...) -> None
+        """
+        Args:
+            figsize_x: The size of the figure in the horizontal direction (inches).
+            figsize_y: The size of the figure in the vertical direction (inches).
+            quantile: Between 0 and  1, the proportion of the total
+                sensitivity to use as a threshold to filter the variables.
+            absolute_value: If True, plot the absolute value of the influence.
+            log_scale: If True, use a logarithmic scale.
+            save_var_files: If True, save the influent variables indices as a NumPy file.
         """
         all_funcs = self.opt_problem.get_all_functions_names()
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
@@ -97,7 +73,8 @@ class VariableInfluence(OptPostProcessor):
             absolute_value = True
         sens_dict = {}
         for func in all_funcs:
-            grad = self.database.get_f_of_x(self.database.GRAD_TAG + func, x_0)
+            func_gradient = self.database.get_gradient_name(func)
+            grad = self.database.get_f_of_x(func_gradient, x_0)
             f_0 = self.database.get_f_of_x(func, x_0)
             f_opt = self.database.get_f_of_x(func, x_opt)
             if grad is not None:
@@ -116,26 +93,33 @@ class VariableInfluence(OptPostProcessor):
                         sens *= delta_corr
                         if absolute_value:
                             sens = absolute(sens)
-                        sens_dict[func + "_" + str(i)] = sens
+                        sens_dict["{}_{}".format(func, i)] = sens
 
         fig = self.__generate_subplots(
             sens_dict, figsize_x, figsize_y, quantile, log_scale, save_var_files
         )
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
 
-    def __get_quantile(self, sensor, func, quant=0.99, save_var_files=False):
-        """Computes the number of variables to keep that explain quant fraction of the
+        self._add_figure(fig)
+
+    def __get_quantile(
+        self,
+        sensor,  # type: ndarray
+        func,  # type: str
+        quant=0.99,  # type: float
+        save_var_files=False,  # type: bool
+    ):  # type: (...)-> Tuple[int, float]
+        """Get the number of variables that explain a quantile fraction of the
         variation.
 
-        :param sensor: the numpy array containing the sensitivity
-        :param func: the function name
-        :param quant: the quantile treshold
-        :param save_var_files: save the influent variables indices as a numpy
-            file
-        :returns: the number of required variables and the treshold value
-            for the sensitivity
+        Args:
+            sensor: The sensitivity.
+            func: The function name.
+            quant: The quantile threshold.
+            save_var_files: If True, save the influent variables indices in a NumPy file.
+
+        Returns:
+            The number of required variables
+            and the threshold value for the sensitivity.
         """
         abs_vals = absolute(sensor)
         abs_sens_i = argsort(abs_vals)[::-1]
@@ -158,11 +142,14 @@ class VariableInfluence(OptPostProcessor):
             names = self.opt_problem.design_space.variables_names
             sizes = self.opt_problem.design_space.variables_sizes
             ll_of_names = array(
-                [[name + "$" + str(i) for i in range(sizes[name])] for name in names]
+                [
+                    ["{}${}".format(name, i) for i in range(sizes[name])]
+                    for name in names
+                ]
             )
             flaten_names = array([name for sublist in ll_of_names for name in sublist])
             kept_names = flaten_names[kept_vars]
-            var_names_file = func + "_influ_vars.csv"
+            var_names_file = "{}_influ_vars.csv".format(func)
             data = stack((kept_names, kept_vars)).T
             if PY2:
                 fmt = "%s".encode("ascii")
@@ -176,22 +163,31 @@ class VariableInfluence(OptPostProcessor):
 
     def __generate_subplots(
         self,
-        sens_dict,
-        figsize_x,
-        figsize_y,
-        quantile=0.99,
-        log_scale=False,
-        save_var_files=False,
-    ):
-        """Generates the gradient sub plots from the data.
+        sens_dict,  # type: Mapping[str, ndarray]
+        figsize_x,  # type: int
+        figsize_y,  # type: int
+        quantile=0.99,  # type: float
+        log_scale=False,  # type: bool
+        save_var_files=False,  # type: bool
+    ):  # type: (...)-> Figure
+        """Generate the gradients subplots from the data.
 
-        :param sens_dict: dict of sensors to plot
-        :param figsize_x: size of figure in horizontal direction (inches)
-        :param figsize_y: size of figure in vertical direction (inches)
-        :param save_var_files: save the influent variables indices as a numpy
-            file
+        Args:
+            sens_dict: The sensors to plot.
+            figsize_x: The size of the figure in the horizontal direction (inches).
+            figsize_y: The size of the figure in the vertical direction (inches).
+            save_var_files: If True, save the influent variables indices in a NumPy file.
+
+        Returns:
+            The gradients subplots.
+
+        Raises:
+            ValueError: If the `sens_dict` is empty.
         """
         n_funcs = len(sens_dict)
+        if n_funcs == 0:
+            raise ValueError("No gradients to plot at current iteration!")
+
         nrows = n_funcs // 2
         if 2 * nrows < n_funcs:
             nrows += 1
@@ -211,6 +207,12 @@ class VariableInfluence(OptPostProcessor):
 
         axes = atleast_2d(axes)
         n_subplots = len(axes) * len(axes[0])
+        x_labels = self._generate_x_names()
+        # This variable determines the number of variables to plot in the
+        # x-axis. Since the data history can be edited by the user after the
+        # problem was solved, we do not use something like opt_problem.dimension
+        # because the problem dimension is not updated when the history is filtered.
+        abscissas = range(len(tuple(sens_dict.values())[0]))
 
         for func, sens in sorted(sens_dict.items()):
             j += 1
@@ -219,22 +221,15 @@ class VariableInfluence(OptPostProcessor):
                 i += 1
             axe = axes[i][j]
             n_vars = len(sens)
-            abscissa = arange(n_vars)
-            # x_labels = [r'$x_{' + str(x_id) + '}$' for x_id in abscissa]
-            x_labels = [str(x_id) for x_id in abscissa]
-            axe.bar(abscissa, sens, color="blue", align="center")
+            axe.bar(abscissas, sens, color="blue", align="center")
             quant, treshold = self.__get_quantile(sens, func, quantile, save_var_files)
             axe.set_title(
-                str(quant)
-                + " variables required"
-                + " to explain "
-                + str(round(quantile * 100))
-                + "% of "
-                + func
-                + " variations"
+                "{} variables required to explain {}% of {} variations".format(
+                    quant, round(quantile * 100), func
+                )
             )
-            axe.set_xticklabels(x_labels, fontsize=14)
-            axe.set_xticks(abscissa)
+            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.set_xticks(abscissas)
             axe.set_xlim(-1, n_vars + 1)
             axe.axhline(treshold, color="r")
             axe.axhline(-treshold, color="r")
@@ -260,8 +255,8 @@ class VariableInfluence(OptPostProcessor):
             # xlabel must be written with the same fontsize on the 2 columns
             j += 1
             axe = axes[i][j]
-            axe.set_xticklabels(x_labels, fontsize=14)
-            axe.set_xticks(abscissa)
+            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.set_xticks(abscissas)
 
         fig.suptitle(
             "Partial variation of the functions " + "wrt design variables", fontsize=14

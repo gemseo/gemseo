@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-R2 error measure
-================
+"""The R2 to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.qual_measure.r2_measure` module
 implements the concept of R2 measures for machine learning algorithms.
@@ -41,45 +39,49 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, NoReturn, Optional, Union
 
 from numpy import array_split, atleast_2d
 from numpy import delete as npdelete
-from numpy import mean, repeat
+from numpy import mean, ndarray, repeat
 from sklearn.metrics import mean_squared_error, r2_score
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class R2Measure(MLErrorMeasure):
-    """R2 measure for machine learning."""
+    """The R2 measure for machine learning."""
 
     SMALLER_IS_BETTER = False
 
-    def _compute_measure(self, outputs, predictions, multioutput=True):
-        """Compute R2.
-
-        :param ndarray outputs: reference outputs.
-        :param ndarray predictions: predicted outputs.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: R2 value.
-        :rtype: float or ndarray(float)
+    def __init__(
+        self,
+        algo,  # type: MLRegressionAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for regression.
+        """
+        super(R2Measure, self).__init__(algo)
+
+    def _compute_measure(
+        self,
+        outputs,  # type: ndarray
+        predictions,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         multioutput = "raw_values" if multioutput else "uniform_average"
         return r2_score(outputs, predictions, multioutput=multioutput)
 
-    def evaluate_kfolds(self, n_folds=5, samples=None, multioutput=True):
-        """Evaluate quality measure using the k-folds technique.
-
-        :param int n_folds: number of folds. Default: 5.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_kfolds(
+        self,
+        n_folds=5,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
         inds = samples
         folds = array_split(inds, n_folds)
@@ -109,15 +111,10 @@ class R2Measure(MLErrorMeasure):
 
         return quality
 
-    def evaluate_bootstrap(self, n_replicates=100, samples=None, multioutput=True):
-        """Evaluate quality measure using the bootstrap technique.
-
-        :param int n_replicates: number of bootstrap replicates. Default: 100.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_bootstrap(
+        self,
+        n_replicates=100,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> NoReturn
         raise NotImplementedError

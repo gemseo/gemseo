@@ -1,13 +1,7 @@
 {
     "name": "ScatterPlotMatrix_options",
-    "required": ["save","variables_list"],
+    "required": ["variables_list"],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show":{
-            "type": "boolean"
-        },
         "figsize_x": {
             "type": "number",
             "minimum":4
@@ -22,12 +16,6 @@
                 "minItems": 1
             },
             "type": "array"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
         }
     },
     "additionalProperties": false,

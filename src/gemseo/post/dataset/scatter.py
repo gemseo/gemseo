@@ -25,9 +25,9 @@ A :class:`Scatter` plot represents a set of points
 :math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
 where the color of points can be heterogeneous.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from typing import Mapping
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -45,7 +45,7 @@ class Scatter(DatasetPlot):
         y,  # type: str
         x_comp=0,  # type: str
         y_comp=0,  # type: str
-    ):  # type: (...) -> Figure
+    ):  # type: (...) -> List[Figure]
         """
         Args:
             x: The name of the variable on the x-axis.
@@ -68,5 +68,4 @@ class Scatter(DatasetPlot):
             axes.set_ylabel(self.ylabel or y)
         else:
             axes.set_ylabel(self.ylabel or "{}({})".format(y, y_comp))
-        fig = plt.gcf()
-        return fig
+        return [fig]

@@ -25,8 +25,9 @@ Plot - YvsX
 ===========
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from matplotlib import pyplot as plt
 from numpy import linspace, pi, sin
 
 from gemseo.api import configure_logger
@@ -49,4 +50,6 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # Plot y vs x
 # -----------
 # We can use the :class:`.YvsX` plot
-dataset.plot("YvsX", x="x", y="y", properties={"linestyle": "--o"})
+dataset.plot("YvsX", x="x", y="y", properties={"linestyle": "--o"}, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

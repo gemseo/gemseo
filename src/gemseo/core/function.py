@@ -23,14 +23,12 @@
 Functions, f(x), from disciplines execution
 *******************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import isinstance
 from multiprocessing import Value
 from numbers import Number
 
-from future.utils import with_metaclass
 from numpy import abs as np_abs
 from numpy import (
     absolute,
@@ -57,7 +55,6 @@ from six import string_types
 
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
-from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1806,7 +1803,7 @@ class MDOQuadraticFunction(MDOFunction):
         return expr
 
 
-class MDOFunctionGenerator(with_metaclass(SingleInstancePerAttributeId, object)):
+class MDOFunctionGenerator(object):
     """The link between MDODisciplines and objective functions and constraints is made
     with MDOFunctionGenerator, which generates MDOFunctions from the disciplines.
 

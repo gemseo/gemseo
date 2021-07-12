@@ -74,9 +74,7 @@ and
 
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import super
+from __future__ import division, unicode_literals
 
 from numpy import array, atleast_2d, complex128, ones
 

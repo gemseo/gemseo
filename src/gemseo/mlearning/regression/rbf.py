@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-RBF regression
-==============
+r"""The RBF network for regression.
 
 The radial basis function surrogate discipline expresses the model output
 as a weighted sum of kernel functions centered on the learning input data:
@@ -31,8 +29,8 @@ as a weighted sum of kernel functions centered on the learning input data:
     y = w_1K(\|x-x_1\|;\epsilon) + w_2K(\|x-x_2\|;\epsilon) + ...
         + w_nK(\|x-x_n\|;\epsilon)
 
-and the coefficients :math:`(w_1, w_2, ..., w_n)`
-are estimated by least square regression.
+and the coefficients :math:`(w_1, w_2, ..., w_n)` are estimated
+by least squares minimization.
 
 Dependence
 ----------
@@ -40,25 +38,37 @@ The RBF model relies on the Rbf class
 of the `scipy library <https://docs.scipy.org/doc/scipy/reference/generated/
 scipy.interpolate.Rbf.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 import pickle
 from os.path import join
+from typing import Callable, Dict, Iterable, Optional, Union
 
-from numpy import array, average, exp, finfo, hstack, log, sqrt
+from numpy import array, average, exp, finfo, hstack, log, ndarray, sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
 from six import string_types
 
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.py23_compat import PY3
 
 LOGGER = logging.getLogger(__name__)
 
+SavedObjectType = Union[SavedObjectType, float, Callable]
+
 
 class RBFRegression(MLRegressionAlgo):
-    """Regression based on radial basis functions."""
+    r"""Regression based on radial basis functions.
+
+    Attributes:
+        der_function (Callable[[ndarray],ndarray]): The derivative
+            of the radial basis function.
+        y_average (ndarray): The mean of the learning output data.
+    """
 
     LIBRARY = "scipy"
     ABBR = "RBF"
@@ -85,39 +95,33 @@ class RBFRegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        function=MULTIQUADRIC,
-        der_function=None,
-        epsilon=None,
-        **parameters
-    ):
-        r"""Constructor.
-
-        :param data: learning dataset
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables. Default: None.
-        :type input_names: list(str)
-        :param output_names: names of the output variables. Default: None.
-        :type output_names: list(str)
-        :param function: radial basis function. Default: 'multiquadric'.
-        :type function: str or callable
-        :param der_function: derivative of radial basis function, only to be
-            provided if function is callable and not str. The der_function
-            should take three arguments (input_data, norm_input_data, eps). For
-            a RBF of the form function(:math:`r`),
-            der_function(:math:`x`, :math:`|x|`, :math:`\epsilon`) should
-            return :math:`\epsilon^{-1} x/|x| f'(|x|/\epsilon)`. Default: None.
-        :type der_function: callable
-        :param epsilon: Adjustable constant for Gaussian or
-            multiquadrics functions. Default: None.
-        :type epsilon: float
-        :param parameters: other RBF parameters (sklearn).
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        function=MULTIQUADRIC,  # type: str
+        der_function=None,  # type: Optional[Callable[[ndarray],ndarray]]
+        epsilon=None,  # type: Optional[float]
+        **parameters  # type: Optional[MLAlgoParameterType]
+    ):  # type: (...) -> None
+        r"""
+        Args:
+            function: The radial basis function.
+            der_function: The derivative of the radial basis function,
+                only to be provided if ``function`` is a callable
+                and if the use of the model with its derivative is required.
+                If None and if ``function`` is a callable,
+                an error will be raised.
+                If None and if ``function`` is a string,
+                the class will look for its internal implementation
+                and will raise an error if it is missing.
+                The der_function shall take three arguments
+                (input_data, norm_input_data, eps).
+                For a RBF of the form function(:math:`r`),
+                der_function(:math:`x`, :math:`|x|`, :math:`\epsilon`) shall
+                return :math:`\epsilon^{-1} x/|x| f'(|x|/\epsilon)`.
+            epsilon: An adjustable constant for Gaussian or multiquadrics functions.
+                If None, use the average distance between input data.
         """
         if isinstance(function, string_types):
             function = str(function)
@@ -134,7 +138,7 @@ class RBFRegression(MLRegressionAlgo):
         self.der_function = der_function
 
     class RBFDerivatives(object):
-        r"""Derivatives of functions used in RBFRegression.
+        r"""Derivatives of functions used in :class:`.RBFRegression`.
 
         For a RBF of the form :math:`f(r)`, :math:`r` scalar,
         the derivative functions are defined by :math:`d(f(r))/dx`,
@@ -148,51 +152,82 @@ class RBFRegression(MLRegressionAlgo):
         TOL = finfo(float).eps
 
         @classmethod
-        def der_multiquadric(cls, input_data, norm_input_data, eps):
-            r"""Compute derivative w.r.t. :math:`x` of the function
-            :math:`f(r) = \sqrt{r^2 + 1}`.
+        def der_multiquadric(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
+            r"""Compute derivative of  :math:`f(r) = \sqrt{r^2 + 1}` wrt :math:`x`.
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return input_data / eps ** 2 / sqrt((norm_input_data / eps) ** 2 + 1)
 
         @classmethod
-        def der_inverse_multiquadric(cls, input_data, norm_input_data, eps):
+        def der_inverse_multiquadric(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = 1/\sqrt{r^2 + 1}`.
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return -input_data / eps ** 2 / ((norm_input_data / eps) ** 2 + 1) ** 1.5
 
         @classmethod
-        def der_gaussian(cls, input_data, norm_input_data, eps):
+        def der_gaussian(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = \exp(-r^2)`.
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return -2 * input_data / eps ** 2 * exp(-((norm_input_data / eps) ** 2))
 
         @classmethod
-        def der_linear(cls, input_data, norm_input_data, eps):
+        def der_linear(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r`.
             If :math:`x=0`, return 0 (determined up to a tolerance).
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return (
                 (norm_input_data > cls.TOL)
@@ -202,39 +237,63 @@ class RBFRegression(MLRegressionAlgo):
             )
 
         @classmethod
-        def der_cubic(cls, input_data, norm_input_data, eps):
+        def der_cubic(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^3`.
 
-            :param float input_data: Input variable (vector) :math:`x`.
-            :param float norm_input_data: Norm of input variable :math:`|x|`.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return 3 * norm_input_data * input_data / eps ** 3
 
         @classmethod
-        def der_quintic(cls, input_data, norm_input_data, eps):
+        def der_quintic(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^5`.
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data : The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return 5 * norm_input_data ** 3 * input_data / eps ** 5
 
         @classmethod
-        def der_thin_plate(cls, input_data, norm_input_data, eps):
+        def der_thin_plate(
+            cls,
+            input_data,  # type: ndarray
+            norm_input_data,  # type: float
+            eps,  # type: float
+        ):  # type: (...) -> ndarray
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^2 \log(r)`.
             If :math:`x=0`, return 0 (determined up to a tolerance).
 
-            :param float input_data: Input variable (vector).
-            :param float norm_input_data: Norm of input variable.
-            :return: Derivative of the function.
-            :rtype: float
+            Args:
+                input_data: The 1D input data.
+                norm_input_data: The norm of the input variable.
+                eps: The correlation length.
+
+            Returns:
+                The derivative of the function.
             """
             return (
                 (norm_input_data > cls.TOL)
@@ -243,12 +302,11 @@ class RBFRegression(MLRegressionAlgo):
                 * (1 + 2 * log(norm_input_data / eps + cls.TOL))
             )
 
-    def _fit(self, input_data, output_data):
-        """Fit the regression model.
-
-        :param ndarray input_data: input data (2D)
-        :param ndarray output_data: output data (2D)
-        """
+    def _fit(
+        self,
+        input_data,  # type: ndarray
+        output_data,  # type: ndarray
+    ):  # type: (...) -> None
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
         if PY3:
@@ -261,13 +319,10 @@ class RBFRegression(MLRegressionAlgo):
                 rbf = Rbf(*args.T, **self.parameters)
                 self.algo.append(rbf)
 
-    def _predict(self, input_data):
-        """Predict output for given input data.
-
-        :param ndarray input_data: input data (2D).
-        :return: output prediction (2D).
-        :rtype: ndarray
-        """
+    def _predict(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         if PY3:
             output_data = self.algo(*input_data.T)
             if len(output_data.shape) == 1:
@@ -278,13 +333,10 @@ class RBFRegression(MLRegressionAlgo):
             output_data = array(output_data).T + self.y_average
         return output_data
 
-    def _predict_jacobian(self, input_data):
-        """Predict Jacobian of the regression model for the given input data.
-
-        :param ndarray input_data: input_data (2D).
-        :return: Jacobian matrices (3D, one for each sample).
-        :rtype: ndarray
-        """
+    def _predict_jacobian(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         self._check_available_jacobian()
         der_func = self.der_function or getattr(
             self.RBFDerivatives, "der_{}".format(self.function)
@@ -311,8 +363,13 @@ class RBFRegression(MLRegressionAlgo):
         jacobians = contributions.sum(-1)
         return jacobians
 
-    def _check_available_jacobian(self):
-        """Check if the Jacobian is available for the given setup."""
+    def _check_available_jacobian(self):  # type: (...) -> None
+        """Check if the Jacobian is available for the given setup.
+
+        Raises:
+            NotImplementedError: Either if the Jacobian computation is not implemented
+                or if the derivative of the radial basis function is missing.
+        """
         if PY3:
             norm_name = self.algo.norm
         else:
@@ -320,21 +377,19 @@ class RBFRegression(MLRegressionAlgo):
 
         if norm_name != self.EUCLIDEAN:
             raise NotImplementedError(
-                "Jacobian is only implemented for " "euclidean norm."
+                "Jacobian is only implemented for Euclidean norm."
             )
 
         if callable(self.function) and self.der_function is None:
             raise NotImplementedError(
-                "No der_function is provided. Add "
-                "der_function in RBFRegression "
-                "constructor."
+                "No der_function is provided."
+                "Add der_function in RBFRegression constructor."
             )
 
-    def _save_algo(self, directory):
-        """Save external machine learning algorithm.
-
-        :param str directory: algorithm directory.
-        """
+    def _save_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
         if PY3:
             super(RBFRegression, self)._save_algo(directory)
         else:
@@ -349,11 +404,10 @@ class RBFRegression(MLRegressionAlgo):
                             pickled_rbf_list[-1][key] = rbf.__getattribute__(key)
                 pickled_rbf.dump(pickled_rbf_list)
 
-    def load_algo(self, directory):
-        """Load external machine learning algorithm.
-
-        :param str directory: algorithm directory.
-        """
+    def load_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
         if PY3:
             super(RBFRegression, self).load_algo(directory)
         else:
@@ -373,33 +427,24 @@ class RBFRegression(MLRegressionAlgo):
                         algo_i.__setattr__(key, value)
                     self.algo.append(algo_i)
 
-    def _get_objects_to_save(self):
-        """Get objects to save."""
+    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
         objects = super(RBFRegression, self)._get_objects_to_save()
         objects["y_average"] = self.y_average
         objects["der_function"] = self.der_function
         return objects
 
     @property
-    def function(self):
-        """Kernel function name.
+    def function(self):  # type: (...) -> str
+        """The name of the kernel function.
 
         The name is possibly different from self.parameters['function'], as it
         is mapped (scipy). Examples:
 
         'inverse'              -> 'inverse_multiquadric'
         'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
-
-        return: Name of kernel function.
-        rtype: str
         """
         if PY3:
             function = self.algo.function
         else:
             function = self.algo[0].function
         return function
-
-    @classmethod
-    def get_available_functions(cls):
-        """Get available RBFs."""
-        return cls.AVAILABLE_FUNCTIONS

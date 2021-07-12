@@ -23,6 +23,7 @@ Installation
 
 You may install the core or the full features set of |g|.
 See :ref:`dependencies` for more information.
+There are different ways to install |g| depending on you platform and Python version.
 
 Requirements
 ************
@@ -45,15 +46,23 @@ it does not require any administrator privilege.
 You may install `Anaconda`_
 and `learn`_ how to use it.
 
-.. _environment:
+Linux or MacOS
+**************
 
-Environment
------------
+For Python 3 on Linux or MacOS,
+install the full feature set in an anaconda environment named *gemseo* for python 3.8 with
 
-This step is optional
-and only required on Windows or for Python 2.7.
+.. code-block:: console
 
-Download :download:`this file <../../../environment-py3.yml>`
+    conda create -c conda-forge -n gemseo python=3.8 gemseo
+
+You can change the python version to 3.6, 3.7 or 3.9.
+
+Windows or Python 2.7
+*********************
+
+For Python 3,
+download :download:`this file <../../../environment-py3.yml>`
 and create an anaconda environment for |g| with
 
 .. code-block:: console
@@ -65,9 +74,10 @@ and minimum common set of |g| dependencies on any platform
 (Linux, Windows, MacOS) in an environment named *gemseo*.
 You may edit :file:`environment-py3.yml`
 to change the environment name or the Python version
-(3.6, 3.7 or 3.8).
+(3.6, 3.7, 3.8 or 3.9).
 
-For Python 2, use :download:`this file <../../../environment-py2.yml>`.
+For Python 2.7,
+use :download:`this file <../../../environment-py2.yml>`.
 
 Then,
 activate this environment with:
@@ -76,42 +86,14 @@ activate this environment with:
 
     conda activate gemseo
 
-and you can now proceed with the installation of |g|.
+and you can now proceed with the installation of |g|,
+see :ref:`pypi`.
 
 You may leave the anaconda environment with
 
 .. code-block:: console
 
     conda deactivate
-
-Installation
-************
-
-You can install |g| with either the core or the full features set.
-See :ref:`optional-dependencies` for more information about the differences.
-
-There are different ways to install |g| depending on you platform.
-
-Linux or MacOS
---------------
-
-This is the easiest way of installing |g|.
-
-Install the full feature set in an anaconda environment named *gemseo* for python 3.8 with
-
-.. code-block:: console
-
-    conda create -c conda-forge -n gemseo python=3.8 gemseo
-
-You can also change the python version to 3.6 or 3.7.
-For python 2.7, see :ref:`pypi`
-(this method also works for any python version
-but is slightly more complex).
-
-Windows
--------
-
-See :ref:`pypi`.
 
 .. _pypi:
 
@@ -207,7 +189,7 @@ Run the tests with:
 
 .. code-block:: console
 
-   pip install pytest
+   pip install gemseo[all,test]
    pytest
 
 Please have a look at the

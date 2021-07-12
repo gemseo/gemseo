@@ -19,10 +19,10 @@
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from os.path import dirname, join
+from os.path import dirname, exists, join
 
 import pytest
 
@@ -55,7 +55,7 @@ class TestRadarChart(unittest.TestCase):
             )
             assert len(post.output_files) == 1
             for outf in post.output_files:
-                assert outf.exists()
+                assert exists(outf)
 
     def test_radar_load(self):
         """"""
@@ -73,7 +73,7 @@ class TestRadarChart(unittest.TestCase):
             )
             assert len(post.output_files) == 1
             for outf in post.output_files:
-                assert outf.exists()
+                assert exists(outf)
             self.assertRaises(
                 ValueError,
                 factory.execute,

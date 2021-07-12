@@ -35,7 +35,7 @@ and a weakly one, with the following properties:
 
 We would like to solve this MDO problem by means of a MDF formulation.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, generate_n2_plot
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem

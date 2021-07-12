@@ -23,7 +23,7 @@
 Scalable problem - Problem
 **************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
 
@@ -214,7 +214,7 @@ class TMProblem(object):
         c_coupling = []
         for disc in range(self.n_submodels):
             if self._full_coupling:
-                other_indices = set(range(self.n_submodels)) - set([disc])
+                other_indices = set(range(self.n_submodels)) - {disc}
                 other_indices = list(other_indices)
             else:
                 other_index = self.n_submodels - 1 if disc == 0 else disc - 1

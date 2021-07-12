@@ -28,7 +28,9 @@ In this example, we illustrate the use of the
 :class:`~gemseo.post.radar_chart.RadarChart` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -94,7 +96,9 @@ scenario.post_process(
     "RadarChart",
     constraints_list=["g_1", "g_2", "g_3"],
     save=False,
-    show=True,
+    show=False,
     figsize_x=5,
     figsize_y=5,
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

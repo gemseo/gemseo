@@ -20,13 +20,12 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import math
 import unittest
 
 import numpy as np
-from future.utils import with_metaclass
 from numpy import allclose, array, eye, matmul, ones, zeros
 from numpy.linalg import norm
 from scipy import optimize
@@ -36,43 +35,10 @@ from gemseo.core.function import (
     MDOFunctionGenerator,
     MDOLinearFunction,
     MDOQuadraticFunction,
-    SingleInstancePerAttributeId,
 )
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.data_conversion import DataConversion
-
-
-class TestSingleInstancePerAttribute(unittest.TestCase):
-    """"""
-
-    def test_fail(self):
-        """"""
-
-        class DummyClassFail(with_metaclass(SingleInstancePerAttributeId, object)):
-            """"""
-
-            def __init__(self):
-                pass
-
-        self.assertRaises(Exception, DummyClassFail)
-
-    def test_single_instance(self):
-        """"""
-
-        class DummyClass(with_metaclass(SingleInstancePerAttributeId, object)):
-            """"""
-
-            def __init__(self, arg):
-                self.arg = arg
-
-        obj1 = object()
-        obj2 = object()
-        d1 = DummyClass(obj1)
-        d1_bis = DummyClass(obj1)
-        d2 = DummyClass(obj2)
-        assert d1 == d1_bis
-        assert d2 != d1
 
 
 class TestMdofunction(unittest.TestCase):
@@ -403,17 +369,6 @@ class TestMdofunctiongenerator(unittest.TestCase):
     def test_instanciation(self):
         """"""
         MDOFunctionGenerator(None)
-
-    def test_singleton(self):
-        """"""
-        sr = SobieskiMission()
-        gen = MDOFunctionGenerator(sr)
-        instances = type(type(gen)).instances
-        inst_len = len(instances)
-        MDOFunctionGenerator(sr)
-        assert inst_len == len(instances)
-        MDOFunctionGenerator(sr)
-        assert inst_len == len(instances)
 
     def test_range_discipline(self):
         """"""

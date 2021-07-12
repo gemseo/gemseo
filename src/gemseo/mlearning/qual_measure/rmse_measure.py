@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Root mean squared error measure
-===============================
+"""The root mean squared error to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.qual_measure.mse_measure` module
 implements the concept of root mean squared error measures
@@ -41,66 +39,62 @@ where
 :math:`\\hat{y}` are the predictions and
 :math:`y` are the data points.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+from typing import List, Optional, Union
+
+from numpy import ndarray
+
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class RMSEMeasure(MSEMeasure):
-    """Root mean Squared Error measure for machine learning."""
+    """The root mean Squared Error measure for machine learning."""
 
-    def evaluate_learn(self, samples=None, multioutput=True):
-        """Evaluate quality measure using the learning dataset.
-
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
+    def __init__(
+        self,
+        algo,  # type: MLRegressionAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for regression.
+        """
+        super(RMSEMeasure, self).__init__(algo)
+
+    def evaluate_learn(
+        self,
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_learn(samples, multioutput)
         return mse ** 0.5
 
-    def evaluate_test(self, test_data, samples=None, multioutput=True):
-        """Evaluate quality measure using a test dataset.
-
-        :param Dataset test_data: test data.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_test(
+        self,
+        test_data,  # type:Dataset
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_test(test_data, samples, multioutput)
         return mse ** 0.5
 
-    def evaluate_kfolds(self, n_folds=5, samples=None, multioutput=True):
-        """Evaluate quality measure using the k-folds technique.
-
-        :param int n_folds: number of folds. Default: 5.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_kfolds(
+        self,
+        n_folds=5,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_kfolds(n_folds, samples, multioutput)
         return mse ** 0.5
 
-    def evaluate_bootstrap(self, n_replicates=100, samples=None, multioutput=True):
-        """Evaluate quality measure using the bootstrap technique.
-
-        :param int n_replicates: number of bootstrap replicates. Default: 100.
-        :param list(int) samples: samples to consider for training.
-            If None, use all samples. Default: None.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: quality measure value.
-        :rtype: float or ndarray(float)
-        """
+    def evaluate_bootstrap(
+        self,
+        n_replicates=100,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_bootstrap(
             n_replicates, samples, multioutput
         )

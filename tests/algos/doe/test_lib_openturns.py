@@ -19,11 +19,12 @@
 #      :author: Damien Guenot - 20 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
 import numpy as np
+from numpy import unique
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -346,7 +347,7 @@ class TestlibOpenturns(unittest.TestCase):
             self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples_1
         )
         samples_lhsc = doe_library.samples
-        self.assertEqual(samples_lhs.shape, (n_samples_1, dim))
+        self.assertEqual(samples_lhsc.shape, (n_samples_1, dim))
         self.assertNotEqual(
             DOELibraryTestBase.relative_norm(samples_lhs, samples_lhsc), 0.0
         )
@@ -398,6 +399,10 @@ class TestlibOpenturns(unittest.TestCase):
             annealing=True,
             temperature="Foo",
         )
+
+    def test_centered_lhs(self):
+        lhsc = DOEFactory().create("OT_LHSC")
+        self.assertEqual(set(unique(lhsc(2, 2)).tolist()), {0.25, 0.75})
 
     def test_random_ot(self):
         """"""

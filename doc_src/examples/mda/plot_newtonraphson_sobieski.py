@@ -23,7 +23,7 @@
 Newton-Raphson MDA
 ==================
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_mda
 

@@ -21,10 +21,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """scipy.optimize optimization library wrapper."""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import super, zip
 
 from numpy import isfinite, real
 from scipy import optimize
@@ -267,6 +266,9 @@ class ScipyOpt(OptimizationLibrary):
         options.pop(self.F_TOL_REL)
         options.pop(self.X_TOL_REL)
         options.pop(self.MAX_TIME)
+        options.pop(self.MAX_ITER)
+        if self.algo_name != "TNC":
+            options.pop("xtol")
         opt_result = optimize.minimize(
             fun=fun,
             x0=x_0,

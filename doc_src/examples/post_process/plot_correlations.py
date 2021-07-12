@@ -27,7 +27,9 @@ Correlations
 In this example, we illustrate the use of the :class:`.Correlations` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -88,4 +90,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # variables, outputs functions and constraints any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
 # This method requires the list of functions names to plot.
-scenario.post_process("Correlations", save=False, show=True)
+scenario.post_process("Correlations", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

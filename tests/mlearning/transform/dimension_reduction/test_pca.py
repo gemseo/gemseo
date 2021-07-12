@@ -21,10 +21,10 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test principal component analysis dimension reduction."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose, arange
+from numpy import allclose, arange, ndarray
 
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 
@@ -33,10 +33,9 @@ N_FEATURES = 8
 
 
 @pytest.fixture
-def data():
-    """Build an input-output dataset."""
-    data_ = arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
-    return data_
+def data():  # type: (...) -> ndarray
+    """The dataset used to build the transformer, based on a 1D-mesh."""
+    return arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
 
 def test_constructor():

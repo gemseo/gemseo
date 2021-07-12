@@ -24,10 +24,9 @@ GGOBI : interactive data visualization software
 
 Export data to the XML file format needed by GGOBI
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
-from builtins import open, range, str
 from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Comment, Element, SubElement
