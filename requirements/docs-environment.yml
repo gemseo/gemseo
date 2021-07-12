@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python=3.8
   # The following dependencies must be the same as in requirements/gemseo-conda-python3.txt
-  - python-graphviz <=0.15
+  - python-graphviz <=0.16
   - pdfo
   - pip:
     - "-r doc.txt"
