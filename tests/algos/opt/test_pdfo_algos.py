@@ -21,7 +21,6 @@
 
 from __future__ import division, unicode_literals
 
-import sys
 from copy import copy
 from math import sqrt
 from unittest import TestCase
@@ -40,9 +39,7 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 from .opt_lib_test_base import OptLibraryTestBase
 
-pytestmark = pytest.mark.skipif(
-    sys.platform == "win32", reason="PDFO is not available under Windows"
-)
+pytest.importorskip("pdfo", reason="pdfo is not available")
 
 
 class TestPDFO(TestCase):
