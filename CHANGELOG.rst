@@ -77,6 +77,7 @@ Added
 - ConcatenationDiscipline: a new discipline to concatenate inputs variables into a single one.
 - Gantt chart generation to visualize the disciplines execution time.
 - An interactive web N2 chart allowing to expand or collapse the groups of strongly coupled disciplines.
+- Support pSeven algorithms for single-objective optimization.
 
 Fixed
 -----
