@@ -134,4 +134,5 @@ def test_wanted_classes(monkeypatch, reset_factory):
     """Verify that the classes found are the expected ones."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
     factory = Factory(MDOFormulation)
-    assert factory.classes == ["DummyBiLevel"]
+    # There could be more classes available with the plugins
+    assert "DummyBiLevel" in factory.classes
