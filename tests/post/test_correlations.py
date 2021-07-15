@@ -135,6 +135,5 @@ def test_correlations_func_names(tmp_wd, pyplot_close_all):
             "Correlations", save=True, n_plots_x=6, n_plots_y=6, func_names=["g_1"]
         )
 
-        assert len(post.output_files) == 1
         for outf in post.output_files:
             assert Path(outf).exists()
