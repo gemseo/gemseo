@@ -26,8 +26,8 @@ and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
 
-Unreleased
-**********
+Version 3.1.0 (July 2021)
+*************************
 
 Changed
 -------
