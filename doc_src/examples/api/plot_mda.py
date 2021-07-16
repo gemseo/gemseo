@@ -59,8 +59,8 @@ print(get_available_mdas())
 print(get_mda_options_schema("MDAGaussSeidel"))
 
 ##########################################################################
-# Create a MDA
-# ------------
+# Create an MDA
+# -------------
 # The API function :meth:`~gemseo.api.create_mda` can be used
 # to create a scenario:
 disciplines = create_discipline(["Sellar1", "Sellar2"])

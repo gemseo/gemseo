@@ -65,7 +65,7 @@ Main features
 
 Basics of MDO
 *************
-- Analyse a MDO problem and generate a N2 and XDSM diagram without wrapping any tool or writing code :ref:`[Read more] <gemseo_study>`
+- Analyse an MDO problem and generate a N2 and XDSM diagram without wrapping any tool or writing code :ref:`[Read more] <gemseo_study>`
 - Use different optimization algorithms  :ref:`[Read more] <optimization>`
 - Use different sampling methods for :term:`design of experiments <DOE>`  :ref:`[Read more] <optimization>`
 - Use different :ref:`MDO formulations <mdo_formulations>`: :ref:`MDF <mdf_formulation>`, :ref:`IDF <idf_formulation>`, :ref:`bilevel <bilevel_formulation>` and disciplinary optimizer  :ref:`[Read more] <mdo_formulations>`

@@ -42,7 +42,7 @@ There is no need to write any line of code to use this tool. A command line exec
 Examples
 --------
 
-The next figure illustrates how this tool can be used to create a MDO study analysis.
+The next figure illustrates how this tool can be used to create an MDO study analysis.
 This requires the creation of an excel workbook with one sheet per discipline.
 The name of the discipline is given by the name of the sheet.
 On each of these sheets, the inputs and outputs of the discipline must be given.
@@ -82,7 +82,7 @@ The XDSM diagrams are generated as standalone HTML files, by default, or as Late
 
 
 Multi level formulations can be also used. You need to define multiple scenarios,
-and add the name of the scenarios in the disciplines list. Use a MDO formulation
+and add the name of the scenarios in the disciplines list. Use an MDO formulation
 that is distributed (BiLevel for instance).
 
 .. figure:: figs/study_2.png

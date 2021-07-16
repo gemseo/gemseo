@@ -33,7 +33,7 @@ and a weakly one, with the following properties:
 - 4 local design parameters for the second strongly coupled discipline,
 - 3 coupling variables for the second strongly coupled discipline.
 
-We would like to solve this MDO problem by means of a MDF formulation.
+We would like to solve this MDO problem by means of an MDF formulation.
 """
 from __future__ import division, unicode_literals
 
@@ -58,8 +58,8 @@ problem = TMScalableProblem(n_shared, n_local, n_coupling)
 generate_n2_plot(problem.disciplines, save=False, show=True)
 
 #######################################################################################
-# Solve the MDO using a MDF formulation
-# -------------------------------------
+# Solve the MDO using an MDF formulation
+# --------------------------------------
 scenario = create_scenario(problem.disciplines, "MDF", "obj", problem.design_space)
 scenario.add_constraint("cstr_0", "ineq")
 scenario.add_constraint("cstr_1", "ineq")

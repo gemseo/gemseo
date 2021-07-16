@@ -50,13 +50,14 @@ variables:
       tox -e $CI_JOB_NAME
 
   cache:
-    - key: $TOX_CONDA_VERSION
+    - key: tox-env-$TOX_CONDA_VERSION
       paths:
         - .tox-env
 
 # Specific settings for linux jobs.
 .linux:
   tags:
+    - gemseo-docker
     - docker
   variables:
     # Caches on the CI runner host.
@@ -66,6 +67,7 @@ variables:
 # Specific settings for windows jobs.
 .windows:
   tags:
+    - gemseo-windows-server-2012
     - windows-server-2012
   variables:
     # Caches on the CI runner host.
@@ -87,14 +89,16 @@ style:
     - !reference [.base, cache]
     - key:
         files:
-          - .pre-commit-config.yaml
-      paths:
-        - .cache/pre-commit
-    - key:
-        files:
           - requirements/style.txt
+        prefix: $CI_JOB_NAME
       paths:
         - .tox/$CI_JOB_NAME
+    - key:
+        files:
+          - .pre-commit-config.yaml
+        prefix: pre-commit-cache
+      paths:
+        - .cache/pre-commit
 
 # pylint:
 #   extends:
@@ -173,7 +177,7 @@ py27-win:
 py38-win:
   extends: .tests-windows
 
-# Define jobs for minor env with this additional parent
+# Define jobs for minor env with this additional parent.
 .additional-tests:
   rules:
     # For selecting from gitlab UI
@@ -209,4 +213,20 @@ py37-win:
 py39-win:
   extends:
     - .tests-windows
+    - .additional-tests
+
+# Jobs for testings anaconda environment yaml files.
+
+anaconda-envs:
+  stage: tests
+  extends:
+    - .base
+    - .linux
+    - .additional-tests
+
+anaconda-envs-win:
+  stage: tests
+  extends:
+    - .base
+    - .windows
     - .additional-tests

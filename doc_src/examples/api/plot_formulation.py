@@ -55,7 +55,7 @@ print(get_available_formulations())
 # -----------------------------------------
 # For a given MDO formulation, e.g. :code:`"MDF"`, we can:
 #
-# - get the options of a MDO formulation using the
+# - get the options of an MDO formulation using the
 #   :meth:`~gemseo.api.get_formulation_options_schema` function; e.g.
 print(get_formulation_options_schema("MDF"))
 
@@ -65,7 +65,7 @@ print(get_formulation_options_schema("MDF"))
 print(get_formulations_options_defaults("MDF"))
 
 ##########################################################################
-# - get sub-options of a MDO formulation using the
+# - get sub-options of an MDO formulation using the
 #   :meth:`~gemseo.api.get_formulation_sub_options_schema` function; e.g.
 print(get_formulation_sub_options_schema("MDF", main_mda_class="MDAGaussSeidel"))
 
