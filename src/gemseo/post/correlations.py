@@ -24,7 +24,7 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
@@ -91,6 +91,8 @@ class Correlations(OptPostProcessor):
             func_names, None, True, 0.0
         )
 
+        variables_names = self.__sort_variables_names(variables_names, func_names)
+
         corr_coeffs_array = self.__compute_correlations(values_array)
         i_corr, j_corr = np.where(
             (np.abs(corr_coeffs_array) > coeff_limit)
@@ -116,8 +118,6 @@ class Correlations(OptPostProcessor):
                 mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
 
-            x_names = self._generate_x_names()
-            variables_names = variables_names[: -len(x_names)] + x_names
             self.__create_sub_correlation_plot(
                 i,
                 j,
@@ -195,3 +195,44 @@ class Correlations(OptPostProcessor):
         """
         ccoeff = np.corrcoef(values_array.astype(float), rowvar=False)
         return np.tril(atleast_2d(ccoeff))  # Keep lower diagonal only
+
+    def __sort_variables_names(
+        self,
+        variables_names,  # type: Sequence[str]
+        func_names,  # type: Sequence[str]
+    ):  # type: (...)-> List[str]
+        """Sort the expanded variable names using func_names as the pattern.
+
+        In addition to sorting the expanded variable names, this method
+        replaces the default hard-coded vectors (x_1, x_2, ... x_n) with
+        the names given by the user.
+
+        Args:
+            variables_names: The expanded variable names to be sorted.
+            func_names: The functions names in the required order.
+
+        Returns:
+            The sorted expanded variable names.
+        """
+
+        def func_order(
+            x,  # type: str
+        ):  # type: (...) -> Tuple[int, str]
+            """Key function to sort function components.
+
+            Args:
+                x: An element from a list.
+
+            Returns:
+                The Tuple to use in the sort method.
+            """
+
+            for i, func_name in enumerate(func_names):
+                if x.find(func_name) == 0:
+                    return (i, x.replace(func_name, ""))
+
+            return (len(func_names) + 1, x)
+
+        variables_names.sort(key=func_order)
+        x_names = self._generate_x_names()
+        return variables_names[: -len(x_names)] + x_names

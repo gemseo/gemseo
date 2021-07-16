@@ -22,14 +22,13 @@
 from __future__ import division, unicode_literals
 
 import pytest
+from matplotlib.testing.decorators import image_comparison
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_discipline, create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2, Path
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -101,7 +100,13 @@ def test_correlations_func_name_error():
             )
 
 
-def test_correlations_func_names(tmp_wd, pyplot_close_all):
+@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.parametrize(
+    "func_names,baseline_images",
+    [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
+)
+@image_comparison(None, extensions=["png"])
+def test_correlations_func_names(tmp_wd, baseline_images, func_names, pyplot_close_all):
     """Test func_names filter.
 
     Args:
@@ -111,29 +116,16 @@ def test_correlations_func_names(tmp_wd, pyplot_close_all):
     """
     factory = PostFactory()
     if factory.is_available("Correlations"):
-        disciplines = create_discipline(
-            [
-                "SobieskiPropulsion",
-                "SobieskiAerodynamics",
-                "SobieskiStructure",
-                "SobieskiMission",
-            ]
+        problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+        post = factory.execute(
+            problem,
+            "Correlations",
+            func_names=func_names,
+            save=False,
+            file_extension="png",
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.99,
+            file_path="correlations",
         )
-        design_space = SobieskiProblem().read_design_space()
-        scenario = create_scenario(
-            disciplines,
-            formulation="MDF",
-            objective_name="y_4",
-            maximize_objective=True,
-            design_space=design_space,
-        )
-        scenario.set_differentiation_method("user")
-        for constraint in ["g_1", "g_2", "g_3"]:
-            scenario.add_constraint(constraint, "ineq")
-        scenario.execute({"algo": "SLSQP", "max_iter": 4})
-        post = scenario.post_process(
-            "Correlations", save=True, n_plots_x=6, n_plots_y=6, func_names=["g_1"]
-        )
-
-        for outf in post.output_files:
-            assert Path(outf).exists()
+        post.figures
