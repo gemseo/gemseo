@@ -208,22 +208,17 @@ Run (append ``-win`` on windows)
 
    tox -e py27-pypi,py36-pypi,py37-pypi,py38-pypi
 
-Full packaging
---------------
+Making a new release
+--------------------
 
-The full package is an archive named
-:file:`gemseo-full-package.tbz`
-for delivering a release,
-it contains:
-
-- |g| distribution
-- generated documentation
-- tests
-- anaconda environment files
-- README.rst
-
-Create it with
-
-.. code-block:: shell
-
-   tox -e full-package
+#. Create a release branch.
+#. Make sure the full test suite passes.
+#. Replace ``Unreleased`` by the new version in :file:`CHANGELOG.rst`.
+#. Hardcode the version number in :file:`conf.py`.
+#. Push the branch.
+#. Build the docs for this branch on rtd, check the version and changelog.
+#. Merge to master.
+#. Tag.
+#. Run :command:`tox -e create-dist` to create the distribution archives.
+#. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
+#. Update the recipe for conda-forge.
