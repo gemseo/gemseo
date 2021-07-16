@@ -66,7 +66,7 @@ design_space = SobieskiProblem().read_design_space()
 ###############################################################################
 # Create and execute scenario
 # ---------------------------
-# The next step is to build a MDO scenario in order to maximize the range,
+# The next step is to build an MDO scenario in order to maximize the range,
 # encoded 'y_4', with respect to the design parameters, while satisfying the
 # inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
 # the SLSQP optimization algorithm

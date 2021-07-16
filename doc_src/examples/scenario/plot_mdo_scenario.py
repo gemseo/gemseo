@@ -21,8 +21,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Create a MDO Scenario
-=====================
+Create an MDO Scenario
+======================
 
 """
 from __future__ import division, unicode_literals

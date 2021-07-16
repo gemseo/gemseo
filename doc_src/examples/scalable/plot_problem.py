@@ -102,8 +102,8 @@ print(problem)
 problem.plot_n2_chart(save=False, show=True)
 
 ###############################################################################
-# Create a MDO scenario
-# ---------------------
+# Create an MDO scenario
+# ----------------------
 # Lastly, we create a :class:`.MDOScenario` with the :class:`.MDF` formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.

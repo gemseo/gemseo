@@ -84,9 +84,9 @@ disciplines = [aerodynamics, structure, mission]
 generate_n2_plot(disciplines, save=False, show=True)
 
 #############################################################################
-# Create a MDO scenario with MDF formulation
-# ------------------------------------------
-# Then, we create a MDO scenario based on the MDF formulation
+# Create an MDO scenario with MDF formulation
+# -------------------------------------------
+# Then, we create an MDO scenario based on the MDF formulation
 design_space = AerostructureDesignSpace()
 scenario = create_scenario(
     disciplines=disciplines,
@@ -101,9 +101,9 @@ scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_op
 scenario.post_process("OptHistoryView", save=False, show=True)
 
 #############################################################################
-# Create a MDO scenario with bilevel formulation
-# ----------------------------------------------
-# Then, we create a MDO scenario based on the bilevel formulation
+# Create an MDO scenario with bilevel formulation
+# -----------------------------------------------
+# Then, we create an MDO scenario based on the bilevel formulation
 sub_scenario_options = {
     "max_iter": 5,
     "algo": "NLOPT_SLSQP",

@@ -184,7 +184,7 @@ disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 # and consequently they have to be included in the design space.
 # Conversely,
 # it would not have been necessary to include them
-# if we aimed to select a MDF formulation.
+# if we aimed to select an MDF formulation.
 
 design_space = DesignSpace()
 design_space.add_variable("x", 1, l_b=0.0, u_b=10.0, value=ones(1))
