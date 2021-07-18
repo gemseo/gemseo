@@ -221,4 +221,7 @@ Making a new release
 #. Tag.
 #. Run :command:`tox -e create-dist` to create the distribution archives.
 #. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
-#. Update the recipe for conda-forge.
+#. Run :command:`tox -e py*-pypi{-win}` for all envs to test the pypi package.
+#. Update the recipe for conda-forge once the update bot sends the PR.
+#. Test the conda-forge packages (TODO: create a tox target)
+#. Merge master to develop so the last tag is a parent commit for defining the dev versions.
