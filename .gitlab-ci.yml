@@ -182,8 +182,8 @@ py38-win:
   rules:
     # For selecting from gitlab UI
     - if: '$TEST_ALL_ENVS == "true"'
-    # Run for MR to the master branch
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+    # Run for commits on the master branch
+    - if: '$CI_COMMIT_BRANCH == "master"'
 
 py36:
   extends:
