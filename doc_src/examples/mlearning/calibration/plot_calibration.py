@@ -23,12 +23,9 @@
 Calibration of a polynomial regression
 ======================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import round
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from matplotlib.tri import Triangulation
 
 from gemseo.algos.design_space import DesignSpace
@@ -36,8 +33,6 @@ from gemseo.api import configure_logger
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Load the dataset
@@ -246,7 +241,6 @@ calibration = MLAlgoCalibration(
     MSEMeasure,
     measure_options,
     degree=10,
-    use_doe=False,
 )
 calibration.execute({"algo": "NLOPT_COBYLA", "max_iter": 100})
 x_opt2 = calibration.optimal_parameters

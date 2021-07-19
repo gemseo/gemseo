@@ -26,16 +26,13 @@ Parameter space
 
 In this example, we will see the basics of :class:`.ParameterSpace`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import configure_logger, create_discipline, create_scenario
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Firstly, a :class:`.ParameterSpace` does not require any mandatory argument.
@@ -70,9 +67,9 @@ print("y is uncertain: ", parameter_space.is_uncertain("y"))
 # -------------------------------
 # We can sample the uncertain variables from the :class:`.ParameterSpace` and
 # get values either as an array (default value) or as a dictionary:
-sample = parameter_space.get_sample(n_samples=2, as_dict=True)
+sample = parameter_space.compute_samples(n_samples=2, as_dict=True)
 print(sample)
-sample = parameter_space.get_sample(n_samples=4)
+sample = parameter_space.compute_samples(n_samples=4)
 print(sample)
 
 ###############################################################################

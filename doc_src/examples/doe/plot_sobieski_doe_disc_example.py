@@ -23,16 +23,15 @@
 Simple disciplinary DOE example on the Sobieski SSBJ test case
 ==============================================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Instantiate the discipline
@@ -68,11 +67,13 @@ scenario.execute({"n_samples": 30, "algo": "lhs"})
 ##############################################################################
 # Plot optimization history view
 # ------------------------------
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
 
 ##############################################################################
 # Plot parallel coordinates
 # -------------------------
 scenario.post_process(
-    "ScatterPlotMatrix", save=False, show=True, variables_list=["y_4", "y_24", "y_34"]
+    "ScatterPlotMatrix", save=False, show=False, variables_list=["y_4", "y_24", "y_34"]
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

@@ -28,9 +28,9 @@ In this example, we will discover the different functions of the API
 related to graphical post-processing of scenarios.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import (
     configure_logger,
@@ -44,7 +44,6 @@ from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Get available DOE algorithms
@@ -74,4 +73,6 @@ scenario = create_scenario(
     disciplines, "MDF", "obj", design_space, "SellarMDFScenario", "MDO"
 )
 scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
-execute_post(scenario, "OptHistoryView", show=True, save=False)
+execute_post(scenario, "OptHistoryView", show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

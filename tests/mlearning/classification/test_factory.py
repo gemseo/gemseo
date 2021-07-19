@@ -19,44 +19,45 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Unit test for ClassificationModelFactory class
-in gemseo.mlearning.classification.factory.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Unit test for ClassificationModelFactory class in
+gemseo.mlearning.classification.factory."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.problems.dataset.iris import IrisDataset
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def dataset():
-    """ Iris dataset. """
+def dataset():  # type: (...) ->IrisDataset
+    """The Iris dataset used to train the classification algorithms."""
     iris = IrisDataset(as_io=True)
     return iris
 
 
 def test_constructor():
-    """ Test factory constructor. """
+    """Test factory constructor."""
     factory = ClassificationModelFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning.classification" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        [
+            "KNNClassifier",
+            "RandomForestClassifier",
+            "SVMClassifier",
+        ]
+    )
 
 
 def test_create(dataset):
-    """ Test the creation of a model from data. """
+    """Test the creation of a model from data."""
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     assert hasattr(knn, "parameters")
 
 
 def test_load(dataset, tmp_path):
-    """ Test the loading of a model from data. """
+    """Test the loading of a model from data."""
     factory = ClassificationModelFactory()
     knn = factory.create("KNNClassifier", data=dataset)
     knn.learn()
@@ -66,13 +67,13 @@ def test_load(dataset, tmp_path):
 
 
 def test_available_models():
-    """ Test the getter of available classification models. """
+    """Test the getter of available classification models."""
     factory = ClassificationModelFactory()
     assert "KNNClassifier" in factory.models
 
 
 def test_is_available():
-    """ Test the existence of a classification model. """
+    """Test the existence of a classification model."""
     factory = ClassificationModelFactory()
     assert factory.is_available("KNNClassifier")
     assert not factory.is_available("Dummy")

@@ -20,23 +20,13 @@
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import str
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.monitoring import Monitoring
-
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 class FakeScenario(object):
@@ -80,7 +70,6 @@ class TestMonitoring(unittest.TestCase):
         assert id(monitor2) == id(self.monitor)
 
     def test_status_update(self):
-        LOGGER.info(str(self.monitor))
         self._assert_update_status(self.sc.disc1, MDODiscipline.STATUS_RUNNING)
         self._assert_update_status(self.sc.disc1, MDODiscipline.STATUS_DONE)
 

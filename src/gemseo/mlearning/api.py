@@ -28,20 +28,31 @@ The machine learning API provides methods for creating new and loading
 existing machine learning models. It also provides methods for listing
 available models and options.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
+from typing import Dict, List, Optional, Union
 
 from gemseo.api import _get_schema
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgo, TransformerType
+from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 # pylint: disable=import-outside-toplevel
 
 
-def get_mlearning_models():
+def get_mlearning_models():  # type:(...) -> List[str]
     """Get available machine learning algorithms.
 
+    Returns:
+        The available machine learning algorithms.
+
     See also
     --------
     import_mlearning_model
@@ -55,9 +66,12 @@ def get_mlearning_models():
     return factory.models
 
 
-def get_regression_models():
+def get_regression_models():  # type:(...) -> List[str]
     """Get available regression models.
 
+    Returns:
+        The available regression models.
+
     See also
     --------
     create_regression_model
@@ -70,8 +84,11 @@ def get_regression_models():
     return factory.models
 
 
-def get_classification_models():
+def get_classification_models():  # type:(...) -> List[str]
     """Get available classification models.
+
+    Returns:
+        The available classification models.
 
     See also
     --------
@@ -85,8 +102,11 @@ def get_classification_models():
     return factory.models
 
 
-def get_clustering_models():
+def get_clustering_models():  # type:(...) -> List[str]
     """Get available clustering models.
+
+    Returns:
+        The available clustering models.
 
     See also
     --------
@@ -100,14 +120,25 @@ def get_clustering_models():
     return factory.models
 
 
-def create_mlearning_model(name, data, transformer=None, **parameters):
-    """Create machine learning algorithm from a learning data set.
+def create_mlearning_model(
+    name,  # type: str
+    data,  # type: Dataset
+    transformer=None,  # type: Optional[TransformerType]
+    **parameters
+):  # type:(...) -> MLAlgo
+    """Create a machine learning algorithm from a learning dataset.
 
-    :param str name: name of the machine learning algorithm.
-    :param Dataset data: learning data set.
-    :param dict(str) transformer: transformation strategy for data groups.
-        If None, do not transform data. Default: None.
-    :param parameters: machine learning algorithm parameters.
+    Args:
+        name: The name of the machine learning algorithm.
+        data: The learning dataset.
+        transformer: The strategies to transform the variables.
+            Values are instances of :class:`.Transformer`
+            while keys are names of either variables or groups of variables.
+            If None, do not transform the variables.
+        parameters: The parameters of the machine learning algorithm.
+
+    Returns:
+        A machine learning model.
 
     See also
     --------
@@ -121,14 +152,28 @@ def create_mlearning_model(name, data, transformer=None, **parameters):
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
-def create_regression_model(name, data, transformer=None, **parameters):
-    """Create a regression model from a learning data set.
+minmax_inputs = {Dataset.INPUT_GROUP: MinMaxScaler()}
 
-    :param str name: name of the regression model.
-    :param Dataset data: learning data set.
-    :param dict(str) transformer: transformation strategy for data groups.
-        If None, do not transform data. Default: None.
-    :param parameters: regression model parameters.
+
+def create_regression_model(
+    name,  # type: str
+    data,  # type: Dataset
+    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
+    **parameters
+):  # type: (...) -> MLRegressionAlgo
+    """Create a regression model from a learning dataset.
+
+    Args:
+        name: The name of the regression algorithm.
+        data: The learning dataset.
+        transformer: The strategies to transform the variables.
+            Values are instances of :class:`.Transformer`
+            while keys are names of either variables or groups of variables.
+            If None, do not transform the variables.
+        parameters: The parameters of the regression model.
+
+    Returns:
+        A regression model.
 
     See also
     --------
@@ -139,17 +184,38 @@ def create_regression_model(name, data, transformer=None, **parameters):
     from gemseo.mlearning.regression.factory import RegressionModelFactory
 
     factory = RegressionModelFactory()
+    if (
+        name == "PCERegression"
+        and isinstance(transformer, dict)
+        and Dataset.INPUT_GROUP in transformer
+    ):
+        LOGGER.warning(
+            "Remove input data transformation because "
+            "PCERegression does not support transformers."
+        )
+        del transformer[Dataset.INPUT_GROUP]
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
-def create_classification_model(name, data, transformer=None, **parameters):
-    """Create a classification model from a learning data set.
+def create_classification_model(
+    name,  # type: str
+    data,  # type: Dataset
+    transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
+    **parameters
+):  # type: (...) -> MLClassificationAlgo
+    """Create a classification model from a learning dataset.
 
-    :param str name: name of the classification model.
-    :param Dataset data: learning data set.
-    :param dict(str) transformer: transformation strategy for data groups.
-        If None, do not transform data. Default: None.
-    :param parameters: classification model parameters.
+    Args:
+        name: The name of the classification algorithm.
+        data: The learning dataset.
+        transformer: The strategies to transform the variables.
+            Values are instances of :class:`.Transformer`
+            while keys are names of either variables or groups of variables.
+            If None, do not transform the variables.
+        parameters: The parameters of the classification model.
+
+    Returns:
+        A classification model.
 
     See also
     --------
@@ -163,14 +229,25 @@ def create_classification_model(name, data, transformer=None, **parameters):
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
-def create_clustering_model(name, data, transformer=None, **parameters):
-    """Create a clustering model from a learning data set.
+def create_clustering_model(
+    name,  # type: str
+    data,  # type: Dataset
+    transformer=None,  # type:Optional[TransformerType]
+    **parameters
+):  # type: (...) -> MLClusteringAlgo
+    """Create a clustering model from a learning dataset.
 
-    :param str name: name of the clustering model.
-    :param Dataset data: learning data set.
-    :param dict(str) transformer: transformation strategy for data groups.
-        If None, do not transform data. Default: None.
-    :param parameters: clustering model parameters.
+    Args:
+        name: The name of the clustering algorithm.
+        data: The learning dataset.
+        transformer: The strategies to transform the variables.
+            Values are instances of :class:`.Transformer`
+            while keys are names of either variables or groups of variables.
+            If None, do not transform the variables.
+        parameters: The parameters of the clustering model.
+
+    Returns:
+        A clustering model.
 
     See also
     --------
@@ -184,10 +261,16 @@ def create_clustering_model(name, data, transformer=None, **parameters):
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
-def import_mlearning_model(directory):
+def import_mlearning_model(
+    directory,  # type: str
+):  # type: (...) -> MLAlgo
     """Import a machine learning algorithm from a directory.
 
-    :param str directory: directory name.
+    Args:
+        directory: The name of the directory.
+
+    Returns:
+        A machine learning model.
 
     See also
     --------
@@ -201,10 +284,16 @@ def import_mlearning_model(directory):
     return factory.load(directory)
 
 
-def import_regression_model(directory):
+def import_regression_model(
+    directory,  # type: str
+):  # type: (...) -> MLRegressionAlgo
     """Import a regression model from a directory.
 
-    :param str directory: directory name.
+    Args:
+        directory: The name of the directory.
+
+    Returns:
+        A regression model.
 
     See also
     --------
@@ -218,10 +307,16 @@ def import_regression_model(directory):
     return factory.load(directory)
 
 
-def import_classification_model(directory):
+def import_classification_model(
+    directory,  # type: str
+):  # type: (...) -> MLClassificationAlgo
     """Import a classification model from a directory.
 
-    :param str directory: directory name.
+    Args:
+        directory: The name of the directory.
+
+    Returns:
+        A classification model.
 
     See also
     --------
@@ -235,10 +330,16 @@ def import_classification_model(directory):
     return factory.load(directory)
 
 
-def import_clustering_model(directory):
+def import_clustering_model(
+    directory,  # type: str
+):  # type: (...) -> MLClusteringAlgo
     """Import a clustering model from a directory.
 
-    :param str directory: directory name.
+    Args:
+        directory: The name of the directory.
+
+    Returns:
+        A clustering model.
 
     See also
     --------
@@ -252,14 +353,20 @@ def import_clustering_model(directory):
     return factory.load(directory)
 
 
-def get_mlearning_options(model_name, output_json=False, pretty_print=True):
-    """
-    Lists the available options for a machine learning algorithm.
+def get_mlearning_options(
+    model_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=True,  # type:bool
+):  # type: (...) -> Union[Dict[str,str],str]
+    """Find the available options for a machine learning algorithm.
 
-    :param str model_name: Name of the machine learning algorithm.
-    :param bool output_json: Apply json format for the schema.
-    :param bool pretty_print: Print the schema in a pretty table.
-    :returns: Option schema (string) of the machine learning algorithm.
+    Args:
+        model_name: The name of the machine learning algorithm.
+        output_json: Apply JSON format for the schema.
+        pretty_print: Whether to print the schema in a pretty table.
+
+    Returns:
+        The options schema of the machine learning algorithm.
 
     See also
     --------
@@ -274,14 +381,20 @@ def get_mlearning_options(model_name, output_json=False, pretty_print=True):
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_regression_options(model_name, output_json=False, pretty_print=True):
-    """
-    Lists the available options for a regression model.
+def get_regression_options(
+    model_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=True,  # type:bool
+):  # type: (...) -> Union[Dict[str,str],str]
+    """Find the available options for a regression model.
 
-    :param str model_name: Name of the regression model.
-    :param bool output_json: Apply json format for the schema.
-    :param bool pretty_print: Print the schema in a pretty table.
-    :returns: Option schema (string) of the regression model.
+    Args:
+        model_name: The name of the regression model.
+        output_json: Apply JSON format for the schema.
+        pretty_print: Print the schema in a pretty table.
+
+    Returns:
+        The options schema of the regression model.
 
     See also
     --------
@@ -296,14 +409,20 @@ def get_regression_options(model_name, output_json=False, pretty_print=True):
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_classification_options(model_name, output_json=False, pretty_print=True):
-    """
-    Lists the available options for a classification model.
+def get_classification_options(
+    model_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=True,  # type:bool
+):  # type: (...) -> Union[Dict[str,str],str]
+    """Find the available options for a classification model.
 
-    :param str model_name: Name of the classification model.
-    :param bool output_json: Apply json format for the schema.
-    :param bool pretty_print: Print the schema in a pretty table.
-    :returns: Option schema (string) of the classification model.
+    Args:
+        model_name: The name of the classification model.
+        output_json: Apply JSON format for the schema.
+        pretty_print: Print the schema in a pretty table.
+
+    Returns:
+        The options schema of the classification model.
 
     See also
     --------
@@ -318,14 +437,20 @@ def get_classification_options(model_name, output_json=False, pretty_print=True)
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_clustering_options(model_name, output_json=False, pretty_print=True):
-    """
-    Lists the available options for clustering model.
+def get_clustering_options(
+    model_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=True,  # type:bool
+):  # type: (...) -> Union[Dict[str,str],str]
+    """Find the available options for clustering model.
 
-    :param str model_name: Name of the clustering model.
-    :param bool output_json: Apply json format for the schema.
-    :param bool pretty_print: Print the schema in a pretty table.
-    :returns: Option schema (string) of the clustering model.
+    Args:
+        model_name: The name of the clustering model.
+        output_json: Apply JSON format for the schema.
+        pretty_print: Print the schema in a pretty table.
+
+    Returns:
+        The options schema of the clustering model.
 
     See also
     --------

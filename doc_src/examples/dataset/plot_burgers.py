@@ -26,9 +26,9 @@ Burgers dataset
 
 Dataset consisting of solutions to Burgers' equation.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, load_dataset
 
@@ -40,8 +40,6 @@ configure_logger()
 # We can easily load this dataset by means of the
 # :meth:`~gemseo.api.load_dataset` function of the API:
 
-
-standard_library.install_aliases()
 
 dataset = load_dataset("BurgersDataset")
 print(dataset)
@@ -62,4 +60,6 @@ print(dataset)
 ##############################################################################
 # Plot the data
 # -------------
-dataset.plot("Curves", mesh="x", variable="u_t")
+dataset.plot("Curves", mesh="x", variable="u_t", show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

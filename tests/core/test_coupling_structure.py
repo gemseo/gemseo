@@ -19,23 +19,28 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import logging
 import unittest
-from builtins import range, str
-from copy import deepcopy
-from os import remove
 from os.path import exists
+from random import shuffle
 
-from future import standard_library
+import pytest
 from numpy import array
 
-from gemseo import LOGGER, SOFTWARE_NAME
-from gemseo.api import configure_logger
+from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import (
+    C_1,
+    C_2,
+    OBJ,
+    Y_1,
+    Y_2,
+    Sellar1,
+    Sellar2,
+    SellarSystem,
+)
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
     SobieskiMission,
@@ -43,31 +48,27 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 
-from .test_dependency_graph import DESC_LIST_16_DISC, generate_disciplines_from_desc
-
-standard_library.install_aliases()
+from .test_dependency_graph import DISC_DESCRIPTIONS, create_disciplines_from_desc
 
 
-configure_logger(SOFTWARE_NAME)
-
-
+@pytest.mark.usefixtures("tmp_wd")
 class TestCouplingStructure(unittest.TestCase):
-    """Test the methods of the coupling structure class"""
+    """Test the methods of the coupling structure class."""
 
     def test_couplings_sellar(self):
-        """Verify the strong/weak/total couplings of Sellar pb"""
+        """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         coupling_structure = MDOCouplingStructure(disciplines)
 
         strong_couplings = coupling_structure.strong_couplings()
         weak_couplings = coupling_structure.weak_couplings()
-        assert strong_couplings == sorted(["y_1", "y_0"])
-        assert weak_couplings == sorted(["c_1", "c_2", "obj"])
+        assert strong_couplings == [Y_1, Y_2]
+        assert weak_couplings == [C_1, C_2, OBJ]
 
         input_coupl = coupling_structure.input_couplings(disciplines[1])
-        assert input_coupl == ["y_0"]
+        assert input_coupl == [Y_1]
         input_coupl = coupling_structure.input_couplings(disciplines[2])
-        assert input_coupl == sorted(["y_0", "y_1"])
+        assert input_coupl == [Y_1, Y_2]
         self.assertRaises(TypeError, coupling_structure.find_discipline, self)
 
         self.assertRaises(ValueError, coupling_structure.find_discipline, "self")
@@ -81,7 +82,7 @@ class TestCouplingStructure(unittest.TestCase):
         assert s1_o_weak == ["y_14"]
 
     def test_n2(self):
-        """Verify the strong/weak/total couplings of Sellar pb"""
+        """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [
             SobieskiStructure(),
             SobieskiAerodynamics(),
@@ -90,24 +91,24 @@ class TestCouplingStructure(unittest.TestCase):
         ]
         coupling_structure = MDOCouplingStructure(disciplines)
 
-        coupling_structure.plot_n2_chart("n2.png", False, show=False, save=True)
-        assert exists("n2.png")
-        remove("n2.png")
-        coupling_structure.plot_n2_chart("n2.png", True, show=False, save=True)
-        assert exists("n2.png")
-        remove("n2.png")
+        coupling_structure.plot_n2_chart("n2_1.png", False, show=False, save=True)
+        assert exists("n2_1.png")
+        coupling_structure.plot_n2_chart("n2_2.png", True, show=False, save=True)
+        assert exists("n2_2.png")
 
-        from random import shuffle
-
-        disc_shuff = deepcopy(DESC_LIST_16_DISC)
+        disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
         shuffle(disc_shuff)
-        disciplines = generate_disciplines_from_desc(disc_shuff)
+        disc_shuff = dict(disc_shuff)
+        disciplines = create_disciplines_from_desc(disc_shuff)
         coupling_structure = MDOCouplingStructure(disciplines)
 
         fname = "n2_16d.png"
         coupling_structure.plot_n2_chart(fname, False, show=False, save=True)
         assert exists(fname)
-        remove(fname)
+
+        coupling_structure = MDOCouplingStructure([disciplines[0]])
+        with pytest.raises(ValueError):
+            coupling_structure.plot_n2_chart("n2_3.png", False, show=False, save=True)
 
     def test_n2_many_io(self):
         a = MDODiscipline("a")
@@ -117,12 +118,8 @@ class TestCouplingStructure(unittest.TestCase):
         b.output_grammar.initialize_from_data_names(["i" + str(i) for i in range(30)])
         b.input_grammar.initialize_from_data_names(["o" + str(i) for i in range(30)])
 
-        fpath = "n2.pdf"
-        if exists(fpath):
-            remove(fpath)
         cpl = MDOCouplingStructure([a, b])
         cpl.plot_n2_chart(save=True, show=False)
-        remove(fpath)
 
     def test_self_coupled(self):
         sc_disc = SelfCoupledDisc()
@@ -145,3 +142,48 @@ class SelfCoupledDisc(MDODiscipline):
 
     def _run(self):
         self.local_data["y"] = 1.0 - self.local_data["y"]
+
+
+def get_strong_couplings(analytic_expressions):
+    """Computes the strong coupling associated.
+
+    Args:
+        analytic_expressions: the list of formulas dict
+        to build the AnalyticDisciplines.
+
+    Returns:
+        The strong couplings.
+    """
+    disciplines = [
+        AnalyticDiscipline(expressions_dict=desc) for desc in analytic_expressions
+    ]
+    return MDOCouplingStructure(disciplines).strong_couplings()
+
+
+def test_strong_couplings_basic():
+    """Tests a particular coupling structure."""
+
+    coupl = get_strong_couplings(
+        (
+            {"c1": "x+0.2*c2", "out1": "x"},
+            {"c2": "x+0.2*c1", "out2": "x"},
+            {"obj": "x+c1+c2+out1+out2+cs"},
+        )
+    )
+
+    assert coupl == ["c1", "c2"]
+
+
+def test_strong_couplings_self_coupled():
+    """Tests a particular coupling structure with self couplings."""
+
+    coupl = get_strong_couplings(
+        (
+            {"cs": "x+0.2*cs"},
+            {"c1": "x+0.2*c2", "out1": "x"},
+            {"c2": "x+0.2*c1", "out2": "x"},
+            {"obj": "x+c1+c2+out1+out2+cs"},
+        )
+    )
+
+    assert coupl == ["c1", "c2", "cs"]

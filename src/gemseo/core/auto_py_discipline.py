@@ -19,16 +19,15 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-MDODiscipline builder from a python function
-********************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
 
+"""MDODiscipline builder from a python function."""
+
+from __future__ import division, unicode_literals
+
+import logging
 import re
 from inspect import getsource
 
-from future import standard_library
 from numpy import array, atleast_2d, ndarray
 
 from gemseo.core.data_processor import DataProcessor
@@ -36,16 +35,12 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.py23_compat import getargspec
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class AutoPyDiscipline(MDODiscipline):
-    """
-    A simplified and straightforward way of integrating a discipline
-    from a python function.
+    """A simplified and straightforward way of integrating a discipline from a python
+    function.
 
     Examples
     --------
@@ -73,8 +68,7 @@ class AutoPyDiscipline(MDODiscipline):
     """
 
     def __init__(self, py_func, py_jac=None, use_arrays=False, write_schema=False):
-        """
-        Constructor
+        """Constructor.
 
         :param py_func: the python function to be used to generate the
             MDODiscipline.
@@ -88,8 +82,8 @@ class AutoPyDiscipline(MDODiscipline):
         :param write_schema: if True, write the json schema on the disk
         :type write_schema: bool
         """
-        if not hasattr(py_func, "__call__"):
-            raise ValueError("py_func must be callable !")
+        if not callable(py_func):
+            raise TypeError("py_func must be callable!")
 
         super(AutoPyDiscipline, self).__init__(
             name=py_func.__name__,
@@ -101,14 +95,15 @@ class AutoPyDiscipline(MDODiscipline):
         self.use_arrays = use_arrays
         self.py_jac = py_jac
 
-        wr_s = write_schema
         args_in = getargspec(py_func)[0]  # pylint: disable=deprecated-method
         self.in_names = args_in
-        self.input_grammar.initialize_from_data_names(self.in_names, write_schema=wr_s)
+        self.input_grammar.initialize_from_data_names(self.in_names)
         self.out_names = self._get_return_spec(py_func)
-        self.output_grammar.initialize_from_data_names(
-            self.out_names, write_schema=wr_s
-        )
+        self.output_grammar.initialize_from_data_names(self.out_names)
+
+        if write_schema:
+            self.input_grammar.write_schema()
+            self.output_grammar.write_schema()
 
         if not use_arrays:
             self.data_processor = AutoDiscDataProcessor(self.out_names)
@@ -121,7 +116,7 @@ class AutoPyDiscipline(MDODiscipline):
         self.sizes = None
 
     def _get_defaults(self):
-        """ Get the list of default values from a data list. """
+        """Get the list of default values from a data list."""
         args, _, _, defaults = getargspec(
             self.py_func
         )  # pylint: disable=deprecated-method
@@ -132,7 +127,7 @@ class AutoPyDiscipline(MDODiscipline):
         return args_dict
 
     def _run(self):
-        """ Run the discipline. """
+        """Run the discipline."""
         input_vals = self.get_input_data()
         out_vals = self.py_func(**input_vals)
         if len(self.out_names) == 1:
@@ -166,8 +161,7 @@ class AutoPyDiscipline(MDODiscipline):
     def get_return_spec_fromstr(
         return_line,
     ):  # pylint: disable=inconsistent-return-statements
-        """
-        Get the specifications returned by a python function
+        """Get the specifications returned by a python function.
 
         :param return_line: the python line containing return statement
         :type return_line: str
@@ -210,13 +204,11 @@ class AutoPyDiscipline(MDODiscipline):
 
 
 class AutoDiscDataProcessor(DataProcessor):
-    """A data preprocessor that converts all |g| scalar input data
-    to floats, and converts all discipline output data to numpy arrays.
-    """
+    """A data preprocessor that converts all |g| scalar input data to floats, and
+    converts all discipline output data to numpy arrays."""
 
     def __init__(self, out_names):
-        """
-        Construcor
+        """Constructor.
 
         :param out_names: names of the outputs
         :type out_names: list(str)
@@ -227,8 +219,8 @@ class AutoDiscDataProcessor(DataProcessor):
 
     def pre_process_data(self, data):
         """Execute a pre processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline
-        is called.
+        MDODiscipline.check_data, and before the _run method of the discipline is
+        called.
 
         :param data: the input data to process.
         :type data: dict
@@ -242,9 +234,8 @@ class AutoDiscDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Execute a post processing of discipline output data
-        after the _run method of the discipline,
-        before they are checked by  MDODiscipline.check_output_data,
+        """Execute a post processing of discipline output data after the _run method of
+        the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         :param data: the output data to process.
         :type data: dict
@@ -260,8 +251,7 @@ class AutoDiscDataProcessor(DataProcessor):
 
 
 def to_arrays_dict(in_dict):
-    """
-    Ensure that a dict of data values are arrays.
+    """Ensure that a dict of data values are arrays.
 
     :param in_dict: the dict to be ensured.
     :returns: ensured data dict

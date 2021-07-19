@@ -23,15 +23,13 @@
 Data conversion between discipline data check and _run()
 ********************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import array, complex128
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DataProcessor(object):
@@ -50,8 +48,8 @@ class DataProcessor(object):
 
     def pre_process_data(self, data):
         """Executes a pre processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline
-        is called.
+        MDODiscipline.check_data, and before the _run method of the discipline is
+        called.
 
         :param data: the input data to process
         :returns: the processed input data
@@ -59,9 +57,8 @@ class DataProcessor(object):
         raise NotImplementedError()
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data
-        after the _run method of the discipline,
-        before they are checked by  MDODiscipline.check_output_data,
+        """Executes a post processing of discipline output data after the _run method of
+        the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         :param data: the output data to process
         :returns: the processed output data
@@ -70,14 +67,13 @@ class DataProcessor(object):
 
 
 class FloatDataProcessor(DataProcessor):
-    """A data preprocessor that converts all gemseo scalar input data
-    to floats, and converts all discipline output data to numpy arrays
-    """
+    """A data preprocessor that converts all gemseo scalar input data to floats, and
+    converts all discipline output data to numpy arrays."""
 
     def pre_process_data(self, data):
         """Executes a pre processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline
-        is called.
+        MDODiscipline.check_data, and before the _run method of the discipline is
+        called.
 
         :param data: the input data to process
         :returns: the processed input data
@@ -91,9 +87,8 @@ class FloatDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data
-        after the _run method of the discipline,
-        before they are checked by  MDODiscipline.check_output_data,
+        """Executes a post processing of discipline output data after the _run method of
+        the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         :param data: the output data to process
         :returns: the processed output data
@@ -108,15 +103,13 @@ class FloatDataProcessor(DataProcessor):
 
 
 class ComplexDataProcessor(DataProcessor):
-    """A data preprocessor that converts all gemseo complex arrays input data
-    to floats arrays, and converts all discipline output data to numpy
-    complex arrays
-    """
+    """A data preprocessor that converts all gemseo complex arrays input data to floats
+    arrays, and converts all discipline output data to numpy complex arrays."""
 
     def pre_process_data(self, data):
         """Executes a pre processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline
-        is called.
+        MDODiscipline.check_data, and before the _run method of the discipline is
+        called.
 
         :param data: the input data to process
         :returns: the processed input data
@@ -127,9 +120,8 @@ class ComplexDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data
-        after the _run method of the discipline,
-        before they are checked by  MDODiscipline.check_output_data,
+        """Executes a post processing of discipline output data after the _run method of
+        the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         :param data: the output data to process
         :returns: the processed output data
@@ -141,13 +133,11 @@ class ComplexDataProcessor(DataProcessor):
 
 
 class NameMapping(DataProcessor):
-    """A data preprocessor that maps process level data names to local
-    discipline data names
-    """
+    """A data preprocessor that maps process level data names to local discipline data
+    names."""
 
     def __init__(self, mapping):
-        """
-        Construcor
+        """Construcor.
 
         :param mapping: dictionary of names mapping
             data structure is {global_key:local_key}
@@ -163,8 +153,8 @@ class NameMapping(DataProcessor):
 
     def pre_process_data(self, data):
         """Executes a pre processing of input data after they are checked by
-        MDODiscipline.check_data, and before the _run method of the discipline
-        is called.
+        MDODiscipline.check_data, and before the _run method of the discipline is
+        called.
 
         :param data: the input data to process
         :returns: the processed input data
@@ -176,9 +166,8 @@ class NameMapping(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Executes a post processing of discipline output data
-        after the _run method of the discipline,
-        before they are checked by  MDODiscipline.check_output_data,
+        """Executes a post processing of discipline output data after the _run method of
+        the discipline, before they are checked by  MDODiscipline.check_output_data,
 
         :param data: the output data to process
         :returns: the processed output data

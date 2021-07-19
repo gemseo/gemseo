@@ -1,0 +1,5 @@
+digraph "Dependency graph" {
+	"MDA of Sellar1, Sellar2" -> SellarSystem [label="y_1,y_2"]
+	_0 [shape=point style=invis]
+	SellarSystem -> _0 [label="c_1,c_2,obj"]
+}

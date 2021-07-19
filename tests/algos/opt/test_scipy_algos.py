@@ -19,52 +19,43 @@
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from unittest import TestCase
 
-from future import standard_library
 from numpy import inf
 from scipy.optimize.optimize import rosen, rosen_der
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
 from gemseo.core.function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
 
 from .opt_lib_test_base import OptLibraryTestBase
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestScipy(TestCase):
-    """ """
+    """"""
 
     OPT_LIB_NAME = "ScipyOpt"
 
-    @link_to("Req-DEP-1")
     def test_init(self):
-        """ """
+        """"""
         factory = OptimizersFactory()
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
     def test_display(self):
-        """ """
+        """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10, disp=10
         )
 
     def test_handles_cstr(self):
-        """ """
+        """"""
         algo_name = "TNC"
         self.assertRaises(
             Exception,
@@ -75,7 +66,7 @@ class TestScipy(TestCase):
         )
 
     def test_algorithm_suited(self):
-        """ """
+        """"""
         algo_name = "SLSQP"
         opt_library = OptLibraryTestBase.generate_one_test(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10
@@ -87,8 +78,10 @@ class TestScipy(TestCase):
             )
         )
 
-        opt_library.problem.pb_type = "non-linear"
-        opt_library.lib_dict["SLSQP"]["pb_type"] = "linear"
+        opt_library.problem.pb_type = OptimizationProblem.NON_LINEAR_PB
+        opt_library.lib_dict["SLSQP"][
+            opt_library.PROBLEM_TYPE
+        ] = OptimizationProblem.LINEAR_PB
         self.assertFalse(
             opt_library.is_algorithm_suited(
                 opt_library.lib_dict["SLSQP"], opt_library.problem
@@ -96,7 +89,7 @@ class TestScipy(TestCase):
         )
 
     def test_positive_constraints(self):
-        """ """
+        """"""
         algo_name = "SLSQP"
         opt_library = OptLibraryTestBase.generate_one_test(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=10
@@ -105,7 +98,7 @@ class TestScipy(TestCase):
         self.assertFalse(opt_library.is_algo_requires_positive_cstr("TNC"))
 
     def test_fail_opt(self):
-        """ """
+        """"""
         algo_name = "SLSQP"
         problem = Rosenbrock()
 
@@ -117,9 +110,8 @@ class TestScipy(TestCase):
         problem.objective = MDOFunction(i_fail, "rosen")
         self.assertRaises(Exception, OptimizersFactory().execute, problem, algo_name)
 
-    @link_to("Req-MDO-4.2")
     def test_tnc_options(self):
-        """ """
+        """"""
         algo_name = "TNC"
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
@@ -136,7 +128,7 @@ class TestScipy(TestCase):
         )
 
     def test_lbfgsb_options(self):
-        """ """
+        """"""
         algo_name = "L-BFGS-B"
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
@@ -159,16 +151,21 @@ class TestScipy(TestCase):
             max_fun_eval=1000,
         )
 
+        opt_library = OptLibraryTestBase.generate_one_test_unconstrained(
+            self.OPT_LIB_NAME, algo_name=algo_name, max_iter=100, max_time=0.0000000001
+        )
+        assert opt_library.problem.solution.message.startswith("Maximum time reached")
+
     def test_slsqp_options(self):
-        """ """
+        """"""
         algo_name = "SLSQP"
         OptLibraryTestBase.generate_one_test(
             self.OPT_LIB_NAME, algo_name=algo_name, max_iter=100, disp=1, ftol_rel=1e-10
         )
 
     def test_normalization(self):
-        """Runs a problem with one variable to be normalized
-        and three not to be normalized."""
+        """Runs a problem with one variable to be normalized and three not to be
+        normalized."""
         design_space = DesignSpace()
         design_space.add_variable("x1", 1, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
         design_space.add_variable("x2", 1, DesignSpace.FLOAT, -inf, 1.0, 0.0)
@@ -178,6 +175,26 @@ class TestScipy(TestCase):
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
         OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=False)
+
+    def test_xtol_ftol_activation(self):
+        def run_pb(algo_options):
+            design_space = DesignSpace()
+            design_space.add_variable("x1", 2, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
+            problem = OptimizationProblem(design_space)
+            problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
+            res = OptimizersFactory().execute(problem, "L-BFGS-B", **algo_options)
+            return res, problem
+
+        for tol_name in (
+            OptLib.F_TOL_ABS,
+            OptLib.F_TOL_REL,
+            OptLib.X_TOL_ABS,
+            OptLib.X_TOL_REL,
+        ):
+            res, pb = run_pb({tol_name: 1e10})
+            assert tol_name in res.message
+            # Check that the criteria is activated as ap
+            assert len(pb.database) == 3
 
 
 suite_tests = OptLibraryTestBase()

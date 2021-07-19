@@ -19,95 +19,83 @@
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+import pytest
 
-import unittest
-from os.path import join
-
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.utils.py23_compat import TemporaryDirectory
-from gemseo.utils.testing_utils import skip_under_windows
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
+@pytest.mark.usefixtures("tmp_wd")
+@pytest.mark.skip_under_windows
+def test_parallel_doe_hdf_cache():
+    disciplines = create_discipline(
+        [
+            "SobieskiStructure",
+            "SobieskiPropulsion",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]
+    )
+    path = "cache.h5"
+    for disc in disciplines:
+        disc.set_cache_policy(disc.HDF5_CACHE, cache_hdf_file=path)
+
+    scenario = create_scenario(
+        disciplines,
+        "DisciplinaryOpt",
+        "y_4",
+        SobieskiProblem().read_design_space(),
+        maximize_objective=True,
+        scenario_type="DOE",
+    )
+
+    n_samples = 10
+    input_data = {
+        "n_samples": n_samples,
+        "algo": "lhs",
+        "algo_options": {"n_processes": 2},
+    }
+    scenario.execute(input_data)
+    scenario.print_execution_metrics()
+    assert len(scenario.formulation.opt_problem.database) == n_samples
+    for disc in disciplines:
+        assert disc.cache.get_length() == n_samples
+
+    input_data = {
+        "n_samples": n_samples,
+        "algo": "lhs",
+        "algo_options": {"n_processes": 2, "n_samples": n_samples},
+    }
+    scenario.execute(input_data)
 
 
-class Test_DOE_Scenario(unittest.TestCase):
-    @skip_under_windows
-    def test_parallel_doe_hdf_cache(self):
-        disciplines = create_discipline(
-            [
-                "SobieskiStructure",
-                "SobieskiPropulsion",
-                "SobieskiAerodynamics",
-                "SobieskiMission",
-            ]
-        )
-        with TemporaryDirectory() as out_dir:
-            path = join(out_dir, "cache.h5")
-            for disc in disciplines:
-                disc.set_cache_policy(disc.HDF5_CACHE, cache_hdf_file=path)
+def test_doe_scenario():
+    disciplines = create_discipline(
+        [
+            "SobieskiStructure",
+            "SobieskiPropulsion",
+            "SobieskiAerodynamics",
+            "SobieskiMission",
+        ]
+    )
 
-            scenario = create_scenario(
-                disciplines,
-                "DisciplinaryOpt",
-                "y_4",
-                SobieskiProblem().read_design_space(),
-                maximize_objective=True,
-                scenario_type="DOE",
-            )
+    scenario = create_scenario(
+        disciplines,
+        "DisciplinaryOpt",
+        "y_4",
+        SobieskiProblem().read_design_space(),
+        maximize_objective=True,
+        scenario_type="DOE",
+    )
 
-            N_SAMPLES = 10
-            input_data = {
-                "n_samples": N_SAMPLES,
-                "algo": "lhs",
-                "algo_options": {"n_processes": 2},
-            }
-            scenario.execute(input_data)
-            scenario.print_execution_metrics()
-            assert len(scenario.formulation.opt_problem.database) == N_SAMPLES
-            for disc in disciplines:
-                assert disc.cache.get_length() == N_SAMPLES
-
-            input_data = {
-                "n_samples": N_SAMPLES,
-                "algo": "lhs",
-                "algo_options": {"n_processes": 2, "n_samples": N_SAMPLES},
-            }
-            scenario.execute(input_data)
-
-    def test_doe_scenario(self):
-        disciplines = create_discipline(
-            [
-                "SobieskiStructure",
-                "SobieskiPropulsion",
-                "SobieskiAerodynamics",
-                "SobieskiMission",
-            ]
-        )
-
-        scenario = create_scenario(
-            disciplines,
-            "DisciplinaryOpt",
-            "y_4",
-            SobieskiProblem().read_design_space(),
-            maximize_objective=True,
-            scenario_type="DOE",
-        )
-
-        N_SAMPLES = 10
-        input_data = {
-            "n_samples": N_SAMPLES,
-            "algo": "lhs",
-            "algo_options": {"n_processes": 1},
-        }
-        scenario.execute(input_data)
-        scenario.print_execution_metrics()
-        assert len(scenario.formulation.opt_problem.database) == N_SAMPLES
+    n_samples = 10
+    input_data = {
+        "n_samples": n_samples,
+        "algo": "lhs",
+        "algo_options": {"n_processes": 1},
+    }
+    scenario.execute(input_data)
+    scenario.print_execution_metrics()
+    assert len(scenario.formulation.opt_problem.database) == n_samples

@@ -1,6 +1,9 @@
+py:class pathlib.Path
+py:class matplotlib.figure.Figure
 py:class numpy array
+py:class nd array
 py:class array
-py:class nd_array
+py:class numpy.ndarray
 py:class ndarray
 py:class array_like
 py:class optional

@@ -19,123 +19,123 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Data scaler
-===========
+"""Scaling a variable with a linear transformation.
 
-The :class:`.Scaler` class implements the default scaling method applying to
-some parameter :math:`z`:
+The :class:`.Scaler` class implements the default scaling method
+applying to some parameter :math:`z`:
 
 .. math::
 
     \\bar{z} := \\text{offset} + \\text{coefficient}\\times z
 
-where :math:`\\bar{z}` is the scaled version of z. This scaling method is a
-linear transformation parameterized by an offset and a coefficient.
+where :math:`\\bar{z}` is the scaled version of :math:`z`.
+This scaling method is a linear transformation
+parameterized by an offset and a coefficient.
 
-In this default scaling method, the offset is equal to 0 and the coefficient is
-equal to 1. Consequently, the scaling operation is the identity:
-:math:`\\bar{z}=z`. This method has to be overloaded.
+In this default scaling method,
+the offset is equal to 0 and the coefficient is equal to 1.
+Consequently,
+the scaling operation is the identity: :math:`\\bar{z}=z`.
+This method has to be overloaded.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.transform.scaler.min_max_scaler`
    :mod:`~gemseo.mlearning.transform.scaler.standard_scaler`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
+
 from numpy import diag, eye, ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
 class Scaler(Transformer):
-    """ Data scaler. """
+    """Data scaler."""
 
-    def __init__(self, name="Scaler", offset=0.0, coefficient=1.0):
-        """Constructor.
-
-        :param str name: name of the scaler.
-        :param float offset: offset of the linear transformation.
-            Default: 0.
-        :param float coefficient: coefficient of the linear transformation.
-            Default: 1.
+    def __init__(
+        self,
+        name="Scaler",  # type: str
+        offset=0.0,  # type: float
+        coefficient=1.0,  # type: float
+    ):  # type: (...) -> None
+        """
+        Args:
+            name: A name for this transformer.
+            offset: The offset of the linear transformation.
+            coefficient: The coefficient of the linear transformation.
         """
         super(Scaler, self).__init__(name, offset=offset, coefficient=coefficient)
 
     @property
-    def offset(self):
-        """ Offset. """
+    def offset(self):  # type: (...) -> float
+        """The scaling offset."""
         return self.parameters["offset"]
 
     @property
-    def coefficient(self):
-        """ Coefficient. """
+    def coefficient(self):  # type: (...) -> float
+        """The scaling coefficient."""
         return self.parameters["coefficient"]
 
     @offset.setter
-    def offset(self, value):
-        """ Set offset. """
+    def offset(
+        self,
+        value,  # type: float
+    ):  # type: (...) -> None
         self.parameters["offset"] = value
 
     @coefficient.setter
-    def coefficient(self, value):
-        """ Set coefficient. """
+    def coefficient(
+        self,
+        value,  # type: float
+    ):  # type: (...) -> None
         self.parameters["coefficient"] = value
 
-    def fit(self, data):
-        """Fit scaler to data. Offset and coefficient terms are already
-        defined in the constructor.
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> None
+        LOGGER.warning(
+            (
+                "The %s.fit() function does nothing; "
+                "the instance of %s uses the coefficient and offset "
+                "passed at its initialization"
+            ),
+            self.__class__.__name__,
+            self.__class__.__name__,
+        )
 
-        :param ndarray data: data to be fitted.
-        """
-        return
+    def transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        return self.offset + self.coefficient * data
 
-    def transform(self, data):
-        """Scale data using the offset and coefficient terms.
+    def inverse_transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        return (data - self.offset) / self.coefficient
 
-        :param ndarray data: data  to be transformed.
-        :return: transformed data.
-        :rtype: ndarray
-        """
-        scaled_data = self.offset + self.coefficient * data
-        return scaled_data
-
-    def inverse_transform(self, data):
-        """Unscale data using the offset and coefficient terms.
-
-        :param ndarray data: data to be inverse transformed.
-        :return: inverse transformed data.
-        :rtype: ndarray
-        """
-        unscaled_data = (data - self.offset) / self.coefficient
-        return unscaled_data
-
-    def compute_jacobian(self, data):
-        """Compute Jacobian of the scaler transform.
-
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
-        """
+    def compute_jacobian(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         if not isinstance(self.coefficient, ndarray):
-            jac = self.coefficient * eye(data.shape[-1])
+            return self.coefficient * eye(data.shape[-1])
         else:
-            jac = diag(self.coefficient)
-        return jac
+            return diag(self.coefficient)
 
-    def compute_jacobian_inverse(self, data):
-        """Compute Jacobian of the scaler inverse_transform.
-
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
-        """
+    def compute_jacobian_inverse(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         if not isinstance(self.coefficient, ndarray):
-            jac_inv = 1 / self.coefficient * eye(data.shape[-1])
+            return 1 / self.coefficient * eye(data.shape[-1])
         else:
-            jac_inv = diag(1 / self.coefficient)
-        return jac_inv
+            return diag(1 / self.coefficient)

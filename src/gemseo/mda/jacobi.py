@@ -13,6 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import division, unicode_literals
+
+import logging
+from copy import deepcopy
+from multiprocessing import cpu_count
+
+from numpy import atleast_2d, concatenate, dot
+from numpy.linalg import lstsq
+
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.mda.mda import MDA
+from gemseo.utils.data_conversion import DataConversion
 
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
@@ -22,32 +36,15 @@
 A Jacobi algorithm for solving MDAs
 ***********************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
 
-from builtins import range, super
-from copy import deepcopy
-from multiprocessing import cpu_count
 
-from future import standard_library
-from numpy import atleast_2d, concatenate, dot
-from numpy.linalg import lstsq
-
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import DataConversion
-
-standard_library.install_aliases()
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
 class MDAJacobi(MDA):
-    """
-    Perform a MDA analysis using a Jacobi algorithm,
-    an iterative technique to solve the linear system:
+    """Perform a MDA analysis using a Jacobi algorithm, an iterative technique to solve
+    the linear system:
 
     .. math::
 
@@ -79,10 +76,9 @@ class MDAJacobi(MDA):
         use_threading=True,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
     ):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
@@ -114,10 +110,9 @@ class MDAJacobi(MDA):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
+        :param grammar_type: the type of grammar to use for IO declaration
+            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
+        :type grammar_type: str
         """
         self.n_processes = n_processes
         super(MDAJacobi, self).__init__(
@@ -128,6 +123,7 @@ class MDAJacobi(MDA):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            grammar_type=grammar_type,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -140,14 +136,31 @@ class MDAJacobi(MDA):
             disciplines, n_processes, use_threading
         )
 
+    def _compute_input_couplings(self):
+        """Compute all the coupling variables that are inputs of the MDA.
+
+        This must be overloaded here because the Jacobi algorithm induces a delay
+        between the couplings, the strong couplings may be fully resolved but the weak
+        ones may need one more iteration. The base MDA class uses strong couplings only
+        which is not satisfying here if all disciplines are not strongly coupled
+        """
+        if len(self.coupling_structure.strongly_coupled_disciplines()) == len(
+            self.disciplines
+        ):
+            return super(MDAJacobi, self)._compute_input_couplings()
+
+        inputs = self.get_input_data_names()
+        strong_cpl = self.coupling_structure.get_all_couplings()
+        self._input_couplings = set(strong_cpl) & set(inputs)
+
     def _initialize_grammars(self):
-        """Defines all inputs and outputs of the chain"""
+        """Defines all inputs and outputs of the chain."""
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
     def execute_all_disciplines(self, input_local_data):
-        """Executes all self.disciplines
+        """Executes all self.disciplines.
 
         :param input_local_data: the input data of the disciplines
         """
@@ -166,18 +179,16 @@ class MDAJacobi(MDA):
             self.local_data.update(data)
 
     def get_expected_workflow(self):
-        """
-        See MDA.get_expected_workflow
-        """
+        """See MDA.get_expected_workflow."""
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
             sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self):
-        """Run method of the chain:
-        executes all disciplines in a loop until outputs converge.
-        Stops when
+        """Run method of the chain: executes all disciplines in a loop until outputs
+        converge. Stops when.
+
         ||outputs-previous output||/||first outputs|| < self.tolerance
 
         :returns: the local data updated
@@ -211,9 +222,8 @@ class MDAJacobi(MDA):
             current_couplings = x_np1
 
     def _compute_nex_iterate(self, current_couplings, new_couplings):
-        """
-        Compute the next iterate given the evaluation of the couplings
-        Eventually computes the secant method acceleration, see
+        """Compute the next iterate given the evaluation of the couplings Eventually
+        computes the secant method acceleration, see.
 
         See :
         Iterative residual-based vector methods to accelerate
@@ -256,11 +266,10 @@ class MDAJacobi(MDA):
 
     @staticmethod
     def _minimize_2md(dxn, dxn_1, dxn_2):
-        """
-        Compute the extrapolation coefficients of the
-        2-delta method
-        Minimizes the sub problem in the d-2 method
-        Use a least squares solver to find he minimizer of
+        """Compute the extrapolation coefficients of the 2-delta method Minimizes the
+        sub problem in the d-2 method Use a least squares solver to find he minimizer
+        of.
+
         dxn - x[0] * (dxn - dxn_1) - x[1] * (dxn_1 - dxn_2)
 
         :param dxn: delta couplings at last iteration
@@ -273,8 +282,7 @@ class MDAJacobi(MDA):
 
     @staticmethod
     def _compute_secant_acc(dxn, dxn_1, cgn, cgn_1):
-        """
-        secant acceleration
+        """secant acceleration.
 
         from the paper:
         "Iterative residual-based vector methods to accelerate
@@ -292,8 +300,7 @@ class MDAJacobi(MDA):
         return cgn - acc
 
     def _compute_m2d_acc(self, dxn, dxn_1, dxn_2, g_n, gn_1, gn_2):
-        """
-        2-delta acceleration
+        """2-delta acceleration.
 
         from the paper:
         "Iterative residual-based vector methods to accelerate
@@ -303,7 +310,7 @@ class MDAJacobi(MDA):
         :param dxn: delta couplings at last iteration
         :param dxn_1: delta couplings at last iteration-1
         :param dxn_2: delta couplings at last iteration-2
-        :param gn: computed couplings at last iteration
+        :param g_n: computed couplings at last iteration
         :param gn_1: computed couplings at last iteration-1
         :param gn_2: computed couplings at last iteration-2
         """

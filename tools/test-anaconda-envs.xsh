@@ -17,7 +17,7 @@ for python_version in ("2", "3"):
         -f environment-py@(python_version).yml
 
     # install gemseo, pytest and run the tests
-    for command in ("pip install .[all]", "pip install pytest", "pytest"):
+    for command in ("pip install .[all,test]", "pytest"):
         conda run \
             -p @(env_path) \
             --no-capture-output \

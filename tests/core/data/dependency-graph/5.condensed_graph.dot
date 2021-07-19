@@ -1,0 +1,4 @@
+digraph "Dependency graph" {
+	"MDA of C, D" -> E [label=f]
+	"MDA of A, B" -> "MDA of C, D" [label=c]
+}

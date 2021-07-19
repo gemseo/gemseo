@@ -19,85 +19,71 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-ZvsXY plot
-==========
+r"""Draw a variable versus two others from a :class:`.Dataset`.
 
 A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
 :math:`x` and :math:`y` as a surface plot, based on a set of points
 :points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation is
 relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-from future import standard_library
+from matplotlib.figure import Figure
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
 
 class ZvsXY(DatasetPlot):
-    """ Plot surface z versus x,y. """
+    """Plot surface z versus x,y."""
 
     def _plot(
         self,
-        x,
-        y,
-        z,
-        x_comp=0,
-        y_comp=0,
-        z_comp=0,
-        colormap="Blues",
-        add_points=False,
-        color="blue",
-    ):
-        """Surface.
-
-        :param x: name of the variable on the x-axis
-        :type x: str
-        :param y: name of the variable on the y-axis
-        :type z: str
-        :param z: name of the variable on the z-axis
-        :type z: str
-        :param x_comp: x component. Default: 0.
-        :type x_comp: int
-        :param y_comp: y component. Default: 0.
-        :type y_comp: int
-        :param z_comp: z component. Default: 0.
-        :type z_comp: int
-        :param colormap: matplotlib colormap. Default: 'Blues'.
-        :type colormap: str
-        :param add_points: display points over the surface plot.
-            Default: False.
-        :type add_points: bool
-        :param color: point color. Default: 'blue'.
-        :type color: str
+        properties,  # type: Mapping
+        x,  # type: str
+        y,  # type: str
+        z,  # type: str
+        x_comp=0,  # type: int
+        y_comp=0,  # type: int
+        z_comp=0,  # type: int
+        add_points=False,  # type: bool
+    ):  # type: (...) -> List[Figure]
         """
+        Args:
+            x: The name of the variable on the x-axis.
+            y: The name of the variable on the y-axis.
+            z: The name of the variable on the z-axis.
+            x_comp: The component of x.
+            y_comp: The component of y.
+            z_comp: The component of z.
+            add_points: If True, display samples over the surface plot.
+        """
+        color = properties.get(self.COLOR) or "blue"
+        colormap = properties.get(self.COLORMAP) or "Blues"
         x_data = self.dataset[x][x][:, x_comp]
         y_data = self.dataset[y][y][:, y_comp]
         z_data = self.dataset[z][z][:, z_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
-        triang = mtri.Triangulation(x_data, y_data)
-        tcf = axes.tricontourf(triang, z_data, cmap=colormap)
+        grid = mtri.Triangulation(x_data, y_data)
+        tcf = axes.tricontourf(grid, z_data, cmap=colormap)
         if add_points:
             axes.scatter(x_data, y_data, color=color)
         if self.dataset.sizes[x] == 1:
-            axes.set_xlabel(x)
+            axes.set_xlabel(self.xlabel or x)
         else:
-            axes.set_xlabel(x + "(" + str(x_comp) + ")")
+            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
         if self.dataset.sizes[y] == 1:
-            axes.set_ylabel(y)
+            axes.set_ylabel(self.ylabel or y)
         else:
-            axes.set_ylabel(y + "(" + str(y_comp) + ")")
+            axes.set_ylabel(self.ylabel or "{}({})".format(y, y_comp))
         if self.dataset.sizes[z] == 1:
-            axes.set_title(z)
+            axes.set_title(self.zlabel or z)
         else:
-            axes.set_title(z + "(" + str(z_comp) + ")")
+            axes.set_title(self.zlabel or "{}({})".format(z, z_comp))
         fig.colorbar(tcf)
-        fig = plt.gcf()
-        return fig
+        return [fig]

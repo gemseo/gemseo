@@ -19,37 +19,27 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
 
 
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_FormulationsFactory(unittest.TestCase):
-    """ """
+class TestFormulationsFactory(unittest.TestCase):
+    """"""
 
     def setUp(self):
-        """ """
+        """"""
         if not hasattr(self, "factory"):
             self.factory = MDOFormulationsFactory()
 
-    @link_to("Req-MDO-1", "Req-MDO-1.1", "Req-MDO-1.2", "Req-MDO-1.4", "Req-MDO-1.7")
     def test_list_formulations(self):
-        """ """
+        """"""
         f_list = self.factory.formulations
         known_form = ["MDF", "IDF", "DisciplinaryOpt", "BiLevel"]
         for form in known_form:
@@ -57,21 +47,21 @@ class Test_FormulationsFactory(unittest.TestCase):
 
     @staticmethod
     def get_xzy():
-        """Generate initial solution"""
+        """Generate initial solution."""
         x_local = np.array([0.0], dtype=np.float64)
         x_shared = np.array([1.0, 0.0], dtype=np.float64)
-        y_0 = np.zeros((1), dtype=np.complex128)
-        y_1 = np.zeros((1), dtype=np.complex128)
+        y_0 = np.zeros(1, dtype=np.complex128)
+        y_1 = np.zeros(1, dtype=np.complex128)
         return x_local, x_shared, y_0, y_1
 
     @staticmethod
     def get_current_x():
-        """Build dictionary with initial solution"""
-        x_local, x_shared, y_0, y_1 = Test_FormulationsFactory.get_xzy()
+        """Build dictionary with initial solution."""
+        x_local, x_shared, y_0, y_1 = TestFormulationsFactory.get_xzy()
         return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
 
     def test_create(self):
-        """ """
+        """"""
         self.assertRaises(
             Exception,
             self.factory.create,

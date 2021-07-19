@@ -20,28 +20,19 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import str
+from __future__ import division, unicode_literals
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
 from gemseo.utils.py23_compat import PY2
-
-standard_library.install_aliases()
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 
 class OptLibraryTestBase(object):
-    """ """
+    """"""
 
     @staticmethod
     def relative_norm(x, x_ref):
@@ -76,7 +67,6 @@ class OptLibraryTestBase(object):
         """
         problem = OptLibraryTestBase().get_pb_instance("Power2")
         opt_library = OptimizersFactory().create(opt_lib_name)
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         opt_library.execute(problem, algo_name=algo_name, **options)
         return opt_library
 
@@ -91,7 +81,6 @@ class OptLibraryTestBase(object):
         """
         problem = OptLibraryTestBase().get_pb_instance("Rosenbrock")
         opt_library = OptimizersFactory().create(opt_lib_name)
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         opt_library.execute(problem, algo_name=algo_name, **options)
         return opt_library
 
@@ -106,7 +95,6 @@ class OptLibraryTestBase(object):
         """
         problem = Power2(exception_error=True)
         opt_library = OptimizersFactory().create(opt_lib_name)
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         opt_library.execute(problem, algo_name=algo_name, **options)
         return opt_library
 
@@ -120,7 +108,6 @@ class OptLibraryTestBase(object):
         :param **options:
 
         """
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         opt = opt_library.execute(problem, algo_name=algo_name, **options)
         x_opt, f_opt = problem.get_solution()
         x_err = OptLibraryTestBase.relative_norm(opt.x_opt, x_opt)
@@ -128,18 +115,6 @@ class OptLibraryTestBase(object):
 
         if x_err > 1e-2 or f_err > 1e-2:
             pb_name = problem.__class__.__name__
-            LOGGER.error(
-                "Optimizer : "
-                + str(algo_name)
-                + " from library :"
-                + opt_library.name
-                + " failed to solve the problem :"
-                + str()
-            )
-            LOGGER.error("Theoretical optimum : x_opt =" + str(x_opt))
-            LOGGER.error("f_opt = " + str(f_opt))
-            LOGGER.error("Obtained optimum    : x_opt =" + str(opt.x_opt))
-            LOGGER.error("f_opt = " + str(opt.f_opt))
             error_msg = (
                 "Optimization with "
                 + algo_name
@@ -160,21 +135,8 @@ class OptLibraryTestBase(object):
 
         """
 
-        @link_to(
-            "Req-DEP-1",
-            "Req-MDO-4",
-            "Req-MDO-4.2",
-            "Req-MDO-4.7",
-            "Req-MDO-4.8",
-            "Req-MDO-4.9",
-        )
         def test_algo(self=None):
-            """
-
-            :param self: Default value = None)
-
-            """
-            # self=None is a trick for a bug with nose2 and link_to decorator
+            """"""
             msg = OptLibraryTestBase.run_and_test_problem(
                 problem, opt_library, algo_name, **options
             )
@@ -184,38 +146,43 @@ class OptLibraryTestBase(object):
 
         return test_algo
 
-    def get_pb_instance(self, pb_name):
+    def get_pb_instance(self, pb_name, pb_options=None):
         """
-
-        :param pb_name:
-
+        :param pb_name: the name of the optimization problem
+        :param pb_options: the options to be passed to the optimization problem
         """
+        if pb_options is None:
+            pb_options = {}
+
         if pb_name == "Rosenbrock":
-            return Rosenbrock(2)
+            return Rosenbrock(2, **pb_options)
         elif pb_name == "Power2":
-            return Power2()
+            return Power2(**pb_options)
         if pb_name == "Rastrigin":
-            return Rastrigin()
+            return Rastrigin(**pb_options)
 
-    def generate_test(self, opt_lib_name, get_options=None):
-        """Generates the tests for an opt library
-        Filters algorithms adapted to the benchmark problems
+    def generate_test(self, opt_lib_name, get_options=None, get_problem_options=None):
+        """Generates the tests for an opt library Filters algorithms adapted to the
+        benchmark problems.
 
         :param opt_lib_name: name of the library
         :param get_options: Default value = None)
         :returns: list of test methods to be attached to a unitest class
-
         """
         tests = []
         factory = OptimizersFactory()
         if factory.is_available(opt_lib_name):
             opt_lib = OptimizersFactory().create(opt_lib_name)
             for pb_name in ["Rosenbrock", "Power2", "Rastrigin"]:
-                problem = self.get_pb_instance(pb_name)
+                if get_problem_options is not None:
+                    pb_options = get_problem_options(pb_name)
+                else:
+                    pb_options = {}
+                problem = self.get_pb_instance(pb_name, pb_options)
                 algos = opt_lib.filter_adapted_algorithms(problem)
                 for algo_name in algos:
                     # Reinitialize problem between runs
-                    problem = self.get_pb_instance(pb_name)
+                    problem = self.get_pb_instance(pb_name, pb_options)
                     if get_options is not None:
                         options = get_options(algo_name)
                     else:

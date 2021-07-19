@@ -19,10 +19,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
@@ -31,13 +30,12 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.surrogate_disc import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegression
 
-standard_library.install_aliases()
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
 def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+    """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -81,11 +79,11 @@ def test_repr(dataset):
 def test_str(dataset):
     surr = SurrogateDiscipline("LinearRegression", dataset)
     msg = "Surrogate discipline: LinReg_func\n"
-    msg += "| Dataset name: func\n"
-    msg += "| Dataset size: 9\n"
-    msg += "| Surrogate model: LinearRegression\n"
-    msg += "| Inputs: x_1, x_2\n"
-    msg += "| Outputs: y_1, y_2"
+    msg += "   Dataset name: func\n"
+    msg += "   Dataset size: 9\n"
+    msg += "   Surrogate model: LinearRegression\n"
+    msg += "   Inputs: x_1, x_2\n"
+    msg += "   Outputs: y_1, y_2"
     assert str(surr) == msg
 
 
@@ -94,8 +92,8 @@ def test_execute(dataset):
     out = surr.execute()
     assert "y_1" in out
     assert "y_2" in out
-    assert allclose(out["y_1"][0], 1.0, atol=1e-3)
-    assert allclose(out["y_2"][0], -1.0, atol=1e-3)
+    assert allclose(out["y_1"][0], 3.5, atol=1e-3)
+    assert allclose(out["y_2"][0], -3.5, atol=1e-3)
 
 
 def test_linearize(dataset):

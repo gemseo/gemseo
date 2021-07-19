@@ -19,11 +19,10 @@
 #                           documentation
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test polynomial regression module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test polynomial regression module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, hstack, linspace, meshgrid, sqrt, zeros
 from scipy.special import comb
 
@@ -33,9 +32,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
-
-standard_library.install_aliases()
-
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -60,7 +56,7 @@ ANOTHER_INPUT_VALUE = {
 
 @pytest.fixture
 def dataset():
-    """ Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2. """
+    """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
     root_learning_size = int(sqrt(LEARNING_SIZE))
     x_1 = linspace(-1, 2, root_learning_size)
     x_2 = linspace(-1, 2, root_learning_size)
@@ -87,8 +83,8 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_from_cache():
-    """ Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2. """
+def dataset_from_cache():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {
         "y_1": "1 + x_1 + x_2**2",
         "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
@@ -106,62 +102,69 @@ def dataset_from_cache():
 
 
 @pytest.fixture
-def model(dataset):
-    """ Define model from data. """
+def model(dataset):  # type: (...) -> PolynomialRegression
+    """A trained PolynomialRegression."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE)
     polyreg.learn()
     return polyreg
 
 
 @pytest.fixture
-def model_without_intercept(dataset):
-    """ Define model from data. """
+def model_without_intercept(dataset):  # type: (...) -> PolynomialRegression
+    """A trained PolynomialRegression without intercept fitting."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE, fit_intercept=False)
     polyreg.learn()
     return polyreg
 
 
 def test_constructor(dataset):
-    """ Test construction."""
     model_ = PolynomialRegression(dataset, degree=2)
     assert model_.algo is not None
 
 
 def test_degree(dataset):
-    """ Test correct handling of incorrect degree ( < 1). """
+    """Test correct handling of incorrect degree ( < 1)."""
     with pytest.raises(ValueError):
         PolynomialRegression(dataset, degree=0)
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     model_ = PolynomialRegression(dataset, degree=2)
     model_.learn()
     assert model_.algo is not None
 
 
 def test_get_coefficients(model):
-    """ Test get_coefficients."""
-    with pytest.raises(NotImplementedError):
-        model.get_coefficients()
+    """Verify that an error is raised when getting coefficients as a dictionary."""
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            "For now the coefficients can only be obtained "
+            "in the form of a NumPy array"
+        ),
+    ):
+        model.get_coefficients(as_dict=True)
 
 
 def test_intercept(model, model_without_intercept):
     """Test intercept parameter from LinearRegression class.
-    Should be 0.0, as fit_intercept is False (replaced by include_bias)."""
+
+    Should be 0.0, as fit_intercept is False (replaced by include_bias).
+    """
     assert allclose(model.intercept, array([1, 3, 0]))
     assert allclose(model_without_intercept.intercept, array([0, 0, 0]))
 
 
 def test_coefficients(model):
-    """ Test coefficients. """
+    """Test coefficients."""
     assert model.coefficients.shape == (N_OUTPUTS, N_POWERS)
     coefficients = model.get_coefficients(as_dict=False)
     assert allclose(coefficients, COEFFICIENTS, atol=1.0e-12)
 
 
 def test_prediction(model):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     another_prediction = model.predict(ANOTHER_INPUT_VALUE)
     assert isinstance(prediction, dict)
@@ -173,7 +176,7 @@ def test_prediction(model):
 
 
 def test_prediction_jacobian(model):
-    """ Test jacobian prediction. """
+    """Test jacobian prediction."""
     jacobian = model.predict_jacobian(INPUT_VALUE)
     another_jacobian = model.predict_jacobian(ANOTHER_INPUT_VALUE)
     assert isinstance(jacobian, dict)
@@ -188,7 +191,7 @@ def test_prediction_jacobian(model):
 
 
 def test_jacobian_constant(dataset):
-    """ Test Jacobians linear polynomials. """
+    """Test Jacobians linear polynomials."""
     model_ = PolynomialRegression(dataset, degree=1)
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
@@ -196,7 +199,7 @@ def test_jacobian_constant(dataset):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)

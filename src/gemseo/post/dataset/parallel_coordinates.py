@@ -19,9 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Parallel coordinates plot
-=========================
+r"""Draw parallel coordinates from a :class:`.Dataset`.
 
 The :class:`.ParallelCoordinates` class implements the parallel coordinates
 plot, a.k.a. cowebplot, which is a way to visualize :math:`n` samples of a
@@ -50,30 +48,33 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-import matplotlib.pyplot as plt
-from future import standard_library
+from typing import List, Mapping
+
+from matplotlib.figure import Figure
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
 
 class ParallelCoordinates(DatasetPlot):
-    """ Parallel coordinates. """
+    """Parallel coordinates."""
 
-    def _plot(self, classifier, lower=-inf, upper=inf, **kwargs):
-        """Parallel coordinates.
-
-        :param classifier: variable name to build the cluster.
-        :type classifier: str
-        :param lower: lower bound of the cluster. Default: -infinity.
-        :type lower: float
-        :param upper: upper bound of the cluster. Default: +infinity.
-        :type upper: float
+    def _plot(
+        self,
+        properties,  # type: Mapping
+        classifier,  # type: str
+        lower=-inf,  # type: float
+        upper=inf,  # type: float
+        **kwargs
+    ):  # type: (...) -> List[Figure]
+        """
+        Args:
+            classifier: The name of the variable to group the data.
+            lower: The lower bound of the cluster.
+            upper: The upper bound of the cluster.
         """
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -89,14 +90,15 @@ class ParallelCoordinates(DatasetPlot):
             return lower < row[varname] < upper
 
         if lower != -inf or upper != inf:
-            cluster = str(lower) + " < " + label + " < " + str(upper)
+            cluster = "{} < {} < {}".format(lower, label, upper)
             cluster = ("classifiers", cluster, "0")
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
-        p_c = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
-        p_c.set_xticklabels(self._get_varnames(columns))
+        axes = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
+        axes.set_xticklabels(self._get_variables_names(columns))
         if lower != -inf or upper != inf:
-            plt.title("Cobwebplot based on the classifier: " + cluster[1])
+            default_title = "Cobweb plot based on the classifier: {}".format(cluster[1])
         else:
-            plt.gca().get_legend().remove()
-        fig = plt.gcf()
-        return fig
+            default_title = None
+            axes.get_legend().remove()
+        axes.set_title(self.title or default_title)
+        return [axes.figure]

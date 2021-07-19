@@ -23,11 +23,9 @@
 Some chains of SSBJ disciplines
 *******************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import super
-
-from future import standard_library
+import logging
 
 from gemseo.core.chain import MDOChain
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -39,18 +37,14 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class SobieskiChain(MDOChain):
     """Chains Sobieski disciplines : weight, aero, power and range"""
 
     def __init__(self, dtype="float64"):
-        """
-        Constructor
+        """Constructor.
 
         :param dtype: data array type, either "float64" or "complex128".
         :type dtype: str
@@ -65,13 +59,11 @@ class SobieskiChain(MDOChain):
 
 
 class SobieskiMDAGaussSeidel(MDAGaussSeidel):
-    """Chains Sobieski disciplines to perform and MDA by Gauss Seidel algorithm
-    Loops over Sobieski wrappers
-    """
+    """Chains Sobieski disciplines to perform and MDA by Gauss Seidel algorithm Loops
+    over Sobieski wrappers."""
 
     def __init__(self, dtype="float64", **mda_options):
-        """
-        Constructor of a MDA using Gauss-Seidel
+        """Constructor of a MDA using Gauss-Seidel.
 
         :param dtype: data array type, either "float64" or "complex128".
         :type dtype: str
@@ -87,13 +79,11 @@ class SobieskiMDAGaussSeidel(MDAGaussSeidel):
 
 
 class SobieskiMDAJacobi(MDAJacobi):
-    """Chains Sobieski disciplines to perform and MDA by Jacobi algorithm
-    Loops over Sobieski wrappers
-    """
+    """Chains Sobieski disciplines to perform and MDA by Jacobi algorithm Loops over
+    Sobieski wrappers."""
 
     def __init__(self, n_processes=1, dtype="float64", **mda_options):
-        """
-        Constructor of a MDA using Jacobi
+        """Constructor of a MDA using Jacobi.
 
         :param n_processes: maximum number of processors on which to run
         :type n_processes: integer

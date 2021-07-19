@@ -19,17 +19,13 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import str
 from math import exp
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -43,27 +39,22 @@ from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
-
 
 class TestAerostructure(unittest.TestCase):
-    """Test linearization of Aerostructure class"""
+    """Test linearization of Aerostructure class."""
 
     @staticmethod
     def get_xzy():
-        """Generate initial solution"""
-        drag = np.zeros((1))
-        forces = np.zeros((1))
-        lift = np.zeros((1))
-        mass = np.zeros((1))
-        displ = np.zeros((1))
-        reserve_fact = np.zeros((1))
-        sweep = np.zeros((1))
-        thick_airfoils = np.zeros((1))
-        thick_panels = np.zeros((1))
+        """Generate initial solution."""
+        drag = np.zeros(1)
+        forces = np.zeros(1)
+        lift = np.zeros(1)
+        mass = np.zeros(1)
+        displ = np.zeros(1)
+        reserve_fact = np.zeros(1)
+        sweep = np.zeros(1)
+        thick_airfoils = np.zeros(1)
+        thick_panels = np.zeros(1)
         return (
             drag,
             forces,
@@ -78,7 +69,7 @@ class TestAerostructure(unittest.TestCase):
 
     @staticmethod
     def get_input_data_linearization():
-        """Generate a point at which the problem is linearized"""
+        """Generate a point at which the problem is linearized."""
         return {
             "drag": np.array([1.0]),
             "forces": np.array([1.0]),
@@ -92,7 +83,7 @@ class TestAerostructure(unittest.TestCase):
         }
 
     def test_run_aero(self):
-        """Evaluate discipline Aero"""
+        """Evaluate discipline Aero."""
         aero = Aerodynamics()
         aero.execute()
         drag, forces, lift = aero.get_outputs_by_name(["drag", "forces", "lift"])
@@ -101,7 +92,7 @@ class TestAerostructure(unittest.TestCase):
         self.assertAlmostEqual(lift[0], -0.00026667, 8)
 
     def test_run_struct(self):
-        """Evaluate discipline Struct"""
+        """Evaluate discipline Struct."""
         struct = Structure()
         struct.execute()
         mass, reserve_fact, displ = struct.get_outputs_by_name(
@@ -112,7 +103,7 @@ class TestAerostructure(unittest.TestCase):
         self.assertAlmostEqual(displ[0], 3.0, 10)
 
     def test_run_mission(self):
-        """Evaluate objective function"""
+        """Evaluate objective function."""
         mission = Mission()
         design_space = AerostructureDesignSpace()
         indata = design_space.get_current_x_dict()
@@ -124,19 +115,19 @@ class TestAerostructure(unittest.TestCase):
         self.assertAlmostEqual(obj, 4915369.8826625682, 10)
 
     def test_jac_mission(self):
-        """Test linearization of objective and constraints"""
+        """Test linearization of objective and constraints."""
         mission = Mission()
         indata = TestAerostructure.get_input_data_linearization()
         assert mission.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
     def test_jac_aerodynamics(self):
-        """Test linearization of discipline Aerodynamics"""
+        """Test linearization of discipline Aerodynamics."""
         aero = Aerodynamics()
         indata = TestAerostructure.get_input_data_linearization()
         assert aero.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
     def test_jac_structure(self):
-        """Test linearization of discipline Structure"""
+        """Test linearization of discipline Structure."""
         struct = Structure()
         indata = TestAerostructure.get_input_data_linearization()
         assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
@@ -144,7 +135,7 @@ class TestAerostructure(unittest.TestCase):
         assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
     def test_mda_gauss_seidel_jac(self):
-        """Test linearization of GS MDA"""
+        """Test linearization of GS MDA."""
         aerodynamics = Aerodynamics()
         structure = Structure()
         mission = Mission()
@@ -164,7 +155,7 @@ class TestAerostructure(unittest.TestCase):
         )
 
     def test_mda_jacobi_jac(self):
-        """Test linearization of Jacobi MDA"""
+        """Test linearization of Jacobi MDA."""
         aerodynamics = Aerodynamics()
         structure = Structure()
         mission = Mission()
@@ -176,7 +167,7 @@ class TestAerostructure(unittest.TestCase):
         assert mda.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
     def test_residual_form_jacs(self):
-        """ """
+        """"""
 
         aerodynamics = Aerodynamics()
         structure = Structure()
@@ -193,24 +184,23 @@ class TestAerostructure(unittest.TestCase):
 
 
 class TestAerostructureScenarios(unittest.TestCase):
-    """Test optimization scenarios"""
+    """Test optimization scenarios."""
 
     # Reference results
     x_ref = np.array((25.0, 20.0, 27.24051915830433))
 
     @staticmethod
     def create_functional_disciplines():
-        """ """
+        """"""
         disciplines = [Aerodynamics(), Structure(), Mission()]
         return disciplines
 
     @staticmethod
     def build_scenario(disciplines, formulation="MDF"):
-        """Build a scenario in functional form with a given formulation
+        """Build a scenario in functional form with a given formulation.
 
         :param disciplines: list of disciplines
         :param formulation: name of the formulation (Default value = 'MDF')
-
         """
         design_space = AerostructureDesignSpace()
         scenario = MDOScenario(
@@ -224,7 +214,7 @@ class TestAerostructureScenarios(unittest.TestCase):
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):
         """Create a scenario with given formulation, solver and linearization method,
-        and solve it
+        and solve it.
 
         :param formulation: param algo:
         :param lin_method: Default value = 'complex_step')
@@ -247,76 +237,51 @@ class TestAerostructureScenarios(unittest.TestCase):
         thick_panels = xopt["thick_panels"]
         x_opt = np.concatenate((thick_airfoils, thick_panels, sweep))
 
-        for disc in disciplines:
-            LOGGER.info(
-                disc.name
-                + " - executions: "
-                + str(disc.n_calls)
-                + ", linearizations: "
-                + str(disc.n_calls_linearize)
-            )
-
         if formulation == "MDF":
             scenario.formulation.mda.plot_residual_history(save=False)
 
         return obj_opt, x_opt
 
     def test_exec_mdf_slsqp_usergrad(self):
-        """Scenario with MDF formulation, solver SLSQP and analytical gradients"""
+        """Scenario with MDF formulation, solver SLSQP and analytical gradients."""
         f_ref = 3733.1194596682094
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
             "MDF", "SLSQP", lin_method="user"
-        )
-        LOGGER.debug("obj_ref=" + str(self.x_ref) + " range_ref=" + str(f_ref))
-        LOGGER.debug(
-            "MDF with constraints: x_opt=" + str(x_opt) + "obj_opt=" + str(obj_opt)
         )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 1)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
     def test_exec_mdf_slsqp_cplx_grad(self):
-        """Scenario with MDF formulation, solver SLSQP and complex step"""
+        """Scenario with MDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
             "MDF", "SLSQP", lin_method="complex_step"
-        )
-        LOGGER.debug("x_ref=" + str(self.x_ref) + " obj_ref=" + str(f_ref))
-        LOGGER.debug(
-            "MDF with constraints: x_opt=" + str(x_opt) + "obj_opt=" + str(obj_opt)
         )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 1)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
     def test_exec_idf_slsqp_cplxstep(self):
-        """Scenario with IDF formulation, solver SLSQP and complex step"""
+        """Scenario with IDF formulation, solver SLSQP and complex step."""
         f_ref = 3733.1202599332164
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
             "IDF", "SLSQP", lin_method="complex_step"
         )
         # vector of design variables contains y targets at the end
         x_opt = x_opt[:3]
-        LOGGER.debug("x_ref=" + str(self.x_ref) + " obj_ref=" + str(f_ref))
-        LOGGER.debug(
-            "IDF with constraints: x_opt=" + str(x_opt) + "obj_opt=" + str(obj_opt)
-        )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 3)
         self.assertAlmostEqual(rel_err, 0.0, 4)
 
     def test_exec_idf_slsqp_usergrad(self):
-        """Scenario with IDF formulation, solver SLSQP and analytical gradients"""
+        """Scenario with IDF formulation, solver SLSQP and analytical gradients."""
         f_ref = 3733.1201817980523
         obj_opt, x_opt = TestAerostructureScenarios.build_and_run_scenario(
             "IDF", "SLSQP", lin_method="user"
         )
         # vector of design variables contains y targets at the end
         x_opt = x_opt[:3]
-        LOGGER.debug("x_ref=" + str(self.x_ref) + " obj_ref=" + str(f_ref))
-        LOGGER.debug(
-            "IDF with constraints: x_opt=" + str(x_opt) + "obj_opt=" + str(obj_opt)
-        )
         rel_err = np.linalg.norm(x_opt - self.x_ref) / np.linalg.norm(self.x_ref)
         self.assertAlmostEqual(obj_opt, f_ref, 1)
         self.assertAlmostEqual(rel_err, 0.0, 4)

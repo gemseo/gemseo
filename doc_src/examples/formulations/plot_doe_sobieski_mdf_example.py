@@ -27,6 +27,8 @@ from __future__ import division, unicode_literals
 
 from os import name as os_name
 
+from matplotlib import pyplot as plt
+
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
@@ -106,16 +108,18 @@ scenario.execute(run_inputs)
 ##############################################################################
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", show=True, save=False)
+scenario.post_process("OptHistoryView", show=False, save=False)
 
 ##############################################################################
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix", show=True, save=False, variables_list=["y_4", "x_shared"]
+    "ScatterPlotMatrix", show=False, save=False, variables_list=["y_4", "x_shared"]
 )
 
 ##############################################################################
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-scenario.post_process("Correlations", show=True, save=False)
+scenario.post_process("Correlations", show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

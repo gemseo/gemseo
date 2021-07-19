@@ -19,9 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-R2 error measure
-================
+"""The R2 to measure the quality of a regression algorithm.
 
 The :mod:`~gemseo.mlearning.qual_measure.r2_measure` module
 implements the concept of R2 measures for machine learning algorithms.
@@ -41,27 +39,82 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
-from sklearn.metrics import r2_score
+from typing import List, NoReturn, Optional, Union
+
+from numpy import array_split, atleast_2d
+from numpy import delete as npdelete
+from numpy import mean, ndarray, repeat
+from sklearn.metrics import mean_squared_error, r2_score
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
-
-standard_library.install_aliases()
+from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 class R2Measure(MLErrorMeasure):
-    """ R2 measure for machine learning. """
+    """The R2 measure for machine learning."""
 
-    def _compute_measure(self, outputs, predictions, multioutput=True):
-        """Compute MSE.
+    SMALLER_IS_BETTER = False
 
-        :param ndarray outputs: reference outputs.
-        :param ndarray predictions: predicted outputs.
-        :param bool multioutput: if True, return the error measure for each
-            output component. Otherwise, average these errors. Default: True.
-        :return: MSE value.
+    def __init__(
+        self,
+        algo,  # type: MLRegressionAlgo
+    ):  # type: (...) -> None
         """
+        Args:
+            algo: A machine learning algorithm for regression.
+        """
+        super(R2Measure, self).__init__(algo)
+
+    def _compute_measure(
+        self,
+        outputs,  # type: ndarray
+        predictions,  # type: ndarray
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
         multioutput = "raw_values" if multioutput else "uniform_average"
         return r2_score(outputs, predictions, multioutput=multioutput)
+
+    def evaluate_kfolds(
+        self,
+        n_folds=5,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> Union[float,ndarray]
+        samples = self._assure_samples(samples)
+        inds = samples
+        folds = array_split(inds, n_folds)
+
+        in_grp = self.algo.learning_set.INPUT_GROUP
+        out_grp = self.algo.learning_set.OUTPUT_GROUP
+        inputs = self.algo.learning_set.get_data_by_group(in_grp)
+        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+
+        multiout = "raw_values" if multioutput else "uniform_average"
+
+        num = 0
+        ymean = mean(outputs, axis=0)
+        ymean = atleast_2d(ymean)
+        ymean = repeat(ymean, outputs.shape[0], axis=0)
+        den = mean_squared_error(outputs, ymean, multioutput=multiout) * len(ymean)
+        for n_fold in range(n_folds):
+            fold = folds[n_fold]
+            train = npdelete(inds, fold)
+            self.algo.learn(samples=train)
+            expected = outputs[fold]
+            predicted = self.algo.predict(inputs[fold])
+            tmp = mean_squared_error(expected, predicted, multioutput=multiout)
+            num += tmp * len(fold)
+
+        quality = 1 - num / den
+
+        return quality
+
+    def evaluate_bootstrap(
+        self,
+        n_replicates=100,  # type: int
+        samples=None,  # type: Optional[List[int]]
+        multioutput=True,  # type: bool
+    ):  # type: (...) -> NoReturn
+        raise NotImplementedError

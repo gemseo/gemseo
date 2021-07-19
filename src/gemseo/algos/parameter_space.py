@@ -19,29 +19,27 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Parameter space including both deterministic and uncertain parameters
-=====================================================================
+
+"""Variable space defining both deterministic and uncertain variables.
 
 Overview
 --------
 
-The :class:`.ParameterSpace` class describes a set of parameters of
-interest which can be either deterministic or uncertain. This class
-inherits from :class:`.DesignSpace`.
+The :class:`.ParameterSpace` class describes a set of parameters of interest
+which can be either deterministic or uncertain.
+This class inherits from :class:`.DesignSpace`.
 
 Capabilities
 ------------
 
-The :meth:`.DesignSpace.add_variable` aims to add deterministic
-variables from:
+The :meth:`.DesignSpace.add_variable` aims to add deterministic variables from:
 
 - a variable name,
-- a variable size (default: 1),
-- a variable type (default: float),
-- a lower bound (default: - infinity),
-- an upper bound (default: + infinity),
-- a current value (default: None).
+- an optional variable size (default: 1),
+- an optional variable type (default: float),
+- an optional lower bound (default: - infinity),
+- an optional upper bound (default: + infinity),
+- an optional current value (default: None).
 
 The :meth:`.add_random_variable` aims to add uncertain
 variables (a.k.a. random variables) from:
@@ -49,125 +47,153 @@ variables (a.k.a. random variables) from:
 - a variable name,
 - a distribution name
   (see :meth:`~gemseo.uncertainty.api.get_available_distributions`),
-- a variable size,
-- distribution parameters (:code:`parameters` set as
+- an optional variable size,
+- optional distribution parameters (:code:`parameters` set as
   a tuple of positional arguments for :class:`.OTDistribution`
   or a dictionary of keyword arguments for :class:`.SPDistribution`,
   or keyword arguments for standard probability distribution such
-  as :class:`.OTNormalDistribution` and :class:`.OTNormalDistribution`).
+  as :class:`.OTNormalDistribution` and :class:`.SPNormalDistribution`).
 
 The :class:`.ParameterSpace` also provides the following methods:
 
-- :meth:`.get_cdf`: evaluate the cumulative density function
+- :meth:`.compute_samples`: returns several samples
+  of the uncertain variables,
+- :meth:`.evaluate_cdf`: evaluate the cumulative density function
   for the different variables and their different
-- :meth:`.get_composed_distribution`: returns the probability distribution
-  of an uncertain variable,
-- :meth:`.get_marginal_distributions`: returns the marginal probability
-  distributions of an uncertain variable,
 - :meth:`.get_range` returns the numerical range
   of the different uncertain parameters,
-- :meth:`.ParameterSpace.get_sample`: returns several sample
-  of the uncertain variables,
 - :meth:`.get_support`: returns the mathematical support
   of the different uncertain variables,
 - :meth:`.is_uncertain`: checks if a parameter is uncertain,
 - :meth:`.is_deterministic`: checks if a parameter is deterministic.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
+from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
+
 from numpy import array, ndarray
-from sympy import simplify
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.uncertainty.distributions.distribution import ComposedDistribution
-from gemseo.uncertainty.distributions.factory import DistributionFactory
+from gemseo.uncertainty.distributions.composed import ComposedDistribution
+from gemseo.uncertainty.distributions.factory import (
+    DistributionFactory,
+    DistributionParametersType,
+)
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParameterSpace(DesignSpace):
-    """ Parameter space. """
+    """Parameter space.
 
-    INITIAL_DISTRIBUTION = "Initial distribution"
-    TRANSFORMATION = "Transformation"
-    SUPPORT = "Support"
-    MEAN = "Mean"
-    STANDARD_DEVIATION = "Standard deviation"
-    RANGE = "Range"
-    BLANK = ""
-    PARAMETER_SPACE = "Parameter space"
+    Attributes:
+        uncertain_variables (List(str)): The names of the uncertain variables.
+        distributions (Dict(str,Distribution)): The marginal probability distributions
+            of the uncertain variables.
+        distribution (ComposedDistribution): The joint probability distribution
+            of the uncertain variables.
+    """
+
+    _INITIAL_DISTRIBUTION = "Initial distribution"
+    _TRANSFORMATION = "Transformation"
+    _SUPPORT = "Support"
+    _MEAN = "Mean"
+    _STANDARD_DEVIATION = "Standard deviation"
+    _RANGE = "Range"
+    _BLANK = ""
+    _PARAMETER_SPACE = "Parameter space"
 
     def __init__(
         self,
-        print_decimals=2,
-        shorten=True,
-        copula=ComposedDistribution.INDEPENDENT_COPULA,
-    ):
-        """Constructor
-
-        :param int print_decimals: number of decimals to print. Default: 2.
-        :param bool shorten: if True, simplify the expressions
-            of variable transformations. Default: True.
-        :param str copula: copula name.
-            Default: ComposedDistribution.INDEPENDENT_COPULA.
+        copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
+    ):  # type: (...) -> None
         """
-        LOGGER.info("Create a new parameter space. ")
+        Args:
+            copula: A name of copula defining the dependency between random variables.
+        """
+        LOGGER.info("*** Create a new parameter space ***")
         super(ParameterSpace, self).__init__()
         self.uncertain_variables = []
-        self.marginals = {}
+        self.distributions = {}
         self.distribution = None
-        self._ndecimals = print_decimals
-        self._shorten = shorten
-        if copula not in ComposedDistribution.AVAILABLE_COPULA:
-            raise ValueError("%s is not an available copula." % (copula))
-        self.copula = copula
+        if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
+            raise ValueError("{} is not a copula name".format(copula))
+        self._copula = copula
 
-    def is_uncertain(self, variable):
+    def is_uncertain(
+        self,
+        variable,  # type: str
+    ):  # type: (...) -> bool
         """Check if a variable is uncertain.
 
-        :param str variable: variable name.
+        Args:
+            variable: The name of the variable.
+
+        Returns:
+            True is the variable is uncertain.
         """
         return variable in self.uncertain_variables
 
-    def is_deterministic(self, variable):
+    def is_deterministic(
+        self,
+        variable,  # type: str
+    ):  # type: (...) -> bool
         """Check if a variable is deterministic.
 
-        :param str variable: variable name.
+        Args:
+            variable: The name of the variable.
+
+        Returns:
+            True is the variable is deterministic.
         """
-        determistic = set(self.variables_names) - set(self.uncertain_variables)
-        return variable in determistic
+        deterministic = set(self.variables_names) - set(self.uncertain_variables)
+        return variable in deterministic
 
-    def __update_parameter_space(self, variable):
-        """Update parameter space.
+    def __update_parameter_space(
+        self,
+        variable,  # type: str
+    ):  # type: (...) -> None
+        """Update the parameter space with a random variable.
 
-        :param variable: variable name.
-        :type variable: str
+        Args:
+            variable: The name of the random variable.
         """
         if variable not in self.variables_names:
-            l_b = self.marginals[variable].math_lower_bound
-            u_b = self.marginals[variable].math_upper_bound
-            value = self.marginals[variable].mean
-            size = self.marginals[variable].dimension
+            l_b = self.distributions[variable].math_lower_bound
+            u_b = self.distributions[variable].math_upper_bound
+            value = self.distributions[variable].mean
+            size = self.distributions[variable].dimension
             self.add_variable(variable, size, "float", l_b, u_b, value)
         else:
-            l_b = self.marginals[variable].math_lower_bound
-            u_b = self.marginals[variable].math_upper_bound
-            value = self.marginals[variable].mean
+            l_b = self.distributions[variable].math_lower_bound
+            u_b = self.distributions[variable].math_upper_bound
+            value = self.distributions[variable].mean
             self.set_lower_bound(variable, l_b)
             self.set_upper_bound(variable, u_b)
             self.set_current_variable(variable, value)
 
-    def add_random_variable(self, name, distribution, size=1, **parameters):
-        """Add a random variable from a distribution
+    def add_random_variable(
+        self,
+        name,  # type: str
+        distribution,  # type: str
+        size=1,  # type: int
+        **parameters  # type: DistributionParametersType
+    ):  # type: (...) -> None
+        """Add a random variable from a probability distribution.
 
-        :param str name: name of the random variable.
-        :param str distribution: distribution name.
-        :param int size: variable size.
-        :param parameters: parameters of the distribution.
+        Args:
+            name: The name of the random variable.
+            distribution: The name of a class
+                implementing a probability distribution,
+                e.g. 'OTUniformDistribution' or 'SPDistribution'.
+            size: The dimension of the random variable.
+            **parameters: The parameters of the distribution.
         """
         factory = DistributionFactory()
         distribution = factory.create(
@@ -175,74 +201,81 @@ class ParameterSpace(DesignSpace):
         )
         variable = distribution.variable_name
         LOGGER.info("Add the random variable: %s", variable)
-        self.marginals[variable] = distribution
+        self.distributions[variable] = distribution
         self.uncertain_variables.append(variable)
         self._build_composed_distribution()
         self.__update_parameter_space(variable)
 
-    def _build_composed_distribution(self):
-        """ Build the composed distribution from the marginal ones. """
-        tmp_marginal = self.marginals[self.uncertain_variables[0]]
-        marginals = [self.marginals[name] for name in self.uncertain_variables]
-        self.distribution = tmp_marginal.COMPOSED_DISTRIBUTION(marginals, self.copula)
+    def _build_composed_distribution(self):  # type: (...) -> None
+        """Build the composed distribution from the marginal ones."""
+        tmp_marginal = self.distributions[self.uncertain_variables[0]]
+        marginals = [self.distributions[name] for name in self.uncertain_variables]
+        self.distribution = tmp_marginal._COMPOSED_DISTRIBUTION(marginals, self._copula)
 
-    def get_composed_distribution(self, variable):
-        """Get the composed distribution of a random variable.
+    def get_range(
+        self,
+        variable,  # type: str
+    ):  # type: (...) -> List[ndarray]
+        """Return the numerical range of a random variable.
 
-        :param str variable: variable name.
+        Args:
+            variable: The name of the random variable.
+
+        Returns:
+            The range of the components of the random variable.
         """
-        return self.marginals[variable].distribution
+        return self.distributions[variable].range
 
-    def get_marginal_distributions(self, variable):
-        """Get the marginal distributions of a random variable.
+    def get_support(
+        self,
+        variable,  # type: str
+    ):  # type: (...) -> List[ndarray]
+        """Return the mathematical support of a random variable.
 
-        :param str variable: variable name.
+        Args:
+            variable: The name of the random variable.
+
+        Returns:
+            The support of the components of the random variable.
         """
-        return self.marginals[variable].marginals
+        return self.distributions[variable].support
 
-    def get_range(self, variable):
-        """Get the numerical range of a random variable.
-
-        :param str variable: variable name.
-        """
-        return self.marginals[variable].range
-
-    def get_support(self, variable):
-        """Get the mathematical support of a random variable.
-
-        :param str variable: variable name.
-        """
-        return self.marginals[variable].support
-
-    def remove_variable(self, name):
+    def remove_variable(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> None
         """Remove a variable from the probability space.
 
-        :param str name: variable name.
+        Args:
+            name: The name of the variable.
         """
         if name in self.uncertain_variables:
-            del self.marginals[name]
+            del self.distributions[name]
             self.uncertain_variables.remove(name)
-            self._build_composed_distribution()
+            if self.uncertain_variables:
+                self._build_composed_distribution()
         super(ParameterSpace, self).remove_variable(name)
 
-    def set_dependence(self, variables, copula, **options):
-        """Set dependence relation between random variables.
+    def compute_samples(
+        self,
+        n_samples=1,  # type: int
+        as_dict=False,  # type: bool
+    ):  # type: (...) -> Union[Dict[str,ndarray],ndarray]
+        """Sample the random variables and return the realizations.
 
-        :param list(str) variables: list of variables names.
-        :param str copula: copula name.
-        :param options: copula options.
+        Args:
+            n_samples: A number of samples.
+            as_dict: The type of the returned object.
+                If True, return a dictionary.
+                Otherwise, return an array.
+
+        Returns:
+            The realizations of the random variables,
+                either stored in an array or in a dictionary
+                whose values are the names of the random variables
+                and the values are the evaluations.
         """
-        raise NotImplementedError
-
-    def get_sample(self, n_samples=1, as_dict=False):
-        """Get sample.
-
-        :param int n_samples: number of samples.
-        :param bool as_dict: return a dictionary.
-        :return: samples
-        :rtype: list(array) or list(dict)
-        """
-        sample = self.distribution.get_sample(n_samples)
+        sample = self.distribution.compute_samples(n_samples)
         if as_dict:
             sample = [
                 DataConversion.array_to_dict(
@@ -252,36 +285,52 @@ class ParameterSpace(DesignSpace):
             ]
         return sample
 
-    def get_cdf(self, value, inverse=False):
-        """Get the inverse Cumulative Density Function
-         values of the different marginals.
+    def evaluate_cdf(
+        self,
+        value,  # type: Dict[str,ndarray]
+        inverse=False,  # type:bool
+    ):  # type: (...) -> Dict[str,ndarray]
+        """Evaluate the cumulative density function (or its inverse) of each marginal.
 
-        :param dict(array) value: values
-        :return: (inverse) CDF values
-        :rtype: dict(array)
+        Args:
+            value: The values of the uncertain variables
+                passed as a dictionary whose keys are the names of the variables.
+            inverse: The type of function to evaluate.
+                If True, compute the cumulative density function.
+                Otherwise, compute the inverse cumulative density function.
+
+        Returns:
+            A dictionary where the keys are the names of the random variables
+                and the values are the evaluations.
         """
         if inverse:
             self.__check_dict_of_array(value)
         values = {}
         for name in self.uncertain_variables:
             val = value[name]
-            distribution = self.marginals[name]
+            distribution = self.distributions[name]
             if inverse:
-                current_v = distribution.inverse_cdf(val)
+                current_v = distribution.compute_inverse_cdf(val)
             else:
-                current_v = distribution.cdf(val)
+                current_v = distribution.compute_cdf(val)
             values[name] = array(current_v)
 
         return values
 
-    def __check_dict_of_array(self, obj):
-        """Check if the object is a dictionary of array.
+    def __check_dict_of_array(
+        self,
+        obj,  # type: Any
+    ):  # type: (...) -> None
+        """Check if the object is a dictionary whose values are numpy arrays.
 
-        :param obj: object to test
+        Args:
+            obj: The object to test.
         """
-        error_msg = "obj must be a dictionary whose keys are the variables "
-        error_msg += "names and values are arrays whose dimensions are the "
-        error_msg += "variables ones and components are in [0, 1]."
+        error_msg = (
+            "obj must be a dictionary whose keys are the variables "
+            "names and values are arrays whose dimensions are the "
+            "variables ones and components are in [0, 1]"
+        )
         if not isinstance(obj, dict):
             raise TypeError(error_msg)
         for variable, value in obj.items():
@@ -302,13 +351,38 @@ class ParameterSpace(DesignSpace):
                 if any(value.flatten() > 1.0) or any(value.flatten() < 0.0):
                     raise ValueError(error_msg)
 
-    def __str__(self, *args, **kwargs):
-        """String representation.
+    def __str__(self):  # type: (...) -> str
+        table = super(ParameterSpace, self).get_pretty_table()
+        distribution = []
+        for variable in self.variables_names:
+            if variable in self.uncertain_variables:
+                dist = self.distributions[variable]
+                for _ in range(dist.dimension):
+                    distribution.append(str(dist))
+            else:
+                for _ in range(self.variables_sizes[variable]):
+                    distribution.append(self._BLANK)
 
-        :return: description
-        :rtype: str
+        table.add_column(self._INITIAL_DISTRIBUTION, distribution)
+        table.title = self._PARAMETER_SPACE
+        desc = str(table)
+        return desc
+
+    def get_tabular_view(
+        self,
+        decimals=2,  # type: int
+    ):  # type: (...) -> str
+        """Return a tabular view of the parameter space.
+
+        This view contains statistical information.
+
+        Args:
+            decimals: The number of decimals to print.
+
+        Returns:
+            The tabular view.
         """
-        table = self.get_pretty_table()
+        table = super(ParameterSpace, self).get_pretty_table()
         distribution = []
         transformation = []
         support = []
@@ -317,7 +391,7 @@ class ParameterSpace(DesignSpace):
         rnge = []
         for variable in self.variables_names:
             if variable in self.uncertain_variables:
-                dist = self.marginals[variable]
+                dist = self.distributions[variable]
                 tmp_mean = dist.mean
                 tmp_std = dist.standard_deviation
                 tmp_range = dist.range
@@ -325,43 +399,51 @@ class ParameterSpace(DesignSpace):
                 for dim in range(dist.dimension):
                     distribution.append(str(dist))
                     transformation.append(dist.transformation)
-                    if self._shorten:
-                        transformation[-1] = str(simplify(transformation[-1]))
                     mean.append(tmp_mean[dim])
-                    mean[-1] = round(mean[-1], self._ndecimals)
+                    mean[-1] = round(mean[-1], decimals)
                     std.append(tmp_std[dim])
-                    std[-1] = round(std[-1], self._ndecimals)
+                    std[-1] = round(std[-1], decimals)
                     rnge.append(tmp_range[dim])
                     support.append(tmp_support[dim])
             else:
-                for dim in range(self.variables_sizes[variable]):
-                    distribution.append(self.BLANK)
-                    transformation.append(self.BLANK)
-                    mean.append(self.BLANK)
-                    std.append(self.BLANK)
-                    support.append(self.BLANK)
-                    rnge.append(self.BLANK)
+                for _ in range(self.variables_sizes[variable]):
+                    distribution.append(self._BLANK)
+                    transformation.append(self._BLANK)
+                    mean.append(self._BLANK)
+                    std.append(self._BLANK)
+                    support.append(self._BLANK)
+                    rnge.append(self._BLANK)
 
-        table.add_column(self.INITIAL_DISTRIBUTION, distribution)
-        table.add_column(self.TRANSFORMATION, transformation)
-        table.add_column(self.SUPPORT, support)
-        table.add_column(self.MEAN, mean)
-        table.add_column(self.STANDARD_DEVIATION, std)
-        table.add_column(self.RANGE, rnge)
-        table.title = self.PARAMETER_SPACE
+        table.add_column(self._INITIAL_DISTRIBUTION, distribution)
+        table.add_column(self._TRANSFORMATION, transformation)
+        table.add_column(self._SUPPORT, support)
+        table.add_column(self._MEAN, mean)
+        table.add_column(self._STANDARD_DEVIATION, std)
+        table.add_column(self._RANGE, rnge)
+        table.title = self._PARAMETER_SPACE
         desc = str(table)
         return desc
 
-    def unnormalize_vect(self, x_vect, minus_lb=True, no_check=False, use_dist=True):
-        """Inverse transformation from a unit design vector.
-        Unnormalizes a normalized vector of the design space.
+    def unnormalize_vect(
+        self,
+        x_vect,  # type:ndarray
+        minus_lb=True,  # type:bool
+        no_check=False,  # type: bool
+        use_dist=True,  # type:bool
+    ):  # type: (...) ->ndarray
+        """Unnormalize an unit vector.
 
-        :param array x_vect: design variables.
-        :param bool minus_lb: if True, remove lower bounds at normalization.
-        :param bool no_check: if True, don't check that values are in [0,1].
-        :param bool use_dist: if True, rescale wrt the stats law.
-        :return: normalized vector
-        :rtype: array
+        Args:
+            x_vect: The unit vector to unnormalize.
+            minus_lb: The type of normalization.
+                If True, remove lower bounds at normalization.
+            no_check: The data checker.
+                If True, do not check that values are in [0,1].
+            use_dist: The statistical scaling.
+                If True, rescale wrt the statistical law.
+
+        Returns:
+            The unnormalized vector.
         """
         if not use_dist:
             return super(ParameterSpace, self).unnormalize_vect(x_vect)
@@ -370,7 +452,7 @@ class ParameterSpace(DesignSpace):
         data_sizes = self.variables_sizes
         dict_sample = DataConversion.array_to_dict(x_vect, data_names, data_sizes)
         x_u_geom = super(ParameterSpace, self).unnormalize_vect(x_vect)
-        x_u = self.get_cdf(dict_sample, inverse=True)
+        x_u = self.evaluate_cdf(dict_sample, inverse=True)
         x_u_geom = DataConversion.array_to_dict(x_u_geom, data_names, data_sizes)
         missing_names = list(set(data_names) - set(x_u.keys()))
         for name in missing_names:
@@ -378,16 +460,25 @@ class ParameterSpace(DesignSpace):
         x_u = DataConversion.dict_to_array(x_u, data_names)
         return x_u
 
-    def normalize_vect(self, x_vect, minus_lb=True, use_dist=False):
-        """Normalizes a vector of the design space.
-        Unbounded variables are not normalized.
+    def normalize_vect(
+        self,
+        x_vect,  # type:ndarray
+        minus_lb=True,  # type: bool
+        use_dist=False,  # type: bool
+    ):  # type: (...) ->ndarray
+        """Normalize a vector.
 
-        :param array x_vect: design variables.
-        :param bool minus_lb: if True, remove lower bounds at normalization.
-        :param bool no_check: if True, don't check that values are in [0,1].
-        :param bool use_dist: if True, rescale wrt the stats law.
-        :return: normalized vector
-        :rtype: array
+        Args:
+            x_vect: The vector to normalize.
+            minus_lb: The type of normalization.
+                If True, remove lower bounds at normalization.
+            no_check: The data checker.
+                If True, do not check that values are in [0,1].
+            use_dist: The statistical scaling.
+                If True, rescale wrt the statistical law.
+
+        Returns:
+            The normalized vector.
         """
         if use_dist:
             return super(ParameterSpace, self).normalize_vect(x_vect)
@@ -396,10 +487,92 @@ class ParameterSpace(DesignSpace):
         data_sizes = self.variables_sizes
         dict_sample = DataConversion.array_to_dict(x_vect, data_names, data_sizes)
         x_u_geom = super(ParameterSpace, self).normalize_vect(x_vect)
-        x_u = self.get_cdf(dict_sample, inverse=False)
+        x_u = self.evaluate_cdf(dict_sample, inverse=False)
         x_u_geom = DataConversion.array_to_dict(x_u_geom, data_names, data_sizes)
         missing_names = list(set(data_names) - set(x_u.keys()))
         for name in missing_names:
             x_u[name] = x_u_geom[name]
         x_u = DataConversion.dict_to_array(x_u, data_names)
         return x_u
+
+    @property
+    def deterministic_variables(self):  # type: (...) -> List[str]
+        """The deterministic variables."""
+        return [
+            variable
+            for variable in self.variables_names
+            if variable not in self.uncertain_variables
+        ]
+
+    def extract_uncertain_space(self):  # type: (...) -> ParameterSpace
+        """Extract the uncertain space.
+
+        Return:
+            The uncertain space.
+        """
+        uncertain_space = deepcopy(self)
+        uncertain_space.filter(self.uncertain_variables)
+        return uncertain_space
+
+    def extract_deterministic_space(self):  # type: (...) -> ParameterSpace
+        """Extract the deterministic space.
+
+        Return:
+            The deterministic space.
+        """
+        deterministic_space = DesignSpace()
+        for name in self.deterministic_variables:
+            deterministic_space.add_variable(
+                name, self.get_size(name), self.get_type(name)
+            )
+            value = self._current_x.get(name)
+            if value is not None:
+                deterministic_space.set_current_variable(name, value)
+            deterministic_space.set_lower_bound(name, self.get_lower_bound(name))
+            deterministic_space.set_upper_bound(name, self.get_upper_bound(name))
+        return deterministic_space
+
+    @staticmethod
+    def init_from_dataset(
+        dataset,  # type: Dataset
+        groups=None,  # type: Optional[Iterable[str]]
+        uncertain=None,  # type: Optional[Mapping[str,bool]]
+        copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
+    ):  # type: (...) -> ParameterSpace
+        """Initialize the parameter space from a dataset.
+
+        Args:
+            dataset: The dataset used for the initialization.
+            groups: The groups of the dataset to be considered.
+                If None, consider all the groups.
+            uncertain: Whether the variables should be uncertain or not.
+            copula: A name of copula defining the dependency between random variables.
+        """
+        parameter_space = ParameterSpace(copula=copula)
+
+        if uncertain is None:
+            uncertain = {}
+
+        if groups is None:
+            groups = dataset.groups
+        for group in groups:
+            for name in dataset.get_names(group):
+                data = dataset.get_data_by_names(name)[name]
+                l_b = data.min(0)
+                u_b = data.max(0)
+                value = (l_b + u_b) / 2
+                size = len(l_b)
+
+                if uncertain.get(name, False):
+                    for idx in range(size):
+                        parameter_space.add_random_variable(
+                            "{}_{}".format(name, idx),
+                            "OTUniformDistribution",
+                            1,
+                            minimum=float(l_b[idx]),
+                            maximum=float(u_b[idx]),
+                        )
+                else:
+                    parameter_space.add_variable(name, size, "float", l_b, u_b, value)
+
+        return parameter_space

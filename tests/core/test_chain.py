@@ -20,17 +20,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import os
 import unittest
 from itertools import permutations
 
-from future import standard_library
+import pytest
 from numpy import allclose, ones
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.chain import MDOAdditiveChain, MDOChain, MDOParallelChain
 from gemseo.core.execution_sequence import ParallelExecSequence
@@ -40,17 +36,12 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
-from gemseo.utils.testing_utils import skip_under_windows
-
-standard_library.install_aliases()
-configure_logger(SOFTWARE_NAME)
 
 DIRNAME = os.path.dirname(__file__)
 
 
-class Test_mdochain(unittest.TestCase):
-    """ """
+class Testmdochain(unittest.TestCase):
+    """"""
 
     def get_disciplines_list(self, perm, dtype="complex128"):
 
@@ -66,9 +57,8 @@ class Test_mdochain(unittest.TestCase):
             diff_order_disc.append(disciplines[p])
         return diff_order_disc
 
-    @link_to("Req-WF-9")
     def test_linearize_sobieski_chain_combinatorial(self):
-        """ """
+        """"""
         for perm in permutations(range(4)):
             disciplines = self.get_disciplines_list(perm)
             chain = MDOChain(disciplines)
@@ -101,7 +91,7 @@ class Test_mdochain(unittest.TestCase):
             )
             assert ok
 
-    @skip_under_windows
+    @pytest.mark.skip_under_windows
     def test_parallel_chain_combinatorial_mprocess(self):
         # Keep the two first only as MP is slow there
         perms = list(permutations(range(4)))[:2]

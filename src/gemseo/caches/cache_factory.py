@@ -19,42 +19,40 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-This module contains a factory
-to instantiate a :class:`.AbstractCache` from its class name.
-The class can be internal to |g| or located in an external module whose path
-is provided to the constructor. It also provides a list of available cache
-types and allows you to test if a cache type is available.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""This module contains a factory to instantiate a :class:`.AbstractCache` from its
+class name.
 
-from future import standard_library
+The class can be internal to |g| or located in an external module whose path is provided
+to the constructor. It also provides a list of available cache types and allows you to
+test if a cache type is available.
+"""
+from __future__ import division, unicode_literals
+
+import logging
 
 from gemseo.core.cache import AbstractCache
 from gemseo.core.factory import Factory
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class CacheFactory(object):
-    """This factory instantiates
-    a :class:`.AbstractCache` from its class name.
-    The class can be internal to |g| or located in an external module
-    whose path is provided to the constructor.
+    """This factory instantiates a :class:`.AbstractCache` from its class name.
+
+    The class can be internal to |g| or located in an external module whose path is
+    provided to the constructor.
     """
 
     def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of AbstractCache.
-        Searches in "GEMSEO_PATH" and gemseo.caches
+        """Initializes the factory: scans the directories to search for subclasses of
+        AbstractCache.
+
+        Searches in "|g|" and gemseo.caches
         """
         self.factory = Factory(AbstractCache, ("gemseo.caches",))
 
     def create(self, cache_name, **options):
-        """
-        Create a cache
+        """Create a cache.
 
         :param str cache_name: name of the cache (its classname)
         :param options: additional options specific
@@ -75,8 +73,7 @@ class CacheFactory(object):
 
     @property
     def caches(self):
-        """
-        Lists the available classes.
+        """Lists the available classes.
 
         :returns: the list of classes names.
         :rtype: list(str)
@@ -90,10 +87,9 @@ class CacheFactory(object):
         return self.factory.classes
 
     def is_available(self, cache_name):
-        """
-        Checks the availability of a cache.
+        """Checks the availability of a cache.
 
-        :param str name:  cache_name of the cache.
+        :param str cache_name:  cache_name of the cache.
         :returns: True if the cache is available.
         :rtype: bool
 

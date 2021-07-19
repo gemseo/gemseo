@@ -19,54 +19,56 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Classification model
-====================
+"""This module contains the base class for classification algorithms.
 
 The :mod:`~gemseo.mlearning.classification.classification` module
-implements classification algorithms, whose goal is to find relationships
-between input data and output classes.
+implements classification algorithms,
+whose goal is to assess the membership of input data to classes.
 
-Classification algorithms provide methods for predicting classes of new input
-data, as well as predicting the probabilities of belonging to each of the
-classes wherever possible.
+Classification algorithms provide methods for predicting classes of new input data,
+as well as predicting the probabilities of belonging to each of the classes
+wherever possible.
 
 This concept is implemented through the :class:`.MLClassificationAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
-from numpy import unique, zeros
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 
+from numpy import ndarray, unique, zeros
+
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
+from gemseo.mlearning.core.supervised import (
+    SavedObjectType as MLSupervisedAlgoSavedObjectType,
+)
 
-standard_library.install_aliases()
+SavedObjectType = Union[
+    MLSupervisedAlgoSavedObjectType, Sequence[str], Dict[str, ndarray], int
+]
 
 
 class MLClassificationAlgo(MLSupervisedAlgo):
     """Classification Algorithm.
 
-    Inheriting classes should implement the :meth:`!MLSupervisedAlgo._fit` and
+    Inheriting classes shall implement the :meth:`!MLSupervisedAlgo._fit` and
     :meth:`!MLClassificationAlgo._predict` methods, and
     :meth:`!MLClassificationAlgo._predict_proba_soft` method if possible.
+
+    Attributes:
+        n_classes (int): The number of classes.
     """
 
     def __init__(
-        self, data, transformer=None, input_names=None, output_names=None, **parameters
-    ):
-        """Constructor.
-
-        :param Dataset data: learning dataset.
-        :param transformer: transformation strategy for data groups.
-            If None, do not scale data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param parameters: algorithm parameters.
-        """
+        self,
+        data,  # type: Dataset
+        transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type: TransformerType
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        **parameters  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
         super(MLClassificationAlgo, self).__init__(
             data,
             transformer=transformer,
@@ -76,39 +78,59 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         )
         self.n_classes = None
 
-    def learn(self, samples=None):
-        """Train machine learning algorithm on learning set, possibly filtered
-        using the given parameters. Determine the number of classes.
-        :param list(int) samples: indices of training samples.
-        """
+    def learn(
+        self,
+        samples=None,  # type: Optional[List[int]]
+    ):  # type: (...) -> None
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
         self.n_classes = unique(output_data).shape[0]
         super(MLClassificationAlgo, self).learn(samples)
 
     @MLSupervisedAlgo.DataFormatters.format_input_output
-    def predict_proba(self, input_data, hard=True):
-        """Predict probability of belonging to each class.
+    def predict_proba(
+        self,
+        input_data,  # type: DataType
+        hard=True,  # type: bool
+    ):  # type: (...)-> ndarray
+        """Predict the probability of belonging to each cluster from input data.
 
-        :param input_data: input data (n_inputs,) or (n_samples, n_inputs).
-        :type input_data: dict(ndarray) or ndarray
-        :param bool hard: indicator for hard or soft classification.
-            Default: True.
-        :return: probabilities of belonging to each class
-            (n_outputs, n_classes) or (n_samples, n_outputs, n_classes).
-        :rtype: dict(ndarray) or ndarray
+        The user can specified these input data either as a numpy array,
+        e.g. :code:`array([1., 2., 3.])`
+        or as a dictionary,
+        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+
+        If the numpy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the numpy arrays are of dimension 1,
+        there is a single sample.
+
+        The type of the output data and the dimension of the output arrays
+        will be consistent
+        with the type of the input data and the size of the input arrays.
+
+        Args:
+            input_data: The input data.
+            hard: Whether clustering should be hard (True) or soft (False).
+
+        Returns:
+            The probability of belonging to each cluster.
         """
         return self._predict_proba(input_data, hard)
 
-    def _predict_proba(self, input_data, hard=True):
-        """Predict probability of belonging to each class.
+    def _predict_proba(
+        self,
+        input_data,  # type: ndarray
+        hard=True,  # type: bool
+    ):  # type: (...)-> ndarray
+        """Predict the probability of belonging to each class.
 
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :param bool hard: indicator for hard or soft classification.
-            Default: True.
-        :return: probabilities of belonging to each class
-            (n_samples, n_outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+            hard: Whether clustering should be hard (True) or soft (False).
+
+        Returns:
+            The probability of belonging to each class
+                with shape (n_samples, n_classes).
         """
         if hard:
             probas = self._predict_proba_hard(input_data)
@@ -116,14 +138,17 @@ class MLClassificationAlgo(MLSupervisedAlgo):
             probas = self._predict_proba_soft(input_data)
         return probas
 
-    def _predict_proba_hard(self, input_data):
-        """Create class indicator of input data.
+    def _predict_proba_hard(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...)-> ndarray
+        """Return 1 if the data belongs to a class, 0 otherwise.
 
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: probabilities of belonging to each class
-            (n_samples, n_outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The indicator of belonging to each class with shape (n_samples, n_classes).
         """
         n_samples = input_data.shape[0]
         prediction = self._predict(input_data).astype(int)
@@ -134,22 +159,22 @@ class MLClassificationAlgo(MLSupervisedAlgo):
                 probas[n_sample, prediction[n_sample, n_output], n_output] = 1
         return probas
 
-    def _predict_proba_soft(self, input_data):
-        """Predict probability of belonging to each class.
+    def _predict_proba_soft(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...)-> ndarray
+        """Predict the probability of belonging to each class.
 
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: probabilities of belonging to each class
-            (n_samples, outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            The probability of belonging to each class
+                with shape (n_samples, n_classes).
         """
         raise NotImplementedError
 
-    def _get_objects_to_save(self):
-        """Get objects to save.
-        :return: objects to save.
-        :rtype: dict
-        """
+    def _get_objects_to_save(self):  # type: (...) -> SavedObjectType
         objects = super(MLClassificationAlgo, self)._get_objects_to_save()
         objects["n_classes"] = self.n_classes
         return objects

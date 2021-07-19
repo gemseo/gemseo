@@ -23,19 +23,13 @@
 Factory for the trust updater
 *****************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import logging
-from builtins import str
-
-from future import standard_library
 
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater, RadiusUpdater
 
-standard_library.install_aliases()
-
-
-LOGGER = logging.getLogger("odd")
+LOGGER = logging.getLogger(__name__)
 
 
 class UpdaterFactory(object):
@@ -53,8 +47,7 @@ class UpdaterFactory(object):
         }
 
     def create(self, name, thresholds, multipliers, bound):
-        """Factory method to create a TrustUpdater subclass from an update
-        name.
+        """Factory method to create a TrustUpdater subclass from an update name.
 
         :param name: update name
         :type name: string
@@ -64,7 +57,6 @@ class UpdaterFactory(object):
         :type multipliers: tuple
         :param bound: (lower or upper) bound for the trust parameter
         :returns: trust updater
-
         """
         if name in self.__update_name_to_updater:
             updater = self.__update_name_to_updater[name](

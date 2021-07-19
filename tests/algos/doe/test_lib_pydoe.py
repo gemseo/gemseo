@@ -21,42 +21,33 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import os
 import unittest
 
-from future import standard_library
+import pytest
 from numpy import loadtxt, ones
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
 
 from .doe_lib_test_base import DOELibraryTestBase
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_pyDOE(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestpyDOE(unittest.TestCase):
+    """"""
 
     DOE_LIB_NAME = "PyDOE"
 
-    @link_to("Req-DEP-2", "Req-MDO-7")
     def test_init(self):
-        """ """
+        """"""
         factory = DOEFactory()
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
     def test_phip(self):
-        """ """
+        """"""
         algo_name = "fullfact"
         doe_library = DOELibraryTestBase.generate_one_test(
             self.DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=20
@@ -67,7 +58,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_export_samples(self):
-        """ """
+        """"""
         algo_name = "lhs"
         n_samples = 30
         dim = 3
@@ -80,10 +71,9 @@ class Test_pyDOE(unittest.TestCase):
         file_samples = loadtxt(doe_file_name, delimiter=",")
         self.assertEqual(samples.shape, (n_samples, dim))
         self.assertEqual(file_samples.shape, (n_samples, dim))
-        os.remove(doe_file_name)
 
     def test_invalid_algo(self):
-        """ """
+        """"""
         algo_name = "bidon"
         dim = 3
         n_samples = 100
@@ -97,7 +87,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_lhs_maximin(self):
-        """ """
+        """"""
         dim = 3
         algo_name = "lhs"
         n_samples = 100
@@ -120,7 +110,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_invalid_criterion(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -135,7 +125,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_lhs_center(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -150,7 +140,7 @@ class Test_pyDOE(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_lhs_centermaximin(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -165,7 +155,7 @@ class Test_pyDOE(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_lhs_correlation(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -180,7 +170,7 @@ class Test_pyDOE(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_iteration_error(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -197,7 +187,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_center_error(self):
-        """ """
+        """"""
         algo_name = "bbdesign"
         dim = 3
         self.assertRaises(
@@ -219,7 +209,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_alpha_error(self):
-        """ """
+        """"""
         algo_name = "ccdesign"
         dim = 3
         self.assertRaises(
@@ -232,7 +222,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_face_error(self):
-        """ """
+        """"""
         algo_name = "ccdesign"
         dim = 3
         self.assertRaises(
@@ -247,7 +237,7 @@ class Test_pyDOE(unittest.TestCase):
     #
 
     def test_missing_algo_name(self):
-        """ """
+        """"""
         dim = 3
         n_samples = 100
         self.assertRaises(
@@ -259,7 +249,7 @@ class Test_pyDOE(unittest.TestCase):
         )
 
     def test_export_error(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -274,7 +264,7 @@ class Test_pyDOE(unittest.TestCase):
         self.assertRaises(Exception, doe_library.export_samples, "test.csv")
 
     def test_rescale_samples(self):
-        """ """
+        """"""
         algo_name = "lhs"
         dim = 3
         n_samples = 100
@@ -290,7 +280,7 @@ class Test_pyDOE(unittest.TestCase):
         doe_library._rescale_samples(samples)
 
     def test_bbdesign_center(self):
-        """ """
+        """"""
         algo_name = "bbdesign"
         dim = 5
         n_samples = 46
@@ -301,7 +291,7 @@ class Test_pyDOE(unittest.TestCase):
         self.assertEqual(samples.shape, (n_samples, dim))
 
     def test_ccdesign_center(self):
-        """ """
+        """"""
         algo_name = "ccdesign"
         dim = 5
         n_samples = 62
@@ -363,6 +353,6 @@ def get_options(algo_name, dim):
 suite_tests = DOELibraryTestBase()
 
 for test_method in suite_tests.generate_test(
-    Test_pyDOE.DOE_LIB_NAME, get_expected_nsamples, get_options
+    TestpyDOE.DOE_LIB_NAME, get_expected_nsamples, get_options
 ):
-    setattr(Test_pyDOE, test_method.__name__, test_method)
+    setattr(TestpyDOE, test_method.__name__, test_method)

@@ -20,13 +20,9 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.uncertainty.distributions.factory import DistributionFactory
-
-standard_library.install_aliases()
 
 
 def test_constructor():
@@ -35,7 +31,7 @@ def test_constructor():
 
 def test_available():
     factory = DistributionFactory()
-    distributions = factory.distributions
+    distributions = factory.available_distributions
     assert "OTNormalDistribution" in distributions
 
 

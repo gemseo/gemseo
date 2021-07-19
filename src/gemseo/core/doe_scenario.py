@@ -23,24 +23,20 @@
 Scenario which drivers are Design of Experiments
 ************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.core.scenario import Scenario
 
-standard_library.install_aliases()
-
-
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DOEScenario(Scenario):
-    """Design of Experiments scenario, based on MDO scenario but with a DOE
-    driver.
+    """Design of Experiments scenario, based on MDO scenario but with a DOE driver.
 
     The main differences between Scenario and MDOScenario are the allowed
     inputs
@@ -85,6 +81,7 @@ class DOEScenario(Scenario):
     # Constants for input variables in json schema
     N_SAMPLES = "n_samples"
     EVAL_JAC = "eval_jac"
+    SEED = "seed"
 
     def __init__(
         self,
@@ -95,8 +92,8 @@ class DOEScenario(Scenario):
         name=None,
         **formulation_options
     ):
-        """Constructor, initializes the DOE scenario
-        Objects instantiation and checks are made before run intentionally
+        """Constructor, initializes the DOE scenario Objects instantiation and checks
+        are made before run intentionally.
 
         :param disciplines: the disciplines of the scenario
         :param formulation: the formulation name,
@@ -115,17 +112,16 @@ class DOEScenario(Scenario):
             name,
             **formulation_options
         )
-
+        self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
 
     def _init_algo_factory(self):
-        """
-        Initalizes the algorithms factory
-        """
+        """Initalizes the algorithms factory."""
         self._algo_factory = DOEFactory()
 
     def _run_algorithm(self):
-        """Runs the DOE algo"""
+        """Runs the DOE algo."""
+        self.seed += 1
         problem = self.formulation.opt_problem
         algo_name = self.local_data[self.ALGO]
         n_samples = self.local_data.get(self.N_SAMPLES)
@@ -142,14 +138,17 @@ class DOEScenario(Scenario):
         if self.ALGO_OPTIONS in self.local_data:
             options = self.local_data[self.ALGO_OPTIONS]
         lib = self._algo_factory.create(algo_name)
-
+        lib.init_options_grammar(algo_name)
+        if self.SEED in lib.opt_grammar.get_data_names():
+            if self.SEED not in options:
+                options[self.SEED] = self.seed
         self.optimization_result = lib.execute(problem, n_samples=n_samples, **options)
         return self.optimization_result
 
     def _run(self):
-        """Execute the scenario and run the optimization problems"""
+        """Execute the scenario and run the optimization problems."""
         LOGGER.info(" ")
         LOGGER.info("*** Start DOE Scenario execution ***")
-        self.log_me()
+        LOGGER.info("%s", repr(self))
         self._run_algorithm()
         LOGGER.info("*** DOE Scenario run terminated ***")

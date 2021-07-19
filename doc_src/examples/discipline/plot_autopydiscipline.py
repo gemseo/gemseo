@@ -24,9 +24,7 @@
 Create a discipline from a python function
 ==========================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 ###############################################################################
 # Import
@@ -37,7 +35,6 @@ from gemseo.api import configure_logger, create_discipline
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Build a discipline from a simple python function
@@ -46,7 +43,7 @@ standard_library.install_aliases()
 
 
 def f(x=0.0, y=0.0):
-    """A simple python function"""
+    """A simple python function."""
     z = x + 2 * y
     return z
 
@@ -90,7 +87,7 @@ print(disc.execute({"x": array([1.0]), "y": array([-3.2])}))
 
 
 def dfdxy(x=0.0, y=0.0):
-    """Jacobian function of f"""
+    """Jacobian function of f."""
     jac = empty((2, 1))
     jac[0, 0] = 1
     jac[1, 0] = 2

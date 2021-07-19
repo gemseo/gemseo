@@ -22,37 +22,31 @@
 Linear solvers wrapper
 **********************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import str
+import logging
 
 import numpy as np
 import scipy.sparse.linalg as scipy_linalg
-from future import standard_library
 from scipy.sparse.base import issparse
 from scipy.sparse.linalg import bicgstab, cgs
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class LinearSolver(object):
-    """Solve a linear system Ax=b"""
+    """Solve a linear system Ax=b."""
 
     LGMRES = "lgmres"
     AVAILABLE_SOLVERS = {LGMRES: scipy_linalg.lgmres}
 
     def __init__(self):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.outer_v = []  # Used to store (v,Av) pairs for restart and multiple RHS
 
     @staticmethod
     def _check_linear_solver(linear_solver):
-        """Check that linear solver is available
+        """Check that linear solver is available.
 
         :param linear_solver: name of linear solver used to solve linear solver
         """
@@ -65,8 +59,8 @@ class LinearSolver(object):
 
     @staticmethod
     def _check_b(a_mat, b_vec):
-        """Check the dimensions of the vector b
-        converts it to ndarray if sparse, for lgmres needs
+        """Check the dimensions of the vector b converts it to ndarray if sparse, for
+        lgmres needs.
 
         :param a_mat: the matrix A
         :param b_vec: the vector b
@@ -87,7 +81,7 @@ class LinearSolver(object):
         return b_vec.real
 
     def solve(self, a_mat, b_vec, linear_solver="lgmres", **kwargs_lin):
-        """Solves the linear system Ax=b using scipy sparse GMRES solver
+        """Solves the linear system Ax=b using scipy sparse GMRES solver.
 
         :param a_mat: matrix A of the system, can be a sparse matrix
         :param b_vec: second member
@@ -112,17 +106,16 @@ class LinearSolver(object):
             A=a_mat, b=b_vec, outer_v=self.outer_v, **kwargs_lin
         )
         base_msg = "scipy linear solver algorithm stop info: "
-        if info == 0:
-            msg = "successful exit"
-        elif info > 0:
-
+        if info > 0:
             msg = "convergence to tolerance not achieved, number of iterations"
             total_msg = base_msg + msg
             LOGGER.warning(total_msg)
             total_msg = base_msg + "--- trying bicgstab method"
             LOGGER.warning(total_msg)
 
-            sol, info = bicgstab(a_mat, b_vec, sol, maxiter=50 * len(b_vec))
+            sol, info = bicgstab(
+                a_mat, b_vec, sol, maxiter=50 * len(b_vec), atol=kwargs_lin["atol"]
+            )
             diff = a_mat.dot(sol) - b_vec.T
             res = np.sqrt(np.sum(diff))
 
@@ -135,7 +128,9 @@ class LinearSolver(object):
                 total_msg = "{} --- trying cgs method".format(base_msg)
                 LOGGER.warning(total_msg)
 
-                sol, info = cgs(a_mat, b_vec, sol, maxiter=50 * len(b_vec))
+                sol, info = cgs(
+                    a_mat, b_vec, sol, maxiter=50 * len(b_vec), atol=kwargs_lin["atol"]
+                )
                 diff = a_mat.dot(sol) - b_vec.T
                 res = np.sqrt(np.sum(diff))
 
@@ -143,7 +138,7 @@ class LinearSolver(object):
                 LOGGER.warning(total_msg)
                 total_msg = "{} --- --- info = {}".format(base_msg, info)
                 LOGGER.warning(total_msg)
-        else:
+        elif info < 0:
             msg = "illegal input or breakdown"
             total_msg = base_msg + msg
             LOGGER.error(total_msg)

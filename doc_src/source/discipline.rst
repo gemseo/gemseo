@@ -26,4 +26,5 @@ Discipline
    disciplines/discipline_from_scratch.rst
    interface/exe_discipline.rst
    disciplines/discipline_interfacing_executable.rst
+   disciplines/discipline_matlab.rst
    disciplines/jacobian_assembly.rst

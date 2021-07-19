@@ -1,13 +1,7 @@
 {
     "name": "Correlations_options",
-    "required": ["save"],
+    "required": [],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
         "n_plots_x":{
             "type": "integer",
             "minimum": 1
@@ -21,11 +15,11 @@
             "minimum": 0.0,
             "maximum": 1.0
         },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
+        "func_names": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "string"
+            }
         }
     },
     "additionalProperties": false,

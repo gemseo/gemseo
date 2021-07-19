@@ -22,11 +22,11 @@
 Chains of disciplines: sequential and parallel execution processes
 ******************************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from copy import deepcopy
 
-from future import standard_library
 from numpy import dot, ndarray, zeros
 
 from gemseo.core.coupling_structure import DependencyGraph
@@ -38,10 +38,7 @@ from gemseo.core.parallel_execution import (
     DiscParallelLinearization,
 )
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MDOChain(MDODiscipline):
@@ -56,8 +53,7 @@ class MDOChain(MDODiscipline):
     def __init__(
         self, disciplines, name=None, grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE
     ):
-        """
-        Constructor of the chain
+        """Constructor of the chain.
 
         :param disciplines: the disciplines list
         :param name: the name of the discipline
@@ -71,7 +67,7 @@ class MDOChain(MDODiscipline):
         self._update_default_inputs()
 
     def set_disciplines_statuses(self, status):
-        """Sets the sub disciplines statuses
+        """Sets the sub disciplines statuses.
 
         :param status: the status
         """
@@ -80,7 +76,7 @@ class MDOChain(MDODiscipline):
             discipline.set_disciplines_statuses(status)
 
     def initialize_grammars(self):
-        """Defines all inputs and outputs of the chain"""
+        """Defines all inputs and outputs of the chain."""
         self.input_grammar.clear()
         self.output_grammar.clear()
         for discipline in self.disciplines:
@@ -90,7 +86,7 @@ class MDOChain(MDODiscipline):
             self.output_grammar.update_from(discipline.output_grammar)
 
     def _update_default_inputs(self):
-        """Computes the default inputs from the disciplines default inputs"""
+        """Computes the default inputs from the disciplines default inputs."""
         self_inputs = self.get_input_data_names()
         for disc in self.disciplines:
             for key, value in disc.default_inputs.items():
@@ -98,14 +94,14 @@ class MDOChain(MDODiscipline):
                     self.default_inputs[key] = value
 
     def _run(self):
-        """Run discipline"""
+        """Run discipline."""
         for discipline in self.disciplines:
             outs = discipline.execute(self.local_data)
             self.local_data.update(outs)
 
     def reverse_chain_rule(self, chain_outputs, discipline):
-        """Chains derivatives of self, with a new discipline in the chain
-        in reverse mode
+        """Chains derivatives of self, with a new discipline in the chain in reverse
+        mode.
 
         Performs chain ruling:
         (notation: D is total derivative, d is partial derivative)
@@ -173,7 +169,7 @@ class MDOChain(MDODiscipline):
                 self.jac[output] = MDOChain.copy_jacs(discipline.jac[output])
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Actual computation of the jacobians
+        """Actual computation of the jacobians.
 
         :param inputs: linearization should be performed with respect
             to inputs list.
@@ -215,7 +211,7 @@ class MDOChain(MDODiscipline):
 
     @staticmethod
     def copy_jacs(jac_dict):
-        """Hard copies Jacobian dict
+        """Hard copies Jacobian dict.
 
         :param jac_dict: dict of dict of ndarrays, or dict of ndarrays
         :returns: deepcopy of the input
@@ -239,19 +235,18 @@ class MDOChain(MDODiscipline):
             discipline.reset_statuses_for_run()
 
     def get_expected_workflow(self):
-        """Returns the expected execution sequence,
-        used for xdsm representation.
-        See MDOFormulation.get_expected_workflow."""
+        """Returns the expected execution sequence, used for xdsm representation.
+
+        See MDOFormulation.get_expected_workflow.
+        """
         sequence = ExecutionSequenceFactory.serial()
         for disc in self.disciplines:
             sequence.extend(disc.get_expected_workflow())
         return sequence
 
     def get_expected_dataflow(self):
-        """Returns the expected data exchange sequence,
-        used for xdsm representation
-        See MDOFormulation.get_expected_dataflow
-        """
+        """Returns the expected data exchange sequence, used for xdsm representation See
+        MDOFormulation.get_expected_dataflow."""
         all_disc = list(set(self.disciplines))
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
@@ -263,9 +258,7 @@ class MDOChain(MDODiscipline):
         return res
 
     def _set_cache_tol(self, cache_tol):
-        """
-        Sets to the cache input tolerance
-        To be overloaded by subclasses
+        """Sets to the cache input tolerance To be overloaded by subclasses.
 
         :param cache_tol: float, cache tolerance
         """
@@ -275,7 +268,7 @@ class MDOChain(MDODiscipline):
 
 
 class MDOParallelChain(MDODiscipline):
-    """Chain of processes that executes disciplines in parallel"""
+    """Chain of processes that executes disciplines in parallel."""
 
     def __init__(
         self,
@@ -283,9 +276,9 @@ class MDOParallelChain(MDODiscipline):
         name=None,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
         use_threading=True,
+        n_processes=None,
     ):
-        """
-        Constructor of the chain
+        """Constructor of the chain.
 
         :param disciplines: the disciplines list
         :param name: the name of the discipline
@@ -293,23 +286,27 @@ class MDOParallelChain(MDODiscipline):
             either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
         :param use_threading: if True, use Threads instead of processes
             to parallelize the execution
+        :param n_processes: maximum number of processors on which to run,
+            by default the number of disciplines
         """
         super(MDOParallelChain, self).__init__(name, grammar_type=grammar_type)
         self.disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
         self._update_default_inputs()
+        if n_processes is None:
+            n_processes = len(self.disciplines)
         dpe = DiscParallelExecution(
-            self.disciplines, len(self.disciplines), use_threading=use_threading
+            self.disciplines, n_processes, use_threading=use_threading
         )
         self.parallel_execution = dpe
         dpl = DiscParallelLinearization(
-            self.disciplines, len(self.disciplines), use_threading=use_threading
+            self.disciplines, n_processes, use_threading=use_threading
         )
         self.parallel_lin = dpl
 
     def initialize_grammars(self):
-        """Defines all inputs and outputs of the chain"""
+        """Defines all inputs and outputs of the chain."""
         self.input_grammar.clear()
         self.output_grammar.clear()
         for discipline in self.disciplines:
@@ -317,7 +314,7 @@ class MDOParallelChain(MDODiscipline):
             self.output_grammar.update_from(discipline.output_grammar)
 
     def _update_default_inputs(self):
-        """Computes the default inputs from the disciplines default inputs"""
+        """Computes the default inputs from the disciplines default inputs."""
         self_inputs = self.get_input_data_names()
         for disc in self.disciplines:
             for key, value in disc.default_inputs.items():
@@ -325,9 +322,7 @@ class MDOParallelChain(MDODiscipline):
                     self.default_inputs[key] = value
 
     def _get_inputs_list(self):
-        """
-        Returns a list of inputs dict for parallel execution
-        """
+        """Returns a list of inputs dict for parallel execution."""
         n_disc = len(self.disciplines)
         # Avoid overlaps with dicts in // by doing a deepcopy
         # The outputs of a discipline may be a coupling, and shall therefore
@@ -337,7 +332,7 @@ class MDOParallelChain(MDODiscipline):
         return all_inpts
 
     def _run(self):
-        """Run discipline"""
+        """Run discipline."""
         all_inpts = self._get_inputs_list()
         self.parallel_execution.execute(all_inpts)
 
@@ -349,7 +344,7 @@ class MDOParallelChain(MDODiscipline):
             self.local_data.update(out_dict)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Actual computation of the jacobians
+        """Actual computation of the jacobians.
 
         :param inputs: linearization should be performed with respect
             to inputs list. If None, linearization
@@ -379,8 +374,7 @@ class MDOParallelChain(MDODiscipline):
         self._set_disciplines_diff_inputs(inputs)
 
     def _set_disciplines_diff_inputs(self, inputs):
-        """
-        Adds inputs to the right sub discipline's differentiated inputs
+        """Adds inputs to the right sub discipline's differentiated inputs.
 
         :param inputs: the inputs list
         """
@@ -395,8 +389,7 @@ class MDOParallelChain(MDODiscipline):
         self._set_disciplines_diff_outputs(outputs)
 
     def _set_disciplines_diff_outputs(self, outputs):
-        """
-        Adds outputs to the right sub discipline's differentiated outputs
+        """Adds outputs to the right sub discipline's differentiated outputs.
 
         :param outputs: the outputs list
         """
@@ -413,10 +406,9 @@ class MDOParallelChain(MDODiscipline):
             discipline.reset_statuses_for_run()
 
     def get_expected_workflow(self):
-        """Returns the expected execution sequence,
-        used for xdsm representation.
-        See MDOFormulation.get_expected_workflow.
+        """Returns the expected execution sequence, used for xdsm representation.
 
+        See MDOFormulation.get_expected_workflow.
         """
         sequence = ExecutionSequenceFactory.parallel()
         for disc in self.disciplines:
@@ -424,16 +416,12 @@ class MDOParallelChain(MDODiscipline):
         return sequence
 
     def get_expected_dataflow(self):
-        """Returns the expected data exchange sequence,
-        used for xdsm representation
-        See MDOFormulation.get_expected_dataflow
-        """
+        """Returns the expected data exchange sequence, used for xdsm representation See
+        MDOFormulation.get_expected_dataflow."""
         return []
 
     def _set_cache_tol(self, cache_tol):
-        """
-        Sets to the cache input tolerance
-        To be overloaded by subclasses
+        """Sets to the cache input tolerance To be overloaded by subclasses.
 
         :param cache_tol: float, cache tolerance
         """
@@ -443,8 +431,8 @@ class MDOParallelChain(MDODiscipline):
 
 
 class MDOAdditiveChain(MDOParallelChain):
-    """Chain of processes that executes disciplines in parallel and sums
-    specified outputs across disciplines"""
+    """Chain of processes that executes disciplines in parallel and sums specified
+    outputs across disciplines."""
 
     def __init__(
         self,
@@ -453,32 +441,33 @@ class MDOAdditiveChain(MDOParallelChain):
         name=None,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
         use_threading=True,
+        n_processes=None,
     ):
-        """
-        Constructor.
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
         :param outputs_to_sum: names list of the outputs to sum
         :type outputs_to_sum: list(str)
         :param name: name of the discipline
-        :type name: str
+        :type name: str, optional
         :param grammar_type: the type of grammar to use for IO declaration
                             either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
+        :type grammar_type: str, optional
         :param use_threading: if True, use Threads instead of processes
             to parallelize the execution
-        :type use_threading: bool
+        :type use_threading: bool, optional
+        :param n_processes: maximum number of processors on which to run,
+            by default the number of disciplines
+        :type n_processes: int, optional
         """
         super(MDOAdditiveChain, self).__init__(
-            disciplines, name, grammar_type, use_threading
+            disciplines, name, grammar_type, use_threading, n_processes
         )
         self._outputs_to_sum = outputs_to_sum
 
     def _run(self):
-        """
-        Runs the disciplines and computes the sum.
-        """
+        """Runs the disciplines and computes the sum."""
         # Run the disciplines in parallel
         MDOParallelChain._run(self)
 
@@ -493,7 +482,7 @@ class MDOAdditiveChain(MDOParallelChain):
             self.local_data[out_name] = sum_value
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Actual computation of the Jacobians
+        """Actual computation of the Jacobians.
 
         :param inputs: linearization should be performed with respect
             to inputs list. If None, linearization

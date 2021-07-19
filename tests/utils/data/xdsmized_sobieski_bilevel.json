@@ -1,0 +1,669 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis2",
+        "name": "MDAJacobi",
+        "type": "mda"
+      },
+      {
+        "id": "Dis3",
+        "name": "SobieskiPropulsion",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "SobieskiAerodynamics",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis5",
+        "name": "SobieskiStructure",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis6",
+        "name": "PropulsionScenario_scn-1-1",
+        "type": "mdo",
+        "subxdsm": "PropulsionScenario_scn-1-1"
+      },
+      {
+        "id": "Dis7",
+        "name": "AerodynamicsScenario_scn-1-2",
+        "type": "mdo",
+        "subxdsm": "AerodynamicsScenario_scn-1-2"
+      },
+      {
+        "id": "Dis8",
+        "name": "StructureScenario_scn-1-3",
+        "type": "mdo",
+        "subxdsm": "StructureScenario_scn-1-3"
+      },
+      {
+        "id": "Dis9",
+        "name": "MDAChain",
+        "type": "mda"
+      },
+      {
+        "id": "Dis10",
+        "name": "MDAJacobi",
+        "type": "mda"
+      },
+      {
+        "id": "Dis14",
+        "name": "SobieskiMission",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_shared^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "-y_4^*, g_1_g_2_g_3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "g_3, g_2, g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "g_3, g_2, g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis5",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis9",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis9",
+        "to": "Opt",
+        "name": "g_3, g_2, g_1, y_4"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis10",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis10",
+        "to": "Opt",
+        "name": "g_3, g_2, g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis5",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis14",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis14",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y_32^*, y_31^*, y_3^*, y_34^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Dis4",
+        "to": "_U_",
+        "name": "y_21^*, y_23^*, y_24^*, y_2^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Dis5",
+        "to": "_U_",
+        "name": "y_1^*, y_11^*, y_14^*, y_12^*"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y_32^*, y_31^*, y_3^*, y_34^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_3"
+      },
+      {
+        "from": "Dis4",
+        "to": "_U_",
+        "name": "y_21^*, y_23^*, y_24^*, y_2^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "g_2"
+      },
+      {
+        "from": "Dis5",
+        "to": "_U_",
+        "name": "y_1^*, y_11^*, y_14^*, y_12^*"
+      },
+      {
+        "from": "Dis5",
+        "to": "Opt",
+        "name": "g_1"
+      },
+      {
+        "from": "Dis14",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis9",
+        "to": "Dis6",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis9",
+        "to": "Dis1",
+        "name": "y_12, y_21, y_23, y_31, y_32"
+      },
+      {
+        "from": "Dis9",
+        "to": "Dis7",
+        "name": "y_12, y_32"
+      },
+      {
+        "from": "Dis9",
+        "to": "Dis8",
+        "name": "y_21, y_31"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis9",
+        "name": "x_3, y_31, y_32"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis1",
+        "name": "x_3, y_31, y_32"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis7",
+        "name": "y_32"
+      },
+      {
+        "from": "Dis6",
+        "to": "Dis8",
+        "name": "y_31"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis9",
+        "name": "y_12, y_21, y_23, y_31, y_32"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis6",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis7",
+        "name": "y_12, y_32"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis8",
+        "name": "y_21, y_31"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis9",
+        "name": "x_2, y_21, y_23"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis6",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis1",
+        "name": "x_2, y_21, y_23"
+      },
+      {
+        "from": "Dis7",
+        "to": "Dis8",
+        "name": "y_21"
+      },
+      {
+        "from": "Dis8",
+        "to": "Dis9",
+        "name": "x_1, y_12"
+      },
+      {
+        "from": "Dis8",
+        "to": "Dis1",
+        "name": "x_1, y_12"
+      },
+      {
+        "from": "Dis8",
+        "to": "Dis7",
+        "name": "y_12"
+      },
+      {
+        "from": "Dis10",
+        "to": "Dis14",
+        "name": "y_14, y_24, y_34"
+      },
+      {
+        "from": "Dis10",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis10",
+        "to": "Dis4",
+        "name": "y_12, y_32"
+      },
+      {
+        "from": "Dis10",
+        "to": "Dis5",
+        "name": "y_21, y_31"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis10",
+        "name": "y_31, y_32"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "y_32"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis5",
+        "name": "y_31"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis10",
+        "name": "y_21, y_23"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis5",
+        "name": "y_21"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis10",
+        "name": "y_12"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis4",
+        "name": "y_12"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis4",
+        "name": "y_12, y_32"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis5",
+        "name": "y_21, y_31"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis2",
+        "name": "y_31, y_32"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "y_32"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis5",
+        "name": "y_31"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis2",
+        "name": "y_21, y_23"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis3",
+        "name": "y_23"
+      },
+      {
+        "from": "Dis4",
+        "to": "Dis5",
+        "name": "y_21"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis2",
+        "name": "y_12"
+      },
+      {
+        "from": "Dis5",
+        "to": "Dis4",
+        "name": "y_12"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          [
+            {
+              "parallel": [
+                "Dis3",
+                "Dis4",
+                "Dis5"
+              ]
+            }
+          ],
+          "Dis6",
+          "Dis7",
+          "Dis8",
+          "Dis9",
+          "Dis10",
+          [
+            {
+              "parallel": [
+                "Dis3",
+                "Dis4",
+                "Dis5"
+              ]
+            }
+          ],
+          "Dis14"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   Minimize: -y_4(x_shared)\n   With respect to: x_shared\n   Subject to constraints:\n      g_1_g_2_g_3(x_shared) <= 0.0"
+  },
+  "PropulsionScenario_scn-1-1": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "SobieskiPropulsion",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_3^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "y_34^*, g_3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_3"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_34, g_3"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y_32^*, y_31^*, y_3^*"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "g_3, y_34"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   Minimize: y_34(x_3)\n   With respect to: x_3\n   Subject to constraints:\n      g_3(x_3) <= 0.0"
+  },
+  "AerodynamicsScenario_scn-1-2": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "SobieskiAerodynamics",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_2^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "-y_24^*, g_2^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_24, g_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y_21^*, y_23^*, y_2^*"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_24, g_2"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   Minimize: -y_24(x_2)\n   With respect to: x_2\n   Subject to constraints:\n      g_2(x_2) <= 0.0"
+  },
+  "StructureScenario_scn-1-3": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "SobieskiStructure",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_1^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "-y_11^*, g_1^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_1"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_11, g_1"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y_1^*, y_14^*, y_12^*"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_11, g_1"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   Minimize: -y_11(x_1)\n   With respect to: x_1\n   Subject to constraints:\n      g_1(x_1) <= 0.0"
+  }
+}

@@ -1,27 +1,17 @@
-image: continuumio/miniconda3:4.9.2
-
-# Settings common to all the jobs.
-variables:
-  # Set this variable to true to run all the tox tests envs,
-  # this format allows pre-filling in gitlab run pipeline UI.
-  ALL_TEST_ENVS:
-    value: "false"
-    description: "Set to true to run all the tox tests environments."
+default:
+  image: continuumio/miniconda3:4.9.2
 
 # Stages executed sequentially until a job fails.
 stages:
   - check
   - tests
 
-# Commands executed before the job main script, it creates the env with tox, used for all the jobs.
-before_script:
-  - conda create -p .tox-env pip
-  # Install tox-conda (will also install tox).
-  - conda run -p .tox-env --no-capture-output pip install tox-conda==0.7.3
-  # Show debug info on the anaconda settings.
-  - conda info --all
-
-# Not common settings below.
+variables:
+  # Set this variable to true to run all the tox tests envs.
+  TEST_ALL_ENVS:
+    value: "false"
+    description: "Set to true to run all the tox tests environments."
+  TOX_CONDA_VERSION: "0.8.0"
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
@@ -34,33 +24,40 @@ before_script:
 #     .tests
 #         .tests-linux
 #             py27,py38
-#             py36,py37
+#             py36,py37,py39
 #         .tests-windows
 #             py27-win,py38-win
-#             py36-win,py37-win
+#             py36-win,py37-win,py39-win
 
 # Base job template.
 .base:
+  interruptible: true
+  dependencies: []
+
+  before_script:
+    # Create the env with tox.
+    - conda create -p .tox-env pip
+    # Install tox-conda (will also install tox).
+    - conda run -p .tox-env --no-capture-output pip install tox-conda==$TOX_CONDA_VERSION
+    # Show debug info on the anaconda settings.
+    - conda info --all
+
   script:
     # Run a tox env named after a job name.
     - conda run
       -p .tox-env
       --no-capture-output
       tox -e $CI_JOB_NAME
+
   cache:
-    paths:
-      # This env is the same for all the jobs but the cache is duplicated for all of them.
-      # TODO: use multi-cache when it is available on gitlab.com
-      - .tox-env
-      # The env of the current job.
-      - .tox/$CI_JOB_NAME
-      # The pre-commit cache, non-empty only for the style job, defined here because it is not easy to extend a list
-      # from a parent list.
-      - .cache/pre-commit
+    - key: tox-env-$TOX_CONDA_VERSION
+      paths:
+        - .tox-env
 
 # Specific settings for linux jobs.
 .linux:
   tags:
+    - gemseo-docker
     - docker
   variables:
     # Caches on the CI runner host.
@@ -70,11 +67,12 @@ before_script:
 # Specific settings for windows jobs.
 .windows:
   tags:
+    - gemseo-windows-server-2012
     - windows-server-2012
   variables:
     # Caches on the CI runner host.
-    CONDA_PKGS_DIRS: "C:\\gitlab-runner-cache\\conda"
-    PIP_CACHE_DIR: "C:\\gitlab-runner-cache\\pip"
+    CONDA_PKGS_DIRS: "E:\\conda"
+    PIP_CACHE_DIR: "E:\\pip"
 
 # Jobs for the check stage.
 style:
@@ -87,23 +85,33 @@ style:
     # Pass the cache locations through the tox env.
     TOX_TESTENV_PASSENV: PIP_CACHE_DIR PRE_COMMIT_HOME
   cache:
-    key:
-      files:
-        - .pre-commit-config.yaml
-        - requirements/style.txt
+    # The extends key does not work for lists.
+    - !reference [.base, cache]
+    - key:
+        files:
+          - requirements/style.txt
+        prefix: $CI_JOB_NAME
+      paths:
+        - .tox/$CI_JOB_NAME
+    - key:
+        files:
+          - .pre-commit-config.yaml
+        prefix: pre-commit-cache
+      paths:
+        - .cache/pre-commit
 
-pylint:
-  extends:
-    - .base
-    - .linux
-  stage: check
-  allow_failure: true
-  cache:
-    key:
-      files:
-        - requirements/pylint.txt
-  # always create the cache
-    when: always
+# pylint:
+#   extends:
+#     - .base
+#     - .linux
+#   stage: check
+#   allow_failure: true
+#   cache:
+#     key:
+#       files:
+#         - requirements/pylint.txt
+#     # Always create the cache.
+#     when: always
 
 # Tests stage.
 
@@ -117,15 +125,20 @@ pylint:
     PYTEST_ADDOPTS: --cov --cov-report=term --cov-report=xml --junitxml=report.xml
     TOX_TESTENV_PASSENV: PYTEST_ADDOPTS
   cache:
-    key:
-      # Define the cache affinity such that it is tied to the content of the tests env.
-      files:
-        # The packages installed in an env are loosely defined in those requirements files
-        #   (not strictly because these files only define the unpinned direct dependencies).
-        - requirements/gemseo.in
-        - requirements/gemseo-conda.txt
-      # Some packages will change when the python version changes, hence the tox env name.
-      prefix: $CI_JOB_NAME
+    - !reference [.base, cache]
+    - key:
+        # Define the cache affinity such that it is tied to the content of the tests env.
+        files:
+          # The packages installed in an env are loosely defined in those requirements files
+          #   (not strictly because these files only define the unpinned direct dependencies).
+          - requirements/gemseo.in
+          # We can only have 2 files as cache keys, changes for python 2 shall hopefully follow the ones for python 3.
+          # NOTE: This will be properly fixed when we'll use pip-compile'd gemseo.in.
+          - requirements/gemseo-conda-python3.txt
+        # Some packages will change when the python version changes, hence the tox env name.
+        prefix: $CI_JOB_NAME
+      paths:
+        - .tox/$CI_JOB_NAME
   artifacts:
     # Send the artifacts even on job failure.
     when: always
@@ -164,13 +177,13 @@ py27-win:
 py38-win:
   extends: .tests-windows
 
-# Define jobs for minor env with this additional parent
+# Define jobs for minor env with this additional parent.
 .additional-tests:
   rules:
     # For selecting from gitlab UI
-    - if: '$ALL_TEST_ENVS == "true"'
-    # Run for MR to the master branch
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+    - if: '$TEST_ALL_ENVS == "true"'
+    # Run for commits on the master branch
+    - if: '$CI_COMMIT_BRANCH == "master"'
 
 py36:
   extends:
@@ -178,6 +191,11 @@ py36:
     - .additional-tests
 
 py37:
+  extends:
+    - .tests-linux
+    - .additional-tests
+
+py39:
   extends:
     - .tests-linux
     - .additional-tests
@@ -190,4 +208,25 @@ py36-win:
 py37-win:
   extends:
     - .tests-windows
+    - .additional-tests
+
+py39-win:
+  extends:
+    - .tests-windows
+    - .additional-tests
+
+# Jobs for testings anaconda environment yaml files.
+
+anaconda-envs:
+  stage: tests
+  extends:
+    - .base
+    - .linux
+    - .additional-tests
+
+anaconda-envs-win:
+  stage: tests
+  extends:
+    - .base
+    - .windows
     - .additional-tests

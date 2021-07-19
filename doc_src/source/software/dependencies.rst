@@ -27,19 +27,24 @@ coverage so that you can fully check your configuration.
 Core features
 *************
 
-The minimal dependencies provide the core features of |g|,
-these are (shown here for python 3):
+The required dependencies provide the core features of |g|,
+these are (shown here for Python 3):
 
-   - fastjsonschema <=2.14.5
+   - custom_inherit ==2.3.1
+   - fastjsonschema <=2.15.1
    - future
-   - h5py >=2.3,<=2.10.0
-   - matplotlib >=2,<=3.3.3
-   - numpy >=1.10,<=1.19.4
-   - pyxdsm <=2.1.3
+   - genson ==1.2.2
+   - h5py >=2.3,<=3.2.1
+   - jinja2 <=3.0.1
+   - matplotlib >=2,<=3.3.4
+   - networkx >=2.2,<=2.5
+   - numpy >=1.10,<=1.20.3
+   - pyxdsm <=2.2.0
    - requests
-   - scipy >=1.1,<=1.4.1
+   - scipy >=1.1,<=1.6.3
    - six
-   - xdsmjs ==1.0.0
+   - tqdm >=4,<=4.61.0
+   - xdsmjs >=1.0.0,<=1.0.1
 
 The minimal dependencies will allow to execute
 :ref:`MDO processes <mdo_formulations>`
@@ -61,13 +66,15 @@ full features set of |g|.
 All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
-   - openturns >=1.13,<=1.15: designs of experiments
-   - pandas >=0.16,<=1.1.4: scatterplot matrix
+   - openturns >=1.13,<=1.16: designs of experiments
+   - pandas >=0.16,<=1.2.4: scatterplot matrix
+   - pdfo ==1.0.0: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments
-   - scikit-learn >=0.18,<=0.23.2: gaussian process surrogate model and SOM, kmeans
+   - scikit-learn >=0.18,<=0.24.2: gaussian process surrogate model and SOM, kmeans
    - sympy >=0.7,<=1.7: symbolic calculations for analytic disciplines
-   - openpyxl <=3.0.5: excel reading with pandas
+   - openpyxl <=3.0.7: excel reading with pandas
    - xlwings <=0.21.4: excel reading with pandas
-   - graphviz <=2.42.3: coupling graph generation
-   - nlopt >=2.4.2,<=2.6.2: optimization library
+   - graphviz <=0.16: coupling graph generation
+   - nlopt >=2.4.2,<=2.7.0: optimization library
+   - pdfo ==1.0.0: optimization library
    - pyside2 <=5.15.2: grammar editor GUI

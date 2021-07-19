@@ -23,19 +23,13 @@
 Decorators to lock and protect critical code sections
 *****************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import functools
 
-from future import standard_library
-
-standard_library.install_aliases()
-
 
 def synchronized(wrapped):
-    """
-    A synchronization decorator to avoid concurrent access
-    of critical sections
+    """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
     with a self.lock attribute
@@ -45,7 +39,7 @@ def synchronized(wrapped):
 
     @functools.wraps(wrapped)
     def _wrapper(*args, **kwargs):
-        """Definition of the synchronization decorator"""
+        """Definition of the synchronization decorator."""
         with args[0].lock:
             return wrapped(*args, **kwargs)
 
@@ -53,9 +47,7 @@ def synchronized(wrapped):
 
 
 def synchronized_hashes(wrapped):
-    """
-    A synchronization decorator to avoid concurrent access
-    of critical sections
+    """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
     with a self.lock_hashes attribute
@@ -65,7 +57,7 @@ def synchronized_hashes(wrapped):
 
     @functools.wraps(wrapped)
     def _wrapper(*args, **kwargs):
-        """Definition of the synchronization decorator"""
+        """Definition of the synchronization decorator."""
         with args[0].lock_hashes:
             return wrapped(*args, **kwargs)
 

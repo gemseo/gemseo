@@ -20,47 +20,41 @@
 #        :author: Matthias De Lozzo
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Unit test for ClusteringModelFactory class
-in gemseo.mlearning.cluster.factory.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Unit test for ClusteringModelFactory class in gemseo.mlearning.cluster.factory."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 from gemseo.problems.dataset.iris import IrisDataset
-
-standard_library.install_aliases()
-
 
 N_CLUSTERS = 3
 
 
 @pytest.fixture
-def dataset():
-    """ Dataset from Iris Dataset. """
-    iris = IrisDataset()
-    return iris
+def dataset():  # type: (...) -> IrisDataset
+    """The dataset used to train the clustering algorithms."""
+    return IrisDataset()
 
 
 def test_constructor():
-    """ Test ClusteringModelFactory constructor. """
+    """Test ClusteringModelFactory constructor."""
     factory = ClusteringModelFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning.cluster" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        ["GaussianMixture", "KMeans", "MLPredictiveClusteringAlgo"]
+    )
 
 
 def test_create(dataset):
-    """ Test the creation of a model from data. """
+    """Test the creation of a model from data."""
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     assert hasattr(kmeans, "parameters")
 
 
 def test_load(dataset, tmp_path):
-    """ Test the loading of a model from data. """
+    """Test the loading of a model from data."""
     factory = ClusteringModelFactory()
     kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
     kmeans.learn()
@@ -70,14 +64,14 @@ def test_load(dataset, tmp_path):
 
 
 def test_available_clustering_models():
-    """ Test the getter of available clustering models. """
+    """Test the getter of available clustering models."""
     factory = ClusteringModelFactory()
     assert "KMeans" in factory.models
     assert "LinearRegression" not in factory.models
 
 
 def test_is_available():
-    """ Test the existence of a clustering model. """
+    """Test the existence of a clustering model."""
     factory = ClusteringModelFactory()
     assert factory.is_available("KMeans")
     assert not factory.is_available("Dummy")

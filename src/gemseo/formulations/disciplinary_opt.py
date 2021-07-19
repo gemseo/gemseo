@@ -18,49 +18,33 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A formulation for uncoupled or weakly coupled problems
-******************************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""A formulation for uncoupled or weakly coupled problems."""
+from __future__ import division, unicode_literals
 
-from builtins import super
+from typing import List, Sequence, Tuple
 
-from future import standard_library
-
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
 
 class DisciplinaryOpt(MDOFormulation):
-    """
-    The disciplinary optimization formulation draws the architecture
-    of a mono disciplinary
-    optimization process from an ordered list of disciplines,
-    an objective function and a design space. The objective function
-    is minimized by default.
+    """The disciplinary optimization.
+
+    This formulation draws the architecture of a mono-disciplinary optimization process
+    from an ordered list of disciplines, an objective function and a design space.
     """
 
     def __init__(
-        self, disciplines, objective_name, design_space, maximize_objective=False
-    ):
-        """
-        Constructor, initializes the objective functions and constraints
-
-        :param disciplines: the disciplines list.
-        :type disciplines: list(MDODiscipline)
-        :param objective_name: the objective function data name.
-        :type objective_name: str
-        :param design_space: the design space.
-        :type design_space: DesignSpace
-        :param maximize_objective: if True, the objective function
-            is maximized, by default, a minimization is performed.
-        :type maximize_objective: bool
-        """
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+        objective_name,  # type: str
+        design_space,  # type: DesignSpace
+        maximize_objective=False,  # type: bool
+    ):  # type: (...) -> None
         self.chain = None
         if len(disciplines) > 1:
             self.chain = MDOChain(disciplines)
@@ -75,40 +59,27 @@ class DisciplinaryOpt(MDOFormulation):
         # Build the objective from its objective name
         self._build_objective_from_disc(objective_name)
 
-    def get_expected_workflow(self):
-        """
-        Returns the expected execution sequence,
-        used for xdsm representation
-        """
+    def get_expected_workflow(
+        self,
+    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
         if self.chain is None:
             return ExecutionSequenceFactory.serial(self.disciplines[0])
         return self.chain.get_expected_workflow()
 
-    def get_expected_dataflow(self):
-        """
-        Returns the expected data exchange sequence,
-        used for xdsm representation
-        """
+    def get_expected_dataflow(
+        self,
+    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
         if self.chain is None:
             return []
         return self.chain.get_expected_dataflow()
 
-    def get_top_level_disc(self):
-        """Returns the disciplines which inputs are required to run the
-        associated scenario
-        By default, returns all disciplines
-        To be overloaded by subclasses
-
-        :returns: the list of top level disciplines
-        """
+    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
         if self.chain is not None:
             return [self.chain]
         return self.disciplines
 
-    def _filter_design_space(self):
-        """
-        Filters the design space to keep only available variables
-        """
+    def _filter_design_space(self):  # type: (...) -> None
+        """Filter the design space to keep only available variables."""
         all_inpts = DataConversion.get_all_inputs(self.get_top_level_disc())
         kept = set(self.design_space.variables_names) & set(all_inpts)
         self.design_space.filter(kept)

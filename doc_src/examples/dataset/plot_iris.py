@@ -51,16 +51,15 @@ This dataset can be used for either clustering purposes
 or classification ones.
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 from numpy.random import choice
 
 from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Load Iris dataset
@@ -116,7 +115,7 @@ print(labels[shown_samples, :])
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-iris.plot("ScatterMatrix", classifier="specy", kde=True)
+iris.plot("ScatterMatrix", classifier="specy", kde=True, save=False, show=False)
 
 ##############################################################################
 # Plot parallel coordinates
@@ -126,7 +125,7 @@ iris.plot("ScatterMatrix", classifier="specy", kde=True)
 # a.k.a. cowebplot, where each samples
 # is represented by a continuous straight line in pieces whose nodes are
 # indexed by the variables names and measure the variables values.
-iris.plot("ParallelCoordinates", classifier="specy")
+iris.plot("ParallelCoordinates", classifier="specy", save=False, show=False)
 
 ##############################################################################
 # Plot Andrews curves
@@ -135,10 +134,12 @@ iris.plot("ParallelCoordinates", classifier="specy")
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-iris.plot("AndrewsCurves", classifier="specy")
+iris.plot("AndrewsCurves", classifier="specy", save=False, show=False)
 
 ##############################################################################
 # Plot Radar
 # ~~~~~~~~~~
 # We can use the :class:`.Radar` plot
-iris.plot("Radar", classifier="specy")
+iris.plot("Radar", classifier="specy", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

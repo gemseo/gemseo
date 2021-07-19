@@ -25,15 +25,14 @@ Plot - Parallel coordinates
 ===========================
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ############################################################################
 # Load a dataset
@@ -48,4 +47,6 @@ iris = load_dataset("IrisDataset")
 # a.k.a. cowebplot, where each samples is represented by a continuous straight
 # line in pieces whose nodes are indexed by the variables names and measure the
 # variables values.
-iris.plot("ParallelCoordinates", classifier="specy")
+iris.plot("ParallelCoordinates", classifier="specy", show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

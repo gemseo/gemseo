@@ -1,19 +1,7 @@
 {
     "name": "LineChart_options",
-    "required": ["save", "data_list"],
+    "required": ["data_list"],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
-        },
         "data_list":{
         	"items": {
                 "type": "string",

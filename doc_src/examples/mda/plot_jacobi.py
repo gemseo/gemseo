@@ -26,7 +26,7 @@ Jacobi MDA
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from os import name as os_name
 
@@ -41,8 +41,8 @@ configure_logger()
 # Define a way to display results
 # -------------------------------
 def display_result(res, mda_name):
-    """
-    Display coupling and output variables in logger
+    """Display coupling and output variables in logger.
+
     @param res: result (dict) of MDA
     @param mda_name: name of the current MDA
     """

@@ -19,9 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Radar visualization
-===================
+r"""Draw a radar visualization from a :class:`.Dataset`.
 
 The :class:`.Radar` class implements the Radviz plot,
 which is a way to visualize :math:`n` samples of a multi-dimensional vector
@@ -53,25 +51,28 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
-from future import standard_library
+from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-standard_library.install_aliases()
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Radar(DatasetPlot):
-    """ Radar visualization. """
+    """Radar visualization."""
 
-    def _plot(self, classifier):
-        """Andrews curves.
-
-        :param classifier: variable name to build the cluster.
-        :type classifier: str
+    def _plot(
+        self,
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
+        classifier,  # type: str
+    ):  # type: (...) -> List[Figure]
+        """
+        Args:
+            classifier: The name of the variable to group the data.
         """
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -86,7 +87,6 @@ class Radar(DatasetPlot):
                 column = (self.dataset.get_group(label), label, str(comp))
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
-        dataframe.columns = self._get_varnames(dataframe)
+        dataframe.columns = self._get_variables_names(dataframe)
         radviz(dataframe, label)
-        fig = plt.gcf()
-        return fig
+        return [plt.gcf()]

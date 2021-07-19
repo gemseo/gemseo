@@ -28,9 +28,9 @@ Runs simple optimization problem with multiple starting points
 Nests a :class:`.MDOScenario` in a :class:`.DOEScenario`
 using a :class:`.MDOScenarioAdapter`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import (
     configure_logger,
@@ -42,7 +42,6 @@ from gemseo.core.mdo_scenario import MDOScenarioAdapter
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Create the disciplines
@@ -97,4 +96,6 @@ scenario_doe.execute(run_inputs)
 ##############################################################################
 # Plot the optimum objective for different x0
 # -------------------------------------------
-scenario_doe.post_process("BasicHistory", data_list=["obj"], save=False, show=True)
+scenario_doe.post_process("BasicHistory", data_list=["obj"], save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

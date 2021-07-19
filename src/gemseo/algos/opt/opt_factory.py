@@ -20,23 +20,15 @@
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""
-A factory to execute optimization algorithms from their name
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import super
-
-from future import standard_library
+"""A factory to execute optimization algorithms from their name."""
+from __future__ import division, unicode_literals
 
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
-standard_library.install_aliases()
-
 
 class OptimizersFactory(DriverFactory):
-    """Optimization  libraries factory, see DriverFactory"""
+    """Optimization  libraries factory, see DriverFactory."""
 
     def __init__(self):
         """Test and import optimization library if it is available."""

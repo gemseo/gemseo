@@ -20,103 +20,83 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Quadratic approximations of functions from the optimization history
-*******************************************************************
-"""
+"""Quadratic approximations of functions from the optimization history."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from math import ceil
-from os.path import splitext
+from typing import Optional
 
 import numpy as np
 import pylab
-from future import standard_library
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
+from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatter
+from numpy import ndarray
 from pylab import plt
 
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class QuadApprox(OptPostProcessor):
-    """
-    The **QuadApprox** post processing
-    performs a quadratic approximation of a given function
-    from an optimization history
-    and plot the results as cuts of the approximation.
+    """Quadratic approximation of a function.
+
+    And cuts of the approximation.
 
     The function index can be passed as option.
-    It is possible either to save the plot, to show the plot or both.
     """
 
     SR1_APPROX = "SR1"
 
-    def __init__(self, opt_problem):
-        """
-        Constructor
-
-        :param opt_problem : the optimization problem to run
-        """
+    def __init__(
+        self,
+        opt_problem,  # type: OptimizationProblem
+    ):  # type: (...) -> None
         super(QuadApprox, self).__init__(opt_problem)
         self.grad_opt = None
 
     def _plot(
         self,
-        function,
-        save=True,
-        show=False,
-        file_path="quad_approx",
-        func_index=None,
-        extension="pdf",
-    ):
-        """
-        Builds the plot and saves it
+        function,  # type: str
+        func_index=None,  # type: Optional[int]
+    ):  # type: (...) -> None
+        """Build the plot and save it.
 
-        :param function: function name to build quadratic approximation
-        :type function: str
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param share_y: if True, all Y axis are the same,
-            useful to compare sensitivities
-        :type share_y: bool
-        :param func_index: functional index
-        :type func_index: int
-        :param extension: file extension
-        :type extension: str
+        Args:
+            function: The function name to build the quadratic approximation.
+            func_index: The index of the output of interest
+                to be defined if the function has a multidimensional output.
+                If None and if the output is multidimensional, an error is raised.
         """
         b_mat = self.__build_approx(function, func_index)
         self.out_data_dict["b_mat"] = b_mat
         fig = self.__plot_hessian(b_mat, function)
-
-        root = splitext(file_path)[0]
-        file_path = root + "_hess_approx"
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+        self._add_figure(fig, "hess_approx")
         fig = self.__plot_variations(b_mat)
+        self._add_figure(fig, "quad_approx")
 
-        file_path = root + "_quad_approx"
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+    def __build_approx(
+        self,
+        function,  # type: str
+        func_index,  # type: int
+    ):  # type: (...) -> ndarray
+        """Build the approximation.
 
-    def __build_approx(self, function, func_index):
-        """
-        Builds the approximation
+        Args:
+            function: The function name to build the quadratic approximation.
+            func_index: The index of the output of interest
+                to be defined if the function has a multidimensional output.
 
-        :param method: SR1 or BFGS
+        Returns:
+             The approximation.
         """
         apprx = SR1Approx(self.database)
         n_x = self.opt_problem.get_dimension()
@@ -132,23 +112,37 @@ class QuadApprox(OptPostProcessor):
         return b_mat
 
     @staticmethod
-    def __plot_hessian(hessian, function):
-        """
-        Plots the Hessian of the function
+    def __plot_hessian(
+        hessian,  # type: ndarray
+        function,  # type: str
+    ):  # type: (...) -> Figure
+        """Plot the Hessian of the function.
 
-        :param hessian: the hessian
+        Args:
+            hessian: The Hessian of the function.
+            function: The function name.
+
+        Returns:
+            The plot of the Hessian of the function.
         """
         fig = pylab.figure()
         pylab.plt.xlabel(r"$x_i$", fontsize=16)
         pylab.plt.ylabel(r"$x_j$", fontsize=16)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
-        linthresh = 10 ** ((np.log10(vmax) - 5.0))
-        # SymLog is a symetric log scale adapted to negative values
+        linthresh = 10 ** (np.log10(vmax) - 5.0)
+
+        # On python 2, base is not defined as a parameter in SymLogNorm()
+        if PY2:
+            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
+        else:
+            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=np.e)
+
+        # SymLog is a symmetric log scale adapted to negative values
         pylab.imshow(
             hessian,
             cmap=PARULA,
             interpolation="nearest",
-            norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
+            norm=norm,
         )
         pylab.grid(True)
         l_f = LogFormatter(base=10, labelOnlyBase=False)
@@ -163,23 +157,39 @@ class QuadApprox(OptPostProcessor):
         return fig
 
     @staticmethod
-    def unnormalize_vector(xn_array, ivar, lower_bounds, upper_bounds):
-        """Unormalize a variable with respect to bounds
+    def unnormalize_vector(
+        xn_array,  # type: ndarray
+        ivar,  # type: int
+        lower_bounds,  # type: ndarray
+        upper_bounds,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Unormalize a variable with respect to bounds.
 
-        :param xn_array: normalized variable (array)
-        :param ivar: index of variable bound
-        :param lower_bounds: param upper_bounds:
-        :param upper_bounds:
-        :returns: unnormalized array
-        :rtype: numpy array
+        Args:
+            xn_array: The normalized variable.
+            ivar: The index of the variable bound.
+            lower_bounds: The lower bounds of the variable.
+            upper_bounds: The upper bounds of the variable.
 
+        Returns:
+            The unnormalized variable.
         """
         l_b = lower_bounds[ivar]
         u_b = upper_bounds[ivar]
         return (u_b - l_b) * xn_array * 0.5 + 0.5 * (l_b + u_b)
 
-    def __plot_variations(self, hessian):
-        """Plots the variation plots of the function wrt all variables """
+    def __plot_variations(
+        self,
+        hessian,  # type: ndarray
+    ):  # type: (...) -> Figure
+        """Plot the variation plot of the function w.r.t. all variables.
+
+        Args:
+            hessian: The Hessian of the function.
+
+        Returns:
+            The plot of the variation of the function w.r.t. all variables.
+        """
         ndv = hessian.shape[0]
         ncols = int(np.sqrt(ndv)) + 1
         nrows = int(ceil(float(ndv) / ncols))

@@ -19,15 +19,18 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-"""
-A from scratch example on the Sellar problem
-"""
+"""A from scratch example on the Sellar problem."""
 
-from math import exp, sqrt
+from math import exp
 
 from numpy import array, ones
 
-from gemseo.api import DesignSpace, MDODiscipline, MDOScenario
+from gemseo.algos.design_space import DesignSpace
+from gemseo.api import configure_logger
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
+
+configure_logger()
 
 
 class SellarSystem(MDODiscipline):
@@ -47,9 +50,9 @@ class SellarSystem(MDODiscipline):
         # ie how outputs are computed from inputs
         x, z, y_0, y_1 = self.get_inputs_by_name(["x", "z", "y_0", "y_1"])
         # The ouputs are stored here
-        self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] + exp(-y_1[0])])
-        self.local_data["c_1"] = array([1.0 - y_0[0] / 3.16])
-        self.local_data["c_2"] = array([y_1[0] / 24.0 - 1.0])
+        self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] ** 2 + exp(-y_1[0])])
+        self.local_data["c_1"] = array([3.16 - y_0[0] ** 2])
+        self.local_data["c_2"] = array([y_1[0] - 24.0])
 
 
 class Sellar1(MDODiscipline):
@@ -63,7 +66,9 @@ class Sellar1(MDODiscipline):
 
     def _run(self):
         x, z, y_1 = self.get_inputs_by_name(["x", "z", "y_1"])
-        self.local_data["y_0"] = array([z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]])
+        self.local_data["y_0"] = array(
+            [(z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5]
+        )
 
 
 class Sellar2(MDODiscipline):
@@ -77,7 +82,7 @@ class Sellar2(MDODiscipline):
 
     def _run(self):
         z, y_0 = self.get_inputs_by_name(["z", "y_0"])
-        self.local_data["y_1"] = array([sqrt(y_0) + z[0] + z[1]])
+        self.local_data["y_1"] = array([abs(y_0[0]) + z[0] + z[1]])
 
 
 def run_process():
@@ -97,7 +102,7 @@ def run_process():
     # The optimization algorithm
     scenario = MDOScenario(
         disciplines,
-        formulation_class="IDFFormulation",
+        formulation="MDF",
         objective_name="obj",
         design_space=design_space,
     )
@@ -113,7 +118,7 @@ def run_process():
     scenario.execute(input_data={"max_iter": 15, "algo": "SLSQP"})
 
     # Generate a plot of the history in a file
-    scenario.post_process("OptHistoryView", save=True)
+    scenario.post_process("OptHistoryView", save=True, show=True)
 
     scenario.save_optimization_history(file_path="sellar_history.h5")
 

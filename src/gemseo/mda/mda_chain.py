@@ -22,21 +22,19 @@
 An advanced MDA splitting algorithm based on graphs
 ***************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from multiprocessing import cpu_count
 from os.path import join, split
 
-from future import standard_library
-
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.mda import MDA
 
-standard_library.install_aliases()
-
-
+LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
@@ -57,11 +55,10 @@ class MDAChain(MDA):
         chain_linearize=False,
         tolerance=1e-6,
         use_lu_fact=False,
-        norm0=None,
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
         **sub_mda_options
     ):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
@@ -86,10 +83,8 @@ class MDAChain(MDA):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
+        :param grammar_type: the type of grammar to use for IO declaration
+            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
         :param sub_mda_options: options dict passed to the sub mda
         :type sub_mda_options: dict
         """
@@ -105,9 +100,16 @@ class MDAChain(MDA):
             name=name,
             tolerance=tolerance,
             use_lu_fact=use_lu_fact,
+            grammar_type=grammar_type,
         )
-        sequence = self.coupling_structure.graph.execution_sequence
-        self.execution_sequence = sequence
+
+        if (
+            not self.coupling_structure.get_all_couplings()
+            and not self.__chain_linearize
+        ):
+            LOGGER.warning("No coupling in MDA, switching chain_linearize to True")
+            self.__chain_linearize = True
+
         self._create_mdo_chain(
             disciplines, sub_mda_class=sub_mda_class, **sub_mda_options
         )
@@ -130,18 +132,24 @@ class MDAChain(MDA):
         """
         chained_disciplines = []
         self.sub_mda_list = []
-        for parallel_tasks in self.execution_sequence:
+
+        for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
             # for now, parallel tasks are run sequentially
             for coupled_disciplines in parallel_tasks:
-                # several disciplines coupled
-                if len(coupled_disciplines) > 1:
+                first_disc = coupled_disciplines[0]
+                if len(coupled_disciplines) > 1 or (
+                    len(coupled_disciplines) == 1
+                    and self.coupling_structure.is_self_coupled(first_disc)
+                ):
+                    # several disciplines coupled
+
                     # order the MDA disciplines the same way as the
                     # original disciplines
                     sub_mda_disciplines = []
-                    for (i, disc_i) in enumerate(disciplines):
-                        if i in coupled_disciplines:
-                            sub_mda_disciplines.append(disc_i)
+                    for disc in disciplines:
+                        if disc in coupled_disciplines:
+                            sub_mda_disciplines.append(disc)
 
                     # create a sub-MDA
                     sub_mda = create_mda(
@@ -149,20 +157,22 @@ class MDAChain(MDA):
                         sub_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
+                        grammar_type=self.grammar_type,
                         **sub_mda_options
                     )
                     sub_mda.n_processes = self.n_processes
 
                     chained_disciplines.append(sub_mda)
                     self.sub_mda_list.append(sub_mda)
-                # single discipline
                 else:
-                    disc_index = coupled_disciplines[0]
-                    single_discipline = disciplines[disc_index]
-                    chained_disciplines.append(single_discipline)
+                    # single discipline
+                    chained_disciplines.append(first_disc)
+
         # create the MDO chain that sequentially evaluates the sub-MDAs and the
         # single disciplines
-        self.mdo_chain = MDOChain(chained_disciplines, name="MDA chain")
+        self.mdo_chain = MDOChain(
+            chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
+        )
 
     def _initialize_grammars(self):
         """Define all inputs and outputs of the chain."""
@@ -205,7 +215,6 @@ class MDAChain(MDA):
 
         :param inputs: list of inputs variables to differentiate
             if None, all inputs of discipline are used (Default value = None)
-
         """
         MDA.add_differentiated_inputs(self, inputs)
         if self.__chain_linearize:
@@ -222,6 +231,22 @@ class MDAChain(MDA):
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self.__chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
+
+    @property
+    def normed_residual(self):
+        """Accessor to the normed_residuals, computed from the sub_mdas residuals."""
+        return sum((mda.normed_residual ** 2 for mda in self.sub_mda_list)) ** 0.5
+
+    @normed_residual.setter
+    def normed_residual(self, normed_residual):
+        """Set the normed_residual.
+
+        Has no effect, since the normed residuals are defined by sub mdas residuals
+        (see associated property)
+
+        Here for compatibility with mother class.
+        """
+        pass
 
     def get_expected_dataflow(self):
         """Get the expected dataflow.
@@ -254,10 +279,9 @@ class MDAChain(MDA):
         filename=None,
         figsize=(50, 10),
     ):
-        """Generate a plot of the residual history
-        All residuals are stored in the history ; only the final
-        residual of the converged MDA is plotted at each optimization
-        iteration
+        """Generate a plot of the residual history All residuals are stored in the
+        history ; only the final residual of the converged MDA is plotted at each
+        optimization iteration.
 
         :param show: if True, displays the plot on screen
             (Default value = False)

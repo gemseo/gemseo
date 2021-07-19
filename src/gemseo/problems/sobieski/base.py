@@ -28,37 +28,33 @@
 SSBJ base class
 ***************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import cmath
+import logging
 import math
-from builtins import range, str
 
-from future import standard_library
 from numpy import array, asarray, complex128, concatenate, dot, float64, zeros
 from numpy.linalg import lstsq
 from scipy import linalg
 from six import string_types
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
-
-from gemseo import LOGGER
 
 DEG_TO_RAD = math.pi / 180.0
 
 
 class SobieskiBase(object):
-    """Class defining Sobieski problem and related method to the problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining Sobieski problem and related method to the problem such as
+    disciplines computation, constraints, reference optimum."""
 
     DTYPE_COMPLEX = "complex128"
     DTYPE_DOUBLE = "float64"
     DTYPE_DEFAULT = DTYPE_COMPLEX
 
     def __init__(self, dtype):
-        """Constructor
+        """Constructor.
 
         :param dtype: data type
         :type dtype: str
@@ -66,10 +62,8 @@ class SobieskiBase(object):
         self.dtype = dtype
         if dtype == complex128:
             self.math = cmath
-            dtype = self.dtype
         elif dtype == float64:
             self.math = math
-            dtype = self.dtype
         elif dtype == self.DTYPE_DOUBLE:
             self.math = math
             self.dtype = float64
@@ -101,7 +95,7 @@ class SobieskiBase(object):
         :returns: constant vector
         :rtype: numpy array
         """
-        constants = zeros((5), dtype=self.dtype)
+        constants = zeros(5, dtype=self.dtype)
 
         # Constants of problem
         constants[0] = 2000.0  # minimum fuel weight
@@ -159,24 +153,22 @@ class SobieskiBase(object):
         """
 
         if isinstance(variables_names, string_types):
-            variables_names = [
-                variables_names,
-            ]
+            variables_names = [variables_names]
         bounds_tuple = cls.get_sobieski_bounds_tuple()
-        bounds_dict = {}
-        bounds_dict["x_1"] = array(bounds_tuple[0:2])
-        bounds_dict["x_2"] = array([bounds_tuple[2]])
-        bounds_dict["x_3"] = array([bounds_tuple[3]])
-        bounds_dict["x_shared"] = array(bounds_tuple[4:10])
-
-        bounds_dict["y_14"] = array([(4.97e04, 5.14e04), (-1.54e04, 3.0e04)])
-        bounds_dict["y_12"] = array([(4.97e04, 5.15e04), (0.9, 1.00)])
-        bounds_dict["y_21"] = array([(4.97e04, 5.15e04)])
-        bounds_dict["y_23"] = array([(6.73e03, 1.76e04)])
-        bounds_dict["y_24"] = array([(0.88, 7.42)])
-        bounds_dict["y_31"] = array([(5.92e03, 6.79e03)])
-        bounds_dict["y_32"] = array([(0.47, 0.53)])
-        bounds_dict["y_34"] = array([(0.88, 1.32)])
+        bounds_dict = {
+            "x_1": array(bounds_tuple[0:2]),
+            "x_2": array([bounds_tuple[2]]),
+            "x_3": array([bounds_tuple[3]]),
+            "x_shared": array(bounds_tuple[4:10]),
+            "y_14": array([(4.97e04, 5.14e04), (-1.54e04, 3.0e04)]),
+            "y_12": array([(4.97e04, 5.15e04), (0.9, 1.00)]),
+            "y_21": array([(4.97e04, 5.15e04)]),
+            "y_23": array([(6.73e03, 1.76e04)]),
+            "y_24": array([(0.88, 7.42)]),
+            "y_31": array([(5.92e03, 6.79e03)]),
+            "y_32": array([(0.47, 0.53)]),
+            "y_34": array([(0.88, 1.32)]),
+        }
 
         for yuk in ["y_21", "y_14", "y_12", "y_23", "y_24", "y_31", "y_32", "y_34"]:
             bounds_dict[yuk][:, 0] = bounds_dict[yuk][:, 0] * 0.5
@@ -190,8 +182,7 @@ class SobieskiBase(object):
         return bounds[:, 0], bounds[:, 1]
 
     def __compute_mtx_shifted(self, s_bound, index):
-        """
-        Compute a matrix of shifted values of design variables.
+        """Compute a matrix of shifted values of design variables.
 
         :param s_bound: vector of bounds used to control slope of
                 polynomial function
@@ -201,7 +192,7 @@ class SobieskiBase(object):
         :returns: mtx_shifted
         :rtype: numpy array
         """
-        #         s_mid = 0.0  # independant variable mid point
+        #         s_mid = 0.0  # independent variable mid point
         #         s_lower = s_mid - s_bound[index]
         #         s_upper = s_mid + s_bound[index]
         s_lower = -s_bound[index]
@@ -244,8 +235,7 @@ class SobieskiBase(object):
         return ao_coeff, ai_coeff, aij_coeff
 
     def __update_aij(self, aij_coeff, imax):
-        """
-        Update of quadratic interpolation terms.
+        """Update of quadratic interpolation terms.
 
         :param aij_coeff: array of quadratic terms
         :type aij_coeff: numpy array
@@ -272,12 +262,11 @@ class SobieskiBase(object):
         return aij_coeff
 
     def __compute_fbound(self, flag, s_shifted, a_coeff, b_coeff, index):
-        """
-        Compute right-hand side of polynomial function system.
+        """Compute right-hand side of polynomial function system.
 
         :param flag: functional relationship between var
         :type flag: numpy array
-        :param s_shifted: vector of normalized values of independant variables
+        :param s_shifted: vector of normalized values of independent variables
                 shifted around origin
         :type s_shifted: numpy array
         """
@@ -308,14 +297,13 @@ class SobieskiBase(object):
 
     @staticmethod
     def _normalize_s(s_ref, s_new):
-        """Normalization of input variables for use of polynomial
-        approximation.
+        """Normalization of input variables for use of polynomial approximation.
 
-        :param s_ref: vector of initial values of independant
+        :param s_ref: vector of initial values of independent
             variables (5 variables at max)
         :type s_ref: numpy array
         :param s_new: vector of current values of
-            independant variables
+            independent variables
         :type s_new: numpy array
         :returns: normalized value and normalized+centered value
         :rtype: numpy array
@@ -327,14 +315,14 @@ class SobieskiBase(object):
         return s_norm, s_shifted
 
     def derive_normalize_s(self, s_ref, s_new):
-        """Derivation of normalization of input variables for use
-        of polynomial approximation.
+        """Derivation of normalization of input variables for use of polynomial
+        approximation.
 
-        :param s_ref: vector of initial values of independant
+        :param s_ref: vector of initial values of independent
             variables (5 variables at max)
         :type s_ref: numpy array
         :param s_new: vector of current values of
-            independant variables
+            independent variables
         :type s_new: numpy array
         :returns: derivatives of normalized value and normalized+centered value
         :rtype: numpy array
@@ -358,16 +346,15 @@ class SobieskiBase(object):
         return derive_s_norm
 
     def derive_poly_approx(self, s_ref, s_new, flag, s_bound):
-        """Compute the polynomial coefficients to characterize the behavior
-        of certain synthetic variables and function modifiers.
-        Compared to poly_approx, also returns polynomial coeff for
-        linearization
+        """Compute the polynomial coefficients to characterize the behavior of certain
+        synthetic variables and function modifiers. Compared to poly_approx, also
+        returns polynomial coeff for linearization.
 
-        :param s_ref: vector of initial values of independant
+        :param s_ref: vector of initial values of independent
             variables (5 variables at max)
         :type s_ref: numpy array
         :param s_new: vector of current values of
-            independant variables
+            independent variables
         :type s_new: numpy array
         :param flag: indicates functional relationship between variables:
 
@@ -390,7 +377,7 @@ class SobieskiBase(object):
         #       derive_S_norm = self._derive_normalize_S(s_ref, s_new)
 
         ao_coeff = 0.0
-        ai_coeff = zeros((imax), dtype=self.dtype)
+        ai_coeff = zeros(imax, dtype=self.dtype)
         aij_coeff = zeros((imax, imax), dtype=self.dtype)
         for i in range(imax):
             a_coeff = 0.1
@@ -410,20 +397,19 @@ class SobieskiBase(object):
         poly_value = (
             ao_coeff
             + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), (s_shifted))
+            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
         )
         return poly_value[0], ai_coeff, aij_coeff[:imax, :imax], s_shifted
 
     def poly_approx(self, s_ref, s_new, flag, s_bound):
-        """This function calculates polynomial coefficients to
-        characterize the behavior
+        """This function calculates polynomial coefficients to characterize the behavior
         of certain synthetic variables and function modifiers.
 
-        :param s_ref: vector of initial values of independant
+        :param s_ref: vector of initial values of independent
             variables (5 variables at max)
         :type s_ref: numpy array
         :param s_new: vector of current values of
-            independant variables
+            independent variables
         :type s_new: numpy array
         :param flag: indicates functional relationship between variables:
 
@@ -447,7 +433,7 @@ class SobieskiBase(object):
         #         - aij_coeff: matrix of coeff for 3rd term
         #         - ao_coeff: scalar coeff
         ao_coeff = 0.0
-        ai_coeff = zeros((imax), dtype=self.dtype)
+        ai_coeff = zeros(imax, dtype=self.dtype)
         aij_coeff = zeros((imax, imax), dtype=self.dtype)
         for i in range(imax):
             a_coeff = 0.1
@@ -467,7 +453,7 @@ class SobieskiBase(object):
         poly_value = (
             ao_coeff
             + dot(ai_coeff, s_shifted)
-            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), (s_shifted))
+            + 0.5 * dot(dot(s_shifted, aij_coeff[:imax, :imax]), s_shifted)
         )
         return poly_value[0]
 
@@ -495,7 +481,7 @@ class SobieskiBase(object):
 
     @staticmethod
     def compute_aero_center(x_1):
-        """Compute a wing thickness.
+        """Computes the aerodynamic center.
 
         :param x_1: local design variables (structure)
         :type x_1: numpy array

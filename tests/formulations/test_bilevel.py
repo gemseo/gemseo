@@ -19,111 +19,21 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-import unittest
 from copy import deepcopy
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
-from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.api import create_discipline, create_scenario
 from gemseo.formulations.bilevel import BiLevel
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiProblem,
-    SobieskiPropulsion,
-    SobieskiStructure,
+from gemseo.formulations.bilevel_test_helper import TestBilevelFormulationBase
+from gemseo.problems.aerostructure.aerostructure_design_space import (
+    AerostructureDesignSpace,
 )
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-
-configure_logger(SOFTWARE_NAME)
 
 
-class Test_BilevelFormulation(unittest.TestCase):
-    """ """
-
-    @classmethod
-    def setUpClass(cls):
-        cls.propulsion = SobieskiPropulsion()
-        cls.aerodynamics = SobieskiAerodynamics()
-        cls.struct = SobieskiStructure()
-        cls.mission = SobieskiMission()
-
-    def build_scenarios(self):
-        """ """
-        ds = SobieskiProblem().read_design_space()
-        sc_prop = MDOScenario(
-            disciplines=[self.propulsion],
-            formulation="DisciplinaryOpt",
-            objective_name="y_34",
-            design_space=deepcopy(ds).filter("x_3"),
-            name="PropulsionScenario",
-        )
-
-        # Maximize L/D
-        sc_aero = MDOScenario(
-            disciplines=[self.aerodynamics],
-            formulation="DisciplinaryOpt",
-            objective_name="y_24",
-            design_space=deepcopy(ds).filter("x_2"),
-            name="AerodynamicsScenario",
-            maximize_objective=True,
-        )
-
-        # Maximize log(aircraft total weight / (aircraft total weight - fuel
-        # weight))
-        sc_str = MDOScenario(
-            disciplines=[self.struct],
-            formulation="DisciplinaryOpt",
-            objective_name="y_11",
-            design_space=deepcopy(ds).filter("x_1"),
-            name="StructureScenario",
-            maximize_objective=True,
-        )
-
-        return sc_str, sc_aero, sc_prop
-
-    def build_system_scenario(self, disciplines, **options):
-        """
-
-        :param disciplines:
-
-        """
-        # Maximize range (Breguet)
-        ds = SobieskiProblem().read_design_space()
-        # Add a coupling to DV but bielevel filters it
-        sc_system = MDOScenario(
-            disciplines,
-            formulation="BiLevel",
-            objective_name="y_4",
-            design_space=ds.filter(["x_shared", "y_14"]),
-            maximize_objective=True,
-            **options
-        )
-        assert sc_system.formulation.opt_problem.design_space.variables_names == [
-            "x_shared"
-        ]
-        sc_system.set_differentiation_method("finite_differences", step=1e-6)
-        return sc_system
-
-    def build_bilevel(self, **options):
-        """ """
-        sub_scenarios = self.build_scenarios()
-        sub_disciplines = list(sub_scenarios) + [self.mission]
-        for sc in sub_scenarios:
-            sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
-        system_scenario = self.build_system_scenario(sub_disciplines, **options)
-
-        return system_scenario
-
-    @link_to("Req-MDO-1.5", "Req-MDO-1.6")
+class TestBilevelFormulation(TestBilevelFormulationBase):
     def test_execute(self):
-        """ """
+        """"""
         scenario = self.build_bilevel(
             apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
         )
@@ -145,3 +55,79 @@ class Test_BilevelFormulation(unittest.TestCase):
         self.assertRaises(ValueError, BiLevel.get_sub_options_grammar)
         self.assertRaises(ValueError, BiLevel.get_default_sub_options_values)
         BiLevel.get_default_sub_options_values(mda_name="MDAJacobi")
+
+
+def test_bilevel_aerostructure():
+    """Test the Bi-level formulation on the aero-structure problem."""
+    algo_options = {
+        "xtol_rel": 1e-8,
+        "xtol_abs": 1e-8,
+        "ftol_rel": 1e-8,
+        "ftol_abs": 1e-8,
+        "ineq_tolerance": 1e-5,
+        "eq_tolerance": 1e-3,
+    }
+
+    aero_formulas = {
+        "drag": "0.1*((sweep/360)**2 + 200 + "
+        + "thick_airfoils**2 - thick_airfoils - 4*displ)",
+        "forces": "10*sweep + 0.2*thick_airfoils - 0.2*displ",
+        "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
+    }
+    aerodynamics = create_discipline(
+        "AnalyticDiscipline", name="Aerodynamics", expressions_dict=aero_formulas
+    )
+    struc_formulas = {
+        "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels + 200.0*forces",
+        "reserve_fact": "-3*sweep - 6*thick_panels + 0.1*forces + 55",
+        "displ": "2*sweep + 3*thick_panels - 2.*forces",
+    }
+    structure = create_discipline(
+        "AnalyticDiscipline", name="Structure", expressions_dict=struc_formulas
+    )
+    mission_formulas = {"range": "8e11*lift/(mass*drag)"}
+    mission = create_discipline(
+        "AnalyticDiscipline", name="Mission", expressions_dict=mission_formulas
+    )
+    sub_scenario_options = {
+        "max_iter": 2,
+        "algo": "NLOPT_SLSQP",
+        "algo_options": algo_options,
+    }
+    design_space_ref = AerostructureDesignSpace()
+
+    design_space_aero = deepcopy(design_space_ref).filter(["thick_airfoils"])
+    aero_scenario = create_scenario(
+        disciplines=[aerodynamics, mission],
+        formulation="DisciplinaryOpt",
+        objective_name="range",
+        design_space=design_space_aero,
+        maximize_objective=True,
+    )
+    aero_scenario.default_inputs = sub_scenario_options
+
+    design_space_struct = deepcopy(design_space_ref).filter(["thick_panels"])
+    struct_scenario = create_scenario(
+        disciplines=[structure, mission],
+        formulation="DisciplinaryOpt",
+        objective_name="range",
+        design_space=design_space_struct,
+        maximize_objective=True,
+    )
+    struct_scenario.default_inputs = sub_scenario_options
+
+    design_space_system = deepcopy(design_space_ref).filter(["sweep"])
+    system_scenario = create_scenario(
+        disciplines=[aero_scenario, struct_scenario, mission],
+        formulation="BiLevel",
+        objective_name="range",
+        design_space=design_space_system,
+        maximize_objective=True,
+        mda_name="MDAJacobi",
+        tolerance=1e-8,
+    )
+    system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)
+    system_scenario.add_constraint("lift", "eq", value=0.5)
+    system_scenario.execute(
+        {"algo": "NLOPT_COBYLA", "max_iter": 5, "algo_options": algo_options}
+    )

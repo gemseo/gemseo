@@ -20,19 +20,14 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Test dimension reduction with Karhunen-Loeve singular value decomposition.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Test dimension reduction with Karhunen-Loeve singular value decomposition."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import array, linspace, pi, sin
 from numpy.random import rand
 
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
-
-standard_library.install_aliases()
 
 N_SAMPLES = 100
 
@@ -44,20 +39,19 @@ MESH2D = [
 
 
 def func(tau, theta):
-    """ Data generating function. """
+    """Data generating function."""
     return sin(2 * pi * (tau - theta)) + 1
 
 
 @pytest.fixture
 def data():
-    """ Build an input-output dataset. """
-    data_ = array([func(array(MESH).flatten(), theta) for theta in rand(N_SAMPLES)])
-    return data_
+    """The dataset used to build the transformer, based on a 1D-mesh."""
+    return array([func(array(MESH).flatten(), theta) for theta in rand(N_SAMPLES)])
 
 
 @pytest.fixture
 def data2d():
-    """ Build an input-output dataset. """
+    """The dataset used to build the transformer, based on a 2D-mesh."""
     tau = array(MESH2D)
     tau = tau[:, 0] - tau[:, 1]
     tau.flatten()
@@ -66,22 +60,29 @@ def data2d():
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     algo = KLSVD(MESH)
     assert algo.name == "KLSVD"
     assert algo.algo is None
 
 
 def test_learn(data, data2d):
-    """ Test learn. """
+    """Test learn."""
     algo = KLSVD(MESH)
     algo.fit(data)
+    assert len(algo.algo.getModes()) == 5
+
     algo = KLSVD(MESH2D)
     algo.fit(data2d)
+    assert len(algo.algo.getModes()) == 5
+
+    algo = KLSVD(MESH, 10)
+    algo.fit(data)
+    assert len(algo.algo.getModes()) == 10
 
 
 def test_transform(data, data2d):
-    """ Test transform. """
+    """Test transform."""
     algo = KLSVD(MESH)
     algo.fit(data)
     reduced_data = algo.transform(data)
@@ -95,7 +96,7 @@ def test_transform(data, data2d):
 
 
 def test_inverse_transform(data, data2d):
-    """ Test inverse transform. """
+    """Test inverse transform."""
     algo = KLSVD(MESH)
     algo.fit(data)
     coefficients = algo.transform(data)
@@ -111,7 +112,7 @@ def test_inverse_transform(data, data2d):
 
 
 def test_eigen(data):
-    """ Test eigen values and eigen vectors. """
+    """Test eigen values and eigen vectors."""
     algo = KLSVD(MESH)
     algo.fit(data)
     assert algo.components.shape[0] == data.shape[1]
@@ -120,7 +121,6 @@ def test_eigen(data):
 
 
 def test_mesh():
-    """ Test mesh. """
+    """Test mesh."""
     algo = KLSVD(MESH)
-    mesh = algo.mesh()
-    assert mesh == MESH
+    assert algo.mesh == MESH

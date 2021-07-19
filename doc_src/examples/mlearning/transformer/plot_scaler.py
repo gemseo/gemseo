@@ -26,12 +26,9 @@ Scaler example
 
 In this example, we will create a scaler to transform data.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import zip
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import linspace
 from numpy import max as npmax
 from numpy import mean
@@ -45,7 +42,6 @@ from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create dataset

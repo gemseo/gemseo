@@ -18,42 +18,37 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A constraints plot
-******************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""A constraints plot."""
+from __future__ import division, unicode_literals
+
+import logging
+from typing import Sequence
 
 import numpy as np
-from future import standard_library
 from matplotlib import pyplot
 from matplotlib.colors import SymLogNorm
 
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ConstraintsHistory(OptPostProcessor):
-    """
-    The **ConstraintsHistory** post processing
-    plots the constraints functions history in lines charts
-    with violation indication by color on background.
+    """Plot of the constraint function history with line charts.
 
-    The plot method requires the list of constraint names to plot.
+    Indicate the violation with color on the background.
+
+    The plot method requires the constraint names to plot.
     It is possible either to save the plot, to show the plot or both.
     """
 
-    def __init__(self, opt_problem):
-        """
-        Constructor
-
-        :param opt_problem: the optimization problem to run
-        """
+    def __init__(
+        self,
+        opt_problem,  # type: OptimizationProblem
+    ):  # type: (...) -> None
         super(ConstraintsHistory, self).__init__(opt_problem)
         self.cmap = PARULA  # "viridis"  # "jet"
         self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
@@ -61,28 +56,11 @@ class ConstraintsHistory(OptPostProcessor):
 
     def _plot(
         self,
-        constraints_list,
-        show=False,
-        save=False,
-        file_path="constraints_history",
-        extension="pdf",
-    ):
+        constraints_list,  # type: Sequence[str]
+    ):  # type: (...) -> None
         """
-        Plots the optimization history:
-        1 plot for the constraints
-
-        :param constraints_list: list of constraint names
-        :type constraints_list: list(str)
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param variables_list: list of the constraints (func name)
-        :type variables_list: list(str)
-        :param extension: file extension
-        :type extension: str
+        Args:
+            constraints_list: The names of the constraints.
         """
         # retrieve the constraints values
         add_dv = False
@@ -91,11 +69,9 @@ class ConstraintsHistory(OptPostProcessor):
         for func in list(constraints_list):
             if func not in all_constr_names:
                 raise ValueError(
-                    "Cannot build constraints history plot,"
-                    + " Function "
-                    + func
-                    + " is not among constraints names"
-                    + " or does not exist."
+                    "Cannot build constraints history plot, "
+                    "function {} is not among the constraints names "
+                    "or does not exist.".format(func)
                 )
 
         vals, vname, _ = self.database.get_history_array(
@@ -143,25 +119,28 @@ class ConstraintsHistory(OptPostProcessor):
             cmap = self.ineq_cstr_cmap
             vmax = max(vmax, np.max(np.abs(cstr_matrix)))
             extent = -0.5, nb_iter - 0.5, np.min(cstr_matrix), np.max(cstr_matrix)
+
+            # On python 2, base is not defined as a parameter in SymLogNorm()
+            if PY2:
+                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax)
+            else:
+                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=np.e)
+
             axe.imshow(
                 cstr_matrix,
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
                 extent=extent,
-                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
+                norm=norm,
                 alpha=0.6,
             )
 
             # plot vertical line the last time that g(x)=0
             indices = np.where(np.diff(np.sign(values)))[0]
-            if indices != []:
+            if indices.size != 0:
                 ind = indices[-1]
-                x_lim = np.interp(
-                    y_lim, values[ind - 1 : ind + 1], x_iter[ind - 1 : ind + 1]
-                )
+                x_lim = np.interp(y_lim, values[ind : ind + 2], x_iter[ind : ind + 2])
                 axe.axvline(x_lim, color="k", linewidth=2)
 
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+        self._add_figure(fig)

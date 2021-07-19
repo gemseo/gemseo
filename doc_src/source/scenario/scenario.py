@@ -14,9 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import (
     create_discipline,
@@ -25,8 +23,6 @@ from gemseo.api import (
     get_available_scenario_types,
 )
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-
-standard_library.install_aliases()
 
 get_available_scenario_types()
 

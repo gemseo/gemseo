@@ -19,19 +19,13 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from os.path import join
 
 import pytest
-from future import standard_library
 from numpy import array
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.yvsx import YvsX
-
-standard_library.install_aliases()
 
 
 def test_empty_dataset():
@@ -46,7 +40,7 @@ def test_plot_notimplementederror():
     dataset.set_from_array(array([[1, 2]]))
     post = DatasetPlot(dataset)
     with pytest.raises(NotImplementedError):
-        post._plot()
+        post._plot({})
 
 
 def test_get_label():
@@ -58,3 +52,26 @@ def test_get_label():
     assert varname == ("parameters", "x", "0")
     with pytest.raises(TypeError):
         label, varname = post._get_label(123)
+
+
+def test_custom():
+    dataset = Dataset()
+    dataset.set_from_array(array([[1, 2]]), variables=["x"], sizes={"x": 2})
+    plot = DatasetPlot(dataset)
+    assert plot.font_size == 10
+    assert plot.title is None
+    assert plot.xlabel is None
+    assert plot.ylabel is None
+    assert plot.zlabel is None
+    plot.title = "title"
+    assert plot.title == "title"
+    plot.xlabel = "xlabel"
+    assert plot.xlabel == "xlabel"
+    plot.ylabel = "ylabel"
+    assert plot.ylabel == "ylabel"
+    plot.zlabel = "zlabel"
+    assert plot.zlabel == "zlabel"
+    plot.font_size = 2
+    assert plot.font_size == 2
+    plot.font_size *= 2
+    assert plot.font_size == 4

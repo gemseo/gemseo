@@ -20,14 +20,13 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""NLOPT library wrapper"""
+"""NLOPT library wrapper."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import range, str, super
+import logging
 
 import nlopt
-from future import standard_library
 from nlopt import RoundoffLimited
 from numpy import atleast_1d, atleast_2d
 
@@ -35,14 +34,11 @@ from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class NloptRoundOffException(Exception):
-    """Nlopt roundoff error"""
+    """Nlopt roundoff error."""
 
 
 class Nlopt(OptimizationLibrary):
@@ -116,9 +112,7 @@ class Nlopt(OptimizationLibrary):
     }
 
     def __init__(self):
-        """
-        Constructor
-        """
+        """Constructor."""
         super(Nlopt, self).__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
@@ -204,10 +198,10 @@ class Nlopt(OptimizationLibrary):
         self,
         ftol_abs=1e-14,  # pylint: disable=W0221
         xtol_abs=1e-14,
+        max_time=0,
         max_iter=999,
         ftol_rel=1e-8,
         xtol_rel=1e-8,
-        max_time=0.0,
         ctol_abs=1e-6,
         stopval=None,
         normalize_design_space=True,
@@ -228,7 +222,8 @@ class Nlopt(OptimizationLibrary):
         :type ftol_rel: float
         :param xtol_rel: Relative design parameter tolerance
         :type xtol_rel: float
-        :param max_time: Maximum time
+        :param max_time: maximum runtime in seconds,
+            disabled if 0 (Default value = 0)
         :type max_time: float
         :param ctol_abs: Absolute tolerance for constraints
         :type ctol_abs: float
@@ -255,12 +250,12 @@ class Nlopt(OptimizationLibrary):
         """
         nds = normalize_design_space
         popts = self._process_options(
-            ftol_abs=ftol_abs,
-            xtol_abs=xtol_abs,
-            max_iter=max_iter,
             ftol_rel=ftol_rel,
+            ftol_abs=ftol_abs,
             xtol_rel=xtol_rel,
+            xtol_abs=xtol_abs,
             max_time=max_time,
+            max_iter=max_iter,
             ctol_abs=ctol_abs,
             normalize_design_space=nds,
             stopval=stopval,
@@ -273,8 +268,8 @@ class Nlopt(OptimizationLibrary):
         return popts
 
     def __opt_objective_grad_nlopt(self, xn_vect, grad):
-        """
-        Objective function + gradient function of the optimizer for nlopt
+        """Objective function + gradient function of the optimizer for nlopt.
+
         :param xn_vect: normalized design vector
         :param grad: gradient array
         :returns: objective Gradients array
@@ -286,22 +281,20 @@ class Nlopt(OptimizationLibrary):
         return obj_func.func(xn_vect).real
 
     def __make_constraint(self, func, jac, index_cstr):
-        """
-        Builds nlopt-like constraints: no vector functions allowed
-        The database will avoid multiple evaluations
+        """Builds nlopt-like constraints: no vector functions allowed The database will
+        avoid multiple evaluations.
+
         :param func: function pointer
         :param jac: jacobian pointer
         :param index_cstr: index of the constraint
         """
 
         def cstr_fun_grad(xn_vect, grad):
-            """Function which is given as a pointer
-            to optimizer for constraints and constraints
-            gradient if required
+            """Function which is given as a pointer to optimizer for constraints and
+            constraints gradient if required.
 
             :param xn_vect: normalized design vector
             :param grad: gradient array
-
             """
             if self.lib_dict[self.algo_name][self.REQUIRE_GRAD]:
                 if grad.size > 0:
@@ -314,9 +307,9 @@ class Nlopt(OptimizationLibrary):
         return cstr_fun_grad
 
     def __add_constraints(self, nlopt_problem, ctol=0.0):
-        """
-        Function that add all constraints (UDF+formulation) to
-        optimization algorithm
+        """Function that add all constraints (UDF+formulation) to optimization
+        algorithm.
+
         :param nlopt_problem: optimization problem
         :rtype: unconstrainted nlopt problem
         :returns: updated nlnlopt_problem
@@ -334,17 +327,17 @@ class Nlopt(OptimizationLibrary):
                     nlopt_problem.add_equality_constraint(nl_fun, ctol)
 
     def __set_prob_options(self, nlopt_problem, **opt_options):
-        """
-        Settings of options for nlopt algorithms
+        """Settings of options for nlopt algorithms.
+
         :param nlopt_problem: optimization problem from nlopt
         :param opt_options: optimization options of nlopt
         """
-
-        nlopt_problem.set_xtol_abs(opt_options[self.X_TOL_ABS])
-        nlopt_problem.set_xtol_rel(opt_options[self.X_TOL_REL])
-        nlopt_problem.set_ftol_rel(opt_options[self.F_TOL_REL])
-        nlopt_problem.set_ftol_abs(opt_options[self.F_TOL_ABS])
-        nlopt_problem.set_maxeval(opt_options[self.MAX_ITER])
+        # ALready 0 by default
+        # nlopt_problem.set_xtol_abs(0.0)
+        # nlopt_problem.set_xtol_rel(0.0)
+        # nlopt_problem.set_ftol_rel(0.0)
+        # nlopt_problem.set_ftol_abs(0.0)
+        nlopt_problem.set_maxeval(int(1.5 * opt_options[self.MAX_ITER]))  # anti-cycling
         nlopt_problem.set_maxtime(opt_options[self.MAX_TIME])
         nlopt_problem.set_initial_step(opt_options[self.INIT_STEP])
         if self.STOPVAL in opt_options:
@@ -355,11 +348,10 @@ class Nlopt(OptimizationLibrary):
         return nlopt_problem
 
     def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses
+        """Runs the algorithm, to be overloaded by subclasses.
 
         :param options: the options dict for the algorithm,
             see associated JSON file
-
         """
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the  bounds anx x0

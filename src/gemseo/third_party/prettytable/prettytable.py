@@ -37,10 +37,9 @@
 The pretty table core
 *********************
 """
-from __future__ import (absolute_import, division, print_function,
+from __future__ import ( division, 
                         unicode_literals)
 
-from builtins import int, map, range, str, zip
 import copy
 import math
 import random
@@ -49,7 +48,6 @@ import sys
 import textwrap
 import unicodedata
 
-from future import standard_library
 
 from ._compact import (basestring_, escape, itermap, str_types, uni_chr,
                        unicode_)
@@ -58,7 +56,6 @@ from ._compact import (basestring_, escape, itermap, str_types, uni_chr,
 PY2 = sys.version_info.major == 2
 
 
-standard_library.install_aliases()
 
 
 # hrule styles
@@ -305,32 +302,32 @@ class PrettyTable(object):
         :param val:
 
         """
-        if option in ("field_names"):
+        if option in "field_names":
             self._validate_field_names(val)
         elif option in ("start", "end", "max_width", "min_width", "min_table_width", "max_table_width", "padding_width",
                         "left_padding_width", "right_padding_width", "format"):
             self._validate_nonnegative_int(option, val)
-        elif option in ("sortby"):
+        elif option in "sortby":
             self._validate_field_name(option, val)
-        elif option in ("sort_key"):
+        elif option in "sort_key":
             self._validate_function(option, val)
-        elif option in ("hrules"):
+        elif option in "hrules":
             self._validate_hrules(option, val)
-        elif option in ("vrules"):
+        elif option in "vrules":
             self._validate_vrules(option, val)
-        elif option in ("fields"):
+        elif option in "fields":
             self._validate_all_field_names(option, val)
         elif option in ("header", "border", "reversesort", "xhtml", "print_empty", "oldsortslice"):
             self._validate_true_or_false(option, val)
-        elif option in ("header_style"):
+        elif option in "header_style":
             self._validate_header_style(val)
-        elif option in ("int_format"):
+        elif option in "int_format":
             self._validate_int_format(option, val)
-        elif option in ("float_format"):
+        elif option in "float_format":
             self._validate_float_format(option, val)
         elif option in ("vertical_char", "horizontal_char", "junction_char"):
             self._validate_single_char(option, val)
-        elif option in ("attributes"):
+        elif option in "attributes":
             self._validate_attributes(option, val)
 
     def _validate_field_names(self, val):

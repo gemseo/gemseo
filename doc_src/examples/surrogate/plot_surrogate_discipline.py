@@ -34,9 +34,7 @@ with two inputs and two outputs:
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegressionAlgo`
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 ###############################################################################
 # Import
@@ -53,8 +51,6 @@ from gemseo.api import (
 
 configure_logger()
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create the discipline to learn

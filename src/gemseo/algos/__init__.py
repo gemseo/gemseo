@@ -14,14 +14,4 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-"""
-Optimization and DOE algorithms
-A framework for doing user friendly scripting optimization/DOEs
-"""
-
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction
-from gemseo.core.logger_config import LoggerConfig
+"""Optimization and DOE algorithms."""

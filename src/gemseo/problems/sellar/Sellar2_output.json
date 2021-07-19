@@ -1,22 +1,22 @@
 {
     "name": "Sellar2_output",
-    "required": ["y_1","r_1"],
+    "required": ["y_2","r_2"],
     "properties": {
-        "y_1": {
+        "y_2": {
             "items": {
                 "type": "number",
                 "id": "0"
             },
             "type": "array",
-            "id": "y_1"
+            "id": "y_2"
         },
-        "r_1": {
+        "r_2": {
             "items": {
                 "type": "number",
                 "id": "0"
             },
             "type": "array",
-            "id": "r_1"
+            "id": "r_2"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

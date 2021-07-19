@@ -17,7 +17,6 @@ The Sellar's problem is considered in different tutorials:
 
 - :ref:`sphx_glr_tutorials_sg_mdo_plot_gemseo_in_10_minutes.py`
 - :ref:`sellar_mdo`
-- :ref:`sellar_scalable`
 
 Description of the problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,9 +36,7 @@ To create the Sellar disciplines, use the function ``create_discipline``:
 
      from gemseo.api import create_discipline
 
-     disciplines = create_discipline(["Sellar1",
-                                     "Sellar2",
-                                     "SellarSystem"])
+     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 
 Importation of the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,9 +61,9 @@ Then, you can visualize it with :code:`print(design_space)`:
     +          +             +        +             +       +
     | x_shared |      0      | (3+0j) |      10     | float |
     +          +             +        +             +       +
-    | y_0      |     -100    | (1+0j) |     100     | float |
-    +          +             +        +             +       +
     | y_1      |     -100    | (1+0j) |     100     | float |
+    +          +             +        +             +       +
+    | y_2      |     -100    | (1+0j) |     100     | float |
     +----------+-------------+--------+-------------+-------+
 
 .. seealso::

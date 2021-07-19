@@ -19,85 +19,117 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A pipeline to chain transformers.
+
+The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
+fit(), transform(), fit_transform() and inverse_transform() methods.
 """
-Data transformer pipeline
-=========================
+from __future__ import division, unicode_literals
 
-The :class:`.Pipeline` class chains a sequence of tranformers, and provides
-global fit(), transform(), fit_transform() and inverse_transform() methods.
-"""
-from __future__ import absolute_import, division, unicode_literals
+from typing import Optional, Sequence
 
-from future import standard_library
-from numpy import eye, matmul
+from numpy import eye, matmul, ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer
-
-standard_library.install_aliases()
+from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
 
 
 class Pipeline(Transformer):
-    """ Transformer pipeline. """
+    """Transformer pipeline.
 
-    def __init__(self, name="Pipeline", transformers=None):
-        """Constructor.
+    Attributes:
+        transformers (Sequence(Transformer)): The sequence of transformers.
+    """
 
-        :param str name: transformer pipeline name. Default: 'Pipeline'.
-        :param list(Transformer) transformers: Sequence of transformers to be
-            chained. The transformers are chained in the order of appearance in
-            the list, i.e. the first transformer is applied first. If
-            transformers is an empty list or None, then the pipeline
-            transformer behaves like an identity transformer.
-            Default: None.
+    def __init__(
+        self,
+        name="Pipeline",  # type: str
+        transformers=None,  # type:Optional[Sequence[Transformer]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            name: A name for this pipeline.
+            transformers: A sequence of transformers to be
+                chained. The transformers are chained in the order of appearance in
+                the list, i.e. the first transformer is applied first. If
+                transformers is an empty list or None, then the pipeline
+                transformer behaves like an identity transformer.
         """
         super(Pipeline, self).__init__(name)
         self.transformers = transformers or []
 
-    def duplicate(self):
-        """ Duplicate the constructor. """
+    def duplicate(self):  # type: (...) -> Pipeline
+        """Duplicate the current object.
+
+        Returns:
+            A deepcopy of the current instance.
+        """
         transformers = [trans.duplicate() for trans in self.transformers]
-        return Pipeline(self.name, transformers)
+        return self.__class__(self.name, transformers)
 
-    def fit(self, data):
-        """Fit transformer pipeline to data. All the transformers are fitted,
-        transforming the data along the way.
+    def fit(
+        self,
+        data,  # type: ndarray
+        **options  # type: TransformerFitOptionType
+    ):  # type: (...) -> None
+        """Fit the transformer pipeline to the data.
 
-        :param ndarray data: data to be fitted.
+        All the transformers are fitted, transforming the data in place.
+
+        Args:
+            data: The data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data)
+            data = transformer.fit_transform(data, **options)
 
-    def transform(self, data):
-        """Transform data. The data is transformed sequentially, where the
-        output of one transformer is the input of the next.
+    def transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Transform the data.
 
-        :param ndarray data: data to be transformed.
-        :return: transformed data.
-        :rtype: ndarray
+        The data is transformed sequentially,
+        where the output of one transformer is the input of the next.
+
+        Args:
+            data: The data to be transformed.
+
+        Returns:
+            The transformed data.
         """
         for transformer in self.transformers:
             data = transformer.transform(data)
         return data
 
-    def inverse_transform(self, data):
-        """Perform an inverse transform on the data. The data is inverse
-        transformed sequentially, starting with the last tranformer in the
-        list.
+    def inverse_transform(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Perform an inverse transform on the data.
 
-        :param ndarray data: data  to be inverse transformed.
-        :return: inverse transformed data.
-        :rtype: ndarray
+        The data is inverse transformed sequentially,
+        starting with the last transformer in the list.
+
+        Args:
+            data: The data to be inverse transformed.
+
+        Returns:
+            The inverse transformed data.
         """
         for transformer in self.transformers[::-1]:
             data = transformer.inverse_transform(data)
         return data
 
-    def compute_jacobian(self, data):
-        """Compute Jacobian of the pipeline transform.
+    def compute_jacobian(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Compute the Jacobian of the ``pipeline.transform()``.
 
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
+        Args:
+            data: The data where the Jacobian is to be computed.
+
+        Returns:
+            The Jacobian matrix.
         """
         jacobian = eye(data.shape[-1])
         for transformer in self.transformers:
@@ -105,12 +137,17 @@ class Pipeline(Transformer):
             data = transformer.transform(data)
         return jacobian
 
-    def compute_jacobian_inverse(self, data):
-        """Compute Jacobian of the pipeline inverse_transform.
+    def compute_jacobian_inverse(
+        self,
+        data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Compute the Jacobian of the ``pipeline.inverse_transform()``.
 
-        :param ndarray data: data where the Jacobian is to be computed.
-        :return: Jacobian matrix.
-        :rtype: ndarray
+        Args:
+            data: The data where the Jacobian is to be computed.
+
+        Returns:
+            The Jacobian matrix.
         """
         jacobian = eye(data.shape[-1])
         for transformer in self.transformers[::-1]:

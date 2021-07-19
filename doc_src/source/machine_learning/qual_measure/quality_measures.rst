@@ -17,10 +17,19 @@ Measure the quality of a machine learning algorithm
 .. automodule:: gemseo.mlearning.qual_measure.error_measure
    :noindex:
 
+.. automodule:: gemseo.mlearning.qual_measure.cluster_measure
+   :noindex:
+
 .. automodule:: gemseo.mlearning.qual_measure.mse_measure
    :noindex:
 
 .. automodule:: gemseo.mlearning.qual_measure.r2_measure
+   :noindex:
+
+.. automodule:: gemseo.mlearning.qual_measure.f1_measure
+   :noindex:
+
+.. automodule:: gemseo.mlearning.qual_measure.silhouette
    :noindex:
 
 .. raw:: html

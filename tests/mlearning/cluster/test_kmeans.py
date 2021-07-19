@@ -19,13 +19,12 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Tests for K-means clustering model. """
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Tests for K-means clustering model."""
+from __future__ import division, unicode_literals
 
-from builtins import range, str
+from typing import List, Tuple
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, integer, ndarray, vstack
 from numpy.linalg import eigvals
 from numpy.random import multivariate_normal, seed
@@ -34,9 +33,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import _long
-
-standard_library.install_aliases()
+from gemseo.utils.py23_compat import long
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
@@ -55,14 +52,18 @@ N_SAMPLES = [50, 50, 50]
 
 # Test value
 VALUE = {"x_1": [0], "x_2": [0]}
+ARRAY_VALUE = array([0, 0])
 
 # Test values (centers of the clusters)
 VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
 @pytest.fixture
-def samples():
-    """ Dataset, consisting of three clusters from normal distributions. """
+def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
+    """The description of the samples used to generate the learning dataset.
+
+    It consists of three clusters from normal distributions.
+    """
     # Check that the parameters conform
     assert len(SCALES) == len(LOCS)
     assert len(N_SAMPLES) == len(LOCS)
@@ -72,9 +73,11 @@ def samples():
 
 
 @pytest.fixture
-def dataset(samples):
-    """ Dataset, consisting of three clusters from normal distributions. """
+def dataset(samples):  # type: (...) -> Dataset
+    """The dataset used to train the GaussianMixture.
 
+    It consists of three clusters from normal distributions.
+    """
     # Fix seed for consistency
     seed(12345)
 
@@ -101,7 +104,7 @@ def dataset(samples):
 
 @pytest.fixture
 def model_with_transform(dataset):
-    """ Define model from data. """
+    """A trained KMeans with parameters scaling."""
     n_clusters = 3
     transformer = {"parameters": MinMaxScaler()}
     kmeans = KMeans(dataset, transformer=transformer, n_clusters=n_clusters)
@@ -111,7 +114,7 @@ def model_with_transform(dataset):
 
 @pytest.fixture
 def model(dataset):
-    """ Define model from data. """
+    """A trained KMeans."""
     n_clusters = 3
     kmeans = KMeans(dataset, n_clusters=n_clusters)
     kmeans.learn()
@@ -119,14 +122,14 @@ def model(dataset):
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     for n_clusters in [1, 10]:
         kmeans = KMeans(dataset, n_clusters=n_clusters)
         assert kmeans.algo is not None
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     n_clusters = 5
     kmeans = KMeans(dataset, n_clusters=n_clusters)
     another_kmeans = KMeans(dataset, var_names=["x_1"], n_clusters=n_clusters)
@@ -141,10 +144,10 @@ def test_learn(dataset):
 
 
 def test_predict(model):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
-    assert isinstance(prediction, (int, _long, integer))
+    assert isinstance(prediction, (int, long, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]
@@ -153,10 +156,10 @@ def test_predict(model):
 
 
 def test_predict_with_transform(model_with_transform):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
-    assert isinstance(prediction, (int, _long, integer))
+    assert isinstance(prediction, (int, long, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]
@@ -164,24 +167,25 @@ def test_predict_with_transform(model_with_transform):
     assert predictions[1] != predictions[2]
 
 
-def test_predict_proba(model):
-    """ Test prediction. """
-    for hard in [True, False]:
-        proba = model.predict_proba(VALUE, hard)
-        probas = model.predict_proba(VALUES, hard)
-        assert isinstance(proba, ndarray)
-        assert isinstance(probas, ndarray)
-        assert len(proba.shape) == 1
-        assert len(probas.shape) == 2
-        assert allclose(proba.sum(), 1)
-        assert allclose(probas.sum(axis=1), 1)
-        assert not allclose(probas[0], probas[1])
-        assert not allclose(probas[0], probas[2])
-        assert not allclose(probas[1], probas[2])
+@pytest.mark.parametrize("hard", [True, False])
+def test_predict_proba(model, hard):
+    """Test prediction."""
+    proba = model.predict_proba(VALUE, hard)
+    probas = model.predict_proba(VALUES, hard)
+    assert (proba == model.predict_proba(ARRAY_VALUE, hard)).all()
+    assert isinstance(proba, ndarray)
+    assert isinstance(probas, ndarray)
+    assert len(proba.shape) == 1
+    assert len(probas.shape) == 2
+    assert allclose(proba.sum(), 1)
+    assert allclose(probas.sum(axis=1), 1)
+    assert not allclose(probas[0], probas[1])
+    assert not allclose(probas[0], probas[2])
+    assert not allclose(probas[1], probas[2])
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_clustering_model(dirname)
     out1 = model.predict(VALUE)

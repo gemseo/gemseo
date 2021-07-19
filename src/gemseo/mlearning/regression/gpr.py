@@ -19,14 +19,12 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Gaussian process regression
-===========================
+r"""The Gaussian process algorithm for regression.
 
 Overview
 --------
 
-The Gaussian process regression (GPR) surrogate discipline
+The Gaussian process regression (GPR) surrogate model
 expresses the model output as a weighted sum of kernel functions
 centered on the learning input data:
 
@@ -44,7 +42,7 @@ Details
 The GPR model relies on the assumption
 that the original model :math:`f` to replace
 is an instance of a Gaussian process (GP) with mean :math:`\mu`
-and covariance :math:`\sigma^2\kappa(\|x-x'|;\epsilon)`.
+and covariance :math:`\sigma^2\kappa(\|x-x'\|;\epsilon)`.
 
 Then, the GP conditioned by the learning set
 :math:`(x_i,y_i)_{1\leq i \leq N}`
@@ -52,7 +50,7 @@ is entirely defined by its expectation:
 
 .. math::
 
-    \hat{f}(x) = \hat{\mu} + w^T k(x)
+    \hat{f}(x) = \hat{\mu} + \hat{w}^T k(x)
 
 and its covariance:
 
@@ -81,16 +79,16 @@ of :math:`\hat{f}`:
 
 .. math::
 
-    \hat{s}(x):=\sqrt{c(x,x)}
+    \hat{s}(x):=\sqrt{\hat{c}(x,x)}
 
 Interpolation or regression
 ---------------------------
 
-The GPR surrogate discipline can be regressive or interpolative
+The GPR surrogate model can be regressive or interpolative
 according to the value of the nugget effect :math:`\\alpha\geq 0`
 which is a regularization term
 applied to the correlation matrix :math:`K`.
-When :math:`\\alpha = 0`,
+When :math:`\alpha = 0`,
 the surrogate model interpolates the learning data.
 
 Dependence
@@ -99,66 +97,51 @@ The GPR model relies on the GaussianProcessRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
-from numpy import atleast_2d
+import logging
+from typing import Callable, Iterable, Optional, Union
+
+import openturns
+from numpy import atleast_2d, ndarray
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import DataConversion
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class GaussianProcessRegression(MLRegressionAlgo):
-    """ Gaussian process regression """
+    """Gaussian process regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "GPR"
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        kernel=None,
-        alpha=1e-10,
-        optimizer="fmin_l_bfgs_b",
-        n_restarts_optimizer=10,
-        random_state=None,
-    ):
-        """Constructor.
-
-        :param data: learning dataset
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param kernel: kernel function. If None, use a Matern(2.5).
-            Default: None.
-        :type kernel: openturns.Kernel
-        :param alpha: nugget effect. Default: 1e-10.
-        :type alpha: float or array
-        :param optimizer: optimization algorithm. Default: 'fmin_l_bfgs_b'.
-        :type optimizer: str or callable
-        :param n_restarts_optimizer: number of restarts of the optimizer.
-            Default: 10.
-        :type n_restarts_optimizer: int
-        :param random_state: the seed used to initialize the centers.
-            If None, the random number generator is the RandomState instance
-            used by `np.random`
-            Default: None.
-        :type random_state: int
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        kernel=None,  # type: Optional[openturns.CovarianceModel]
+        alpha=1e-10,  # type: Union[float,ndarray]
+        optimizer="fmin_l_bfgs_b",  # type: Union[str,Callable]
+        n_restarts_optimizer=10,  # type: int
+        random_state=None,  # type: Optional[int]
+    ):  # type: (...) -> None
+        """
+        Args:
+            kernel: The kernel function. If None, use a ``Matern(2.5)``.
+            alpha: The nugget effect to regularize the model.
+            optimizer: The optimization algorithm to find the hyperparameters.
+            n_restarts_optimizer: The number of restarts of the optimizer.
+            random_state: The seed used to initialize the centers.
+                If None, the random number generator is the RandomState instance
+                used by `numpy.random`.
         """
         super(GaussianProcessRegression, self).__init__(
             data,
@@ -192,30 +175,31 @@ class GaussianProcessRegression(MLRegressionAlgo):
         )
         self.parameters["kernel"] = self.kernel.__class__.__name__
 
-    def _fit(self, input_data, output_data):
-        """Fit the regression model.
-
-        :param ndarray input_data: input data (2D)
-        :param ndarray output_data: output data (2D)
-        """
+    def _fit(
+        self,
+        input_data,  # type: ndarray
+        output_data,  # type: ndarray
+    ):  # type: (...) -> None
         self.algo.fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output.
-
-        :param ndarray input_data: input data (2D).
-        :return: output prediction (2D).
-        :rtype: ndarray
-        """
+    def _predict(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         output_pred = self.algo.predict(input_data, False)
         return output_pred
 
-    def predict_std(self, input_data):
-        """Predict standard deviation value for given input data.
+    def predict_std(
+        self,
+        input_data,  # type:DataType
+    ):  # type: (...) -> ndarray
+        """Predict the standard deviation from input data.
 
-        :param dict(ndarray) input_data: input data (1D or 2D).
-        :return: output data (1D or 2D, same as input_data).
-        :rtype: dict(ndarray)
+        Args:
+            input_data: The input data with shape (n_samples, n_inputs).
+
+        Returns:
+            output_data: The output data with shape (n_samples, n_outputs).
         """
         as_dict = isinstance(input_data, dict)
         if as_dict:

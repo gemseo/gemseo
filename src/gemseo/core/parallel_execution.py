@@ -22,21 +22,17 @@
 Parallel execution of disciplines and functions using multiprocessing
 *********************************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 import multiprocessing as mp
 import os
 import queue
 import threading as th
 import time
 import traceback
-from builtins import range, str, zip
 
-from future import standard_library
-
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParallelExecution(object):
@@ -54,8 +50,7 @@ class ParallelExecution(object):
         use_threading=False,
         wait_time_between_fork=0,
     ):
-        """
-        Constructor.
+        """Constructor.
 
         :param worker_list: list of objects that perform the tasks
         :param n_processes: maximum number of processors on which to run
@@ -108,7 +103,7 @@ class ParallelExecution(object):
     ):
         """Execute all processes.
 
-        :param inputs: the input values (list or values)
+        :param input_data_list: the input values (list or values)
         :param exec_callback: callback function called with the
             pair (index, outputs) as arguments when an item is retrieved
             from the processing, where index is the associated index
@@ -142,9 +137,8 @@ class ParallelExecution(object):
             queue_out = mananger.Queue()
 
         def worker():
-            """Worker method executes a function while
-            there are args left in the queue_in
-            """
+            """Worker method executes a function while there are args left in the
+            queue_in."""
             for args in iter(queue_in.get, None):
                 try:
                     function_output = self._run_task_by_index(*args)
@@ -198,7 +192,7 @@ class ParallelExecution(object):
             got_n_outs += 1
 
         # Tells threads and processes to terminate
-        for proc in processes:
+        for _ in processes:
             queue_in.put(None)
 
         # Join processes and threads

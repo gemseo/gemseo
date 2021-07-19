@@ -20,18 +20,20 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
+import sys
 from copy import deepcopy
-from os import remove
 from os.path import dirname, join
+from typing import List
 
 import pytest
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger, create_discipline
+from gemseo.api import create_discipline
+from gemseo.utils.py23_compat import mock
 from gemseo.wrappers.disc_from_exe import (
-    OUTPUT_GRAMMAR,
     DiscFromExe,
+    FoldersIter,
+    Parsers,
     parse_key_value_file,
     parse_outfile,
     parse_template,
@@ -41,22 +43,55 @@ from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
 
 DIRNAME = dirname(__file__)
-configure_logger(SOFTWARE_NAME)
 
 
-def test_disc_from_exe_json(tmpdir):
-    workdir = str(tmpdir)
-    sum_path = join(dirname(__file__), "sum_data.py")
-    exec_cmd = "python " + sum_path + " -i input.json -o output.json"
+@pytest.fixture()
+def xfail_if_windows_unc_issue(tmpdir, use_shell=True):
+    if str(tmpdir).startswith("\\\\") and use_shell and sys.platform.startswith("win"):
+        pytest.xfail("cmd.exe cannot perform the cd command on a UNC network path.")
+
+
+@pytest.mark.skipif(
+    not sys.platform.startswith("win"), reason="This test is only relevant on Windows."
+)
+@pytest.mark.xfail(reason="cmd.exe cannot perform the cd command on UNC network path.")
+def test_disc_from_exe_network_path_windows():
+    """Test that a network location cannot be userd as a workdir under Windows."""
+
+    def _mock_list_out_dir(self):  # type: (...) -> List[str]
+        """Mock of _list_out_dir.
+
+        This mock method is needed as an existing workdir is needed by _list_out_dir.
+        """
+        return []
+
+    with mock.patch.object(DiscFromExe, "_list_out_dirs", new=_mock_list_out_dir):
+        create_discipline(
+            "DiscFromExe",
+            input_template=join(DIRNAME, "input.json.template"),
+            output_template=join(DIRNAME, "output.json.template"),
+            output_folder_basepath="\\\\my_fake_network_location\\folder\\",
+            executable_command="ls",
+            input_filename="input.json",
+            output_filename="output.json",
+            use_shell=True,
+        )
+
+
+@pytest.mark.parametrize("use_shell", [True, False])
+def test_disc_from_exe_json(xfail_if_windows_unc_issue, tmp_wd, use_shell):
+    sum_path = join(DIRNAME, "sum_data.py")
+    exec_cmd = "python {} -i input.json -o output.json".format(sum_path)
 
     disc = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input.json.template"),
         output_template=join(DIRNAME, "output.json.template"),
-        output_folder_basepath=workdir,
+        output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
+        use_shell=use_shell,
     )
 
     indata = {
@@ -72,18 +107,17 @@ def test_disc_from_exe_json(tmpdir):
     assert abs(out["out"] - (indata["a"] + indata["b"] + indata["c"])) < 1e-8
 
 
-def test_disc_from_exe_cfgobj(tmpdir):
-    workdir = str(tmpdir)
-    sum_path = join(dirname(__file__), "cfgobj_exe.py")
-    exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
+def test_disc_from_exe_cfgobj(xfail_if_windows_unc_issue, tmp_wd):
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
 
     disc = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=workdir,
+        output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method="KEY_VALUE_PARSER",
+        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
         input_filename="input.cfg",
         output_filename="output.cfg",
     )
@@ -107,34 +141,111 @@ def test_disc_from_exe_cfgobj(tmpdir):
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=workdir,
+        output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method="KEY_VALUE_PARSER",
+        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        folders_iter=DiscFromExe.UUID,
+        folders_iter=FoldersIter.UUID,
     )
 
     disc.execute(indata)
 
 
-def test_exec_cfg(tmpdir):
-    outfile = join(str(tmpdir), "out_dummy.cfg")
+@pytest.mark.parametrize(
+    "folders_iter",
+    [
+        ("UUID", FoldersIter.UUID),
+        (FoldersIter.UUID, FoldersIter.UUID),
+        (FoldersIter.NUMBERED, FoldersIter.NUMBERED),
+        ("NUMBERED", FoldersIter.NUMBERED),
+    ],
+)
+def test_disc_from_exe_cfgobj_folder_iter_str(
+    xfail_if_windows_unc_issue, tmp_wd, folders_iter
+):
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+
+    disc = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input_template.cfg"),
+        output_template=join(DIRNAME, "output_template.cfg"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        parse_outfile_method="KEY_VALUE_PARSER",
+        input_filename="input.cfg",
+        output_filename="output.cfg",
+        folders_iter=folders_iter[0],
+    )
+    assert disc.folders_iter == folders_iter[1]
+
+
+@pytest.mark.parametrize(
+    "parser",
+    [
+        ("TEMPLATE_PARSER", Parsers.TEMPLATE_PARSER),
+        (Parsers.TEMPLATE_PARSER, Parsers.TEMPLATE_PARSER),
+        (Parsers.KEY_VALUE_PARSER, Parsers.KEY_VALUE_PARSER),
+        ("KEY_VALUE_PARSER", Parsers.KEY_VALUE_PARSER),
+        (lambda a, b: zip(a, b), Parsers.CUSTOM_CALLABLE),
+    ],
+)
+def test_disc_from_exe_cfgobj_parser_str(xfail_if_windows_unc_issue, tmp_wd, parser):
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+
+    disc = create_discipline(
+        "DiscFromExe",
+        input_template=join(DIRNAME, "input_template.cfg"),
+        output_template=join(DIRNAME, "output_template.cfg"),
+        output_folder_basepath=str(tmp_wd),
+        executable_command=exec_cmd,
+        parse_outfile_method=parser[0],
+        input_filename="input.cfg",
+        output_filename="output.cfg",
+        folders_iter="UUID",
+    )
+    assert disc._parse_outfile_method == parser[1]
+
+
+def test_disc_from_exe_invalid_folder_iter(xfail_if_windows_unc_issue, tmp_wd):
+    """Test that a ValueError Exception is raised if an incorrect folder iter is
+    provided."""
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    exec_cmd = "python {} -i input.cfg -o output.cfg".format(sum_path)
+
+    with pytest.raises(
+        ValueError, match="wrong_folder_iter is not a valid folder_iter value."
+    ):
+        create_discipline(
+            "DiscFromExe",
+            input_template=join(DIRNAME, "input_template.cfg"),
+            output_template=join(DIRNAME, "output_template.cfg"),
+            output_folder_basepath=str(tmp_wd),
+            executable_command=exec_cmd,
+            parse_outfile_method=Parsers.KEY_VALUE_PARSER,
+            input_filename="input.cfg",
+            output_filename="output.cfg",
+            folders_iter="wrong_folder_iter",
+        )
+
+
+def test_exec_cfg(tmp_wd):
+    outfile = "out_dummy.cfg"
     infile = join(DIRNAME, "input.cfg")
     exec_cfg(infile, outfile)
-    remove(outfile)
 
 
-def test_exec_json(tmpdir):
-    outfile = join(str(tmpdir), "out_dummy.json")
+def test_exec_json(tmp_wd):
+    outfile = "out_dummy.json"
     infile = join(DIRNAME, "input.json")
     exec_sum(infile, outfile)
-    remove(outfile)
 
 
-def test_disc_from_exe_wrong_inputs(tmpdir):
+def test_disc_from_exe_wrong_inputs(tmp_wd):
 
-    sum_path = join(dirname(__file__), "cfgobj_exe.py")
+    sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg"
 
     with pytest.raises(TypeError):
@@ -142,7 +253,7 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
             "DiscFromExe",
             input_template=join(DIRNAME, "input_template.cfg"),
             output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmpdir),
+            output_folder_basepath=str(tmp_wd),
             executable_command=exec_cmd,
             parse_outfile_method="ERROR",
             input_filename="input.cfg",
@@ -154,7 +265,7 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
             "DiscFromExe",
             input_template=join(DIRNAME, "input_template.cfg"),
             output_template=join(DIRNAME, "output_template.cfg"),
-            output_folder_basepath=str(tmpdir),
+            output_folder_basepath=str(tmp_wd),
             executable_command=exec_cmd,
             write_input_file_method="ERROR",
             input_filename="input.cfg",
@@ -162,17 +273,17 @@ def test_disc_from_exe_wrong_inputs(tmpdir):
         )
 
 
-def test_disc_from_exe_fail_exe(tmpdir):
+def test_disc_from_exe_fail_exe(xfail_if_windows_unc_issue, tmp_wd):
 
-    sum_path = join(dirname(__file__), "cfgobj_exe_fails.py")
+    sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc = create_discipline(
         "DiscFromExe",
         input_template=join(DIRNAME, "input_template.cfg"),
         output_template=join(DIRNAME, "output_template.cfg"),
-        output_folder_basepath=str(tmpdir),
+        output_folder_basepath=str(tmp_wd),
         executable_command=exec_cmd,
-        parse_outfile_method="KEY_VALUE_PARSER",
+        parse_outfile_method=Parsers.KEY_VALUE_PARSER,
         input_filename="input.cfg",
         output_filename="output.cfg",
     )
@@ -189,9 +300,6 @@ def test_disc_from_exe_fail_exe(tmpdir):
 
 
 def test_parse_key_value_file():
-    with pytest.raises(ValueError):
-        parse_template("template_lines", grammar_type="FAIL")
-
     data = parse_key_value_file(None, ["a = 1.0"])
     assert data["a"] == 1.0
     assert len(data) == 1
@@ -217,7 +325,7 @@ def test_parse_outfile():
     with open(join(DIRNAME, "output_template.cfg"), "r") as infile:
         out_template = infile.readlines()
 
-    _, out_pos = parse_template(out_template, OUTPUT_GRAMMAR)
+    _, out_pos = parse_template(out_template, False)
     with open(join(DIRNAME, "output.cfg"), "r") as infile:
         output = infile.readlines()
     values = parse_outfile(out_pos, output)

@@ -19,40 +19,41 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Abstraction of processes
-************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+
+"""Abstraction of processes."""
+
+from __future__ import division, unicode_literals
 
 import inspect
+import logging
+import os
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Value, cpu_count
+from multiprocessing import Manager, Value, cpu_count
 from multiprocessing.sharedctypes import Synchronized
 from os.path import abspath, dirname, join
 from timeit import default_timer as timer
 
-from future import standard_library
+import six
+from custom_inherit import DocInheritMeta
 from numpy import concatenate, empty, zeros
-from six import string_types
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.grammar import InvalidDataException, SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
+from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
+# TODO: remove try except when py2 is no longer supported
 try:
-    import cPickle as pickle
+    import cPickle as pickle  # noqa: N813
 except ImportError:
     import pickle
 
-standard_library.install_aliases()
 
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 def default_dict_factory():
@@ -60,6 +61,7 @@ def default_dict_factory():
     return defaultdict(None)
 
 
+@six.add_metaclass(DocInheritMeta())
 class MDODiscipline(object):
     """A software integrated in the workflow.
 
@@ -76,8 +78,6 @@ class MDODiscipline(object):
     The JSON Grammar are automatically detected when in the same
     folder as your subclass module and named "CLASSNAME_input.json"
     use auto_detect_grammar_files=True to activate this option
-
-
     """
 
     STATUS_VIRTUAL = "VIRTUAL"
@@ -110,6 +110,9 @@ class MDODiscipline(object):
     RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
     N_CPUS = cpu_count()
 
+    __time_stamps_mp_manager = None
+    time_stamps = None
+
     def __init__(
         self,
         name=None,
@@ -141,7 +144,6 @@ class MDODiscipline(object):
         :param cache_file_path: the file to store the data,
             mandatory when HDF caching is used
         """
-
         self.input_grammar = None  # : input grammar
         self.output_grammar = None  # : output grammar
         self.grammar_type = grammar_type
@@ -185,7 +187,6 @@ class MDODiscipline(object):
         self._cache_file_path = cache_file_path
         self._cache_tolerance = 0.0
         self._cache_hdf_node_name = None
-        self._cache_factory = CacheFactory()
         # By default, dont use approximate cache
         # It is up to the user to choose to optimize CPU time with this or not
         self.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_file_path)
@@ -213,6 +214,19 @@ class MDODiscipline(object):
         self._cache_was_loaded = False
         self._init_shared_attrs()
         self._status_observers = []
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        msg = MultiLineString()
+        msg.add(self.name)
+        msg.indent()
+        inputs = sorted(self.get_input_data_names())
+        outputs = sorted(self.get_output_data_names())
+        msg.add("Inputs: {}", pretty_repr(inputs))
+        msg.add("Outputs: {}", pretty_repr(outputs))
+        return str(msg)
 
     def _init_shared_attrs(self):
         """Initialize the shared attributes in multiprocessing."""
@@ -277,7 +291,7 @@ class MDODiscipline(object):
     @n_calls_linearize.setter
     def n_calls_linearize(self, value):
         """Set the number of calls to linearize() which triggered the
-        _compute_jacobian() method
+        _compute_jacobian() method.
 
         Multiprocessing safe
         :param value: the value of n_calls_linearize
@@ -316,7 +330,6 @@ class MDODiscipline(object):
 
         :param inputs: list of inputs variables to differentiate
             if None, all inputs of discipline are used (Default value = None)
-
         """
         if (inputs is not None) and (not self.is_all_inputs_existing(inputs)):
             raise ValueError(
@@ -360,6 +373,7 @@ class MDODiscipline(object):
         cache_tolerance=0.0,
         cache_hdf_file=None,
         cache_hdf_node_name=None,
+        is_memory_shared=True,
     ):
         """Set the type of cache to use and the tolerance level.
 
@@ -383,8 +397,16 @@ class MDODiscipline(object):
         :param str cache_hdf_node_name: name of the HDF
             dataset to store the discipline
             data. If None, self.name is used
+        :param bool is_memory_shared:
+            If True, a shared memory dict is used to store the data,
+            which makes the cache compatible with multiprocessing.
+            WARNING: if set to False, and multiple disciplines point to
+            the same cache or the process is multiprocessed, there may
+            be duplicate computations because the cache will not be
+            shared among the processes.
         """
-        create_cache = self._cache_factory.create
+
+        create_cache = CacheFactory().create
 
         if cache_type == self.HDF5_CACHE:
             not_same_file = cache_hdf_file != self._cache_file_path
@@ -407,9 +429,17 @@ class MDODiscipline(object):
                 self._cache_file_path = cache_hdf_file
 
         elif cache_type != self._cache_type or self.cache is None:
-            self.cache = create_cache(
-                cache_type, tolerance=cache_tolerance, name=self.name
-            )
+            if cache_type == self.MEMORY_FULL_CACHE:
+                self.cache = create_cache(
+                    cache_type,
+                    tolerance=cache_tolerance,
+                    name=self.name,
+                    is_memory_shared=is_memory_shared,
+                )
+            else:
+                self.cache = create_cache(
+                    cache_type, tolerance=cache_tolerance, name=self.name
+                )
         else:
             LOGGER.warning(
                 "Cache policy is already set to %s. To clear the"
@@ -421,8 +451,7 @@ class MDODiscipline(object):
         self._cache_tolerance = cache_tolerance
 
     def get_sub_disciplines(self):  # pylint: disable=R0201
-        """Gets the sub disciplines of self
-        By default, empty
+        """Gets the sub disciplines of self By default, empty.
 
         :returns: the list of disciplines
         """
@@ -431,9 +460,8 @@ class MDODiscipline(object):
     def get_expected_workflow(self):
         """Return the expected execution sequence.
 
-        This method is used for XDSM representation
-        Default to the execution of the discipline itself
-        See MDOFormulation.get_expected_workflow
+        This method is used for XDSM representation Default to the execution of the
+        discipline itself See MDOFormulation.get_expected_workflow
         """
         # avoid circular dependency
         from gemseo.core.execution_sequence import ExecutionSequenceFactory
@@ -466,12 +494,10 @@ class MDODiscipline(object):
             self.input_grammar = JSONGrammar(
                 name=self.name + "_input",
                 schema_file=input_grammar_file,
-                grammar_type="input",
             )
             self.output_grammar = JSONGrammar(
                 name=self.name + "_output",
                 schema_file=output_grammar_file,
-                grammar_type="output",
             )
         elif grammar_type == self.SIMPLE_GRAMMAR_TYPE:
             self.input_grammar = SimpleGrammar(name=self.name + "_input")
@@ -560,8 +586,7 @@ class MDODiscipline(object):
             )
 
     def __get_input_data_for_cache(self, input_data, in_names):
-        """
-        Prepares the input data dict for caching
+        """Prepares the input data dict for caching.
 
         :param input_data: input data dict
         :param in_names: input data names
@@ -701,18 +726,37 @@ class MDODiscipline(object):
         with self._n_calls_linearize.get_lock():
             self._n_calls_linearize.value += 1
 
-    def __increment_exec_time(self, t_0):
-        """Increment the execution time."""
+    def __increment_exec_time(self, t_0, linearize=False):
+        """Increment the execution time.
+
+        :param t_0: The time of the execution start.
+        :type t_0: float
+        :param linearize: The switch to declare if it is an execution
+            or a linearization.
+        :type linearize: boolean
+        """
         curr_t = timer()
         with self._exec_time.get_lock():
             self._exec_time.value += curr_t - t_0
+
+            time_stamps = MDODiscipline.time_stamps
+            if time_stamps is not None:
+                disc_stamps = time_stamps.get(self.name)
+                if disc_stamps is None:
+                    if os.name == "nt":
+                        disc_stamps = []
+                    else:
+                        disc_stamps = MDODiscipline.__time_stamps_mp_manager.list()
+                stamp = (t_0, curr_t, linearize)
+                disc_stamps.append(stamp)
+                time_stamps[self.name] = disc_stamps
 
     def _retreive_diff_inouts(self, force_all=False):
         """Get the list of outputs to be differentiated wrt inputs.
 
         Get the list of outputs to be differentiated, depending on the
-        self._differentiated_inputs and self._differentiated_inputs attributes,
-        and the force_all option
+        self._differentiated_inputs and self._differentiated_inputs attributes, and the
+        force_all option
         """
         if force_all:
             inputs = self.get_input_data_names()
@@ -721,6 +765,26 @@ class MDODiscipline(object):
             inputs = self._differentiated_inputs
             outputs = self._differentiated_outputs
         return inputs, outputs
+
+    @classmethod
+    def activate_time_stamps(cls):
+        """Activate the time stamps.
+
+        For storing start and end times of execution and linearizations.
+        """
+        if os.name == "nt":  # No multiprocessing under windows
+            MDODiscipline.time_stamps = {}
+        else:
+            manager = Manager()
+            MDODiscipline.__time_stamps_mp_manager = manager
+            MDODiscipline.time_stamps = manager.dict()
+
+    @classmethod
+    def deactivate_time_stamps(cls):
+        """Deactivate the time stamps for storing start and end times of execution and
+        linearizations."""
+        MDODiscipline.time_stamps = None
+        MDODiscipline.__time_stamps_mp_manager = None
 
     def linearize(self, input_data=None, force_all=False, force_no_exec=False):
         """Execute the linearized version of the code.
@@ -780,14 +844,13 @@ class MDODiscipline(object):
         t_0 = timer()
         approximate_jac = self.linearization_mode in self.APPROX_MODES
 
-        if approximate_jac:
+        if approximate_jac:  # Time already counted in execute()
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
             self._compute_jacobian(inputs, outputs)
+            self.__increment_exec_time(t_0, linearize=True)
 
         self.__increment_n_calls_lin()
-        if not approximate_jac:  # Time already counted in execute()
-            self.__increment_exec_time(t_0)
 
         self._check_jacobian_shape(inputs, outputs)
         # Cache the Jacobian matrix
@@ -905,16 +968,15 @@ class MDODiscipline(object):
         :param outputs: outputs to be derived
         """
         if self.jac is None:
-            raise ValueError("The discipline " + self.name + " was not linearized")
+            raise ValueError("The discipline {} was not linearized.".format(self.name))
         out_set = set(outputs)
         in_set = set(inputs)
         out_jac_set = set(self.jac.keys())
 
         if not out_set.issubset(out_jac_set):
-            msg = "Missing outputs in Jacobian of discipline "
-            msg += self.name
-            msg += ": " + str(out_set.difference(out_jac_set))
-            raise KeyError(msg)
+            msg = "Missing outputs in Jacobian of discipline {}: {}"
+            missing_outputs = out_set.difference(out_jac_set)
+            raise KeyError(msg.format(self.name, missing_outputs))
 
         for j_o in outputs:
             j_out = self.jac[j_o]
@@ -923,10 +985,9 @@ class MDODiscipline(object):
             n_out_j = self.__get_len(output_vals)
 
             if not in_set.issubset(out_dv_set):
-                msg = "Missing inputs " + str(in_set.difference(out_dv_set))
-                msg += " in Jacobian of discipline "
-                msg += self.name + ", for output : " + str(j_o)
-                raise KeyError(msg)
+                msg = "Missing inputs {} in Jacobian of discipline {}, for output: {}"
+                missing_inputs = in_set.difference(out_dv_set)
+                raise KeyError(msg.format(missing_inputs, self.name, j_o))
 
             for j_i in inputs:
                 input_vals = self.local_data.get(j_i)
@@ -940,12 +1001,12 @@ class MDODiscipline(object):
                     continue
 
                 if j_mat.shape != expected_shape:
-                    msg = "Jacobian matrix of discipline " + str(self.name)
-                    msg += " d " + j_o + "/d " + j_i
-                    msg += " is not of the right shape !"
-                    msg += "\nExpected : " + str((n_out_j, n_in_j))
-                    msg += " got : " + str(j_mat.shape)
-                    raise ValueError(msg)
+                    msg = (
+                        "Jacobian matrix of discipline {} d{}/d{}"
+                        " is not of the right shape!\n Expected: ({},{}) got: {}"
+                    )
+                    data = [self.name, j_o, j_i, n_out_j, n_in_j, j_mat.shape]
+                    raise ValueError(msg.format(*data))
 
         # Discard imaginary part of Jacobian
         for jac_loc in self.jac.values():
@@ -1254,7 +1315,6 @@ class MDODiscipline(object):
         :param data_name: the name of the output
         :returns: True if data_name is in input grammar
         :rtype: logical
-
         """
         return self.input_grammar.is_data_name_existing(data_name)
 
@@ -1266,7 +1326,7 @@ class MDODiscipline(object):
         return status not in [self.STATUS_RUNNING]
 
     def reset_statuses_for_run(self):
-        """Sets all the statuses to PENDING"""
+        """Sets all the statuses to PENDING."""
         if not self._is_status_ok_for_run_again(self.status):
             raise ValueError(
                 "Cannot run discipline "
@@ -1287,7 +1347,7 @@ class MDODiscipline(object):
         self.notify_status_observers()
 
     def add_status_observer(self, obs):
-        """Add an observer for the status
+        """Add an observer for the status.
 
         Add an observer for the status to be notified when self changes of
         status.
@@ -1314,7 +1374,6 @@ class MDODiscipline(object):
         """Store discipline data in local data.
 
         :param kwargs: the data as key value pairs
-
         """
         self.local_data.update(kwargs)
 
@@ -1326,8 +1385,12 @@ class MDODiscipline(object):
         """
         try:
             self.input_grammar.load_data(input_data, raise_exception)
-        except InvalidDataException:
-            raise InvalidDataException("Invalid input data for: " + self.name)
+        except InvalidDataException as err:
+            err.args = (
+                err.args[0].replace("Invalid data", "Invalid input data")
+                + " in discipline {}".format(self.name),
+            )
+            raise
 
     def check_output_data(self, raise_exception=True):
         """Check the output data validity.
@@ -1337,8 +1400,12 @@ class MDODiscipline(object):
         """
         try:
             self.output_grammar.load_data(self.local_data, raise_exception)
-        except InvalidDataException:
-            raise InvalidDataException("Invalid output data for: " + self.name)
+        except InvalidDataException as err:
+            err.args = (
+                err.args[0].replace("Invalid data", "Invalid output data")
+                + " in discipline {}".format(self.name),
+            )
+            raise
 
     def get_outputs_asarray(self):
         """Accessor for the outputs as a large numpy array.
@@ -1496,7 +1563,6 @@ class MDODiscipline(object):
             "exec_time",
             "_cache_type",
             "_cache_file_path",
-            "_cache_factory",
             "_cache_tolerance",
             "_cache_hdf_node_name",
             "_linearize_on_last_state",
@@ -1591,6 +1657,6 @@ class MDODiscipline(object):
         :param data_dict: the dict to get the data from
         :returns: a data or a generator of data
         """
-        if isinstance(keys, string_types):
+        if isinstance(keys, six.string_types):
             return data_dict[keys]
         return (data_dict[name] for name in keys)

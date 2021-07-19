@@ -20,30 +20,26 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test principal component analysis dimension reduction. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test principal component analysis dimension reduction."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import linspace
+from numpy import linspace, ndarray
 
 from gemseo.mlearning.transform.dimension_reduction.kpca import KPCA
-
-standard_library.install_aliases()
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
 @pytest.fixture
-def data():
-    """ Build an input-output dataset. """
-    data_ = linspace(0, 1, N_SAMPLES * N_FEATURES)
-    return data_.reshape(N_SAMPLES, N_FEATURES)
+def data():  # type: (...) -> ndarray
+    """The dataset used to build the transformer, based on a 1D-mesh."""
+    return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     assert kpca.name == "KPCA"
@@ -52,14 +48,14 @@ def test_constructor():
 
 
 def test_learn(data):
-    """ Test learn. """
+    """Test learn."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)
 
 
 def test_transform(data):
-    """ Test transform. """
+    """Test transform."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)
@@ -69,7 +65,7 @@ def test_transform(data):
 
 
 def test_inverse_transform(data):
-    """ Test inverse transform. """
+    """Test inverse transform."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)

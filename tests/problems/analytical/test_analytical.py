@@ -20,31 +20,22 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
 import numpy as np
-from future import standard_library
 from numpy import zeros
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.driver_lib import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
 from gemseo.problems.analytical.rosenbrock import Rosenbrock, RosenMF
 
-standard_library.install_aliases()
 
-
-# Init logger
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_AnalyticalFunctions(unittest.TestCase):
-    """ """
+class TestAnalyticalFunctions(unittest.TestCase):
+    """"""
 
     def __relative_norm(self, x, x_ref):
         xr_norm = np.linalg.norm(x_ref)
@@ -74,12 +65,12 @@ class Test_AnalyticalFunctions(unittest.TestCase):
                 pass
 
     def test_rastrigin(self):
-        """ """
+        """"""
         problem = Rastrigin()
         self.run_and_test_problem(problem)
 
     def test_rosen(self):
-        """ """
+        """"""
         problem = Rosenbrock(2)
         self.run_and_test_problem(problem, "L-BFGS-B")
         problem = Rosenbrock(2, initial_guess=zeros(2))
@@ -88,7 +79,7 @@ class Test_AnalyticalFunctions(unittest.TestCase):
         assert "x" not in problem.design_space.variables_names
 
     def test_power2(self):
-        """ """
+        """"""
         problem = Power2()
         self.run_and_test_problem(problem)
 

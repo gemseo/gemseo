@@ -20,16 +20,11 @@
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import str
 from copy import deepcopy
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import (
     AtomicExecSequence,
@@ -47,13 +42,8 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_ExecSequence(unittest.TestCase):
+class TestExecSequence(unittest.TestCase):
     def setUp(self):
         self.d1 = SobieskiMission()
         self.d2 = SobieskiAerodynamics()

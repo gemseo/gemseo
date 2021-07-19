@@ -8,8 +8,8 @@
 
 .. _calibration_selection:
 
-Calibrate a machine learning algorithm
-======================================
+Calibrate or select a machine learning algorithm
+================================================
 
 .. automodule:: gemseo.mlearning.core.calibration
    :noindex:
@@ -17,3 +17,10 @@ Calibrate a machine learning algorithm
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/calibration/plot_calibration.html" role="button">Examples</a></div>
+
+.. automodule:: gemseo.mlearning.core.selection
+   :noindex:
+
+.. raw:: html
+
+   <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/calibration/plot_selection.html" role="button">Examples</a></div>

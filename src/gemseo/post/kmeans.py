@@ -18,30 +18,26 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A k-means classification of the optimization history
-****************************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""A k-means classification of the optimization history."""
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
+from typing import Optional, Union
+
 from numpy import array
 from numpy import int as np_int
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.utils.py23_compat import Path
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class KMeans(OptPostProcessor):
-    """
-    The **KMeans** post processing
-    performs a k-means clustering on optimization history.
+    """The **KMeans** post processing performs a k-means clustering on optimization
+    history.
 
     The default number of clusters is 5 and can be modified in option.
 
@@ -52,20 +48,26 @@ class KMeans(OptPostProcessor):
     sklearn.cluster.MiniBatchKMeans.html>`_ .
     """
 
-    def _run(self, n_clusters=5):  # pylint: disable=W0221
-        """
-        Computes the clustering
+    def _run(
+        self,
+        save=True,  # type: bool
+        show=False,  # type: bool
+        file_path=None,  # type: Optional[Path]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
+        file_extension=None,  # type: Optional[str]
+        **options  # type: OptPostProcessorOptionType
+    ):  # type: (...) -> None
+        self.__build_clusters(**options)
 
-        :param n_clusters: prescribed number of clusters
-        """
-        self.__build_clusters(n_clusters)
+    def __build_clusters(
+        self,
+        n_clusters=5,  # type: int
+    ):  # type: (...) -> None
+        """Build the clusters.
 
-    def __build_clusters(self, n_clusters=5):
-        """
-        Builds the clusters
-
-        :param n_clusters: prescribed number of clusters
-        :type n_clusters: int
+        Args:
+            n_clusters: The number of clusters.
         """
         x_history = self.database.get_x_history()
         x_vars = array(x_history)

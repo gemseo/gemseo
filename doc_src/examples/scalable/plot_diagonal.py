@@ -24,7 +24,8 @@
 Scalable diagonal discipline
 ============================
 
-Let us consider the :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline.
+Let us consider the
+:class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline.
 We want to build its :class:`.ScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 
@@ -32,9 +33,9 @@ For that, we can use a 20-length :class:`.DiagonalDOE`
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -49,7 +50,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Learning dataset
@@ -60,7 +60,8 @@ standard_library.install_aliases()
 ###############################################################################
 # Instantiate the discipline
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
-# For that, we instantiate the :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline
+# For that, we instantiate the
+# :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -92,8 +93,10 @@ scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
 # Build the scalable discipline
 # -----------------------------
 # The second step is to build a :class:`.ScalableDiscipline`,
-# using a :class:`.ScalableDiagonalModel` and the cache of the discipline.
-scalable = create_scalable("ScalableDiagonalModel", discipline.cache)
+# using a :class:`.ScalableDiagonalModel` and the cache of the discipline,
+# converted to a :class:`.Dataset`.
+dataset = discipline.cache.export_to_dataset()
+scalable = create_scalable("ScalableDiagonalModel", dataset)
 
 ###############################################################################
 # Visualize the input-output dependencies
@@ -107,14 +110,14 @@ scalable = create_scalable("ScalableDiagonalModel", discipline.cache)
 # these degrees are contributions to the output component and they add up to 1.
 # In other words, a degree expresses this contribution in percentage
 # and for a given column, the elements add up to 100.
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Visualize the 1D interpolations
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For every output, we can also visualize a spline interpolation of the output
 # samples over the diagonal of the input space.
-scalable.scalable_model.plot_1d_interpolations(save=False, show=True)
+scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
 
 ###############################################################################
 # Increased problem dimension
@@ -130,8 +133,8 @@ sizes = {
     name: discipline.cache.varsizes[name] * 2
     for name in discipline.get_input_data_names()
 }
-scalable = create_scalable("ScalableDiagonalModel", discipline.cache, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Twice as many outputs
@@ -141,8 +144,8 @@ sizes = {
     name: discipline.cache.varsizes[name] * 2
     for name in discipline.get_output_data_names()
 }
-scalable = create_scalable("ScalableDiagonalModel", discipline.cache, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Twice as many variables
@@ -151,8 +154,8 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 names = list(discipline.get_input_data_names())
 names += list(discipline.get_output_data_names())
 sizes = {name: discipline.cache.varsizes[name] * 2 for name in names}
-scalable = create_scalable("ScalableDiagonalModel", discipline.cache, sizes)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Binary IO dependencies
@@ -172,48 +175,35 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 ###############################################################################
 # Fill factor = 0.2
 # ~~~~~~~~~~~~~~~~~
-# Here, there is a 20% connection rate
-scalable = create_scalable(
-    "ScalableDiagonalModel", discipline.cache, sizes, fill_factor=0.2
-)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.2)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Fill factor = 0.5
 # ~~~~~~~~~~~~~~~~~
-# Here, there is a 50% connection rate
-scalable = create_scalable(
-    "ScalableDiagonalModel", discipline.cache, sizes, fill_factor=0.5
-)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.5)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Fill factor = 0.8
 # ~~~~~~~~~~~~~~~~~
-# Here, there is a 80% connection rate
-scalable = create_scalable(
-    "ScalableDiagonalModel", discipline.cache, sizes, fill_factor=0.8
-)
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable = create_scalable("ScalableDiagonalModel", dataset, sizes, fill_factor=0.8)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Heterogeneous dependencies
 # --------------------------
-# We could also imagine a more complex situation
-# where an output would depend inputs with a particular fill factor.
-# For example, let us consider a 20% connection rate for :code:`"y_2"`.
 scalable = create_scalable(
-    "ScalableDiagonalModel", discipline.cache, sizes, fill_factor={"y_2": 0.2}
+    "ScalableDiagonalModel", dataset, sizes, fill_factor={"y_2": 0.2}
 )
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable.scalable_model.plot_dependency(save=False, show=False)
 
 ###############################################################################
 # Group dependencies
 # ------------------
-# We could also imagine another particular situation
-# where an output would depend only on certain inputs.
-# For example, let us suppose that :code:`"y_2"` depends only on :code:`"x_shared"`.
 scalable = create_scalable(
-    "ScalableDiagonalModel", discipline.cache, sizes, group_dep={"y_2": ["x_shared"]}
+    "ScalableDiagonalModel", dataset, sizes, group_dep={"y_2": ["x_shared"]}
 )
-scalable.scalable_model.plot_dependency(save=False, show=True)
+scalable.scalable_model.plot_dependency(save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

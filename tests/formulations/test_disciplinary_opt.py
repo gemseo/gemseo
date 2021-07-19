@@ -19,14 +19,10 @@
 #                       initial documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.sobieski.wrappers import (
     SobieskiMission,
@@ -34,24 +30,19 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_DisciplinaryOpt(unittest.TestCase):
-    """ """
+class TestDisciplinaryOpt(unittest.TestCase):
+    """"""
 
     def test_multiple_disc(self):
-        """ """
+        """"""
         ds = SobieskiProblem().read_design_space()
         dopt = DisciplinaryOpt([SobieskiStructure(), SobieskiMission()], "y_4", ds)
         dopt.get_expected_dataflow()
         dopt.get_expected_workflow()
 
     def test_init(self):
-        """ """
+        """"""
         sm = SobieskiMission()
         ds = SobieskiProblem().read_design_space()
         dopt = DisciplinaryOpt([sm], "y_4", ds)

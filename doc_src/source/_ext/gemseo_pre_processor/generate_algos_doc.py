@@ -78,25 +78,32 @@ def get_options_schemas(feature_name, feature_api_opts_pt):
     for opt_name, opt_schema in list(all_options.items()):
         if descr in opt_schema:
             opt_schema[descr] = opt_schema[descr].replace("\n", " ")
+        elif "anyOf" in opt_schema:
+            if descr in opt_schema["anyOf"][0]:
+                opt_schema[descr] = opt_schema["anyOf"][0][descr].replace("\n", " ")
         else:
             print(
                 Warning(
-                    "Missing description for option "
-                    + str(opt_name)
-                    + " of algo "
-                    + feature_name
+                    "Missing description for option {} of algo {}".format(
+                        opt_name, feature_name
+                    )
                 )
             )
             opt_schema[descr] = ""
         if obj_type in opt_schema:
             opt_schema[obj_type] = opt_schema[obj_type].replace("\n", " ")
+        elif "anyOf" in opt_schema:
+            var_types = []
+            for sub_opt_schema in opt_schema["anyOf"]:
+                if obj_type in sub_opt_schema:
+                    var_types.append(sub_opt_schema[obj_type].replace("\n", " "))
+            opt_schema[obj_type] = "Union[{}]".format(",".join(var_types))
         else:
             print(
                 Warning(
-                    "Missing object type for option "
-                    + str(opt_name)
-                    + " of algo "
-                    + feature_name
+                    "Missing object type for option {} of algo {}".format(
+                        opt_name, feature_name
+                    )
                 )
             )
             opt_schema[obj_type] = ""
@@ -138,6 +145,12 @@ def split_param_type(options_dict):
                 options_dict[algo][option]["ptype"] = "Unknown"
             if options_dict[algo][option]["type"] == "":
                 options_dict[algo][option]["type"] = "Unknown"
+            # sphinx uses "ptype" to display the type of an argument.
+            # The latter is read from the docstrings.
+            # If it is "Unknown", we use the type found in the grammar
+            # which is often less meaningful than the ones we can find in docstrings.
+            if options_dict[algo][option]["ptype"] == "Unknown":
+                options_dict[algo][option]["ptype"] = options_dict[algo][option]["type"]
 
 
 def main(gen_opts_path):

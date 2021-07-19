@@ -27,9 +27,13 @@
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
 .. _editable mode: https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
-.. _google docstrings: https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html
 .. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _mypy: http://mypy-lang.org
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
+.. _pytest-cov: https://pytest-cov.readthedocs.io
 .. _gitlab: https://gitlab.com/gemseo/dev/gemseo
+.. _pyperf: https://pyperf.readthedocs.io
+.. _profiler: https://docs.python.org/3/library/profile.html
 
 .. _dev:
 
@@ -61,13 +65,13 @@ Quick start
 First time setup:
 
 * Create a main environment with `tox-conda`_, see :ref:`requirements`.
-* then on linux
+* Then on Linux
 
   .. code-block:: console
 
      tox -e dev
 
-* or on windows
+* or, on Windows
 
   .. code-block:: console
 
@@ -75,13 +79,13 @@ First time setup:
 
 Run the tests
 
-* on linux
+* on Linux
 
    .. code-block:: console
 
       tox -e py27,py37
 
-* on windows
+* on Windows
 
    .. code-block:: console
 
@@ -105,7 +109,7 @@ and environment from which it is used.
 All the settings of `tox`_ are defined in the file :file:`tox.ini`.
 It contains the descriptions of the environments:
 
-* version of python to use,
+* version of Python to use,
 * packages to install,
 * environment variables to set or pass from the current environment,
 * commands to execute.
@@ -123,7 +127,7 @@ Requirements
 
 We use `tox`_ and `tox-conda`_ along with `anaconda`_,
 you need to have them installed before moving along.
-Create an anaconda environment with `tox-conda`_:
+Create an Anaconda environment with `tox-conda`_:
 
 .. code-block:: console
 
@@ -136,6 +140,31 @@ Create an anaconda environment with `tox-conda`_:
 The last two commands are necessary
 to have the :command:`tox` executable available
 in the just created environment.
+
+.. _matlab_requirements:
+
+MATLAB requirements
+~~~~~~~~~~~~~~~~~~~
+
+The MATLAB Python API is not defined as a dependency of |g|,
+it has to be installed manually in the Anaconda environment.
+The Python API usually needs to be built
+and installed since it is not done by default during the MATLAB installation.
+
+For testing with `tox`_,
+set the environment variable :envvar:`MATLAB_PYTHON_WRAPPER`
+to point to the path to a ``pip`` installable version of the MATLAB Python API.
+
+pSeven requirements
+~~~~~~~~~~~~~~~~~~~
+
+Like the MATLAB Python API, the pSeven one shall be installed manually in the Anaconda environment.
+
+For testing with `tox`_,
+set the environment variable :envvar:`PSEVEN_PYTHON_WRAPPER`
+to point to the path to a ``pip`` installable pSeven Python API.
+Set the environment variable :envvar:`DATADVD_LICENSE_FILE`
+for the pSeven license.
 
 How to use tox
 ++++++++++++++
@@ -183,7 +212,7 @@ activate the `tox`_ environment named *env* with:
 
 .. note::
 
-  An anaconda environment created by `tox`_ has no anaconda name,
+  An Anaconda environment created by `tox`_ has no Anaconda name,
   thus :command:`conda` cannot activate it by its name as usual.
 
 Activating environments may be useful for instance
@@ -193,7 +222,7 @@ You may modify an activated environment
 just like any other `anaconda`_ environment,
 in case of trouble just recreate it.
 Be aware that the environment variables defined in :file:`tox.ini`
-will not be set with an manually activated environment.
+will not be set with a manually activated environment.
 
 Show available environments with:
 
@@ -208,12 +237,12 @@ for example:
 
    tox -e env -- ARG1 --opt1
 
-Not all the environment allows this feature,
+Not all the environments allow this feature,
 see the specific topics below for more information.
 
 .. note::
 
-  On windows,
+  On Windows,
   the environment names shall be suffixed with *-win*.
   This is a limitation of `tox`_.
 
@@ -225,15 +254,17 @@ Coding environment
 
 Create the development environment:
 
-.. code-block:: console
+* On Linux
 
-   tox -e dev
+  .. code-block:: console
 
-On windows use instead:
+     tox -e dev
 
-.. code-block:: console
+* On Windows
 
-   tox -e dev-win
+  .. code-block:: console
+
+     tox -e dev-win
 
 This will create an environment with:
 
@@ -293,6 +324,10 @@ Logging
   and it’s intuitively obvious where events are logged
   just from the logger name.
 
+Error messages
+  Error messages will be read by humans:
+  they shall be explicit and valid sentences.
+
 .. _git:
 
 Git
@@ -306,7 +341,6 @@ For the daily work,
 this basically means that evolutions of |g|
 are done in feature branches created from the develop branch
 and merged back into it when finished.
-The feature branches shall be prefixed with *ft_*.
 
 Git hooks
 +++++++++
@@ -320,9 +354,9 @@ git will perform predefined actions:
 * check that no big file is committed,
 * check bad symbolic links,
 * check or fix some of the python docstrings formatting,
-* fix the python import order,
-* fix the python code formatting,
-* check for python coding issues (see :ref:`coding-style`),
+* fix the Python import order,
+* fix the Python code formatting,
+* check for Python coding issues (see :ref:`coding-style`),
 * check the commit message (see :ref:`commit-msg`),
 * check for forbidden :func:`print` usage,
 * check for misused :mod:`logging` formatting,
@@ -366,7 +400,7 @@ Where:
     * build: Changes that affect the build system or external dependencies
     * ci: Changes to our CI configuration files and scripts
 * *(optional scope)* provide additional contextual information and is contained
-  within parenthesis
+  within parentheses
 * *<description>* is a concise description of the changes,
   imperative,
   lower case
@@ -397,7 +431,8 @@ Commit message examples:
 Commit best practices
 +++++++++++++++++++++
 
-The purpose of these best practices is to ease the code review,
+The purpose of these best practices is to ease
+the code reviews,
 commit reverting (rollback changes)
 bisecting (find regressions),
 branch merging or rebasing.
@@ -411,17 +446,18 @@ Write atomic commits
 
 Commits history
    Try to keep the commit history as linear as possible
-   by avoiding unnecessary merge commit,
-   git can help to achieve this with
-   (this is done automatically when the ``.tox/dev`` environment is created):
+   by avoiding unnecessary merge commit.
+   When possible, prefer rebasing over merging,
+   git can help to achieve this with:
 
    .. code-block:: console
 
       git config pull.rebase true
+      git config rerere.enabled true
 
 Rework commit history
   You may reorder, split or combine the commits of a branch.
-  Such history modifications must be done
+  Such history modifications shall be done
   before the branch has been pushed to the main repository.
 
 Tests
@@ -443,7 +479,7 @@ Tests writing guidelines
 ++++++++++++++++++++++++
 
 We use `pytest`_ for writing and executing all the |g| tests.
-Older tests were written with the unittest module from the python standard library
+Older tests were written with the unittest module from the Python standard library
 but newer tests shall be written with `pytest`_.
 
 Logic
@@ -475,7 +511,7 @@ Messages
     `pytest.raises <https://docs.pytest.org/en/stable/assert.html#assertraises>`_
     for checking the error messages.
 
-Skipping under windows
+Skipping under Windows
     Use the `pytest`_ marker like:
 
     .. code-block:: python
@@ -492,18 +528,19 @@ Validation of images
 Executing tests
 +++++++++++++++
 
-For python 2.7,
+For Python 2.7,
 run the tests with:
 
 .. code-block:: console
 
    tox -e py27
 
-Replace py27 by py38 for testing with python 3.8,
-you may run the tests accordingly with python 2.7,
+Replace py27 by py38 for testing with Python 3.8,
+you may run the tests accordingly with Python 2.7,
 3.6,
-3.7
-and 3.8.
+3.7,
+3.8
+and 3.9.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
@@ -512,13 +549,13 @@ for instance:
 
    tox -e py38 -- --last-failed --step-wise
 
-Run the tests for several python versions with for instance:
+Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
    tox -e py27,py38
 
-Under windows,
+Under Windows,
 append ``-win`` to the names of the test environments,
 for instance:
 
@@ -529,7 +566,7 @@ for instance:
 Tests coverage
 ++++++++++++++
 
-For a selected python version (for instance python 3.8),
+For a selected python version (for instance Python 3.8),
 get the coverage information with:
 
 .. code-block:: console
@@ -545,13 +582,13 @@ Generating the doc
 ++++++++++++++++++
 
 The documentation is written with `sphinx`_.
-Generate the documentation with:
+On Linux, generate the documentation with:
 
 .. code-block:: console
 
    tox -e doc
 
-Under windows,
+Under Windows,
 append ``-win`` to the names of the this environment.
 
 Pass options to ``sphinx-build`` after ``--``,
@@ -571,14 +608,55 @@ Check the links in the generated documentation with:
 
    doc-linkchecker does not work on windows.
 
-Writing style
-+++++++++++++
+Writing guidelines
+++++++++++++++++++
+
+Documenting classes, functions, methods, attributes, modules, etc... is mandatory.
+End users and developers shall not have to guess the purpose of an API
+and how to use it.
+
+Style
+~~~~~
+
+Use the Google Style Docstrings format for documenting the code.
+This :ref:`example module` shows how to write such docstrings.
+Older docstrings use the legacy *epydoc* docstrings format
+which is visually dense and hard to read.
+They will be overhauled progressively.
+
+Type hints
+~~~~~~~~~~
+
+For functions and methods,
+write type hints with inlined comments as shown in :ref:`example module`
+(this is compatible with both Python 2.7 and 3.6+).
+The type hints are used when generating the functions and methods documentation,
+they will also be used gradually to check and improved the code quality
+with the help of a type checker like `mypy`_.
+
+Functions and methods arguments shall use `standard duck typing`_.
+In practice, use :class:`Iterable` or :class:`Sequence`
+instead of :class:`List` when appropriate,
+similarly for :class:`Mapping` instead of :class:`Dict`.
+For ``*args`` and ``**kwargs`` arguments,
+use only the value types with no container.
+
+Return types shall match exactly the type of the returned object.
+
+Linefeeds
+~~~~~~~~~
 
 Use `semantic linefeeds`_
 by starting a new line at the end of each sentence,
 and splitting sentences themselves at natural breaks between clauses,
 a text file becomes far easier to edit and version control.
-You can give a look at the current page's source for instance.
+You can have a look at the current page's source for instance.
+
+Example
+~~~~~~~
+
+Have a look to the uncertainty module
+for an example of proper code documentation.
 
 Versioning
 ----------
@@ -590,3 +668,21 @@ we increment the:
 1. MAJOR version when we make incompatible API changes,
 2. MINOR version when we add functionality in a backwards compatible manner, and
 3. PATCH version when we make backwards compatible bug fixes.
+
+Benchmarking
+------------
+
+Use `pyperf`_ to create valid benchmark,
+mind properly tuning the system for the benchmark (see the docs).
+
+Profiling
+---------
+
+The Python standard library provides a `profiler`_,
+mind using it with controlled system like for benchmarking.
+The profiling data could be analyzed with one of these tools:
+
+- `snakeviz <https://jiffyclub.github.io/snakeviz>`_
+- `kcachegrind <https://kcachegrind.github.io/html/Home.html>`_,
+  after having converted the profiling data with
+  `pyprof2calltree <https://github.com/pwaller/pyprof2calltree/>`_

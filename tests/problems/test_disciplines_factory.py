@@ -21,20 +21,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from pathlib import Path
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.disciplines_factory import DisciplinesFactory
-
-standard_library.install_aliases()
-
-configure_logger(SOFTWARE_NAME)
+from gemseo.utils.py23_compat import Path
 
 DATA = Path(__file__).parent / "data"
 

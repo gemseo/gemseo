@@ -19,20 +19,16 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Base class for all Scenarios
-****************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import inspect
-from builtins import str, super
+import logging
 from os import remove
 from os.path import abspath, basename
 from os.path import dirname as pdirname
 from os.path import exists
+from typing import Mapping, Union
 
-from future import standard_library
 from six import string_types
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -41,11 +37,17 @@ from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.post_factory import PostFactory
+from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
-standard_library.install_aliases()
+"""
+Base class for all Scenarios
+****************************
+"""
 
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
+
+ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, float]]]]
 
 
 class Scenario(MDODiscipline):
@@ -88,8 +90,6 @@ class Scenario(MDODiscipline):
     To list post processings on your setup,
     use the method scenario.posts
     For more detains on their options, go to the "gemseo.post" package
-
-
     """
 
     # Constants for input variables in json schema
@@ -108,9 +108,8 @@ class Scenario(MDODiscipline):
         name=None,
         **formulation_options
     ):
-        """
-        Constructor, initializes the MDO scenario
-        Objects instantiation and checks are made before run intentionally
+        """Constructor, initializes the MDO scenario Objects instantiation and checks
+        are made before run intentionally.
 
         :param disciplines: the disciplines of the scenario
         :param formulation: the formulation name,
@@ -128,7 +127,7 @@ class Scenario(MDODiscipline):
 
         self._check_disciplines()
         self._init_algo_factory()
-        self._form_factory = MDOFormulationsFactory()
+        self._form_factory = self._formulation_factory
         super(Scenario, self).__init__(name=name)
         self._init_base_grammar(self.__class__.__name__)
         self._init_formulation(
@@ -137,37 +136,35 @@ class Scenario(MDODiscipline):
         self.post_factory = PostFactory()
         self._update_input_grammar()
 
+    @property
+    def _formulation_factory(self):
+        """Returns formulations factory."""
+        return MDOFormulationsFactory()
+
     def _check_disciplines(self):
-        """
-        Check that two disciplines dont compute the same output
-        """
+        """Check that two disciplines dont compute the same output."""
 
         all_outs = set()
         for disc in self.disciplines:
             outs = set(disc.get_output_data_names())
             common = outs & all_outs
             if len(common) > 0:
-                raise ValueError(
-                    "Two disciplines, among which "
-                    + disc.name
-                    + " compute the same output :"
-                    + str(common)
-                )
+                msg = "Two disciplines, among which {}, compute the same output: {}"
+                raise ValueError(msg.format(disc.name, common))
             all_outs = all_outs | outs
 
     @property
     def design_space(self):
-        """
-        Proxy for formulation.design_space
+        """Proxy for formulation.design_space.
 
         :returns: the design space
         """
         return self.formulation.design_space
 
     def _init_base_grammar(self, name):
-        """Initializes the base grammars from MDO scenario inputs and outputs
-        This ensures that subclasses have base scenario inputs and outputs
-        Can be overloaded by subclasses if this is not desired.
+        """Initializes the base grammars from MDO scenario inputs and outputs This
+        ensures that subclasses have base scenario inputs and outputs Can be overloaded
+        by subclasses if this is not desired.
 
         :param name: name of the scenario, used as base name for the json
             schema to import: name_input.json and name_output.json
@@ -178,7 +175,7 @@ class Scenario(MDODiscipline):
         self._instantiate_grammars(input_grammar_file, output_grammar_file)
 
     def set_differentiation_method(self, method="user", step=1e-6):
-        """Sets the differentiation method for the process
+        """Sets the differentiation method for the process.
 
         :param method: the method to use, either "user", "finite_differences",
             or "complex_step" or "no_derivatives",
@@ -197,11 +194,11 @@ class Scenario(MDODiscipline):
         constraint_name=None,
         value=None,
         positive=False,
+        **kwargs
     ):
-        """Add a user constraint, i.e. a design constraint in addition to
-        formulation specific constraints such as targets in IDF.
-        The strategy of repartition of constraints is defined in the
-        formulation class.
+        """Add a user constraint, i.e. a design constraint in addition to formulation
+        specific constraints such as targets in IDF. The strategy of repartition of
+        constraints is defined in the formulation class.
 
         :param output_name: the output name to be used as constraint
             for instance, if g_1 is given and
@@ -234,13 +231,33 @@ class Scenario(MDODiscipline):
             constraint_name=constraint_name,
             value=value,
             positive=positive,
+            **kwargs
+        )
+
+    def add_observable(self, output_names, observable_name=None, discipline=None):
+        """Add observable to the optimization problem. The repartition strategy of the
+        observable is defined in the formulation class. When more than one output name
+        is provided, the observable function returns a concatenated array of the output
+        values.
+
+        :param output_names: names of the outputs to observe
+        :param observable_name: name of the observable, optional. If None, the
+            output name is used by default.
+        :type observable_name: str
+        :param discipline: if None, detected from inner disciplines, otherwise
+            the discipline used to build the function
+            (Default value = None)
+        :type discipline: MDODiscipline
+        """
+        return self.formulation.add_observable(
+            output_names, observable_name, discipline
         )
 
     def _init_formulation(
         self, formulation, objective_name, design_space, **formulation_options
     ):
-        """Initializes the formulation given disciplines, objective name
-        and design variables names
+        """Initializes the formulation given disciplines, objective name and design
+        variables names.
 
         :param formulation: the formulation name to use
         :param design_space: the design space object
@@ -263,7 +280,7 @@ class Scenario(MDODiscipline):
         self.formulation = form_inst
 
     def get_optim_variables_names(self):
-        """A convenience function to access formulation design variables names
+        """A convenience function to access formulation design variables names.
 
         :returns: the decision variables of the scenario
         :rtype: list(str)
@@ -271,7 +288,7 @@ class Scenario(MDODiscipline):
         return self.formulation.get_optim_variables_names()
 
     def get_optimum(self):
-        """Return the optimization results
+        """Return the optimization results.
 
         :returns: Optimal solution found by the scenario if executed, None
                   otherwise
@@ -283,8 +300,7 @@ class Scenario(MDODiscipline):
     def save_optimization_history(
         self, file_path, file_format=OptimizationProblem.HDF5_FORMAT, append=False
     ):
-        """Saves the optimization history of the scenario
-        to a file
+        """Saves the optimization history of the scenario to a file.
 
         :param file_path: The path to the file to save the history
         :param file_format: The format of the file, either "hdf5" or "ggobi"
@@ -313,8 +329,7 @@ class Scenario(MDODiscipline):
         pre_load=False,
         generate_opt_plot=False,
     ):
-        """
-        Sets the backup file for the optimization history during the run
+        """Sets the backup file for the optimization history during the run.
 
         :param file_path: The path to the file to save the history
         :param each_new_iter: if True, callback at every iteration
@@ -342,9 +357,7 @@ class Scenario(MDODiscipline):
                 opt_pb.database.import_hdf(file_path)
 
         def backup_callback():
-            """
-            A callback function to backup optimization history
-            """
+            """A callback function to backup optimization history."""
             self.save_optimization_history(file_path, append=True)
             if generate_opt_plot and opt_pb.database:
                 basepath = basename(file_path).split(".")[0]
@@ -358,15 +371,15 @@ class Scenario(MDODiscipline):
 
     @property
     def posts(self):
-        """Lists the available post processings
+        """Lists the available post processings.
 
         :returns: the list of methods
         """
         return self.post_factory.posts
 
     def post_process(self, post_name, **options):
-        """Finds the appropriate library and executes
-        the post processing on the problem
+        """Finds the appropriate library and executes the post processing on the
+        problem.
 
         :param post_name: the post processing name
         :param options: options for the post method, see its package
@@ -377,34 +390,20 @@ class Scenario(MDODiscipline):
         return post
 
     def _run_algorithm(self):
-        """Runs the algo, either DOE or optimizer"""
+        """Runs the algo, either DOE or optimizer."""
         raise NotImplementedError()
 
-    def __str__(self):
-        """
-        Summarize optimizations results for display
-
-        :returns: string summarizing optimization results
-        """
-        msg = self.__class__.__name__ + ":\nDisciplines: "
-        disc_names = [disc.name for disc in self.disciplines]  # pylint: disable=E1101
-        msg += " ".join(disc_names)
-        msg += "\nMDOFormulation: "
-        msg += self.formulation.__class__.__name__
-        msg += "\nAlgorithm: "
-        msg += str(self.local_data.get(self.ALGO)) + "\n"
-        return msg
-
-    def log_me(self):
-        """Logs a representation of the scenario characteristics
-        logs self.__repr__ message
-        """
-        msg = str(self)
-        for line in msg.split("\n"):
-            LOGGER.info(line)
+    def __repr__(self):
+        msg = MultiLineString()
+        msg.add(self.name)
+        msg.indent()
+        msg.add("Disciplines: {}", pretty_repr(self.disciplines, delimiter=" "))
+        msg.add("MDOFormulation: {}", self.formulation.__class__.__name__)
+        msg.add("Algorithm: {}", self.local_data.get(self.ALGO))
+        return str(msg)
 
     def get_disciplines_statuses(self):
-        """Retrieves the disciplines statuses
+        """Retrieves the disciplines statuses.
 
         :returns: the statuses dict, key: discipline name, value: status
         """
@@ -414,9 +413,7 @@ class Scenario(MDODiscipline):
         return statuses
 
     def print_execution_metrics(self):
-        """Prints total number of executions and cumulated runtime
-        by discipline
-        """
+        """Prints total number of executions and cumulated runtime by discipline."""
         n_lin = 0
         n_calls = 0
         LOGGER.info("* Scenario Executions statistics *")
@@ -443,10 +440,9 @@ class Scenario(MDODiscipline):
         html_output=True,
         json_output=False,
     ):
-        """
-        Creates an xdsm.json file from the current scenario.
-        If monitor is set to True, the xdsm.json file is updated to reflect
-        discipline status update (hence monitor name).
+        """Creates an xdsm.json file from the current scenario. If monitor is set to
+        True, the xdsm.json file is updated to reflect discipline status update (hence
+        monitor name).
 
         :param bool monitor: if True, updates the generated file at each
             discipline status change
@@ -470,44 +466,35 @@ class Scenario(MDODiscipline):
             XDSMizer(self).monitor(outdir=outdir, print_statuses=print_statuses)
         else:
             XDSMizer(self).run(
-                outdir=outdir,
+                output_directory_path=outdir,
                 latex_output=latex_output,
                 open_browser=open_browser,
                 html_output=html_output,
                 json_output=json_output,
+                outfilename=outfilename,
             )
 
     def get_expected_dataflow(self):
-        """Overriden method from MDODiscipline base class
-        delegated to formulation object
-
-        """
+        """Overriden method from MDODiscipline base class delegated to formulation
+        object."""
         return self.formulation.get_expected_dataflow()
 
     def get_expected_workflow(self):
-        """Overriden method from MDODiscipline base class
-        delegated to formulation object
-
-        """
+        """Overriden method from MDODiscipline base class delegated to formulation
+        object."""
         exp_wf = self.formulation.get_expected_workflow()
         return ExecutionSequenceFactory.loop(self, exp_wf)
 
     def _init_algo_factory(self):
-        """
-        Initalizes the algorithms factory
-        """
+        """Initalizes the algorithms factory."""
         raise NotImplementedError()
 
     def get_available_driver_names(self):
-        """
-        Returns the list of available drivers
-        """
+        """Returns the list of available drivers."""
         return self._algo_factory.algorithms
 
     def _update_input_grammar(self):
-        """
-        Updates input grammar from algos names
-        """
+        """Updates input grammar from algos names."""
 
         available_algos = self.get_available_driver_names()
         algo_grammar = {"type": "string", "enum": available_algos}
@@ -515,8 +502,7 @@ class Scenario(MDODiscipline):
 
     @staticmethod
     def is_scenario():
-        """
-        Retuns True if self is a scenario
+        """Retuns True if self is a scenario.
 
         :returns: True if self is a scenario
         """

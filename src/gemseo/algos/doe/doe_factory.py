@@ -23,18 +23,14 @@
 A factory to execute DOE algorithms from their class names
 **********************************************************
 """
-from __future__ import absolute_import, division, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.driver_factory import DriverFactory
 
-standard_library.install_aliases()
-
 
 class DOEFactory(DriverFactory):
-    """DOE factory to create DOE libraries, see DriverFactory"""
+    """DOE factory to create DOE libraries, see DriverFactory."""
 
     def __init__(self):
         """Test and import optimization library if it is available."""

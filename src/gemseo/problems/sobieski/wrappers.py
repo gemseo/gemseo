@@ -24,33 +24,23 @@ SSBJ Disciplines wrappers
 *************************
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import time
-from builtins import super
 from numbers import Number
-
-from future import standard_library
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.core import SobieskiProblem
-
-standard_library.install_aliases()
-
 
 DTYPE_COMPLEX = "complex128"
 DTYPE_DOUBLE = "float64"
 
 
 class SobieskiBaseWrapper(MDODiscipline):
-    """Base wrapper for Sobieski problem discipline wrappers
-    and JSON grammars
-
-    """
+    """Base wrapper for Sobieski problem discipline wrappers and JSON grammars."""
 
     def __init__(self, dtype=DTYPE_DOUBLE):
-        """
-        Constructor
+        """Constructor.
 
         :param dtype: type of data, either "float64" or "complex128".
         :type dtype: str
@@ -64,19 +54,16 @@ class SobieskiBaseWrapper(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized
-        Can be overloaded by disciplines
+        """Defines the attributes to be serialized Can be overloaded by disciplines.
 
         :returns: the list of attributes names
-
         """
         base_d = super(SobieskiBaseWrapper, self).get_attributes_to_serialize()
         base_d.append("dtype")
         return base_d
 
     def __setstate__(self, d):
-        """
-        Used by pickle to define what to deserialize
+        """Used by pickle to define what to deserialize.
 
         :param d : update self dict from d to deserialize
         """
@@ -84,19 +71,16 @@ class SobieskiBaseWrapper(MDODiscipline):
         self.sobieski_problem = SobieskiProblem(self.dtype)
 
     def _run(self):
-        """
-        Run the discipline
-        """
+        """Run the discipline."""
         raise NotImplementedError()
 
 
 class SobieskiMission(SobieskiBaseWrapper):
 
-    """Sobieski range wrapper using Breguet formula"""
+    """Sobieski range wrapper using Breguet formula."""
 
     def __init__(self, dtype=DTYPE_DOUBLE, enable_delay=False):
-        """
-        Constructor of wrapper for range computation
+        """Constructor of wrapper for range computation.
 
         :param dtype: type of data, either "float64" or "complex128".
         :type dtype: str
@@ -105,7 +89,7 @@ class SobieskiMission(SobieskiBaseWrapper):
         self.enable_delay = enable_delay
 
     def _run(self):
-        """Compute range"""
+        """Compute range."""
         if self.enable_delay:
             if isinstance(self.enable_delay, Number):
                 time.sleep(self.enable_delay)
@@ -118,7 +102,7 @@ class SobieskiMission(SobieskiBaseWrapper):
         self.store_local_data(y_4=y_4)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Compute the partial derivatives of all outputs wrt all inputs
+        """Compute the partial derivatives of all outputs wrt all inputs.
 
         :param inputs: Default value = None)
         :param outputs: Default value = None)
@@ -132,11 +116,10 @@ class SobieskiMission(SobieskiBaseWrapper):
 
 class SobieskiStructure(SobieskiBaseWrapper):
 
-    """Sobieski mass estimation wrapper"""
+    """Sobieski mass estimation wrapper."""
 
     def __init__(self, dtype=DTYPE_DOUBLE):
-        """
-        Constructor of wrapper for weight computation
+        """Constructor of wrapper for weight computation.
 
         :param dtype: type of data, either "float64" or "complex128".
         :type dtype: str
@@ -144,7 +127,7 @@ class SobieskiStructure(SobieskiBaseWrapper):
         super(SobieskiStructure, self).__init__(dtype=dtype)
 
     def _run(self):
-        """Compute weight"""
+        """Compute weight."""
 
         data_names = ["x_1", "y_21", "y_31", "x_shared"]
         x_1, y_21, y_31, x_shared = self.get_inputs_by_name(data_names)
@@ -154,7 +137,7 @@ class SobieskiStructure(SobieskiBaseWrapper):
         self.store_local_data(y_1=y_1, y_11=y_11, y_12=y_12, y_14=y_14, g_1=g_1)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Linearization of weight analysis
+        """Linearization of weight analysis.
 
         :param inputs: Default value = None)
         :param outputs: Default value = None)
@@ -168,11 +151,10 @@ class SobieskiStructure(SobieskiBaseWrapper):
 
 class SobieskiAerodynamics(SobieskiBaseWrapper):
 
-    """Sobieski aerodynamic discipline wrapper"""
+    """Sobieski aerodynamic discipline wrapper."""
 
     def __init__(self, dtype=DTYPE_DOUBLE):
-        """
-        Constructor of wrapper for aerodynamic computation
+        """Constructor of wrapper for aerodynamic computation.
 
         :param dtype: type of data, "float64" or "complex128".
         :type dtype: str
@@ -180,7 +162,7 @@ class SobieskiAerodynamics(SobieskiBaseWrapper):
         super(SobieskiAerodynamics, self).__init__(dtype=dtype)
 
     def _run(self):
-        """Compute aerodynamics"""
+        """Compute aerodynamics."""
         data_names = ["x_2", "y_12", "y_32", "x_shared"]
         x_2, y_12, y_32, x_shared = self.get_inputs_by_name(data_names)
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.blackbox_aerodynamics(
@@ -189,7 +171,7 @@ class SobieskiAerodynamics(SobieskiBaseWrapper):
         self.store_local_data(y_2=y_2, y_21=y_21, y_23=y_23, y_24=y_24, g_2=g_2)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Compute the partial derivatives of all outputs wrt all inputs
+        """Compute the partial derivatives of all outputs wrt all inputs.
 
         :param inputs: Default value = None)
         :param outputs: Default value = None)
@@ -202,11 +184,10 @@ class SobieskiAerodynamics(SobieskiBaseWrapper):
 
 
 class SobieskiPropulsion(SobieskiBaseWrapper):
-    """Sobieski propulsion propulsion wrapper"""
+    """Sobieski propulsion propulsion wrapper."""
 
     def __init__(self, dtype=DTYPE_DOUBLE):
-        """
-        Constructor of wrapper for propulsion computation
+        """Constructor of wrapper for propulsion computation.
 
         :param dtype: type of data, either "float64" or "complex128"
         :type dtype: str
@@ -214,7 +195,7 @@ class SobieskiPropulsion(SobieskiBaseWrapper):
         super(SobieskiPropulsion, self).__init__(dtype=dtype)
 
     def _run(self):
-        """Compute propulsion"""
+        """Compute propulsion."""
         data_names = ["x_3", "y_23", "x_shared"]
 
         x_3, y_23, x_shared = self.get_inputs_by_name(data_names)
@@ -224,7 +205,7 @@ class SobieskiPropulsion(SobieskiBaseWrapper):
         self.store_local_data(y_3=y_3, y_34=y_34, y_31=y_31, y_32=y_32, g_3=g_3)
 
     def _compute_jacobian(self, inputs=None, outputs=None):
-        """Compute the partial derivatives of all outputs wrt all inputs
+        """Compute the partial derivatives of all outputs wrt all inputs.
 
         :param inputs: Default value = None)
         :param outputs: Default value = None)

@@ -28,16 +28,15 @@
 SSBJ core computations
 **********************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import cmath
+import logging
 import math
 import random
-from builtins import str
 from os.path import dirname, join
 from random import uniform
 
-from future import standard_library
 from numpy import array, complex128, concatenate, float64, ones
 from six import string_types
 
@@ -48,11 +47,7 @@ from gemseo.problems.sobieski.core_mission import SobieskiMission
 from gemseo.problems.sobieski.core_propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core_structure import SobieskiStructure
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
-
+LOGGER = logging.getLogger(__name__)
 DIRNAME = dirname(__file__)
 
 DEG_TO_RAD = math.pi / 180.0
@@ -60,9 +55,8 @@ DEG_TO_RAD = math.pi / 180.0
 
 class SobieskiProblem(object):
 
-    """Class defining Sobieski problem and related method to the problem
-    such as disciplines computation, constraints, reference optimum
-    """
+    """Class defining Sobieski problem and related method to the problem such as
+    disciplines computation, constraints, reference optimum."""
 
     CONTRAINTS_NAMES_INEQUALITY = (
         "c_Stress_x1",
@@ -140,8 +134,7 @@ class SobieskiProblem(object):
     TEMPERATURE_LIMIT = SobieskiPropulsion.TEMPERATURE_LIMIT
 
     def __init__(self, dtype=DTYPE_DOUBLE):
-        """
-        Constructor
+        """Constructor.
 
         :param dtype: data type of problem, either "float64" or "complex128".
         :type dtype: str
@@ -180,7 +173,7 @@ class SobieskiProblem(object):
         self.u_b, self.l_b = self.base.get_sobieski_bounds()
 
     def get_default_x0(self):
-        """Function that returns a default initial value for design variables
+        """Function that returns a default initial value for design variables.
 
         :returns: i_0 , initial design variables
         :rtype: ndarray
@@ -190,7 +183,7 @@ class SobieskiProblem(object):
         return self.base.get_default_x0()
 
     def default_constants(self):
-        """Definition of constants vector C for Sobieski problem
+        """Definition of constants vector C for Sobieski problem.
 
         :returns: constant vector
         :rtype: ndarray
@@ -198,8 +191,7 @@ class SobieskiProblem(object):
         return self.base.default_constants()
 
     def get_bounds_by_name(self, variables_names):
-        """Class method that return bounds of design
-        variables and coupling variables
+        """Class method that return bounds of design variables and coupling variables.
 
         :param variables_names: name of variable
         :returns: lower bound and upper bound
@@ -207,8 +199,7 @@ class SobieskiProblem(object):
         return self.base.get_bounds_by_name(variables_names)
 
     def __set_indata(self, input_vect, names):
-        """
-        Returns a set of default inputs for the different disciplines
+        """Returns a set of default inputs for the different disciplines.
 
         :param input_vect: design vector used to fill the dictionary
         :param names: specific data names, if None, returns all inputs
@@ -227,26 +218,24 @@ class SobieskiProblem(object):
             "y_31": array([6354.32430691], dtype=self.dtype),
             "y_32": array([0.50279625], dtype=self.dtype),
             "y_34": array([1.10754577], dtype=self.dtype),
-            "y_1": ones((3), dtype=self.dtype),
-            "y_2": ones((3), dtype=self.dtype),
-            "y_3": ones((3), dtype=self.dtype),
-            "g_1": ones((6), dtype=self.dtype),
-            "g_2": ones((1), dtype=self.dtype),
-            "g_3": ones((3), dtype=self.dtype),
+            "y_1": ones(3, dtype=self.dtype),
+            "y_2": ones(3, dtype=self.dtype),
+            "y_3": ones(3, dtype=self.dtype),
+            "g_1": ones(6, dtype=self.dtype),
+            "g_2": ones(1, dtype=self.dtype),
+            "g_3": ones(3, dtype=self.dtype),
             "x_1": input_vect[:2],
             "x_2": array([input_vect[2]], dtype=self.dtype),
             "x_3": array([input_vect[3]], dtype=self.dtype),
         }
         if isinstance(names, string_types):
-            names = [
-                names,
-            ]
+            names = [names]
         if names is not None:
             return {k: indata[k] for k in names if k in indata}
         return indata
 
     def get_default_inputs(self, names=None):
-        """Returns a set of default inputs for the different disciplines
+        """Returns a set of default inputs for the different disciplines.
 
         :param names: specific data names, if None, returns all inputs
             (Default value = None)
@@ -258,7 +247,7 @@ class SobieskiProblem(object):
         return self.__set_indata(input_vect, names)
 
     def get_default_inputs_feasible(self, names=None):
-        """Returns a set of default inputs for the different disciplines
+        """Returns a set of default inputs for the different disciplines.
 
         :param names: specific data names, if None, returns all inputs
             (Default value = None)
@@ -270,8 +259,8 @@ class SobieskiProblem(object):
         return self.__set_indata(input_vect, names)
 
     def get_default_inputs_equilibrium(self, names=None):
-        """Returns a set of default inputs, where coupling variables are
-        at the equilibrium (MDA) for X0
+        """Returns a set of default inputs, where coupling variables are at the
+        equilibrium (MDA) for X0.
 
         :param names: specific data names, if None, returns all inputs
             (Default value = None)
@@ -316,8 +305,7 @@ class SobieskiProblem(object):
         return indata
 
     def get_random_input(self, names=None, seed=None):
-        """Get a randomized starting point
-        with specified variables names
+        """Get a randomized starting point with specified variables names.
 
         :param names: specific data names, if None, returns all inputs
             (Default value = None)
@@ -353,8 +341,7 @@ class SobieskiProblem(object):
         return indata
 
     def get_x0_feasible(self, names=None):
-        """Gets a feasible starting point
-        with specified variables names
+        """Gets a feasible starting point with specified variables names.
 
         :param names: specific data names, if None, returns all inputs
             (Default value = None)
@@ -363,23 +350,22 @@ class SobieskiProblem(object):
         :rtype: ndarray
         """
         if isinstance(names, string_types):
-            names = [
-                names,
-            ]
+            names = [names]
         if names is None:
             names = ["x_1", "x_2", "x_3", "x_shared"]
-        opts = {}
-        opts["x_1"] = array([0.14951, 7.5e-01], dtype=self.dtype)
-        opts["x_2"] = array([7.5e-01], dtype=self.dtype)
-        opts["x_3"] = array([0.1675], dtype=self.dtype)
-        opts["x_shared"] = array(
-            [6.0e-02, 5.4e04, 1.4e00, 4.4e00, 6.6e01, 1.2e03], dtype=self.dtype
-        )
+        opts = {
+            "x_1": array([0.14951, 7.5e-01], dtype=self.dtype),
+            "x_2": array([7.5e-01], dtype=self.dtype),
+            "x_3": array([0.1675], dtype=self.dtype),
+            "x_shared": array(
+                [6.0e-02, 5.4e04, 1.4e00, 4.4e00, 6.6e01, 1.2e03], dtype=self.dtype
+            ),
+        }
 
         return concatenate([opts[zname] for zname in names])
 
     def get_sobieski_bounds(self):
-        """Set the input design bounds and return them as 2 ndarrays
+        """Set the input design bounds and return them as 2 ndarrays.
 
         :returns: ub,lb: upper and lower bounds
         :rtype: ndarray,ndarray
@@ -387,7 +373,7 @@ class SobieskiProblem(object):
         return self.base.get_sobieski_bounds()
 
     def get_sobieski_optimum(self):
-        """Optimum by Sobieski with BLISS
+        """Optimum by Sobieski with BLISS.
 
         :returns: array of x optimum x_1, x_2, x_3, x_shared concatenated
         :rtype: ndarray
@@ -398,7 +384,7 @@ class SobieskiProblem(object):
         )
 
     def get_sobieski_optimum_range(self):
-        """Return range value by Sobieski with BLISS
+        """Return range value by Sobieski with BLISS.
 
         :returns: optimal range value
         :rtype: ndarray
@@ -406,7 +392,7 @@ class SobieskiProblem(object):
         return array([3963.98], dtype=self.dtype)
 
     def get_sobieski_constraints(self, g_1, g_2, g_3, true_cstr=False):
-        """Compare the constraints to their limits for Sobieski problem
+        """Compare the constraints to their limits for Sobieski problem.
 
         :param g_1: vector of constraints for weight analysis:
 
@@ -458,9 +444,8 @@ class SobieskiProblem(object):
         return constraints_values
 
     def normalize_inputs(self, input_vector):
-        """This function normalizes design variables w.r.t lower and
-        upper bounds of these design variables
-        They will be defined in [0,1]
+        """This function normalizes design variables w.r.t lower and upper bounds of
+        these design variables They will be defined in [0,1]
 
         :param input_vector: real design variables vector
         :type input_vector: ndarray
@@ -471,7 +456,7 @@ class SobieskiProblem(object):
         return (input_vector - lower_bound) / (upper_bound - lower_bound)
 
     def unnormalize_inputs(self, input_vector):
-        """This function unnormalizes design variables
+        """This function unnormalizes design variables.
 
         :param input_vector: normalized design variables vector
         :type input_vector: ndarray
@@ -482,8 +467,7 @@ class SobieskiProblem(object):
         return input_vector * (upper_bound - lower_bound) + lower_bound
 
     def blackbox_structure(self, x_shared, y_21, y_31, x_1, true_cstr=False):
-        """This function calculates the weight of the
-        aircraft by structure and adds
+        """This function calculates the weight of the aircraft by structure and adds
         them to obtain a total aircraft weight.
 
         :param x_shared: shared design variable vector:
@@ -532,9 +516,8 @@ class SobieskiProblem(object):
         )
 
     def derive_blackbox_structure(self, x_shared, y_21, y_31, x_1, true_cstr=False):
-        """Compute jacobian matrix of structural analysis
-        y_1 is the vector of structural outputs and g_1
-        are the structural constraints
+        """Compute jacobian matrix of structural analysis y_1 is the vector of
+        structural outputs and g_1 are the structural constraints.
 
         - y_1[0]: total aircraft weight
         - y_1[1]: fuel weight
@@ -647,8 +630,8 @@ class SobieskiProblem(object):
         )
 
     def blackbox_propulsion(self, x_shared, y_23, x_3, true_cstr=False):
-        """This function calculates fuel comsumption, engine weight and
-        engine scale factor
+        """This function calculates fuel comsumption, engine weight and engine scale
+        factor.
 
         :param x_shared: shared design variable vector:
 
@@ -682,14 +665,13 @@ class SobieskiProblem(object):
             - g_3[2]: throttle setting constraint
 
         :rtype: ndarray, ndarray, ndarray, ndarray, ndarray
-
         """
         return self.sobieski_propulsion.blackbox_propulsion(
             x_shared, y_23, x_3, true_cstr=true_cstr
         )
 
     def derive_blackbox_propulsion(self, x_shared, y_23, x_3, true_cstr=False):
-        """This function calculates the Jacobian matrix of propulsion
+        """This function calculates the Jacobian matrix of propulsion.
 
         :param x_shared: shared design variable vector:
 
@@ -717,7 +699,7 @@ class SobieskiProblem(object):
         )
 
     def blackbox_mission(self, x_shared, y_14, y_24, y_34):
-        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law
+        """THIS SECTION COMPUTES THE A/C RANGE from Breguet's law.
 
         :param x_shared: shared design variable vector:
 
@@ -778,10 +760,9 @@ class SobieskiProblem(object):
     def systemanalysis_gauss_seidel(
         self, design_vector, true_cstr=False, accuracy=1e-3
     ):
-        """This subfunction uses Gauss-Seidel iterations on the A/C range
-        optimization
-        model to compute behavior variables, given a set of design variables.
-        Black boxes WEIGHT, DRAGPOLAR, and POWER are called
+        """This subfunction uses Gauss-Seidel iterations on the A/C range optimization
+        model to compute behavior variables, given a set of design variables. Black
+        boxes WEIGHT, DRAGPOLAR, and POWER are called.
 
         :param design_vector: design variable vector
         :type design_vector: ndarray
@@ -839,10 +820,10 @@ class SobieskiProblem(object):
         x_3 = array([design_vector[3]], dtype=self.dtype)
         x_shared = design_vector[4:]
 
-        y_12 = ones((2), dtype=self.dtype)
-        y_21 = ones((1), dtype=self.dtype)
-        y_31 = ones((1), dtype=self.dtype)
-        y_32 = ones((1), dtype=self.dtype)
+        y_12 = ones(2, dtype=self.dtype)
+        y_21 = ones(1, dtype=self.dtype)
+        y_31 = ones(1, dtype=self.dtype)
+        y_32 = ones(1, dtype=self.dtype)
 
         # Execute Gauss Seidel iteration on system to find Y variables
         lift_convergence = y_21[0] + 10.0
@@ -887,7 +868,7 @@ class SobieskiProblem(object):
         )
 
     def get_constraints(self, design_vector, true_cstr=False):
-        """Compute all constraints of Sobieski problem
+        """Compute all constraints of Sobieski problem.
 
         :param design_vector: design variable vector
         :type design_vector: ndarray
@@ -901,9 +882,7 @@ class SobieskiProblem(object):
         return outputs[-3], outputs[-2], outputs[-1]
 
     def read_design_space(self):
-        """Reads the sobieski design space file and creates
-        a DesignSpace instance
-        """
+        """Reads the sobieski design space file and creates a DesignSpace instance."""
         input_file = join(DIRNAME, "sobieski_design_space.txt")
         design_space = DesignSpace.read_from_txt(input_file)
         if self.dtype == complex128:

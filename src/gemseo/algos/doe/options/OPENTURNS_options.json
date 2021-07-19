@@ -48,6 +48,29 @@
         "wait_time_between_samples": {
         	"type" : "number",
         	"minimum":0
+        },
+         "temperature": {
+            "type": "string",
+            "enum": ["Geometric", "Linear"]
+        },
+         "criterion": {
+            "type": "string",
+            "enum": ["C2","PhiP","MinDist"]
+        },
+         "annealing":{
+            "type": "boolean"
+        },
+        "n_replicates": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "seed": {
+                "type" : "integer",
+                "minimum":1
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

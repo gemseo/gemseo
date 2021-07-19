@@ -28,9 +28,7 @@ In this example, we will discover the different functions of the API
 related to MDO formulations: their names, their options and their sub-options.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import (
     configure_logger,
@@ -43,7 +41,6 @@ from gemseo.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##########################################################################
 # Get available formulations
@@ -58,7 +55,7 @@ print(get_available_formulations())
 # -----------------------------------------
 # For a given MDO formulation, e.g. :code:`"MDF"`, we can:
 #
-# - get the options of a MDO formulation using the
+# - get the options of an MDO formulation using the
 #   :meth:`~gemseo.api.get_formulation_options_schema` function; e.g.
 print(get_formulation_options_schema("MDF"))
 
@@ -68,7 +65,7 @@ print(get_formulation_options_schema("MDF"))
 print(get_formulations_options_defaults("MDF"))
 
 ##########################################################################
-# - get sub-options of a MDO formulation using the
+# - get sub-options of an MDO formulation using the
 #   :meth:`~gemseo.api.get_formulation_sub_options_schema` function; e.g.
 print(get_formulation_sub_options_schema("MDF", main_mda_class="MDAGaussSeidel"))
 

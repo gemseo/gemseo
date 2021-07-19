@@ -18,26 +18,23 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test scaler transformer module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test scaler transformer module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import allclose, arange, array, diag, eye
+from numpy import allclose, arange, array, diag, eye, ndarray
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def data():
-    """ Test data. """
+def data():  # type: (...) -> ndarray
+    """Test data."""
     return arange(30).reshape((10, 3))
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     scaler = Scaler()
     assert scaler.name == "Scaler"
     assert allclose(scaler.offset, 0)
@@ -45,7 +42,7 @@ def test_constructor():
 
 
 def test_duplicate(data):
-    """ Test duplicate method. """
+    """Test duplicate method."""
     scaler = Scaler()
     scaler.fit(data)
     scaler_dup = scaler.duplicate()
@@ -62,13 +59,13 @@ def test_duplicate(data):
 
 
 def test_fit(data):
-    """ Test fit method. """
+    """Test fit method."""
     scaler = Scaler()
     scaler.fit(data)
 
 
 def test_transform(data):
-    """ Test transform method. """
+    """Test transform method."""
     scaler = Scaler()
     another_scaler = Scaler(offset=3, coefficient=2)
     yet_another_scaler = Scaler(
@@ -87,7 +84,7 @@ def test_transform(data):
 
 
 def test_inverse_transform(data):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     scaler = Scaler()
     another_scaler = Scaler(offset=3, coefficient=2)
     yet_another_scaler = Scaler(
@@ -108,7 +105,7 @@ def test_inverse_transform(data):
 
 
 def test_compute_jacobian(data):
-    """ Test compute_jacobian method. """
+    """Test compute_jacobian method."""
     iden = eye(data.shape[1])
 
     scaler = Scaler()
@@ -130,7 +127,7 @@ def test_compute_jacobian(data):
 
 
 def test_compute_jacobian_inverse(data):
-    """ Test compute_jacobian_inverse method. """
+    """Test compute_jacobian_inverse method."""
     iden = eye(data.shape[1])
 
     scaler = Scaler()
@@ -145,8 +142,6 @@ def test_compute_jacobian_inverse(data):
     jac_inv = scaler.compute_jacobian_inverse(data)
     another_jac_inv = another_scaler.compute_jacobian_inverse(data)
     yet_another_jac_inv = yet_another_scaler.compute_jacobian_inverse(data)
-
-    print(jac_inv)
 
     assert allclose(jac_inv, iden)
     assert allclose(another_jac_inv, 1 / 2 * iden)

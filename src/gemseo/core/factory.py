@@ -19,139 +19,168 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Factory base class
-******************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+
+"""Factory base class."""
+
+from __future__ import division, unicode_literals
 
 import importlib
+import logging
 import os
 import pkgutil
 import sys
-
-from future import standard_library
-from future.utils import with_metaclass
+from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.singleton import SingleInstancePerAttributeEq
-from gemseo.utils.source_parsing import SourceParsing
+from gemseo.utils.py23_compat import lru_cache
+from gemseo.utils.source_parsing import get_default_options_values, get_options_doc
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
-class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
+@lru_cache(maxsize=None)
+class Factory(object):
+    """Factory of class objects.
+
+    This factory can create an object from a base class
+    or any of its sub-classes
+    that can be imported from the given modules sources.
+    There are 3 sources of modules that can be searched:
+
+    - fully qualified module names (such as gemseo.problems, ...),
+    - the environment variable "GEMSEO_PATH" may contain the list of directories,
+    - |g| plugins, i.e. packages whose name starts with ``gemseo_``.
+
+    If a class,
+    despite being a sub-class of the base class,
+    or even the base class itself,
+    does not belong to the modules sources
+    then it is not taken into account
+    by the factory.
     """
-    Factory to create extensions that are known to |g|:
-        can be a MDODiscipline, MDOFormulation... Depending on the subclass
 
-    Three types of directories are scanned :
+    # Names of the environment variable to search for classes
+    __GEMSEO_PATH = "GEMSEO_PATH"
+    __GEMS_PATH = "GEMS_PATH"
 
-    - the environment variable "GEMSEO_PATH" may contain
-      the list of directories to scan
-    - internal_modules_paths (such as gemseo.problems...)
-    - a directory list may be passed to the factory
-    """
+    # Allowed prefix for naming a plugin importable from sys.path
+    __PLUGIN_PREFIX = "gemseo_"
 
-    # Name of the environment variable to search for classes
-    GEMSEO_PATH = "GEMSEO_PATH"
-    GEMS_PATH = "GEMS_PATH"
-
-    # Allowed prefix for naming a plugin in sys.path
-    PLUGIN_PREFIX = "gemseo_"
-
-    def __init__(self, base_class=None, internal_modules_paths=None):
-        """Initializes the factory.
-
-        Scans the directories to search for subclasses of MDODiscipline.
-        Searches in "GEMSEO_PATH", "GEMS_PATH",  and gemseo.problems
-
-        :param base_class: class to search in the modules
-            (MDOFormulation, MDODiscipline...) depending on the subclass
-        :param internal_modules_paths: import paths (such as gemseo.problems)
-            which are already imported
-        :param name: name of the factory to print when configuration
-                     is printed
-        :param possible_plugin_names: tuple of plugins packages names to be
-            scanned if they can be imported. The last plugin name has the
-            priority. For instance, if the same class MDAJacobi exists in
-            gemseo.mda, gemseo_plugins.mda and gemseo_private.mda, the used one will
-            be gemseo_private.mda
+    def __init__(
+        self,
+        base_class,  # type: Type[Any]
+        module_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
+        # noqa: D205, D212, D405, D415
+        """
+        Args:
+            base_class: The base class to be considered.
+            module_names: The fully qualified modules names to be searched.
         """
         if not isinstance(base_class, type):
             raise TypeError("Class to search must be a class!")
 
-        self.base_class = base_class
-        self.internal_modules_paths = internal_modules_paths or []
-
-        self.failed_imports = {}
+        self.__base_class = base_class
+        self.__module_names = module_names or []
         self.__names_to_classes = {}
+        self.failed_imports = {}
 
         self.update()
 
-    def _update_path_from_env_variable(self, env_variable):
-        """Update the classes that can be instanciated from a factory from an
-        environment variable.
+    def update(self):  # type: (...) -> None
+        """Search for the classes that can be instantiated.
 
-        param env_variable: name of the environment variable
+        The search is done in the following order:
+            1. The fully qualified module names
+            2. The plugin packages
+            3. The packages from the environment variables
+        """
+        module_names = list(self.__module_names)
+
+        # Import internal packages
+        for module_name in module_names:
+            self.__import_modules_from(module_name)
+
+        # Import plugins packages
+        for _, module_name, _ in pkgutil.iter_modules():
+            if module_name.startswith(self.__PLUGIN_PREFIX):
+                self.__import_modules_from(module_name)
+                module_names += [module_name]
+
+        gems_path = os.environ.get(self.__GEMS_PATH)
+        if gems_path is not None:
+            msg = (
+                "GEMS is now named GEMSEO. "
+                "The GEMS_PATH environment variable is now deprecated "
+                "and it is strongly recommended "
+                "to use the GEMSEO_PATH environment variable "
+                "instead to register your GEMSEO plugins."
+            )
+            LOGGER.warning(msg)
+
+        # Import from environment variable paths
+        for env_variable in [self.__GEMSEO_PATH, self.__GEMS_PATH]:
+            module_names += self.__import_modules_from_env_var(env_variable)
+
+        names_to_classes = self.__get_sub_classes(self.__base_class)
+        for name, cls in names_to_classes.items():
+            if self.__is_class_in_modules(module_names, cls):
+                self.__names_to_classes[name] = cls
+
+    def __log_import_failure(
+        self, pkg_name  # type: str
+    ):  # type: (...) -> None
+        """Log import failures.
+
+        Args:
+            pkg_name: The name of a package that failed to be imported.
+        """
+        LOGGER.debug("Failed to import package %s", pkg_name)
+        self.failed_imports[pkg_name] = ""
+
+    def __import_modules_from_env_var(
+        self, env_variable  # type: str
+    ):  # type: (...) -> List[str]
+        """Import the modules from the path given by an environment variable.
+
+        Args:
+            env_variable: The name of an environment variable.
+
+        Returns:
+            The imported fully qualified module names.
         """
         g_path = os.environ.get(env_variable)
         if g_path is None:
-            return
+            return []
 
         if ":" in g_path:
             paths = g_path.split(":")
         else:
             paths = [g_path]
 
-        # temporary make the gemseo paths visible to the import machinery
+        # temporary make the paths visible to the import machinery
         for path in paths:
             sys.path.insert(0, path)
+
+        mod_names = list()
         for _, mod_name, _ in pkgutil.iter_modules(path=paths):
             self.__import_modules_from(mod_name)
-        for path in paths:
+            mod_names += [mod_name]
+
+        for _ in paths:
             sys.path.pop(0)
 
-    def update(self):
-        """Update the classes that can be created by the factory.
+        return mod_names
 
-        In order, scan in the internal modules, then in plugins, then in
-        GEMSEO_PATH.
+    def __import_modules_from(
+        self, pkg_name  # type: str
+    ):  # type: (...) -> None
+        """Import all the modules from a package.
+
+        Args:
+            pkg_name: The name of the package.
         """
-        # Scan internal packages
-        for mod_name in self.internal_modules_paths:
-            self.__import_modules_from(mod_name)
-
-        # Scan plugins packages
-        for _, mod_name, _ in pkgutil.iter_modules():
-            if mod_name.startswith(self.PLUGIN_PREFIX):
-                self.__import_modules_from(mod_name)
-
-        gems_path = os.environ.get(self.GEMS_PATH)
-        if gems_path is not None:
-            msg = """GEMS is now named GEMSEO. The GEMS_PATH environment
-             variable is now deprecated and it is strongly recommended to use
-             the GEMSEO_PATH environment variable instead to register your
-             GEMSEO plugins."""
-            LOGGER.warn(msg)
-
-        # Scan environment variable paths
-        env_variables = [self.GEMSEO_PATH, self.GEMS_PATH]
-        for env_variable in env_variables:
-            self._update_path_from_env_variable(env_variable)
-
-        self.__names_to_classes = self.__get_sub_classes(self.base_class)
-
-    def __log_import_failure(self, pkg_name):
-        """Log import failures."""
-        LOGGER.debug("Failed to import package %s", pkg_name)
-        self.failed_imports[pkg_name] = ""
-
-    def __import_modules_from(self, pkg_name):
-        """Import modules from a package."""
         pkg = importlib.import_module(pkg_name)
 
         if not hasattr(pkg, "__path__"):
@@ -164,14 +193,22 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
             try:
                 importlib.import_module(mod_name)
             except Exception as err:  # pylint: disable=(broad-except
-                LOGGER.debug("Failed to import module: %s, %s", mod_name, err)
+                LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
                 self.failed_imports[mod_name] = err
 
-    def __get_sub_classes(self, cls):
-        """Return all the sub classes of cls.
+    def __get_sub_classes(
+        self, cls  # type: Type[Any]
+    ):  # type: (...) -> Dict[str, Type[Any]]
+        """Find all the sub classes of a class.
 
-        The class names are unique, the last imported is kept when more than
-        one class have the same name.
+        The class names are unique,
+        the last imported is kept when more than one class have the same name.
+
+        Args:
+            cls: A class.
+
+        Returns:
+            A mapping from the names to the unique sub-classes.
         """
         all_sub_classes = {}
         for sub_class in cls.__subclasses__():
@@ -181,27 +218,61 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
                 all_sub_classes[cls_name] = _cls
         return all_sub_classes
 
+    @staticmethod
+    def __is_class_in_modules(
+        module_names,  # type: str
+        cls,  # type: Type[Any]
+    ):  # type: (...) -> bool
+        """Return whether a class belongs to given modules.
+
+         Args:
+            module_names: The names of the modules.
+            cls: The class.
+
+        Returns:
+            Whether the class belongs to the modules.
+        """
+        for name in module_names:
+            if cls.__module__.startswith(name):
+                return True
+        return False
+
     @property
-    def classes(self):
+    @lru_cache()
+    def classes(self):  # type: (...) -> List[str]
         """Return the available classes.
 
-        :returns : the list of classes names
+        Returns:
+            The sorted names of the available classes.
         """
         return sorted(self.__names_to_classes.keys())
 
-    # TODO: rename to has_class
-    def is_available(self, name):
-        """Return whether a class is available.
+    def is_available(
+        self, name  # type: str
+    ):  # type: (...) -> bool
+        """Return whether a class can be instantiated.
 
-        :param name : name of the class
-        :returns: True if the class is available
+        Args:
+            name: The name of the class.
+
+        Returns:
+            Whether the class can be instantiated.
         """
         return name in self.__names_to_classes
 
-    def get_class(self, name):
-        """Return the class from its name.
+    def get_class(
+        self, name  # type: str
+    ):  # type: (...) -> Type[Any]
+        """Return a class from its name.
 
-        :param name : name of the class
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The class.
+
+        Raises:
+            ImportError: If the class is not available.
         """
         try:
             return self.__names_to_classes[name]
@@ -211,109 +282,153 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
             )
             raise ImportError(msg)
 
-    def create(self, class_name, **options):
-        """Return an instance with given class name.
+    def create(
+        self,
+        class_name,  # type: str
+        **options  # type: Any
+    ):  # type: (...) -> Any
+        """Return an instance of a class.
 
-        :param class_name : name of the class
-        :parma options: options to be passed to the constructor
+        Args:
+            class_name: The name of the class.
+            **options: The arguments to be passed to the class constructor.
+
+        Returns:
+            The instance of the class.
+
+        Raises:
+            TypeError: If the class cannot be instantiated.
         """
         cls = self.get_class(class_name)
         try:
             return cls(**options)
         except TypeError:
-            # TODO: raise an error with message and let the callers handle
-            # logging
             LOGGER.error(
                 "Failed to create class %s with arguments %s", class_name, options
             )
             raise
 
-    def get_options_doc(self, name):
-        """Return the options documentation for the given class name.
+    def get_options_doc(
+        self, name  # type: str
+    ):  # type: (...) -> Dict[str, str]
+        """Return the constructor documentation of a class.
 
-        :param name: name of the class
-        :returns: the dict of option name: option documentation
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The mapping from the argument names to their documentation.
         """
         cls = self.get_class(name)
-        return SourceParsing.get_options_doc(cls.__init__)
+        return get_options_doc(cls.__init__)
 
-    def get_default_options_values(self, name):
-        """Return the options default values for the given class name.
+    def get_default_options_values(
+        self, name  # type: str
+    ):  # type: (...) -> Dict[str, Union[str,int,float,bool]]
+        """Return the constructor kwargs default values of a class.
 
-        Only addresses kwargs
+        Args:
+            name: The name of the class.
 
-        :param name : name of the class
-        :returns: the dict option name: option default value
+        Returns:
+            The mapping from the argument names to their default values.
         """
         cls = self.get_class(name)
-        return SourceParsing.get_default_options_values(cls)
+        return get_default_options_values(cls)
 
-    def get_options_grammar(self, name, write_schema=False, schema_file=None):
-        """Return the options grammar for a class.
+    def get_options_grammar(
+        self,
+        name,  # type: str
+        write_schema=False,  # type: bool
+        schema_file=None,  # type: Optional[str]
+    ):  # type: (...) -> JSONGrammar
+        """Return the options JSON grammar for a class.
 
-        Attempts to generate a JSONGrammar from the arguments of the __init__
-        method of the class
+        Attempt to generate a JSONGrammar
+        from the arguments of the __init__ method of the class.
 
-        :param name: name of the class
-        :param schema_file: the output json file path. If None: input.json or
-            output.json depending on gramamr type.
-            (Default value = None)
-        :param write_schema: if True, writes the schema files
-            (Default value = False)
-        :returns: the json grammar for options
+        Args:
+            name: The name of the class.
+            write_schema: If True, write the JSON schema to a file.
+            schema_file: The path to the JSON schema file.
+                If None, the file is saved in the current directory in a file named
+                after the name of the class.
+
+        Returns:
+            The JSON grammar.
         """
         args_dict = self.get_default_options_values(name)
         opts_doc = self.get_options_doc(name)
         opts_doc = {k: v for k, v in opts_doc.items() if k in args_dict}
-        gramm = JSONGrammar(name)
+        grammar = JSONGrammar(name)
 
-        gramm.initialize_from_base_dict(
+        grammar.initialize_from_base_dict(
             args_dict,
-            schema_file=schema_file,
-            write_schema=write_schema,
             description_dict=opts_doc,
         )
+
+        if write_schema:
+            grammar.write_schema(schema_file)
+
         # Remove None args from required
-        sch_dict = gramm.schema.to_dict()
+        sch_dict = grammar.schema.to_dict()
         required = sch_dict["required"]
         has_changed = False
+
         for opt, val in args_dict.items():
             if val is None and opt in required:
                 required.remove(opt)
                 has_changed = True
-        if has_changed:
-            gramm = JSONGrammar(name, schema=sch_dict)
-        return gramm
 
-    def get_sub_options_grammar(self, class_name, **options):
+        if has_changed:
+            grammar = JSONGrammar(name, schema=sch_dict)
+
+        return grammar
+
+    def get_sub_options_grammar(
+        self,
+        name,  # type: str
+        **options  # type: str
+    ):  # type: (...) -> JSONGrammar
         """Return the JSONGrammar of the sub options of a class.
 
-        :param class_name: name of the class
-        :param options: options to be passed to the class required to deduce
-            the sub options
+        Args:
+            name: The name of the class.
+            **options: The options to be passed to the class required to deduce
+                the sub options.
+
+        Returns:
+            The JSON grammar.
         """
-        cls = self.get_class(class_name)
+        cls = self.get_class(name)
         return cls.get_sub_options_grammar(**options)
 
-    def get_default_sub_options_values(self, class_name, **options):
+    def get_default_sub_options_values(
+        self,
+        name,  # type: str
+        **options  # type: str
+    ):  # type: (...) -> JSONGrammar
         """Return the default values of the sub options of a class.
 
-        :param class_name: name of the class
-        :param options: options to be passed to the class required to deduce
-            the sub options
+        Args:
+            name: The name of the class.
+            **options: The options to be passed to the class required to deduce
+                the sub options.
+
+        Returns:
+            The JSON grammar.
         """
-        cls = self.get_class(class_name)
+        cls = self.get_class(name)
         return cls.get_default_sub_options_values(**options)
 
-    def __str__(self):
-        """Return the representation of a factory.
+    def __str__(self):  # type: (...) -> str
+        return "Factory({})".format(self.__base_class.__name__)
 
-        Gives the configuration with the successfully loaded modules and
-        failed imports with the reason.
-        """
+    def __repr__(self):  # type: (...) -> str
+        # Display the successfully loaded modules and the failed imports with the reason
         table = PrettyTable(
             ["Module", "Is available ?", "Purpose or error message"],
-            title=self.base_class.__name__,
+            title=self.__base_class.__name__,
             min_table_width=120,
             max_table_width=120,
         )
@@ -326,7 +441,7 @@ class Factory(with_metaclass(SingleInstancePerAttributeEq, object)):
                 while msgs and msg == "":
                     msg = msgs[0]
                     del msgs[0]
-            except Exception as err:  # pylint: disable=(broad-except
+            except Exception:  # pylint: disable=broad-except
                 pass
 
             key = cls.__name__

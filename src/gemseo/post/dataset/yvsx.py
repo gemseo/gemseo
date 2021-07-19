@@ -19,43 +19,42 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-YvsX plot
-==========
+"""Draw a variable versus another from a :class:`.Dataset`.
 
-A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)`
-as a set of points whose values are stored in a :class:`.Dataset`. The user
-can select the style of line or markers, as well as the color.
+A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of points
+whose values are stored in a :class:`.Dataset`. The user can select the style of line or
+markers, as well as the color.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
-from future import standard_library
+from matplotlib.figure import Figure
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-standard_library.install_aliases()
-
 
 class YvsX(DatasetPlot):
-    """ Plot curve y versus x. """
+    """Plot curve y versus x."""
 
-    def _plot(self, x, y, x_comp=0, y_comp=0, style="o", color="blue"):
-        """Surface.
-
-        :param x: name of the variable on the x-axis
-        :type x: str
-        :param y: name of the variable on the y-axis
-        :type z: str
-        :param x_comp: x component. Default: 0.
-        :type x_comp: int
-        :param y_comp: y component. Default: 0.
-        :type y_comp: int
-        :param style: line style. Default: 'o'.
-        :type style: str
-        :param color: point color. Default: 'blue'.
-        :type color: str
+    def _plot(
+        self,
+        properties,  # type: Mapping
+        x,  # type: str
+        y,  # type: str
+        x_comp=0,  # type: int
+        y_comp=0,  # type: int
+    ):  # type: (...) -> List[Figure]
         """
+        Args:
+            x: The name of the variable on the x-axis.
+            y: The name of the variable on the y-axis.
+            x_comp: The component of x.
+            y_comp: The component of y.
+        """
+        color = properties.get(self.COLOR) or "blue"
+        style = properties.get(self.LINESTYLE) or "o"
         x_data = self.dataset[x][x][:, x_comp]
         y_data = self.dataset[y][y][:, y_comp]
 
@@ -63,12 +62,11 @@ class YvsX(DatasetPlot):
         axes = fig.add_subplot(1, 1, 1)
         axes.plot(x_data, y_data, style, color=color)
         if self.dataset.sizes[x] == 1:
-            axes.set_xlabel(x)
+            axes.set_xlabel(self.xlabel or x)
         else:
-            axes.set_xlabel(x + "(" + str(x_comp) + ")")
+            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
         if self.dataset.sizes[y] == 1:
-            axes.set_ylabel(y)
+            axes.set_ylabel(self.ylabel or y)
         else:
-            axes.set_ylabel(y + "(" + str(y_comp) + ")")
-        fig = plt.gcf()
-        return fig
+            axes.set_ylabel("{}({})".format(y, y_comp))
+        return [fig]

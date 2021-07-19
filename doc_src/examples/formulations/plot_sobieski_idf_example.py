@@ -23,14 +23,13 @@
 IDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
-standard_library.install_aliases()
 configure_logger()
 
 ##############################################################################
@@ -111,9 +110,11 @@ scenario.print_execution_metrics()
 ##############################################################################
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
 
 ##############################################################################
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

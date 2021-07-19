@@ -27,9 +27,9 @@ Variables influence
 In this example, we illustrate the use of the :class:`.VariableInfluence` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -41,7 +41,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create disciplines
@@ -66,7 +65,7 @@ design_space = SobieskiProblem().read_design_space()
 ###############################################################################
 # Create and execute scenario
 # ---------------------------
-# The next step is to build a MDO scenario in order to maximize the range,
+# The next step is to build an MDO scenario in order to maximize the range,
 # encoded 'y_4', with respect to the design parameters, while satisfying the
 # inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
 # the SLSQP optimization algorithm
@@ -92,5 +91,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # and xi* is the optimal value of the variable plots any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
 scenario.post_process(
-    "VariableInfluence", save=False, show=True, figsize_x=15, figsize_y=12
+    "VariableInfluence", save=False, show=False, figsize_x=15, figsize_y=12
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

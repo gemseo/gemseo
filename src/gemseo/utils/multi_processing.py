@@ -19,22 +19,16 @@
 #       :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-"""
-Wrapper of the multiprocessing module in order to circumvent the issues
-encountered on Windows with the multiprocessing
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Wrapper of the multiprocessing module in order to circumvent the issues encountered
+on Windows with the multiprocessing."""
+from __future__ import division, unicode_literals
 
+import logging
 import os
 import threading
-from builtins import dict, int
 
-from future import standard_library
+LOGGER = logging.getLogger(__name__)
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
 
 # On Windows, some functions and classes are monkey-patched in order to keep it
 # compatible with older Python 2.7 interpreters. Particularly, issues have been
@@ -42,10 +36,10 @@ from gemseo import LOGGER
 if os.name == "nt":
 
     class MockValue(object):
-        """A mock object for multiprocessing Value"""
+        """A mock object for multiprocessing Value."""
 
         def __init__(self, value):
-            """Constructor
+            """Constructor.
 
             :param value: initializing value
             :type value: `int` or `float`
@@ -54,12 +48,11 @@ if os.name == "nt":
             self.lock = threading.RLock()
 
         def get_lock(self):
-            """Get the Lock"""
+            """Get the Lock."""
             return self.lock
 
     def new_value(new_type, initial_value):
-        """
-        Monkey patch for the Value function
+        """Monkey patch for the Value function.
 
         :param new_type: type of the Value, currently 'i' or 'd' are supported
         :type new_type: `str`
@@ -76,19 +69,15 @@ if os.name == "nt":
         return MockValue(initial_value)
 
     class NewManager(object):
-        """
-        Monkey patch for the Manager class
-        """
+        """Monkey patch for the Manager class."""
 
         @staticmethod
         def dict():
-            """
-            Monkey patch the dict() Manager object
-            """
+            """Monkey patch the dict() Manager object."""
             return dict()
 
     RLock = threading.RLock
     Manager = NewManager
     Value = new_value
 else:
-    from multiprocessing import Manager, RLock, Value  # pylint: disable=unused-import
+    from multiprocessing import Manager, RLock, Value  # noqa: F401

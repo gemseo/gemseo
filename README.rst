@@ -66,3 +66,5 @@ Contributors
 - Syver Doving Agdestein
 - Antoine Dechaume
 - Anne Gazaix
+- Nicolas Roussouly
+- Gilberto Ruiz Jimenez

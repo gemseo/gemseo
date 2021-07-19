@@ -24,27 +24,25 @@
 Abstract factory to create drivers
 **********************************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.core.factory import Factory
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DriverFactory(object):
     """Base class for definition of optimization and/or DOE factory.
 
-    Automates the creation of library interfaces given a name
-    of the algorithm.
+    Automates the creation of library interfaces given a name of the algorithm.
     """
 
     def __init__(self, driver_lib_class, driver_package):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of DriverLib.
+        """Initializes the factory: scans the directories to search for subclasses of
+        DriverLib.
+
         Searches in "GEMSEO_PATH" and gemseo.mda
         """
         self.factory = Factory(driver_lib_class, (driver_package,))
@@ -52,17 +50,15 @@ class DriverFactory(object):
         self.__update_libdict()
 
     def __update_libdict(self):
-        """Updates the self.__algo_name_to_lib_name
-        dict with available libraries list
-
-        """
+        """Updates the self.__algo_name_to_lib_name dict with available libraries
+        list."""
         for lib_name in self.libraries:
             lib = self.create(lib_name)
             for algo_name in lib.algorithms:
                 self.__algo_name_to_lib_name[algo_name] = lib_name
 
     def is_available(self, name):
-        """Checks the availability of a library name or algorithm name
+        """Checks the availability of a library name or algorithm name.
 
         :param name: the name of the library name or algorithm name
         :returns: True if the library is installed
@@ -72,8 +68,7 @@ class DriverFactory(object):
 
     @property
     def algorithms(self):
-        """
-        Lists the available algorithms names in the present configuration
+        """Lists the available algorithms names in the present configuration.
 
         :returns: the list of algorithms as a string list
         """
@@ -81,16 +76,15 @@ class DriverFactory(object):
 
     @property
     def libraries(self):
-        """
-        Lists the available library names in the present configuration
+        """Lists the available library names in the present configuration.
 
         :returns: the list of libraries as a string list
         """
         return self.factory.classes
 
     def create(self, name):
-        """Factory method to create a DriverLib subclass from algo identifier
-        or a library identifier
+        """Factory method to create a DriverLib subclass from algo identifier or a
+        library identifier.
 
         :param name: library or algorithm name
         :type name: string
@@ -117,8 +111,7 @@ class DriverFactory(object):
         return lib_created
 
     def execute(self, problem, algo_name, **options):
-        """Finds the appropriate library and executes
-        the driver on the problem
+        """Finds the appropriate library and executes the driver on the problem.
 
         :param problem: the problem on which to run the execution
         :param algo_name: the algorithm name

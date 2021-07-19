@@ -214,24 +214,21 @@
 Self Organizing Maps
 ********************
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import  division, unicode_literals
 
-from builtins import int, range, round, str
 import itertools
+import logging
 import os
 import tempfile
 from timeit import default_timer as timer
 
-from future import standard_library
+import matplotlib
+import numpy as np
 from matplotlib import cm
 from matplotlib import pyplot as plt
-import matplotlib
 from matplotlib.colors import LogNorm
 from scipy.sparse import csr_matrix
 from sklearn import neighbors
-
-import numpy as np
-
 
 try:
     from sklearn.externals.joblib import Parallel, delayed, dump, load
@@ -242,7 +239,6 @@ except ImportError:
     load = None
 
 
-standard_library.install_aliases()
 
 
 try:
@@ -251,7 +247,7 @@ except ImportError:
     from sklearn.decomposition import PCA as RandomizedPCA
 
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class SOM(object):

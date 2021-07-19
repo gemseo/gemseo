@@ -23,14 +23,13 @@
 MDF-based MDO on the Sobieski SSBJ test case
 ============================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
-standard_library.install_aliases()
 configure_logger()
 
 ##############################################################################
@@ -166,41 +165,41 @@ scenario.print_execution_metrics()
 #
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
 
 ##############################################################################
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("BasicHistory", data_list=["x_shared"], save=False, show=True)
+scenario.post_process("BasicHistory", data_list=["x_shared"], save=False, show=False)
 
 ##############################################################################
 # Plot the constraints and objective history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ObjConstrHist", save=False, show=True)
+scenario.post_process("ObjConstrHist", save=False, show=False)
 
 ##############################################################################
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ConstraintsHistory", save=False, show=True, constraints_list=["g_1", "g_2", "g_3"]
+    "ConstraintsHistory", save=False, show=False, constraints_list=["g_1", "g_2", "g_3"]
 )
 
 ##############################################################################
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "RadarChart", save=False, show=True, constraints_list=["g_1", "g_2", "g_3"]
+    "RadarChart", save=False, show=False, constraints_list=["g_1", "g_2", "g_3"]
 )
 
 ##############################################################################
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
 
 ##############################################################################
 # Plot the functions using a SOM
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("SOM", save=False, show=True)
+scenario.post_process("SOM", save=False, show=False)
 
 ##############################################################################
 # Plot the scatter matrix of variables of interest
@@ -208,7 +207,7 @@ scenario.post_process("SOM", save=False, show=True)
 scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
-    show=True,
+    show=False,
     variables_list=["-y_4", "g_1"],
     figsize_x=14,
     figsize_y=14,
@@ -217,16 +216,18 @@ scenario.post_process(
 ##############################################################################
 # Plot the variables using the parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ParallelCoordinates", save=False, show=True)
+scenario.post_process("ParallelCoordinates", save=False, show=False)
 
 ##############################################################################
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("Robustness", save=False, show=True)
+scenario.post_process("Robustness", save=False, show=False)
 
 ##############################################################################
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "VariableInfluence", save=False, show=True, figsize_x=14, figsize_y=14
+    "VariableInfluence", save=False, show=False, figsize_x=14, figsize_y=14
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

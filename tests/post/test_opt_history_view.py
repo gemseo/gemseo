@@ -19,61 +19,49 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from os import remove
 from os.path import dirname, exists, join
 
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger, execute_post
-from gemseo.core.grammar import InvalidDataException
+from gemseo.api import execute_post
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 DIRNAME = dirname(__file__)
 POWER2 = join(DIRNAME, "power2_opt_pb.h5")
 POWER2_NAN = join(DIRNAME, "power2_opt_pb_nan.h5")
 
 
-class Test_PlotHistoryViews(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestPlotHistoryViews(unittest.TestCase):
+    """"""
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.1", "Req-VIZ-1.2", "Req-VIZ-2", "Req-MR-4")
     def test_view(self):
-        """ """
+        """"""
         problem = Rosenbrock()
         OptimizersFactory().execute(problem, "L-BFGS-B")
         view = OptHistoryView(problem)
-        path = join(DIRNAME, "rosen_1")
+        path = "rosen_1"
         view.execute(show=False, save=True, file_path=path)
         for full_path in view.output_files:
             assert exists(full_path)
-            remove(full_path)
 
     def test_view_load_pb(self):
-        """ """
+        """"""
         problem = OptimizationProblem.import_hdf(POWER2)
         view = OptHistoryView(problem)
         view.execute(show=False, save=True, file_path="power2view", obj_relative=True)
         for full_path in view.output_files:
             assert exists(full_path)
-            remove(full_path)
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.3", "Req-MDO-8.2", "Req-MR-4")
     def test_view_constraints(self):
-        """ """
+        """"""
         problem = Power2()
         OptimizersFactory().execute(problem, "SLSQP")
         view = OptHistoryView(problem)
@@ -90,18 +78,6 @@ class Test_PlotHistoryViews(unittest.TestCase):
         )
         for full_path in view.output_files:
             assert exists(full_path)
-            remove(full_path)
-
-    @link_to("Req-VIZ-1", "Req-VIZ-1.3", "Req-MR-4")
-    def test_opt_errors(self):
-        """ """
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        view = OptHistoryView(problem)
-        self.assertRaises(InvalidDataException, view.execute)
-        self.assertRaises(InvalidDataException, view.execute, save="toto")
-        self.assertRaises(InvalidDataException, view.execute, save=True, file_path=True)
-        self.assertRaises(InvalidDataException, view.execute, save=False, show=1)
 
     def test_nans(self):
 
@@ -135,4 +111,3 @@ class Test_PlotHistoryViews(unittest.TestCase):
 
         for full_path in view.output_files:
             assert exists(full_path)
-            remove(full_path)

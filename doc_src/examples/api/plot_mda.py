@@ -30,9 +30,7 @@ feasibility of the multidisciplinary coupling. All classes
 implementing MDAs inherit from :class:`.MDA` which is an abstract class.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import (
     configure_logger,
@@ -44,7 +42,6 @@ from gemseo.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##########################################################################
 # Get available MDA
@@ -62,8 +59,8 @@ print(get_available_mdas())
 print(get_mda_options_schema("MDAGaussSeidel"))
 
 ##########################################################################
-# Create a MDA
-# ------------
+# Create an MDA
+# -------------
 # The API function :meth:`~gemseo.api.create_mda` can be used
 # to create a scenario:
 disciplines = create_discipline(["Sellar1", "Sellar2"])

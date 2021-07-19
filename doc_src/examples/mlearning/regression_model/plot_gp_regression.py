@@ -31,9 +31,8 @@ We want to approximate a discipline with two inputs and two outputs:
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import (
@@ -46,7 +45,6 @@ from gemseo.mlearning.api import create_regression_model
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create the discipline to learn

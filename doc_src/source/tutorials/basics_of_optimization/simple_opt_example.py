@@ -14,12 +14,9 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import str
+from __future__ import division, unicode_literals
 
 import numpy as np
-from future import standard_library
 from scipy import optimize
 
 from gemseo.api import (
@@ -29,8 +26,6 @@ from gemseo.api import (
     execute_post,
     get_available_opt_algorithms,
 )
-
-standard_library.install_aliases()
 
 # PART 1
 

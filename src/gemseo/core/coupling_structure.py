@@ -20,69 +20,70 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #          Arthur Piat: greatly improve the N2 layout
-"""
-Coupled problem analysis, weak/strong coupling computation using graphs
-***********************************************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Graph-based analysis of the weak and strong couplings between several disciplines."""
 
-import os
-from shutil import move
+from __future__ import unicode_literals
+
+import itertools
+import logging
+from typing import Dict, List, Sequence, Set, Tuple, Union
 
 import matplotlib.pyplot as plt
-from future import standard_library
-from graphviz import Digraph
+from matplotlib.figure import Figure
+from matplotlib.text import Text
 from numpy import array
 from pylab import gca
 
-from gemseo.utils.py23_compat import string_types
+from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.n2d3.n2_html import N2HTML
+from gemseo.utils.py23_compat import Path, string_types
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
-
-from gemseo import LOGGER
+NodeType = Tuple[List[str], List[str]]
+EdgesType = Dict[int, Dict[int, List[str]]]
+GraphType = Dict[int, Set[int]]
+ComponentType = Tuple[int]
 
 
 class MDOCouplingStructure(object):
-    """Structure of the couplings between disciplines
-    The methods of this class include the computation of weak,
-    strong or all couplings."""
+    """Structure of the couplings between several disciplines.
 
-    def __init__(self, disciplines):
+    The methods of this class include the computation of weak, strong or all couplings.
+
+    Attributes:
+        disciplines (Sequence[MDODiscipline]): The disciplines.
+        graph (DependencyGraph): The directed graph of the disciplines.
+        sequence (List[List[Tuple[MDODiscipline]]]): The sequence of execution
+            of the disciplines.
+    """
+
+    def __init__(
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+    ):  # type: (...) -> None
         """
-        Constructor
-
-        :param disciplines: list of MDO disciplines that possibly
-            exchange coupling variables
+        Args:
+            disciplines: The disciplines that possibly exchange coupling variables.
         """
         self.disciplines = disciplines
-        # generate the directed graph of the disciplines and the
-        # resulting execution sequence
         self.graph = DependencyGraph(disciplines)
-        self.sequence = self._compute_execution_sequence()
-
-    def _compute_execution_sequence(self):
-        """Generates the execution sequence of the disciplines.
-        Transforms the sequence of indices into a sequence of
-        disciplines."""
-        sequence = []
-        for parallel_tasks in self.graph.execution_sequence:
-            parallel_tasks_disc = []
-            for component in parallel_tasks:
-                # replace index by corresponding discipline
-                component_disc = tuple(self.disciplines[index] for index in component)
-                parallel_tasks_disc.append(component_disc)
-            sequence.append(parallel_tasks_disc)
-        return sequence
+        self.sequence = self.graph.get_execution_sequence()
 
     @staticmethod
-    def is_self_coupled(discipline):
-        """
-        Tests if the discipline is self coupled
-        ie if one of its outputs is also an input
+    def is_self_coupled(
+        discipline,  # type: MDODiscipline
+    ):  # type: (...) -> bool
+        """Test if the discipline is self-coupled.
 
-        :param discipline: the discipline
-        :returns: a boolean
+        Self-coupling means that one of its outputs is also an input.
+
+        Args:
+            discipline: The discipline.
+
+        Returns:
+            Whether the discipline is self-coupled.
         """
         return (
             len(
@@ -93,26 +94,51 @@ class MDOCouplingStructure(object):
         )
 
     # methods that determine strong/weak/all couplings
+    def strongly_coupled_disciplines(
+        self,
+        add_self_coupled=True,  # type: bool
+        by_group=False,  # type: bool
+    ):  # type: (...) -> Union[List[MDODiscipline],List[List[MDODiscipline]]]
+        """Determines the strongly coupled disciplines, that is the disciplines that
+        occur in (possibly different) MDAs.
 
-    def strongly_coupled_disciplines(self):
-        """Determines the strongly coupled disciplines, that is
-        the disciplines that occur in (possibly different) MDAs."""
+        Args:
+            add_self_coupled: if True, adds the disciplines that are self-coupled
+                to the list of strongly coupled disciplines
+            by_group: if True, returns a list of list of strongly coupled diciplines
+                where the sublists contains the groups of disciplines that
+                are strongly coupled together.
+                if False, returns a single list
+
+        Returns:
+            The coupled disciplines list or list of list
+        """
         strong_disciplines = []
         for parallel_tasks in self.sequence:
             for component in parallel_tasks:
                 # find MDAs
                 if len(component) > 1:
-                    for discipline in component:
-                        strong_disciplines.append(discipline)
-                else:
+                    if by_group:
+                        strong_disciplines.append(component)
+                    else:
+                        strong_disciplines += component
+                elif add_self_coupled:
                     for discipline in component:
                         if self.is_self_coupled(discipline):
-                            strong_disciplines.append(discipline)
+                            if by_group:
+                                strong_disciplines.append([discipline])
+                            else:
+                                strong_disciplines.append(discipline)
         return strong_disciplines
 
-    def weakly_coupled_disciplines(self):
-        """Determines the weakly coupled disciplines, that is
-        the disciplines that do not occur in MDAs."""
+    def weakly_coupled_disciplines(self):  # type: (...) -> List[MDODiscipline]
+        """Determine the weakly coupled disciplines.
+
+        These are the disciplines that do not occur in MDAs.
+
+        Returns:
+            The weakly coupled disciplines.
+        """
         weak_disciplines = []
         for parallel_tasks in self.sequence:
             for component in parallel_tasks:
@@ -121,24 +147,37 @@ class MDOCouplingStructure(object):
                     weak_disciplines.append(component[0])
         return weak_disciplines
 
-    def strong_couplings(self):
-        """Determines the strong couplings = outputs of the strongly
-        coupled disciplines that are also inputs of the strongly
-        coupled disciplines."""
-        strong_disciplines = self.strongly_coupled_disciplines()
+    def strong_couplings(self):  # type: (...) -> List[str]
+        """Determine the strong couplings.
+
+        These are the outputs of the strongly coupled disciplines
+        that are also inputs of the strongly coupled disciplines.
+
+        Returns:
+            The names of the strongly coupling variables.
+        """
+        strong_disciplines = self.strongly_coupled_disciplines(
+            add_self_coupled=True, by_group=True
+        )
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
         strong_couplings = set()
-        for strong_discipline in strong_disciplines:
-            strong_couplings.update(strong_discipline.get_output_data_names())
-        inputs = set()
-        for discipline in self.disciplines:
-            inputs.update(discipline.get_input_data_names())
-        return sorted(list(strong_couplings & inputs))
 
-    def weak_couplings(self):
-        """Determines the weak couplings = outputs of the weakly
-        coupled disciplines."""
+        for group in strong_disciplines:
+            inputs = itertools.chain(*[disc.get_input_data_names() for disc in group])
+            outputs = itertools.chain(*[disc.get_output_data_names() for disc in group])
+            strong_couplings.update(set(inputs) & set(outputs))
+
+        return sorted(list(strong_couplings))
+
+    def weak_couplings(self):  # type: (...) -> List[str]
+        """Determine the weak couplings.
+
+        These are the outputs of the weakly coupled disciplines.
+
+        Returns:
+            The names of the weakly coupling variables.
+        """
         weak_disciplines = self.weakly_coupled_disciplines()
         # determine strong couplings = the outputs of the weakly coupled
         # disciplines that are inputs of any other discipline
@@ -147,20 +186,27 @@ class MDOCouplingStructure(object):
             weak_couplings.update(weak_discipline.get_output_data_names())
         return sorted(list(weak_couplings))
 
-    def input_couplings(self, discipline):
-        """Computes all input coupling variables of a discipline.
+    def input_couplings(
+        self,
+        discipline,  # type: MDODiscipline
+    ):  # type: (...) -> List[str]
+        """Compute all the input coupling variables of a discipline.
 
-        :param discipline: the discipline
-        :returns: the list of input coupling variables names
+        Args:
+            discipline: The discipline.
+
+        Returns:
+            The names of the input coupling variables.
         """
         input_names = discipline.get_input_data_names()
         strong_couplings = self.strong_couplings()
         return sorted([name for name in input_names if name in strong_couplings])
 
-    def get_all_couplings(self):
-        """
-        Computes all coupling variables, weak or strong
-        :returns: the list of coupling variables names
+    def get_all_couplings(self):  # type: (...) -> List[str]
+        """Compute all the weak and strong coupling variables.
+
+        Returns:
+            The names of the coupling variables.
         """
         inputs = []
         outputs = []
@@ -169,11 +215,19 @@ class MDOCouplingStructure(object):
             outputs += discipline.get_output_data_names()
         return sorted(list(set(inputs) & set(outputs)))
 
-    def output_couplings(self, discipline, strong=True):
-        """Computes the output coupling variables of a discipline.
+    def output_couplings(
+        self,
+        discipline,  # type: MDODiscipline
+        strong=True,  # type: bool
+    ):  # type: (...) -> List[str]
+        """Compute the output coupling variables of a discipline, either strong or weak.
 
-        :param discipline: the discipline
-        :returns: the list of output coupling variables names
+        Args:
+            discipline: The discipline.
+            strong: If True, consider the strong couplings. Otherwise, the weak ones.
+
+        Returns:
+            The names of the output coupling variables.
         """
         output_names = discipline.get_output_data_names()
         if strong:
@@ -183,90 +237,113 @@ class MDOCouplingStructure(object):
 
         return sorted([name for name in output_names if name in couplings])
 
-    def find_discipline(self, output):
-        """Finds which discipline produces a given output.
+    def find_discipline(
+        self,
+        output,  # type: str
+    ):  # type: (...) -> MDODiscipline
+        """Find which discipline produces a given output.
 
-        :param output: the name of the output
-        :returns: the discipline if it is found, otherwise raise
-            an exception
+        Args:
+            output: The name of an output.
 
+        Returns:
+            The discipline producing this output, if it exists.
+
+        Raises:
+            TypeError: If the name of the output is not a string.
+            ValueError: If the output is not an output of the discipline.
         """
         if not isinstance(output, string_types):
             raise TypeError("Output shall be a string")
         for discipline in self.disciplines:
             if discipline.is_output_existing(output):
                 return discipline
-        raise ValueError(output + " is not the output " + "of a discipline")
+        raise ValueError("{} is not the output of a discipline".format(output))
 
     def plot_n2_chart(
         self,
-        file_path="n2.pdf",
-        show_data_names=True,
-        save=True,
-        show=False,
-        figsize=(15, 10),
-    ):
-        """
-        Generates a N2 plot for the disciplines list.
+        file_path="n2.pdf",  # type: str
+        show_data_names=True,  # type:bool
+        save=True,  # type:bool
+        show=False,  # type: bool
+        figsize=(15, 10),  # type: Tuple[int]
+        open_browser=False,  # type:bool
+    ):  # type: (...) -> None
+        """Generate a N2 plot for the disciplines.
 
-        :param file_path: file path of the figure
-        :param show_data_names: if true, the names of the
-            coupling data is shown
-            otherwise, circles are drawn, which size depend on the
-            number of coupling names
-        :param save: if True, saved the figure to file_path
-        :param show: if True, shows the plot
+        Args:
+            file_path: The name of the file path of the figure.
+            show_data_names: If ``True``, show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                which size depend on the number of coupling names.
+            save: If True, save the figure to file_path.
+            show: If True, show the plot.
+            figsize: The width and height of the figure.
+            open_browser: If True, open a browser and display an interactive N2 chart.
+
+        Raises:
+            ValueError: If there is only 1 discipline.
         """
+        output_directory_path = Path(file_path).parent
+        html_file_name = "n2.html"
+        html_file_path = output_directory_path / html_file_name
+        N2HTML(html_file_path, open_browser).from_graph(self.graph)
 
         fig = plt.figure(figsize=figsize)
-        plt.rc("grid", linestyle="-", color="black", lw=1)
         plt.grid(True)
         axe = gca()
-        n_disc = len(self.disciplines)
-        ax_ticks = list(range(n_disc + 1))
+        axe.grid(True, linestyle="-", color="black", lw=1)
+        n_disciplines = len(self.disciplines)
+        if n_disciplines == 1:
+            raise ValueError("N2 Diagrams can be generated for at least 2 disciplines.")
+        ax_ticks = list(range(n_disciplines + 1))
         axe.xaxis.set_ticks(ax_ticks)
         axe.yaxis.set_ticks(ax_ticks)
         axe.xaxis.set_ticklabels([])
         axe.yaxis.set_ticklabels([])
+        axe.set(xlim=(0, ax_ticks[-1]), ylim=(0, ax_ticks[-1]))
+        axe.tick_params(axis="x", direction="in")
+        axe.tick_params(axis="y", direction="in")
         fig.tight_layout()
 
-        for i, disc_i in enumerate(self.disciplines):
-            x_1 = i
-            x_2 = i + 1
-            y_1 = n_disc - i
-            y_2 = n_disc - i - 1
+        for discipline_index, discipline in enumerate(self.disciplines):
+            x_1 = discipline_index
+            x_2 = discipline_index + 1
+            y_1 = n_disciplines - discipline_index
+            y_2 = n_disciplines - discipline_index - 1
             plt.fill(
                 [x_1, x_1, x_2, x_2], [y_1, y_2, y_2, y_1], "limegreen", alpha=0.45
             )
-            text = plt.text(
-                i + 0.5,
-                n_disc - i - 0.5,
-                disc_i.name,
+            discipline_name = plt.text(
+                discipline_index + 0.5,
+                n_disciplines - discipline_index - 0.5,
+                discipline.name,
                 verticalalignment="center",
                 horizontalalignment="center",
             )
-            self._check_size_text(text, fig, n_disc)
+            self._check_size_text(discipline_name, fig, n_disciplines)
 
-        coupl_tuples = self.graph.get_disciplines_couplings()
+        couplings = self.graph.get_disciplines_couplings()
 
-        max_cpls = array([len(tpl[2]) for tpl in coupl_tuples]).max()
+        max_coupling_length = array([len(coupling[2]) for coupling in couplings]).max()
 
-        for disc1, disc2, c_vars in coupl_tuples:
-            i = self.disciplines.index(disc1)
-            j = self.disciplines.index(disc2)
+        for source, destination, variables in couplings:
+            source_position = self.disciplines.index(source)
+            destination_position = self.disciplines.index(destination)
             if show_data_names:
-                text = plt.text(
-                    j + 0.5,
-                    n_disc - i - 0.5,
-                    "\n".join(c_vars),
+                variables_names = plt.text(
+                    destination_position + 0.5,
+                    n_disciplines - source_position - 0.5,
+                    "\n".join(variables),
                     verticalalignment="center",
                     horizontalalignment="center",
                 )
-                self._check_size_text(text, fig, n_disc)
+                self._check_size_text(variables_names, fig, n_disciplines)
             else:
                 circle = plt.Circle(
-                    (0.5 + j, n_disc - 0.5 - i),
-                    len(c_vars) / (3.0 * max_cpls),
+                    (0.5 + destination_position, n_disciplines - 0.5 - source_position),
+                    len(variables) / (3.0 * max_coupling_length),
                     color="blue",
                 )
                 axe.add_artist(circle)
@@ -277,306 +354,27 @@ class MDOCouplingStructure(object):
             plt.show()
 
     @staticmethod
-    def _check_size_text(text, figure, n_disc):
-        """
-        check the size of the text plotted in the N2 matrix and adapt
-        the fig size according to the text shown
+    def _check_size_text(
+        text,  # type: Text
+        figure,  # type: Figure
+        n_disciplines,  # type: int
+    ):  # type: (...)-> None
+        """Adapt the size of the figure based on the size of the text to display.
 
-        :param text: text shown in the N2 matrix
-        :param figure: figure of the n2 matrix
-        :param n_disc: number of disciplines to be visible
+        Args:
+            text: The text shown in the N2 matrix.
+            figure: The figure of the N2 matrix.
+            n_disciplines: The number of disciplines to be visible.
         """
         renderer = figure.canvas.get_renderer()
         bbox = text.get_window_extent(renderer=renderer)
         width = bbox.width
         height = bbox.height
-        size_max_box = figure.get_size_inches() * figure.dpi / n_disc
+        size_max_box = figure.get_size_inches() * figure.dpi / n_disciplines
         inches = figure.get_size_inches()
         if width > size_max_box[0]:
-            width_l = round(width * n_disc / figure.dpi) + 1
+            width_l = round(width * n_disciplines / figure.dpi) + 1
             figure.set_size_inches(width_l, inches[1])
         if height > size_max_box[1]:
-            length_l = round(height * n_disc / figure.dpi) + 1
+            length_l = round(height * n_disciplines / figure.dpi) + 1
             figure.set_size_inches(inches[0], length_l)
-
-
-class DependencyGraph(object):
-    """Constructs a graph of dependency between the disciplines, and
-    generate a sequence of execution (including strongly coupled
-    disciplines, sequential tasks, parallel tasks)."""
-
-    def __init__(self, disciplines):
-        """
-        Constructor
-
-        :param disciplines: list of disciplines
-        """
-        self.disciplines = disciplines
-        # initial graph
-        initial_nodes = self._create_initial_nodes()
-        (self.initial_graph, self.initial_edges) = self._compute_graph(initial_nodes)
-        # strongly connected components
-        self.components = self._strongly_connected_components()
-        # resulting reduced graph
-        reduced_nodes = self._create_component_nodes(initial_nodes)
-        (self.reduced_graph, self.reduced_edges) = self._compute_graph(reduced_nodes)
-        self.execution_sequence = self._topological_sort()
-
-    def _create_initial_nodes(self):
-        """Creates a list of (input, output) coupling variables
-        for each discipline.
-        The resulting list has the same order as the disciplines."""
-        nodes = []
-        for discipline in self.disciplines:
-            nodes.append(
-                (discipline.get_input_data_names(), discipline.get_output_data_names())
-            )
-        return nodes
-
-    def _create_component_nodes(self, initial_nodes):
-        """Creates a list of (input, output) coupling variables
-        for each strongly connected component.
-        The resulting list has the same order as the strongly connected
-        components.
-
-        :param initial_nodes: nodes of the initial graph
-        """
-        nodes = []
-        for component in self.components:
-            component_inputs = set()
-            component_outputs = set()
-            for node_index in component:
-                (inputs, outputs) = initial_nodes[node_index]
-                component_inputs.update(inputs)
-                component_outputs.update(outputs)
-            nodes.append((list(component_inputs), list(component_outputs)))
-        return nodes
-
-    @staticmethod
-    def _compute_graph(nodes):
-        """Computes the successors_i of each node and the edges between
-        the nodes.
-
-        :param nodes: the nodes of the graph
-        """
-        graph = {}
-        disc_i = 0
-        edges = {}
-
-        for (_, outputs_i) in nodes:
-            successors_i = set()
-            # find out in which discipline(s) the outputs_i are used
-            for output_i in outputs_i:
-                disc_j = 0
-                for (inputs_j, _) in nodes:
-                    if disc_i != disc_j and output_i in inputs_j:
-                        successors_i.add(disc_j)
-                        # add the edge disc_i -> disc_j with
-                        # label output_i
-                        if disc_i not in edges:
-                            edges[disc_i] = {}
-                        if disc_j not in edges[disc_i]:
-                            edges[disc_i][disc_j] = []
-                        edges[disc_i][disc_j].append(output_i)
-                    disc_j += 1
-
-            graph[disc_i] = successors_i
-            disc_i += 1
-        return graph, edges
-
-    def _strongly_connected_components(self):
-        """Tarjan's algorithm determines the strongly connected components of a
-        directed initial_graph.
-        Within a component, there exists a path between each pair of nodes.
-
-        Based on:
-        http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
-        """
-        stack = []
-        comp_inds = {}
-        node_indices = {}
-        component_list = []  # result
-
-        def strong_connect(node_index, current_index):
-            """Browses the initial_graph from a node_index.
-
-            :param node_index: current node index
-            :param current_index:
-            """
-            node_indices[node_index] = current_index
-            comp_inds[node_index] = current_index
-            current_index += 1
-            stack.append(node_index)
-
-            # Consider successors of node_index
-            successors = self.initial_graph.get(node_index, [])
-            for successor in successors:
-                if successor not in comp_inds:
-                    # Successor has not yet been visited; recurse on it
-                    current_index = strong_connect(successor, current_index)
-                    comp_inds[node_index] = min(
-                        comp_inds[node_index], comp_inds[successor]
-                    )
-                elif successor in stack:
-                    # the successor is in the stack, therefore in the current
-                    # strongly connected component
-                    comp_inds[node_index] = min(
-                        comp_inds[node_index], node_indices[successor]
-                    )
-
-            # If node_index is a root node_index, pop the stack and generate an
-            # SCC
-            if comp_inds[node_index] == node_indices[node_index]:
-                # build the component by popping the stack
-                connected_component = self._unstack_component(node_index, stack)
-                component_list.append(tuple(connected_component))
-
-            return current_index
-
-        current_index = 0
-        for node in self.initial_graph:
-            if node not in comp_inds:
-                current_index = strong_connect(node, current_index)
-
-        return component_list
-
-    @staticmethod
-    def _unstack_component(node, stack):
-        """Builds a set of nodes corresponding to a strongly connected
-        component.
-
-        :param node: current node
-        :param stack: current stack
-        """
-        # build the component by popping the stack
-        connected_component = []
-        while True:
-            successor = stack.pop()
-            connected_component.append(successor)
-            if successor == node:
-                break
-        return connected_component
-
-    # TOPOLOGICAL SORT
-    def _topological_sort(self):
-        """Computes a topological sort of a directed graph.
-        Determines if some nodes may be run in parallel."""
-        current_graph = self.reduced_graph.copy()
-        result = []
-        while True:
-            # find the leaves of the initial_graph
-            leaves = set()
-            for (node_index, successors) in current_graph.items():
-                if not successors:
-                    leaves.add(node_index)
-
-            if not leaves:
-                break
-            # all leaves are parallelizable
-            parallel_tasks = set(
-                self.components[component_index] for component_index in leaves
-            )
-            result.append(sorted(parallel_tasks))
-            # update the current initial_graph by removing the leaves and
-            # the initial_edges pointing toward them
-            current_graph = {
-                node_index: (successors - leaves)
-                for (node_index, successors) in current_graph.items()
-                if node_index not in leaves
-            }
-        return result[::-1]
-
-    def get_disciplines_couplings(self):
-        """Returns couplings between disciplines as a list of
-        3-uples (from_disc, to_disc, variables names set).
-        """
-        couplings = []
-        for from_disc in self.initial_edges:
-            for to_disc in self.initial_edges[from_disc]:
-                couplings.append(
-                    (
-                        self.disciplines[from_disc],
-                        self.disciplines[to_disc],
-                        sorted(self.initial_edges[from_disc][to_disc]),
-                    )
-                )
-        return couplings
-
-    # EXPORT METHODS
-    def export_initial_graph(self, file_path):
-        """Exports a visualization of the initial graph.
-
-        :param file_path: file path of the generated file
-        """
-        file_name, file_extension = os.path.splitext(file_path)
-        dot = Digraph(comment="Dependency graph", format=file_extension[1:])
-        # add the disciplines as nodes
-        disc_dict = {}
-        for i, disc in enumerate(self.disciplines):
-            disc_id = str(i)
-            dot.node(disc_id, disc.name)
-            disc_dict[disc] = disc_id
-
-        # add the coupling as initial_edges
-        for disc_from in self.initial_edges:
-            for disc_to in self.initial_edges[disc_from]:
-                outputs = self.initial_edges[disc_from][disc_to]
-                dot.edge(str(disc_from), str(disc_to), label=",".join(sorted(outputs)))
-                # outputs of the last node
-
-        last_tasks = self.execution_sequence[-1]
-        for k, last_task in enumerate(last_tasks):
-            last_taskind = last_task[0]
-            i_str = "-" + str(k)
-            disc = self.disciplines[last_taskind]
-            last_outputs = disc.get_output_data_names()
-            if last_outputs != []:
-                # create an edge to an invisible node
-                dot.node(i_str, style="invis", shape="point")
-                label = ",".join(last_outputs)
-                dot.edge(disc_dict[disc], i_str, label=label)
-
-        dot.render(file_name, view=False)
-        move(file_name, "{}.gv".format(file_name))
-
-    def export_reduced_graph(self, file_path):
-        """Exports a visualization of the reduced graph.
-
-        :param file_path: the file_path of the generated file
-        """
-        file_name, file_extension = os.path.splitext(file_path)
-        dot = Digraph(comment="Dependency graph", format=file_extension[1:])
-        # add the disciplines as nodes
-        for parallel_tasks in self.execution_sequence:
-            for component in parallel_tasks:
-                # if MDA, aggregate the names of the disciplines
-                if len(component) > 1:
-                    disc_names = [self.disciplines[disc].name for disc in component]
-                    component_name = "MDA of " + ", ".join(disc_names)
-                else:
-                    component_name = self.disciplines[component[0]].name
-                dot.node(str(component), component_name)
-
-        # outputs of the last nodes
-
-        last_tasks = self.execution_sequence[-1]
-        for i, last_task in enumerate(last_tasks):
-            last_taskind = last_task[0]
-            i_str = "-" + str(i)
-            last_outputs = self.disciplines[last_taskind].get_output_data_names()
-            if last_outputs != []:
-                # create an edge to an invisible node
-                dot.node(i_str, style="invis", shape="point")
-                label = ",".join(last_outputs)
-                dot.edge(str(last_task), i_str, label=label)
-
-        # add the coupling as initial_edges
-        for disc_from in self.reduced_edges:
-            for disc_to in self.reduced_edges[disc_from]:
-                outputs = self.reduced_edges[disc_from][disc_to]
-                dot.edge(
-                    str(self.components[disc_from]),
-                    str(self.components[disc_to]),
-                    label=",".join(sorted(outputs)),
-                )
-        dot.render(file_name, view=False)

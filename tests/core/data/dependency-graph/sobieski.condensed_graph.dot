@@ -1,0 +1,5 @@
+digraph "Dependency graph" {
+	"MDA of SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion" -> SobieskiMission [label="y_14,y_24,y_34"]
+	_0 [shape=point style=invis]
+	SobieskiMission -> _0 [label=y_4]
+}

@@ -18,41 +18,41 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A constraints plot
-******************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""A constraints plot."""
+from __future__ import division, unicode_literals
+
+import logging
+from typing import Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
-from future import standard_library
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
+from numpy import ndarray
 
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import PY2
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ObjConstrHist(OptPostProcessor):
-    """
-    The **ObjConstrHist** post processing
-    plots the constraint functions history in lines charts.
+    """The constraint function history in line charts.
 
-    By default, all constraints are considered. A sublist of constraints
-    can be passed as options.
-    It is possible either to save the plot, to show the plot or both.
+    By default, all the constraints are considered. A sublist of constraints can be
+    passed as options.
     """
 
-    def __init__(self, opt_problem):
+    def __init__(
+        self,
+        opt_problem,  # type: OptimizationProblem
+    ):  # type: (...) -> None
         """
-        Constructor
-
-        :param opt_problem: the optimization problem to run
+        Args:
+            opt_problem: The optimization problem to be post-processed.
         """
         super(ObjConstrHist, self).__init__(opt_problem)
         self.opt_problem = opt_problem
@@ -62,25 +62,13 @@ class ObjConstrHist(OptPostProcessor):
 
     def _plot(
         self,
-        save=False,
-        show=False,
-        file_path="obj_constr_hist",
-        constr_names=None,
-        extension="pdf",
-    ):
-        """
-        Creates the design variables plot
+        constr_names=None,  # type: Optional[Sequence[str]]
+    ):  # type: (...) -> None
+        """Create the design variables plot.
 
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param constr_names: names of the constraints to plot
-        :type constr_names: list(str)
-        :param extension: file extension
-        :type extension: str
+        Args:
+            constr_names: The names of the constraints to plot.
+                If None, use all the constraints.
         """
         obj_name = self.opt_problem.get_objective_name()
         obj_history, x_history, n_iter = self.__get_history(obj_name)
@@ -130,13 +118,22 @@ class ObjConstrHist(OptPostProcessor):
         vmax = fmax
         vmin = -vmax
         extent = -0.5, nb_iter - 0.5, fmin, fmax
+
+        # On python 2, base is not defined as a parameter in SymLogNorm()
+        if PY2:
+            norm = SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75)
+        else:
+            norm = SymLogNorm(
+                linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75, base=np.e
+            )
+
         im1 = ax1.imshow(
             values,
             cmap=cmap,
             interpolation="nearest",
             aspect="auto",
             extent=extent,
-            norm=SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75),
+            norm=norm,
             alpha=0.6,
         )
 
@@ -169,33 +166,40 @@ class ObjConstrHist(OptPostProcessor):
         col_bar.ax.tick_params(labelsize=9)
         cax.set_xlabel("symlog")
 
-        # save and show
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+        self._add_figure(fig)
 
-    def __get_history(self, fname):
-        """
-        Access the optimization history of a function and the design
-        variables at which it was computed
+    def __get_history(
+        self,
+        function_name,  # type: str
+    ):  # type: (...) -> Tuple[ndarray,ndarray,int]
+        """Access the optimization history of a function.
 
-        :param fname: name of the function
-        :returns: list of function values
-            list of design variables values
-            list of iterations
+        Also the design variables at which it was computed.
+
+        Args:
+            function_name: The name of the function.
+
+        Returns:
+            The function values,
+            the design variables values
+            and the number of iterations.
         """
-        f_hist, x_hist = self.database.get_func_history(fname, x_hist=True)
+        f_hist, x_hist = self.database.get_func_history(function_name, x_hist=True)
         f_hist = np.array(f_hist).real
         x_hist = np.array(x_hist).real
         n_iter = x_hist.shape[0]
 
         return f_hist, x_hist, n_iter
 
-    def __get_constraints(self, constr_names=None):
-        """
-        Returns constraints with formated shape
+    def __get_constraints(
+        self,
+        constr_names=None,  # type: Optional[Sequence[str]]
+    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray]
+        """Return the constraints with formatted shape.
 
-        :param constr_name: list of constraint names
+        Args:
+            constr_names: The names of the constraints.
+                If None, use all the constraints.
         """
         # retrieve the constraints values
         ineq_cstr_names = []
@@ -213,11 +217,11 @@ class ObjConstrHist(OptPostProcessor):
                 if cstr.name in constr_names:
                     eq_cstr_names.append(cstr.name)
         get_hist_array = self.database.get_history_array
-        if ineq_cstr_names != []:
+        if ineq_cstr_names:
             ineq_vals, ineq_id, _ = get_hist_array(ineq_cstr_names, add_dv=False)
         else:
             ineq_vals, ineq_id = np.array([]), np.array([])
-        if eq_cstr_names != []:
+        if eq_cstr_names:
             eq_vals, eq_cstr_id, _ = get_hist_array(eq_cstr_names, add_dv=False)
         else:
             eq_vals, eq_cstr_id = np.array([]), np.array([])

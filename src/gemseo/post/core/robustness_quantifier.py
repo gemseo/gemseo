@@ -19,28 +19,22 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Quantification of robustness of the optimum to variables perturbations
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Quantification of robustness of the optimum to variables perturbations."""
+from __future__ import division, unicode_literals
 
 import numpy as np
-import numpy.random as npr
-from future import standard_library
+from numpy.random import multivariate_normal
 
 from gemseo.post.core.hessians import BFGSApprox, LSTSQApprox, SR1Approx
 
-standard_library.install_aliases()
-
 
 class RobustnessQuantifier(object):
-    """classdocs"""
+    """classdocs."""
 
     AVAILABLE_APPROXIMATIONS = ["BFGS", "SR1", "LEAST_SQUARES"]
 
     def __init__(self, history, approximation_method="SR1"):
-        """
-        Constructor
+        """Constructor.
 
         :param history: an approximation history.
         :param approximation_method: an approximation method for the Hessian.
@@ -74,7 +68,7 @@ class RobustnessQuantifier(object):
         at_most_niter=-1,
         func_index=None,
     ):
-        """Builds the BFGS approximation for the hessian
+        """Builds the BFGS approximation for the hessian.
 
         :param at_most_niter: maximum number of iterations to take
             (Default value = -1).
@@ -100,13 +94,11 @@ class RobustnessQuantifier(object):
         return self.b_mat
 
     def compute_expected_value(self, expect, cov):
-        """computes 1/2*E(e.T B e) , where e is a
-        vector of expected values expect
-        and covariance matrix cov
+        """computes 1/2*E(e.T B e) , where e is a vector of expected values expect and
+        covariance matrix cov.
 
         :param expect: the expected value of inputs.
         :param cov: the covariance matrix of inputs.
-
         """
         n_vars = len(expect)
         if cov.shape != (n_vars, n_vars):
@@ -124,13 +116,11 @@ class RobustnessQuantifier(object):
         return exp_val
 
     def compute_variance(self, expect, cov):
-        """computes 1/2*E(e.T B e), where e is a
-        vector of expected values expect
-        and covariance matrix cov
+        """computes 1/2*E(e.T B e), where e is a vector of expected values expect and
+        covariance matrix cov.
 
         :param expect: the expected value of inputs.
         :param cov: the covariance matrix of inputs.
-
         """
         if self.b_mat is None:
             raise ValueError(
@@ -147,11 +137,10 @@ class RobustnessQuantifier(object):
         return var
 
     def compute_function_approximation(self, x_vars):
-        """Computes a second order approximation of the function
+        """Computes a second order approximation of the function.
 
-        :param x: the point on which the approximation is evaluated.
+        :param x_vars: the point on which the approximation is evaluated.
         :param x_vars: x vars.
-
         """
         if self.b_mat is None or self.x_ref is None:
             raise ValueError(
@@ -166,11 +155,9 @@ class RobustnessQuantifier(object):
         )
 
     def compute_gradient_approximation(self, x_vars):
-        """Computes a first order approximation of the gradient
-         based on the hessian
+        """Computes a first order approximation of the gradient based on the hessian.
 
         :param x_vars: the point on which the approximation is evaluated.
-
         """
         if self.b_mat is None or self.fgrad_ref is None:
             raise ValueError(
@@ -181,7 +168,7 @@ class RobustnessQuantifier(object):
         return np.dot(self.b_mat, x_l) + self.fgrad_ref
 
     def montecarlo_average_var(self, mean, cov, n_samples=100000, func=None):
-        """Computes the variance and expected value using Monte Carlo approach
+        """Computes the variance and expected value using Monte Carlo approach.
 
         :param mean: the mean value.
         :param cov: the covariance matrix.
@@ -189,14 +176,13 @@ class RobustnessQuantifier(object):
             (Default value = 100000).
         :param func: if None, the compute_function_approximation function,
                         otherwise a user function (Default value = None).
-
         """
         n_dv = len(mean)
         if not cov.shape == (n_dv, n_dv):
             raise ValueError(
                 "Covariance matrix dimension " + "incompatible with mean dimensions"
             )
-        ran = npr.multivariate_normal(mean=mean, cov=cov, size=n_samples).T
+        ran = multivariate_normal(mean=mean, cov=cov, size=n_samples).T
         vals = np.zeros(n_samples)
         if func is None:
             func = self.compute_function_approximation

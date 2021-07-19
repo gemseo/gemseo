@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.regression.polyreg
    :noindex:
 
-.. autoclass:: gemseo.mlearning.regression.polyreg.PolynomialRegression
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_polynomial_regression.html" role="button">Example</a></div>

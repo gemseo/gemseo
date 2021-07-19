@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.classification.knn
    :noindex:
 
-.. autoclass:: gemseo.mlearning.classification.knn.KNNClassifier
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/classification_model/plot_knn.html" role="button">Example</a></div>

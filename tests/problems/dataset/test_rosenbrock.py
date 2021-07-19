@@ -19,13 +19,9 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
-
-standard_library.install_aliases()
 
 
 def test_constructor():

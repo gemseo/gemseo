@@ -19,39 +19,26 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import os
 import unittest
 from copy import deepcopy
 from os.path import dirname, join
 
 import numpy as np
-from future import standard_library
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.core.function import MDOFunction
+from gemseo.api import create_discipline, create_scenario
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.derivatives_approx import comp_best_step
 
-standard_library.install_aliases()
-
-
-LOGGER = configure_logger(SOFTWARE_NAME)
-
-
-DIRNAME = dirname(os.path.realpath(__file__))
 DS_FILE = join(dirname(__file__), "sobieski_design_space.txt")
 
 
-class Test_LagrangeMultipliers(unittest.TestCase):
-    """ """
+class TestLagrangeMultipliers(unittest.TestCase):
+    """"""
 
     NLOPT_OPTIONS = {
         "eq_tolerance": 1e-11,
@@ -63,24 +50,6 @@ class Test_LagrangeMultipliers(unittest.TestCase):
         "xtol_rel": 1e-14,
     }
 
-    def __create_pow2_problem(self):
-        design_space = DesignSpace()
-        design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
-        x_0 = np.ones(3)
-        design_space.set_current_x(x_0)
-
-        problem = OptimizationProblem(design_space)
-        power2 = Power2(design_space)
-        problem.objective = MDOFunction(
-            power2.pow2,
-            name="pow2",
-            f_type="obj",
-            jac=power2.pow2_jac,
-            expr="x[0]**2+x[1]**2+x[2]**2",
-            args=["x"],
-        )
-        return problem
-
     def test_lagrange_notanoptproblem(self):
         self.assertRaises(ValueError, LagrangeMultipliers, "not_a_problem")
 
@@ -89,7 +58,7 @@ class Test_LagrangeMultipliers(unittest.TestCase):
         self.assertRaises(ValueError, LagrangeMultipliers, problem)
 
     def test_lagrange_pow2_too_many_acts(self):
-        """ """
+        """"""
         problem = Power2()
         problem.design_space.set_current_x(array([0.5, 0.9, -0.5]))
         problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
@@ -106,10 +75,9 @@ class Test_LagrangeMultipliers(unittest.TestCase):
         assert "lower_bounds" in lagrangian
         assert "equality" in lagrangian
         assert "inequality" not in lagrangian
-        lagrange.log_me()
 
     def test_lagrange_pow2_nact_ndim(self):
-        """ """
+        """"""
         problem = Power2()
         problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
         OptimizersFactory().execute(
@@ -124,8 +92,6 @@ class Test_LagrangeMultipliers(unittest.TestCase):
         assert "lower_bounds" in lagrangian
         assert "equality" in lagrangian
         assert "inequality" in lagrangian
-
-    #
 
     def test_lagrangian_validation_lbound(self):
         problem = Power2()
@@ -177,7 +143,6 @@ class Test_LagrangeMultipliers(unittest.TestCase):
 
         lagrange = LagrangeMultipliers(problem)
         lagrangian = lagrange.compute(problem.solution.x_opt)
-        LOGGER.info(lagrange)
 
         def obj(eq_val):
             problem2 = Power2()
@@ -216,9 +181,7 @@ class Test_LagrangeMultipliers(unittest.TestCase):
         eps = 1e-4
         obj_ref = obj(0.0)
 
-        trunc_error, cancel_error, opt_step = comp_best_step(
-            obj(eps), obj_ref, obj(-eps), eps, 1e-8
-        )
+        _, _, opt_step = comp_best_step(obj(eps), obj_ref, obj(-eps), eps, 1e-8)
         df_anal = obj_grad(0.0)
 
         df_fd = (obj(opt_step) - obj(-opt_step)) / (2 * opt_step)

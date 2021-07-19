@@ -19,14 +19,11 @@
 #                           documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
 from numpy import allclose
 
 from gemseo.problems.dataset.burgers import BurgersDataset
-
-standard_library.install_aliases()
 
 
 def test_constructor():

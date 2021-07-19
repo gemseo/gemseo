@@ -20,40 +20,32 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import tempfile
 import unittest
-from builtins import range, str
-from os import remove
 from os.path import dirname, exists, join, realpath
 
 import numpy as np
-from future import standard_library
+import pytest
 from numpy import array, inf, int32, ones
 from numpy.linalg import norm
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.core import SobieskiProblem
-
-standard_library.install_aliases()
-
 
 CURRENT_DIR = dirname(__file__)
 TEST_INFILE = join(CURRENT_DIR, "design_space.txt")
-LOGGER = configure_logger(SOFTWARE_NAME)
 
 FAIL_HDF = join(dirname(realpath(__file__)), "fail.hdf5")
 
 
+@pytest.mark.usefixtures("tmp_wd")
 class TestDesignSpace(unittest.TestCase):
-    """Test the creation and update of the design space"""
+    """Test the creation and update of the design space."""
 
     def test_creation(self):
-        """ """
+        """"""
         design_space = DesignSpace()
         design_space.add_variable("x1", 3, DesignSpace.FLOAT, 0.0, 1.0)
         self.assertRaises(
@@ -202,16 +194,39 @@ class TestDesignSpace(unittest.TestCase):
         self.assertRaises(ValueError, design_space.round_vect, array([[[1.0]]]))
 
     def test_filter(self):
+        """Test the filtering of a design space variables."""
+        # Filtering by variable name
         design_space = DesignSpace()
         design_space.add_variable("x1", 1, "float", -1.0, 0.0, -0.5)
         design_space.add_variable("x2", 3, "float", -1.0, 0.0, -0.5)
+        new_space = design_space.filter("x2", copy=True)
+        assert not new_space.__contains__("x1")
+        assert new_space.__contains__("x2")
+        assert new_space is not design_space
         design_space.filter(["x2"])
+        assert not design_space.__contains__("x1")
+        assert design_space.__contains__("x2")
+        # Filtering by dimensions
         design_space = DesignSpace()
         design_space.add_variable("x1", 1, "float", -1.0, 0.0, -0.5)
         design_space.add_variable("x2", 3, "float", -1.0, 0.0, -0.5)
         design_space.filter_dim("x2", [0])
         self.assertRaises(ValueError, design_space.filter_dim, "x2", [1])
         self.assertRaises(ValueError, design_space.filter, "unknown_x")
+
+    def test_extend(self):
+        """Test the extension of a design space with another."""
+        design_space = DesignSpace()
+        design_space.add_variable("x1", 1, "float", -1.0, 0.0, -0.5)
+        other = DesignSpace()
+        other.add_variable("x2", 3, "float", -1.0, 0.0, -0.5)
+        design_space.extend(other)
+        assert design_space.__contains__("x2")
+        assert design_space.get_size("x2") == other.get_size("x2")
+        assert (design_space.get_type("x2") == other.get_type("x2")).all()
+        assert (design_space.get_lower_bound("x2") == other.get_lower_bound("x2")).all()
+        assert (design_space.get_upper_bound("x2") == other.get_upper_bound("x2")).all()
+        assert (design_space.get_current_x(["x2"]) == other.get_current_x(["x2"])).all()
 
     def test_active_bounds(self):
 
@@ -228,11 +243,11 @@ class TestDesignSpace(unittest.TestCase):
         assert lb_1 == lb_2
         assert lb_1["x"] == [True]
         assert lb_1["y"] == [False]
-        assert lb_1["z"][0] == False
+        assert not lb_1["z"][0]
         assert ub_1 == ub_2
         assert ub_1["y"] == [True]
         assert ub_1["x"] == [False]
-        assert ub_1["z"][0] == False
+        assert not ub_1["z"][0]
 
         self.assertRaises(Exception, design_space.get_active_bounds, "test")
         self.assertRaises(KeyError, design_space.get_active_bounds)
@@ -308,8 +323,8 @@ class TestDesignSpace(unittest.TestCase):
 
         design_space = DesignSpace()
         design_space.add_variable("x", 1, DesignSpace.INTEGER, 1, 1)
-        assert design_space.normalize_vect(ones((1)))[0] == 0.0
-        assert design_space.unnormalize_vect(ones((1)) * 0)[0] == 1.0
+        assert design_space.normalize_vect(ones(1))[0] == 0.0
+        assert design_space.unnormalize_vect(ones(1) * 0)[0] == 1.0
         assert design_space.unnormalize_vect(array([[0.0], [0.0]]))[0][0] == 1.0
         assert design_space.unnormalize_vect(array([[0.0], [0.0]]))[1][0] == 1.0
 
@@ -384,7 +399,6 @@ class TestDesignSpace(unittest.TestCase):
         assert design_space.get_current_x_dict()["x_1"][0] == 5.0
         self.assertRaises(ValueError, design_space.set_current_variable, "x_3", 1.0)
 
-        LOGGER.info(design_space)
         self.assertRaises(Exception, design_space.add_variable, "error", l_b=1.0, u_b=0)
 
         design_space = DesignSpace()
@@ -392,7 +406,6 @@ class TestDesignSpace(unittest.TestCase):
         design_space.set_current_x({"x": None})
         assert not design_space.has_current_x()
 
-    #
     def get_sob_ds(self):
         names = [
             "x_shared",
@@ -420,42 +433,34 @@ class TestDesignSpace(unittest.TestCase):
 
         return ref_ds
 
-    #
     def test_read_write(self):
         ref_ds = self.get_sob_ds()
-        temp_dir = tempfile.mkdtemp()
-        f_path = "/".join((temp_dir, "sobieski_design_space.txt"))
+        f_path = "sobieski_design_space.txt"
         ref_ds.export_to_txt(f_path)
         read_ds = DesignSpace.read_from_txt(f_path)
         read_ds.get_lower_bounds()
         self.check_ds(ref_ds, read_ds, f_path)
 
         ds = DesignSpace.read_from_txt(TEST_INFILE)
-        LOGGER.info(ds)
         assert not ds.has_current_x()
         for i in range(1, 9):
             testfile = join(CURRENT_DIR, "design_space_fail_" + str(i) + ".txt")
-            LOGGER.info("Testing failure of " + str(testfile))
             self.assertRaises(ValueError, DesignSpace.read_from_txt, testfile)
 
         for i in range(1, 4):
             testfile = join(CURRENT_DIR, "design_space_" + str(i) + ".txt")
-            LOGGER.info("Testing read of " + str(testfile))
             header = None
             if i == 2:
                 header = ["name", "value", "lower_bound", "type", "upper_bound"]
             ds = DesignSpace.read_from_txt(testfile, header=header)
-            LOGGER.info(str(ds))
 
         ds = DesignSpace.read_from_txt(TEST_INFILE)
         ds.set_lower_bound("x_shared", None)
         ds.set_upper_bound("x_shared", None)
-        LOGGER.info(str(ds))
 
         out_f = "table.txt"
         ds.export_to_txt(out_f, sortby="upper_bound")
         assert exists(out_f)
-        remove(out_f)
 
     def test_dict_to_array(self):
         design_space = DesignSpace()
@@ -469,11 +474,9 @@ class TestDesignSpace(unittest.TestCase):
 
     def check_ds(self, ref_ds, read_ds, f_path):
         """
-
         :param ref_ds: param read_ds:
         :param f_path:
         :param read_ds:
-
         """
         assert exists(f_path)
         self.assertListEqual(read_ds.variables_names, ref_ds.variables_names)
@@ -505,20 +508,17 @@ class TestDesignSpace(unittest.TestCase):
         assert len(ref_str) > 1000
         assert len(ref_str.split("\n")) > 20
 
-        remove(f_path)
-
     def test_hdf5_export(self):
-        """
-        Tests the export of a Design space in the HDF5 format
-        """
+        """Tests the export of a Design space in the HDF5 format."""
         ref_ds = self.get_sob_ds()
-        f_path = join(tempfile.mkdtemp(), "sobieski_design_space.h5")
+        f_path = "_sobieski_design_space.h5"
         ref_ds.export_hdf(f_path)
         read_ds = DesignSpace(f_path)
         self.check_ds(ref_ds, read_ds, f_path)
-        self.assertRaises(Exception, DesignSpace, f_path)
 
-    #
+    def test_ctor_error_with_missing_file(self):
+        self.assertRaises(Exception, DesignSpace, "dummy.h5")
+
     def test_fail_import(self):
         self.assertRaises(KeyError, DesignSpace().import_hdf, FAIL_HDF)
 
@@ -529,7 +529,7 @@ class TestDesignSpace(unittest.TestCase):
         assert "-inf" in str(str_repr)
 
     def test_project_into_bounds(self):
-        """ Tests the projection onto the design space bounds. """
+        """Tests the projection onto the design space bounds."""
         design_space = DesignSpace()
         design_space.add_variable("x", 3, DesignSpace.FLOAT, -1.0, 2.0)
         x_c = [-2, 0.5, 3]
@@ -537,3 +537,52 @@ class TestDesignSpace(unittest.TestCase):
         self.assertAlmostEqual(norm(x_p - [-1, 0.5, 2]), 0.0)
         x_p = design_space.project_into_bounds(x_c, normalized=True)
         self.assertAlmostEqual(norm(x_p - [0, 0.5, 1]), 0.0)
+
+    def test_contains(self):
+        design_space = DesignSpace()
+        design_space.add_variable("x")
+        assert "x" in design_space
+        assert "y" not in design_space
+
+    def test_len(self):
+        design_space = DesignSpace()
+        design_space.add_variable("x")
+        design_space.add_variable("y", size=2)
+        assert len(design_space) == 2
+
+    def test_getitem(self):
+        design_space = DesignSpace()
+        design_space.add_variable("x", value=0.5)
+        design_space.add_variable("y", size=2)
+
+        assert design_space["x"] == {
+            "name": "x",
+            "type": "float",
+            "value": array([0.5]),
+            "size": 1,
+            "l_b": array([-inf]),
+            "u_b": array([inf]),
+        }
+
+        assert design_space["y"]["value"] is None
+
+        expected = "The parameter indices are comprise between 0 and 1. Got 2."
+        with pytest.raises(ValueError, match=expected):
+            design_space[2]
+
+        expected = "The design space does not contain 'foo'."
+        with pytest.raises(ValueError, match=expected):
+            design_space["foo"]
+
+    def test_get_variables_indexes(self):
+        """Test the variables indexes getter."""
+        space = DesignSpace()
+        space.add_variable("x", 3)
+        space.add_variable("y", 2)
+        space.add_variable("z", 1)
+        assert (space.get_variables_indexes(["x"]) == array([0, 1, 2])).all()
+        assert (space.get_variables_indexes(["y"]) == array([3, 4])).all()
+        assert (space.get_variables_indexes(["z"]) == array([5])).all()
+        assert (space.get_variables_indexes(["x", "y"]) == array([0, 1, 2, 3, 4])).all()
+        assert (space.get_variables_indexes(["x", "z"]) == array([0, 1, 2, 5])).all()
+        assert (space.get_variables_indexes(["y", "z"]) == array([3, 4, 5])).all()

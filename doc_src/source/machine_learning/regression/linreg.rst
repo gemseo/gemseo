@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.regression.linreg
    :noindex:
 
-.. autoclass:: gemseo.mlearning.regression.linreg.LinearRegression
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_linear_regression.html" role="button">Example</a></div>

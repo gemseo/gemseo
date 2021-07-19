@@ -25,9 +25,7 @@ Create a DOE Scenario
 =====================
 
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import (
     configure_logger,
@@ -40,7 +38,6 @@ from gemseo.api import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 #############################################################################
 # Let :math:`(P)` be a simple optimization problem:

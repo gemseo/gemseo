@@ -23,11 +23,9 @@
 MDO formulations for a toy example in aerostructure
 ===================================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from copy import deepcopy
-
-from future import standard_library
 
 from gemseo.api import (
     configure_logger,
@@ -41,7 +39,6 @@ from gemseo.problems.aerostructure.aerostructure_design_space import (
 
 configure_logger()
 
-standard_library.install_aliases()
 
 algo_options = {
     "xtol_rel": 1e-8,
@@ -87,9 +84,9 @@ disciplines = [aerodynamics, structure, mission]
 generate_n2_plot(disciplines, save=False, show=True)
 
 #############################################################################
-# Create a MDO scenario with MDF formulation
-# ------------------------------------------
-# Then, we create a MDO scenario based on the MDF formulation
+# Create an MDO scenario with MDF formulation
+# -------------------------------------------
+# Then, we create an MDO scenario based on the MDF formulation
 design_space = AerostructureDesignSpace()
 scenario = create_scenario(
     disciplines=disciplines,
@@ -104,9 +101,9 @@ scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_op
 scenario.post_process("OptHistoryView", save=False, show=True)
 
 #############################################################################
-# Create a MDO scenario with bilevel formulation
-# ----------------------------------------------
-# Then, we create a MDO scenario based on the bilevel formulation
+# Create an MDO scenario with bilevel formulation
+# -----------------------------------------------
+# Then, we create an MDO scenario based on the bilevel formulation
 sub_scenario_options = {
     "max_iter": 5,
     "algo": "NLOPT_SLSQP",

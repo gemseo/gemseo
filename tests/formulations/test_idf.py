@@ -19,14 +19,12 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import unicode_literals
 
 import numpy as np
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.formulations.idf import IDF
 from gemseo.problems.sobieski.core import SobieskiProblem
@@ -36,22 +34,15 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
-from gemseo.utils.testing_utils import skip_under_windows
 
-from .formulations_basetest import FakeDiscipline, Formulations_BaseTest
-
-standard_library.install_aliases()
+from .formulations_basetest import FakeDiscipline, FormulationsBaseTest
 
 
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_IDF(Formulations_BaseTest):
-    """ """
+class TestIDF(FormulationsBaseTest):
+    """"""
 
     def test_init_idf(self):
-        """ """
+        """"""
         self.build_mdo_scenario("IDF")
 
     def build_and_run_idf_scenario_with_constraints(
@@ -137,7 +128,7 @@ class Test_IDF(Formulations_BaseTest):
         return obj_opt, is_feasible
 
     def test_build_func_from_disc(self):
-        """ """
+        """"""
         pb = SobieskiProblem("complex128")
         disciplines = [
             SobieskiMission("complex128"),
@@ -167,7 +158,7 @@ class Test_IDF(Formulations_BaseTest):
             func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
     def test_exec_idf_cstr_complex_step(self):
-        """ """
+        """"""
         obj_opt, is_feasible = self.build_and_run_idf_scenario_with_constraints(
             "SLSQP",
             linearize=False,
@@ -177,13 +168,11 @@ class Test_IDF(Formulations_BaseTest):
             ineq_tolerance=1e-4,
         )
 
-        assert 3962.0 < obj_opt
-        assert obj_opt < 3965.0
+        assert 3962.0 < obj_opt < 3966.0
         assert is_feasible
 
-    @link_to("Req-MDO-1.2")
     def test_exec_idf_scipy_slsqp_cstr(self):
-        """ """
+        """"""
         obj_opt, _ = self.build_and_run_idf_scenario_with_constraints(
             "SLSQP", linearize=True, dtype="float64", normalize_cstr=False
         )
@@ -191,7 +180,6 @@ class Test_IDF(Formulations_BaseTest):
         assert 3962.0 < obj_opt
         assert obj_opt < 3965.0
 
-    @link_to("Req-MDO-1.2")
     def test_exec_idf_scipy_slsqp_norm_cstr(self):
         obj_opt, is_feasible = self.build_and_run_idf_scenario_with_constraints(
             "SLSQP", linearize=True, dtype="float64", normalize_cstr=True
@@ -201,7 +189,6 @@ class Test_IDF(Formulations_BaseTest):
         assert obj_opt < 3965.0
         assert is_feasible
 
-    @link_to("Req-MDO-1.2")
     def test_exec_idf_scipy_slsqp_norm_cstr_par_thread(self):
         obj_opt, is_feasible = self.build_and_run_idf_scenario_with_constraints(
             "SLSQP",
@@ -216,8 +203,7 @@ class Test_IDF(Formulations_BaseTest):
         assert obj_opt < 3965.0
         assert is_feasible
 
-    @skip_under_windows
-    @link_to("Req-MDO-1.2")
+    @pytest.mark.skip_under_windows
     def test_exec_idf_scipy_slsqp_norm_cstr_par_process(self):
         obj_opt, is_feasible = self.build_and_run_idf_scenario_with_constraints(
             "SLSQP",
@@ -233,7 +219,7 @@ class Test_IDF(Formulations_BaseTest):
         assert is_feasible
 
     def test_fail_idf_no_coupl(self):
-        """ """
+        """"""
         self.assertRaises(
             Exception,
             self.build_and_run_idf_scenario_with_constraints,
@@ -247,7 +233,7 @@ class Test_IDF(Formulations_BaseTest):
         )
 
     def test_expected_workflow(self):
-        """ """
+        """"""
         disc1 = FakeDiscipline("d1")
         disc2 = FakeDiscipline("d2")
         disc3 = FakeDiscipline("d3")
@@ -256,7 +242,7 @@ class Test_IDF(Formulations_BaseTest):
         self.assertEqual(str(idf.get_expected_workflow()), expected)
 
     def test_expected_dataflow(self):
-        """ """
+        """"""
         disc1 = FakeDiscipline("d1")
         disc2 = FakeDiscipline("d2")
         disc3 = FakeDiscipline("d3")

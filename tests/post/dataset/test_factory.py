@@ -19,14 +19,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.post.dataset.factory import DatasetPlotFactory
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
-
-standard_library.install_aliases()
 
 
 def test_instantiate_factory():
@@ -50,4 +46,4 @@ def test_create():
     factory = DatasetPlotFactory()
     dataset = RosenbrockDataset()
     dataset = factory.create("ScatterMatrix", dataset=dataset)
-    assert dataset.output_files == []
+    assert not dataset.output_files

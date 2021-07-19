@@ -22,23 +22,16 @@
 A Gauss Seidel algorithm for solving MDAs
 *****************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import super
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
 
-standard_library.install_aliases()
-
 
 class MDAGaussSeidel(MDA):
-    """
-    Perform a MDA analysis using a Gauss-Seidel algorithm,
-    an iterative technique to solve the linear system:
+    """Perform a MDA analysis using a Gauss-Seidel algorithm, an iterative technique to
+    solve the linear system:
 
     .. math::
 
@@ -65,10 +58,9 @@ class MDAGaussSeidel(MDA):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
+        over_relax_factor=1.0,
     ):
-        """
-        Constructor
+        """Constructor.
 
         :param disciplines: the disciplines list
         :type disciplines: list(MDODiscipline)
@@ -93,10 +85,11 @@ class MDAGaussSeidel(MDA):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
+        :param over_relax_factor: relaxation coefficient, used to make the
+            method more robust, if 0<over_relax_factor<1
+            or faster if 1<over_relax_factor<=2.
+            If over_relax_factor =1., it is deactivated
+        :type over_relax_factor: float
         """
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         super(MDAGaussSeidel, self).__init__(
@@ -109,48 +102,61 @@ class MDAGaussSeidel(MDA):
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
         )
+        assert over_relax_factor > 0.0
+        assert over_relax_factor <= 2.0
+        self.over_relax_factor = over_relax_factor
         self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
 
-    def reset_statuses_for_run(self):
-        """Sets all the statuses to PENDING"""
-        super(MDAGaussSeidel, self).reset_statuses_for_run()
-        self.chain.reset_statuses_for_run()
-
     def _initialize_grammars(self):
-        """Defines all inputs and outputs of the chain"""
+        """Defines all inputs and outputs of the chain."""
         # self.chain.initialize_grammars()
         self.input_grammar.update_from(self.chain.input_grammar)
         self.output_grammar.update_from(self.chain.output_grammar)
 
     def _run(self):
-        """Runs the disciplines in a sequential way until the difference
-        between outputs is under tolerance
+        """Runs the disciplines in a sequential way until the difference between outputs
+        is under tolerance.
 
         :returns: the local data
         """
         if self.warm_start:
             self._couplings_warm_start()
-        # execute the disciplines
-        current_couplings = self._current_input_couplings()
-        self.chain.reset_statuses_for_run()
-        self.local_data.update(self.chain.execute(self.local_data))
-        new_couplings = self._current_input_couplings()
+        current_couplings = 0.0
 
+        relax = self.over_relax_factor
+        use_relax = relax != 1.0
         # store initial residual
-        current_iter = 1
-        self._compute_residual(
-            current_couplings, new_couplings, current_iter, first=True
-        )
-        current_couplings = new_couplings
+        current_iter = 0
+        while not self._termination(current_iter) or current_iter == 0:
+            for discipline in self.disciplines:
+                discipline.execute(self.local_data)
+                outs = discipline.get_output_data()
+                if use_relax:
+                    # First time this output is computed, update directly local data
+                    self.local_data.update(
+                        {k: v for k, v in outs.items() if k not in self.local_data}
+                    )
+                    # The couplings already exist in the local data,
+                    # so the over relaxation can be applied
+                    self.local_data.update(
+                        {
+                            k: relax * v + (1.0 - relax) * self.local_data[k]
+                            for k, v in outs.items()
+                            if k in self.local_data
+                        }
+                    )
+                else:
+                    self.local_data.update(outs)
 
-        while not self._termination(current_iter):
-            self.chain.reset_statuses_for_run()
-            self.local_data.update(self.chain.execute(self.local_data))
-            new_couplings = self._current_input_couplings()
-
-            # store current residual
+            new_couplings = self._current_strong_couplings()
+            self._compute_residual(
+                current_couplings, new_couplings, current_iter, first=current_iter == 0
+            )
+            # store current residuals
             current_iter += 1
-            self._compute_residual(current_couplings, new_couplings, current_iter)
             current_couplings = new_couplings
+
+        for discipline in self.disciplines:  # Update all outputs without relax
+            self.local_data.update(discipline.get_output_data())

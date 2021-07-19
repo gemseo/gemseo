@@ -18,7 +18,7 @@
 How to deal with post-processing
 ================================
 
-In this section we describe the post processing features of GEMSEO, used to
+In this section we describe the post processing features of |g|, used to
 analyze :class:`~gemseo.algos.opt_result.OptimizationResult`, called the
 :term:`optimization history`.
 
@@ -92,8 +92,10 @@ What are the post-processing features?
    <a href="_postprocessing/basic_history.html"><img src="../_images/mdf_basic_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/constraints_history.html">Constraints history</a></h3>
    <a href="_postprocessing/constraints_history.html"><img src="../_images/mdf_constraints_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="_postprocessing/objective_and_constraints_history.html">Objective and constraints history</a></h3>
+   <a href="_postprocessing/objective_and_constraints_history.html"><img src="../_images/mdf_objective_and_constraints_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/gradients_sensitivity.html">Gradient sensitivity</a></h3>
-    <a href="_postprocessing/gradients_sensitivity.html"><img src="../_images/mdf_gradient_sensitivity.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <a href="_postprocessing/gradients_sensitivity.html"><img src="../_images/mdf_gradient_sensitivity.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/opt_history_view.html">Optimization history view</a></h3>
    <a href="_postprocessing/opt_history_view.html"><img src="../_images/mdf_variables_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/parallel_coordinates.html">Parallel coordinates</a></h3>
@@ -102,10 +104,16 @@ What are the post-processing features?
    <a href="_postprocessing/quadratic_approximation.html"><img src="../_images/mdf_hessian_approx.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/radar_chart.html">Radar chart</a></h3>
    <a href="_postprocessing/radar_chart.html"><img src="../_images/mdf_radar_chart.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="_postprocessing/correlations.html">Correlations</a></h3>
+   <a href="_postprocessing/correlations.html"><img src="../_images/mdf_correlations.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/robustness.html">Robustness</a></h3>
    <a href="_postprocessing/robustness.html"><img src="../_images/mdf_boxplot.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="_postprocessing/som.html">Self-Organizing Maps</a></h3>
    <a href="_postprocessing/som.html"><img src="../_images/som_fine.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="_postprocessing/scatter_plot_matrix.html">Scatter plot matrix</a></h3>
+   <a href="_postprocessing/scatter_plot_matrix.html"><img src="../_images/mdf_scatter_plot_matrix.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="_postprocessing/variable_influence.html">Variable influence</a></h3>
+   <a href="_postprocessing/variable_influence.html"><img src="../_images/mdf_variable_influence.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
 
 .. toctree::
    :caption: Post processing methods
@@ -117,8 +125,11 @@ What are the post-processing features?
    _postprocessing/quadratic_approximation.rst
    _postprocessing/som.rst
    _postprocessing/constraints_history.rst
+   _postprocessing/objective_and_constraints_history.rst
    _postprocessing/opt_history_view.rst
    _postprocessing/radar_chart.rst
    _postprocessing/correlations.rst
    _postprocessing/parallel_coordinates.rst
    _postprocessing/robustness.rst
+   _postprocessing/scatter_plot_matrix.rst
+   _postprocessing/variable_influence.rst

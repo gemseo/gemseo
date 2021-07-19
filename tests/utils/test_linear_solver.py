@@ -19,26 +19,17 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import range
 
-from future import standard_library
 from numpy import diag, ones
 from scipy.sparse import csr_matrix
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.utils.linear_solver import LinearSolver
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_LinearSolver(unittest.TestCase):
+class TestLinearSolver(unittest.TestCase):
     def test_init(self):
         LinearSolver()
 
@@ -52,9 +43,9 @@ class Test_LinearSolver(unittest.TestCase):
             ValueError, LinearSolver().solve, diag(list(range(2))), ones((3, 2))
         )
 
-        A = csr_matrix([[1, 2, 0], [0, 0, 3], [4, 0, 5]])
+        a = csr_matrix([[1, 2, 0], [0, 0, 3], [4, 0, 5]])
         b = csr_matrix([1, 2, 0]).T
-        LinearSolver().solve(A, b)
+        LinearSolver().solve(a, b)
 
         LinearSolver().solve(diag(list(range(2))), ones(2), maxiter=-1)
 

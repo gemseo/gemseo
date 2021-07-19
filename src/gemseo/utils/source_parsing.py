@@ -19,57 +19,120 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Parse source code to extract information
-****************************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
 
+"""Parse source code to extract information."""
+
+from __future__ import division, unicode_literals
+
+import inspect
 import re
-from builtins import range, str
-from inspect import getargspec, getdoc
+from typing import Callable, Dict
 
-from future import standard_library
-
-standard_library.install_aliases()
+from gemseo.utils.py23_compat import getargspec
 
 
-class SourceParsing(object):
+def get_options_doc(
+    method,  # type: Callable
+):  # type: (...) -> Dict[str, str]
+    """Get the documentation of a method.
+
+    Args:
+        method: The method to retrieve the doc from.
+
+    Returns:
+        The descriptions of the options.
     """
-    Parse source code to extract information
+    # the docstring has all the leading and common white spaces removed
+    docstring = inspect.getdoc(method)
+
+    if docstring is None:
+        raise ValueError("Empty doc for {}".format(method))
+
+    for parse in (parse_google, parse_rest):
+        parsed_docstring = parse(docstring)
+        if parsed_docstring:
+            return parsed_docstring
+
+    raise ValueError(
+        "The docstring of the arguments is malformed: "
+        "please use Google style docstrings"
+    )
+
+
+def get_default_options_values(
+    cls,
+):  # type: (...) -> Dict[str, str]
+    """Get the options default values for the given class, by only addressing kwargs.
+
+    Args:
+        cls: The class.
     """
+    args, _, _, defaults = getargspec(cls.__init__)
+    if "self" in args:
+        args.remove("self")
+    n_def = len(defaults)
 
-    @staticmethod
-    def get_options_doc(method):
-        """
-        Get the documentation of a method
+    return {args[-n_def:][i]: defaults[i] for i in range(n_def)}
 
-        :param method: the method to retreive the doc from
-        :returns: the dictionary of options meaning
-        """
-        doc = getdoc(method)
-        if doc is None:
-            raise ValueError("Empty doc for " + str(method))
-        pattern = ":param ([\*\w]+): (.*?)"  # pylint: disable=W1401
-        pattern += "(?:(?=:param)|(?=:return)|\Z)"  # pylint: disable=W1401
-        param_re = re.compile(pattern, re.S)
-        doc_list = param_re.findall(doc)
-        return {txt[0]: txt[1].replace(" " * 4, "") for txt in doc_list}
 
-    @staticmethod
-    def get_default_options_values(klass):
-        """
-        Get the options default values for the given class
-        Only addresses kwargs
+def parse_rest(
+    docstring,  # type: str
+):  # type: (...) -> Dict[str, str]
+    """Parse a reST docstring.
 
-        :param name : name of the class
-        :returns: the dict option name: option default value
-        """
-        args, _, _, defaults = getargspec(klass.__init__)
-        if "self" in args:
-            args.remove("self")
-        n_def = len(defaults)
+    Args:
+        docstring: The docstring to be parsed.
 
-        args_dict = {args[-n_def:][i]: defaults[i] for i in range(n_def)}
+    Returns:
+        The parsed docstring.
+    """
+    pattern = r":param ([\*\w]+): (.*?)(?:(?=:param)|(?=:return)|\Z)"
+    param_re = re.compile(pattern, re.S)
+    doc_list = param_re.findall(docstring)
+    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in doc_list}
+    parsed_doc = {
+        name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
+        for name, description in parsed_doc.items()
+    }
+    return parsed_doc
 
-        return args_dict
+
+# regex pattern for finding the arguments section of a google docstring
+# doc_inherit.DocInheritMeta replaces the section title "Args" with "Parameters"
+RE_PATTERN_ARGS_SECTION = re.compile(
+    r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:Returns:|Raises:|$)", flags=re.DOTALL
+)
+
+# regex pattern for finding the arguments names and description of a google docstring
+RE_PATTERN_ARGS = re.compile(
+    r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\**\w+\s*:))", flags=re.DOTALL
+)
+
+
+def parse_google(
+    docstring,  # type: str
+):  # type: (...) -> Dict[str, str]
+    """Parse a Google docstring.
+
+    Args:
+        docstring: The docstring to be parsed.
+
+    Returns:
+        The parsed docstring with the function arguments names bound to their descriptions.
+    """
+    args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
+
+    if len(args_sections) != 1:
+        # This is not a google docstring
+        return {}
+
+    # remove leading common blank spaces
+    args_section = inspect.cleandoc(args_sections[0])
+
+    parsed_doc = {}
+
+    for name, desc in RE_PATTERN_ARGS.findall(args_section):
+        # remove multiple blank spaces and carriage returns
+        parsed_doc[name] = re.sub(r"\s+", " ", desc).strip()
+
+    return parsed_doc

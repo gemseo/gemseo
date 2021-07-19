@@ -19,14 +19,11 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Hessian matrix approximations from gradient pairs
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""Hessian matrix approximations from gradient pairs."""
+from __future__ import division, unicode_literals
 
-from builtins import range, str, zip
+import logging
 
-from future import standard_library
 from numpy import array, atleast_2d, concatenate, cumsum
 from numpy import diag as np_diag
 from numpy import dot, eye, inf, sqrt, trace, zeros
@@ -34,17 +31,15 @@ from numpy.linalg import LinAlgError, cholesky, inv, multi_dot, norm
 from numpy.matlib import repmat
 from scipy.optimize import leastsq
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class HessianApproximation(object):
-    """Abstract class for hessian approximations from optimization history"""
+    """Abstract class for hessian approximations from optimization history."""
 
     def __init__(self, history):
-        """
-        Constructor
+        """Constructor.
+
         :param history: the optimization history
         """
         self.history = history
@@ -64,8 +59,7 @@ class HessianApproximation(object):
         normalize_design_space=False,
         design_space=None,
     ):
-        """Get gradient history and design variables history of gradient
-        evaluations
+        """Get gradient history and design variables history of gradient evaluations.
 
         :param funcname: function name
         :param first_iter: first iteration after which the history is
@@ -79,7 +73,6 @@ class HessianApproximation(object):
             to work in a normalized design space (x between 0 and 1)
         :param design_space: the design space used to scale all values
             mandatory if normalize_design_space==True
-
         """
         x_grad_hist, x_hist = self.history.get_func_grad_history(funcname, x_hist=True)
         if normalize_design_space:
@@ -150,9 +143,8 @@ class HessianApproximation(object):
 
     @staticmethod
     def _normalize_x_g(x_hist, x_grad_hist, design_space):
-        """
-         scale the values
-            to work in a normalized design space (x between 0 and 1)
+        """scale the values to work in a normalized design space (x between 0 and 1)
+
         :param design_space: the design space used to scale all values
         """
         if design_space is None:
@@ -163,7 +155,7 @@ class HessianApproximation(object):
         unnormalize_vect = design_space.unnormalize_vect
 
         def normalize_gradient(x_vect):
-            """Unnormalize a gradient"""
+            """Unnormalize a gradient."""
             return unnormalize_vect(x_vect, minus_lb=False, no_check=True)
 
         x_scaled, grad_scaled = [], []
@@ -174,13 +166,12 @@ class HessianApproximation(object):
 
     @staticmethod
     def get_s_k_y_k(x_hist, x_grad_hist, iteration):
-        """Generate the s_k and y_k terms, respectively design variable
-        difference and gradients difference between iterates
+        """Generate the s_k and y_k terms, respectively design variable difference and
+        gradients difference between iterates.
 
         :param x_hist: design variables history array
         :param x_grad_hist: gradients history array
         :param iteration: iteration number for which the pair must be generated
-
         """
         n_iter = x_grad_hist.shape[0]
         if iteration >= n_iter:
@@ -194,12 +185,11 @@ class HessianApproximation(object):
 
     @staticmethod
     def iterate_s_k_y_k(x_hist, x_grad_hist):
-        """Generate the s_k and y_k terms, respectively design variable
-        difference and gradients difference between iterates
+        """Generate the s_k and y_k terms, respectively design variable difference and
+        gradients difference between iterates.
 
         :param x_hist: design variables history array
         :param x_grad_hist: gradients history array
-
         """
         n_iter = x_hist.shape[0]
         for k in range(n_iter - 1):
@@ -237,6 +227,7 @@ class HessianApproximation(object):
             (Default value = False)
         :param func_index: Default value = None)
             (Default value = False)
+        :param scaling: do scaling step
         :param normalize_design_space: if True, scale the values
             to work in a normalized design space (x between 0 and 1)
         :param design_space: the design space used to scale all values
@@ -245,7 +236,6 @@ class HessianApproximation(object):
             and eventually the x and grad history pairs
             used to build B, if return_x_grad=True,
             otherwise, None and None are returned for args consistency
-
         """
         normalize_ds = normalize_design_space
         x_hist, x_grad_hist, _, _ = self.get_x_grad_history(
@@ -258,8 +248,6 @@ class HessianApproximation(object):
             design_space,
         )
         if b_mat0 is None:
-            for s_k, y_k in self.iterate_s_k_y_k(x_hist, x_grad_hist):
-                break
             last_n_grad = x_grad_hist.shape[0] - 2
             s_k, y_k = self.get_s_k_y_k(x_hist, x_grad_hist, last_n_grad)
             alpha = dot(y_k.T, s_k) / dot(y_k.T, y_k)
@@ -282,10 +270,11 @@ class HessianApproximation(object):
 
     @staticmethod
     def compute_scaling(hessk, hessk_dsk, dskt_hessk_dsk, dyk, dyt_dsk):
-        """Compute scaling
+        """Compute scaling.
+
         :param hessk: previous approximation
-        :param hessk_s: product between hessk and dsk
-        :param dskt_hessk_sk: product between dsk^t, hessk and dsk
+        :param hessk_dsk: product between hessk and dsk
+        :param dskt_hessk_dsk: product between dsk^t, hessk and dsk
         :param dyk: gradients difference between iterates
         :param dyt_dsk: product between dyk^t and dsk^t
         """
@@ -297,14 +286,13 @@ class HessianApproximation(object):
 
     @staticmethod
     def iterate_approximation(hessk, dsk, dyk, scaling=False):
-        """BFGS iteration from step k to step k+1
+        """BFGS iteration from step k to step k+1.
 
         :param hessk: previous approximation
         :param dsk: design variable difference between iterates
         :param dyk: gradients difference between iterates
         :param scaling: do scaling step
         :returns: updated approximation
-
         """
         dyt_dsk = dot(dyk.T, dsk)
         hessk_dsk = dot(hessk, dsk)
@@ -338,7 +326,7 @@ class HessianApproximation(object):
         normalize_design_space=False,
         design_space=None,
     ):
-        """Builds the inversed hessian approximation H
+        """Builds the inversed hessian approximation H.
 
         :param funcname: function name
         :param save_diag: if True, returns the list of diagonal approximations
@@ -362,7 +350,6 @@ class HessianApproximation(object):
             and eventually the x and grad history pairs
             used to build H, if return_x_grad=True,
             otherwise, None and None are returned for args consistency
-
         """
         normalize_ds = normalize_design_space
         x_hist, x_grad_hist, _, _ = self.get_x_grad_history(
@@ -374,12 +361,9 @@ class HessianApproximation(object):
             normalize_ds,
             design_space,
         )
-        b_mat = None  # to become the Hessian approximation B, optionally
         h_factor = None  # to become a matrix G such that H = G*G', optionally
         b_factor = None  # to become the inverse of the matrix G
         if h_mat0 is None:
-            for s_k, y_k in self.iterate_s_k_y_k(x_hist, x_grad_hist):
-                break
             last_n_grad = x_grad_hist.shape[0] - 2
             s_k, y_k = self.get_s_k_y_k(x_hist, x_grad_hist, last_n_grad)
             alpha = dot(y_k.T, s_k) / dot(y_k.T, y_k)
@@ -437,7 +421,7 @@ class HessianApproximation(object):
 
     @staticmethod
     def compute_corrections(x_hist, x_grad_hist):
-        """ Computes the corrections from the history. """
+        """Computes the corrections from the history."""
         n_iter = x_hist.shape[0]
         x_corr = x_hist[1:n_iter].T - x_hist[: n_iter - 1].T
         grad_corr = x_grad_hist[1:n_iter].T - x_grad_hist[: n_iter - 1].T
@@ -445,7 +429,7 @@ class HessianApproximation(object):
 
     @staticmethod
     def rebuild_history(x_corr, x_0, grad_corr, g_0):
-        """ Computes the history from the corrections. """
+        """Computes the history from the corrections."""
         # Rebuild the argument history:
         x_hist = repmat(x_0, x_corr.shape[1], 1) + cumsum(x_corr.T, axis=0)
         x_hist = concatenate((atleast_2d(x_0), x_hist), axis=0)
@@ -465,13 +449,12 @@ class HessianApproximation(object):
         factorize=False,
         scaling=False,
     ):
-        """Inverse BFGS iteration
+        """Inverse BFGS iteration.
 
         :param h_mat: previous approximation
         :param s_k: design variable difference between iterates
         :param y_k: gradients difference between iterates
         :returns: updated inverse approximation
-
         """
         # Compute the two terms of the non-scaled updated matrix:
         yts = dot(y_k.T, s_k)
@@ -493,10 +476,10 @@ class HessianApproximation(object):
             sst_b = dot(s_k, b_s.T)
             left = proj / sqrt(coeff1) + sst_b / sqrt(coeff2 * yts * st_b_s)
             h_factor[:, :] = dot(left, h_factor)
-            #             b_factor[:, :] = dot(eye(len(s_k)) - sstB.T / stBs / sqrt(coeff1)
-            #                                  + dot(y_k, s_k.T)
-            #                                  / sqrt(coeff2 * stBs * yts),
-            #                                  b_factor)
+            # b_factor[:, :] = dot(eye(len(s_k)) - sstB.T / stBs / sqrt(coeff1)
+            #                      + dot(y_k, s_k.T)
+            #                      / sqrt(coeff2 * stBs * yts),
+            #                      b_factor)
             right = sqrt(coeff1) * (eye(len(s_k)) - sst_b / st_b_s)
             right += sqrt(coeff2) * dot(s_k, y_k.T) / sqrt(st_b_s * yts)
             b_factor[:, :] = dot(b_factor, right)
@@ -513,16 +496,15 @@ class HessianApproximation(object):
 
 class BFGSApprox(HessianApproximation):
 
-    """Builds a BFGS approximation from optimization history"""
+    """Builds a BFGS approximation from optimization history."""
 
     @staticmethod
     def iterate_s_k_y_k(x_hist, x_grad_hist):
-        """Generate the s_k and y_k terms, respectively design variable
-        difference and gradients difference between iterates
+        """Generate the s_k and y_k terms, respectively design variable difference and
+        gradients difference between iterates.
 
         :param x_hist: design variables history array
         :param x_grad_hist: gradients history array
-
         """
         n_iter = x_hist.shape[0]
         for k in range(n_iter - 1):
@@ -535,20 +517,19 @@ class BFGSApprox(HessianApproximation):
 
 class SR1Approx(HessianApproximation):
 
-    """Builds a Symmetric Rank One approximation from optimization history"""
+    """Builds a Symmetric Rank One approximation from optimization history."""
 
     EPSILON = 1e-8
 
     @staticmethod
     def iterate_approximation(b_mat, s_k, y_k, scaling=False):
-        """SR1 iteration
+        """SR1 iteration.
 
         :param b_mat: previous approximation
         :param s_k: design variable difference between iterates
         :param y_k: gradients difference between iterates
-        :param scaling: do scaling sep
+        :param scaling: do scaling step
         :returns: updated approximation
-
         """
         d_mat = y_k - multi_dot((b_mat, s_k))
         den = multi_dot((d_mat.T, s_k))
@@ -562,7 +543,7 @@ class SR1Approx(HessianApproximation):
 
 class LSTSQApprox(HessianApproximation):
 
-    """Builds a Least squares approximation from optimization history"""
+    """Builds a Least squares approximation from optimization history."""
 
     def build_approximation(
         self,
@@ -578,7 +559,7 @@ class LSTSQApprox(HessianApproximation):
         normalize_design_space=False,
         design_space=None,
     ):
-        """Builds the hessian approximation
+        """Builds the hessian approximation.
 
         :param funcname: function name
         :param save_diag: if True, returns the list of diagonal approximations
@@ -614,23 +595,21 @@ class LSTSQApprox(HessianApproximation):
         assert len(x_grad_hist) == len(x_hist)
 
         def y_to_b(y_vars):
-            """Reshapes the approximation from vector to matrix
+            """Reshapes the approximation from vector to matrix.
 
-            :param y: the vector approximation
+            :param y_vars: the vector approximation
             :param y_vars: returns: the matrix shaped approximation
             :returns: the matrix shaped approximation
-
             """
             y_mat = y_vars.reshape((nparam, nparam))
             return y_mat + y_mat.T
 
         def func(y_vars):
-            """Create the least square function
+            """Create the least square function.
 
-            :param y: the current approximation vector
+            :param y_vars: the current approximation vector
             :param y_vars: returns: the estimated error vector
             :returns: the estimated error vector
-
             """
             b_mat_current = y_to_b(y_vars)
             err = zeros((nparam, sec_dim))

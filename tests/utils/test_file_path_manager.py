@@ -1,0 +1,89 @@
+# -*- coding: utf-8 -*-
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import pytest
+
+from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.py23_compat import Path
+
+
+def test_str():
+    """Verify the string representation of a FileManager."""
+    manager = FilePathManager(FileType.FIGURE)
+    expected = [
+        "FilePathManager",
+        "   File type: FIGURE",
+        "   Default file name: figure",
+        "   Default file extension: png",
+        "   Default directory: {}".format(Path.cwd()),
+    ]
+    assert str(manager) == "\n".join(expected)
+
+
+@pytest.fixture(scope="module")
+def file_path_manager():  # type: (...) -> FilePathManager
+    """A manager of figure file paths."""
+    return FilePathManager(FileType.FIGURE, default_directory=Path("."))
+
+
+@pytest.mark.parametrize(
+    "file_path,directory_path,file_name,file_extension,expected",
+    [
+        (None, None, None, None, Path("figure.png")),
+        (None, Path("directory"), None, None, Path("directory") / "figure.png"),
+        (None, Path("directory"), "fname", None, Path("directory") / "fname.png"),
+        (None, Path("directory"), None, "pdf", Path("directory") / "figure.pdf"),
+        (None, Path("directory"), "fname", "pdf", Path("directory") / "fname.pdf"),
+        (None, None, "fname", None, Path("fname.png")),
+        (None, None, None, "pdf", Path("figure.pdf")),
+        (None, None, "fname", "pdf", Path("fname.pdf")),
+    ],
+)
+def test_create_file_path(
+    tmp_path,
+    file_path_manager,
+    file_path,
+    directory_path,
+    file_name,
+    file_extension,
+    expected,
+):
+    """Verify the creation of file paths."""
+    assert expected == file_path_manager.create_file_path(
+        file_path=file_path,
+        directory_path=directory_path,
+        file_name=file_name,
+        file_extension=file_extension,
+    )
+
+
+@pytest.mark.parametrize(
+    "original,expected",
+    [
+        ("foo", "foo"),
+        ("Foo", "foo"),
+        ("FooBar", "foo_bar"),
+        ("Foo Bar", "foo_bar"),
+        ("Foo-Bar", "foo_bar"),
+    ],
+)
+def test_to_snake_case(original, expected):
+    assert FilePathManager.to_snake_case(original) == expected
+
+
+def test_add_suffix():
+    file_path = Path("directory") / "filename.pdf"
+    expected_file_path = Path("directory") / "filename_suffix.pdf"
+    assert FilePathManager.add_suffix(file_path, "suffix") == expected_file_path

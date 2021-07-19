@@ -20,23 +20,17 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""
-scipy.optimize optimization library wrapper
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""scipy.optimize optimization library wrapper."""
+from __future__ import division, unicode_literals
 
-from builtins import super, zip
+import logging
 
-from future import standard_library
 from numpy import isfinite, real
 from scipy import optimize
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ScipyOpt(OptimizationLibrary):
@@ -48,9 +42,6 @@ class ScipyOpt(OptimizationLibrary):
     LIB_COMPUTE_GRAD = True
 
     OPTIONS_MAP = {
-        OptimizationLibrary.MAX_ITER: "maxiter",
-        OptimizationLibrary.F_TOL_REL: "ftol",
-        OptimizationLibrary.X_TOL_REL: "xtol",
         # Available only in the doc !
         # OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
         OptimizationLibrary.LS_STEP_SIZE_MAX: "stepmx",
@@ -59,8 +50,7 @@ class ScipyOpt(OptimizationLibrary):
     }
 
     def __init__(self):
-        """
-        Constructor
+        """Constructor.
 
         Generate the library dict, contains the list
         of algorithms with their characteristics:
@@ -68,7 +58,6 @@ class ScipyOpt(OptimizationLibrary):
         - does it require gradient
         - does it handle equality constraints
         - does it handle inequality constraints
-
         """
         super(ScipyOpt, self).__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
@@ -104,20 +93,20 @@ class ScipyOpt(OptimizationLibrary):
             },
         }
 
-    def _get_options(
+    def _get_options(  # pylint: disable=W0221
         self,
         max_iter=999,
-        ftol_rel=1e-9,  # pylint: disable=W0221
+        ftol_rel=1e-9,
         ftol_abs=1e-9,
         xtol_rel=1e-9,
         xtol_abs=1e-9,
         max_ls_step_size=0.0,
         max_ls_step_nb=20,
         max_fun_eval=999,
-        max_time=-1,
+        max_time=0,
         pg_tol=1e-5,
         disp=0,
-        maxCGit=-1,
+        max_c_git=-1,
         eta=-1.0,
         factr=1e7,
         maxcor=20,
@@ -167,16 +156,17 @@ class ScipyOpt(OptimizationLibrary):
         :param max_fun_eval: internal stop criteria on the
                number of algorithm outer iterations (Default value = 999)
         :type max_ls_step_size: int
-        :param max_time: maximum runtime (Default value = -1)
+        :param max_time: maximum runtime in seconds,
+            disabled if 0 (Default value = 0)
         :type max_time: float
         :param pg_tol: stop criteria on the projected gradient norm
                (Default value = 1e-5)
         :type pg_tol: float
         :param disp: display information, (Default value = 0)
         :type disp: int
-        :param maxCGit: Maximum Conjugate Gradient internal solver
+        :param max_c_git: Maximum Conjugate Gradient internal solver
                iterations (Default value = -1)
-        :type maxCGit: int
+        :type max_c_git: int
         :param eta: severity of the linesearch, specific to
                TNC algorithm (Default value = -1.)
         :type eta: int
@@ -204,7 +194,7 @@ class ScipyOpt(OptimizationLibrary):
         :param offset: Value to subtract from each variable.
         :type offset: float
         :param kwargs: other algorithms options
-        :tupe kwargs: kwargs
+        :type kwargs: kwargs
         """
         nds = normalize_design_space
         popts = self._process_options(
@@ -213,13 +203,13 @@ class ScipyOpt(OptimizationLibrary):
             ftol_abs=ftol_abs,
             xtol_rel=xtol_rel,
             xtol_abs=xtol_abs,
+            max_time=max_time,
             max_ls_step_size=max_ls_step_size,
             max_ls_step_nb=max_ls_step_nb,
             max_fun_eval=max_fun_eval,
-            max_time=max_time,
             pg_tol=pg_tol,
             disp=disp,
-            maxCGit=maxCGit,
+            max_c_git=max_c_git,
             eta=eta,
             factr=factr,
             maxcor=maxcor,
@@ -236,7 +226,7 @@ class ScipyOpt(OptimizationLibrary):
         return popts
 
     def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses
+        """Runs the algorithm, to be overloaded by subclasses.
 
         :param options: the options dict for the algorithm
         """
@@ -250,9 +240,7 @@ class ScipyOpt(OptimizationLibrary):
         bounds = list(zip(l_b, u_b))
 
         def real_part_fun(x_vect):
-            """
-            Wraps the function and returns the real part
-            """
+            """Wraps the function and returns the real part."""
             return real(self.problem.objective.func(x_vect))
 
         fun = real_part_fun
@@ -264,10 +252,23 @@ class ScipyOpt(OptimizationLibrary):
             cstr_scipy.append(c_scipy)
         jac = self.problem.objective.jac
 
-        # |g| is in charge of ensuring max iterations, since it may
+        # |g| is in charge of ensuring max iterations, and
+        # xtol, ftol, since it may
         # have a different definition of iterations, such as for SLSQP
         # for instance which counts duplicate calls to x as a new iteration
-        options[self.OPTIONS_MAP[self.MAX_ITER]] = 10000000
+        options["maxiter"] = 10000000
+
+        # Deactivate scipy stop criteria to use |g|' ones
+        options["ftol"] = 0.0
+        options["xtol"] = 0.0
+        options.pop(self.F_TOL_ABS)
+        options.pop(self.X_TOL_ABS)
+        options.pop(self.F_TOL_REL)
+        options.pop(self.X_TOL_REL)
+        options.pop(self.MAX_TIME)
+        options.pop(self.MAX_ITER)
+        if self.algo_name != "TNC":
+            options.pop("xtol")
         opt_result = optimize.minimize(
             fun=fun,
             x0=x_0,

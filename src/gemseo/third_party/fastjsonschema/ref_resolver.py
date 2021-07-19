@@ -7,7 +7,7 @@ https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
 Code adapted from https://github.com/Julian/jsonschema
 """
 
-from __future__ import absolute_import, unicode_literals, with_statement
+from __future__ import  unicode_literals
 
 import contextlib
 import json

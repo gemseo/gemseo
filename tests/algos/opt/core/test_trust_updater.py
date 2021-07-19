@@ -21,11 +21,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests TrustUpdater."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 from unittest import TestCase
 
-from future import standard_library
 from numpy import allclose, ones, zeros
 
 from gemseo.algos.opt.core.trust_updater import (
@@ -35,11 +34,9 @@ from gemseo.algos.opt.core.trust_updater import (
     TrustUpdater,
 )
 
-standard_library.install_aliases()
-
 
 class TestTrustUpdater(TestCase):
-    """A class to test the TrustUpdater class"""
+    """A class to test the TrustUpdater class."""
 
     def test_not_implemented_errors(self):
         trust_updater = TrustUpdater(
@@ -50,14 +47,14 @@ class TestTrustUpdater(TestCase):
 
 
 class TestPenaltyUpdater(TestCase):
-    """A class to test the PenaltyUpdater class"""
+    """A class to test the PenaltyUpdater class."""
 
     def test_invalid_parameters(self):
         """Tests the invalid parameters exceptions."""
-        self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.1))
+        self.assertRaises(Exception, PenaltyUpdater, thresholds=0.1)
         self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.1,))
         self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.2, 0.1))
-        self.assertRaises(Exception, PenaltyUpdater, multipliers=(1.0))
+        self.assertRaises(Exception, PenaltyUpdater, multipliers=1.0)
         self.assertRaises(Exception, PenaltyUpdater, multipliers=(1.0,))
         self.assertRaises(Exception, PenaltyUpdater, multipliers=(2.0, 1.0))
         self.assertRaises(Exception, PenaltyUpdater, multipliers=(0.5, 0.5))
@@ -107,14 +104,14 @@ class TestPenaltyUpdater(TestCase):
 
 
 class TestRadiusUpdater(TestCase):
-    """A class to test the RadiusUpdater class"""
+    """A class to test the RadiusUpdater class."""
 
     def test_invalid_parameters(self):
         """Tests the invalid parameters exceptions."""
-        self.assertRaises(Exception, RadiusUpdater, thresholds=(0.1))
+        self.assertRaises(Exception, RadiusUpdater, thresholds=0.1)
         self.assertRaises(Exception, RadiusUpdater, thresholds=(0.1,))
         self.assertRaises(Exception, RadiusUpdater, thresholds=(0.2, 0.1))
-        self.assertRaises(Exception, RadiusUpdater, multipliers=(1.0))
+        self.assertRaises(Exception, RadiusUpdater, multipliers=1.0)
         self.assertRaises(Exception, RadiusUpdater, multipliers=(1.0,))
         self.assertRaises(Exception, RadiusUpdater, multipliers=(2.0, 1.0))
         self.assertRaises(Exception, RadiusUpdater, multipliers=(0.5, 0.5))
@@ -154,7 +151,7 @@ class TestRadiusUpdater(TestCase):
 
 
 class TestBoundsUpdater(TestCase):
-    """A class to test the BoundsUpdater class"""
+    """A class to test the BoundsUpdater class."""
 
     def setUp(self):
         dim = 5

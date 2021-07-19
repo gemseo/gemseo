@@ -38,5 +38,17 @@
 	 #predict_proba_soft()
 	}
 
+	class SVMClassifier {
+	 +LIBRARY
+	 +ABBR
+	 +algo
+	 +C
+	 +kernel
+	 +probability
+	 #fit()
+	 #predict()
+	}
+
 	MLClassificationAlgo <|-- KKNClassifier
 	MLClassificationAlgo <|-- RandomForestClassifier
+	MLClassificationAlgo <|-- SVMClassifier

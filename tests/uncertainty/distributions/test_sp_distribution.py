@@ -19,22 +19,17 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array, inf, ndarray
 from numpy.random import seed
 
-from gemseo.uncertainty.distributions.sp_dist import (
-    SPDistribution,
-    SPExponentialDistribution,
-    SPNormalDistribution,
-    SPTriangularDistribution,
-    SPUniformDistribution,
-)
-
-standard_library.install_aliases()
+from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
+from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
+from gemseo.uncertainty.distributions.scipy.triangular import SPTriangularDistribution
+from gemseo.uncertainty.distributions.scipy.uniform import SPUniformDistribution
 
 
 def test_constructor():
@@ -70,10 +65,10 @@ def test_str():
     assert str(distribution) == "norm(mean=0, var=4)"
 
 
-def test_get_sample():
+def test_compute_samples():
     seed(0)
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2})
-    sample = distribution.get_sample(3)
+    sample = distribution.compute_samples(3)
     assert isinstance(sample, ndarray)
     assert len(sample.shape) == 2
     assert sample.shape[0] == 3
@@ -81,7 +76,7 @@ def test_get_sample():
     expectation = array([[3.528105], [0.800314], [1.957476]])
     assert allclose(sample, expectation, 1e-3)
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 4)
-    sample = distribution.get_sample(3)
+    sample = distribution.compute_samples(3)
     expectation = array(
         [
             [4.481786, 1.900177, 0.821197, 1.522075],
@@ -94,13 +89,13 @@ def test_get_sample():
 
 def test_get_cdf():
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    result = distribution.cdf(array([0, 0]))
+    result = distribution.compute_cdf(array([0, 0]))
     assert allclose(result, array([0.5, 0.5]))
 
 
 def test_get_inverse_cdf():
     distribution = SPDistribution("x", "norm", {"loc": 0.0, "scale": 2}, 2)
-    result = distribution.inverse_cdf(array([0.5, 0.5]))
+    result = distribution.compute_inverse_cdf(array([0.5, 0.5]))
     assert allclose(result, array([0.0, 0.0]))
 
 

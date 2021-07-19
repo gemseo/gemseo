@@ -22,13 +22,12 @@
 Base class for all Multi-disciplinary Design Analysis
 *****************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import range, super
+import logging
 from multiprocessing import cpu_count
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from matplotlib.ticker import MaxNLocator
 from numpy import array, concatenate
 from numpy.linalg import norm
@@ -38,7 +37,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
 class MDA(MDODiscipline):
@@ -61,7 +60,6 @@ class MDA(MDODiscipline):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
-        norm0=None,
     ):
         """Constructor.
 
@@ -80,10 +78,6 @@ class MDA(MDODiscipline):
         :param use_lu_fact: if True, when using adjoint/forward
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
-        :param norm0: reference value of the norm of the residual to compute
-            the decrease stop criteria.
-            Iterations stops when norm(residual)/norm0<tolerance
-        :type norm0: float
         """
         super(MDA, self).__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
@@ -97,7 +91,7 @@ class MDA(MDODiscipline):
         self.warm_start = warm_start
         # Don't erase coupling values before calling _compute_jacobian
         self._linearize_on_last_state = True
-        self.norm0 = norm0
+        self.norm0 = None
         self.normed_residual = 1.0
         self.strong_couplings = self.coupling_structure.strong_couplings()
         self._input_couplings = []
@@ -105,6 +99,50 @@ class MDA(MDODiscipline):
         self.use_lu_fact = use_lu_fact
         # By default dont use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
+
+        self._check_consistency()
+
+    def _check_consistency(self):
+        """Checks if there are not more than 1 equation per variable, for instance if a
+        strong coupling is not also a self coupling."""
+        strong_c_disc = self.coupling_structure.strongly_coupled_disciplines(
+            add_self_coupled=False
+        )
+        also_strong = [
+            disc
+            for disc in strong_c_disc
+            if self.coupling_structure.is_self_coupled(disc)
+        ]
+        if also_strong:
+            for disc in also_strong:
+                in_outs = set(disc.get_input_data_names()) & set(
+                    disc.get_output_data_names()
+                )
+                LOGGER.warning(
+                    "Self coupling variables in discipline %s are: %s",
+                    disc.name,
+                    in_outs,
+                )
+
+            also_strong_n = [disc.name for disc in also_strong]
+            raise ValueError(
+                "Too many coupling constraints. The following disciplines"
+                " are self coupled and also strongly coupled "
+                "with other disciplines: {}".format(also_strong_n)
+            )
+
+        all_outs = {}
+        multiple_outs = []
+        for disc in self.disciplines:
+            for out in disc.get_output_data_names():
+                if out in all_outs:
+                    multiple_outs.append(out)
+                all_outs[out] = disc
+
+        if multiple_outs:
+            raise ValueError(
+                "Outputs are defined multiple times: {}".format(multiple_outs)
+            )
 
     def _run(self):
         """Run the MDA."""
@@ -123,12 +161,19 @@ class MDA(MDODiscipline):
             return array([])
         return concatenate(input_couplings)
 
+    def _current_strong_couplings(self):
+        """Compute the vector of the strong coupling values."""
+        couplings = list(iter(self.get_outputs_by_name(self.strong_couplings)))
+        if not couplings:
+            return array([])
+        return concatenate(couplings)
+
     def _retreive_diff_inouts(self, force_all=False):
         """Get the list of outputs to be differentiated w.r.t. inputs.
 
-        This method get the list of the outputs to be differentiated w.r.t. the
-        inputs depending on the self._differentiated_inputs and
-        self._differentiated_inputs attributes, and the force_all option
+        This method get the list of the outputs to be differentiated w.r.t. the inputs
+        depending on the self._differentiated_inputs and self._differentiated_inputs
+        attributes, and the force_all option
         """
         if force_all:
             strong_cpl = set(self.strong_couplings)
@@ -156,8 +201,8 @@ class MDA(MDODiscipline):
     def _set_default_inputs(self):
         """Compute the default default_inputs.
 
-        This method computes the default default_inputs from the disciplines
-        default default_inputs.
+        This method computes the default default_inputs from the disciplines default
+        default_inputs.
         """
         self.default_inputs = {}
         mda_input_names = self.get_input_data_names()
@@ -181,8 +226,8 @@ class MDA(MDODiscipline):
     def get_expected_workflow(self):
         """Return the expected execution sequence.
 
-        This method is used for xdsm representation
-        See MDOFormulation.get_expected_workflow
+        This method is used for xdsm representation See
+        MDOFormulation.get_expected_workflow
         """
         disc_exec_seq = ExecutionSequenceFactory.serial(self.disciplines)
         return ExecutionSequenceFactory.loop(self, disc_exec_seq)
@@ -190,8 +235,8 @@ class MDA(MDODiscipline):
     def get_expected_dataflow(self):
         """Return the expected data exchange sequence.
 
-        This method is used for xdsm representation
-        See MDOFormulation.get_expected_dataflow
+        This method is used for xdsm representation See
+        MDOFormulation.get_expected_dataflow
         """
         all_disc = [self] + self.disciplines
         graph = DependencyGraph(all_disc)
@@ -207,7 +252,6 @@ class MDA(MDODiscipline):
         :param outputs: linearization should be performed on outputs list.
             If None, linearization should be
             performed on all outputs (Default value = None)
-        :param kwargs_lin: optional parameters for scipy sparse linear solver
         """
         # Do not re execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
@@ -220,7 +264,7 @@ class MDA(MDODiscipline):
             self.local_data,
             outputs,
             inputs,
-            self.strong_couplings,
+            self.coupling_structure.get_all_couplings(),
             tol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
@@ -249,6 +293,8 @@ class MDA(MDODiscipline):
         normed_residual = norm((current_couplings - new_couplings).real)
         if self.norm0 is None:
             self.norm0 = normed_residual
+        if self.norm0 == 0:
+            self.norm0 = 1
         self.normed_residual = normed_residual / self.norm0
 
         if store_it:
@@ -268,10 +314,14 @@ class MDA(MDODiscipline):
         n_processes=N_CPUS,
         use_threading=False,
         wait_time_between_fork=0,
+        auto_set_step=False,
+        plot_result=False,
+        file_path="jacobian_errors.pdf",
+        show=False,
+        figsize_x=10,
+        figsize_y=10,
     ):
-        """Check if the jacobian is correct.
-
-        This method checks the jacobian computed by the linearize() method.
+        """Check if the jacobian provided by the linearize() method is correct.
 
         :param input_data: input data dict (Default value = None)
         :param derr_approx: derivative approximation method: COMPLEX_STEP
@@ -295,19 +345,28 @@ class MDA(MDODiscipline):
             discipline multiple times, you shall use multiprocessing
         :param wait_time_between_fork: time waited between two forks of the
             process /Thread
+        :param auto_set_step: Compute optimal step for a forward first
+            order finite differences gradient approximation
+        :param plot_result: plot the result of the validation (computed
+            and approximate jacobians)
+        :param file_path: path to the output file if plot_result is True
+        :param show: if True, open the figure
+        :param figsize_x: x size of the figure in inches
+        :param figsize_y: y size of the figure in inches
         :returns: True if the check is accepted, False otherwise
         """
         # Strong couplings are not linearized
         if inputs is None:
             inputs = self.get_input_data_names()
         inputs = list(iter(inputs))
-        for str_cpl in self.strong_couplings:
+        all_couplings = self.coupling_structure.get_all_couplings()
+        for str_cpl in all_couplings:
             if str_cpl in inputs:
                 inputs.remove(str_cpl)
         if outputs is None:
             outputs = self.get_output_data_names()
         outputs = list(iter(outputs))
-        for str_cpl in self.strong_couplings:
+        for str_cpl in all_couplings:
             if str_cpl in outputs:
                 outputs.remove(str_cpl)
 
@@ -319,6 +378,16 @@ class MDA(MDODiscipline):
             linearization_mode,
             inputs,
             outputs,
+            parallel,
+            n_processes,
+            use_threading,
+            wait_time_between_fork,
+            auto_set_step,
+            plot_result,
+            file_path,
+            show,
+            figsize_x,
+            figsize_y,
         )
 
     def _termination(self, current_iter):

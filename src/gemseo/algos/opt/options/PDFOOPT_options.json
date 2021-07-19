@@ -1,0 +1,63 @@
+{
+    "name": "PDFOOPT_options",
+    "properties": {
+        "rhobeg": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "rhoend": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_iter": {
+            "type": "integer"
+        },
+        "ftarget": {
+            "type": "number"
+        },
+        "scale": {
+            "type": "boolean"
+        },
+        "quiet": {
+            "type": "boolean"
+        },
+        "classical": {
+            "type": "boolean"
+        },
+        "debug":{
+            "type": "boolean"
+        },
+        "chkfunval":{
+            "type": "boolean"
+        },
+        "ensure_bounds":{
+            "type": "boolean"
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		},
+		"xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

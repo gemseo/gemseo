@@ -28,15 +28,12 @@ In this example, we will see how to read, filter, and export a design space
 from the disk.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, export_design_space, read_design_space
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Read a design space from a file

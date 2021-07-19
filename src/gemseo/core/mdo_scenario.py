@@ -19,20 +19,23 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
+#                                                        Jacobian computation
 """
 A Scenario which driver is an optimization algorithm
 ****************************************************
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from copy import copy, deepcopy
 from datetime import timedelta
 from timeit import default_timer as timer
 
-from future import standard_library
 from numpy import atleast_1d, zeros
 from numpy.linalg import norm
 
+from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.discipline import MDODiscipline
@@ -42,15 +45,14 @@ from gemseo.core.scenario import Scenario
 
 # The detection of formulations requires to import them,
 # before calling get_formulation_from_name
-standard_library.install_aliases()
 
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class MDOScenario(Scenario):
-    """Multidisciplinary Design Optimization Scenario, main user interface
-    Creates an optimization problem and solves it with an optimizer
+    """Multidisciplinary Design Optimization Scenario, main user interface Creates an
+    optimization problem and solves it with an optimizer.
 
     The main differences between Scenario and MDOScenario are the allowed
     inputs in the MDOScenario.json, which differs from DOEScenario.json,
@@ -91,7 +93,6 @@ class MDOScenario(Scenario):
     To list post-processing on your setup,
     use the method scenario.posts
     For more detains on their options, go to the "gemseo.post" package
-
     """
 
     # Constants for input variables in json schema
@@ -107,9 +108,8 @@ class MDOScenario(Scenario):
         name=None,
         **formulation_options
     ):
-        """
-        Constructor, initializes the MDO scenario
-        Objects instantiation and checks are made before run intentionally
+        """Constructor, initializes the MDO scenario Objects instantiation and checks
+        are made before run intentionally.
 
         :param disciplines: the disciplines of the scenario
         :param formulation: the formulation name,
@@ -131,7 +131,7 @@ class MDOScenario(Scenario):
         self.clear_history_before_run = False
 
     def _run_algorithm(self):
-        """Runs the optimization algo"""
+        """Runs the optimization algo."""
         problem = self.formulation.opt_problem
         # Clears the database when multiple runs are performed (bi level)
         if self.clear_history_before_run:
@@ -155,36 +155,35 @@ class MDOScenario(Scenario):
         return self.optimization_result
 
     def _run(self):
-        """Execute the scenario and run the optimization problems"""
+        """Execute the scenario and run the optimization problems."""
         t_0 = timer()
         LOGGER.info(" ")
         LOGGER.info("*** Start MDO Scenario execution ***")
-        self.log_me()
+        LOGGER.info("%s", repr(self))
         self._run_algorithm()
-
         # MDODiscipline.execute is not finished therefore self.exec_time is not
         # computed yet, need to recompute it, besides exec_time is the total
         # execution time, while this is for a single execution
         delta_t = timer() - t_0
         LOGGER.info(
-            "*** MDO Scenario run terminated in %s ***", str(timedelta(seconds=delta_t))
+            "*** MDO Scenario run terminated in %s ***", timedelta(seconds=delta_t)
         )
 
     def _init_algo_factory(self):
-        """
-        Initalizes the algorithms factory
-        """
+        """Initalizes the algorithms factory."""
         self._algo_factory = OptimizersFactory()
 
 
 class MDOScenarioAdapter(MDODiscipline):
     """An adapter class for MDO Scenario:
-    input variables are specified
-    they update default_data in the top level discipline
-    they output data from the top level discipline outputs."""
+
+    input variables are specified they update default_data in the top level discipline
+    they output data from the top level discipline outputs.
+    """
 
     LOWER_BND_SUFFIX = "_lower_bnd"
     UPPER_BND_SUFFIX = "_upper_bnd"
+    MULTIPLIER_SUFFIX = "_multiplier"
 
     def __init__(
         self,
@@ -194,9 +193,10 @@ class MDOScenarioAdapter(MDODiscipline):
         reset_x0_before_opt=False,
         set_x0_before_opt=False,
         set_bounds_before_opt=False,
+        cache_type=MDODiscipline.SIMPLE_CACHE,
+        output_multipliers=False,
     ):
-        """
-        Constructor
+        """Initialize the scenario adapter.
 
         :param scenario: the scenario to adapt
         :type scenario: MDOScenario
@@ -215,6 +215,12 @@ class MDOScenarioAdapter(MDODiscipline):
         :param set_bounds_before_opt: if True, sets the bounds of the design
             space, useful for trust regions
         :type set_bounds_before_opt: bool
+        :param cache_type: type of cache policy, SIMPLE_CACHE
+            or HDF5_CACHE
+        :type cache_type: str
+        :param output_multipliers: if True then the Lagrange multipliers of the
+            scenario optimal solution are computed and added to the outputs
+        :type output_multipliers: bool
         """
         if reset_x0_before_opt and set_x0_before_opt:
             raise ValueError("Inconsistent options for ScenarioAdapter !")
@@ -224,8 +230,9 @@ class MDOScenarioAdapter(MDODiscipline):
         self._inputs_list = inputs_list
         self._outputs_list = outputs_list
         self._reset_x0_before_opt = reset_x0_before_opt
-        name = scenario.name
-        super(MDOScenarioAdapter, self).__init__(name)
+        self._output_multipliers = output_multipliers
+        name = "{}_adapter".format(scenario.name)
+        super(MDOScenarioAdapter, self).__init__(name, cache_type=cache_type)
 
         self._update_grammars()
         self._dv_in_names = None
@@ -260,10 +267,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self.post_optimal_analysis = None
 
     def _update_grammars(self):
-        """
-        Updates the inputs and outputs grammars
-        """
-
+        """Update the input and output grammars."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         top_leveld = formulation.get_top_level_disc()
@@ -317,18 +321,79 @@ class MDOScenarioAdapter(MDODiscipline):
                 "Can't compute inputs from scenarios: " + str(missing_inpt)
             )
 
+        # Add the Lagrange multipliers to the output grammar
+        if self._output_multipliers:
+            self._add_output_multipliers()
+
+    def _add_output_multipliers(self):
+        """Add the Lagrange multipliers of the scenario optimal solution as outputs of
+        the adapter."""
+        # Fill a dictionary with data of typical shapes
+        base_dict = dict()
+        problem = self.scenario.formulation.opt_problem
+        # bound-constraints multipliers
+        current_x = problem.design_space.get_current_x_dict()
+        base_dict.update(
+            {
+                self.get_bnd_mult_name(var_name, False): val
+                for var_name, val in current_x.items()
+            }
+        )
+        base_dict.update(
+            {
+                self.get_bnd_mult_name(var_name, True): val
+                for var_name, val in current_x.items()
+            }
+        )
+        # equality- and inequality-constraints multipliers
+        base_dict.update(
+            {
+                self.get_cstr_mult_name(cstr_name): zeros(1)
+                for cstr_name in problem.get_constraints_names()
+            }
+        )
+
+        # Update the output grammar
+        multipliers_grammar = JSONGrammar("multipliers")
+        multipliers_grammar.initialize_from_base_dict(base_dict)
+        self.output_grammar.update_from(multipliers_grammar)
+
+    @staticmethod
+    def get_bnd_mult_name(variable_name, is_upper):
+        """Return the name of the lower bound-constraint multiplier of a variable.
+
+        :param variable_name: name of the variable
+        :type variable_name: str
+        :param is_upper: if True then return the upper bound-constraint multiplier
+            name, otherwise return the lower bound-constraint multiplier
+        :type is_upper: bool
+        :return: name of the lower bound-constraint multiplier
+        :rtype: str
+        """
+        mult_name = variable_name
+        mult_name += "_upp-bnd" if is_upper else "_low-bnd"
+        mult_name += MDOScenarioAdapter.MULTIPLIER_SUFFIX
+        return mult_name
+
+    @staticmethod
+    def get_cstr_mult_name(constraint_name):
+        """Return the name of the multiplier of a constraint.
+
+        :param constraint_name: name of the constraint
+        :type constraint_name: str
+        :return: name of the multiplier
+        :rtype: str
+        """
+        return constraint_name + MDOScenarioAdapter.MULTIPLIER_SUFFIX
+
     def _run(self):
-        """
-        Runs the scenario
-        """
+        """Runs the scenario."""
         self._pre_run()
         self.scenario.execute()
         self._post_run()
 
     def _pre_run(self):
-        """
-        Pre-processes the scenario.
-        """
+        """Pre-processes the scenario."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         design_space = opt_problem.design_space
@@ -369,9 +434,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 design_space.set_upper_bound(name, upper_bound)
 
     def _post_run(self):
-        """
-        Post-processes the scenario.
-        """
+        """Post-process the scenario."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         design_space = opt_problem.design_space
@@ -395,11 +458,13 @@ class MDOScenarioAdapter(MDODiscipline):
         # Retrieves top-level discipline outputs
         self._retrieve_top_level_outputs()
 
+        # Compute the Lagrange multipliers and store them in the local data
+        if self._output_multipliers:
+            self._compute_lagrange_multipliers()
+
     def _retrieve_top_level_outputs(self):
-        """
-        Overwrites the adapter outputs with the top-level discipline outputs
-        and optimal design parameters
-        """
+        """Overwrites the adapter outputs with the top-level discipline outputs and
+        optimal design parameters."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         top_leveld = formulation.get_top_level_disc()
@@ -411,6 +476,42 @@ class MDOScenarioAdapter(MDODiscipline):
             out_ds = x_dict.get(outdata)
             if out_ds is not None:
                 self.local_data[outdata] = out_ds
+
+    def _compute_lagrange_multipliers(self):
+        """Compute the Lagrange multipliers for the optimal solution of the scenario and
+        store them in the local data."""
+        # Compute the Lagrange multipliers
+        problem = self.scenario.formulation.opt_problem
+        x_opt = problem.solution.x_opt
+        lagrange = LagrangeMultipliers(problem)
+        lagrange.compute(x_opt, problem.ineq_tolerance)
+
+        # Store the Lagrange multipliers in the local data
+        multipliers = lagrange.get_multipliers_arrays()
+        self.local_data.update(
+            {
+                self.get_bnd_mult_name(name, False): mult
+                for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
+            }
+        )
+        self.local_data.update(
+            {
+                self.get_bnd_mult_name(name, True): mult
+                for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
+            }
+        )
+        self.local_data.update(
+            {
+                self.get_cstr_mult_name(name): mult
+                for name, mult in multipliers[lagrange.EQUALITY].items()
+            }
+        )
+        self.local_data.update(
+            {
+                self.get_cstr_mult_name(name): mult
+                for name, mult in multipliers[lagrange.INEQUALITY].items()
+            }
+        )
 
     def get_expected_workflow(self):
         return self.scenario.get_expected_workflow()
@@ -499,8 +600,7 @@ class MDOScenarioAdapter(MDODiscipline):
                 out_jac[in_name] = zeros((1, in_dim))
 
     def _compute_auxiliary_jacobians(self, inputs, func_names=None, use_threading=True):
-        """
-        Computes the Jacobians of the optimization functions.
+        """Computes the Jacobians of the optimization functions.
 
         :param inputs: names list of the inputs w.r.t. which differentiate
         :type inputs: list(str)
@@ -556,18 +656,26 @@ class MDOScenarioAdapter(MDODiscipline):
 
         return jacobians
 
+    def add_outputs(self, outputs_names):
+        """Add outputs to the scenario adapter.
+
+        :param outputs_names: names of the outputs to be added
+        :type outputs_names: list(str)
+        """
+        names_to_add = [
+            name for name in outputs_names if name not in self._outputs_list
+        ]
+        self._outputs_list.extend(names_to_add)
+        self._update_grammars()
+
 
 class MDOObjScenarioAdapter(MDOScenarioAdapter):
-    """
-    A scenario adapter that overwrites the local data with the optimal
-    objective function value.
-    """
+    """A scenario adapter that overwrites the local data with the optimal objective
+    function value."""
 
     def _retrieve_top_level_outputs(self):
-        """
-        Overwrites the adapter outputs with the top-level discipline outputs
-        and optimal design parameters
-        """
+        """Overwrites the adapter outputs with the top-level discipline outputs and
+        optimal design parameters."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         top_leveld = formulation.get_top_level_disc()
@@ -580,7 +688,7 @@ class MDOObjScenarioAdapter(MDOScenarioAdapter):
         outvars = opt_problem.objective.outvars
         if not len(outvars) == 1:
             raise ValueError("The objective function must be single-valued.")
-        optim_data[outvars[0]] = atleast_1d(f_opt)  # FIXME
+        optim_data[outvars[0]] = atleast_1d(f_opt)
 
         # Overwrite the adapter local data
         for outdata in self._outputs_list:

@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.regression.gpr
    :noindex:
 
-.. autoclass:: gemseo.mlearning.regression.gpr.GaussianProcessRegression
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_gp_regression.html" role="button">Example</a></div>

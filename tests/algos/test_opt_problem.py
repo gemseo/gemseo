@@ -19,55 +19,48 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
-import tempfile
 import timeit
 import unittest
-from builtins import range, str
-from os.path import dirname, exists, join
+from functools import partial
+from os.path import dirname, exists
 
 import numpy as np
-from future import standard_library
-from numpy import array, ndarray, ones, zeros
+import pytest
+from numpy import allclose, array, inf, ndarray, ones, zeros
 from scipy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
-from gemseo.api import configure_logger
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.function import MDOFunction
+from gemseo.core.function import MDOFunction, MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.wrappers import SobieskiProblem, SobieskiStructure
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 DIRNAME = dirname(os.path.realpath(__file__))
 FAIL_HDF = os.path.join(DIRNAME, "fail2.hdf5")
 
 
-class Test_OptProblem(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestOptProblem(unittest.TestCase):
+    """"""
 
-    def __create_pow2_problem(self):
+    @staticmethod
+    def __create_pow2_problem():
         design_space = DesignSpace()
         design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
         x_0 = np.ones(3)
         design_space.set_current_x(x_0)
 
         problem = OptimizationProblem(design_space)
-        power2 = Power2(design_space)
+        power2 = Power2()
         problem.objective = MDOFunction(
             power2.pow2,
             name="pow2",
@@ -78,8 +71,9 @@ class Test_OptProblem(unittest.TestCase):
         )
         return problem
 
-    def create_rosen_pb(self):
-        """ """
+    @staticmethod
+    def create_rosen_pb():
+        """"""
         design_space = DesignSpace()
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(
@@ -93,12 +87,12 @@ class Test_OptProblem(unittest.TestCase):
         return problem
 
     def test_init(self):
-        """ """
+        """"""
         design_space = DesignSpace()
         OptimizationProblem(design_space)
 
     def test_checks(self):
-        """ """
+        """"""
         n = 3
         design_space = DesignSpace()
         problem = OptimizationProblem(design_space)
@@ -118,7 +112,7 @@ class Test_OptProblem(unittest.TestCase):
         problem.check()
 
     def test_callback(self):
-        """ """
+        """"""
         n = 3
         design_space = DesignSpace()
         design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
@@ -132,7 +126,7 @@ class Test_OptProblem(unittest.TestCase):
         self.i_was_called = False
 
         def call_me():
-            """ """
+            """"""
             self.i_was_called = True
 
         problem.add_callback(call_me)
@@ -149,9 +143,8 @@ class Test_OptProblem(unittest.TestCase):
     #         problem.objective = MDOFunction(rosen, name="rosen",
     #                                         f_type="obj", jac=rosen_der)
 
-    @link_to("Req-MDO-4.3", "Req-MDO-4.5")
     def test_add_constraints(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         ineq1 = MDOFunction(
             Power2.ineq_constraint1,
@@ -182,8 +175,113 @@ class Test_OptProblem(unittest.TestCase):
         problem.constraints = [problem.objective]
         self.assertRaises(ValueError, problem.check)
 
+    def test_getmsg_ineq_constraints(self):
+        """"""
+        expected = []
+        problem = self.__create_pow2_problem()
+
+        ineq_std = MDOFunction(
+            Power2.ineq_constraint1,
+            name="ineq_std",
+            f_type="ineq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(ineq_std)
+        expected.append("ineq_std(x): cstr + cst <= 0.0")
+
+        ineq_lo_posval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="ineq_lo_posval",
+            f_type="ineq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(ineq_lo_posval, value=1.0)
+        expected.append("ineq_lo_posval(x): cstr + cst <= 1.0")
+
+        ineq_lo_negval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="ineq_lo_negval",
+            f_type="ineq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(ineq_lo_negval, value=-1.0)
+        expected.append("ineq_lo_negval(x): cstr + cst <= -1.0")
+
+        ineq_up_negval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="ineq_up_negval",
+            f_type="ineq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(ineq_up_negval, value=-1.0, positive=True)
+        expected.append("ineq_up_negval(x): cstr + cst >= -1.0")
+
+        ineq_up_posval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="ineq_up_posval",
+            f_type="ineq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(ineq_up_posval, value=1.0, positive=True)
+        expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
+
+        linear_constraint = MDOLinearFunction(array([1, 2]), "lin1", f_type="ineq")
+        problem.add_constraint(linear_constraint)
+        expected.append("lin1(x!0, x!1): x!0 + 2.00e+00*x!1 <= 0.0")
+
+        linear_constraint = MDOLinearFunction(array([1, 2]), "lin2", f_type="ineq")
+        problem.add_constraint(linear_constraint, positive=True, value=-1.0)
+        expected.append("lin2(x!0, x!1): x!0 + 2.00e+00*x!1 >= -1.0")
+
+        msg = str(problem)
+        for elem in expected:
+            assert elem in msg
+
+    def test_getmsg_eq_constraints(self):
+        """"""
+        expected = []
+        problem = self.__create_pow2_problem()
+
+        eq_std = MDOFunction(
+            Power2.ineq_constraint1,
+            name="eq_std",
+            f_type="eq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(eq_std)
+        expected.append("eq_std(x): cstr + cst == 0.0")
+
+        eq_posval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="eq_posval",
+            f_type="eq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(eq_posval, value=1.0)
+        expected.append("eq_posval(x): cstr + cst == 1.0")
+        eq_negval = MDOFunction(
+            Power2.ineq_constraint1,
+            name="eq_negval",
+            f_type="eq",
+            expr="cstr + cst",
+            args=["x"],
+        )
+        problem.add_constraint(eq_negval, value=-1.0)
+        expected.append("eq_negval(x): cstr + cst == -1.0")
+
+        msg = str(problem)
+        for elem in expected:
+            assert elem in msg
+
     def test_get_dimension(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         problem.u_bounds = None
         problem.l_bounds = None
@@ -195,13 +293,12 @@ class Test_OptProblem(unittest.TestCase):
         self.assertEqual(problem.get_dimension(), dim)
 
     def test_check_format(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         self.assertRaises(TypeError, problem.check_format, "1")
 
-    @link_to("Req-MDO-4.3", "Req-MDO-4.5")
     def test_constraints_dim(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         ineq1 = MDOFunction(
             Power2.ineq_constraint1,
@@ -219,7 +316,7 @@ class Test_OptProblem(unittest.TestCase):
         assert len(problem.get_nonproc_constraints()) == 1
 
     def test_check(self):
-        """ """
+        """"""
         # Objective is missing!
         design_space = DesignSpace()
         design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
@@ -227,9 +324,8 @@ class Test_OptProblem(unittest.TestCase):
         problem = OptimizationProblem(design_space)
         self.assertRaises(Exception, problem.check)
 
-    @link_to("Req-MDO-4.4", "Req-MDO-4.5")
     def test_missing_constjac(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
 
         ineq1 = MDOFunction(sum, name="sum", f_type="ineq", expr="sum(x)", args=["x"])
@@ -240,7 +336,7 @@ class Test_OptProblem(unittest.TestCase):
         )
 
     def _test_check_bounds(self):
-        """ """
+        """"""
         dim = 3
         problem = self.__create_pow2_problem()
         problem.x_0 = np.ones(dim)
@@ -270,14 +366,13 @@ class Test_OptProblem(unittest.TestCase):
         self.assertRaises(ValueError, problem.check)
 
     def test_pb_type(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         problem.pb_type = "None"
         self.assertRaises(TypeError, problem.check)
 
-    @link_to("Req-MDO-4.4", "Req-MDO-4.5")
     def test_differentiation_method(self):
-        """ """
+        """"""
         problem = self.__create_pow2_problem()
         problem.differentiation_method = "None"
         self.assertRaises(ValueError, problem.check)
@@ -297,7 +392,7 @@ class Test_OptProblem(unittest.TestCase):
         problem.check()
 
     def test_get_dv_names(self):
-        """ """
+        """"""
         problem = Power2()
         OptimizersFactory().execute(problem, "SLSQP")
         self.assertListEqual(problem.design_space.variables_names, ["x"])
@@ -330,14 +425,14 @@ class Test_OptProblem(unittest.TestCase):
         assert len(opt_fd) > 0
 
     def test_feasible_optimum_points(self):
-        """ """
+        """"""
         problem = Power2()
         self.assertRaises(ValueError, problem.get_optimum)
         OptimizersFactory().execute(
             problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
         )
         feasible_points, _ = problem.get_feasible_points()
-        assert len(feasible_points) == 2
+        assert len(feasible_points) >= 2
         min_value, solution, is_feasible, _, _ = problem.get_optimum()
         assert (solution == feasible_points[-1]).all()
         self.assertAlmostEqual(min_value, 2.192090802, 9)
@@ -346,8 +441,7 @@ class Test_OptProblem(unittest.TestCase):
         self.assertAlmostEqual(solution[2], 0.96548938, 8)
         assert is_feasible
 
-    #         print "*", solution
-    #         assert problem.is_feasible_point(solution, 1e-6, 1e-6)
+        # assert problem.is_feasible_point(solution, 1e-6, 1e-6)
 
     def test_nan(self):
         problem = Power2()
@@ -362,26 +456,69 @@ class Test_OptProblem(unittest.TestCase):
         problem.preprocess_functions()
         self.assertRaises(FunctionIsNan, problem.objective.jac, array([0.1, 0.2, 0.3]))
 
-    def test_preprocess_functons(self):
+    def test_preprocess_functions(self):
+        """Test the pre-processing of a problem functions."""
         problem = Power2()
+        obs1 = MDOFunction(norm, "design Euclidean norm")
+        problem.add_observable(obs1)
+        obs2 = MDOFunction(partial(norm, inf), "design infinity norm")
+        problem.add_observable(obs2)
+
+        # Store the initial functions identities
+        obj_id = id(problem.objective)
+        cstr_id = set([id(cstr) for cstr in problem.constraints])
+        obs_id = set([id(obs) for obs in problem.observables])
+
         problem.preprocess_functions(normalize=False, round_ints=False)
 
-    @link_to("Req-MDO-4.4", "Req-MDO-4.5", "Req-MDO-4.6")
+        # Check that the non-preprocessed functions are the original ones
+        assert id(problem.nonproc_objective) == obj_id
+        assert set([id(cstr) for cstr in problem.nonproc_constraints]) == cstr_id
+        assert set([id(obs) for obs in problem.nonproc_observables]) == obs_id
+
+        # Check that the current problem functions are NOT the original ones
+        assert id(problem.objective) != obj_id
+        assert set([id(cstr) for cstr in problem.constraints]).isdisjoint(cstr_id)
+        assert set([id(obs) for obs in problem.observables]).isdisjoint(obs_id)
+
+        nonproc_constraints = set([repr(cstr) for cstr in problem.nonproc_constraints])
+        constraints = set([repr(cstr) for cstr in problem.constraints])
+        assert nonproc_constraints == constraints
+
+    def test_normalize_linear_function(self):
+        """Test the normalization of linear functions."""
+        design_space = DesignSpace()
+        lower_bounds = array([-5.0, -7.0])
+        upper_bounds = array([11.0, 13.0])
+        x_0 = 0.2 * lower_bounds + 0.8 * upper_bounds
+        design_space.add_variable("x", 2, l_b=lower_bounds, u_b=upper_bounds, value=x_0)
+        objective = MDOLinearFunction(
+            array([[2.0, 0.0], [0.0, 3.0]]), "affine", "obj", "x", array([5.0, 7.0])
+        )
+        low_bnd_value = objective(lower_bounds)
+        upp_bnd_value = objective(upper_bounds)
+        initial_value = objective(x_0)
+        problem = OptimizationProblem(design_space)
+        problem.objective = objective
+        problem.preprocess_functions(
+            normalize=True, use_database=False, round_ints=False
+        )
+        assert allclose(problem.objective(zeros(2)), low_bnd_value)
+        assert allclose(problem.objective(ones(2)), upp_bnd_value)
+        assert allclose(problem.objective(0.8 * ones(2)), initial_value)
+
     def test_export_hdf(self):
-        """ """
-        file_path = join(tempfile.mkdtemp(), "power2.hdf5")
-        file_path = "power2.hdf5"
+        """"""
+        file_path = "power2.h5"
         problem = Power2()
         OptimizersFactory().execute(problem, "SLSQP")
         problem.export_hdf(file_path, append=True)  # Shall still work now
 
         def check_pb(imp_pb):
             assert exists(file_path)
-            repr_pb = str(problem)
-            repr_sol = str(problem.solution)
             imp_pb = OptimizationProblem.import_hdf(file_path)
-            assert str(imp_pb) == repr_pb
-            assert str(imp_pb.solution) == repr_sol
+            assert str(imp_pb) == str(problem)
+            assert str(imp_pb.solution) == str(problem.solution)
             assert exists(file_path)
 
             assert problem.get_eq_cstr_total_dim() == 1
@@ -395,7 +532,6 @@ class Test_OptProblem(unittest.TestCase):
         problem.export_hdf(file_path, append=True)
         imp_pb = OptimizationProblem.import_hdf(file_path)
         check_pb(imp_pb)
-        # remove(file_path)
         val = imp_pb.objective(imp_pb.database.get_x_by_iter(1))
         assert isinstance(val, float)
         jac = imp_pb.objective.jac(imp_pb.database.get_x_by_iter(0))
@@ -429,7 +565,7 @@ class Test_OptProblem(unittest.TestCase):
     def test_nan_func(self):
         problem = Power2()
 
-        def nan_func(x):
+        def nan_func(_):
             return float("nan")
 
         problem.objective.func = nan_func
@@ -448,7 +584,7 @@ class Test_OptProblem(unittest.TestCase):
         problem = Rosenbrock()
         problem.preprocess_functions()
         func = problem.objective
-        file_path_db = join(tempfile.mkdtemp(), "test_pb_append.hdf5")
+        file_path_db = "test_pb_append.hdf5"
         # Export empty file
         problem.export_hdf(file_path_db, append=False)
 
@@ -473,7 +609,6 @@ class Test_OptProblem(unittest.TestCase):
         dt2 = timeit.default_timer() - t0
         read_db = Database(file_path_db)
         assert len(read_db) == n_calls + 1
-        os.remove(file_path_db)
 
         assert dt1 / dt2 > 2.0  # 70 in practice
 
@@ -519,3 +654,10 @@ class Test_OptProblem(unittest.TestCase):
         obs_data = func_data.get("design norm")
         assert obs_data is not None
         assert func_data["design norm"][:, 0].tolist() == iter_norms
+        assert dataset.GRADIENT_GROUP not in dataset.groups
+        dataset = problem.export_to_dataset("dataset", export_gradients=True)
+        assert dataset.GRADIENT_GROUP in dataset.groups
+        name = Database.get_gradient_name("pow2")
+        n_iter = len(database)
+        n_var = problem.design_space.dimension
+        assert dataset.get_data_by_names(name, as_dict=False).shape == (n_iter, n_var)

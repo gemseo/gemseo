@@ -27,9 +27,9 @@ Scatter plot matrix
 In this example, we illustrate the use of the :class:`.ScatterPlotMatrix` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -41,7 +41,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create disciplines
@@ -96,3 +95,5 @@ scenario.post_process(
     show=True,
     variables_list=design_variables + ["-y_4"],
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

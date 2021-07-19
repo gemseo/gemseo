@@ -47,9 +47,8 @@ a text file using the :meth:`.Dataset.set_from_array` and
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or a :class:`.MDA`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
 from numpy import array, hstack, vstack
 
 from gemseo.api import (
@@ -63,7 +62,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create a surrogate discipline
@@ -144,7 +142,9 @@ scenario = create_scenario(
 ##############################################################################
 # Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
 scenario.execute({"n_samples": 30, "algo": "lhs"})
-mission_dataset = discipline.cache.export_to_dataset()
+mission_dataset = discipline.cache.export_to_dataset(
+    inputs_names=["x_shared", "y_24", "y_34"]
+)
 
 ##############################################################################
 # .. seealso::

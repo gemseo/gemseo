@@ -19,17 +19,13 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import str
 
-from future import standard_library
 from numpy import array, complex128, concatenate, float64, ones, zeros
 from numpy.linalg import norm
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.propane.propane import (
     PropaneComb1,
@@ -38,17 +34,13 @@ from gemseo.problems.propane.propane import (
     PropaneReaction,
     get_design_space,
 )
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-logger = configure_logger(SOFTWARE_NAME)
 
 
-class Test_PropaneScenario(unittest.TestCase):
-    """ """
+class TestPropaneScenario(unittest.TestCase):
+    """"""
 
     def get_current_x(self):
-        """ """
+        """"""
         return get_design_space().get_current_x()
 
     def get_inputs_by_names(self, data_names):
@@ -115,19 +107,16 @@ class Test_PropaneScenario(unittest.TestCase):
         return obj_opt, x_opt
 
     def test_init_mdf(self):
-        """ """
+        """"""
         self.build_mdo_scenario("MDF")
 
     def test_init_idf(self):
-        """ """
+        """"""
         self.build_mdo_scenario("IDF")
 
-    @link_to("Req-MDO-1.4", "Req-MDO-1.1", "Req-MDO-2", "Req-PERF-1", "Req-PERF-1.1")
-    def test_exec_mdf_MMA(self):
-        """ """
+    def test_exec_mdf_mma(self):
+        """"""
         obj_opt, x_opt = self.build_and_run_scenario("MDF", "SLSQP")
-        logger.debug("obj with constraints=" + str(obj_opt))
-        logger.debug("x_opt=" + str(x_opt))
         self.assertAlmostEqual(obj_opt, 0, 2)
         x_ref = array((1.378887, 18.426810, 1.094798, 0.931214))
         rel_err = norm(x_opt - x_ref) / norm(x_ref)
@@ -135,8 +124,6 @@ class Test_PropaneScenario(unittest.TestCase):
 
 
 # =========================================================================
-#     @link_to('Req-MDO-1.4', "Req-MDO-1.2", "Req-MDO-2",
-#              "Req-PERF-1", "Req-PERF-1.1")
 #     def test_exec_idf_SLSQP(self):
 #         obj_opt, x_opt = self.build_and_run_scenario('IDF',
 #                                                      'SLSQP')
@@ -152,36 +139,36 @@ class Test_PropaneScenario(unittest.TestCase):
 # =========================================================================
 
 
-class Test_PropaneCombustion(unittest.TestCase):
-    """ """
+class TestPropaneCombustion(unittest.TestCase):
+    """"""
 
     def test_init_1(self):
-        """ """
+        """"""
         PropaneComb1()
 
     def test_init_2(self):
-        """ """
+        """"""
         PropaneComb2()
 
     def test_init_3(self):
-        """ """
+        """"""
         PropaneComb3()
 
     def get_xy(self):
-        """ """
-        y_1 = zeros((2), dtype=complex128)
-        y_2 = zeros((2), dtype=complex128)
-        y_3 = zeros((3), dtype=complex128)
-        x_shared = ones((4), dtype=float64)
+        """"""
+        y_1 = zeros(2, dtype=complex128)
+        y_2 = zeros(2, dtype=complex128)
+        y_3 = zeros(3, dtype=complex128)
+        x_shared = ones(4, dtype=float64)
         return y_1, y_2, y_3, x_shared
 
     def get_current_x(self):
-        """ """
+        """"""
         y_1, y_2, y_3, x_shared = self.get_xy()
         return {"y_1": y_1, "y_2": y_2, "y_3": y_3, "x_shared": x_shared}
 
     def test_run_1(self):
-        """ """
+        """"""
         pc = PropaneComb1()
         pc.execute(self.get_current_x())
         y_1 = pc.get_outputs_by_name("y_1")
@@ -189,7 +176,7 @@ class Test_PropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_1[1], 2.0, 10)
 
     def test_run_2(self):
-        """ """
+        """"""
         pc = PropaneComb2()
         pc.execute(self.get_current_x())
         y_2 = pc.get_outputs_by_name("y_2")
@@ -197,7 +184,7 @@ class Test_PropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_2[1], 0.058860363180964305, 10)
 
     def test_run_3(self):
-        """ """
+        """"""
         pc = PropaneComb3()
         pc.execute(self.get_current_x())
         y_3 = pc.get_outputs_by_name("y_3")
@@ -206,12 +193,12 @@ class Test_PropaneCombustion(unittest.TestCase):
         self.assertAlmostEqual(y_3[2], 47.088290544771446, 10)
 
     def test_run_reac(self):
-        """ """
+        """"""
         pc = PropaneReaction()
         indata = self.get_current_x()
         indata["y_1"] = ones([2])
         indata["y_2"] = ones([2])
         indata["y_3"] = ones([3])
         pc.execute(indata)
-        F = pc.get_outputs_by_name("obj")
-        self.assertAlmostEqual(F, -16.973665961010276, 10)
+        f = pc.get_outputs_by_name("obj")
+        self.assertAlmostEqual(f, -16.973665961010276, 10)

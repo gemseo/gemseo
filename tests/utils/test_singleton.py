@@ -19,31 +19,22 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import super
 from os.path import dirname
 
-from future import standard_library
 from future.utils import with_metaclass
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.utils.singleton import (
     SingleInstancePerAttributeEq,
     SingleInstancePerAttributeId,
     SingleInstancePerFileAttribute,
 )
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestSingleton(unittest.TestCase):
-    """Test the signletons"""
+    """Test the signletons."""
 
     def test_sing_attr(self):
         class SingleEq(with_metaclass(SingleInstancePerAttributeEq, object)):
@@ -83,7 +74,7 @@ class TestSingleton(unittest.TestCase):
 
         self.assertRaises(ValueError, SingleIdFail)
 
-    def test_sing_File(self):
+    def test_sing_file(self):
 
         file_loc = __file__
 

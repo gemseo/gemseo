@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Multidisciplinary coupling graph</title>
+
+<!-- style.css -->
+<style type="text/css">{}</style>
+
+<!-- modal.css -->
+<style type="text/css">{}</style>
+
+<!-- button.css -->
+<style type="text/css">{}</style>
+
+    <!-- d3.vs.js -->
+<script type="text/javascript">{}</script>
+
+<!-- d3.parcoords.js -->
+<script type="text/javascript">{}</script>
+
+<!-- science.v1.js -->
+<script type="text/javascript">{}</script>
+
+<!-- tiny-queue.js -->
+<script type="text/javascript">{}</script>
+
+<!-- reorder.v1.js -->
+<script type="text/javascript">{}</script>
+
+<!-- matrix.js -->
+<script type="text/javascript">{}</script>
+
+<!-- expand_groups.js -->
+<script type="text/javascript">{}</script>
+
+<!-- editable_span.js -->
+<script type="text/javascript">{}</script>
+
+<!-- canvas_toBlob.js -->
+<script type="text/javascript">{}</script>
+
+<!-- FileSave.js -->
+<script type="text/javascript">{}</script>
+
+<!-- save_json.js -->
+<script type="text/javascript">{}</script>
+
+<!-- save_png.js -->
+<script type="text/javascript">{}</script>
+
+<h1>Multidisciplinary coupling graph
+<span style='font-size: small;'>powered by&nbsp;</span>
+<a href="https://gemseo.readthedocs.io/" target="_blank">
+<img src="https://gemseo.readthedocs.io/en/latest/_static/logo-small.png"
+style='height:0.5em;'/>
+</a>
+</h1>
+
+<aside style="margin-top:80px;">
+
+    <p>
+    <a href="#help"><button class="myButton help">Help</button></a>
+    <button class="myButton save" onclick="save_json()">Save</button>
+    <button class="myButton export" onclick="save_png()">Export</button>
+    </p>
+    <h2>Sort the disciplines</h2>
+        <select id="order">
+            <option value="group">by coupling group</option>
+            <option value="count">by coupling frequency</option>
+            <option value="name">by discipline name</option>
+        </select>
+
+    <div id="groups"></div>
+
+</aside>
+
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p id="modal-body"></p>
+  </div>
+</div>
+
+<span id="ruler" style="font: 10px sans-serif; visibility: hidden;"></span>
+
+<script type="text/javascript">
+    String.prototype.visualLength = function() {{
+    var ruler = document.getElementById("ruler");
+    ruler.innerHTML = this+'___';
+    return ruler.offsetWidth;
+    }}
+
+    var json = {};
+    var max_node = null;
+    var max_margin = 0;
+    json.nodes.forEach(function(node){{
+        if(node.name.length>max_margin){{
+            max_node = node.name;
+            max_margin = node.name.length;
+        }}
+    }});
+    max_margin = max_node.visualLength();
+
+var margin = {{top: max_margin, right: 0, bottom: 10, left: max_margin}},
+    width = 720,
+    height = 720;
+
+document.getElementsByTagName('html')[0].style.minWidth = 1040+margin.left+max_margin+"px";
+
+var x = d3.scale.ordinal().rangeBands([0, width]),
+    z = d3.scale.linear().domain([0, 4]).clamp(true),
+    c = d3.scale.category10().domain(d3.range(10));
+
+var svg = d3.select("body").append("svg")
+    .attr("id","svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .style("margin-left", -margin.left + "px")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var initial_collapsed_nodes = [...Array(json.groups.length).keys()]
+    initial_collapsed_nodes.shift();
+    var mat = matrix(json,initial_collapsed_nodes);
+
+    d3.select("#order").on("change", function() {{
+        mat.order(this.value);
+    }});
+
+    d3.select("#groups").append('text')
+        .style("text-anchor", "left")
+        .attr("class", "attribution")
+        .html(json.disciplines);
+
+    for(var i=0;i!=json.groups.length;i = i+1){{
+        d3.select("#group_name_"+i)
+        .style('color',c(i+1));
+    }}
+
+var toggler = document.getElementsByClassName("caret");
+var i;
+
+for (i = 0; i < toggler.length; i++) {{
+  toggler[i].addEventListener("click", function() {{
+    this.parentElement.querySelector(".nested").classList.toggle("active");
+    this.classList.toggle("caret-down");
+  }});
+}}
+
+
+</script>
+
+<footer>
+
+    <a id="help"></a>
+
+    <h2>Help</h2>
+
+        <h3>Read the graph</h3>
+
+            <p>
+                The multidisciplinary coupling graph is a particular
+                <a href="https://en.wikipedia.org/wiki/N2_chart" target="_blank">
+                N<sup>2</sup> chart</a>:
+                <ul>
+                    <li>
+                        Its diagonal elements are the disciplines.
+                    </li>
+                    <li>
+                        A discipline takes its inputs vertically
+                        and returns its outputs horizontally.</li>
+                    <li>
+                        The links between disciplines are located
+                        outside the diagonal as coloured squares;
+                        in other words,
+                        if the cell (i,j) is colored,
+                        the j<sup>th</sup> discipline takes as input
+                        some outputs of the i<sup>th</sup> discipline;
+                        we talk about <i>bi-disciplinary coupling</i>.
+                    </li>
+                    <li>
+                        The disciplines that are strongly coupled to each other
+                        are part of the same group, represented by a color
+                        whose intensity increases with the number of coupling variables.
+                    </li>
+                </ul>
+            </p>
+
+        <h3>Handle the graph</h3>
+
+            <h4>Disciplinary details</h4>
+
+                Click on a diagonal element to get details
+                about the corresponding discipline or group of disciplines.
+
+            <h4>Coupling details</h4>
+
+                Click on a non-diagonal element to get details
+                about the bi-disciplinary coupling.
+
+            <h4>Sorting</h4>
+
+                There are different criteria to sort the disciplines:
+                <ul>
+                    <li>
+                        <b>coupling group</b>:
+                        the disciplines of the same group are placed side by side;
+                    </li>
+                    <li>
+                        <b>coupling frequency</b>:
+                        the disciplines are classified
+                        by decreasing order of bi-disciplinary coupling;
+                    </li>
+                    <li>
+                        <b>discipline name</b>:
+                        the disciplines are classified in alphabetical order.
+                    </li>
+                </ul>
+
+            <h4>Grouping</h4>
+
+                <p>
+                    On the right side,
+                    click on a group of disciplines to change its name
+                    and click on its checkbox to expand it or collapse it.
+                </p>
+
+                <p>
+                    A group consists of disciplines
+                    that are strongly <i>coupled<sup> (1)</sup></i> to each other
+                    and weakly coupled to those in other groups,
+                    except for the first one which contains the disciplines
+                    that are only <i>weakly<sup> (2)</sup></i> coupled
+                    between themselves and with others.
+                </p>
+
+                <p>
+                    <i>
+                        <sup>(1)</sup> A and B are strongly coupled
+                        if A depends on B and B depends on A.
+                    </i>
+                </p>
+
+                <p>
+                    <i>
+                        <sup>(2)</sup> A and B are weakly coupled
+                        if either A depends on B or B depends on A,
+                        but not both.
+                    </i>
+                </p>
+
+</footer>

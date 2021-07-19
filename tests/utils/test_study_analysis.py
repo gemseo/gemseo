@@ -21,20 +21,18 @@
 
 import shutil
 import sys
-from os.path import dirname, exists, join
 
 import pytest
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.study_analysis import StudyAnalysis
+
+INPUT_DIR = Path(__file__).parent / "study_inputs"
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 6), reason="study analysis requires python 3.6 or higher"
 )
-
-configure_logger(SOFTWARE_NAME)
-INPUT_DIR = join(dirname(__file__), "study_inputs")
 
 try:
     skip_condition = shutil.which("pdflatex") is None
@@ -48,50 +46,83 @@ has_no_pdflatex = {
 }
 
 
-def test_generate_n2(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "disciplines_spec.xlsx"))
-    fpath = join(str(tmpdir), "xls_n2.pdf")
+def test_generate_n2(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    fpath = tmp_path / "xls_n2.pdf"
     study.generate_n2(fpath, figsize=(5, 5))
-    assert exists(fpath)
+    assert fpath.exists()
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "disciplines_spec.xlsx"))
-    study.generate_xdsm(str(tmpdir), latex_output=True)
+def test_xdsm_mdf(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    study.generate_xdsm(tmp_path, latex_output=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_mdf_special_characters(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "disciplines_spec_special_characters.xlsx"))
-    study.generate_xdsm(str(tmpdir), latex_output=True)
+def test_xdsm_mdf_special_characters(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
+    study.generate_xdsm(tmp_path, latex_output=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
-def test_xdsm_idf(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "disciplines_spec2.xlsx"))
-    study.generate_xdsm(str(tmpdir), latex_output=True)
+def test_xdsm_idf(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
+    dnames = ["Discipline1", "Discipline2"]
+    assert list(study.disciplines_descr.keys()) == dnames
+
+    disc_names = [d.name for d in study.disciplines.values()]
+    assert disc_names == disc_names
+    study.generate_xdsm(tmp_path, latex_output=True)
 
 
-def test_xdsm_Bilevel(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "study_bielvel_sobieski.xlsx"))
-    study.generate_n2(join(str(tmpdir), "n2.pdf"))  # str(tmpdir)
-    study.generate_xdsm(str(tmpdir), latex_output=False)
+def test_xdsm_bilevel(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
+    dnames = [
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+        "SobieskiMission",
+    ]
+    assert list(study.disciplines_descr.keys()) == dnames
+
+    disc_names = [d.name for d in study.disciplines.values()]
+    assert dnames == disc_names
+    study.generate_n2(tmp_path / "n2.pdf")
+    study.generate_xdsm(tmp_path, latex_output=False)
 
 
-def test_xdsm_Bilevel_d(tmpdir):
-    study = StudyAnalysis(join(INPUT_DIR, "bilevel_d.xlsx"))
-    study.generate_n2(join(str(tmpdir), "n2_d.pdf"))
-    study.generate_xdsm(str(tmpdir), latex_output=False)
+def test_xdsm_bilevel_d(tmp_path):
+    study = StudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
+    study.generate_n2(str(tmp_path / "n2_d.pdf"))
+    study.generate_xdsm(str(tmp_path), latex_output=False)
 
 
 def test_none_inputs():
     with pytest.raises(IOError):
-        StudyAnalysis(join(INPUT_DIR, "None.xlsx"))
+        StudyAnalysis(INPUT_DIR / "None.xlsx")
 
 
 @pytest.mark.parametrize("file_index", range(1, 19))
-def test_wrong_inputs(tmpdir, file_index):
+def test_wrong_inputs(tmp_path, file_index):
+    fname = "disciplines_spec_fail{}.xlsx".format(file_index)
     with pytest.raises(ValueError):
-        fname = "disciplines_spec_fail" + str(file_index) + ".xlsx"
-        StudyAnalysis(join(INPUT_DIR, fname))
+        StudyAnalysis(INPUT_DIR / fname)
+
+
+def test_options():
+    """Test that prescribed options are taken into account.
+
+    This test also enables to make sure that there is no need to put '' when prescribing
+    a string in option values.
+    """
+    study = StudyAnalysis(INPUT_DIR / "disciplines_spec_options.xlsx")
+
+    mda = study.scenarios["Scenario"].formulation.mda
+
+    assert study.scenarios["Scenario"].name == "my_test_scenario"
+    assert isinstance(mda, MDAGaussSeidel)
+    assert mda.warm_start is False
+    assert mda.tolerance == pytest.approx(1e-5)
+    assert mda.over_relax_factor == pytest.approx(1.2)
+    assert mda.max_mda_iter == pytest.approx(20)

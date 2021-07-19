@@ -13,74 +13,65 @@
 Coupling visualization
 ======================
 
-First of all, we need to instantiate the different :class:`~gemseo.core.discipline.MDODiscipline`, e.g.
+|g| offers two ways of visualizing a multidisciplinary coupling structure,
+either using a network diagram based on nodes and links
+or using an N2 chart based on a tabular view.
+
+Dependency graph
+----------------
+
+Both rely on the same :class:`.DependencyGraph`,
+built from the library `NetworkX <https://networkx.org/>`_.
+This :class:`.DependencyGraph`
+generates not only the full
+`directed graph <https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)>`_
+but also the condensed one
+with the Tarjan's algorithm [1]_ with Nuutila's modifications [2]_.
+
+.. [1] Depth-first search and linear graph algorithms, R. Tarjan
+   SIAM Journal of Computing 1(2):146-160, (1972).
+
+.. [2] On finding the strongly connected components in a directed graph.
+   E. Nuutila and E. Soisalon-Soinen
+   Information Processing Letters 49(1): 9-14, (1994).
+
+The following example is used to illustrate these features:
 
 .. code::
 
     from gemseo.api import create_discipline
 
-    disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+    disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions_dict={'y0':'x0+y1+y2'})
+    disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions_dict={'y1':'x0+x1+y2'})
+    disc2 = create_discipline('AnalyticDiscipline', name='D2', expressions_dict={'y2':'x0+x2+y1'})
+    disciplines = [disc0, disc1, disc2]
 
-N2 chart
---------
+where the disciplines D1 and D2 are strongly coupled
+while D0 is weakly coupled to D1 and D2.
 
-Then, we can represent the coupling structure of these :code:`disciplines` by means of a **N2 chart**,
-also referred to as N2 diagram, N-squared diagram or N-squared chart.
+Coupling graph visualization
+----------------------------
 
-.. seealso::
+Both full and condensed graphs can be represented as network diagrams
+where disciplines are nodes represented by circles labeled by their names,
+and couplings are links represented by arrows labeled by their coupling variables.
 
-   More information concerning the N2 chart `on wikipedia <https://en.wikipedia.org/wiki/N2_chart>`_.
+API
+~~~
 
-Description
-~~~~~~~~~~~
+The API function :meth:`~gemseo.api.generate_coupling_graph` allows
+to create these visualizations and save them, from:
 
-For that, we consider the :meth:`~gemseo.api.generate_n2_plot` API function:
+- the :class:`.MDODiscipline` instances defining the disciplines of interest,
+- a file path
+  (by default,
+  the default current working directory with *coupling_graph.pdf* as file name),
+- and the type of graph to display
+  (by default,
+  the full graph).
 
-.. code::
-
-    from gemseo.api import generate_n2_plot
-
-    generate_n2_plot(disciplines)
-
-and obtains the following N2 chart where:
-
-- disciplines are on the diagonal,
-- the input coupling variables of a discipline are located at the vertical of the discipline,
-- the output coupling variables of a discipline are located at the horizontal of the discipline.
-
-In this case, Sellar1 returns the coupling variable y_0 which is an input for Sellar2 and SellarSystem.
-Similarly, Sellar2 returns the coupling variable y_1 which is an input for Sellar1 and SellarSystem.
-
-
-.. figure:: /_images/coupling/n2.png
-   :scale: 75 %
-
-Options
-~~~~~~~
-
-The first argument of the :meth:`~gemseo.api.generate_n2_plot` API function is the :code:`list` of :class:`~gemseo.core.discipline.MDODiscipline`.
-This argument is mandatory while the others are optional:
-
-- :code:`file_path`: file path of the figure (default value: :code:`'n2.pdf'`)
-- :code:`show_data_names`: if true, the names of the coupling data is shown otherwise, circles are drawn, which sizes depend on the number of coupling names (default value: :code:`True`)
-- :code:`save`: if True, saved the figure to file_path (default value: :code:`True`)
-- :code:`show`: if True, shows the plot (default value: :code:`False`)
-- :code:`figsize`: tuple, size of the figure (default value: :code:`(15,10)`)
-
-Here, when :code:`show_data_names` is :code:`False`, we obtain:
-
-.. figure:: /_images/coupling/n2_disc.png
-   :scale: 75 %
-
-Coupling graph
---------------
-
-We can also represent this relation by means of a **coupling graph**.
-
-Description
-~~~~~~~~~~~
-
-For that, we consider the :meth:`~gemseo.api.generate_coupling_graph` API function:
+Full graph
+~~~~~~~~~~
 
 .. code::
 
@@ -88,22 +79,88 @@ For that, we consider the :meth:`~gemseo.api.generate_coupling_graph` API functi
 
     generate_coupling_graph(disciplines)
 
-and obtains the following coupling graph where:
+.. figure:: /_images/coupling/full_coupling_graph.png
 
-- disciplines are represented by bubbles,
-- coupling variable flows are represented by arrows between disciplines,
-- constraint and objectives functions are represented.
 
-In this case, the coupling variable y_0 goes from Sellar1 to Sellar2 and from Sellar1 to SellarSystem.
-Similarly, the coupling variable y_1 goes from Sellar2 to Sellar1 and from Sellar2 to SellarSystem.
-Moreover, SellarSystem returns the value of the objective function and constraints.
+Condensed graph
+~~~~~~~~~~~~~~~
 
-.. figure:: /_images/coupling/coupling_graph.png
+.. code::
 
-Options
-~~~~~~~
+    generate_coupling_graph(disciplines, full=False)
 
-The first argument of the :meth:`~gemseo.api.generate_coupling_graph` API function is the :code:`list` of :class:`~gemseo.core.discipline.MDODiscipline`.
-This argument is mandatory while the other is optional:
+.. figure:: /_images/coupling/condensed_coupling_graph.png
 
-- :code:`file_path`: file path of the figure (default value: :code:`'coupling_graph.pdf'`)
+N2 chart visualization
+----------------------
+
+Both full and condensed graphs can be represented
+as `N2 charts <https://en.wikipedia.org/wiki/N2_chart>`_
+also referred to as N2 diagrams, N-squared diagrams or N-squared charts.
+
+The diagonal elements of an N2 chart are the disciplines
+while the non-diagonal elements are the coupling variables.
+A discipline takes its inputs vertically and returns its outputs horizontally.
+In other words,
+if the cell *(i,j)* is not empty,
+its content is the set of the names of the variables
+computed by the *i*-th discipline and passed to the *j*-th discipline.
+
+|g| offers the possibility to display the N2 chart
+either as a static visualization of the full graph,
+or as an interactive visualization of both full and condensed graphs.
+
+API
+~~~
+
+The API function :meth:`~gemseo.api.generate_n2_plot` allows
+to create these visualizations and save them, from:
+
+- the :class:`.MDODiscipline` instances defining the disciplines of interest,
+- a file path
+  (by default,
+  the default current working directory with *n2.pdf* as file name),
+- whether to display the names of the coupling variables in the static N2 chart
+  (by default, True),
+- whether to save the static N2 chart
+  (by default, True),
+- whether to show the static N2 chart in a dedicated window
+  (by default, True),
+- the size of the figure of the static N2 chart
+  (by default, width equal to 15 and height equal to 10),
+- and whether to open the default web browser and display the interactive N2 chart
+  (by default, False).
+
+Whatever the options,
+an HTML file is create based on the provided file path
+by using *.html* as file extension (by default, *n2.html*).
+This interactive N2 chart can be opened at any time in a browser
+
+.. seealso::
+
+   `Click here <../_static/n2.html>`_ to see the example of an interactive N2 chart
+   with several groups of strongly coupled disciplines.
+
+With coupling names
+~~~~~~~~~~~~~~~~~~~
+
+.. code::
+
+    from gemseo.api import generate_n2_plot
+
+    generate_n2_plot(disciplines)
+
+.. figure:: /_images/coupling/n2.png
+   :scale: 75 %
+
+Without coupling names
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code::
+
+    from gemseo.api import generate_n2_plot
+
+    generate_n2_plot(disciplines, show_data_names=False)
+
+.. figure:: /_images/coupling/n2_without_names.png
+   :scale: 75 %

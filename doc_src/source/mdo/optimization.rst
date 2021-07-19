@@ -88,7 +88,7 @@ with normalized design space, we have:
     from gemseo.algos import OptimizersFactory
     opt = OptimizersFactory().execute(problem, "L-BFGS-B",
                                       normalize_design_space=True)
-    print("Optimum = " + str(opt))
+    print "Optimum = " + str(opt)
 
 Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the extenal `library scipy <https://www.scipy.org/>`_
 and interfaced with |g| through the class :class:`~gemseo.algos.opt.lib_scipy.ScipyOpt`.
@@ -99,7 +99,7 @@ optimization libraries. It can be obtained using :
 .. code::
 
     algo_list = OptimizersFactory().algorithms
-    print("Available algorithms:" +str(algo_list))
+    print "Available algorithms:" +str(algo_list)
 
 The optimization history can be saved to the disk for further analysis,
 without having to re execute the optimization.

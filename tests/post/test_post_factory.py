@@ -19,31 +19,22 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 from os.path import dirname, join
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
-
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 
 DIRNAME = dirname(__file__)
 POWER2 = join(DIRNAME, "power2_opt_pb.h5")
 
 
-class Test_PostFactory(unittest.TestCase):
-    """ """
+class TestPostFactory(unittest.TestCase):
+    """"""
 
     def test_is_available(self):
-        """ """
+        """"""
         factory = PostFactory()
         assert factory.is_available("OptHistoryView")
         assert not factory.is_available("TOTO")

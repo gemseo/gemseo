@@ -14,8 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-"""
-Created on Mar 25, 2019
+"""Created on Mar 25, 2019.
 
 @author: matthias.delozzo
 """

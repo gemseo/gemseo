@@ -19,24 +19,21 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.uncertainty.distributions.distribution import Distribution
-
-standard_library.install_aliases()
 
 
 def test_raise_notimplementederror():
     dist = Distribution("x", "Normal", {"mu": 1, "sigma": 0}, 1)
     with pytest.raises(NotImplementedError):
-        dist.get_sample()
+        dist.compute_samples()
     with pytest.raises(NotImplementedError):
-        dist.cdf(1)
+        dist.compute_cdf(1)
     with pytest.raises(NotImplementedError):
-        dist.inverse_cdf(1)
+        dist.compute_inverse_cdf(1)
     with pytest.raises(NotImplementedError):
         dist.mean
     with pytest.raises(NotImplementedError):

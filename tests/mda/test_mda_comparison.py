@@ -20,35 +20,27 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 import unittest
 
 import numpy as np
-from future import standard_library
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel, SobieskiMDAJacobi
-from gemseo.third_party.junitxmlreq import link_to
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
+DIRNAME = os.path.dirname(__file__)
 
 
 class TestMDAComparison(unittest.TestCase):
-    """Comparisons between MDA"""
+    """Comparisons between MDA."""
 
-    @link_to("Req-MDO-9", "Req-MDO-9.1", "Req-MDO-9.2", "Req-MDO-9.3")
     def test_compare_mda_jacobi_gs(self):
-        """Compare the results of Jacobi and Gauss-Seidel"""
+        """Compare the results of Jacobi and Gauss-Seidel."""
         mda = SobieskiMDAJacobi()
         out1 = mda.execute()
 
@@ -62,7 +54,7 @@ class TestMDAComparison(unittest.TestCase):
             )
 
     def test_mda_jacobi_newton_hybrid(self):
-        """Compare Newton and Gauss-Seidel MDA"""
+        """Compare Newton and Gauss-Seidel MDA."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
         mda_j = MDAJacobi(disciplines)

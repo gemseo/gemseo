@@ -24,12 +24,11 @@
 Create a discipline from an external executable
 ===============================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
 import subprocess
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -37,7 +36,6 @@ from gemseo.core.discipline import MDODiscipline
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Introduction

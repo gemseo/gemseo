@@ -27,16 +27,14 @@ DesignSpace creation and manipulation
 In this example, we will see how to create and how to manipulate an instance of
 :class:`.DesignSpace`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger, create_design_space
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create a parameter space

@@ -32,6 +32,15 @@
 	    #compute_measure()
 	}
 
+	abstract class MLClusteringMeasure {
+	    +evaluate_learn()
+	    +evaluate_test()
+	    +evaluate_loo()
+	    +evaluate_kfolds()
+	    +evaluate_bootstrap()
+	    #compute_measure()
+	}
+
 	class MSEMeasure {
 		#compute_measure()
 	}
@@ -40,7 +49,18 @@
 		#compute_measure()
 	}
 
+	class F1Measure {
+		#compute_measure()
+	}
 
-	MLQualityMeasure <|-- ErrorMeasure
+	class SilhouetteMeasure {
+		#compute_measure()
+	}
+
+
+	MLQualityMeasure <|-- MLErrorMeasure
+	MLQualityMeasure <|-- MLClusteringMeasure
 	MLErrorMeasure <|-- R2Measure
 	MLErrorMeasure <|-- MSEMeasure
+	MLErrorMeasure <|-- F1Measure
+	MLClusteringMeasure <|-- SilhouetteMeasure

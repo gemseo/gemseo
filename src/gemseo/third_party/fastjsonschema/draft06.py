@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, with_statement, unicode_literals
+from __future__ import  unicode_literals
 
 from .draft04 import JSON_TYPE_TO_PYTHON_TYPE, CodeGeneratorDraft04
 from .exceptions import JsonSchemaDefinitionException

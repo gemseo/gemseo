@@ -19,28 +19,28 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-K-nearest neighbors classification model
-========================================
+"""The k-nearest neighbors for classification.
 
-The k-nearest neighbor classification algorithm is an approach to predict the
-output class of a new input point by selecting the majority class
-among the k nearest neighbors in a training set through voting. The algorithm
-may also predict the probabilties of belonging to each class by counting the
-number of occurences of the class withing the k nearest neighbors.
+The k-nearest neighbor classification algorithm is an approach
+to predict the output class of a new input point
+by selecting the majority class among the k nearest neighbors in a training set
+through voting.
+The algorithm may also predict the probabilities of belonging to each class
+by counting the number of occurrences of the class withing the k nearest neighbors.
 
 Let :math:`(x_i)_{i=1,\\cdots,n_{\\text{samples}}}\\in
-\\mathbb{R}^{n_{\\text{samples}}\\times n_{\\text{inputs}}}` and
-:math:`(y_i)_{i=1,\\cdots,n_{\\text{samples}}}\\in
-\\{1,\\cdots,n_{\\text{classes}}\\}^{n_{\\text{samples}}}` denote the input and
-output training data respectively.
+\\mathbb{R}^{n_{\\text{samples}}\\times n_{\\text{inputs}}}`
+and :math:`(y_i)_{i=1,\\cdots,n_{\\text{samples}}}\\in
+\\{1,\\cdots,n_{\\text{classes}}\\}^{n_{\\text{samples}}}`
+denote the input and output training data respectively.
 
 The procedure for predicting the class of a new input point :math:`x\\in
 \\mathbb{R}^{n_{\\text{inputs}}}` is the following:
 
-Let :math:`i_1(x), \\cdots, i_{n_{\\text{samples}}}(x)` be the indices
-of the input training points sorted by distance to the prediction point
-:math:`x`, i.e.
+Let :math:`i_1(x), \\cdots, i_{n_{\\text{samples}}}(x)` be
+the indices of the input training points
+sorted by distance to the prediction point :math:`x`,
+i.e.
 
 .. math::
 
@@ -69,11 +69,12 @@ that is
     I_p(x) = \\{1,\\cdots,n_{\\text{samples}}\\}\\setminus
     \\{i_1(x),\\cdots,i_{p-1}(x)\\}.
 
-Then, by denoting :math:`\\operatorname{mode}(\\cdot)` the mode operator, i.e.
-the operator that extracts the element with the highest occurence,
+Then,
+by denoting :math:`\\operatorname{mode}(\\cdot)` the mode operator,
+i.e. the operator that extracts the element with the highest occurrence,
 we may define the prediction operator as the mode of the set of output classes
-associated to the :math:`k` first indices (classes of the :math:`k`-nearest
-neighbors of :math:`x`):
+associated to the :math:`k` first indices
+(classes of the :math:`k`-nearest neighbors of :math:`x`):
 
 .. math::
 
@@ -89,49 +90,39 @@ The classifier relies on the KNeighborsClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
-from numpy import stack
-from sklearn.neighbors import KNeighborsClassifier as SKLKNN
+import logging
+from typing import Iterable, Optional, Union
 
+from numpy import ndarray, stack
+from sklearn.neighbors import KNeighborsClassifier
+
+from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
+from gemseo.mlearning.core.ml_algo import TransformerType
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class KNNClassifier(MLClassificationAlgo):
-    """ K nearest neighbors classification algorithm. """
+    """The k-nearest neighbors classification algorithm."""
 
     LIBRARY = "scikit-learn"
     ABBR = "KNN"
 
     def __init__(
         self,
-        data,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        n_neighbors=5,
-        **parameters
-    ):
-        """Constructor.
-
-        :param data: learning dataset.
-        :type data: Dataset
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param n_neighbors: number of neighbors.
-        :type n_neighbords: int
-        :param parameters: other keyword arguments for sklearn KNN.
+        data,  # type: Dataset
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        n_neighbors=5,  # type: int
+        **parameters  # type: Union[int,str]
+    ):  # type: (...) -> None
+        """
+        Args:
+            n_neighbors: The number of neighbors.
         """
         super(KNNClassifier, self).__init__(
             data,
@@ -141,39 +132,30 @@ class KNNClassifier(MLClassificationAlgo):
             n_neighbors=n_neighbors,
             **parameters
         )
-        self.algo = SKLKNN(n_neighbors, **parameters)
+        self.algo = KNeighborsClassifier(n_neighbors, **parameters)
 
-    def _fit(self, input_data, output_data):
-        """Fit the classification model.
-
-        :param ndarray input_data: input data (2D).
-        :param ndarray(int) output_data: output data.
-        """
+    def _fit(
+        self,
+        input_data,  # type:ndarray
+        output_data,  # type:ndarray
+    ):  # type: (...) -> None
         if output_data.shape[1] == 1:
             output_data = output_data.ravel()
         self.algo.fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output data from input data.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: output data (n_samples, n_outputs).
-        :rtype: ndarray(int)
-        """
+    def _predict(
+        self,
+        input_data,  # type:ndarray
+    ):  # type: (...) -> ndarray
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
             output_data = output_data[:, None]
         return output_data
 
-    def _predict_proba_soft(self, input_data):
-        """Predict probability of belonging to each class.
-
-        :param ndarray input_data: input data (n_samples, n_inputs).
-        :return: probabilities of belonging to each class
-            (n_samples, n_outputs, n_classes). For a given sample and output
-            variable, the sum of probabilities is one.
-        :rtype: ndarray
-        """
+    def _predict_proba_soft(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...)-> ndarray
         probas = self.algo.predict_proba(input_data)
         if len(probas[0].shape) == 1:
             probas = probas[..., None]

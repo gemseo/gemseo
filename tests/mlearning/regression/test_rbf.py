@@ -19,21 +19,19 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test radial basis function regression module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test radial basis function regression module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import allclose, array
 from scipy.interpolate.rbf import Rbf
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.rbf import RBFRegression
-
-standard_library.install_aliases()
 
 LEARNING_SIZE = 9
 
@@ -45,8 +43,8 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -59,18 +57,16 @@ def dataset():
 
 
 @pytest.fixture
-def model(dataset):
-    """ Define model from data. """
+def model(dataset):  # type: (...) -> RBFRegression
+    """A trained RBFRegression."""
     rbf = RBFRegression(dataset)
     rbf.learn()
     return rbf
 
 
 @pytest.fixture
-def model_with_custom_function(dataset):
-    """Define model with custom function f(r) = r**2 - 1.
-    Provide derivative.
-    """
+def model_with_custom_function(dataset):  # type: (...) -> RBFRegression
+    """A trained RBFRegression  f(r) = r**2 - 1 as kernel function."""
 
     def der_function(input_data, norm_input_data, eps):
         return 2 * input_data / eps ** 2
@@ -83,28 +79,27 @@ def model_with_custom_function(dataset):
 
 
 @pytest.fixture
-def model_with_1d_output(dataset):
-    """ Model with only one output variable. """
+def model_with_1d_output(dataset):  # type: (...) -> RBFRegression
+    """A trained RBFRegression with y_1 as output."""
     rbf = RBFRegression(dataset, output_names=["y_1"])
     rbf.learn()
     return rbf
 
 
 def test_get_available_functions():
-    """ Test available RBFs. """
-    available_functions = RBFRegression.get_available_functions()
-    for function in available_functions:
+    """Test available RBFs."""
+    for function in RBFRegression.AVAILABLE_FUNCTIONS:
         assert hasattr(Rbf, "_h_{}".format(function))
 
 
 def test_constructor(dataset):
-    """ Test construction."""
+    """Test construction."""
     model_ = RBFRegression(dataset)
     assert model_.algo is None
 
 
 def test_jacobian_not_implemented(dataset):
-    """ Test cases where the Jacobian is not implemented. """
+    """Test cases where the Jacobian is not implemented."""
     # Test unimplemented norm
     rbf = RBFRegression(dataset, norm="canberra")
     rbf.learn()
@@ -119,14 +114,14 @@ def test_jacobian_not_implemented(dataset):
 
 
 def test_learn(dataset):
-    """ Test learn."""
+    """Test learn."""
     model_ = RBFRegression(dataset)
     model_.learn()
     assert model_.algo is not None
 
 
 def test_average(model):
-    """ Test average. """
+    """Test average."""
     avg_dict = {"y_1": 3.5, "y_2": -3.5, "y_3": 3}
     y_average = array([0.0, 0.0, 0.0])
     for i in range(3):
@@ -135,7 +130,7 @@ def test_average(model):
 
 
 def test_prediction(model):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model.predict(INPUT_VALUE)
     predictions = model.predict(INPUT_VALUES)
     assert isinstance(prediction, dict)
@@ -147,7 +142,7 @@ def test_prediction(model):
 
 
 def test_prediction_custom(model_with_custom_function):
-    """ Test prediction. """
+    """Test prediction."""
     prediction = model_with_custom_function.predict(INPUT_VALUE)
     predictions = model_with_custom_function.predict(INPUT_VALUES)
     assert isinstance(prediction, dict)
@@ -159,7 +154,7 @@ def test_prediction_custom(model_with_custom_function):
 
 
 def test_pred_single_out(model_with_1d_output):
-    """ Test predict with one output variable. """
+    """Test predict with one output variable."""
     prediction = model_with_1d_output.predict(INPUT_VALUE)
     predictions = model_with_1d_output.predict(INPUT_VALUES)
     assert isinstance(prediction, dict)
@@ -171,7 +166,7 @@ def test_pred_single_out(model_with_1d_output):
 
 
 def test_predict_jacobian(dataset):
-    """ Test prediction. """
+    """Test prediction."""
     for function in RBFRegression.AVAILABLE_FUNCTIONS:
         model_ = RBFRegression(dataset, function=function)
         model_.learn()
@@ -186,7 +181,7 @@ def test_predict_jacobian(dataset):
 
 
 def test_predict_jacobian_custom(model_with_custom_function):
-    """ Test prediction. """
+    """Test prediction."""
     jacobian = model_with_custom_function.predict_jacobian(INPUT_VALUE)
     jacobians = model_with_custom_function.predict_jacobian(INPUT_VALUES)
     assert isinstance(jacobian, dict)
@@ -198,7 +193,7 @@ def test_predict_jacobian_custom(model_with_custom_function):
 
 
 def test_save_and_load(model, tmp_path):
-    """ Test save and load. """
+    """Test save and load."""
     dirname = model.save(path=str(tmp_path))
     imported_model = import_regression_model(dirname)
     out1 = model.predict(INPUT_VALUE)

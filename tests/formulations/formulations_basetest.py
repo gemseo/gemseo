@@ -19,16 +19,12 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -38,14 +34,9 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiStructure,
 )
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class FakeDiscipline(MDODiscipline):
-    """ """
+    """"""
 
     def _instantiate_grammars(
         self,
@@ -66,8 +57,8 @@ class FakeDiscipline(MDODiscipline):
         self.output_grammar.initialize_from_base_dict({self.name + "_y": 1.0})
 
 
-class Formulations_BaseTest(unittest.TestCase):
-    """ """
+class FormulationsBaseTest(unittest.TestCase):
+    """"""
 
     DV_NAMES = ["x_1", "x_2", "x_3", "x_shared"]
 

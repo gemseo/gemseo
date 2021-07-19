@@ -28,16 +28,13 @@ In this example, we will see how to build a :class:`.Dataset` from objects
 of an :class:`.OptimizationProblem`.
 For that, we need to import this :class:`.Dataset` class:
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Synthetic data
@@ -49,7 +46,7 @@ discipline = create_discipline("Sellar1")
 design_space = SellarDesignSpace().filter(discipline.get_input_data_names())
 
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_0", design_space, scenario_type="DOE"
+    [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
 )
 scenario.execute({"algo": "lhs", "n_samples": 5})
 opt_problem = scenario.formulation.opt_problem
@@ -109,10 +106,10 @@ print(dataset.get_data_by_group("design_parameters", True))
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # We can get the data by variables names,
 # either as a dictionary indexed by the variables names (default option):
-print(dataset.get_data_by_names(["x_shared", "y_1"]))
+print(dataset.get_data_by_names(["x_shared", "y_2"]))
 ##############################################################################
 # or as an array:
-print(dataset.get_data_by_names(["x_shared", "y_1"], False))
+print(dataset.get_data_by_names(["x_shared", "y_2"], False))
 
 ##############################################################################
 # Access all data

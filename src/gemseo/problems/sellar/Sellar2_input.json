@@ -1,6 +1,6 @@
 {
     "name": "Sellar1_input",
-    "required": ["x_shared","y_0","y_1"],
+    "required": ["x_shared","y_1","y_2"],
     "properties": {
         "x_shared": {
             "items": {
@@ -10,14 +10,6 @@
             "type": "array",
             "id": "x_shared"
         },
-        "y_0": {
-            "items": {
-                "type": "number",
-                "id": "0"
-            },
-            "type": "array",
-            "id": "y_0"
-        },
         "y_1": {
             "items": {
                 "type": "number",
@@ -25,6 +17,14 @@
             },
             "type": "array",
             "id": "y_1"
+        },
+        "y_2": {
+            "items": {
+                "type": "number",
+                "id": "0"
+            },
+            "type": "array",
+            "id": "y_2"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

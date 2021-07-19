@@ -19,21 +19,24 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import division, unicode_literals
+
+import logging
+
+from gemseo.utils.string_tools import MultiLineString
+
 """
 Optimization result
 *******************
 """
-from __future__ import absolute_import, division, unicode_literals
 
-from future import standard_library
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class OptimizationResult(object):
 
-    """Stores optimization results"""
+    """Stores optimization results."""
 
     DICT_REPR_ATTR = [
         "x_0",
@@ -66,8 +69,7 @@ class OptimizationResult(object):
         n_constr_call=None,
         is_feasible=False,
     ):
-        """
-        Initialize optimization results
+        """Initialize optimization results.
 
         :param x_0: initial guess for design variables
         :param x_opt: optimal design variables values
@@ -94,40 +96,45 @@ class OptimizationResult(object):
         self.is_feasible = is_feasible
 
     def __repr__(self):
-        msg = "Optimization result: \n"
-        msg += "|_ Design variables: " + str(self.x_opt) + "\n"
-        msg += "|_ Objective function: " + str(self.f_opt) + "\n"
-        msg += "|_ Feasible solution: " + str(self.is_feasible)
-        return msg
+        msg = MultiLineString()
+        msg.add("Optimization result:")
+        msg.indent()
+        msg.add("Design variables: {}", self.x_opt)
+        msg.add("Objective function: {}", self.f_opt)
+        msg.add("Feasible solution: {}", self.is_feasible)
+        return str(msg)
 
     def __str__(self):
-        msg = "Optimization result: \n"
-        msg += "Objective value = " + str(self.f_opt) + "\n"
+        msg = MultiLineString()
+        msg.add("Optimization result:")
+        msg.add("Objective value = {}", self.f_opt)
         if self.is_feasible:
-            msg += "The result is feasible.\n"
+            msg.add("The result is feasible.")
         else:
-            msg += "The result is not feasible !\n"
-        msg += "Status: " + str(self.status) + "\n"
-        msg += "Optimizer message: " + str(self.message) + "\n"
+            msg.add("The result is not feasible.")
+        msg.add("Status: {}", self.status)
+        msg.add("Optimizer message: {}", self.message)
         if self.n_obj_call is not None:
-            msg += "Number of calls to the objective function by "
-            msg += "the optimizer: " + str(self.n_obj_call) + "\n"
-        if self.constraints_values is not None and len(self.constraints_values) < 20:
-            msg += "Constraints values: " + "\n"
+            msg.add(
+                "Number of calls to the objective function by the optimizer: {}",
+                self.n_obj_call,
+            )
+        if self.constraints_values and len(self.constraints_values) < 20:
+            msg.add("Constraints values w.r.t. 0: ")
+            msg.indent()
             for c_name in sorted(self.constraints_values.keys()):
-                msg += " " + str(c_name) + " = "
-                msg += str(self.constraints_values[c_name]) + "\n"
-        return msg
-
-    def log_me(self):
-        """Logs the self.__repr__ message"""
-        msg = str(self)
-        for log_info in msg.split("\n"):
-            LOGGER.info(log_info)
+                if c_name.startswith("-"):
+                    name = str(c_name[1:])
+                    values = str(-self.constraints_values[c_name])
+                else:
+                    name = str(c_name)
+                    values = str(self.constraints_values[c_name])
+                msg.add("{} = {}", name, values)
+        return str(msg)
 
     def get_data_dict_repr(self):
-        """Returns a dict representation of self for serialization
-        functions are removed
+        """Returns a dict representation of self for serialization functions are
+        removed.
 
         :returns: a dict with attributes names as keys
         """
@@ -148,8 +155,8 @@ class OptimizationResult(object):
 
     @staticmethod
     def init_from_dict_repr(**kwargs):
-        """Initalizes a new opt result from a data dict
-        typically uised for deserialization
+        """Initializes a new opt result from a data dict typically used for
+        deserialization.
 
         :param kwargs: key value pairs from DICT_REPR_ATTR
         """

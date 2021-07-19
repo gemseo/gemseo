@@ -19,19 +19,17 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import os
-from builtins import open
-from os.path import exists, join
+from os.path import exists
+from typing import Sequence
 
 import pytest
-from future import standard_library
 from numpy import array
+from numpy.linalg import norm
 
-from gemseo import SOFTWARE_NAME
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.api import configure_logger
 from gemseo.core.function import MDOFunctionGenerator
 from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
 from gemseo.problems.sobieski.core import SobieskiProblem
@@ -41,24 +39,16 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
 
 
-LOGGER = configure_logger(SOFTWARE_NAME)
+def build_mdo_scenario(formulation):
+    """Build the scenario for SSBJ.
 
+    Args:
+        formulation (str): The name of the scenario formulation.
 
-def create_design_space():
-    return SobieskiProblem().read_design_space()
-
-
-def build_mdo_scenario(formulation="MDF"):
-    """
-    Build the scenario for SSBJ
-
-    :param formulation: Default value = 'MDF'
-
+    Returns:
+        MDOScenario: The scenario.
     """
     disciplines = [
         SobieskiPropulsion(),
@@ -66,7 +56,7 @@ def build_mdo_scenario(formulation="MDF"):
         SobieskiMission(),
         SobieskiStructure(),
     ]
-    design_space = create_design_space()
+    design_space = SobieskiProblem().read_design_space()
     scenario = MDOScenario(
         disciplines,
         formulation=formulation,
@@ -77,106 +67,135 @@ def build_mdo_scenario(formulation="MDF"):
     return scenario
 
 
-def test_add_user_defined_constraint_error():
-    scenario = build_mdo_scenario("MDF")
-    stats = scenario.get_disciplines_statuses()
-    assert len(stats) == len(scenario.disciplines)
-    for disc in scenario.disciplines:
+@pytest.fixture()
+def mdf_scenario():
+    """Return a MDOScenario with MDF formulation."""
+    return build_mdo_scenario("MDF")
+
+
+@pytest.fixture()
+def idf_scenario():
+    """Return a MDOScenario with IDF formulation."""
+    return build_mdo_scenario("IDF")
+
+
+def test_scenario_state(mdf_scenario):
+    stats = mdf_scenario.get_disciplines_statuses()
+
+    assert len(stats) == len(mdf_scenario.disciplines)
+
+    for disc in mdf_scenario.disciplines:
         assert disc.name in stats
         assert stats[disc.name] == "PENDING"
+
+
+def test_add_user_defined_constraint_error(mdf_scenario):
     # Set the design constraints
     with pytest.raises(Exception):
-        scenario.add_constraint(["g_1", "g_2", "g_3"], "None")
+        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], "None")
+
     with pytest.raises(Exception):
-        scenario.save_optimization_history("file_path", file_format="toto")
+        mdf_scenario.save_optimization_history("file_path", file_format="toto")
 
-    scenario.set_differentiation_method(None)
-    assert scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
+    mdf_scenario.set_differentiation_method(None)
 
-
-@link_to(
-    "Req-INT-1",
-    "Req-INT-2",
-    "Req-INT-3",
-    "Req-INT-3.1",
-    "Req-INT-3.2",
-    "Req-INT-3.3",
-    "Req-MDO-4.3",
-    "Req-MDO-11",
-    "Req-SC-1.1",
-    "Req-SC-2",
-    "Req-SC-2.1",
-    "Req-SC-3",
-    "Req-SC-4",
-    "Req-SC-5",
-    "Req-SC-6",
-)
-def test_init_mdf():
-    """ """
-    scs = [build_mdo_scenario("MDF")]
-    for scenario in scs:
-        assert len(scenario.formulation.mda.strong_couplings) == 8
-        for coupling in scenario.formulation.mda.strong_couplings:
-            assert coupling.startswith("y_")
+    assert (
+        mdf_scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
+    )
 
 
-def test_basic_idf(tmpdir):
-    """ """
-    scenario = build_mdo_scenario("IDF")
-    posts = scenario.posts
+def test_init_mdf(mdf_scenario):
+    assert (
+        sorted(["y_12", "y_21", "y_23", "y_31", "y_32"])
+        == mdf_scenario.formulation.mda.strong_couplings
+    )
+
+
+def test_basic_idf(tmp_wd, idf_scenario):
+    """"""
+    posts = idf_scenario.posts
 
     assert len(posts) > 0
+
     for post in ["OptHistoryView", "Correlations", "QuadApprox"]:
         assert post in posts
 
-        # Monitor in the console
-    scenario.xdsmize(
-        outdir=str(tmpdir), json_output=True, html_output=True, open_browser=False
+    # Monitor in the console
+    idf_scenario.xdsmize(
+        outdir=str(tmp_wd), json_output=True, html_output=True, open_browser=False
     )
 
-    assert exists(join(str(tmpdir), "xdsm.json"))
-    assert exists(join(str(tmpdir), "xdsm.html"))
+    assert exists("xdsm.json")
+    assert exists("xdsm.html")
 
 
-def test_backup():
-    sc = build_mdo_scenario()
+def test_backup_error(tmp_wd, mdf_scenario):
+    """"""
     with pytest.raises(ValueError):
-        sc.set_optimization_history_backup(__file__, erase=True, pre_load=True)
-    with pytest.raises(IOError):
-        sc.set_optimization_history_backup(__file__, erase=False, pre_load=True)
+        mdf_scenario.set_optimization_history_backup(
+            __file__, erase=True, pre_load=True
+        )
 
-    filename = "temporary_file.txt"
-    if exists(filename):
-        os.remove(filename)
-    with open(filename, "w") as f:
-        f.write("something")
-    sc.set_optimization_history_backup(
+    with pytest.raises(IOError):
+        mdf_scenario.set_optimization_history_backup(
+            __file__, erase=False, pre_load=True
+        )
+
+
+def test_backup_0(tmp_wd, mdf_scenario):
+    """Test the optimization backup with generation of plots during convergence.
+
+    tests that when used, the backup does not call the original objective
+    """
+    filename = "opt_history.h5"
+    mdf_scenario.set_optimization_history_backup(
         filename, erase=True, pre_load=False, generate_opt_plot=True
     )
-    sc.execute({"algo": "SLSQP", "max_iter": 10})
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+
+    assert exists(filename)
+
+    opt_read = OptimizationProblem.import_hdf(filename)
+
+    assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
+
+
+def test_backup_1(tmp_wd, mdf_scenario):
+    """Test the optimization backup with generation of plots during convergence.
+
+    tests that when used, the backup does not call the original objective
+    """
+    filename = "opt_history.h5"
+    mdf_scenario.set_optimization_history_backup(
+        filename, erase=False, pre_load=True, generate_opt_plot=False
+    )
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    opt_read = OptimizationProblem.import_hdf(filename)
+
+    assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
+
+    assert (
+        norm(
+            array(mdf_scenario.formulation.opt_problem.database.get_x_history())
+            - array(mdf_scenario.formulation.opt_problem.database.get_x_history())
+        )
+        == 0.0
+    )
 
 
 def test_typeerror_formulation():
-    disciplines = [
-        SobieskiPropulsion(),
-        SobieskiAerodynamics(),
-        SobieskiMission(),
-        SobieskiStructure(),
-    ]
-    design_space = create_design_space()
+    disciplines = [SobieskiPropulsion()]
+    design_space = SobieskiProblem().read_design_space()
 
     with pytest.raises(TypeError):
         MDOScenario(disciplines, 1, "y_4", design_space)
 
 
-def test_get_optimization_results():
-    """Test the optimization results accessor
+def test_get_optimization_results(mdf_scenario):
+    """Test the optimization results accessor.
 
-    Test the case when the Optimization results are available
+    Test the case when the Optimization results are available.
     """
-
-    scenario = build_mdo_scenario()
-
     x_opt = [1.0, 2.0]
     f_opt = 3
     constraints_values = [4.0, 5.0]
@@ -191,9 +210,9 @@ def test_get_optimization_results():
         is_feasible=is_feasible,
     )
 
-    scenario.optimization_result = opt_results
+    mdf_scenario.optimization_result = opt_results
 
-    optimum = scenario.get_optimum()
+    optimum = mdf_scenario.get_optimum()
 
     assert optimum.x_opt == x_opt
     assert optimum.f_opt == f_opt
@@ -202,66 +221,107 @@ def test_get_optimization_results():
     assert optimum.is_feasible == is_feasible
 
 
-def test_get_optimization_results_empty():
-    """Test the optimization results accessor
+def test_get_optimization_results_empty(mdf_scenario):
+    """Test the optimization results accessor.
 
-    Test the case when the Optimization results are not available (e.g.
-    when the execute method has not been executed)
+    Test the case when the Optimization results are not available (e.g. when the execute
+    method has not been executed).
     """
-
-    scenario = build_mdo_scenario()
-    assert scenario.get_optimum() is None
+    assert mdf_scenario.get_optimum() is None
 
 
-def test_adapter(tmpdir):
-    """Test the adapter """
-
-    disciplines = [
-        SobieskiPropulsion(),
-        SobieskiAerodynamics(),
-        SobieskiMission(),
-        SobieskiStructure(),
-    ]
-
-    design_space = create_design_space()
-    scenario = MDOScenario(
-        disciplines,
-        formulation="IDF",
-        objective_name="y_4",
-        design_space=design_space,
-        maximize_objective=True,
-    )
+def test_adapter(tmp_wd, idf_scenario):
+    """Test the adapter."""
     # Monitor in the console
-    scenario.xdsmize(
+    idf_scenario.xdsmize(
         True,
         print_statuses=True,
-        outdir=str(tmpdir),
+        outdir=str(tmp_wd),
         json_output=True,
         html_output=True,
     )
 
-    scenario.default_inputs = {
+    idf_scenario.default_inputs = {
         "max_iter": 1,
         "algo": "SLSQP",
-        scenario.ALGO_OPTIONS: {"max_iter": 1},
+        idf_scenario.ALGO_OPTIONS: {"max_iter": 1},
     }
 
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs)
+    adapter = MDOScenarioAdapter(idf_scenario, inputs, outputs)
     gen = MDOFunctionGenerator(adapter)
     func = gen.get_function(inputs, outputs)
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     f_x1 = func(x_shared)
     f_x2 = func(x_shared)
-    assert f_x1 == f_x2
-    assert len(scenario.formulation.opt_problem.database) == 1
-    x_shared = array([0.09, 60000, 1.4, 2.5, 70, 1500])
 
+    assert f_x1 == f_x2
+    assert len(idf_scenario.formulation.opt_problem.database) == 1
+
+    x_shared = array([0.09, 60000, 1.4, 2.5, 70, 1500])
     func(x_shared)
 
-    with pytest.raises(ValueError):
-        MDOScenarioAdapter(scenario, inputs + ["missing_input"], outputs)
+
+def test_adapter_error(idf_scenario):
+    """Test the adapter."""
+    inputs = ["x_shared"]
+    outputs = ["y_4"]
 
     with pytest.raises(ValueError):
-        MDOScenarioAdapter(scenario, inputs, outputs + ["missing_output"])
+        MDOScenarioAdapter(idf_scenario, inputs + ["missing_input"], outputs)
+
+    with pytest.raises(ValueError):
+        MDOScenarioAdapter(idf_scenario, inputs, outputs + ["missing_output"])
+
+
+def test_repr_str(idf_scenario):
+    assert str(idf_scenario) == idf_scenario.name
+
+    expected = [
+        "MDOScenario",
+        "   Disciplines: "
+        "SobieskiPropulsion SobieskiAerodynamics SobieskiMission SobieskiStructure",
+        "   MDOFormulation: IDF",
+        "   Algorithm: None",
+    ]
+    assert repr(idf_scenario) == "\n".join(expected)
+
+
+def test_xdsm_filename(tmp_path, idf_scenario):
+    """Tests the export path dir for xdsm."""
+    outfilename = "my_xdsm.html"
+    idf_scenario.xdsmize(
+        outdir=tmp_path, outfilename=outfilename, latex_output=False, html_output=True
+    )
+    assert (tmp_path / outfilename).is_file()
+
+
+@pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
+def test_add_observable(
+    mdf_scenario,  # type: MDOScenario
+    observables,  # type: Sequence[str]
+):
+    """Test adding observables from discipline outputs.
+
+    Args:
+         mdf_scenario: A fixture for the MDOScenario.
+         observables: A list of observables.
+    """
+    mdf_scenario.add_observable(observables)
+    new_observables = mdf_scenario.formulation.opt_problem.observables
+    for new_observable, expected_observable in zip(new_observables, observables):
+        assert new_observable.name == expected_observable
+
+
+def test_add_observable_not_available(
+    mdf_scenario,  # type: MDOScenario
+):
+    """Test adding an observable which is not available in any discipline.
+
+    Args:
+         mdf_scenario: A fixture for the MDOScenario.
+    """
+    msg = "^No discipline known by formulation MDF has all outputs named .*"
+    with pytest.raises(ValueError, match=msg):
+        mdf_scenario.add_observable("toto")

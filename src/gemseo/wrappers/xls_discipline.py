@@ -22,22 +22,23 @@
 
 """Excel based discipline."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import atexit
+import os
+from os import getcwd
 
-from future import standard_library
 from numpy import array
 
 try:
+    cwd = getcwd()
     import xlwings
 except ImportError:
     # error will be reported if the discipline is used
+    os.chdir(cwd)
     xlwings = None
 
 from gemseo.core.discipline import MDODiscipline
-
-standard_library.install_aliases()
 
 
 class XLSDiscipline(MDODiscipline):

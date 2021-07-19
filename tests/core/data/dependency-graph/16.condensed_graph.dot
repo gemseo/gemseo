@@ -1,0 +1,10 @@
+digraph "Dependency graph" {
+	"MDA of M, N, O" -> P [label="u,v"]
+	J -> "MDA of M, N, O" [label="p,q"]
+	"MDA of K, L" -> P [label=z]
+	"MDA of F, G, H, I" -> "MDA of K, L" [label=w]
+	"MDA of A, B, C, D, E" -> J [label="n,o"]
+	"MDA of A, B, C, D, E" -> "MDA of F, G, H, I" [label="g,h"]
+	_0 [shape=point style=invis]
+	P -> _0 [label=obj]
+}

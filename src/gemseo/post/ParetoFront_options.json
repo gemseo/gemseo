@@ -1,11 +1,8 @@
 {
     "name": "ParetoFront_options",
-    "required": ["save"],
+    "required": [],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show":{
+        "show_non_feasible":{
             "type": "boolean"
         },
         "figsize_x": {
@@ -29,12 +26,6 @@
                 "minItems": 1
             },
             "type": "array"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
         }
     },
     "additionalProperties": false,

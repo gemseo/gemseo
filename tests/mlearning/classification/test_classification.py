@@ -20,22 +20,19 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning classification algorithm module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test machine learning classification algorithm module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange, zeros
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def dataset():
-    """ Build an input-output dataset. """
+def dataset():  # type: (...) -> Dataset
+    """A dataset used to train the classification algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
@@ -46,7 +43,7 @@ def dataset():
 
 
 def test_notimplementederror(dataset):
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     ml_algo = MLClassificationAlgo(dataset)
     ml_algo_limited = MLClassificationAlgo(dataset, output_names=["y_1"])
     with pytest.raises(NotImplementedError):

@@ -19,48 +19,55 @@
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Dimension reduction
-===================
+"""Dimension reduction as a generic transformer.
 
-The :class:`.DimensionReduction` class implements the concept of dimension
-reduction.
+The :class:`.DimensionReduction` class implements the concept of dimension reduction.
 
 .. seealso::
 
    :mod:`~gemseo.mlearning.transform.dimension_reduction.pca`
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from typing import NoReturn, Optional, Union
 
-from gemseo.mlearning.transform.transformer import Transformer
+from numpy import ndarray
 
-standard_library.install_aliases()
+from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
 
 
 class DimensionReduction(Transformer):
-    """ Dimension reduction. """
+    """Dimension reduction."""
 
-    def __init__(self, name="DimensionReduction", n_components=5, **parameters):
-        """Constructor.
-
-        :param str name: name of the scaler.
-        :param int n_components: number of components. Default: 5.
-        :param parameters: parameters for the dimension reduction algorithm.
+    def __init__(
+        self,
+        name="DimensionReduction",  # type: str
+        n_components=5,  # type: int
+        **parameters  # type: Optional[Union[float,int,str,bool]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            name: A name for this transformer.
+            n_components: The number of components of the latent space.
+            **parameters: The parameters of the transformer.
         """
         super(DimensionReduction, self).__init__(
             name, n_components=n_components, **parameters
         )
 
-    def fit(self, data):
-        """Fit dimension reduction algorithm to data.
+    def fit(
+        self,
+        data,  # type: ndarray
+        *args  # type: TransformerFitOptionType
+    ):  # type: (...) -> NoReturn
+        """Fit the transformer to the data.
 
-        :param ndarray data: data to be fitted.
+        Args:
+            data: The data to be fitted.
         """
         raise NotImplementedError
 
     @property
-    def n_components(self):
-        """ Number of components """
+    def n_components(self):  # type: (...) -> int
+        """The number of components."""
         return self.parameters["n_components"]

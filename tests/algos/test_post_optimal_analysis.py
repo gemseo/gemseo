@@ -19,11 +19,10 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
 from numpy import allclose, array, dot
 from numpy.linalg import norm
 
@@ -33,15 +32,11 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.function import MDOFunction
 
-standard_library.install_aliases()
-
 
 class TestPostOptimalAnalysis(unittest.TestCase):
-    """
-    Tests for the post-optimal analysis.
-    The following parameterized optimization problem is considered.
-    Minimize    x^2 + y^2 + p^2
-    relative to x and y
+    """Tests for the post-optimal analysis. The following parameterized optimization
+    problem is considered. Minimize    x^2 + y^2 + p^2 relative to x and y.
+
     subject to  p - x - y <= 0
                 p*x - y = 0
                 0 <= x <= 1
@@ -52,8 +47,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
     """
 
     def get_solution(self, p=0.5, minimize=True):
-        """
-        Returns the solution of the parameterized optimization problem.
+        """Returns the solution of the parameterized optimization problem.
 
         :param p: parameter of the optimization problem
         :param minimize: if True, returns the solution of the minimization
@@ -73,8 +67,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         return sol, sol_der, jac_at_sol
 
     def get_problem(self, p=0.5, minimize=True, solve=True):
-        """
-        Returns the parameterized optimization problem.
+        """Returns the parameterized optimization problem.
 
         :param p: parameter of the optimization problem
         :param minimize: if True, the problem is formulated as a minimization
@@ -138,10 +131,8 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         return opt_problem
 
     def test_invalid_problem(self):
-        """
-        Tests for an exception raise when the passed problem is unsolved or
-        has a multi-named objective.
-        """
+        """Tests for an exception raise when the passed problem is unsolved or has a
+        multi-named objective."""
         # Pass an unsolved problem
         opt_problem = self.get_problem(solve=False)
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
@@ -152,9 +143,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         self.assertRaises(ValueError, PostOptimalAnalysis, opt_problem)
 
     def test_invalid_output(self):
-        """
-        Tests for an exception raise when the passed outputs are invalid.
-        """
+        """Tests for an exception raise when the passed outputs are invalid."""
         opt_problem = self.get_problem()
         post_optimal_analyser = PostOptimalAnalysis(opt_problem)
         _, jac_opt, _ = self.get_solution()
@@ -165,9 +154,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         )
 
     def test_invalid_jacobians(self):
-        """
-        Tests for an exception raise when the passed Jacobians are invalid.
-        """
+        """Tests for an exception raise when the passed Jacobians are invalid."""
         opt_problem = self.get_problem()
         post_optimal_analyser = PostOptimalAnalysis(opt_problem)
 
@@ -204,9 +191,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         )
 
     def test_validity(self):
-        """
-        Tests the validity check.
-        """
+        """Tests the validity check."""
         # Set up a post-optimal analyzer
         p = 0.5
         opt_problem = self.get_problem(p, solve=True)
@@ -226,7 +211,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         assert allclose(eq_corr["p"], 0.0)
 
         # Check validity for a maximization problem
-        opt_problem.change_objective_sign()
+        opt_problem = self.get_problem(p, minimize=False, solve=True)
         valid, ineq_corr, eq_corr = analyzer.check_validity(
             total_jac, jac_at_sol, ["p"], threshold=1e-10
         )
@@ -235,9 +220,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         assert allclose(eq_corr["p"], 0.0)
 
     def test_execute(self):
-        """
-        Tests the validity of the post-optimal analysis.
-        """
+        """Tests the validity of the post-optimal analysis."""
         p = 1.0
 
         # Pass a minimization problem

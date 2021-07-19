@@ -19,12 +19,9 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Andrews curves
-==============
+r"""Draw Andrews curves from a :class:`.Dataset`.
 
-The :class:`.AndrewsCurves` class implements the Andrew plot,
-a.k.a. Andrews curves,
+The :class:`.AndrewsCurves` class implements the Andrew plot, a.k.a. Andrews curves,
 which is a way to visualize :math:`n` samples of a high-dimensional vector
 
 .. math::
@@ -55,29 +52,32 @@ over the interval :math:`[-\pi,\pi]`
 and structure in the data may be visible in these :math:`n` Andrews curves.
 
 A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the :code:`classifier` keyword in order to color the curves
-according to the value of the variable name. This is useful when the data is
-labeled.
+by means of the :code:`classifier` keyword
+in order to color the curves according to the value of the variable name.
+This is useful when the data is labeled.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
+
+from typing import List, Mapping
 
 import matplotlib.pyplot as plt
-from future import standard_library
+from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-standard_library.install_aliases()
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class AndrewsCurves(DatasetPlot):
-    """ Andrews curves. """
+    """Andrews curves."""
 
-    def _plot(self, classifier):
-        """Andrews curves.
-
-        :param classifier: variable name to build the cluster.
-        :type classifier: str
+    def _plot(
+        self,
+        properties,  # type: Mapping[str,DatasetPlotPropertyType]
+        classifier,  # type: str
+    ):  # type: (...) -> List[Figure]
+        """
+        Args:
+            classifier: The name of the variable to group the data.
         """
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -93,5 +93,4 @@ class AndrewsCurves(DatasetPlot):
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
         andrews_curves(dataframe, varname)
-        fig = plt.gcf()
-        return fig
+        return [plt.gcf()]

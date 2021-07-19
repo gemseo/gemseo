@@ -18,26 +18,23 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test transformer module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test transformer module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import arange
+from numpy import arange, ndarray
 
 from gemseo.mlearning.transform.transformer import Transformer
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def data():
-    """ Test data. """
+def data():  # type: (...) -> ndarray
+    """Test data."""
     return arange(30).reshape((10, 3))
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     transformer = Transformer()
     another_transformer = Transformer("Another Transformer")
     assert transformer.name is not None
@@ -45,49 +42,49 @@ def test_constructor():
 
 
 def test_fit(data):
-    """ Test fit method. """
+    """Test fit method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.fit(data)
 
 
 def test_transform(data):
-    """ Test transform method. """
+    """Test transform method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.transform(data)
 
 
 def test_inverse_transform(data):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.inverse_transform(data)
 
 
 def test_fit_transform(data):
-    """ Test fit_transform method. """
+    """Test fit_transform method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.fit_transform(data)
 
 
 def test_compute_jacobian(data):
-    """ Test inverse_transform method. """
+    """Test inverse_transform method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.compute_jacobian(data)
 
 
 def test_compute_jacobian_inverse(data):
-    """ Test fit_transform method. """
+    """Test fit_transform method."""
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.compute_jacobian_inverse(data)
 
 
 def test_str():
-    """ Test string representation."""
+    """Test string representation."""
     transformer = Transformer()
     repres = str(transformer)
     assert "Transformer" in repres

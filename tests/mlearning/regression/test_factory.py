@@ -19,28 +19,23 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Unit test for RegressionModelFactory class
-in gemseo.mlearning.regression.factory.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Unit test for RegressionModelFactory class in gemseo.mlearning.regression.factory."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.regression.factory import RegressionModelFactory
-
-standard_library.install_aliases()
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the regression algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -53,21 +48,28 @@ def dataset():
 
 
 def test_constructor():
-    """ Test factory constructor. """
+    """Test factory constructor."""
     factory = RegressionModelFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning.regression" in internal_modules_paths
+    assert factory.models == [
+        "GaussianProcessRegression",
+        "LinearRegression",
+        "MixtureOfExperts",
+        "PCERegression",
+        "PolynomialRegression",
+        "RBFRegression",
+        "RandomForestRegressor",
+    ]
 
 
 def test_create(dataset):
-    """ Test the creation of a model from data. """
+    """Test the creation of a model from data."""
     factory = RegressionModelFactory()
     linreg = factory.create("LinearRegression", data=dataset)
     assert hasattr(linreg, "parameters")
 
 
 def test_load(dataset, tmp_path):
-    """ Test the loading of a model from data. """
+    """Test the loading of a model from data."""
     factory = RegressionModelFactory()
     linreg = factory.create("LinearRegression", data=dataset)
     linreg.learn()
@@ -77,13 +79,13 @@ def test_load(dataset, tmp_path):
 
 
 def test_available_models():
-    """ Test the getter of available regression models. """
+    """Test the getter of available regression models."""
     factory = RegressionModelFactory()
     assert "LinearRegression" in factory.models
 
 
 def test_is_available():
-    """ Test the existence of a regression model. """
+    """Test the existence of a regression model."""
     factory = RegressionModelFactory()
     assert factory.is_available("LinearRegression")
     assert not factory.is_available("Dummy")

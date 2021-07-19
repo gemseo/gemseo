@@ -19,61 +19,47 @@
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A parallel coordinates plot of functions and x
-**********************************************
-"""
+"""A parallel coordinates plot of functions and x."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from os.path import splitext
+import logging
+from typing import Sequence
 
 import matplotlib as mpl
-from future import standard_library
 from matplotlib import pyplot
-from numpy import array
+from matplotlib.figure import Figure
+from numpy import array, ndarray
 
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParallelCoordinates(OptPostProcessor):
-    """
-    The **ParallelCoordinates** post processing
-    builds parallel coordinates plots  among design
-    variables, outputs functions and constraints
+    """Parallel coordinates among design variables, outputs functions and constraints.
 
     x- and y- figure sizes can be changed in option.
-    It is possible either to save the plot, to show the plot or both.
     """
 
-    def _run(self, figsize_x=10, figsize_y=2, **options):
-        """Visualizes the ScatterPlotMatrix
-
-        :param options: plotting options according to associated json file
-        :param figsize_x: X size of the figure Default value = 10
-        :param figsize_y: Y size of the figure Default value = 2
-        """
-        self._plot(figsize_x, figsize_y, **options)
-
     @staticmethod
-    def parallel_coordinates(y_data, x_names, color_criteria, figsize_x, figsize_y):
-        """Plots parallel coordinates
+    def parallel_coordinates(
+        y_data,  # type: ndarray
+        x_names,  # type: Sequence[str]
+        color_criteria,  # type: Sequence[float]
+        figsize_x,  # type: int
+        figsize_y,  # type: int
+    ):  # type: (...) -> Figure
+        """Plot the parallel coordinates.
 
-        :param y_data: the lines data to plot
-        :type y_data: array
-        :param x_names: names of the abscissa
-        :type x_names: list(str)
-        :param color_criteria: the list of  values of same length
-                                as y_data to colorize the lines
-        :type color_criteria: list(float)
-        :param figsize_x: size of figure in horizontal direction (inches)
-        :type figsize_x: int
-        :param figsize_y: size of figure in vertical direction (inches)
-        :type figsize_y: int
+        Args:
+            y_data: The lines data to plot.
+            x_names: The names of the abscissa.
+            color_criteria: The values of same length as `y_data`
+                to colorize the lines.
+            figsize_x: The size of the figure in horizontal direction (inches).
+            figsize_y: The size of the figure in vertical direction (inches).
         """
         n_x, n_cols = y_data.shape
         assert n_cols == len(x_names)
@@ -101,28 +87,13 @@ class ParallelCoordinates(OptPostProcessor):
 
     def _plot(
         self,
-        figsize_x,
-        figsize_y,
-        show=False,
-        save=False,
-        file_path="para_coord_funcs",
-        extension="pdf",
-    ):
+        figsize_x=10,  # type: int
+        figsize_y=2,  # type: int
+    ):  # type: (...) -> None
         """
-        Plots the ScatterPlotMatrix graph
-
-        :param figsize_x: size of figure in horizontal direction (inches)
-        :type figsize_x: int
-        :param figsize_y: size of figure in vertical direction (inches)
-        :type figsize_y: int
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param extension: file extension
-        :type extension: str
+        Args:
+            figsize_x: The size of the figure in horizontal direction (inches).
+            figsize_y: The size of the figure in vertical direction (inches).
         """
         all_funcs = self.opt_problem.get_all_functions_names()
         design_variables = self.opt_problem.get_design_variable_names()
@@ -145,14 +116,8 @@ class ParallelCoordinates(OptPostProcessor):
         fig.suptitle(
             "Design variables history colored" + " by '" + obj_name + "'  value"
         )
-        root = splitext(file_path)[0]
-        self._save_and_show(
-            fig,
-            save=save,
-            show=show,
-            file_path=root + "para_coord_des_vars",
-            extension=extension,
-        )
+
+        self._add_figure(fig, "para_coord_des_vars")
 
         func_vals = vals[:, : vals.shape[1] - len(x_names)]
         fig = self.parallel_coordinates(
@@ -164,10 +129,5 @@ class ParallelCoordinates(OptPostProcessor):
             + obj_name
             + "' value"
         )
-        self._save_and_show(
-            fig,
-            file_path=root + "para_coord_funcs",
-            save=save,
-            show=show,
-            extension=extension,
-        )
+
+        self._add_figure(fig, "para_coord_funcs")

@@ -20,30 +20,26 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test principal component analysis dimension reduction. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test principal component analysis dimension reduction."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import allclose, arange
+from numpy import allclose, arange, ndarray
 
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-
-standard_library.install_aliases()
 
 N_SAMPLES = 10
 N_FEATURES = 8
 
 
 @pytest.fixture
-def data():
-    """ Build an input-output dataset. """
-    data_ = arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
-    return data_
+def data():  # type: (...) -> ndarray
+    """The dataset used to build the transformer, based on a 1D-mesh."""
+    return arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     n_components = 3
     pca = PCA(n_components=n_components)
     assert pca.name == "PCA"
@@ -52,14 +48,14 @@ def test_constructor():
 
 
 def test_learn(data):
-    """ Test learn. """
+    """Test learn."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
 
 
 def test_transform(data):
-    """ Test transform. """
+    """Test transform."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
@@ -69,7 +65,7 @@ def test_transform(data):
 
 
 def test_inverse_transform(data):
-    """ Test inverse transform. """
+    """Test inverse transform."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
@@ -80,7 +76,7 @@ def test_inverse_transform(data):
 
 
 def test_compute_jacobian(data):
-    """ Test compute_jacobian method. """
+    """Test compute_jacobian method."""
 
     n_components = 3
     pca = PCA(n_components=n_components)
@@ -92,7 +88,7 @@ def test_compute_jacobian(data):
 
 
 def test_compute_jacobian_inverse(data):
-    """ Test compute_jacobian_inverse method. """
+    """Test compute_jacobian_inverse method."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
@@ -103,7 +99,7 @@ def test_compute_jacobian_inverse(data):
 
 
 def test_components(data):
-    """ Test transform. """
+    """Test transform."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)

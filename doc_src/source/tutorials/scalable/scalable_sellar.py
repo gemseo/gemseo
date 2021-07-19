@@ -47,7 +47,7 @@ scalable_sellar = create_discipline(
 input_data = {
     name: arange(variables_sizes) / float(variables_sizes) for name in input_names
 }
-print(scalable_sellar.execute(input_data)["y_0"])
+print(scalable_sellar.execute(input_data)["y_1"])
 
 variables_sizes = 3
 sizes = {name: variables_sizes for name in input_names + output_names}
@@ -63,4 +63,4 @@ scalable_sellar = create_discipline(
 input_data = {
     name: arange(variables_sizes) / float(variables_sizes) for name in input_names
 }
-print(scalable_sellar.execute(input_data)["y_0"])
+print(scalable_sellar.execute(input_data)["y_1"])

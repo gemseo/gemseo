@@ -19,27 +19,19 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
-
-standard_library.install_aliases()
-configure_logger(SOFTWARE_NAME)
 
 
-class Test_OptPostProcessor(unittest.TestCase):
-    """ """
+class TestOptPostProcessor(unittest.TestCase):
+    """"""
 
     @classmethod
     def setUpClass(cls):
@@ -49,17 +41,16 @@ class Test_OptPostProcessor(unittest.TestCase):
         cls.factory = PostFactory()
 
     def test_no_input_gram(self):
-        """ """
+        """"""
 
         class PostNoGram(OptPostProcessor):
-            """ """
+            """"""
 
             pass
 
         self.assertRaises(Exception, PostNoGram, self.problem)
 
-    @link_to("Req-MDO-8.2")
     def test_execute(self):
-        """ """
+        """"""
         hist = OptHistoryView(Rosenbrock())
         self.assertRaises(Exception, hist.execute, save=False)

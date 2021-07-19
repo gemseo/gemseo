@@ -18,60 +18,50 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-The Multi-disciplinary Design Feasible formulation
-**************************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""The Multi-disciplinary Design Feasible (MDF) formulation."""
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from typing import Any, Dict, List, Sequence, Tuple
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
+from gemseo.core.json_grammar import JSONGrammar
 from gemseo.mda.mda_factory import MDAFactory
-
-standard_library.install_aliases()
 
 
 class MDF(MDOFormulation):
-    """
-    The Multidisciplinary Design Feasible formulation draws an
-    optimization architecture where the coupling of strongly
-    coupled disciplines is made consistent by means of a
-    Multidisciplinary Design Analysis (MDA), the optimization
-    problem w.r.t. local and global design variables is made
-    at the top level. Multidisciplinary analysis is made at
-    a each optimization iteration.
+    """The Multidisciplinary Design Feasible (MDF) formulation.
+
+    This formulation draws an optimization architecture
+    where:
+
+    - the coupling of strongly coupled disciplines is made consistent
+      by means of a Multidisciplinary Design Analysis (MDA),
+    - the optimization problem
+      with respect to the local and global design variables is made at the top level.
+
+    Note that the multidisciplinary analysis is made at a each optimization iteration.
     """
 
     def __init__(
         self,
-        disciplines,
-        objective_name,
-        design_space,
-        maximize_objective=False,
-        main_mda_class="MDAChain",
-        sub_mda_class="MDAJacobi",
-        **mda_options
+        disciplines,  # type: Sequence[MDODiscipline]
+        objective_name,  # type: str
+        design_space,  # type: DesignSpace
+        maximize_objective=False,  # type: bool
+        main_mda_class="MDAChain",  # type: str
+        sub_mda_class="MDAJacobi",  # type: str
+        **mda_options  # type: Any
     ):
         """
-        Constructor, initializes the objective functions and constraints
-
-        :param main_mda_class: classname of the main MDA, typically the
-            MDAChain,  but one can force to use MDAGaussSeidel for instance
-        :type main_mda_class: str
-        :param disciplines: the disciplines list.
-        :type disciplines: list(MDODiscipline)
-        :param objective_name: the objective function data name.
-        :type objective_name: str
-        :param design_space: the design space.
-        :type design_space: DesignSpace
-        :param maximize_objective: if True, the objective function
-            is maximized, by default, a minimization is performed.
-        :type maximize_objective: bool
-        :param sub_mda_class: the type of MDA  to be used,
-            shall be the class name. (default MDAJacobi)
-        :type sub_mda_class: str
-        :param mda_options: options passed to the MDA at construction
+        Args:
+            main_mda_class: The name of the class used for the main MDA,
+                typically the :class:`.MDAChain`,
+                but one can force to use :class:`.MDAGaussSeidel` for instance.
+            sub_mda_class: The name of the class used for the sub-MDA.
+            **mda_options: The options passed to the MDA at construction.
         """
         super(MDF, self).__init__(
             disciplines,
@@ -86,13 +76,21 @@ class MDF(MDOFormulation):
         self._update_design_space()
         self._build_objective()
 
-    def get_top_level_disc(self):
+    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
         return [self.mda]
 
     def _instantiate_mda(
-        self, main_mda_class="MDAChain", sub_mda_class="MDAJacobi", **mda_options
-    ):
-        """Create MDA discipline"""
+        self,
+        main_mda_class="MDAChain",  # type: str
+        sub_mda_class="MDAJacobi",  # type: str
+        **mda_options  # type:Any
+    ):  # type: (...) -> None
+        """Create the MDA discipline.
+
+        Args:
+            main_mda_class: The name of the class of the main MDA.
+            sub_mda_class: The name of the class of the sub-MDA used by the main MDA.
+        """
         if main_mda_class == "MDAChain":
             mda_options["sub_mda_class"] = sub_mda_class
         self.mda = self._mda_factory.create(
@@ -100,64 +98,53 @@ class MDF(MDOFormulation):
         )
 
     @classmethod
-    def get_sub_options_grammar(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option schema may be specified here, mainly for
-        use in the API
-
-        :param options: options dict required to deduce the sub options grammar
-        :returns: None, or the sub options grammar
-        """
+    def get_sub_options_grammar(
+        cls, **options  # type: str
+    ):  # type: (...) -> JSONGrammar
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required \n"
-                + "to deduce the sub options of MDF !"
+                "main_mda_class option required to deduce the sub options of MDF !"
             )
         factory = MDAFactory().factory
         return factory.get_options_grammar(main_mda)
 
     @classmethod
-    def get_default_sub_options_values(cls, **options):
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option defaults may be specified here, mainly for
-        use in the API
-
-        :param options: options dict required to deduce the sub options grammar
-        :returns: None, or the sub options defaults
-        """
+    def get_default_sub_options_values(
+        cls, **options  # type:str
+    ):  # type: (...) -> Dict
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required \n"
-                + "to deduce the sub options of MDF !"
+                "main_mda_class option required to deduce the sub options of MDF !"
             )
         factory = MDAFactory().factory
         return factory.get_default_options_values(main_mda)
 
-    def _build_objective(self):
-        """Builds the objective function on the MDA"""
-        # Build the objective from the mda and the objective name
+    def _build_objective(self):  # type: (...) -> None
+        """Build the objective function from the MDA and the objective name."""
         self._build_objective_from_disc(self._objective_name, discipline=self.mda)
 
-    def get_expected_workflow(self):
+    def get_expected_workflow(
+        self,
+    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
         return self.mda.get_expected_workflow()
 
-    def get_expected_dataflow(self):
+    def get_expected_dataflow(
+        self,
+    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
         return self.mda.get_expected_dataflow()
 
-    def _update_design_space(self):
-        """Update the design space by removing the coupling variables"""
+    def _update_design_space(self):  # type: (...) -> None
+        """Update the design space by removing the coupling variables."""
         self._set_defaultinputs_from_ds()
         # No couplings in design space (managed by MDA)
         self._remove_couplings_from_ds()
         # Cleanup
         self._remove_unused_variables()
 
-    def _remove_couplings_from_ds(self):
-        """Removes the coupling variables from the design space"""
+    def _remove_couplings_from_ds(self):  # type: (...) -> None
+        """Remove the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
         for coupling in self.mda.strong_couplings:
             if coupling in design_space.variables_names:

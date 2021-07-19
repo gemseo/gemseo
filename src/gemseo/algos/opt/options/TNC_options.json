@@ -2,6 +2,26 @@
     "name": "TNC_options",
     "required":["max_iter"],
     "properties": {
+		"xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        },
         "scale": {
             "required": ["items"],
             "type": "array",
@@ -35,14 +55,6 @@
         },
         "minfev": {
             "type": "number"
-        },
-        "ftol_rel": {
-            "type": "number",
-            "minimum": 0.0
-        },
-        "xtol_rel": {
-            "type": "number",
-            "minimum": 0.0
         },
         "pg_tol": {
             "type": "number",

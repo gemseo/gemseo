@@ -11,9 +11,6 @@
 .. automodule:: gemseo.mlearning.regression.rbf
    :noindex:
 
-.. autoclass:: gemseo.mlearning.regression.rbf.RBFRegression
-   :noindex:
-
 .. raw:: html
 
    <div style="text-align: center;"><a class="btn gemseo-btn mb-1" href="../../examples/mlearning/regression_model/plot_rbf_regression.html" role="button">Example</a></div>

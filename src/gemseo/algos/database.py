@@ -21,37 +21,34 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
+
 """
 A database of function calls and design variables
 *************************************************
 """
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 from ast import literal_eval
-from builtins import isinstance
 from hashlib import sha1
 from itertools import chain, islice
 from xml.etree.ElementTree import parse as parse_element
 
 import h5py
-from future import standard_library
 from numpy import array, atleast_2d, concatenate, float64, ndarray, string_, uint8
 from numpy.linalg import norm
 from six import string_types
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
-from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
+from gemseo.utils.hdf5 import get_hdf5_group
+from gemseo.utils.py23_compat import OrderedDict
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Database(object):
-    """Class to store evaluations of functions,
-    such as DOE or optimization histories
+    """Class to store evaluations of functions, such as DOE or optimization histories.
 
     Avoids multiple calls of the same functions,
     useful when simulations are costly
@@ -61,8 +58,6 @@ class Database(object):
     generation
 
     Can be serialized to HDF5 for portability and cold post processing
-
-
     """
 
     missing_value_tag = "NA"
@@ -71,9 +66,7 @@ class Database(object):
     ITER_TAG = "Iter"
 
     def __init__(self, input_hdf_file=None):
-        """
-        Constructor
-        """
+        """Constructor."""
         self.__dict = OrderedDict()
         self.__max_iteration = 0
         # Call functions when store is called
@@ -82,8 +75,7 @@ class Database(object):
             self.import_hdf(input_hdf_file)
 
     def __setitem__(self, key, value, dict_setitem=dict.__setitem__):
-        """
-        Sets an item of the dictionary
+        """Sets an item of the dictionary.
 
         :param key: the key of the item
         :param value: the value of the item
@@ -91,10 +83,10 @@ class Database(object):
         """
         if not isinstance(key, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if not isinstance(value, dict):
-            raise TypeError("Optimization history values must" + " be data dictionary")
+            raise TypeError("Optimization history values must be data dictionary")
         if isinstance(key, HashableNdarray):
             self.__dict[key] = value
         else:
@@ -102,38 +94,35 @@ class Database(object):
 
     @staticmethod
     def __get_hashed_key(x_vect):
-        """
-        Gets the HashableNdarray from x_vect
+        """Gets the HashableNdarray from x_vect.
 
         :param x_vect: the x design vector or a HashableNdarray
         :returns : the HashableNdarray of x_vect
         """
         if not isinstance(x_vect, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if isinstance(x_vect, ndarray):
             return HashableNdarray(x_vect)
         return x_vect
 
     def __getitem__(self, x_vect):
-        hashed = Database.__get_hashed_key(x_vect)
+        hashed = self.__get_hashed_key(x_vect)
         return self.__dict[hashed]
 
     def __delitem__(self, x_vect):
-        hashed = Database.__get_hashed_key(x_vect)
+        hashed = self.__get_hashed_key(x_vect)
         del self.__dict[hashed]
 
     def setdefault(self, key, default):
-        """
-        Sets a default database entry.
-        """
+        """Sets a default database entry."""
         if not isinstance(key, (ndarray, HashableNdarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if not isinstance(default, dict):
-            raise TypeError("Optimization history values must" + " be data dictionary")
+            raise TypeError("Optimization history values must be data dictionary")
         return self.__dict.setdefault(key, default)
 
     def __len__(self):
@@ -155,30 +144,40 @@ class Database(object):
             yield key, val
 
     def get_value(self, x_vect):
-        """Accessor for the values
+        """Accessor for the values.
 
         :param x_vect: the design variables
-
         """
         return self[x_vect]
 
     def get_max_iteration(self):
-        """Maximum iteration number"""
+        """Maximum iteration number."""
         return self.__max_iteration
 
     def get_x_history(self):
-        """Get list of x ordered by calls
+        """Get list of x ordered by calls.
 
         :returns: the list of x np arrays
         """
-        history = []
-        for x_vect in self.__dict.keys():
-            history.append(x_vect.unwrap())
-        return history
+        return [x_vect.unwrap() for x_vect in self.__dict.keys()]
+
+    def get_last_n_x(self, n):
+        """Get list of n last x ordered by calls.
+
+        :returns: the list of x np arrays
+        """
+        n_max = len(self)
+        if n > n_max:
+            raise ValueError(
+                "n ={} must be lower than the database size = {}".format(n, n_max)
+            )
+        return [
+            x_vect.unwrap() for x_vect in islice(self.__dict.keys(), n_max - n, n_max)
+        ]
 
     def get_index_of(self, x_vect):
-        """
-        Returns the index of a particular x
+        """Returns the index of a particular x.
+
         :param x_vect: x numpy array
         :returns: the index of x_vect, or throws a key error
         """
@@ -189,7 +188,7 @@ class Database(object):
         raise KeyError(x_vect)
 
     def get_x_by_iter(self, iteration):
-        """Return design variables at a specified iteration
+        """Return design variables at a specified iteration.
 
         :param iteration: the iteration number
         :returns: the numpy array of x at iteration
@@ -210,17 +209,13 @@ class Database(object):
         for i, key in enumerate(self.__dict.keys()):
             if i == iteration:
                 return key.unwrap()
-        return None  # pep8 requirement
 
     def clear(self):
-        """
-        Clears the database
-        """
+        """Clears the database."""
         self.__dict.clear()
 
     def clean_from_iterate(self, iterate):
-        """
-        Delete the iterates after a given iterate number
+        """Delete the iterates after a given iterate number.
 
         :param iterate: the iterate number
         """
@@ -238,10 +233,7 @@ class Database(object):
         self.__max_iteration = len(self)
 
     def remove_empty_entries(self):
-        """
-        Removes empty entries, when x is associated to
-        an empty dict
-        """
+        """Removes empty entries, when x is associated to an empty dict."""
         empt = [
             k
             for k, v in self.items()
@@ -251,8 +243,8 @@ class Database(object):
             del self[k]
 
     def filter(self, data_list_to_keep):
-        """
-        Keeps only the values in the data list
+        """Keeps only the values in the data list.
+
         :param data_list_to_keep: the list of data names to keep
         """
         data_list_to_keep = set(data_list_to_keep)
@@ -262,8 +254,7 @@ class Database(object):
                 del val[key]
 
     def get_func_history(self, funcname, x_hist=False):
-        """Return function values history.
-        Can also return history of design variables
+        """Return function values history. Can also return history of design variables.
 
         :param funcname: the function name
         :param x_hist: if True, returns variables history as well
@@ -287,18 +278,18 @@ class Database(object):
         return outf
 
     def get_func_grad_history(self, funcname, x_hist=False):
-        """Return gradient values history
-        Can also return history of design variables
+        """Return gradient values history Can also return history of design variables.
 
         :param funcname: the function name
         :param x_hist: if True, returns variables history as well
             (Default value = False)
         :returns: the jacobian history list
         """
-        return self.get_func_history(funcname=self.GRAD_TAG + funcname, x_hist=x_hist)
+        gradient_name = self.get_gradient_name(funcname)
+        return self.get_func_history(funcname=gradient_name, x_hist=x_hist)
 
     def is_func_grad_history_empty(self, funcname):
-        """Check if history is empty
+        """Check if history is empty.
 
         :param funcname: the function name
         :returns: True if history is empty
@@ -306,7 +297,7 @@ class Database(object):
         return len(self.get_func_grad_history(funcname, x_hist=False)) == 0
 
     def contains_x(self, x_vect):
-        """Tests if history has a design variables x stored
+        """Tests if history has a design variables x stored.
 
         :param x_vect: the design variables to test
         :returns: True if x_vect is in self
@@ -314,7 +305,7 @@ class Database(object):
         return HashableNdarray(x_vect) in self.__dict
 
     def get_f_of_x(self, fname, x_vect, dist_tol=0.0):
-        """If x in self, get associated "fname" value, if it exists
+        """If x in self, get associated "fname" value, if it exists.
 
         :param fname: the function name
         :param x_vect: the design variables
@@ -332,28 +323,24 @@ class Database(object):
         return None
 
     def get(self, x_vect, default=None):
-        """
-        Return the value for key if key is in the dictionary, else default.
-        """
+        """Return the value for key if key is in the dictionary, else default."""
         if not isinstance(x_vect, (HashableNdarray, ndarray)):
             raise TypeError(
-                "Optimization history keys must be" + " design variables numpy arrays"
+                "Optimization history keys must be design variables numpy arrays"
             )
         if isinstance(x_vect, ndarray):
             x_vect = HashableNdarray(x_vect)
         return self.__dict.get(x_vect, default)
 
     def pop(self, k):
-        """
-        D.pop(k[,d]) -> v, remove specified key and return the corresponding
-        value.
-        If key is not found, d is returned if given, otherwise KeyError is
-        raised
+        """D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+
+        If key is not found, d is returned if given, otherwise KeyError is raised
         """
         return self.__dict.pop(k)
 
     def contains_dataname(self, data_name, skip_grad=False):
-        """Tests if history has a value named data_name stored
+        """Tests if history has a value named data_name stored.
 
         :param data_name: the name of the data
         :param skip_grad: do not account for gradient names
@@ -362,7 +349,7 @@ class Database(object):
         return data_name in self.get_all_data_names(skip_grad=skip_grad)
 
     def store(self, x_vect, values_dict, add_iter=True):
-        """Stores the values associated to the variables x
+        """Stores the values associated to the variables x.
 
         :param x_vect: design variables vector
         :param values_dict: values to be stored
@@ -387,8 +374,8 @@ class Database(object):
             self.__setitem__(x_vect, values_dict)
 
     def get_all_data_names(self, skip_grad=True, skip_iter=False):
-        """Return data variables (design, functions, gradient, ...
-        Gradient variables can be skipped
+        """Return data variables (design, functions, gradient, ... Gradient variables
+        can be skipped.
 
         :param skip_grad: do not list gradient names (Default value = True)
         :param skip_iter: do not add Iter in the list
@@ -440,8 +427,7 @@ class Database(object):
         all_iterations=False,
         stacked_data=None,
     ):
-        """Return complete history of optimization:
-        design variables, functions,
+        """Return complete history of optimization: design variables, functions,
         gradients.
 
         :param functions: functions names to get (Default value = None)
@@ -496,9 +482,7 @@ class Database(object):
 
     @staticmethod
     def __to_real(data):
-        """
-        Convert complex to real numpy array
-        """
+        """Convert complex to real numpy array."""
         return array(array(data, copy=False).real, dtype=float64)
 
     def export_hdf(self, file_path="optimization_history.h5", append=False):
@@ -509,74 +493,76 @@ class Database(object):
         :param append: if True, appends the data in the file
             (Default value = False)
         """
-        if append:
-            mode = "a"
-        else:
-            mode = "w"
-        h5file = h5py.File(file_path, mode)
-        design_vars_grp = h5file.require_group("x")
-        keys_group = h5file.require_group("k")
-        values_group = h5file.require_group("v")
-        iterated = self.items()
-        i = 0
-        if append and design_vars_grp:
-            iterated = islice(iterated, len(design_vars_grp), len(self.__dict))
-            i = len(design_vars_grp)
+        mode = "a" if append else "w"
 
-        for key, val in iterated:
-            design_vars_grp.create_dataset(str(i), data=key.unwrap())
-            keys_data = array(list(val.keys()), dtype=string_)
-            locvalues_scalars = []
-            argrp = None
-            for ind, locval in enumerate(val.values()):
-                if isinstance(locval, (ndarray, list)):
-                    if argrp is None:
-                        argrp = values_group.require_group("arr_" + str(i))
-                    argrp.create_dataset(str(ind), data=self.__to_real(locval))
-                else:
-                    locvalues_scalars.append(locval)
-            keys_group.create_dataset(str(i), data=keys_data)
-            values_group.create_dataset(str(i), data=self.__to_real(locvalues_scalars))
-            i += 1
+        with h5py.File(file_path, mode) as h5file:
+            design_vars_grp = h5file.require_group("x")
+            keys_group = h5file.require_group("k")
+            values_group = h5file.require_group("v")
+            iterated = self.items()
+            i = 0
 
-        h5file.close()
+            if append and design_vars_grp:
+                iterated = islice(iterated, len(design_vars_grp), len(self.__dict))
+                i = len(design_vars_grp)
+
+            for key, val in iterated:
+                design_vars_grp.create_dataset(str(i), data=key.unwrap())
+                keys_data = array(list(val.keys()), dtype=string_)
+                locvalues_scalars = []
+                argrp = None
+
+                for ind, locval in enumerate(val.values()):
+                    if isinstance(locval, (ndarray, list)):
+                        if argrp is None:
+                            argrp = values_group.require_group("arr_" + str(i))
+                        argrp.create_dataset(str(ind), data=self.__to_real(locval))
+                    else:
+                        locvalues_scalars.append(locval)
+
+                keys_group.create_dataset(str(i), data=keys_data)
+                values_group.create_dataset(
+                    str(i), data=self.__to_real(locvalues_scalars)
+                )
+                i += 1
 
     def import_hdf(self, filename="optimization_history.h5"):
-        """Imports a database from hdf file
+        """Imports a database from hdf file.
 
         :param filename: Default value = 'optimization_history.h5')
         """
-        h5file = h5py.File(filename, "r")
-        try:
+        with h5py.File(filename, "r") as h5file:
             design_vars_grp = h5file["x"]
             keys_group = h5file["k"]
             values_group = h5file["v"]
-            ndata = len(design_vars_grp)  # keys , and subdict
-            for idata in range(ndata):
-                x_vect = design_vars_grp[str(idata)]
-                keys = keys_group[str(idata)]
-                keys = [k.decode() for k in keys]
-                vec_dict = {}
-                if "arr_" + str(idata) in values_group:
-                    argrp = values_group["arr_" + str(idata)]
+
+            for raw_index in range(len(design_vars_grp)):
+                str_index = str(raw_index)
+                keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
+
+                array_name = "arr_{}".format(str_index)
+
+                if array_name in values_group:
+                    argrp = values_group[array_name]
                     vec_dict = {keys[int(k)]: array(v) for k, v in argrp.items()}
-                locvalues_scalars = values_group[str(idata)]
+                else:
+                    vec_dict = {}
+
+                locvalues_scalars = get_hdf5_group(values_group, str_index)
                 scalar_keys = (k for k in keys if k not in vec_dict)
+
                 scalar_dict = dict(
                     ((k, v) for k, v in zip(scalar_keys, locvalues_scalars))
                 )
                 scalar_dict.update(vec_dict)
 
-                self.store(array(x_vect), scalar_dict, add_iter=False)
-        except KeyError as err:
-            h5file.close()
-            raise KeyError(
-                "Invalid database hdf5 file, missing dataset. " + err.args[0]
-            )
+                self.store(
+                    array(design_vars_grp[str_index]), scalar_dict, add_iter=False
+                )
 
     @staticmethod
     def set_dv_names(n_dv):
-        """Create a list of default design variables names
+        """Create a list of default design variables names.
 
         :param n_dv: number of design variables in problem
         :returns: a list of design variables names
@@ -592,17 +578,13 @@ class Database(object):
         if design_variables_names is None:
             design_variables_names = self.set_dv_names(dimension)
         elif isinstance(design_variables_names, string_types):
-            design_variables_names = [
-                design_variables_names,
-            ]
+            design_variables_names = [design_variables_names]
         elif not isinstance(design_variables_names, list) and not isinstance(
             design_variables_names, tuple
         ):
             raise TypeError(
-                "design_variables_names must be a list or a "
-                + "tuple: a "
-                + str(type(design_variables_names))
-                + " is provided"
+                "design_variables_names must be a list or a tuple: "
+                "a {} is provided".format(type(design_variables_names))
             )
         return design_variables_names
 
@@ -616,7 +598,7 @@ class Database(object):
         all_iterations=False,
         stacked_data=None,
     ):
-        """Return history of optimization process
+        """Return history of optimization process.
 
         :param functions: functions names to export (Default value = None)
         :param design_variables_names: names of the design variables
@@ -705,7 +687,7 @@ class Database(object):
     def export_to_ggobi(
         self, functions=None, file_path="opt_hist.xml", design_variables_names=None
     ):
-        """Export history to xml file format for ggobi tool
+        """Export history to xml file format for ggobi tool.
 
         :param functions: Default value = None)
         :param file_path: Default value = "opt_hist.xml")
@@ -723,7 +705,7 @@ class Database(object):
         )
 
     def import_from_opendace(self, database_file):
-        """Reads an opendace xml database
+        """Reads an opendace xml database.
 
         :param database_file: the path to the database file
         """
@@ -738,6 +720,25 @@ class Database(object):
             for key, value in data["dy"].items():
                 data_reformat["@" + key[1:]] = array(value)
             self.store(x_vect, data_reformat)
+
+    @classmethod
+    def get_gradient_name(
+        cls,
+        name,  # type: str
+    ):  # type: (...) -> str
+        """Return the name of the gradient related to a function.
+
+        This name is the concatenation of a GRAD_TAG, e.g. '@',
+        and the name of the function, e.g. 'f'.
+        With this example, the name of the gradient is '@f'.
+
+        Args:
+            name: The name of a function.
+
+        Returns:
+            The name of the gradient based on the name of the function.
+        """
+        return "{}{}".format(cls.GRAD_TAG, name)
 
 
 class HashableNdarray(object):
@@ -756,13 +757,10 @@ class HashableNdarray(object):
     ndarray object. This can be either a copied instance (which is safer)
     or the original object (which requires the user to be careful enough
     not to modify it).
-
-
     """
 
     def __init__(self, wrapped, tight=False):
-        """
-        Creates a new HashableNdarray object encapsulating an ndarray.
+        """Creates a new HashableNdarray object encapsulating an ndarray.
 
         :param wrapped:The wrapped ndarray.
         :param tight: If True, a copy of the input ndaray is created.
@@ -779,8 +777,8 @@ class HashableNdarray(object):
 
     def unwrap(self):
         """Returns the encapsulated ndarray.
-        If the wrapper is "tight", a copy of the encapsulated ndarray is
 
+        If the wrapper is "tight", a copy of the encapsulated ndarray is
         """
         if self.__tight:
             return array(self.wrapped)

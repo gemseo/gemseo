@@ -24,9 +24,7 @@
 Create a discipline from analytical expressions
 ===============================================
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from future import standard_library
+from __future__ import division, unicode_literals
 
 ###############################################################################
 # Import
@@ -45,8 +43,6 @@ configure_logger()
 # thanks to the :class:`.AnalyticDiscipline` class
 # which is a quick alternative to model a simple analytic MDO problem.
 
-
-standard_library.install_aliases()
 
 ###############################################################################
 # Create the dictionary of analytic outputs

@@ -26,12 +26,9 @@ PCA on Burgers equation
 
 Example using PCA on solutions of the Burgers equation.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from builtins import next, range
+from __future__ import division, unicode_literals
 
 import matplotlib.pyplot as plt
-from future import standard_library
 from numpy import eye
 
 from gemseo.api import configure_logger
@@ -40,7 +37,6 @@ from gemseo.problems.dataset.burgers import BurgersDataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Load dataset
@@ -58,7 +54,7 @@ t_split = 0.87
 
 
 def lines_gen():
-    """ Linestyle generator. """
+    """Linestyle generator."""
     yield "-"
     for i in range(1, dataset.n_samples):
         yield 0, (i, 1, 1, 1)

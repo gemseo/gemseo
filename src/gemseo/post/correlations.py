@@ -19,128 +19,105 @@
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Correlations in the optimization database
-*****************************************
-"""
+"""Correlations in the optimization database."""
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from os.path import basename, dirname, join, splitext
+import logging
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
 import pylab
-from future import standard_library
 from matplotlib import ticker
-from numpy import atleast_2d
+from matplotlib.figure import Figure
+from numpy import atleast_2d, ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Correlations(OptPostProcessor):
+    """Scatter plots of the correlated variables.
+
+    These variables can be design variables, outputs functions or constraints.
+
+    The plot method considers all the variable correlations greater than 95%.
+    Another level value, a sublist of variable names or both can be passed as options.
+    The x- and y-figure sizes can also be modified.
     """
-    The **Correlations** post processing
-    builds scatter plots of correlated variables among design
-    variables, outputs functions and constraints
-
-    The plot method considers all variable correlations
-    greater than 95%. An other level value, a sublist of variable names
-    or both can be passed as options. The x- and y- figure sizes
-    can also be modified in option.
-    It is possible either to save the plot, to show the plot or both.
-    """
-
-    def _run(self, **options):
-        """Visualizes the optimization history
-
-        :param options: options for the post processing,
-            see associated JSON file
-        """
-        functions = self.opt_problem.get_all_functions()
-        func_names = [func.name for func in functions]
-        self._plot(func_names, **options)
 
     def _plot(
         self,
-        func_names=None,
-        coeff_limit=0.95,
-        n_plots_x=5,
-        n_plots_y=5,
-        save=False,
-        show=False,
-        file_path=None,
-        extension="pdf",
-    ):
+        func_names=None,  # type: Optional[Sequence[str]]
+        coeff_limit=0.95,  # type: float
+        n_plots_x=5,  # type: int
+        n_plots_y=5,  # type: int
+    ):  # type: (...) -> None
         """
-        Plots the correlations graph
+        Args:
+            func_names: The function names subset
+                for which the correlations are computed.
+                If None, all functions are considered.
+            coeff_limit: The plot is not made
+                if the correlation between the variables is lower than this limit.
+            n_plots_x: The number of horizontal plots.
+            n_plots_y: The number of vertical plots.
 
-        :param coeff_limit: if the correlation between the variables
-            is lower than coeff_limit, the plot is not made
-        :type coeff_limit: bool
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param func_names: the func_names on which correlations is computed
-        :type func_names: list(str)
-        :param n_plots_x: number of horizontal plots
-        :type n_plots_x: int
-        :param n_plots_y: number of vertical plots
-        :type n_plots_y: int
-        :param extension: file extension
-        :type extension: str
+        Raises:
+            ValueError: If an element of `func_names` is not a function
+                defined in `opt_problem`.
         """
-        n_slide = 0
+        functions = self.opt_problem.get_all_functions()
+        all_func_names = [func.name for func in functions]
+
+        if not func_names:
+            func_names = all_func_names
+        elif set(func_names).issubset(all_func_names):
+            func_names = [
+                func_name for func_name in all_func_names if func_name in func_names
+            ]
+        else:
+            raise ValueError(
+                "The following elements are not "
+                "functions: {}. Defined functions are {}.".format(
+                    ", ".join(set(func_names) - set(all_func_names)),
+                    ", ".join(all_func_names),
+                )
+            )
+
         values_array, variables_names, _ = self.database.get_history_array(
             func_names, None, True, 0.0
         )
+
+        variables_names = self.__sort_variables_names(variables_names, func_names)
+
         corr_coeffs_array = self.__compute_correlations(values_array)
         i_corr, j_corr = np.where(
             (np.abs(corr_coeffs_array) > coeff_limit)
             & (np.abs(corr_coeffs_array) < (1.0 - 1e-9))
         )
         LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
+
         if i_corr.size <= 16:
             n_plots_x = 4
             n_plots_y = 4
-        figs = []
         spec = gridspec.GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
         spec.update(top=0.95, bottom=0.06, left=0.08, right=0.95)
         fig = None
         fig_indx = 0
-        if file_path is not None:
-            root = splitext(file_path)[0]
-            root_dir = dirname(root)
-            base_n = basename(root)
-        else:
-            root_dir = "."
-            base_n = ""
         for plot_index, (i, j) in enumerate(zip(i_corr, j_corr)):
             plot_index_loc = plot_index % (n_plots_x * n_plots_y)
             if plot_index_loc == 0:
                 if fig is not None:  # Save previous plot
                     fig_indx += 1
-                    base_loc = base_n + "correlations_" + str(fig_indx)
-                    fpath = join(root_dir, base_loc)
-                    self._save_and_show(
-                        fig, file_path=fpath, save=save, show=show, extension=extension
-                    )
-                    pylab.plt.close(fig)
+                    self._add_figure(fig)
                 fig = pylab.plt.figure()
-                figs.append(fig)
                 mng = pylab.plt.get_current_fig_manager()
                 mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
 
-            # plt.suptitle('All variables are normalized')
             self.__create_sub_correlation_plot(
                 i,
                 j,
@@ -154,28 +131,35 @@ class Correlations(OptPostProcessor):
                 variables_names,
             )
         if fig is not None:
-            base_loc = base_n + "correlations_" + str(fig_indx + 1)
-            fpath = join(root_dir, base_loc)
-            self._save_and_show(
-                fig, save=save, show=show, file_path=fpath, extension=extension
-            )
-            pylab.plt.close(fig)
-        return n_slide
+            self._add_figure(fig)
 
     def __create_sub_correlation_plot(
         self,
-        i_ind,
-        j_ind,
-        corr_coeff,
-        fig,
-        spec,
-        plot_index,
-        n_plot_v,
-        n_plot_h,
-        values_array,
-        variables_names,
-    ):
-        """Creates a correlation plot"""
+        i_ind,  # type: int
+        j_ind,  # type: int
+        corr_coeff,  # type: ndarray
+        fig,  # type: Figure
+        spec,  # type: gridspec
+        plot_index,  # type: int
+        n_plot_v,  # type: int
+        n_plot_h,  # type: int
+        values_array,  # type: ndarray
+        variables_names,  # type: Sequence[str]
+    ):  # type: (...)-> None
+        """Create a correlation plot.
+
+        Args:
+            i_ind: The index for the x-axis data.
+            j_ind: The index for the y-axis data.
+            corr_coeff: The correlation coefficients.
+            fig: The figure where the subplot will be placed.
+            spec: The matplotlib grid structure.
+            plot_index: The local plot index.
+            n_plot_v: The number of vertical plots.
+            n_plot_h: The number of horizontal plots.
+            values_array: The function values from the optimization history.
+            variables_names: The variables names.
+        """
         gs_curr = spec[int(plot_index / n_plot_v), plot_index % n_plot_h]
         ax1 = fig.add_subplot(gs_curr)
         x_plt = values_array[:, i_ind]
@@ -194,11 +178,61 @@ class Correlations(OptPostProcessor):
         ax1.xaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
         ax1.set_ylabel(variables_names[j_ind], fontsize=10)
         ax1.tick_params(labelsize=10)
-        ax1.set_title("R=%5f" % corr_coeff, fontsize=12)
+        ax1.set_title("R={:.5f}".format(corr_coeff), fontsize=12)
         ax1.grid()
 
     @classmethod
-    def __compute_correlations(cls, values_array):
-        """Compute correlations"""
+    def __compute_correlations(
+        cls, values_array  # type: ndarray
+    ):  # type: (...)-> ndarray
+        """Compute correlations.
+
+        Args:
+            values_array: The values to compute the correlations.
+
+        Returns:
+            The lower diagonal of the correlations matrix.
+        """
         ccoeff = np.corrcoef(values_array.astype(float), rowvar=False)
-        return np.tril(atleast_2d(ccoeff))  # Keep upper diagonal only
+        return np.tril(atleast_2d(ccoeff))  # Keep lower diagonal only
+
+    def __sort_variables_names(
+        self,
+        variables_names,  # type: Sequence[str]
+        func_names,  # type: Sequence[str]
+    ):  # type: (...)-> List[str]
+        """Sort the expanded variable names using func_names as the pattern.
+
+        In addition to sorting the expanded variable names, this method
+        replaces the default hard-coded vectors (x_1, x_2, ... x_n) with
+        the names given by the user.
+
+        Args:
+            variables_names: The expanded variable names to be sorted.
+            func_names: The functions names in the required order.
+
+        Returns:
+            The sorted expanded variable names.
+        """
+
+        def func_order(
+            x,  # type: str
+        ):  # type: (...) -> Tuple[int, str]
+            """Key function to sort function components.
+
+            Args:
+                x: An element from a list.
+
+            Returns:
+                The Tuple to use in the sort method.
+            """
+
+            for i, func_name in enumerate(func_names):
+                if x.find(func_name) == 0:
+                    return (i, x.replace(func_name, ""))
+
+            return (len(func_names) + 1, x)
+
+        variables_names.sort(key=func_order)
+        x_names = self._generate_x_names()
+        return variables_names[: -len(x_names)] + x_names

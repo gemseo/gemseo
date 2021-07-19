@@ -19,71 +19,91 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Distribution factory
-====================
 
-This module contains a factory to instantiate a :class:`.Distribution`
-from its class name.
-The class can be internal to |g|
-or located in an external module whose path is provided to the constructor.
-It also provides a list of available distributions types
-and allows you to test if a distribution type is available.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Module containing a factory to create an instance of :class:`.Distribution`."""
 
-from future import standard_library
+from __future__ import division, unicode_literals
+
+from typing import List, Optional, Union
 
 from gemseo.core.factory import Factory
-from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.distribution import (
+    Distribution,
+    ParametersType,
+    StandardParametersType,
+)
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+DistributionParametersType = Union[
+    int, ParametersType, Optional[StandardParametersType], float
+]
 
 
 class DistributionFactory(object):
-    """This factory instantiates a :class:`.Distribution` from its class name.
-    The class can be internal to |g| or located in an external module
-    whose path is provided to the constructor.
+    """Factory to build instances of :class:`.Distribution`.
+
+    At initialization, this factory scans the following modules
+    to search for subclasses of this class:
+
+    - the modules located in "gemseo.uncertainty.distributions" and its sub-packages,
+    - the modules referenced in the "GEMSEO_PATH",
+    - the modules referenced in the "PYTHONPATH" and starting with "gemseo_".
+
+    Then, it can check if a class is present or return the list of available classes.
+
+    Lastly, it can create an instance of a class.
+
+    Examples:
+        >>> from gemseo.uncertainty.distributions.factory import DistributionFactory
+        >>> factory = DistributionFactory()
+        >>> factory.is_available("OTNormalDistribution")
+        True
+        >>> factory.available_distributions[-3:]
+        ['SPNormalDistribution', 'SPTriangularDistribution', 'SPUniformDistribution']
+        >>> distribution = factory.create("OTNormalDistribution", "x")
+        >>> print(distribution)
+        Normal(mu=0.0, sigma=1.0)
     """
 
-    def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of Distribution.
-        Searches in "GEMSEO_PATH" and gemseo.uncertainty.p_dist.
-        """
+    def __init__(self):  # noqa: D107
+        # type: (...) -> None
         self.factory = Factory(Distribution, ("gemseo.uncertainty.distributions",))
 
-    def create(self, distribution_name, variable, **parameters):
-        """
-        Creates a distribution.
+    def create(
+        self,
+        distribution_name,  # type: str
+        variable,  # type: str
+        **parameters  # type: DistributionParametersType
+    ):
+        # type: (...) -> Distribution
+        """Create a probability distribution for a given random variable.
 
-        :param str distribution_name: name of the distribution (its classname)
-        :param str variable: variable name.
-        :param parameters: distribution parameters
-        :return: distribution_name distribution
+        Args:
+            distribution_name: The name of a class defining a distribution.
+            variable: The name of the random variable.
+            **parameters: The parameters of the distribution.
+
+        Returns:
+            The probability distribution instance.
         """
         return self.factory.create(distribution_name, variable=variable, **parameters)
 
     @property
-    def distributions(self):
-        """
-        Lists the available classes.
-
-        :returns: the list of classes names.
-        :rtype: list(str)
-        """
+    def available_distributions(self):
+        # type: (...) -> List[str]
+        """The available probability distributions."""
         return self.factory.classes
 
-    def is_available(self, distribution_name):
-        """
-        Checks the availability of a distribution.
+    def is_available(
+        self,
+        distribution_name,  # type: str
+    ):
+        # type: (...) -> bool
+        """Check the availability of a probability distribution.
 
-        :param str distribution_name:  name of the distribution.
-        :returns: True if the distribution is available.
-        :rtype: bool
+        Args:
+            distribution_name: The name of a class defining a distribution.
+
+        Returns:
+            The availability of the distribution.
         """
         return self.factory.is_available(distribution_name)

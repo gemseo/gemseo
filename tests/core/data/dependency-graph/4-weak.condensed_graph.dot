@@ -1,0 +1,8 @@
+digraph "Dependency graph" {
+	B -> D [label=b]
+	C -> D [label=c]
+	A -> B [label=a]
+	A -> C [label=a]
+	_0 [shape=point style=invis]
+	D -> _0 [label=d]
+}

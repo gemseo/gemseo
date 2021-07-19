@@ -19,27 +19,21 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Unit test for MLAlgoFactory class
-in gemseo.mlearning.core.factory.
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
 
-standard_library.install_aliases()
-
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():
-    """ Simple dataset. """
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
     dataset_.add_group(Dataset.INPUT_GROUP, data[:, :2])
@@ -48,21 +42,42 @@ def dataset():
 
 
 def test_constructor():
-    """ Test factory constructor. """
+    """Test factory constructor."""
     factory = MLAlgoFactory()
-    internal_modules_paths = factory.factory.internal_modules_paths
-    assert "gemseo.mlearning" in internal_modules_paths
+    # plugins may add classes
+    assert set(factory.models) <= set(
+        [
+            "GaussianMixture",
+            "GaussianProcessRegression",
+            "KMeans",
+            "KNNClassifier",
+            "LinearRegression",
+            "MLClassificationAlgo",
+            "MLClusteringAlgo",
+            "MLPredictiveClusteringAlgo",
+            "MLRegressionAlgo",
+            "MLSupervisedAlgo",
+            "MLUnsupervisedAlgo",
+            "MixtureOfExperts",
+            "PCERegression",
+            "PolynomialRegression",
+            "RBFRegression",
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "SVMClassifier",
+        ]
+    )
 
 
 def test_create(dataset):
-    """ Test the creation of a model from data. """
+    """Test the creation of a model from data."""
     factory = MLAlgoFactory()
     ml_algo = factory.create("LinearRegression", data=dataset)
     assert hasattr(ml_algo, "parameters")
 
 
 def test_load(dataset, tmp_path):
-    """ Test the loading of a model from data. """
+    """Test the loading of a model from data."""
     factory = MLAlgoFactory()
     ml_algo = factory.create("RandomForestClassifier", data=dataset)
     dirname = ml_algo.save(path=str(tmp_path))
@@ -71,13 +86,13 @@ def test_load(dataset, tmp_path):
 
 
 def test_available_models():
-    """ Test the getter of available regression models. """
+    """Test the getter of available regression models."""
     factory = MLAlgoFactory()
     assert "KMeans" in factory.models
 
 
 def test_is_available():
-    """ Test the existence of a regression model. """
+    """Test the existence of a regression model."""
     factory = MLAlgoFactory()
     assert factory.is_available("PolynomialRegression")
     assert not factory.is_available("Dummy")

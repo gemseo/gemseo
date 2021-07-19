@@ -19,39 +19,31 @@
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from os import remove
 from os.path import dirname, exists, join
 
-from future import standard_library
+import pytest
 
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.third_party.junitxmlreq import link_to
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
 POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
 
 
-class Test_ConstraintsHistory(unittest.TestCase):
-    """ """
+@pytest.mark.usefixtures("tmp_wd")
+class TestConstraintsHistory(unittest.TestCase):
+    """"""
 
     @classmethod
     def setUpClass(cls):
         cls.factory = PostFactory()
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.6", "Req-VIZ-4")
-    def test_ConstraintsHistory(self):
-        """ """
+    def test_constraints_history(self):
+        """"""
         if self.factory.is_available("ConstraintsHistory"):
             problem = Power2()
             OptimizersFactory().execute(problem, "SLSQP")
@@ -66,11 +58,9 @@ class Test_ConstraintsHistory(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)
 
-    @link_to("Req-VIZ-1", "Req-VIZ-1.6", "Req-VIZ-4")
-    def test_ConstraintsHistory_load(self):
-        """ """
+    def test_constraints_history_load(self):
+        """"""
         if self.factory.is_available("ConstraintsHistory"):
             problem = OptimizationProblem.import_hdf(file_path=POWER2)
             post = self.factory.execute(
@@ -83,7 +73,6 @@ class Test_ConstraintsHistory(unittest.TestCase):
             assert len(post.output_files) == 1
             for outf in post.output_files:
                 assert exists(outf)
-                remove(outf)
 
             self.assertRaises(
                 ValueError,

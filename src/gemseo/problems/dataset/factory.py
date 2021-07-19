@@ -29,36 +29,33 @@ The class can be internal to |g| or located in an external module whose path
 is provided to the constructor. It also provides a list of available cache
 types and allows you to test if a cache type is available.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+import logging
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class DatasetFactory(object):
     """This factory instantiates a :class:`.Dataset` from its class name.
-    The class can be internal to |g| or located in an external module
-    whose path is provided to the constructor.
+
+    The class can be internal to |g| or located in an external module whose path is
+    provided to the constructor.
     """
 
     def __init__(self):
-        """
-        Initializes the factory: scans the directories to search for
-        subclasses of Dataset.
+        """Initializes the factory: scans the directories to search for subclasses of
+        Dataset.
+
         Searches in "GEMSEO_PATH" and gemseo.mlearning.p_datasets
         """
         self.factory = Factory(Dataset, ("gemseo.problems.dataset",))
 
     def create(self, dataset, **options):
-        """
-        Create a dataset.
+        """Create a dataset.
 
         :param str dataset: name of the dataset (its classname).
         :param options: additional options specific
@@ -69,8 +66,7 @@ class DatasetFactory(object):
 
     @property
     def datasets(self):
-        """
-        Lists the available datasets.
+        """Lists the available datasets.
 
         :returns: the list of datasets.
         :rtype: list(str)
@@ -78,8 +74,7 @@ class DatasetFactory(object):
         return self.factory.classes
 
     def is_available(self, dataset):
-        """
-        Checks the availability of a dataset.
+        """Checks the availability of a dataset.
 
         :param str dataset:  name of the dataset (its class name).
         :returns: True if the dataset is available.

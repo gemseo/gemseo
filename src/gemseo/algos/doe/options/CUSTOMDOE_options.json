@@ -1,9 +1,20 @@
 {
     "name": "CUSTOM_options",
-    "description": "Run a DOE from a file containing samples values",
+    "description": "Run a DOE from samples provided either as an array or as a file",
     "properties": {
          "doe_file": {
             "type": "string"
+        },
+        "samples":{
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number",
+                    "minItems": 1
+                },
+                "minItems": 1
+            }
         },
         "delimiter":{
             "type": "string"
@@ -22,12 +33,16 @@
         	"type" : "integer",
         	"minimum":1
         },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        },
         "wait_time_between_samples": {
         	"type" : "number",
         	"minimum":0
         }
     },
-    "required": ["doe_file"],
+    "required": [],
     "$schema": "http://json-schema.org/draft-04/schema",
     "additionalProperties": false,
     "type": "object"

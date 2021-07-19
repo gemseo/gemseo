@@ -19,17 +19,15 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""
-Polynomial regression
-=====================
+r"""The polynomial model for regression.
 
 Polynomial regression class is a particular case of the linear regression,
-where the input data is transformed before the regression is applied. This
-transform consists of creating a matrix of monomials (Vandermonde) by raising
-the input data to different powers up to a certain degree :math:`D`. In the
-case where there is only one input variable, the input data
-:math:`(x_i)_{i=1, \dots, n}\in\mathbb{R}^n` is transformed into the
-Vandermonde matrix
+where the input data is transformed before the regression is applied.
+This transform consists of creating a matrix of monomials (Vandermonde)
+by raising the input data to different powers up to a certain degree :math:`D`.
+In the case where there is only one input variable,
+the input data :math:`(x_i)_{i=1, \dots, n}\in\mathbb{R}^n` is transformed
+into the Vandermonde matrix
 
 .. math::
 
@@ -47,24 +45,27 @@ The output is expressed as a weighted sum of monomials:
 
      y = w_0 + w_1 x^1 + w_2 x^2 + ... + w_D x^D,
 
-where the coefficients :math:`(w_1, w_2, ..., w_d)` and the intercept
-:math:`w_0` are estimated by least square regression.
+where the coefficients :math:`(w_1, w_2, ..., w_d)` and the intercept :math:`w_0`
+are estimated by least square regression.
 
-In the case of a multidimensional input, i.e.
-:math:`X = (x_{ij})_{i=1,\dots,n; j=1,\dots,m}`, where :math:`n` is the number
-of samples and :math:`m` is the number of input variables, the Vandermonde
-matrix is expressed through different combinations of monomials of degree
-:math:`d, (1 \leq d \leq D)`; e.g. for three variables
-:math:`(x, y, z)` and degree :math:`D=3`, the different terms are
+In the case of a multidimensional input,
+i.e. :math:`X = (x_{ij})_{i=1,\dots,n; j=1,\dots,m}`,
+where :math:`n` is the number of samples and :math:`m` is the number of input variables,
+the Vandermonde matrix is expressed
+through different combinations of monomials of degree :math:`d, (1 \leq d \leq D)`;
+e.g. for three variables :math:`(x, y, z)` and degree :math:`D=3`,
+the different terms are
 :math:`x`, :math:`y`, :math:`z`, :math:`x^2`, :math:`xy`, :math:`xz`,
-:math:`y^2`, :math:`yz`, :math:`z^2`, :math:`x^3`, :math:`x^2y` etc. More
-generally, for m input variables, the total number of monomials of degree
-:math:`1 \leq d \leq D` is given by
-:math:`P = \binom{m+D}{m} = \frac{(m+D)!}{m!D!}`. In the case of 3 input
-variables given above, the total number of monomial combinations of degree
-lesser than or equal to three is thus :math:`P = \binom{6}{3} = 20`. The linear
-regression has to identify the coefficients :math:`(w_1, \dots, w_P)`, in
-addition to the intercept :math:`w_0`.
+:math:`y^2`, :math:`yz`, :math:`z^2`, :math:`x^3`, :math:`x^2y` etc.
+More generally,
+for m input variables,
+the total number of monomials of degree :math:`1 \leq d \leq D` is given
+by :math:`P = \binom{m+D}{m} = \frac{(m+D)!}{m!D!}`.
+In the case of 3 input variables given above,
+the total number of monomial combinations of degree lesser than or equal to three
+is thus :math:`P = \binom{6}{3} = 20`.
+The linear regression has to identify the coefficients :math:`(w_1, \dots, w_P)`,
+in addition to the intercept :math:`w_0`.
 
 This concept is implemented through the :class:`.PolynomialRegression` class
 which inherits from the :class:`.MLRegressionAlgo` class.
@@ -78,67 +79,59 @@ modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
 the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 import pickle
 from os.path import join
+from typing import Iterable, Optional, Union
 
-from future import standard_library
-from numpy import concatenate, where, zeros
+from numpy import concatenate, ndarray, where, zeros
 from sklearn.preprocessing import PolynomialFeatures
 
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.core.ml_algo import DataType, TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegression
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class PolynomialRegression(LinearRegression):
-    """ Polynomial regression. """
+    """Polynomial regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "PolyReg"
 
     def __init__(
         self,
-        data,
-        degree,
-        transformer=None,
-        input_names=None,
-        output_names=None,
-        fit_intercept=True,
-        penalty_level=0.0,
-        l2_penalty_ratio=1.0,
-        **parameters
-    ):
-        """Constructor.
+        data,  # type: Dataset
+        degree,  # type: int
+        transformer=None,  # type: Optional[TransformerType]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        fit_intercept=True,  # type: bool
+        penalty_level=0.0,  # type: float
+        l2_penalty_ratio=1.0,  # type: float
+        **parameters  # type: Optional[Union[float,int,str,bool]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            degree: The polynomial degree.
+            fit_intercept: If True, fit intercept.
+            penalty_level: The penalty level greater or equal to 0.
+                If 0, there is no penalty.
+            l2_penalty_ratio: The penalty ratio
+                related to the l2 regularization.
+                If 1, the penalty is the Ridge penalty.
+                If 0, this is the Lasso penalty.
+                Between 0 and 1, the penalty is the ElasticNet penalty.
 
-        :param data: learning dataset.
-        :type data: Dataset
-        :param degree: Degree of polynomial. Default: 2.
-        :type degree: int
-        :param transformer: transformation strategy for data groups.
-            If None, do not transform data. Default: None.
-        :type transformer: dict(str)
-        :param input_names: names of the input variables.
-        :type input_names: list(str)
-        :param output_names: names of the output variables.
-        :type output_names: list(str)
-        :param fit_intercept: if True, fit intercept. Default: True.
-        :type fit_intercept: bool
-        :param penalty_level: penalty level greater or equal to 0.
-            If 0, there is no penalty. Default: 0.
-        :type penalty_leve: float
-        :param l2_penalty_ratio: penalty ratio related to the l2
-            regularization. If 1, the penalty is the Ridge penalty. If 0,
-            this is the Lasso penalty. Between 0 and 1, the penalty is the
-            ElasticNet penalty. Default: None.
-        :type l2_penalty_ratio: float
+        Raises:
+            ValueError: If the degree is lower than one.
         """
         super(PolynomialRegression, self).__init__(
             data,
+            degree=degree,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
@@ -147,37 +140,30 @@ class PolynomialRegression(LinearRegression):
             l2_penalty_ratio=l2_penalty_ratio,
             **parameters
         )
-        self.poly = PolynomialFeatures(degree=degree, include_bias=False)
+        self._poly = PolynomialFeatures(degree=degree, include_bias=False)
         self.parameters["degree"] = degree
         if degree < 1:
             raise ValueError("Degree must be >= 1.")
 
-    def _fit(self, input_data, output_data):
-        """Fit the regression model.
-
-        :param ndarray input_data: input data (2D).
-        :param ndarray output_data: output data (2D).
-        """
-        input_data = self.poly.fit_transform(input_data)
+    def _fit(
+        self,
+        input_data,  # type: ndarray
+        output_data,  # type: ndarray
+    ):  # type: (...) -> None
+        input_data = self._poly.fit_transform(input_data)
         super(PolynomialRegression, self)._fit(input_data, output_data)
 
-    def _predict(self, input_data):
-        """Predict output for given input data.
-
-        :param ndarray input_data: input data (2D).
-        :return: output prediction (2D).
-        :rtype: ndarray.
-        """
-        input_data = self.poly.transform(input_data)
+    def _predict(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        input_data = self._poly.transform(input_data)
         return super(PolynomialRegression, self)._predict(input_data)
 
-    def _predict_jacobian(self, input_data):
-        """Predict Jacobian of the regression model for the given input data.
-
-        :param ndarray input_data: input_data (2D).
-        :return: Jacobian matrices (3D, one for each sample).
-        :rtype: ndarray
-        """
+    def _predict_jacobian(
+        self,
+        input_data,  # type: ndarray
+    ):  # type: (...) -> ndarray
         # Dimensions:
         # powers:        (           ,            ,  n_powers ,  n_inputs )
         # coefs:         (           ,  n_outputs ,  n_powers ,           )
@@ -189,11 +175,11 @@ class PolynomialRegression(LinearRegression):
         # n_powers is given by the formula
         # n_powers = binom(n_inputs+degree, n_inputs)+1
 
-        vandermonde = self.poly.transform(input_data)
+        vandermonde = self._poly.transform(input_data)
 
-        powers = self.poly.powers_
-        n_inputs = self.poly.n_input_features_
-        n_powers = self.poly.n_output_features_
+        powers = self._poly.powers_
+        n_inputs = self._poly.n_input_features_
+        n_powers = self._poly.n_output_features_
         n_outputs = self.algo.coef_.shape[0]
         coefs = self.get_coefficients(False)
 
@@ -240,35 +226,47 @@ class PolynomialRegression(LinearRegression):
 
         return jacobians
 
-    def get_coefficients(self, as_dict=True):
-        """Return the regression coefficients of the linear fit
-        as a numpy array or as a dict.
+    def get_coefficients(
+        self,
+        as_dict=False,  # type:bool
+    ):  # type: (...) -> DataType
+        """Return the regression coefficients of the linear model.
 
-        :param bool as_dict: if True, returns coefficients as a dictionary.
-            Default: True.
+        Args:
+            as_dict: If True, return the coefficients as a dictionary of Numpy arrays
+                indexed by the names of the coefficients.
+                Otherwise, return the coefficients as a Numpy array.
+                For now the only valid value is False.
+
+        Returns:
+            The regression coefficients of the linear model.
+
+        Raises:
+            NotImplementedError: If the coefficients are required as a dictionary.
         """
         coefficients = self.coefficients
         if as_dict:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "For now the coefficients can only be obtained "
+                "in the form of a NumPy array"
+            )
         return coefficients
 
-    def _save_algo(self, directory):
-        """Save external machine learning algorithm.
-
-        :param str directory: algorithm directory.
-        """
+    def _save_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
         super(PolynomialRegression, self)._save_algo(directory)
         filename = join(directory, "poly.pkl")
         with open(filename, "wb") as handle:
-            pickle.dump(self.poly, handle)
+            pickle.dump(self._poly, handle)
 
-    def load_algo(self, directory):
-        """Load external machine learning algorithm.
-
-        :param str directory: algorithm directory.
-        """
+    def load_algo(
+        self,
+        directory,  # type: str
+    ):  # type: (...) -> None
         super(PolynomialRegression, self).load_algo(directory)
         filename = join(directory, "poly.pkl")
         with open(filename, "rb") as handle:
             poly = pickle.load(handle)
-        self.poly = poly
+        self._poly = poly

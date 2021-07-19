@@ -19,16 +19,19 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning API. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test machine learning API."""
+from __future__ import division, unicode_literals
+
+from typing import Dict, List, Tuple
 
 import pytest
-from future import standard_library
-from numpy import arange, array, atleast_2d, hstack
+from numpy import arange, array, atleast_2d, hstack, ndarray
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_dataset
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import (
     create_classification_model,
@@ -48,9 +51,7 @@ from gemseo.mlearning.api import (
     import_mlearning_model,
     import_regression_model,
 )
-
-standard_library.install_aliases()
-
+from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [
@@ -66,8 +67,8 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
 @pytest.fixture
-def dataset():
-    """ Dataset from a R^2 -> R^2 function sampled over [0,1]^2. """
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the machine learning algorithms."""
     expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
     discipline = AnalyticDiscipline("func", expressions_dict)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -80,8 +81,8 @@ def dataset():
 
 
 @pytest.fixture
-def classification_data():
-    """ Dataset for classification. """
+def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,str]]
+    """The dataset used to train the classification algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
     )
@@ -92,8 +93,8 @@ def classification_data():
 
 
 @pytest.fixture
-def cluster_data():
-    """ Dataset for clustering. """
+def cluster_data():  # type:(...) -> Tuple[ndarray,List[str]]
+    """The dataset used to train the clustering algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
     )
@@ -101,7 +102,7 @@ def cluster_data():
 
 
 def test_get_mlearning_models():
-    """ Test that available ML models are found. """
+    """Test that available ML models are found."""
     available_models = get_mlearning_models()
     for regression_model in AVAILABLE_REGRESSION_MODELS:
         assert regression_model in available_models
@@ -113,7 +114,7 @@ def test_get_mlearning_models():
 
 
 def test_get_regression_models():
-    """ Test that available regression models are found. """
+    """Test that available regression models are found."""
     available_models = get_regression_models()
     for regression_model in AVAILABLE_REGRESSION_MODELS:
         assert regression_model in available_models
@@ -121,7 +122,7 @@ def test_get_regression_models():
 
 
 def test_get_classification_models():
-    """ Test that available classification models are found. """
+    """Test that available classification models are found."""
     available_models = get_classification_models()
     for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
         assert classification_model in available_models
@@ -129,7 +130,7 @@ def test_get_classification_models():
 
 
 def test_get_clustering_models():
-    """ Test that available clustering models are found. """
+    """Test that available clustering models are found."""
     available_models = get_clustering_models()
     for clustering_model in AVAILABLE_CLUSTERING_MODELS:
         assert clustering_model in available_models
@@ -137,7 +138,7 @@ def test_get_clustering_models():
 
 
 def test_create_mlearning_model(dataset, classification_data, cluster_data):
-    """ Test creation of model. """
+    """Test creation of model."""
     model = create_mlearning_model("LinearRegression", dataset)
     assert model.algo is not None
     data, variables, groups = classification_data
@@ -151,13 +152,28 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
 
 
 def test_create_regression_model(dataset):
-    """ Test creation of regression model. """
+    """Test creation of regression model."""
     model = create_regression_model("LinearRegression", dataset)
     assert model.algo is not None
 
+    probability_space = ParameterSpace()
+    probability_space.add_random_variable(
+        "x_1", "OTUniformDistribution", minimum=0, maximum=1
+    )
+    probability_space.add_random_variable(
+        "x_2", "OTUniformDistribution", minimum=0, maximum=1
+    )
+    model = create_regression_model(
+        "PCERegression",
+        dataset,
+        probability_space=probability_space,
+        transformer={"inputs": MinMaxScaler()},
+    )
+    assert not model.transformer
+
 
 def test_create_classification_model(classification_data):
-    """ Test creation of classification model. """
+    """Test creation of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_classification_model("KNNClassifier", dataset)
@@ -165,7 +181,7 @@ def test_create_classification_model(classification_data):
 
 
 def test_create_clustering_model(cluster_data):
-    """ Test creation of clustering model. """
+    """Test creation of clustering model."""
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
     model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
@@ -173,7 +189,7 @@ def test_create_clustering_model(cluster_data):
 
 
 def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_path):
-    """ Test import of model. """
+    """Test import of model."""
     model = create_mlearning_model("LinearRegression", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
@@ -196,7 +212,7 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
 
 
 def test_import_regression_model(dataset, tmp_path):
-    """ Test import of regression model. """
+    """Test import of regression model."""
     model = create_regression_model("LinearRegression", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
@@ -205,7 +221,7 @@ def test_import_regression_model(dataset, tmp_path):
 
 
 def test_import_classification_model(classification_data, tmp_path):
-    """ Test import of classification model. """
+    """Test import of classification model."""
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
     model = create_classification_model("KNNClassifier", dataset)
@@ -216,7 +232,7 @@ def test_import_classification_model(classification_data, tmp_path):
 
 
 def test_import_clustering_model(cluster_data, tmp_path):
-    """ Test import of clustering model. """
+    """Test import of clustering model."""
     data, variables = cluster_data
     dataset = create_dataset("dataset_name", data, variables)
     model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
@@ -227,7 +243,7 @@ def test_import_clustering_model(cluster_data, tmp_path):
 
 
 def test_get_mlearning_options():
-    """ Test correct retrieval of model options. """
+    """Test correct retrieval of model options."""
     properties = get_mlearning_options("LinearRegression")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
@@ -240,21 +256,21 @@ def test_get_mlearning_options():
 
 
 def test_get_regression_options():
-    """ Test correct retrieval of regression model options. """
+    """Test correct retrieval of regression model options."""
     properties = get_regression_options("LinearRegression")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
 
 
 def test_get_classification_options():
-    """ Test correct retrieval of classification model options. """
+    """Test correct retrieval of classification model options."""
     properties = get_classification_options("KNNClassifier")["properties"]
     assert "n_neighbors" in properties
     assert "Dummy" not in properties
 
 
 def test_get_clustering_model_options():
-    """ Test correct retrieval of clustering model options. """
+    """Test correct retrieval of clustering model options."""
     properties = get_clustering_options("KMeans")["properties"]
     assert "n_clusters" in properties
     assert "Dummy" not in properties

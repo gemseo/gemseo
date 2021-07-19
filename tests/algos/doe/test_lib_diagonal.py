@@ -19,37 +19,28 @@
 #      :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 
 from .doe_lib_test_base import DOELibraryTestBase
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_DiagonalLib(unittest.TestCase):
-    """ """
+class TestDiagonalLib(unittest.TestCase):
+    """"""
 
     DOE_LIB_NAME = "DiagonalDOE"
 
     def test_init(self):
-        """ """
+        """"""
         factory = DOEFactory()
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
     def test_invalid_algo(self):
-        """ """
+        """"""
         algo_name = "unknown_algo"
         dim = 3
         n_samples = 100
@@ -63,7 +54,7 @@ class Test_DiagonalLib(unittest.TestCase):
         )
 
     def test_diagonal_doe(self):
-        """ """
+        """"""
         algo_name = "DiagonalDOE"
         dim = 3
         n_samples = 10
@@ -99,6 +90,6 @@ def get_options(algo_name, dim):
 
 suite_tests = DOELibraryTestBase()
 for test_method in suite_tests.generate_test(
-    Test_DiagonalLib.DOE_LIB_NAME, get_expected_nsamples, get_options
+    TestDiagonalLib.DOE_LIB_NAME, get_expected_nsamples, get_options
 ):
-    setattr(Test_DiagonalLib, test_method.__name__, test_method)
+    setattr(TestDiagonalLib, test_method.__name__, test_method)

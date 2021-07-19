@@ -37,19 +37,16 @@
 Pretty table factory
 ********************
 """
-from __future__ import (absolute_import, division, print_function,
+from __future__ import ( division, 
                         unicode_literals)
 
-from builtins import int, map, next, range
 import csv
 
-from future import standard_library
 
 from ._compact import HTMLParser
 from .prettytable import PrettyTable
 
 
-standard_library.install_aliases()
 
 
 def from_csv(filepath, field_names=None, **kwargs):
@@ -184,7 +181,8 @@ class TableHandler(HTMLParser):
                 table.add_row(row[0])
         return table
 
-    def make_fields_unique(self, fields):
+    @staticmethod
+    def make_fields_unique(fields):
         """iterates over the row and make each field unique
 
         :param fields: fields

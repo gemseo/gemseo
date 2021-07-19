@@ -19,25 +19,22 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
-from numpy import allclose, arange
+from numpy import allclose, arange, ndarray
 
 from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def data():
-    """ Test data. """
+def data():  # type: (...) -> ndarray
+    """Test data."""
     return arange(300).reshape((3, 100))
 
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     sensor = JamesonSensor()
     assert sensor.name == "JamesonSensor"
     assert sensor.threshold == 0.3
@@ -46,23 +43,15 @@ def test_constructor():
 
 
 def test_fit(data):
-    """ Test fit method. """
+    """Test fit method."""
     sensor = JamesonSensor()
     sensor.fit(data)
     assert allclose(sensor.threshold, 89.7)
 
 
 def test_transform(data):
-    """ Test transform method. """
+    """Test transform method."""
     sensor = JamesonSensor()
     sensor.fit(data)
     sensored = sensor.transform(data)
     assert sensored.shape == (3, 97)
-
-
-def test_fail2d():
-    data = arange(2 ** 3).reshape((2, 2, 2))
-    sensor = JamesonSensor(dimension=3)
-    sensor.fit(data)
-    with pytest.raises(NotImplementedError):
-        sensor.transform(data)

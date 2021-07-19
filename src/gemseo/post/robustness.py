@@ -20,74 +20,57 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Box plots to quantify optimum robustness
-****************************************
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Box plots to quantify optimum robustness."""
+from __future__ import division, unicode_literals
 
+import logging
 from math import sqrt
 
 import matplotlib.pyplot as plt
-import numpy.random as npr
-from future import standard_library
+from matplotlib.figure import Figure
 from numpy import zeros
+from numpy.random import normal
 
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.opt_post_processor import OptPostProcessor
 
-standard_library.install_aliases()
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class Robustness(OptPostProcessor):
-    """
-    The **Robustness** post processing
-    performs a quadratic approximation from an optimization history,
-    and plot the results as cuts of the approximation
-    computes the quadratic approximations of all the output functions,
-    propagate analytically a normal distribution centered on the optimal
-    design variable with a standard deviation which is a percentage
-    of the mean passed in option (default: 1%)
-    and plot the corresponding output boxplot.
+    """Uncertainty quantification at the optimum.
 
-    It is possible either to save the plot, to show the plot or both.
+    Compute the quadratic approximations of all the output functions,
+    propagate analytically a normal distribution centered
+    on the optimal design variables
+    with a standard deviation which is a percentage of the mean passed in option
+    (default: 1%)
+    and plot the corresponding output boxplot.
     """
 
     SR1_APPROX = "SR1"
 
     def _plot(
-        self, save=True, show=False, stddev=0.01, file_path="boxplot", extension="pdf"
-    ):
+        self,
+        stddev=0.01,  # type: float
+    ):  # type: (...) -> None
         """
-        Builds the plot and saves it
-
-        :param function: function name to build quadratic approximation
-        :type function: bool
-        :param show: if True, displays the plot windows
-        :type show: bool
-        :param save: if True, exports plot to pdf
-        :type save: bool
-        :param file_path: the base paths of the files to export
-        :type file_path: str
-        :param stddev: standard deviation of inputs as fraction of x bounds
-        :type stddev: float
-        :param share_y: if True, all Y axis are the same,
-            useful to comare sensitivities
-        :type share_y: bool
-        :param extension: file extension
-        :type extension: str
+        Args:
+            stddev: The standard deviation of the inputs as fraction of x bounds.
         """
-        fig = self.__boxplot(stddev)
-        self._save_and_show(
-            fig, save=save, show=show, file_path=file_path, extension=extension
-        )
+        self._add_figure(self.__boxplot(stddev))
 
-    def __boxplot(self, stddev=0.01):
-        """
-        Plots the Hessian of the function
+    def __boxplot(
+        self,
+        stddev=0.01,  # type: float
+    ):  # type: (...) -> Figure
+        """Plot the Hessian of the function.
 
-        :param stddev : standard deviation of inputs as fraction of x bounds
+        Args:
+            stddev: The standard deviation of the inputs as fraction of x bounds.
+
+        Returns:
+            A plot of the Hessian of the function.
         """
         robustness = RobustnessQuantifier(self.database, "SR1")
         n_x = self.opt_problem.get_dimension()
@@ -95,7 +78,7 @@ class Robustness(OptPostProcessor):
         upper_bounds = self.opt_problem.design_space.get_upper_bounds()
         lower_bounds = self.opt_problem.design_space.get_lower_bounds()
         bounds_range = upper_bounds - lower_bounds
-        cov[list(range(n_x)), list(range(n_x))] = (stddev * (bounds_range)) ** 2
+        cov[list(range(n_x)), list(range(n_x))] = (stddev * bounds_range) ** 2
 
         data = []
         funcs_names = []
@@ -114,7 +97,7 @@ class Robustness(OptPostProcessor):
                 mean = robustness.compute_expected_value(x_ref, cov)
                 var = robustness.compute_variance(x_ref, cov)
                 if var > 0:  # Otherwise normal doesnt work
-                    data.append(npr.normal(loc=mean, scale=sqrt(var), size=500))
+                    data.append(normal(loc=mean, scale=sqrt(var), size=500))
                     legend = func_name
                     if dim > 1:
                         legend += "_" + str(i + 1)
@@ -123,8 +106,7 @@ class Robustness(OptPostProcessor):
         fig = plt.figure()
         fig.suptitle(
             "Box plot of the optimization functions "
-            + "with normalized stddev "
-            + str(stddev)
+            "with normalized stddev {}".format(stddev)
         )
         plt.boxplot(data, showfliers=False, labels=funcs_names)
 

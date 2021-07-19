@@ -12,7 +12,10 @@ flake8-docstrings==1.5.0
 flake8-logging-format
 flake8-print
 ipython
+isort
 pep8-naming
+pip-tools
+pre-commit
 pytest-pudb
 rope
 tox

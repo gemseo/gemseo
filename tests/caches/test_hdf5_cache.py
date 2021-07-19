@@ -19,18 +19,15 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
 from os.path import join
 
 import h5py
 import pytest
-from future import standard_library
 from numpy import ones
 
 from gemseo.caches.cache_factory import CacheFactory
-
-standard_library.install_aliases()
 
 
 def create_cache(tmp_path, h5_node="Dummy"):

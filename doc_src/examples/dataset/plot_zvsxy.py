@@ -25,15 +25,14 @@ Plot - ZvsXY
 ============
 
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ############################################################################
 # Load the Rosenbrock dataset
@@ -44,4 +43,6 @@ dataset = load_dataset("RosenbrockDataset")
 # Plot z vs x and y
 # -----------------
 # We can use the :class:`.ZvsXY` plot
-dataset.plot("ZvsXY", x="x", x_comp=0, y="x", y_comp=1, z="rosen")
+dataset.plot("ZvsXY", x="x", x_comp=0, y="x", y_comp=1, z="rosen", show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

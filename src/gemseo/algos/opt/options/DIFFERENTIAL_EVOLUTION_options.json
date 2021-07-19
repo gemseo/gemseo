@@ -1,0 +1,64 @@
+{
+    "name": "DIFFERENTIAL_EVOLUTION_options",
+    "required":["max_iter"],
+    "properties": {
+        "xtol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "xtol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_rel": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ftol_abs": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "max_iter":{
+            "type": "integer",
+            "minimum": 1
+        },
+        "seed":{
+            "type":"integer",
+            "minimum": 1
+        },
+        "strategy":{
+            "type": "string"
+        },
+        "popsize":{
+            "type":"integer"
+        },
+        "tol":{
+            "type":"number"
+        },
+        "atol":{
+            "type":"number"
+        },
+        "mutation":{
+            "type":"object"
+        },
+        "recombination":{
+            "type":"number"
+        },
+        "polish":{
+            "type":"boolean"
+        },
+        "init":{
+            "type":"string"
+        },
+        "updating":{
+            "type":"string"
+        },
+        "workers":{
+            "type":"integer"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "id": "#DIFFERENTIAL_EVOLUTION"
+}

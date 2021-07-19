@@ -27,9 +27,9 @@ Robustness
 In this example, we illustrate the use of the :class:`.Robustness` plot
 on the Sobieski's SSBJ problem.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
@@ -41,7 +41,6 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ###############################################################################
 # Create disciplines
@@ -66,7 +65,7 @@ design_space = SobieskiProblem().read_design_space()
 ###############################################################################
 # Create and execute scenario
 # ---------------------------
-# The next step is to build a MDO scenario in order to maximize the range,
+# The next step is to build an MDO scenario in order to maximize the range,
 # encoded 'y_4', with respect to the design parameters, while satisfying the
 # inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
 # the SLSQP optimization algorithm
@@ -94,4 +93,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # deviation which is a percentage of the mean passed in option (default: 1%)
 # and plot the corresponding output boxplot. plots any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
-scenario.post_process("Robustness", save=False, show=True)
+scenario.post_process("Robustness", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

@@ -20,25 +20,19 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import logging
 from copy import deepcopy
 
 import numpy as np
-from future import standard_library
 
-from gemseo import LOGGER
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.third_party.junitxmlreq import link_to
 from gemseo.utils.py23_compat import PY2
-
-standard_library.install_aliases()
 
 
 class DOELibraryTestBase(object):
-    """ """
+    """"""
 
     @staticmethod
     def relative_norm(x, x_ref):
@@ -70,7 +64,6 @@ class DOELibraryTestBase(object):
         """
         problem = DOELibraryTestBase.get_problem(dim)
         doe_library = DOEFactory().create(doe_algo_name)
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         doe_library.execute(problem, **options)
         return doe_library
 
@@ -88,7 +81,6 @@ class DOELibraryTestBase(object):
 
         """
         problem = DOELibraryTestBase.get_problem(dim)
-        LOGGER.info("Run test problem " + str(problem.__class__.__name__))
         doe_library.execute(problem, algo_name=algo_name, **options)
         samples = doe_library.samples
 
@@ -121,7 +113,6 @@ class DOELibraryTestBase(object):
 
         """
 
-        @link_to("Req-MDO-2", "Req-MDO-9", "Req-MDO-7")
         def test_algo(self=None):
             """
 
@@ -138,24 +129,22 @@ class DOELibraryTestBase(object):
 
     @staticmethod
     def get_problem(dim):
-        """Reinsantiate problem to do not erase it
+        """Reinsantiate problem to do not erase it.
 
         :param dim:
-
         """
         problem = Rosenbrock(dim)
         problem.check()
         return problem
 
     def generate_test(self, opt_lib_name, get_expected_nsamples, get_options):
-        """Generates the tests for an opt library
-        Filters algorithms adapted to the benchmark problems
+        """Generates the tests for an opt library Filters algorithms adapted to the
+        benchmark problems.
 
         :param opt_lib_name: name of the library
         :param get_expected_nsamples: param get_options:
         :param get_options:
         :returns: list of test methods to be attached to a unitest class
-
         """
         tests = []
         factory = DOEFactory()

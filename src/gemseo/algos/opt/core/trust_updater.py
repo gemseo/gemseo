@@ -25,17 +25,13 @@ Updates a trust parameter according to a decreases ratio
 ********************************************************
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import str, super
+import logging
 
-from future import standard_library
-from numpy import divide, maximum, minimum, multiply, ones
+from numpy import divide, maximum, minimum, multiply
 
-standard_library.install_aliases()
-
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class TrustUpdater(object):
@@ -49,7 +45,6 @@ class TrustUpdater(object):
         :param multipliers: multipliers for the trust parameter
         :type multipliers: tuple
         :param bound: (lower or upper) bound for the trust parameter
-
         """
         if not isinstance(thresholds, tuple):
             raise ValueError(
@@ -70,8 +65,8 @@ class TrustUpdater(object):
         raise NotImplementedError()
 
     def update(self, ratio, parameter):
-        """Updates the trust parameter relative to the decreases ratio value.
-        Method to be overidden by subclasses.
+        """Updates the trust parameter relative to the decreases ratio value. Method to
+        be overidden by subclasses.
 
         :param ratio: decreases ratio
         :param parameter: trust parameter (radius or penalty)
@@ -92,7 +87,6 @@ class PenaltyUpdater(TrustUpdater):
         :param multipliers: multipliers for the penalty parameter
         :type multipliers: tuple
         :param bound: lower bound for the penalty parameter
-
         """
         super(PenaltyUpdater, self).__init__(thresholds, multipliers, bound)
         self._check()
@@ -145,7 +139,6 @@ class PenaltyUpdater(TrustUpdater):
         :param ratio: decreases ratio
         :param parameter: penalty parameter
         :returns: new penalty parameter, iteration success (boolean)
-
         """
         # The iteration is declared successful if and only if the ratio is
         #         greater than or equal to the lower threshold.
@@ -175,7 +168,6 @@ class RadiusUpdater(TrustUpdater):
         :param multipliers: multipliers for the region radius
         :type multipliers: tuple
         :param bound: lower bound for the region radius
-
         """
         super(RadiusUpdater, self).__init__(thresholds, multipliers, bound)
         self._check()
@@ -224,7 +216,6 @@ class RadiusUpdater(TrustUpdater):
         :param ratio: decreases ratio
         :param parameter: region radius
         :returns: new region radius, iteration success (boolean)
-
         """
         # The iteration is declared successful if and only if the ratio is
         # greater than or equal to the lower threshold.
@@ -241,7 +232,10 @@ class RadiusUpdater(TrustUpdater):
 
 
 class BoundsUpdater(object):
-    """Updates trust bounds, i.e. trust ball w.r.t. the infinity norm."""
+    """Updates trust bounds, i.e. trust ball w.r.t.
+
+    the infinity norm.
+    """
 
     def __init__(self, lower_bounds, upper_bounds, normalize=False):
         """Initializer.
@@ -259,11 +253,10 @@ class BoundsUpdater(object):
         self._normalized_update = normalize
 
     def update(self, radius, center):
-        """
-        Updates the trust bounds.
+        """Updates the trust bounds.
 
         :param radius: region radius w.r.t. the infinity norm
-        :type ratio: float
+        :type radius: float
         :param center: region center
         :type center: ndarray
         :returns: new region radius, iteration success (boolean)
@@ -273,20 +266,20 @@ class BoundsUpdater(object):
                 self._lower_bounds, self._upper_bounds, center, radius
             )
         else:
-            norm_center = self._normalize(center)
-            ones_vect = ones(center.size)
+            # Compute the normalized coordinate-specific radii:
+            # radius_i = radius * 0.5 * (upper_bound_i - lower_bound_i)
+            radii = radius * 0.5 * (self._upper_bounds - self._lower_bounds)
+            # Compute the trust bounds
             low_bnds, upp_bnds = self._compute_trust_bounds(
-                -ones_vect, ones_vect, norm_center, radius
+                self._lower_bounds, self._upper_bounds, center, radii
             )
-            low_bnds = self._unnormalize(low_bnds)
-            upp_bnds = self._unnormalize(upp_bnds)
 
         return low_bnds, upp_bnds
 
     @staticmethod
     def _compute_trust_bounds(lower_bounds, upper_bounds, center, radius):
-        """Updates bounds based on a ball center and ball radius w.r.t. the
-        infinity norm.
+        """Updates bounds based on a ball center and ball radius w.r.t. the infinity
+        norm.
 
         :param lower_bounds: lower bounds to be updated
         :type lower_bounds: ndarray
@@ -294,8 +287,8 @@ class BoundsUpdater(object):
         :type upper_bounds: ndarray
         :param center: ball center
         :type center: ndarray
-        :param radius: ball radius
-        :type radius: float
+        :param radius: ball radius (same for all coordinate or coordinate-specific)
+        :type radius: float or ndarray
         :returns: updated lower bounds, updated upper bounds
         :rtype: ndarray, ndarray
         """
@@ -308,17 +301,13 @@ class BoundsUpdater(object):
         return lower_trust_bounds, upper_trust_bounds
 
     def _normalize(self, x_vect):
-        """
-        Normalize a vector coordinates to [-1, 1].
-        """
+        """Normalize a vector coordinates to [-1, 1]."""
         x_norm = 2.0 * x_vect - self._upper_bounds - self._lower_bounds
         x_norm = divide(x_norm, self._upper_bounds - self._lower_bounds)
         return x_norm
 
     def _unnormalize(self, x_norm):
-        """
-        Unnormalize a vector coordinates from [-1, 1].
-        """
+        """Unnormalize a vector coordinates from [-1, 1]."""
         x_vect = multiply(x_norm, (self._upper_bounds - self._lower_bounds))
         x_vect = (x_vect + self._upper_bounds + self._lower_bounds) / 2.0
         return x_vect

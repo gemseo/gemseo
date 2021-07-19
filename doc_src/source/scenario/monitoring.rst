@@ -161,3 +161,39 @@ The scenario execution generates the following output log:
 
 More advanced use can be made of this notification system, since the atom has the discipline concerned by the status change as an attribute.
 Therefore, one can programmatically track the execution; or the data creation by the discipline's execution, and store it.
+
+
+Monitoring using a Gantt chart
+------------------------------
+
+A Gantt chart can be generated to visualize the process execution.
+All disciplines execution and linearization times are recorded and plotted.
+
+To activate the execution times recording,
+which are required to plot the Gantt chart,
+please first activate the time stamps before executing the scenario.
+
+.. code::
+
+   from gemseo.core.discipline import MDODiscipline
+   MDODiscipline.activate_time_stamps()
+
+Then, after the scenario execution,
+the Gantt chart can be created easily.
+
+.. code::
+
+   from gemseo.post.core.gantt_chart import create_gantt
+
+   create_gantt(save=True, show=False)
+
+This generates the following plot,
+here on a Sobieski MDF scenario.
+
+
+.. figure:: /_images/monitoring/gantt_process.png
+   :scale: 65 %
+
+   The Gantt chart: disciplines are sorted by names,
+   each discipline has a dedicated rows,
+   and the blue rectangles correspond to execution while the red ones are for linearization.

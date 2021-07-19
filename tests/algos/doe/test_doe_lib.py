@@ -19,43 +19,39 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+import pytest
 
-from unittest import TestCase
-
-from future import standard_library
-
-from gemseo import SOFTWARE_NAME
 from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.testing_utils import IS_NT
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
+FACTORY = DOEFactory()
 
 
-class Test_DOE_lib(TestCase):
-    def test_fail_sample(self):
-        problem = Power2(exception_error=True)
-        factory = DOEFactory()
-        if factory.is_available("PyDOE"):
-            lib = factory.create("PyDOE")
-            lib.execute(problem, "lhs", n_samples=4)
+@pytest.fixture
+def doe():
+    pytest.mark.skipif(
+        FACTORY.is_available("PyDOE"), reason="skipped because PyDOE is missing"
+    )
+    return FACTORY.create("PyDOE")
 
-    def test_evaluate_samples(self):
-        problem = Power2()
-        factory = DOEFactory()
-        if factory.is_available("PyDOE"):
-            doe = factory.create("PyDOE")
-            doe.execute(problem, "fullfact", n_samples=2, wait_time_between_samples=1)
-            if not IS_NT:
-                doe.execute(
-                    problem,
-                    "fullfact",
-                    n_samples=2,
-                    n_processes=2,
-                    wait_time_between_samples=1,
-                )
+
+def test_fail_sample(doe):
+    problem = Power2(exception_error=True)
+    doe.execute(problem, "lhs", n_samples=4)
+
+
+def test_evaluate_samples(doe):
+    problem = Power2()
+    doe.execute(problem, "fullfact", n_samples=2, wait_time_between_samples=1)
+
+
+@pytest.mark.skip_under_windows
+def test_evaluate_samples_multiproc(doe):
+    problem = Power2()
+    doe.execute(
+        problem,
+        "fullfact",
+        n_samples=2,
+        n_processes=2,
+        wait_time_between_samples=1,
+    )

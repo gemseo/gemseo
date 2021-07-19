@@ -28,9 +28,8 @@ In this example, we will see how to build a :class:`.Dataset` from objects
 of an :class:`.AbstractFullCache`.
 For that, we need to import this :class:`.Dataset` class:
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
 from numpy import array
 
 from gemseo.api import configure_logger
@@ -38,7 +37,6 @@ from gemseo.caches.memory_full_cache import MemoryFullCache
 
 configure_logger()
 
-standard_library.install_aliases()
 
 ##############################################################################
 # Synthetic data

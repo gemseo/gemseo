@@ -49,20 +49,21 @@ The **GradientSensitivity** post processing
 builds histograms of derivatives of objective and constraints
 
 The plot method considers the derivatives at the last iteration.
-The iteration can be changed in option. The x- and y- figure sizes
-can also be modified in option.
+The iteration can be changed in options. The x- and y- figure sizes
+can also be modified in options.
 It is possible either to save the plot, to show the plot or both.
 
 Options
 -------
 
-- **extension**, :code:`str` - file extension
-- **figsize_x**, :code:`int` - size of figure in horizontal direction (inches)
-- **figsize_y**, :code:`int` - size of figure in vertical direction (inches)
-- **file_path**, :code:`str` - the base paths of the files to export
-- **iteration**, :code:`int` -  the iteration to plot sensitivities, if negative, use optimum
-- **save**, :code:`bool` - if True, exports plot to pdf
-- **show**, :code:`bool` - if True, displays the plot windows
+- **iteration**, :code:`int` - The iteration to plot the sensitivities, if negative, use the optimum.
+- **figsize_x**, :code:`int` - The size of the figure in the horizontal direction (inches).
+- **figsize_y**, :code:`int` - The size of the figure in the vertical direction (inches).
+- **show**, :code:`bool` - If True, display the plot windows.
+- **save**, :code:`bool` - If True, export the plot to pdf.
+- **file_path**, :code:`str` - The base paths of the files to export. Relative to the working directory.
+- **extension**, :code:`str` - The file extension.
+- **scale_gradients**, :code:`bool` - If True, normalize each gradient w.r.t. the design variables.
 
 Case of the MDF formulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,7 +74,7 @@ and additional arguments concerning the type of display (file, screen, both):
 
 .. code::
 
-    scenario.post_process(“GradientSensitivity”, save=True, show=False,file_path=“mdf” )
+    scenario.post_process("GradientSensitivity", save=True, show=False,file_path=“mdf” )
 
 The figure :ref:`fig-ssbj-mdf-grad-sens` shows the total derivatives of the objective and constraints with
 respect to the :term:`design variables`: :math:`\frac{d f}{d x_i}`:
@@ -91,11 +92,11 @@ respect to the :term:`design variables`: :math:`\frac{d f}{d x_i}`:
 
     Gradient sensitivity on the Sobieski use case for the MDF formulation
 
-:math:`x_0` (wing-taper ratio) and :math:`x_2` (Mach number) appear to
+:math:`x_{shared_0}` (wing-taper ratio) and :math:`x_{shared_2}` (Mach number) appear to
 be the most important for the gradient of the objective function.
 
 The ``g_1_0`` to ``g_1_4`` are very similar, since they all quantify the
 stress in various sections. ``g_1_5`` and ``g_1_6`` correspond to the
 lower and upper bounds of the twist , therefore their sensitivities are
-opposite. ``g_2`` is a function of only :math:`x_0` ; :math:`x_0` is the
+opposite. ``g_2`` is a function of only :math:`x_{shared_0}` ; :math:`x_{shared_0}` is the
 only variable that influences its gradient.

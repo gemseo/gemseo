@@ -19,18 +19,18 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-GUI for edition of templates for inputs and outputs files
-To be used by :class:`.DiscFromExe`
+"""GUI for edition of templates for inputs and outputs files To be used by
+:class:`.DiscFromExe`
 
 Run this file with no argument to open the GUI
 """
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import division, unicode_literals
 
+import logging
 import sys
 from os.path import dirname, exists, join
 
-from future import standard_library
+LOGGER = logging.getLogger(__name__)
 
 try:
     from PySide2.QtCore import QRegExp
@@ -46,6 +46,7 @@ try:
 except ImportError:
     # Both libraries are fully interchangeable so we are not contaminated by
     # the GPL license here
+    LOGGER.warning("PySide2 cannot be imported.")
     from PyQt5.QtCore import QRegExp
     from PyQt5.QtGui import QColor, QIcon, QTextCursor
     from PyQt5.QtWidgets import (
@@ -57,8 +58,11 @@ except ImportError:
         QTextEdit,
     )
 
-
-standard_library.install_aliases()
+    LOGGER.warning(
+        "Your Python environment uses PyQt5"
+        ": it is distributed under the GNU GPL v3.0 license "
+        "unless you have acquired a commercial license for it."
+    )
 
 
 class QtTemplateEditor(QMainWindow):
@@ -94,7 +98,6 @@ class QtTemplateEditor(QMainWindow):
 
         :param in_sep: separator name for the input tag, default GEMSEO_INPUT
         :param out_sep: separator name for the output tag, default GEMSEO_OUTPUT
-
         """
 
         self.in_sep = in_sep

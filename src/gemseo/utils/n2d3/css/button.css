@@ -1,0 +1,23 @@
+.myButton {
+  border: none;
+  color: white;
+  padding: 7px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.help {
+  background-color: #17a2b8;
+  }
+
+.save {
+  background-color: #4CAF50;
+  }
+
+.export {
+  background-color: #ffc107;
+  color: #332703;
+  }

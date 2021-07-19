@@ -19,60 +19,85 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Baseclass for all formulations
-******************************
-"""
+"""The base class for all formulations."""
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from future import standard_library
-from numpy import array, copy, empty, in1d, where, zeros
+import logging
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
+
+from gemseo.algos.design_space import DesignSpace
+from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_sequence import ExecutionSequence
+from gemseo.core.json_grammar import JSONGrammar
+
+if TYPE_CHECKING:
+    from gemseo.core.scenario import Scenario
+
+import six
+from custom_inherit import DocInheritMeta
+from numpy import array, copy, empty, in1d, ndarray, where, zeros
 from six import string_types
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.function import MDOFunction, MDOFunctionGenerator
 
-standard_library.install_aliases()
+LOGGER = logging.getLogger(__name__)
 
 
-from gemseo import LOGGER
-
-
+@six.add_metaclass(
+    DocInheritMeta(
+        abstract_base_class=True,
+        style="google_with_merge",
+        include_special_methods=True,
+    )
+)
 class MDOFormulation(object):
-    """Abstract MDO formulation class
-    To be extended in subclasses for use.
+    """Abstract MDO formulation class to be extended in subclasses for use.
 
-    The MDOFormulation creates the objective function and
-    constraints from the disciplines.
-
+    This class creates the objective function and constraints from the disciplines.
     It defines the process implicitly.
 
-    The link between MDODisciplines and objective
-    functions and constraints is made with MDOFunctionGenerator,
-    which generates MDOFunctions from the disciplines.
+    By default,
+
+    - the objective function is minimized,
+    - the type of a constraint is equality,
+    - the activation value of a constraint is 0.
+
+    The link between the instances of :class:`.MDODiscipline`,
+    the name of the objective function
+    and the names of the constraints
+    is made with the :class:`.MDOFunctionGenerator`,
+    which generates instances of :class:`.MDOFunction` from the disciplines.
     """
 
     NAME = "MDOFormulation"
 
     def __init__(
         self,
-        disciplines,
-        objective_name,
-        design_space,
-        maximize_objective=False,
+        disciplines,  # type: Sequence[MDODiscipline]
+        objective_name,  # type: str
+        design_space,  # type: DesignSpace
+        maximize_objective=False,  # type: bool
         **options
-    ):  # pylint: disable=W0613
+    ):  # type: (...) -> None # pylint: disable=W0613
         """
-        Constructor, initializes the objective functions and constraints
-
-        :param disciplines: the disciplines list
-        :param reference_input_data: the base input data dict for the
-            disciplines
-        :param objective_name: the objective function data name
-        :param design_space: the design space
-        :param maximize_objective: if True, the objective function
-            is maximized, by default, a minimization is performed
+        Args:
+            disciplines: The disciplines.
+            objective_name: The name of the objective function.
+            design_space: The design space.
+            maximize_objective: If True, the objective function is maximized.
+            **options: The options of the formulation.
         """
         self.check_disciplines(disciplines)
         self.disciplines = disciplines
@@ -81,42 +106,41 @@ class MDOFormulation(object):
         self._maximize_objective = maximize_objective
 
     @property
-    def design_space(self):
-        """
-        Proxy for formulation.design_space
-
-        :returns: the design space
-        """
+    def design_space(self):  # type: (...) -> DesignSpace
+        """The design space on which the formulation is applied."""
         return self.opt_problem.design_space
 
     @staticmethod
-    def check_disciplines(disciplines):
-        """Sets the disciplines.
+    def check_disciplines(
+        disciplines,  # type: Any
+    ):  # type: (...) -> None
+        """Check that the disciplines are provided as a list.
 
-        :param disciplines: the disciplines list
+        Args:
+            disciplines: The disciplines.
         """
         if not disciplines or not isinstance(disciplines, list):
-            raise TypeError(
-                "Disciplines must be provided" + " to the formulation as a list"
-            )
+            raise TypeError("Disciplines must be provided to the formulation as a list")
 
     @staticmethod
-    def _check_add_cstr_input(output_name, constraint_type):
-        """Checks the add_constraint method inputs
-        Can be reused in subclasses
+    def _check_add_cstr_input(
+        output_name,  # type: str,
+        constraint_type,  # type:str
+    ):  # type: (...) -> List[str]
+        """Check the output name and constraint type passed to :meth:`.add_constraint`.
 
-        :param output_name: the output name to be used as constraint
-            for instance, if g_1 is given and constraint_type="eq",
-            g_1=0 will be added as constraint to the optimizer
-        :param constraint_type: the type of constraint, "eq" for equality,
-            "ineq" for inequality constraint
+        Args:
+            output_name: The name of the output to be used as a constraint.
+                For instance, if g_1 is given and constraint_type="eq",
+                g_1=0 will be added as a constraint to the optimizer.
+            constraint_type: The type of constraint,
+                either "eq" for equality constraint
+                or "ineq" for inequality constraint.
         """
         if constraint_type not in [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ]:
             raise ValueError(
                 "Constraint type must be either 'eq' or 'ineq',"
-                + " got:"
-                + str(constraint_type)
-                + " instead"
+                " got: %s instead" % constraint_type
             )
         if isinstance(output_name, list):
             outputs_list = output_name
@@ -126,30 +150,31 @@ class MDOFormulation(object):
 
     def add_constraint(
         self,
-        output_name,
-        constraint_type=MDOFunction.TYPE_EQ,
-        constraint_name=None,
-        value=None,
-        positive=False,
-    ):
-        """Add a user constraint, i.e. a design constraint in addition to
-        formulation specific constraints such as targets in IDF.
-        The strategy of repartition of constraints is defined in the
-        formulation class.
+        output_name,  # type: str
+        constraint_type=MDOFunction.TYPE_EQ,  # type: str
+        constraint_name=None,  # type: Optional[str]
+        value=None,  # type: Optional[float]
+        positive=False,  # type: bool
+    ):  # type: (...) -> None
+        """Add a user constraint.
 
-        :param output_name: the output name to be used as constraint
-            for instance, if g_1 is given and constraint_type="eq",
-            g_1=0 will be added as constraint to the optimizer
-        :param constraint_type: the type of constraint, "eq" for equality,
-            "ineq" for inequality constraint
-            (Default value = MDOFunction.TYPE_EQ)
-        :param constraint_name: name of the constraint to be stored,
-            if None, generated from the output name (Default value = None)
-        :param value: Default value = None)
-        :param positive: Default value = False)
-        :returns: the constraint as an MDOFunction
-            False if the formulation does not dispatch the constraint to the
-            optimizers itself
+        A user constraint is a design constraint
+        in addition to the formulation specific constraints
+        such as the targets (a.k.a. consistency constraints) in IDF.
+
+        The strategy of repartition of constraints is defined in the formulation class.
+
+        Args:
+            output_name: The name of the output to be used as a constraint.
+                For instance, if g_1 is given and constraint_type="eq",
+                g_1=0 will be added as a constraint to the optimizer.
+            constraint_type: The type of constraint,
+                either "eq" for equality constraint or "ineq" for inequality constraint.
+            constraint_name: The name of the constraint to be stored,
+                If None, the name is generated from the output name.
+            value: The value of activation of the constraint.
+                If None, the value is equal to 0.
+            positive: If True, the inequality constraint is positive.
         """
         outputs_list = self._check_add_cstr_input(output_name, constraint_type)
 
@@ -160,19 +185,21 @@ class MDOFormulation(object):
             mapped_cstr.name = constraint_name
         self.opt_problem.add_constraint(mapped_cstr, value=value, positive=positive)
 
-    def add_observable(self, output_names, observable_name=None, discipline=None):
-        """
-        Adds observable to the optimization problem. The repartition
-        strategy of the observable is defined in the formulation class.
+    def add_observable(
+        self,
+        output_names,  # type: Union[str,Sequence[str]]
+        observable_name=None,  # type: Optional[str]
+        discipline=None,  # type: Optional[MDODiscipline]
+    ):  # type: (...) -> None
+        """Add an observable to the optimization problem.
 
-        :param output_names: names of the outputs to observe
-        :type output_names: str or list(str)
-        :param observable_name: name of the observable, optional.
-        :type observable_name: str
-        :param discipline: if None, detected from inner disciplines, otherwise
-            the discipline used to build the function
-            (Default value = None)
-        :type discipline: MDODiscipline
+        The repartition strategy of the observable is defined in the formulation class.
+
+        Args:
+            output_names: The name(s) of the output(s) to observe.
+            observable_name: The name of the observable.
+            discipline: The discipline computing the observed outputs.
+                If None, the discipline is detected from inner disciplines.
         """
         if isinstance(output_names, string_types):
             output_names = [output_names]
@@ -184,37 +211,59 @@ class MDOFormulation(object):
         obs_fun.f_type = MDOFunction.TYPE_OBS
         self.opt_problem.add_observable(obs_fun)
 
-    def get_top_level_disc(self):
-        """Returns the disciplines which inputs are required to run the
-        associated scenario
-        By default, returns all disciplines
-        To be overloaded by subclasses
+    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
+        """Return the disciplines which inputs are required to run the scenario.
 
-        :returns: the list of top level disciplines
+        A formulation seeks to
+        evaluate objective function and constraints from inputs.
+        It structures the optimization problem into multiple levels of disciplines.
+        The disciplines directly depending on these inputs
+        are called top level disciplines.
+
+        By default, this method returns all disciplines.
+        This method can be overloaded by subclasses.
+
+        Returns:
+            The top level disciplines.
         """
         return self.disciplines
 
     @staticmethod
-    def _get_mask_from_datanames(all_data_names, masked_data_names):
-        """Gets a mask of all_data_names for masked_data_names, ie an array
-        of the size of all_data_names with True values when masked_data_names
-        are in all_data_names
+    def _get_mask_from_datanames(
+        all_data_names,  # type: ndarray
+        masked_data_names,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Get a mask of all_data_names for masked_data_names.
 
-        :param all_data_names: the main array for mask
-        :param masked_data_names: the array which masks all_data_names
-        :returns: a True / False valued mask array
+        This mask is an array of the size of all_data_names
+        with True values when masked_data_names are in all_data_names.
+
+        Args:
+            all_data_names: The main array for mask.
+            masked_data_names: The array which masks all_data_names.
+
+        Returns:
+            A True / False valued mask array.
         """
         places = in1d(all_data_names, masked_data_names)
         return where(places)
 
-    def _get_generator_from(self, output_names, top_level_disc=False):
-        """Find a discipline which has all outputs named output_names
-        and builds the associated MDOFunctionGenerator
+    def _get_generator_from(
+        self,
+        output_names,  # type: Iterable[str]
+        top_level_disc=False,  # type: bool
+    ):  # type: (...) -> MDOFunctionGenerator
+        """Create a generator of :class:`.MDOFunction` from the names of the outputs.
 
-        :param top_level_disc: if True, search outputs among top
-            level disciplines (Default value = False)
-        :param output_names: the output names
-        :returns: the discipline
+        Find a discipline which computes all the provided outputs
+        and build the associated MDOFunctionGenerator.
+
+        Args:
+            output_names: The names of the outputs.
+            top_level_disc: If True, search outputs among top level disciplines.
+
+        Returns:
+            A generator of :class:`.MDOFunction` instances.
         """
         if top_level_disc:
             search_among = self.get_top_level_disc()
@@ -224,19 +273,26 @@ class MDOFormulation(object):
             if discipline.is_all_outputs_existing(output_names):
                 return MDOFunctionGenerator(discipline)
         raise ValueError(
-            "No discipline known by formulation "
-            + type(self).__name__
-            + " has all outputs named "
-            + str(output_names)
+            "No discipline known by formulation %s"
+            " has all outputs named %s" % (type(self).__name__, output_names)
         )
 
-    def _get_generator_with_inputs(self, input_names, top_level_disc=False):
-        """Find a discipline which has all inputs named output_names
+    def _get_generator_with_inputs(
+        self,
+        input_names,  # type: Iterable[str]
+        top_level_disc=False,  # type: bool
+    ):  # type: (...) -> MDOFunctionGenerator
+        """Create a generator of :class:`.MDOFunction` from the names of the inputs.
 
-        :param input_names: the output names
-        :param top_level_disc: if True, search outputs among top
-            level disciplines (Default value = False)
-        :returns: the discipline
+        Find a discipline which has all the provided inputs
+        and build the associated MDOFunctionGenerator.
+
+        Args:
+            input_names: The names of the inputs.
+            top_level_disc: If True, search inputs among the top level disciplines.
+
+        Returns:
+            A generator of :class:`.MDOFunction` instances.
         """
         if top_level_disc:
             search_among = self.get_top_level_disc()
@@ -246,22 +302,26 @@ class MDOFormulation(object):
             if discipline.is_all_inputs_existing(input_names):
                 return MDOFunctionGenerator(discipline)
         raise ValueError(
-            "No discipline known by formulation "
-            + type(self).__name__
-            + " has all inputs named "
-            + str(input_names)
+            "No discipline known by formulation %s"
+            " has all inputs named %s" % (type(self).__name__, input_names)
         )
 
-    def mask_x(self, masking_data_names, x_vect, all_data_names=None):
-        """Masks a vector x_vect, using names masking_data_names,
-        and with respect to reference names all_data_names
+    def mask_x(
+        self,
+        masking_data_names,  # type: Iterable[str]
+        x_vect,  # type: ndarray
+        all_data_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> ndarray
+        """Mask a vector from a subset of names, with respect to a set of names.
 
-        :param masking_data_names: the names of data to keep
-        :param x_vect: the vector to mask
-        :param all_data_names: reference data names, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
-        :returns: masked x_vect
+        Args:
+            masking_data_names: The names of data to keep.
+            x_vect: The vector of float to mask.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+
+        Returns:
+            A boolean mask with the same shape as the input vector.
         """
         if all_data_names is None:
             all_data_names = self.get_optim_variables_names()
@@ -271,54 +331,84 @@ class MDOFormulation(object):
             var_length = self._get_dv_length(key)
             i_max = i_min + var_length
             if len(x_vect) < i_max:
-                msg = "Inconsistent input size array " + str(key) + " = "
-                msg += str(x_vect.shape) + " for the design variable "
-                msg += "of length " + str(var_length)
-                raise ValueError(msg)
+                raise ValueError(
+                    "Inconsistent input size array %s = %s"
+                    " for the design variable of length %s"
+                    % (key, x_vect.shape, var_length)
+                )
             if key in masking_data_names:
                 x_mask[i_min:i_max] = True
             i_min = i_max
 
         return x_vect[x_mask]
 
-    def unmask_x(self, masking_data_names, x_masked, all_data_names=None, x_full=None):
-        """Unmasks a vector x, using names masking_data_names,
-        and with respect to
-        reference names all_data_names
+    def unmask_x(
+        self,
+        masking_data_names,  # type: Iterable[str]
+        x_masked,  # type: ndarray
+        all_data_names=None,  # type: Optional[Iterable[str]]
+        x_full=None,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Unmask a vector from a subset of names, with respect to a set of names.
 
-        :param masking_data_names: the names of data to keep
-        :param x_masked: the vector to unmask
-        :param all_data_names: reference data names, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
-        :param x_full: the default values for the full vector, if None,
-            np.zeros() is used
-        :returns: unmasked x
+        Args:
+            masking_data_names: The names of the kept data.
+            x_masked: The boolean vector to unmask.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+            x_full: The default values for the full vector.
+                If None, use the zero vector.
+
+        Returns:
+            The vector related to the input mask.
         """
         return self.unmask_x_swap_order(
             masking_data_names, x_masked, all_data_names, x_full
         )
 
-    def _get_dv_length(self, variable_name):
-        """Retrieves the length of a variable from the size declared
-        in the design space
+    def _get_dv_length(
+        self,
+        variable_name,  # type: str
+    ):  # type: (...) -> int
+        """Retrieve the length of a variable.
 
-        :param variable_name: name of the variable
+        This method relies on the size declared in the design space.
 
+        Args:
+            variable_name: The name of the variable.
+
+        Returns:
+            The size of the variable.
         """
         return self.opt_problem.design_space.get_size(variable_name)
 
-    def _get_x_mask_swap(self, masking_data_names, all_data_names=None):
-        """gets the mask dict, using names masking_data_names,
-        and with respect to reference names all_data_names
-        eventually swaps the order of the values if data names order
-        are inconsistent between masking_data_names and all_data_names
+    def _get_x_mask_swap(
+        self,
+        masking_data_names,  # type: Iterable[str]
+        all_data_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> Tuple[Dict[str,Tuple[int,int]],int,int]
+        """Get a mask from a subset of names, with respect to a set of names.
 
-        :param masking_data_names: the names of data to keep
-        :param all_data_names: reference data names, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
-        :returns: mask dict
+        This method eventually swaps the order of the values
+        if the order of the data names is inconsistent between these sets.
+
+        Args:
+            masking_data_names: The names of data to keep.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+
+        Returns:
+            A mask as well as
+            the dimension of the restricted variable space
+            and the dimension of the original variable space.
+
+            The mask is a dictionary
+            indexed by the names of the variables coming from the subset.
+            For a given name,
+            the value is a tuple
+            whose first component is its lowest dimension in the original space
+            and the second one is the lowest dimension of the variable that follows it
+            in the original space.
         """
         if all_data_names is None:
             all_data_names = self.get_optim_variables_names()
@@ -334,21 +424,27 @@ class MDOFormulation(object):
         return x_values_dict, n_x, i_max
 
     def unmask_x_swap_order(
-        self, masking_data_names, x_masked, all_data_names=None, x_full=None
-    ):
-        """Unmasks a vector x, using names masking_data_names,
-        and with respect to  reference names all_data_names
-        eventually swaps the order of the x values if data names order
-        are inconsistent between masking_data_names and all_data_names
+        self,
+        masking_data_names,  # type: Iterable[str]
+        x_masked,  # type: ndarray
+        all_data_names=None,  # type: Optional[Iterable[str]]
+        x_full=None,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Unmask a vector from a subset of names, with respect to a set of names.
 
-        :param masking_data_names: the names of data to keep
-        :param x_masked: the masked vector
-        :param all_data_names: reference data names, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
-        :param x_full: the default values for the full vector, if None,
-                        np.zeros() is used
-        :returns: unmasked x
+        This method eventually swaps the order of the values
+        if the order of the data names is inconsistent between these sets.
+
+        Args:
+            masking_data_names: The names of the kept data.
+            x_masked: The boolean vector to unmask.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+            x_full: The default values for the full vector.
+                If None, use the zero vector.
+
+        Returns:
+            The vector related to the input mask.
         """
         if all_data_names is None:
             all_data_names = self.get_optim_variables_names()
@@ -356,7 +452,7 @@ class MDOFormulation(object):
             masking_data_names, all_data_names
         )
         if x_full is None:
-            x_unmask = zeros((len_x), dtype=x_masked.dtype)
+            x_unmask = zeros(len_x, dtype=x_masked.dtype)
         else:
             x_unmask = copy(x_full)
 
@@ -366,68 +462,68 @@ class MDOFormulation(object):
                 i_min, i_max = x_values_dict[key]
                 n_x = i_max - i_min
                 if x_masked.size < i_x + n_x:
-                    msg = "Inconsistent data shapes !\nTry to unmask data "
-                    msg += key + " of len " + str(n_x)
-                    msg += "\nWith values of len : " + str(x_masked.size)
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Inconsistent data shapes !\n"
+                        "Try to unmask data %s of length %s\n"
+                        "With values of length: %s" % (key, n_x, x_masked.size)
+                    )
                 x_unmask[i_min:i_max] = x_masked[i_x : i_x + n_x]
                 i_x += n_x
         return x_unmask
 
-    def mask_x_swap_order(self, masking_data_names, x_vect, all_data_names=None):
-        """Masks a vector x_vect, using names masking_data_names,
-        and with respect to reference names all_data_names
-        possibly swaps the order of the x_vect values if data names orders
-        are inconsistent between masking_data_names and all_data_names
+    def mask_x_swap_order(
+        self,
+        masking_data_names,  # type: Iterable[str]
+        x_vect,  # type: ndarray
+        all_data_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> ndarray
+        """Mask a vector from a subset of names, with respect to a set of names.
 
-        :param masking_data_names: the names of data to keep
-        :param x_vect: the vector to mask
-        :param all_data_names: reference data names, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
-        :returns: masked x_vect
+        This method eventually swaps the order of the values
+        if the order of the data names is inconsistent between these sets.
+
+        Args:
+            masking_data_names: The names of the kept data.
+            x_vect: The vector to mask.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+
+        Returns:
+            The masked version of the input vector.
         """
         if all_data_names is None:
             all_data_names = self.get_optim_variables_names()
         x_values_dict, n_x, _ = self._get_x_mask_swap(
             masking_data_names, all_data_names
         )
-        x_masked = zeros((n_x), dtype=x_vect.dtype)
+        x_masked = zeros(n_x, dtype=x_vect.dtype)
         i_max = 0
         i_min = 0
         for key in masking_data_names:
             if key not in x_values_dict:
                 raise ValueError(
-                    "Inconsistent inputs of masking. Key "
-                    + str(key)
-                    + " is in masking_data_names"
-                    + str(masking_data_names)
-                    + " but not in provided all_data_names :"
-                    + str(all_data_names)
-                    + " !"
+                    "Inconsistent inputs of masking. "
+                    "Key %s is in masking_data_names %s "
+                    "but not in provided all_data_names : %s!"
+                    % (key, masking_data_names, all_data_names)
                 )
             value = x_values_dict[key]
             i_max += value[1] - value[0]
             len_x = len(x_vect)
             if len(x_masked) < i_max or len_x <= value[0] or len_x < value[1]:
                 raise ValueError(
-                    "Inconsistent input array size of values "
-                    + "array "
-                    + str(x_vect)
-                    + " with reference data shape "
-                    + str(x_vect.shape)
-                    + ", for data named :"
-                    + str(key)
-                    + " of size : "
-                    + str(i_max)
+                    "Inconsistent input array size of values array %s "
+                    "with reference data shape %s, "
+                    "for data named: %s of size: %s"
+                    % (x_vect, x_vect.shape, key, i_max)
                 )
             x_masked[i_min:i_max] = x_vect[value[0] : value[1]]
             i_min = i_max
 
         return x_masked
 
-    def _remove_unused_variables(self):
-        """Removes variables in the design space that are not discipline inputs"""
+    def _remove_unused_variables(self):  # type: (...) -> None
+        """Remove variables in the design space that are not discipline inputs."""
         design_space = self.opt_problem.design_space
         disciplines = self.get_top_level_disc()
         all_inputs = set(
@@ -437,8 +533,8 @@ class MDOFormulation(object):
             if name not in all_inputs:
                 design_space.remove_variable(name)
 
-    def _remove_sub_scenario_dv_from_ds(self):
-        """Removes the sub scenarios design variables from the design space"""
+    def _remove_sub_scenario_dv_from_ds(self):  # type: (...) -> None
+        """Remove the sub scenarios design variables from the design space."""
         for scenario in self.get_sub_scenarios():
             loc_vars = scenario.design_space.variables_names
             for var in loc_vars:
@@ -446,16 +542,18 @@ class MDOFormulation(object):
                     self.design_space.remove_variable(var)
 
     def _build_objective_from_disc(
-        self, objective_name, discipline=None, top_level_disc=True
-    ):
-        """Given the objective name, finds the discipline which is able to
-        compute it and builds the objective function from it.
+        self,
+        objective_name,  # type: str
+        discipline=None,  # type: Optional[MDODiscipline]
+        top_level_disc=True,  # type: bool
+    ):  # type: (...) -> None
+        """Build the objective function from the discipline able to compute it.
 
-        :param objective_name: the name of the objective
-        :param discipline: if None, detected from inner disciplines, otherwise
-            the discipline used to build the function
-            (Default value = None)
-        :param top_level_disc: Default value = True)
+        Args:
+            objective_name: The name of the objective function.
+            discipline: The discipline computing the objective function.
+                If None, the discipline is detected from the inner disciplines.
+            top_level_disc: If True, search the discipline among the top level ones.
         """
         if isinstance(objective_name, string_types):
             objective_name = [objective_name]
@@ -469,27 +567,29 @@ class MDOFormulation(object):
 
     def _get_function_from(
         self,
-        output_names,
-        discipline=None,
-        top_level_disc=True,
-        x_names=None,
-        all_data_names=None,
-    ):
-        """Builds the objective function from a discipline.
+        output_names,  # type: Sequence[str]
+        discipline=None,  # type: Optional[MDODiscipline]
+        top_level_disc=True,  # type:bool
+        x_names=None,  # type: Optional[Sequence[str]]
+        all_data_names=None,  # type:Optional[Iterable[str]]
+        differentiable=True,  # type: bool
+    ):  # type: (...) -> MDOFunction
+        """Build a function able to compute various outputs.
 
-        :param output_names: the name list of the  data
-        :param discipline: if None, detected from inner disciplines, otherwise
-            the discipline used to build the function
-            (Default value = None)
-        :param top_level_disc: if True, only high level disciplines
-            are used to select discipline to build
-            the function (Default value = True)
-        :param x_names: names of the design variables, if None, use
-            self.get_x_names_of_disc(discipline)
-            (Default value = None)
-        :param all_data_names: reference data names for masking x, if None,
-            self.get_optim_variables_names() used instead
-            (Default value = None)
+        Args:
+            output_names: The names of the outputs.
+            discipline: The discipline computing these outputs.
+                If None, the discipline is detected from the inner disciplines.
+            top_level_disc: If True, search the discipline among the top level ones.
+            x_names: The names of the design variables.
+                If None, use self.get_x_names_of_disc(discipline).
+            all_data_names: The reference data names for masking x.
+                If None, use self.get_optim_variables_names().
+            differentiable: If True, then inputs and outputs are added
+                to the list of variables to be differentiated.
+
+        Returns:
+            The function able to compute the values of the given outputs.
         """
         if discipline is None:
             gen = self._get_generator_from(output_names, top_level_disc=top_level_disc)
@@ -500,16 +600,20 @@ class MDOFormulation(object):
         if x_names is None:
             x_names = self.get_x_names_of_disc(discipline)
 
-        out_x_func = gen.get_function(x_names, output_names)
+        out_x_func = gen.get_function(
+            x_names, output_names, differentiable=differentiable
+        )
 
-        def func(x_vect):
-            """Function to compute consistency constraints
+        def func(
+            x_vect,  # type: ndarray
+        ):  # type: (...) -> ndarray
+            """Function to compute the outputs.
 
-            :param x: design variable vector
-            :param x_vect: returns: value of consistency constraints
-                    (=0 if disciplines are at equilibrium)
-            :returns: value of consistency constraints
-                    (=0 if disciplines are at equilibrium)
+            Args:
+                x_vect: The design variable vector.
+
+            Returns:
+                The value of the outputs.
             """
             x_of_disc = self.mask_x_swap_order(x_names, x_vect, all_data_names)
             obj_allx_val = out_x_func(x_of_disc)
@@ -526,12 +630,16 @@ class MDOFormulation(object):
         )
         if out_x_func.has_jac():
 
-            def func_jac(x_vect):
-                """Function to compute consistency constraints gradient
+            def func_jac(
+                x_vect,  # type: ndarray
+            ):  # type: (...) -> ndarray
+                """Function to compute the gradient of the outputs.
 
-                :param x: design variable vector
-                :param x_vect: returns: gradient of consistency constraints
-                :returns: gradient of consistency constraints
+                Args:
+                    x_vect: The design variable vector.
+
+                Returns:
+                    The value of the gradient of the outputs.
                 """
                 x_of_disc = self.mask_x_swap_order(x_names, x_vect, all_data_names)
 
@@ -556,40 +664,51 @@ class MDOFormulation(object):
 
         return masked_func
 
-    def get_optim_variables_names(self):
-        """Gets the optimization unknown names to be provided to the optimizer
-        This is different from the design variable names provided by the user,
-        since it depends on the formulation, and can include target values
-        for coupling for instance in IDF
+    def get_optim_variables_names(self):  # type: (...) -> List[str]
+        """Get the optimization unknown names to be provided to the optimizer.
 
-        :returns: optimization unknown names
+        This is different from the design variable names provided by the user,
+        since it depends on the formulation,
+        and can include target values for coupling for instance in IDF.
+
+        Returns:
+            The optimization variable names.
         """
         return self.opt_problem.design_space.variables_names
 
-    def get_x_names_of_disc(self, discipline):
-        """Gets the design variables names of a given discipline
+    def get_x_names_of_disc(
+        self,
+        discipline,  # type: MDODiscipline
+    ):  # type: (...) -> List[str]
+        """Get the design variables names of a given discipline.
 
-        :param discipline: the discipline
-        :returns: design variables names
+        Args:
+            discipline: The discipline.
+
+        Returns:
+             The names of the design variables.
         """
         optim_variables_names = self.get_optim_variables_names()
         input_names = discipline.get_input_data_names()
         return [name for name in optim_variables_names if name in input_names]
 
-    def get_sub_disciplines(self):
-        """Accessor to the sub disciplines.
-        Lists the sub scenarios' disciplines.
+    def get_sub_disciplines(self):  # type: (...) ->List[MDODiscipline]
+        """Accessor to the sub-disciplines.
 
-        :returns: list of sub disciplines
+        This method lists the sub scenarios' disciplines.
+
+        Returns:
+            The sub-disciplines.
         """
         sub_disc = []
 
-        def add_to_sub(disc_list):
-            """
-            Adds the discipline list to the sub_sc disc list
-            if not already in it
+        def add_to_sub(
+            disc_list,  # type:Iterable[MDODiscipline]
+        ):  # type: (...) -> None
+            """Add the disciplines of the sub-scenarios if not already added it.
 
-            :param disc_list: the discipline list
+            Args:
+                disc_list: The disciplines.
             """
             for disc in disc_list:
                 if disc not in sub_disc:
@@ -603,18 +722,16 @@ class MDOFormulation(object):
 
         return sub_disc
 
-    def get_sub_scenarios(self):
-        """Lists the disciplines that are actually scenarios
+    def get_sub_scenarios(self):  # type: (...) -> List[Scenario]
+        """List the disciplines that are actually scenarios.
 
-        :returns: the list of scenarios
+        Returns:
+            The scenarios.
         """
         return [disc for disc in self.disciplines if disc.is_scenario()]
 
-    def _set_defaultinputs_from_ds(self):
-        """
-        Sets the default inputs of the top level disciplines
-        from the design space
-        """
+    def _set_defaultinputs_from_ds(self):  # type: (...) -> None
+        """Initialize the top level disciplines from the design space."""
         if not self.opt_problem.design_space.has_current_x():
             return
         x_dict = self.opt_problem.design_space.get_current_x_dict()
@@ -623,50 +740,75 @@ class MDOFormulation(object):
             curr_x_disc = {name: x_dict[name] for name in inputs if name in x_dict}
             disc.default_inputs.update(curr_x_disc)
 
-    def get_expected_workflow(self):
-        """Returns the sequence of execution of the disciplines to be expected
-        regarding the implementation.
-        The returned value is an array containing disciplines,
-        tuples of disciplines for concurrent execution.
-        For instance :
-        * [A, B] denotes the execution of A then the execution of B
+    def get_expected_workflow(
+        self,
+    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
+        """Get the expected sequence of execution of the disciplines.
+
+        This method is used for the XDSM representation
+        and can be overloaded by subclasses.
+
+        For instance:
+
+        * [A, B] denotes the execution of A,
+          then the execution of B
         * (A, B) denotes the concurrent execution of A and B
-        * [A, (B, C), D] denotes the execution of A then the concurrent
-        execution of B and C then the execution of D.
+        * [A, (B, C), D] denotes the execution of A,
+          then the concurrent execution of B and C,
+          then the execution of D.
 
-        :returns: array containing disciplines or tuples of disciplines.
-            Used for xdsm representation
-            To be overloaded by subclasses.
+        Returns:
+            A sequence of elements which are either
+            an :class:`.ExecutionSequence`
+            or a tuple of :class:`.ExecutionSequence` for concurrent execution.
         """
         raise NotImplementedError()
 
-    def get_expected_dataflow(self):
-        """Returns the expected data exchange sequence,
-        uUsed for xdsm representation
-        to be overloaded by subclasses
+    def get_expected_dataflow(
+        self,
+    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+        """Get the expected data exchange sequence.
 
-        :returns: array of tuples (disc_from, disc_to, array of variable names)
+        This method is used for the XDSM representation
+        and can be overloaded by subclasses.
+
+        Returns:
+            The expected sequence of data exchange
+            where the i-th item is described by the starting discipline,
+            the ending discipline and the coupling variables.
         """
         raise NotImplementedError()
 
     @classmethod
-    def get_default_sub_options_values(cls, **options):  # pylint: disable=W0613
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option defaults may be specified here, mainly for
-        use in the API
+    def get_default_sub_options_values(
+        cls, **options  # type:str
+    ):  # type: (...) -> Dict  # pylint: disable=W0613
+        """Get the default values of the sub-options of the formulation.
 
-        :param options: options dict required to deduce the sub options grammar
-        :returns: None, or the sub options defaults
+        When some options of the formulation depend on higher level options,
+        the default values of these sub-options may be obtained here,
+        mainly for use in the API.
+
+        Args:
+            **options: The options required to deduce the sub-options grammar.
+
+        Returns:
+            Either None or the sub-options default values.
         """
 
     @classmethod
-    def get_sub_options_grammar(cls, **options):  # pylint: disable=W0613
-        """
-        When some options of the formulation depend on higher level
-        options, a sub option schema may be specified here, mainly for
-        use in the API
+    def get_sub_options_grammar(
+        cls, **options  # type: str
+    ):  # type: (...) -> JSONGrammar # pylint: disable=W0613
+        """Get the sub-options grammar.
 
-        :param options: options dict required to deduce the sub options grammar
-        :returns: None, or the sub options grammar
+        When some options of the formulation depend on higher level options,
+        the schema of the sub-options may be obtained here,
+        mainly for use in the API.
+
+        Args:
+            **options: The options required to deduce the sub-options grammar.
+
+        Returns:
+            Either None or the sub-options grammar.
         """

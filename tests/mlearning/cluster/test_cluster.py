@@ -20,22 +20,22 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test machine learning clustering algorithm module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test machine learning clustering algorithm module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange, zeros
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-
-standard_library.install_aliases()
+from gemseo.mlearning.cluster.cluster import (
+    MLClusteringAlgo,
+    MLPredictiveClusteringAlgo,
+)
 
 
 @pytest.fixture
-def dataset():
-    """ Build an input-output dataset. """
+def dataset():  # type: (...) -> Dataset
+    """The dataset used to train the clustering algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
@@ -44,28 +44,23 @@ def dataset():
     return dataset_
 
 
-@pytest.fixture
-def new_algo():
-    """ Create new machine learning algorithm. """
+class NewAlgo(MLClusteringAlgo):
+    """New machine learning algorithm class."""
 
-    class NewAlgo(MLClusteringAlgo):
-        """ New machine learning algorithm class. """
-
-        def _fit(self, data):
-            pass
-
-        def _predict(self, data):
-            pass
-
-        def _predict_proba_soft(self, data):
-            pass
-
-    return NewAlgo
+    def _fit(self, data):
+        pass
 
 
 def test_notimplementederror(dataset):
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     ml_algo = MLClusteringAlgo(dataset)
+    with pytest.raises(NotImplementedError):
+        ml_algo.learn()
+
+
+def test_predictive_notimplementederror(dataset):
+    """Test not implemented methods."""
+    ml_algo = MLPredictiveClusteringAlgo(dataset)
     with pytest.raises(NotImplementedError):
         ml_algo.learn()
     with pytest.raises(NotImplementedError):
@@ -76,8 +71,8 @@ def test_notimplementederror(dataset):
         ml_algo.predict_proba({"x_1": zeros(1), "x_2": zeros(2)}, hard=False)
 
 
-def test_labels(dataset, new_algo):
-    """ Test clustering labels. """
-    algo = new_algo(dataset)
+def test_labels(dataset):
+    """Test clustering labels."""
+    algo = NewAlgo(dataset)
     with pytest.raises(ValueError):
         algo.learn()

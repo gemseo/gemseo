@@ -19,104 +19,159 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-The notions of distribution and composed distributions
-======================================================
+
+r"""Abstract class defining the concept of probability distribution.
 
 Overview
 --------
 
 The abstract :class:`.Distribution` class implements the concept of
-probability distribution. It is enriched by concrete classes
-such as :class:`.OTDistribution` and :class:`.SPDistribution`.
+`probability distribution <https://en.wikipedia.org/wiki/Probability_distribution>`_,
+which is a mathematical function giving the probabilities of occurrence
+of different possible outcomes of a random variable for an experiment.
+The `normal distribution <https://en.wikipedia.org/wiki/Normal_distribution>`_
+with its famous *bell curve* is a well-known example of probability distribution.
 
-Similarly, the abstract :class:`.ComposedDistribution` class implements
-the concept of composed probability distribution from a list
-of probability distributions. It inherits from :class:`.Distribution`.
+.. seealso::
+
+    This abstract class is enriched by concrete ones,
+    such as :class:`.OTDistribution` interfacing the OpenTURNS probability distributions
+    and :class:`.SPDistribution` interfacing the SciPy probability distributions.
 
 Construction
 ------------
 
 The :class:`.Distribution` of a given uncertain variable is built
-from a recognized distribution name,
+from a recognized distribution name (e.g. 'Normal' for OpenTURNS or 'norm' for SciPy),
 a variable dimension, a set of parameters
 and optionally a standard representation of these parameters.
-
-The :class:`.ComposedDistribution` of a list of given uncertain variables
-is built from a list of :class:`.Distribution` objects
-implementing the probability distributions of these variables
-and from a copula name.
-
-.. note::
-
-   A copula is a mathematical function used to define the dependence
-   between random variables from their cumulative density functions.
-   `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`_.
 
 Capabilities
 ------------
 
 From a :class:`.Distribution`, we can easily get statistics,
 such as :attr:`.Distribution.mean`,
-:attr:`.Distribution.standard_deviation`,
+:attr:`.Distribution.standard_deviation`. We can also get the
 numerical :attr:`.Distribution.range` and
-mathematical :attr:`.Distribution.support`,
-or plot the cumulative and probability density functions,
-either for a given marginal (:meth:`.Distribution.plot`)
-or for all marginals (:meth:`.Distribution.plot_all`).
-
-We can also compute the cumulative density function
-(:meth:`.Distribution.cdf`)
-for the different marginals of the random variable,
-as well as the inverse cumulative density function
-(:meth:`.Distribution.inverse_cdf`).
-
-Lastly, we can get realizations of the random variable
-by means of the :meth:`.Distribution.get_sample` method.
+mathematical :attr:`.Distribution.support`.
 
 .. note::
 
-   As :class:`.ComposedDistribution` inherits from :class:`.Distribution`,
-   it has the same capabilities.
+    We call mathematical *support* the set of values that the random variable
+    can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
+    and numerical *range* the set of values that it can can take in practice,
+    taking into account the values rounded to zero double precision.
+    Both support and range are described in terms of lower and upper bounds
+
+We can also evaluate the cumulative density function
+(:meth:`.Distribution.compute_cdf`)
+for the different marginals of the random variable,
+as well as the inverse cumulative density function
+(:meth:`.Distribution.compute_inverse_cdf`). We can plot them,
+either for a given marginal (:meth:`.Distribution.plot`)
+or for all marginals (:meth:`.Distribution.plot_all`).
+
+Lastly, we can compute realizations of the random variable
+by means of the :meth:`.Distribution.compute_samples` method.
 """
-from __future__ import absolute_import, division, unicode_literals
+
+from __future__ import division, unicode_literals
+
+import logging
+from typing import Callable, Iterable, List, Mapping, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
-from future import standard_library
-from numpy import arange, array, concatenate
+import six
+from custom_inherit import DocInheritMeta
+from matplotlib.figure import Figure
+from numpy import arange, array, ndarray
 from past.utils import old_div
 
-standard_library.install_aliases()
+from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
+
+StandardParametersType = Mapping[str, Union[str, int, float]]
+ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
+@six.add_metaclass(DocInheritMeta(abstract_base_class=True))
 class Distribution(object):
-    """ Distribution. """
+    """Probability distribution related to a random variable.
 
-    MATHEMATICAL_LOWER_BOUND = "math_l_b"
-    MATHEMATICAL_UPPER_BOUND = "math_u_b"
-    NUMERICAL_LOWER_BOUND = "num_l_b"
-    NUMERICAL_UPPER_BOUND = "num_u_b"
-    MU = "mu"
-    SIGMA = "sigma"
-    LOWER = "lower"
-    UPPER = "upper"
-    MODE = "mode"
-    RATE = "rate"
-    LOC = "loc"
+    The dimension of the random variable can be greater than 1. In this case,
+    the same distribution is applied to all components of the random variable
+    under the hypothesis that these components are stochastically independent.
+
+    The string representation of a distribution
+    interfacing a distribution called :code:`'MyDistribution'`
+    with parameters :code:`(2,3)` is 'MyDistribution(2, 3)`
+    if no standard parameters are passed.
+    If the standard parameters are :code:`{a: 2, b: 3}`
+    (resp. :code:`{a_inv: 2, b: 3}`),
+    then the standard representation is: 'MyDistribution(a=2, b=3)`
+    (resp. 'MyDistribution(a_inv=0.5, b=3)`)
+    Standard parameters are useful to redefine the name of the parameters.
+    For example, some exponential distributions consider the notion of rate
+    while other ones consider the notion of scale, which is the inverse of the rate...
+    even in the background, the distribution is the same!
+
+    Attributes:
+        math_lower_bound (ndarray): The mathematical lower bound
+            of the random variable.
+        math_upper_bound (ndarray): The mathematical upper bound
+            of the random variable.
+        num_lower_bound (ndarray): The numerical lower bound
+            of the random variable.
+        num_upper_bound (ndarray): The numerical upper bound
+            of the random variable.
+        distribution (InterfacedDistributionClass): The probability distribution
+            of the random variable.
+        marginals (list(InterfacedDistributionClass)): The marginal distributions
+            of the components of the random variable.
+        dimension (int): The number of dimensions of the random variable.
+        variable_name (str): The name of the random variable.
+        distribution_name (str): The name of the probability distribution.
+        transformation (str): The transformation applied to the random variable,
+            e.g. 'sin(x)'.
+        parameters (tuple or dict): The parameters of the probability distribution.
+        standard_parameters (dict, optional): The standard representation
+            of the parameters of the distribution, used for its string representation.
+    """
+
+    _MU = "mu"
+    _SIGMA = "sigma"
+    _LOWER = "lower"
+    _UPPER = "upper"
+    _MODE = "mode"
+    _RATE = "rate"
+    _LOC = "loc"
+
+    _COMPOSED_DISTRIBUTION = None
 
     def __init__(
-        self, variable, distribution, parameters, dimension, standard_parameters=None
-    ):
-        """Constructor
-
-        :param str variable: variable name.
-        :param str distribution: distribution name.
-        :param parameters: distribution parameters.
-        :type parameters: tuple or dict
-        :param int dimension: variable dimension.
-        :param dict standard_parameters: standard parameters.
+        self,
+        variable,  # type: str
+        interfaced_distribution,  # type: str
+        parameters,  # type: ParametersType
+        dimension=1,  # type: int
+        standard_parameters=None,  # type: Optional[StandardParametersType]
+    ):  # noqa: D205,D212,D415
+        # type: (...) -> None
+        """
+        Args:
+            variable: The name of the random variable.
+            interfaced_distribution: The name of the probability distribution,
+                typically the name of a class wrapped from an external library,
+                such as 'Normal' for OpenTURNS or 'norm' for SciPy.
+            parameters: The parameters of the class
+                related to distribution.
+            dimension: The dimension of the random variable.
+            standard_parameters: The standard representation
+                of the parameters of the probability distribution.
         """
         self.math_lower_bound = None
         self.math_upper_bound = None
@@ -126,88 +181,104 @@ class Distribution(object):
         self.marginals = None
         self.dimension = dimension
         self.variable_name = variable
-        self.distribution_name = distribution
+        self.distribution_name = interfaced_distribution
         self.transformation = variable
         self.parameters = parameters
         if standard_parameters is None:
             self.standard_parameters = self.parameters
         else:
             self.standard_parameters = standard_parameters
-        LOGGER.info("Define the random variable: %s ", variable)
-        LOGGER.info("|_ Distribution: %s ", str(self))
-        LOGGER.info("|_ Dimension: %s ", str(dimension))
+        self.__file_path_manager = FilePathManager(
+            FileType.FIGURE, default_name="distribution_{}".format(self.variable_name)
+        )
+        msg = MultiLineString()
+        msg.add("Define the random variable: {}", variable)
+        msg.indent()
+        msg.add("Distribution: {}", self)
+        msg.add("Dimension: {}", dimension)
+        LOGGER.info("%s", msg)
 
     def __str__(self):
-        """String representation of the object.
+        # type: (...) -> str
+        parameters = pretty_repr(self.standard_parameters)
+        return "{}({})".format(self.distribution_name, parameters)
 
-        :return: string representation.
-        :rtype: str
-        """
-        label = self.distribution_name + "("
-        if isinstance(self.standard_parameters, dict):
-            param = iter(self.standard_parameters.items())
-            param = sorted([name + "=" + str(val) for name, val in param])
-            label += ", ".join(param)
-        else:
-            param = [str(option) for option in self.standard_parameters]
-            label += ", ".join(param)
-        label += ")"
-        return label
+    def compute_samples(
+        self,
+        n_samples=1,  # type: int
+    ):
+        # type: (...) -> ndarray
+        """Sample the random variable.
 
-    def get_sample(self, n_samples=1):
-        """Get several samples.
+        Args:
+            n_samples: The number of samples.
 
-        :param int n_samples: number of samples.
-        :return: samples
-        :rtype: array
+        Returns:
+            The samples of the random variable,
+
+            The number of columns is equal to the dimension of the variable
+            and the number of lines is equal to the number of samples.
         """
         raise NotImplementedError
 
-    def cdf(self, vector):
-        """Evaluate the cumulative density function of the random variable
-        marginals for a given instance.
+    def compute_cdf(
+        self,
+        vector,  # type: Iterable[float]
+    ):
+        # type: (...) -> ndarray
+        """Evaluate the cumulative density function (CDF).
 
-        :param array vector: instance of the random variable.
-        :return: cdf values
-        :rtype: array
+        Evaluate the CDF of the components of the random variable
+        for a given realization of this random variable.
+
+        Args:
+            vector: A realization of the random variable.
+
+        Returns:
+            The CDF values of the components of the random variable.
         """
         raise NotImplementedError
 
-    def inverse_cdf(self, vector):
-        """Evaluate the inverse of the cumulative density function of the
-        random variable marginals for a given unit vector .
+    def compute_inverse_cdf(
+        self,
+        vector,  # type: Iterable[float]
+    ):
+        # type: (...) -> ndarray
+        """Evaluate the inverse of the cumulative density function (ICDF).
 
-        :param array vector: vector of values comprised between 0 and 1 with
-            same dimension as the random variable.
-        :return: inverse cdf values
-        :rtype: array
+        Args:
+            vector: A vector of values comprised between 0 and 1
+                whose length is equal to the dimension of the random variable.
+
+        Returns:
+            The ICDF values of the components of the random variable.
         """
         raise NotImplementedError
 
     @property
     def mean(self):
-        """Get the mean of the random variable.
-
-        :return: mean of the random variable.
-        :rtype: array
-        """
+        # type: (...) -> ndarray
+        """The analytical mean of the random variable."""
         raise NotImplementedError
 
     @property
     def standard_deviation(self):
-        """Get the standard deviation of the random variable.
-
-        :return: standard deviation of the random variable.
-        :rtype: array
-        """
+        # type: (...) -> ndarray
+        """The analytical standard deviation of the random variable."""
         raise NotImplementedError
 
     @property
     def range(self):
-        """Get the numerical range for the different components.
+        # type: (...) -> List[ndarray]
+        """The numerical range.
 
-        :return: numerical range.
-        :rtype: list(array)
+        The numerical range is the interval defined by
+        the lower and upper bounds numerically reachable by the random variable.
+
+        Here, the numerical range of the random variable is defined
+        by one array for each component of the random variable,
+        whose first element is the lower bound of this component
+        while the second one is its upper bound.
         """
         value = [
             array([l_b, u_b])
@@ -217,10 +288,16 @@ class Distribution(object):
 
     @property
     def support(self):
-        """Get the mathematical support for the different components.
+        # type: (...) -> List[ndarray]
+        """The mathematical support.
 
-        :return: mathematical support.
-        :rtype: list(array)
+        The mathematical support is the interval defined by
+        the theoretical lower and upper bounds of the random variable.
+
+        Here, the mathematical range of the random variable is defined
+        by one array for each component of the random variable,
+        whose first element is the lower bound of this component
+        while the second one is its upper bound.
         """
         value = [
             array([l_b, u_b])
@@ -228,166 +305,171 @@ class Distribution(object):
         ]
         return value
 
-    def plot_all(self, show=True, save=False, prefix=None):
-        """Plot the probability density function and the cumulative density
-        function of the random variable.
+    def plot_all(
+        self,
+        show=True,  # type: bool
+        save=False,  # type: bool
+        file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
+        file_extension=None,  # type: Optional[str]
+    ):
+        # type: (...) -> List[Figure]
+        """Plot both probability and cumulative density functions for all components.
 
-        :param str prefix: If not None, start the filename with a prefix.
-            Default: None.
+        Args:
+            save: If True, save the figure.
+            show: If True, display the figure.
+            file_path: The path of the file to save the figures.
+                If the extension is missing, use ``file_extension``.
+                If None,
+                create a file path
+                from ``directory_path``, ``file_name`` and ``file_extension``.
+            directory_path: The path of the directory to save the figures.
+                If None, use the current working directory.
+            file_name: The name of the file to save the figures.
+                If None, use a default one generated by the post-processing.
+            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
+                If None, use a default file extension.
+
+        Returns:
+            The figures.
         """
+        figures = []
         for index in range(self.dimension):
-            self.plot(index, show, save, prefix)
+            figures.append(
+                self.plot(
+                    index=index,
+                    show=show,
+                    save=save,
+                    file_path=file_path,
+                    file_name=file_name,
+                    file_extension=file_extension,
+                    directory_path=directory_path,
+                )
+            )
+        return figures
 
-    def plot(self, index=0, show=True, save=False, prefix=None):
-        """Plot the probability density function and the cumulative density
-        function of the random variable.
+    def plot(
+        self,
+        index=0,  # type: int
+        show=True,  # type: bool
+        save=False,  # type: bool
+        file_path=None,  # type: Optional[Union[str,Path]]
+        directory_path=None,  # type: Optional[Union[str,Path]]
+        file_name=None,  # type: Optional[str]
+        file_extension=None,  # type: Optional[str]
+    ):
+        # type: (...) -> Figure
+        """Plot both probability and cumulative density functions for a given component.
 
-        :param str prefix: If not None, start the filename with a prefix.
-            Default: None.
+        Args:
+            index: The index of a component of the random variable.
+            save: If True, save the figure.
+            show: If True, display the figure.
+            file_path: The path of the file to save the figures.
+                If the extension is missing, use ``file_extension``.
+                If None,
+                create a file path
+                from ``directory_path``, ``file_name`` and ``file_extension``.
+            directory_path: The path of the directory to save the figures.
+                If None, use the current working directory.
+            file_name: The name of the file to save the figures.
+                If None, use a default one generated by the post-processing.
+            file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
+                If None, use a default file extension.
+
+        Returns:
+            The figure.
         """
-        variable_name = self.variable_name + "(" + str(index) + ")"
+        variable_name = self.variable_name
+        if self.dimension > 1:
+            variable_name = "{}({})".format(variable_name, index)
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
-        xvals = arange(l_b, u_b, old_div((u_b - l_b), 100))
-        y1vals = [self._pdf(index)(xval) for xval in xvals]
-        ax1 = plt.subplot(121)
-        ax1.plot(xvals, y1vals)
+        x_values = arange(l_b, u_b, old_div((u_b - l_b), 100))
+        y1_values = [self._pdf(index)(x_value) for x_value in x_values]
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle("Probability distribution of {}".format(variable_name))
+        ax1.plot(x_values, y1_values)
         ax1.set_xlabel(variable_name)
         ax1.set_title("PDF")
-        y2vals = [self._cdf(index)(xval) for xval in xvals]
-        ax2 = plt.subplot(122)
-        ax2.plot(xvals, y2vals)
+        y2_values = [self._cdf(index)(x_value) for x_value in x_values]
+        ax2.plot(x_values, y2_values)
         ax2.set_xlabel(variable_name)
-        ax2.set_title("CDF")
-        fname = "distribution_" + self.variable_name + "_" + str(index)
-        if show:
-            plt.show()
+        ax2.set_title("Cumulative density function")
         if save:
-            if prefix is not None:
-                fname = prefix + "_" + fname
-            plt.savefig(fname + ".pdf")
+            file_path = self.__file_path_manager.create_file_path(
+                file_path=file_path,
+                file_name=file_name,
+                directory_path=directory_path,
+                file_extension=file_extension,
+            )
+            if self.dimension > 1:
+                file_path = self.__file_path_manager.add_suffix(file_path, index)
+        else:
+            file_path = None
+        save_show_figure(fig, show, file_path)
+        return fig
 
-    def _pdf(self, index):
+    def _pdf(
+        self,
+        index,  # type: int
+    ):
+        # type: (...) -> Callable
         """Get the probability density function of a marginal.
 
-        :param int index: marginal index.
-        :return: probability density function
-        :rtype: function
+        Args:
+            index: The index of a component of the random variable.
+
+        Return:
+            The probability density function
+                of the given component of the random variable.
         """
 
-        def pdf(point):
+        def pdf(
+            point,  # type: float
+        ):
+            # type: (...) -> float
             """Probability Density Function (PDF).
 
-            :param float point: point value.
-            :return: PDF value.
-            :rtype: float
+            Args:
+                point: An evaluation point.
+
+            Returns:
+                The PDF value at the evaluation point.
             """
             raise NotImplementedError
 
         return pdf
 
-    def _cdf(self, index):
+    def _cdf(
+        self,
+        index,  # type: int
+    ):
+        # type: (...) -> Callable
         """Get the cumulative density function of a marginal.
 
-        :param int index: marginal index.
-        :return: cumulative density function
-        :rtype: function
+        Args:
+            index: The index of a component of the random variable.
+
+        Return:
+            The cumulative density function
+                of the given component of the random variable.
         """
 
-        def cdf(level):
+        def cdf(
+            level,  # type: float
+        ):
+            # type: (...) -> float
             """Cumulative Density Function (CDF).
 
-            :param float point: point value.
-            :return: CDF value.
-            :rtype: float
+            Args:
+                level: A probability level.
+
+            Returns:
+                The CDF value for the probability level.
             """
             raise NotImplementedError
 
         return cdf
-
-
-class ComposedDistribution(Distribution):
-    """ Composed Distribution. """
-
-    INDEPENDENT_COPULA = "independent_copula"
-    AVAILABLE_COPULA = [INDEPENDENT_COPULA]
-    COMPOSED = "Composed"
-
-    def __init__(self, distributions, copula=INDEPENDENT_COPULA):
-        """Constructor.
-
-        :param list(Distribution) distributions: list of distributions.
-        :param str copula: copula name. Default: INDEPENDENT_COPULA.
-        """
-        dimension = sum([distribution.dimension for distribution in distributions])
-        self._marginal_variables = [
-            distribution.variable_name for distribution in distributions
-        ]
-        variable = "_".join(self._marginal_variables)
-        super(ComposedDistribution, self).__init__(
-            variable, self.COMPOSED, (copula,), dimension
-        )
-        self.marginals = distributions
-        LOGGER.info("|_ Marginals:")
-        for distribution in distributions:
-            LOGGER.info(
-                "   - %s(%s): %s",
-                distribution.variable_name,
-                distribution.dimension,
-                distribution,
-            )
-
-    def _set_bounds(self, distributions):
-        """Set mathematical and numerical bounds (= support and range).
-
-        :param list(Distribution) distributions: list of distributions.
-        """
-        self.math_lower_bound = array([])
-        self.math_upper_bound = array([])
-        self.num_lower_bound = array([])
-        self.num_upper_bound = array([])
-        for dist in distributions:
-            self.math_lower_bound = concatenate(
-                (self.math_lower_bound, dist.math_lower_bound)
-            )
-            self.num_lower_bound = concatenate(
-                (self.num_lower_bound, dist.num_lower_bound)
-            )
-            self.math_upper_bound = concatenate(
-                (self.math_upper_bound, dist.math_upper_bound)
-            )
-            self.num_upper_bound = concatenate(
-                (self.num_upper_bound, dist.num_upper_bound)
-            )
-
-    @property
-    def mean(self):
-        """Get the mean of the random variable.
-
-        :return: mean of the random variable.
-        :rtype: array
-        """
-        mean = [marginal.mean for marginal in self.marginals]
-        return array(mean).flatten()
-
-    @property
-    def standard_deviation(self):
-        """Get the standard deviation of the random variable.
-
-        :return: standard deviation of the random variable.
-        :rtype: array
-        """
-        std = [marginal.standard_deviation for marginal in self.marginals]
-        return array(std).flatten()
-
-    def get_sample(self, n_samples=1):
-        """Get sample.
-
-        :param int n_samples: number of samples.
-        :return: samples
-        :rtype: list(array)
-        """
-        sample = self.marginals[0].get_sample(n_samples)
-        for marginal in self.marginals[1:]:
-            sample = concatenate((sample, marginal.get_sample(n_samples)), axis=1)
-        return sample

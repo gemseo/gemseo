@@ -18,53 +18,72 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Sellar MDO problem's Design Space
-*********************************
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
+"""The design space for the MDO problem proposed by Sellar et al. in.
 
-from builtins import super
+Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent subspace
+optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
+exhibit (p. 714).
+"""
+from __future__ import division, unicode_literals
 
-import numpy as np
-from future import standard_library
+from typing import Tuple
+
+from numpy import array, ndarray
 
 from gemseo.algos.design_space import DesignSpace
-
-standard_library.install_aliases()
+from gemseo.problems.sellar.sellar import X_LOCAL, X_SHARED, Y_1, Y_2
 
 
 class SellarDesignSpace(DesignSpace):
+    """The design space for the MDO problem proposed by Sellar et al (1996).
 
-    """**SellarDesignSpace** creates the :class:`.DesignSpace` of the
-    Sellar problem
-    whose :class:`.MDODiscipline` are :class:`.Sellar1`, :class:`.Sellar2`
-    and :class:`.SellarSystem`.
+    It is composed of:
+    - :math:`x_{local}` belonging to :math:`[0., 10.]`,
+    - :math:`x_{shared,1}` belonging to :math:`[-10., 10.]`,
+    - :math:`x_{shared,2}` belonging to :math:`[0., 10.]`,
+    - :math:`y_1` belonging to :math:`[-100., 100.]`,
+    - :math:`y_2` belonging to :math:`[-100., 100.]`.
 
-    - x_local belongs to [0., 10.]
-    - x_shared_0 belongs to [-10., 10.]
-    - x_shared_1 belongs to [0., 10.]
-    - y_0 belongs to [-100., 100.]
-    - y_1 belongs to [-100., 100.]
+    This design space is initialized with the initial solution:
+
+    - :math:`x_{local}=1`,
+    - :math:`x_{shared,1}=4`,
+    - :math:`x_{shared,2}=3`,
+    - :math:`y_1=1`,
+    - :math:`y_2=1`.
     """
 
-    def __init__(self, dtype="complex128"):
-        """The constructor creates a blank :class:`.DesignSpace`
-        to which it adds all design variables."""
+    def __init__(
+        self,
+        dtype="complex128",  # type: str
+    ):  # type: (...) -> None
+        """
+        Args:
+            dtype: The type of the variables defined in the design space.
+        """
         super(SellarDesignSpace, self).__init__()
 
-        # construct a dictionary with initial solution
-        x_local = np.array([1.0], dtype=dtype)
-        x_shared = np.array([4.0, 3.0], dtype=dtype)
-        y_0 = np.array([1.0], dtype=dtype)
-        y_1 = np.array([1.0], dtype=dtype)
+        x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)
+        self.add_variable(X_LOCAL, 1, l_b=0.0, u_b=10.0, value=x_local)
+        self.add_variable(X_SHARED, 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=x_shared)
+        self.add_variable(Y_1, 1, l_b=-100.0, u_b=100.0, value=y_1)
+        self.add_variable(Y_2, 1, l_b=-100.0, u_b=100.0, value=y_2)
 
-        # design variables
-        self.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=x_local)  # x
-        self.add_variable(
-            "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=x_shared
-        )  # z
+    @staticmethod
+    def __get_initial_solution(
+        dtype,  # type: str
+    ):  # type: (...) -> Tuple[ndarray]
+        """Return an initial solution for the MDO problem.
 
-        # target coupling variables
-        self.add_variable("y_0", 1, l_b=-100.0, u_b=100.0, value=y_0)
-        self.add_variable("y_1", 1, l_b=-100.0, u_b=100.0, value=y_1)
+        Args:
+            dtype: The type of the variables defined in the design space.
+
+        Returns:
+            An initial solution for both local design variables,
+            shared design variables and coupling variables.
+        """
+        x_local = array([1.0], dtype=dtype)
+        x_shared = array([4.0, 3.0], dtype=dtype)
+        y_1 = array([1.0], dtype=dtype)
+        y_2 = array([1.0], dtype=dtype)
+        return x_local, x_shared, y_1, y_2

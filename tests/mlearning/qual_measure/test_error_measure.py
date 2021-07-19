@@ -19,30 +19,26 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test error measure module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test error measure module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 
-standard_library.install_aliases()
-
 
 @pytest.fixture
-def measure():
-    """ Error measure. """
+def measure():  # type: (...) ->MLErrorMeasure
+    """The error measure of a linear regression based on the Rosenbrock dataset."""
     dataset = RosenbrockDataset(opt_naming=False)
     algo = LinearRegression(dataset)
-    error_measure = MLErrorMeasure(algo)
-    return error_measure
+    return MLErrorMeasure(algo)
 
 
 def test_evaluate(measure):
-    """ Test different evaluation methods of error measure. """
+    """Test different evaluation methods of error measure."""
     with pytest.raises(NotImplementedError):
         measure.evaluate_learn()
     dataset_test = RosenbrockDataset(opt_naming=False)

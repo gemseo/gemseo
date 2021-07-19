@@ -19,27 +19,27 @@
 #        :author: Charlie Vanaret
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-# from Tedford2010
-# Sellar analytical problem, p9
-r"""
-Sellar MDO problem
-******************
+r"""The disciplines for the MDO problem proposed by Sellar et al. in
 
-The **sellar** module implements all :class:`.MDODiscipline`
-included in the Sellar problem:
+Sellar, R., Batill, S., & Renaud, J. (1996).
+Response surface based, concurrent subspace optimization
+for multidisciplinary system design.
+In 34th aerospace sciences meeting and exhibit (p. 714).
+
+The MDO problem is written as follows:
 
 .. math::
 
    \begin{aligned}
-   \text{minimize the objective function }&obj=x_{local}^2 + x_{shared,1}
-   +y_0+e^{-y_1} \\
+   \text{minimize the objective function }&obj=x_{local}^2 + x_{shared,2}
+   +y_1^2+e^{-y_2} \\
    \text{with respect to the design variables }&x_{shared},\,x_{local} \\
    \text{subject to the general constraints }
    & c_1 \leq 0\\
    & c_2 \leq 0\\
    \text{subject to the bound constraints }
-   & -10 \leq x_{shared,0} \leq 10\\
-   & 0 \leq x_{shared,1} \leq 10\\
+   & -10 \leq x_{shared,1} \leq 10\\
+   & 0 \leq x_{shared,2} \leq 10\\
    & 0 \leq x_{local} \leq 10.
    \end{aligned}
 
@@ -47,447 +47,369 @@ where the coupling variables are
 
 .. math::
 
-    \text{Discipline 0: } y_0 = x_{shared,0}^2 + x_{shared,1} +
-     x_{local} - 0.2\,y_1,
+    \text{Discipline 1: } y_1 = \sqrt{x_{shared,1}^2 + x_{shared,2} +
+     x_{local} - 0.2\,y_2},
 
 and
 
 .. math::
 
-    \text{Discipline 1: }y_1 = \sqrt{y_0} + x_{shared,0} + x_{shared,1}.
+    \text{Discipline 2: }y_2 = |y_1| + x_{shared,1} + x_{shared,2}.
 
 and where the general constraints are
 
 .. math::
 
-   c_0 = 1-y_0/{3.16}
+   c_1 = 3.16 - y_1^2
 
-   c_1 = y_1/{24.} - 1
+   c_2 = y_2 - 24
+
+This module implements three disciplines to compute the different coupling variables,
+constraints and objective:
+
+- :class:`.Sellar1`:
+  this :class:`.MDODiscipline` computes :math:`y_1`
+  from :math:`y_2`, :math:`x_{shared,1}`, :math:`x_{shared,2}` and :math:`x_{local}`.
+- :class:`.Sellar2`:
+  this :class:`.MDODiscipline` computes :math:`y_2`
+  from :math:`y_1`, :math:`x_{shared,1}` and :math:`x_{shared,2}`.
+- :class:`.SellarSystem`:
+  this :class:`.MDODiscipline` computes both objective and constraints
+  from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-from builtins import super
 from cmath import exp, sqrt
+from typing import Dict, Iterable, List, Optional
 
-from future import standard_library
-from numpy import array, atleast_2d, complex128, ones, zeros
+from numpy import array, atleast_2d, complex128, ndarray, ones, zeros
 
 from gemseo.core.discipline import MDODiscipline
 
-standard_library.install_aliases()
+Y_1 = "y_1"
+Y_2 = "y_2"
+X_SHARED = "x_shared"
+X_LOCAL = "x_local"
+OBJ = "obj"
+C_1 = "c_1"
+C_2 = "c_2"
+R_1 = "r_1"
+R_2 = "r_2"
 
 
-def get_inputs(names=None):
-    """Generate initial solution
+def get_inputs(
+    names=None,  # type: Optional[Iterable[str]]
+):  # type: (...) -> Dict[str,ndarray]
+    """Generate an initial solution for the MDO problem.
 
-    :param names: input names (default: None)
-    :type names: list(str)
-    :returns: input values
-    :rtype: dict
+    Args:
+        names: The names of the discipline inputs.
+
+    Returns:
+        The default values of the discipline inputs.
     """
     inputs = {
-        "x_local": array([0.0], dtype=complex128),
-        "x_shared": array([1.0, 0.0], dtype=complex128),
-        "y_0": ones((1), dtype=complex128),
-        "y_1": ones((1), dtype=complex128),
+        X_LOCAL: array([0.0], dtype=complex128),
+        X_SHARED: array([1.0, 0.0], dtype=complex128),
+        Y_1: ones(1, dtype=complex128),
+        Y_2: ones(1, dtype=complex128),
     }
     if names is None:
         return inputs
-    return {k: inputs[k] for k in names}
+    return {name: inputs[name] for name in names}
 
 
 class SellarSystem(MDODiscipline):
-    """**SellarSystem** is the :class:`.MDODiscipline`
-    implementing the computation of the Sellar's objective
-    and constraints discipline."""
+    """The discipline to compute the objective and constraints of the Sellar problem."""
 
-    def __init__(self):
-        """Constructor"""
+    def __init__(self):  # type: (...) -> None
         super(SellarSystem, self).__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):
-        """Defines the execution of the process, given that data
-        has been checked.
-        Compute the outputs (= objective value and constraints at system level)
-        of the Sellar analytical problem.
-        """
-        x_local, x_shared, y_0, y_1 = self.get_inputs_by_name(
-            ["x_local", "x_shared", "y_0", "y_1"]
+    def _run(self):  # type: (...) -> None
+        x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
+            [X_LOCAL, X_SHARED, Y_1, Y_2]
         )
-        obj = array([self.obj(x_local, x_shared, y_0, y_1)], dtype=complex128)
-        c_1 = array([self.c_1(y_0)], dtype=complex128)
-        c_2 = array([self.c_2(y_1)], dtype=complex128)
+        obj = array([self.compute_obj(x_local, x_shared, y_1, y_2)], dtype=complex128)
+        c_1 = array([self.compute_c_1(y_1)], dtype=complex128)
+        c_2 = array([self.compute_c_2(y_2)], dtype=complex128)
         self.store_local_data(obj=obj, c_1=c_1, c_2=c_2)
 
     @staticmethod
-    def obj(x_local, x_shared, y_0, y_1):
-        """Objective function
+    def compute_obj(
+        x_local,  # type: ndarray
+        x_shared,  # type: ndarray
+        y_1,  # type: ndarray
+        y_2,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the objective :math:`obj`.
 
-        :param x_local: local design variables
-        :type x_local: ndarray
-        :param x_shared: shared design variables
-        :type x_shared: ndarray
-        :param y_0: coupling variable from discipline 1
-        :type y_0: ndarray
-        :param y_1: coupling variable from discipline 2
-        :type y_1: ndarray
-        :returns: Objective value
-        :rtype: float
+        Args:
+            x_local: The design variables local to the first discipline.
+            x_shared: The shared design variables.
+            y_1: The coupling variable coming from the first discipline.
+            y_2: The coupling variable coming from the second discipline.
+
+        Returns:
+            The value of the objective :math:`obj`.
         """
-        return x_local[0] ** 2 + x_shared[1] + y_0[0] ** 2 + exp(-y_1[0])
+        return x_local[0] ** 2 + x_shared[1] + y_1[0] ** 2 + exp(-y_2[0])
 
     @staticmethod
-    def c_1(y_0):
-        """First constraint on system level
+    def compute_c_1(
+        y_1,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the constraint :math:`c_1`.
 
-        :param y_0: coupling variable from discipline 1
-        :type y_0: ndarray
-        :returns: Value of the constraint
-        :rtype: float
+        Args:
+            y_1: The coupling variable coming from the first discipline.
+
+        Returns:
+            The value of the constraint :math:`c_1`.
         """
-        return 3.16 - y_0[0] ** 2
+        return 3.16 - y_1[0] ** 2
 
     @staticmethod
-    def c_2(y_1):
-        """Second constraint on system level
+    def compute_c_2(
+        y_2,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the constraint :math:`c_2`.
 
-        :param y_1: coupling variable from discipline 2
-        :type y_1: ndarray
-        :returns: Value of the constraint
-        :rtype: float
-        """
-        return y_1[0] - 24.0
+        Args:
+            y_2: The coupling variable coming from the second discipline.
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+        Returns:
+            The value of the constraint :math:`c_2`.
         """
-        Computes the jacobian
+        return y_2[0] - 24.0
 
-        :param inputs: linearization should be performed with respect
-            to inputs list. If None, linearization should
-            be performed wrt all inputs (Default value = None)
-        :param outputs: linearization should be performed on outputs list.
-            If None, linearization should be performed
-            on all outputs (Default value = None)
-        """
-        # Initialize all matrices to zeros
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         self._init_jacobian(inputs, outputs, with_zeros=True)
-        x_local, _, y_0, y_1 = self.get_inputs_by_name(
-            ["x_local", "x_shared", "y_0", "y_1"]
-        )
-        self.jac["c_1"]["y_0"] = atleast_2d(array([-2.0 * y_0]))
-        self.jac["c_2"]["y_1"] = ones((1, 1))
-        self.jac["obj"]["x_local"] = atleast_2d(array([2.0 * x_local[0]]))
-        self.jac["obj"]["x_shared"] = atleast_2d(array([0.0, 1.0]))
-        self.jac["obj"]["y_0"] = atleast_2d(array([2.0 * y_0[0]]))
-        self.jac["obj"]["y_1"] = atleast_2d(array([-exp(-y_1[0])]))
+        x_local, _, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_1, Y_2])
+        self.jac[C_1][Y_1] = atleast_2d(array([-2.0 * y_1]))
+        self.jac[C_2][Y_2] = ones((1, 1))
+        self.jac[OBJ][X_LOCAL] = atleast_2d(array([2.0 * x_local[0]]))
+        self.jac[OBJ][X_SHARED] = atleast_2d(array([0.0, 1.0]))
+        self.jac[OBJ][Y_1] = atleast_2d(array([2.0 * y_1[0]]))
+        self.jac[OBJ][Y_2] = atleast_2d(array([-exp(-y_2[0])]))
 
 
 class Sellar1(MDODiscipline):
-    """**Sellar1** is the :class:`.MDODiscipline`
-    implementing the 1st set of equations: y_0.
-    """
+    """The discipline to compute the coupling variable :math:`y_1`."""
 
-    def __init__(self, residual_form=False):
+    def __init__(
+        self,
+        residual_form=False,  # type: bool
+    ):  # type: (...) -> None
         """
-        Constructor
-
-        :param residual_form: if True only residuals are computed, no Ys
-        :type residual_form: bool
+        Args:
+            residual_form: If True,
+                then only residuals are computed,
+                not the coupling variables.
         """
         self.residual_form = residual_form
         super(Sellar1, self).__init__(auto_detect_grammar_files=True)
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         if residual_form:
-            self.residual_variables = ["r_0"]
-            self.output_grammar.remove_item("y_0")
+            self.residual_variables = [R_1]
+            self.output_grammar.remove_item(Y_1)
 
         else:
-            self.output_grammar.remove_item("r_0")
-            self.input_grammar.remove_item("y_0")
+            self.output_grammar.remove_item(R_1)
+            self.input_grammar.remove_item(Y_1)
 
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
-    def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized
-        Can be overloaded by disciplines
-
-        :returns: the list of attributes names
-        :rtype: list(str)
-        """
+    def get_attributes_to_serialize(self):  # type: (...) -> List[str]
         base_d = super(Sellar1, self).get_attributes_to_serialize()
         base_d.append("residual_form")
         return base_d
 
-    def _run(self):
-        """Defines the execution of the process, given that
-        data has been checked.
-        Solve a coupling equation in functional form and
-        compute coupling variable y_0.
-        """
-        x_local, x_shared, y_1 = self.get_inputs_by_name(["x_local", "x_shared", "y_1"])
+    def _run(self):  # type: (...) -> None
+        x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
         if self.residual_form:
-            y_0 = self.get_inputs_by_name("y_0")
-
-            # residual form
-            r_0_out = array(
-                [self.compute_r_0(x_local, x_shared, y_0, y_1)], dtype=complex128
+            y_1 = self.get_inputs_by_name(Y_1)
+            r_1_out = array(
+                [self.compute_r_1(x_local, x_shared, y_1, y_2)], dtype=complex128
             )
-            # store outputs
-            self.store_local_data(r_0=r_0_out)
+            self.store_local_data(r_1=r_1_out)
         else:
             # functional form
-            y_0_out = array(
-                [self.compute_y_0(x_local, x_shared, y_1)], dtype=complex128
+            y_1_out = array(
+                [self.compute_y_1(x_local, x_shared, y_2)], dtype=complex128
             )
-            self.store_local_data(y_0=y_0_out)
+            self.store_local_data(y_1=y_1_out)
 
     @staticmethod
-    def compute_y_0(x_local, x_shared, y_1):
-        """Solve the first coupling equation in functional form.
+    def compute_y_1(
+        x_local,  # type: ndarray
+        x_shared,  # type: ndarray
+        y_2,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the first coupling equation in functional form.
 
-        :param x_local: vector of design variables local to discipline 1
-        :type x_local: ndarray
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_1: coupling variable of discipline 2
-        :type y_1: ndarray
-        :returns: coupling variable y_0 of discipline 1
-        :rtype: float
+        Args:
+            x_local: The design variables local to first discipline.
+            x_shared: The shared design variables.
+            y_2: The coupling variable coming from the second discipline.
+
+        Returns:
+            The value of the coupling variable :math:`y_1`.
         """
-        return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_1[0])
+        return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])
 
     @staticmethod
-    def compute_r_0(x_local, x_shared, y_0, y_1):
+    def compute_r_1(
+        x_local,  # type: ndarray
+        x_shared,  # type: ndarray
+        y_1,  # type: ndarray
+        y_2,  # type: ndarray
+    ):  # type: (...) -> float
         """Evaluate the first coupling equation in residual form.
 
-        :param x_local: vector of design variables local to discipline 1
-        :type x_local: ndarray
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_0: coupling variable of discipline 1
-        :type y_0: ndarray
-        :param y_1: coupling variable of discipline 2
-        :type y_1: ndarray
-        :returns: coupling variable y_0
-        :rtype: float
-        """
-        return Sellar1.compute_y_0(x_local, x_shared, y_1) - y_0[0]
+        Args:
+            x_local: The design variables local to the first discipline.
+            x_shared: The shared design variables.
+            y_1: The coupling variable coming from the first discipline.
+            y_2: The coupling variable coming from the second discipline.
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+        Returns:
+            The value of the residues related to the first discipline.
         """
+        return Sellar1.compute_y_1(x_local, x_shared, y_2) - y_1[0]
 
-        :param inputs: linearization should be performed with respect
-            to inputs list. If None, linearization should
-            be performed wrt all inputs (Default value = None)
-        :param outputs: linearization should be performed on outputs list.
-            If None, linearization should be performed
-            on all outputs (Default value = None)
-        """
-        # Initialize all matrices to zeros
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         self._init_jacobian(inputs, outputs, with_zeros=True)
-        x_local, x_shared, y_1 = self.get_inputs_by_name(["x_local", "x_shared", "y_1"])
+        x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
-        inv_denom = 1.0 / (self.compute_y_0(x_local, x_shared, y_1))
-        self.jac["y_0"] = {}
-        self.jac["y_0"]["x_local"] = atleast_2d(array([0.5 * inv_denom]))
-        self.jac["y_0"]["x_shared"] = atleast_2d(
+        inv_denom = 1.0 / (self.compute_y_1(x_local, x_shared, y_2))
+        self.jac[Y_1] = {}
+        self.jac[Y_1][X_LOCAL] = atleast_2d(array([0.5 * inv_denom]))
+        self.jac[Y_1][X_SHARED] = atleast_2d(
             array([x_shared[0] * inv_denom, 0.5 * inv_denom])
         )
-        self.jac["y_0"]["y_1"] = atleast_2d(array([-0.1 * inv_denom]))
+        self.jac[Y_1][Y_2] = atleast_2d(array([-0.1 * inv_denom]))
 
         if self.residual_form:
-            self.jac["r_0"]["x_local"] = atleast_2d(self.jac["y_0"]["x_local"])
-            self.jac["r_0"]["x_shared"] = atleast_2d(self.jac["y_0"]["x_shared"])
-            self.jac["r_0"]["y_1"] = atleast_2d(self.jac["y_0"]["y_1"])
-            self.jac["r_0"]["y_0"] = -ones((1, 1))
-            del self.jac["y_0"]
+            self.jac[R_1][X_LOCAL] = atleast_2d(self.jac[Y_1][X_LOCAL])
+            self.jac[R_1][X_SHARED] = atleast_2d(self.jac[Y_1][X_SHARED])
+            self.jac[R_1][Y_2] = atleast_2d(self.jac[Y_1][Y_2])
+            self.jac[R_1][Y_1] = -ones((1, 1))
+            del self.jac[Y_1]
 
 
 class Sellar2(MDODiscipline):
-    """**Sellar1** is the :class:`.MDODiscipline`
-    implementing the 2nd set of equations: y_1
-    """
+    """The discipline to compute the coupling variable :math:`y_2`."""
 
-    def __init__(self, residual_form=False):
+    def __init__(
+        self,
+        residual_form=False,  # type: bool
+    ):  # type: (...) -> None
         """
-        Constructor
-
-        :param residual_form: if True only residuals are computed, no Ys
-        :type residual_form: bool
+        Args:
+            residual_form: If True,
+                then only residuals are computed,
+                not the coupling variables.
         """
         self.residual_form = residual_form
         super(Sellar2, self).__init__(auto_detect_grammar_files=True)
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         if residual_form:
-            self.residual_variables = ["r_1"]
-            self.output_grammar.remove_item("y_1")
+            self.residual_variables = [R_2]
+            self.output_grammar.remove_item(Y_2)
         else:
-            self.output_grammar.remove_item("r_1")
-            self.input_grammar.remove_item("y_1")
+            self.output_grammar.remove_item(R_2)
+            self.input_grammar.remove_item(Y_2)
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
     def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized
-        Can be overloaded by disciplines
-
-        :returns: the list of attributes names
-        :rtype: list(str)
-        """
         base_d = super(Sellar2, self).get_attributes_to_serialize()
         base_d.append("residual_form")
         return base_d
 
-    def _run(self):
-        """Defines the execution of the process, given
-        that data has been checked.
-        Solve a coupling equation in functional form and compute coupling
-        variable y1.
-        """
-        x_shared, y_0 = self.get_inputs_by_name(["x_shared", "y_0"])
+    def _run(self):  # type: (...) -> None
+        x_shared, y_1 = self.get_inputs_by_name([X_SHARED, Y_1])
 
         if self.residual_form:
-            y_1 = self.get_inputs_by_name("y_1")
-            # residual form
-            r_1_out = array([self.compute_r_1(x_shared, y_0, y_1)], dtype=complex128)
-            # store outputs
-            self.store_local_data(r_1=r_1_out)
+            y_2 = self.get_inputs_by_name(Y_2)
+            r_2_out = array([self.compute_r_2(x_shared, y_1, y_2)], dtype=complex128)
+            self.store_local_data(r_2=r_2_out)
         else:
             # functional form
-            y_1_out = array([self.compute_y1(x_shared, y_0)], dtype=complex128)
-            self.store_local_data(y_1=y_1_out)
+            y_2_out = array([self.compute_y_2(x_shared, y_1)], dtype=complex128)
+            self.store_local_data(y_2=y_2_out)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """
-        :param inputs: linearization should be performed with respect
-            to inputs list. If None, linearization should
-            be performed wrt all inputs (Default value = None)
-        :param outputs: linearization should be performed on outputs list.
-            If None, linearization should be performed
-            on all outputs (Default value = None)
-        """
-        # Initialize all matrices to zeros
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         self._init_jacobian(inputs, outputs, with_zeros=True)
-        y_0 = self.get_inputs_by_name("y_0")
-        self.jac["y_1"] = {}
-        self.jac["y_1"]["x_local"] = zeros((1, 1))
-        self.jac["y_1"]["x_shared"] = ones((1, 2))
-        if y_0[0] < 0.0:
-            self.jac["y_1"]["y_0"] = -ones((1, 1))
-        elif y_0[0] == 0.0:
-            self.jac["y_1"]["y_0"] = zeros((1, 1))
+        y_1 = self.get_inputs_by_name(Y_1)
+        self.jac[Y_2] = {}
+        self.jac[Y_2][X_LOCAL] = zeros((1, 1))
+        self.jac[Y_2][X_SHARED] = ones((1, 2))
+        if y_1[0] < 0.0:
+            self.jac[Y_2][Y_1] = -ones((1, 1))
+        elif y_1[0] == 0.0:
+            self.jac[Y_2][Y_1] = zeros((1, 1))
         else:
-            self.jac["y_1"]["y_0"] = ones((1, 1))
+            self.jac[Y_2][Y_1] = ones((1, 1))
 
         if self.residual_form:
-            self.jac["r_1"]["x_local"] = self.jac["y_1"]["x_local"]
-            self.jac["r_1"]["x_shared"] = self.jac["y_1"]["x_shared"]
-            self.jac["r_1"]["y_0"] = self.jac["y_1"]["y_0"]
-            self.jac["r_1"]["y_1"] = -ones((1, 1))
-            del self.jac["y_1"]
+            self.jac[R_2][X_LOCAL] = self.jac[Y_2][X_LOCAL]
+            self.jac[R_2][X_SHARED] = self.jac[Y_2][X_SHARED]
+            self.jac[R_2][Y_1] = self.jac[Y_2][Y_1]
+            self.jac[R_2][Y_2] = -ones((1, 1))
+            del self.jac[Y_2]
 
     @staticmethod
-    def compute_y1(x_shared, y_0):
-        """Solve the second coupling equation in functional form.
+    def compute_y_2(
+        x_shared,  # type: ndarray
+        y_1,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the second coupling equation in functional form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_0: coupling variable of discipline 1
-        :type y_0: ndarray
-        :returns: coupling variable y_1
-        :rtype: float
+        Args:
+            x_shared: The shared design variables.
+            y_1: The coupling variable coming from the first discipline.
+
+        Returns:
+            The value of the coupling variable :math:`y_2`.
         """
         out = x_shared[0] + x_shared[1]
-        if y_0[0].real == 0:
-            y_1 = out
-        elif y_0[0].real > 0:
-            y_1 = y_0[0] + out
+        if y_1[0].real == 0:
+            y_2 = out
+        elif y_1[0].real > 0:
+            y_2 = y_1[0] + out
         else:
-            y_1 = -y_0[0] + out
-        return y_1
+            y_2 = -y_1[0] + out
+        return y_2
 
     @staticmethod
-    def compute_r_1(x_shared, y_0, y_1):
+    def compute_r_2(
+        x_shared,  # type: ndarray
+        y_1,  # type: ndarray
+        y_2,  # type: ndarray
+    ):  # type: (...) -> float
         """Evaluate the second coupling equation in residual form.
 
-        :param x_shared: vector of shared design variables
-        :type x_shared: ndarray
-        :param y_0: coupling variable of discipline 1
-        :type y_0: ndarray
-        :param y_1: coupling variable of discipline 2
-        :type y_1: ndarray
-        :returns: coupling variable y_0
-        :rtype: float
+        Args:
+            x_shared: The shared design variables.
+            y_1: The coupling variable coming from the first discipline.
+            y_2: The coupling variable coming from the second discipline.
+
+        Returns:
+            The value of the residues related to the second discipline.
         """
-        return Sellar2.compute_y1(x_shared, y_0) - y_1[0]
-
-
-# #=========================================================================
-# # Analytical Jacobians of f and residuals
-#
-#
-# class Jacobian(object):
-#     """
-#     Compute the Jacobians of objective function and residuals with respect
-#     to design and coupling variables
-#     """
-#
-#     @staticmethod
-#     def jacobian_f_x(x_shared):
-#         """
-#         Jacobian matrix of objective function wrt design variables
-#         :param x_shared: vector of design variables
-#         :type x_shared: ndarray
-#         :returns: Jacobian matrix
-#         """
-#         return array([0, 2 * x_shared[1], 1])
-#
-#     @staticmethod
-#     def jacobian_f_y(Y):
-#         """
-#         Jacobian matrix of objective function wrt coupling variables
-#         :param Y: vector of coupling variables
-#         :type Y: ndarray
-#         :returns: Jacobian matrix
-#         """
-#         return array([2 * Y[0], -exp(-Y[1])])
-#
-#     @staticmethod
-#     def jacobian_residuals_x(x_shared):
-#         """
-#         Jacobian matrix of residual vector wrt design variables
-#         :param x_shared: vector of design variables
-#         :type x_shared: ndarray
-#         :returns: Jacobian matrix
-#         """
-#         return array([[2 * x_shared[0], 1, 1], [1, 0, 1]])
-#
-#     @staticmethod
-#     def jacobian_residuals_y(Y):
-#         """
-#         Jacobian matrix of residual vector wrt coupling variables
-#         :param Y: vector of coupling variables
-#         :type Y: ndarray
-#         :returns: Jacobian matrix
-#         """
-#         return array([[-2 * Y[0], -0.2], [Y[0] / abs(Y[0]), -1.]])
-#
-#     @staticmethod
-#     def jacobian_g_x():
-#         """
-#         Jacobian matrix of system-level constraints wrt design variables
-#         :returns: Jacobian matrix
-#         """
-#         return array([[0., 0., 0.], [0., 0., 0.]])
-#
-#     @staticmethod
-#     def jacobian_g_y(Y):
-#         """
-#         Jacobian matrix of system-level constraints wrt coupling variables
-#         :param Y: vector of coupling variables
-#         :type Y: ndarray
-#         :returns: Jacobian matrix
-#         """
-#         return array([[2 * Y[0], 0], [0, 1]])
+        return Sellar2.compute_y_2(x_shared, y_1) - y_2[0]

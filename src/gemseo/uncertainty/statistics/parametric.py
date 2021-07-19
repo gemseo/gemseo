@@ -19,24 +19,26 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Parametric estimation of statistics from a dataset
-==================================================
+
+"""Class for the parametric estimation of statistics from a dataset.
 
 Overview
 --------
 
-The :class:`.ParametricStatistics` class inherits from the
-abstract :class:`.Statistics` class and aims to estimate statistics
-from a :class:`.Dataset`, based on a collection of
-candidate parametric distribution calibrated from this :class:`.Dataset`.
-For each variable, parameters of these distributions are calibrated
-from the :class:`.Dataset`
-and the fitted parametric :class:`.Distribution` which is optimal
-in the sense of a goodness-of-fit criterion and a selection criterion
-is selected to estimate :class:`.Statistics` associated with this variable.
-The :class:`.ParametricStatistics` relies on the OpenTURNS library through
-the :class:`.OTDistribution` and :class:`.OTDistributionFitter` classes.
+The :class:`.ParametricStatistics` class inherits
+from the abstract :class:`.Statistics` class
+and aims to estimate statistics from a :class:`.Dataset`,
+based on candidate parametric distributions calibrated from this :class:`.Dataset`.
+
+For each variable,
+
+1. the parameters of these distributions are calibrated from the :class:`.Dataset`,
+2. the fitted parametric :class:`.Distribution` which is optimal
+   in the sense of a goodness-of-fit criterion and a selection criterion
+   is selected to estimate the statistics related to this variable.
+
+The :class:`.ParametricStatistics` relies on the OpenTURNS library
+through the :class:`.OTDistribution` and :class:`.OTDistributionFitter` classes.
 
 Construction
 ------------
@@ -48,87 +50,157 @@ The :class:`.ParametricStatistics` is built from two mandatory arguments:
 
 and can consider optional arguments:
 
-- a subset of variables names (by default, statistics are computed
-  for all variables),
-- a fitting criterion name (by default, BIC is used;
-  see :meth:`.ParametricStatistics.get_available_criteria`
-  and :meth:`.ParametricStatistics.get_significance_tests`
+- a subset of variables names
+  (by default, statistics are computed for all variables),
+- a fitting criterion name
+  (by default, BIC is used;
+  see :attr:`.AVAILABLE_CRITERIA`
+  and :attr:`.AVAILABLE_SIGNIFICANCE_TESTS`
   for more information),
 - a level associated with the fitting criterion,
 - a selection criterion:
 
-  - 'best': select the distribution minimizing (or maximizing, depending
-    on the criterion) the criterion,
-  - 'first': Select the first distribution for which the criterion is
-    greater (or lower, depending on the criterion) than the level,
+  - 'best':
+    select the distribution minimizing
+    (or maximizing, depending on the criterion)
+    the criterion,
+  - 'first':
+    select the first distribution
+    for which the criterion is greater
+    (or lower, depending on the criterion)
+    than the level,
 
-- a name for the :class:`.ParametricStatistics` object (by default,
-  the name is the concatenation of 'ParametricStatistics' and
+- a name for the :class:`.ParametricStatistics` object
+  (by default, the name is the concatenation of 'ParametricStatistics'
   and the name of the :class:`.Dataset`).
 
 Capabilities
 ------------
 
-By inheritance, a :class:`.ParametricStatistics` object has the
-same capabilities as :class:`.Statistics`. Additional ones are:
+By inheritance,
+a :class:`.ParametricStatistics` object has
+the same capabilities as :class:`.Statistics`.
+Additional ones are:
 
-- :meth:`.get_fitting_matrix`: this method shows the values
-  of the fitting criterion for the different variables and
-  candidate probability distributions
+- :meth:`.get_fitting_matrix`:
+  this method displays the values of the fitting criterion
+  for the different variables
+  and candidate probability distributions
   as well as the select probability distribution,
-- :meth:`.plot_criteria`: this method plots the criterion values
-  for a given variable.
+- :meth:`.plot_criteria`:
+  this method plots the criterion values for a given variable.
 """
-from __future__ import absolute_import, division, unicode_literals
 
+from __future__ import division, unicode_literals
+
+import logging
 import os
+from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
-import openturns as ot
-from future import standard_library
-from numpy import array, exp, inf, linspace, log
-from past.utils import old_div
+from numpy import array, linspace, ndarray
 
+from gemseo.core.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
-from gemseo.uncertainty.distributions.ot_dist import OTNormalDistribution
-from gemseo.uncertainty.distributions.ot_fdist import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.fitting import (
+    MeasureType,
+    OTDistributionFitter,
+)
 from gemseo.uncertainty.statistics.statistics import Statistics
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    ToleranceIntervalFactory,
+    ToleranceIntervalSide,
+)
 
-standard_library.install_aliases()
-
-from gemseo import LOGGER
+LOGGER = logging.getLogger(__name__)
 
 
 class ParametricStatistics(Statistics):
-    """ Parametric estimation of statistics. """
+    """Parametric estimation of statistics.
+
+    Attributes:
+        fitting_criterion (str): The name of the goodness-of-fit criterion,
+            measuring how the distribution fits the data.
+        level (float): The test level,
+            i.e. risk of committing a Type 1 error,
+            that is an incorrect rejection of a true null hypothesis,
+            for criteria based on test hypothesis.
+        selection_criterion (str): The name of the selection criterion
+            to select a distribution from a list of candidates.
+        distributions (dict(str, dict(str, OTDistribution))): The probability
+            distributions of the random variables.
+
+    Examples:
+        >>> from gemseo.api import (
+        ...     create_discipline,
+        ...     create_parameter_space,
+        ...     create_scenario
+        ... )
+        >>> from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+        >>>
+        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
+        >>> discipline = create_discipline(
+        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ... )
+        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+        >>>
+        >>> parameter_space = create_parameter_space()
+        >>> parameter_space.add_random_variable(
+        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
+        ... )
+        >>> parameter_space.add_random_variable(
+        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
+        ... )
+        >>>
+        >>> scenario = create_scenario(
+        ...     [discipline],
+        ...     "DisciplinaryOpt",
+        ...     "y1", parameter_space, scenario_type="DOE"
+        ... )
+        >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
+        >>>
+        >>> dataset = discipline.cache.export_to_dataset()
+        >>>
+        >>> statistics = ParametricStatistics(
+        ...     dataset, ['Normal', 'Uniform', 'Triangular']
+        ... )
+        >>> fitting_matrix = statistics.get_fitting_matrix()
+        >>> mean = statistics.mean()
+    """
+
+    AVAILABLE_DISTRIBUTIONS = sorted(
+        OTDistributionFitter._AVAILABLE_DISTRIBUTIONS.keys()
+    )
+
+    AVAILABLE_CRITERIA = sorted(OTDistributionFitter._AVAILABLE_FITTING_TESTS.keys())
+    AVAILABLE_SIGNIFICANCE_TESTS = sorted(OTDistributionFitter.SIGNIFICANCE_TESTS)
 
     def __init__(
         self,
-        dataset,
-        distributions,
-        variables_names=None,
-        fitting_criterion="BIC",
-        level=0.05,
-        selection_criterion="best",
-        name=None,
-    ):
-        """Constructor
-
-        :param Dataset dataset: dataset
-        :param list(str) distributions: list of distributions names
-        :param list(str) variables_names: list of variables names
-            or list of variables names. If None, the method considers
-            all variables from loaded dataset. Default: None.
-        :param str fitting_criterion: goodness-of-fit criterion.
-            Default: 'BIC'.
-        :param float level: risk of committing a Type 1 error,
-            that is an incorrect rejection of a true null hypothesis,
-            for criteria based on test hypothesis.
-            Default: 0.05.
-        :param str selection_criterion: selection criterion. Default: 'best'
-        :param str name: name of the object.
-            If None, use the concatenation of class and dataset names.
-            Default: None.
+        dataset,  # type: Dataset
+        distributions,  # type: Sequence[str]
+        variables_names=None,  # type: Optional[Iterable[str]]
+        fitting_criterion="BIC",  # type: str
+        level=0.05,  # type: float
+        selection_criterion="best",  # type: str
+        name=None,  # type: Optional[str]
+    ):  # type: (...) -> None  # noqa: D205,D212,D415
+        """
+        Args:
+            distributions: The names of the distributions.
+            fitting_criterion: The name of
+                the goodness-of-fit criterion,
+                measuring how the distribution fits the data.
+                Use :meth:`.ParametricStatistics.get_criteria`
+                to get the available criteria.
+            level: A test level,
+                i.e. the risk of committing a Type 1 error,
+                that is an incorrect rejection of a true null hypothesis,
+                for criteria based on test hypothesis.
+            selection_criterion: The name of the selection criterion
+                to select a distribution from a list of candidates.
+                Either 'first' or 'best'.
         """
         super(ParametricStatistics, self).__init__(dataset, variables_names, name)
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
@@ -140,99 +212,126 @@ class ParametricStatistics(Statistics):
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
         else:
             self.level = None
-        self.build_distributions(distributions)
+        self._all_distributions = None
+        self.distributions = None
+        self._build_distributions(distributions)
 
-    def build_distributions(self, distributions):
-        """Build distributions from a list of distributions names,
-        a test level and the stored dataset.
+    def _build_distributions(
+        self,
+        distributions,  # type: Sequence[str]
+    ):  # type: (...) -> None
+        """Build distributions from distributions names.
 
-        :param list(str) distributions: list of distributions names.
+        Args:
+            distributions: The names of the distributions.
         """
         self._all_distributions = self._fit_distributions(distributions)
         self.distributions = self._select_best_distributions(distributions)
 
-    def get_fitting_matrix(self):
-        """Get the fitting matrix. This matrix contains goodness-of-fit
-        measures for each pair < variable, distribution >."""
-        rownames = sorted(self._all_distributions.keys())
-        colnames = list(self._all_distributions[rownames[0]].keys())
-        table = PrettyTable(["Variable"] + colnames + ["Selection"])
-        for varname in rownames:
-            row, _ = self.get_criteria(varname)
-            row = [varname] + [row[distribution] for distribution in colnames]
-            row = row + [self.distributions[varname]["name"]]
+    def get_fitting_matrix(self):  # type: (...) -> str
+        """Get the fitting matrix.
+
+        This matrix contains goodness-of-fit measures
+        for each pair < variable, distribution >.
+
+        Returns:
+            The printable fitting matrix.
+        """
+        variables = sorted(self._all_distributions.keys())
+        distributions = list(self._all_distributions[variables[0]].keys())
+        table = PrettyTable(["Variable"] + distributions + ["Selection"])
+        for variable in variables:
+            row, _ = self.get_criteria(variable)
+            row = [variable] + [row[distribution] for distribution in distributions]
+            row = row + [self.distributions[variable]["name"]]
             table.add_row(row)
         return str(table)
 
-    def get_criteria(self, varname):
-        """Get criteria for a given variable name.
+    def get_criteria(
+        self,
+        variable,  # type:str
+    ):  # type: (...) -> Tuple[Dict[str,float],bool]
+        """Get criteria for a given variable name and the different distributions.
 
-        :param str varname: variable name.
+        Args:
+            variable: The name of the variable.
+
+        Returns:
+            The criterion for the different distributions.
+            and an indicator equal to True is the criterion is a p-value.
         """
-        varname_dist = self._all_distributions[varname]
+        all_distributions = self._all_distributions[variable]
         criteria = {
             distribution: result["criterion"]
-            for distribution, result in varname_dist.items()
+            for distribution, result in all_distributions.items()
         }
-        is_pvalue = False
+        is_p_value = False
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         if self.fitting_criterion in significance_tests:
             criteria = {
                 distribution: result[1]["p-value"]
                 for distribution, result in criteria.items()
             }
-            is_pvalue = True
-        return criteria, is_pvalue
+            is_p_value = True
+        return criteria, is_p_value
 
     def plot_criteria(
-        self, varname, title=None, save=False, show=True, n_legend_cols=4, directory="."
-    ):
-        """Plot criteria for a given variable name
+        self,
+        variable,  # type: str
+        title=None,  # type: Optional[str]
+        save=False,  # type:bool
+        show=True,  # type: bool
+        n_legend_cols=4,  # type: int
+        directory=".",  # type:str
+    ):  # type: (...) -> None
+        """Plot criteria for a given variable name.
 
-        :param str varname: name of the variable
-        :param str title: title. Default: None.
-        :param bool save: save the plot into a file. Default: False.
-        :param bool show: show the plot. Default: True.
-        :param int n_legend_cols: number of text columns in the upper legend.
-            Default: 4.
-        :param str directory: directory absolute or relative path.
-            Default: '.'.
+        Args:
+            variable: The name of the variable.
+            title: A plot title.
+            save: If True, save the plot on the disk.
+            show: If True, show the plot.
+            n_legend_cols: The number of text columns in the upper legend.
+            directory: The directory path, either absolute or relative.
+
+        Raises:
+            ValueError: If the variable is missing from the dataset.
         """
-        if varname not in self.names:
+        if variable not in self.names:
             raise ValueError(
-                varname + " is not a variable of the dataset."
-                "Available ones are:" + ", ".join(self.names)
+                "The variable '{}' is missing from the dataset."
+                "Available ones are: {}.".format(variable, ", ".join(self.names))
             )
-        criteria, is_pvalue = self.get_criteria(varname)
-        xvals = []
-        yvals = []
+        criteria, is_p_value = self.get_criteria(variable)
+        x_values = []
+        y_values = []
         labels = []
-        xval = 0
+        x_value = 0
         for distribution, criterion in criteria.items():
-            xval += 1
-            xvals.append(xval)
-            yvals.append(criterion)
+            x_value += 1
+            x_values.append(x_value)
+            y_values.append(criterion)
             labels.append(distribution)
         plt.subplot(121)
-        plt.bar(xvals, yvals, tick_label=labels, align="center")
-        if is_pvalue:
-            plt.ylabel("p-value from " + self.fitting_criterion + " test")
+        plt.bar(x_values, y_values, tick_label=labels, align="center")
+        if is_p_value:
+            plt.ylabel("p-value from {} test".format(self.fitting_criterion))
             plt.axhline(self.level, color="r", linewidth=2.0)
         plt.grid(True, "both")
         plt.subplot(122)
-        data = array(self.dataset[varname])
+        data = array(self.dataset[variable])
         data_min = min(data)
         data_max = max(data)
-        xvals = linspace(data_min, data_max, 1000)
-        distributions = self._all_distributions[varname]
+        x_values = linspace(data_min, data_max, 1000)
+        distributions = self._all_distributions[variable]
         try:
             plt.hist(data, density=True)
         except AttributeError:
             plt.hist(data, normed=True)
         for dist_name, dist_value in distributions.items():
             pdf = dist_value["fitted_distribution"].distribution.computePDF
-            yvals = [pdf([xval])[0] for xval in xvals]
-            plt.plot(xvals, yvals, label=dist_name, linewidth=2.0)
+            y_values = [pdf([x_value])[0] for x_value in x_values]
+            plt.plot(x_values, y_values, label=dist_name, linewidth=2.0)
         plt.legend(
             bbox_to_anchor=(0.0, 1.02, 1.0, 0.102),
             loc="lower left",
@@ -250,31 +349,46 @@ class ParametricStatistics(Statistics):
             plt.show()
         plt.close()
 
-    def _select_best_distributions(self, distributions_names):
-        """ Select the best distributions for the different variables."""
+    def _select_best_distributions(
+        self, distributions_names  # type: Sequence[str]
+    ):  # type: (...) -> Dict[str,Dict[str,Union[str,OTDistribution]]]
+        """Select the best distributions for the different variables.
+
+        Args:
+            distributions_names: The names of the distributions.
+
+        Returns:
+            The best distributions for the different variables.
+        """
         LOGGER.info("Select the best distribution for each variable.")
         distributions = {}
-        for varname in self.names:
-            varname_dist = self._all_distributions[varname]
+        for variable in self.names:
+            all_distributions = self._all_distributions[variable]
             criteria = [
-                varname_dist[distribution]["criterion"]
+                all_distributions[distribution]["criterion"]
                 for distribution in distributions_names
             ]
-            select_from_results = OTDistributionFitter.select_from_results
-            index = select_from_results(
+            select_from_measures = OTDistributionFitter.select_from_measures
+            index = select_from_measures(
                 criteria, self.fitting_criterion, self.level, self.selection_criterion
             )
             name = distributions_names[index]
-            value = varname_dist[name]["fitted_distribution"]
-            distributions[varname] = {"name": name, "value": value}
-            LOGGER.info("| The best distribution for %s is %s.", varname, value)
+            value = all_distributions[name]["fitted_distribution"]
+            distributions[variable] = {"name": name, "value": value}
+            LOGGER.info("| The best distribution for %s is %s.", variable, value)
         return distributions
 
-    def _fit_distributions(self, distributions):
-        """Fit distributions for the different dataset marginals
-        among a given collection of distributions names.
+    def _fit_distributions(
+        self,
+        distributions,  # type: Iterable[str]
+    ):  # type: (...) -> Dict[str,Dict[str,Dict[str,Union[OTDistribution,MeasureType]]]]
+        """Fit different distributions for the different marginals.
 
-        :param list(str) distributions: list of distributions names
+        Args:
+            distributions: The distributions names.
+
+        Returns:
+            dict(str, dict): The distributions for the different variables.
         """
         dist_list = ", ".join(distributions)
         LOGGER.info(
@@ -283,27 +397,35 @@ class ParametricStatistics(Statistics):
             dist_list,
         )
         results = {}
-        for varname in self.names:
-            LOGGER.info("| Fit different distributions for %s.", varname)
-            dataset = self.dataset[varname]
-            results[varname] = self._fit_marginal_distributions(
-                varname, dataset, distributions
+        for variable in self.names:
+            LOGGER.info("| Fit different distributions for %s.", variable)
+            dataset = self.dataset[variable]
+            results[variable] = self._fit_marginal_distributions(
+                variable, dataset, distributions
             )
         return results
 
-    def _fit_marginal_distributions(self, variable, sample, distributions):
-        """Fit distributions for a given dataset marginal
-        among a given collection of distributions names
+    def _fit_marginal_distributions(
+        self,
+        variable,  # type: str
+        sample,  # type: ndarray
+        distributions,  # type: Iterable[str]
+    ):  # type: (...) -> Dict[str,Dict[str,Union[OTDistribution,MeasureType]]]
+        """Fit different distributions for a given dataset marginal.
 
-        :param str variable: variable name
-        :param array dataset: sample
-        :param list(str) distributions: list of distributions names
+        Args:
+            variable: A variable name.
+            sample: A data array.
+            distributions: The names of the distributions.
+
+        Returns:
+            The distributions for the different variables.
         """
         result = {}
         factory = OTDistributionFitter(variable, sample)
         for distribution in distributions:
             fitted_distribution = factory.fit(distribution)
-            test_result = factory.measure(
+            test_result = factory.compute_measure(
                 fitted_distribution, self.fitting_criterion, self.level
             )
             result[distribution] = {}
@@ -311,384 +433,103 @@ class ParametricStatistics(Statistics):
             result[distribution]["criterion"] = test_result
         return result
 
-    def maximum(self):
-        """Get the maximum.
-
-        :return: maximum
-        """
+    def compute_maximum(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {
             name: self.distributions[name]["value"].math_upper_bound
             for name in self.names
         }
         return result
 
-    def mean(self):
-        """Get the mean.
-
-        :return: mean
-        """
+    def compute_mean(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {name: self.distributions[name]["value"].mean for name in self.names}
         return result
 
-    def minimum(self):
-        """Get the minimum.
-
-        :return: minimum
-        """
+    def compute_minimum(self):  # type: (...) -> Dict[str, ndarray] # noqa: D102
         result = {
             name: self.distributions[name]["value"].math_lower_bound
             for name in self.names
         }
         return result
 
-    def probability(self, thresh, greater=False):
-        """Compute a probability associated to a threshold.
-
-        :param float thresh: threshold
-        :param bool greater: if True, compute the probability the probability
-            of exceeding the threshold, if False, compute the reverse.
-            Default: True.
-        :return: probability
-        """
+    def compute_probability(
+        self,
+        thresh,  # type: float
+        greater=True,  # type: bool
+    ):  # type: (...) -> Dict[str, ndarray] # noqa: D102
         dist = self.distributions
         if greater:
             result = {
-                name: 1 - dist[name]["value"].cdf(thresh[name])[0]
+                name: 1 - dist[name]["value"].compute_cdf(thresh[name])[0]
                 for name in self.names
             }
         else:
             result = {
-                name: dist[name]["value"].cdf(thresh[name])[0] for name in self.names
+                name: dist[name]["value"].compute_cdf(thresh[name])[0]
+                for name in self.names
             }
         return result
 
-    def tolerance_interval(self, coverage, confidence=0.95, side="both"):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level.
-
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for lower-sided TI,
-            'upper' for upper-sided TI and 'both for both-sided TI.
-        :return: tolerance limits
-        """
-        if side not in ["upper", "lower", "both"]:
-            raise ValueError(
-                "The argument 'side' represents the type"
-                "of tolerance bounds. Available ones are: 'upper'"
-                "'lower' and 'both'."
-            )
+    def compute_tolerance_interval(
+        self,
+        coverage,  # type: float
+        confidence=0.95,  # type: float
+        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
+    ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]
+        # noqa: D102 D205 D212 D415
         if not 0.0 <= coverage <= 1.0:
-            raise ValueError("The argument 'coverage'" " must be number in [0,1].")
+            raise ValueError("The argument 'coverage' must be number in [0,1].")
         if not 0.0 <= confidence <= 1.0:
-            raise ValueError("The argument 'confidence'" " must be number in [0,1].")
+            raise ValueError("The argument 'confidence' must be number in [0,1].")
         limits = {}
-        for varname in self.names:
-            dist_name = self.distributions[varname]["name"]
-            dist = self.distributions[varname]["value"]
-            if dist_name == "Normal":
-                lower, upper = self._normal_tolerance_interval(
-                    dist, coverage, confidence, side
-                )
-            elif dist_name == "Uniform":
-                lower, upper = self._uniform_tolerance_interval(
-                    dist, coverage, confidence, side
-                )
-            elif dist_name == "LogNormal":
-                lower, upper = self._lognormal_tolerance_interval(
-                    dist, coverage, confidence, side
-                )
-            elif dist_name == "WeibullMin":
-                lower, upper = self._weibull_tolerance_interval(
-                    dist, coverage, confidence, side
-                )
-            elif dist_name == "Exponential":
-                lower, upper = self._exponential_tolerance_interval(
-                    dist, coverage, confidence, side
-                )
-            else:
-                raise ValueError(
-                    "Tolerance interval is not implemented for"
-                    'distribution "' + dist_name + '".'
-                )
-            limits[varname] = (lower, upper)
+        factory = ToleranceIntervalFactory()
+        for variable in self.names:
+            distribution = self.distributions[variable]
+            cls = factory.get_class(distribution["name"])
+            parameters = distribution["value"].marginals[0].getParameter()
+            tolerance_interval = cls(self.n_samples, *parameters)
+            limits[variable] = tolerance_interval.compute(coverage, confidence, side)
         return limits
 
-    def _weibull_tolerance_interval(
-        self, dist, coverage, confidence=0.95, side="lower"
-    ):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level, when data are
-        Weibull distributed
-
-        :param WeibullMin dist: OT WeibullMin distribution
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for one-sided lower TI,
-            'upper' for one-sided upper TI or 'both' for two-sided TI.
-        :return: tolerance limits
-        """
-        alpha = dist.marginals[0].getParameter()[0]
-        beta = dist.marginals[0].getParameter()[1]
-        gamma = dist.marginals[0].getParameter()[2]
-        x_i = log(beta)
-        delta = 1.0 / alpha
-        if side == "upper":
-            lbd = log(-log(1 - coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            upper = delta * student.computeQuantile(confidence)[0]
-            upper /= (self.n_samples - 1) ** 0.5
-            upper = x_i - upper
-            lower = -inf
-        elif side == "lower":
-            lbd = log(-log(coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            lower = delta * student.computeQuantile(1 - confidence)[0]
-            lower /= (self.n_samples - 1) ** 0.5
-            lower = x_i - lower
-            upper = inf
-        else:
-            coverage = (coverage + 1) / 2.0
-            alpha = (1 - confidence) / 2.0
-            lbd = log(-log(1 - coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            upper = delta * student.computeQuantile(1 - alpha)[0]
-            upper /= (self.n_samples - 1) ** 0.5
-            upper = x_i - upper
-            lbd = log(-log(coverage))
-            offset = -self.n_samples ** 0.5 * lbd
-            dof = self.n_samples - 1
-            student = ot.Student(dof, offset)
-            lower = delta * student.computeQuantile(alpha)[0]
-            lower /= (self.n_samples - 1) ** 0.5
-            lower = x_i - lower
-        limits = (array([exp(lower) + gamma]), array([exp(upper) + gamma]))
-        return limits
-
-    def _uniform_tolerance_interval(
-        self, dist, coverage, confidence=0.95, side="lower"
-    ):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level, when data are
-        uniformly distributed
-
-        :param Distribution dist: OT uniform distribution
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for one-sided lower TI,
-            'upper' for one-sided upper TI or 'both' for two-sided TI.
-        :return: tolerance limits
-        """
-        minimum = dist.marginals[0].getParameter()[0]
-        maximum = dist.marginals[0].getParameter()[1]
-        if side == "upper":
-            upper = (maximum - minimum) * coverage
-            upper /= (1 - confidence) ** (1.0 / self.n_samples)
-            upper += minimum
-            limits = (array([-inf]), array([upper]))
-        elif side == "lower":
-            lower = (maximum - minimum) * (1 - coverage)
-            lower /= confidence ** (1.0 / self.n_samples)
-            lower += minimum
-            limits = (array([lower]), array([inf]))
-        else:
-            upper = (maximum - minimum) * (coverage + 1) / 2.0
-            upper /= ((1 - confidence) / 2.0) ** (1.0 / self.n_samples)
-            upper += minimum
-            lower = (maximum - minimum) * (1 - (coverage + 1) / 2.0)
-            lower /= (1 - (1 - confidence) / 2.0) ** (1.0 / self.n_samples)
-            lower += minimum
-            limits = (array([lower]), array([upper]))
-        return limits
-
-    def _exponential_tolerance_interval(
-        self, dist, coverage, confidence=0.95, side="lower"
-    ):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level, when data are
-        exponentially distributed
-
-        :param Exponential dist: OT exponential distribution
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for one-sided lower TI,
-            'upper' for one-sided upper TI or 'both' for two-sided TI.
-        :return: tolerance limits
-        """
-        lmbda = dist.marginals[0].getParameter()[0]
-        gamma = dist.marginals[0].getParameter()[1]
-        if side == "upper":
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(confidence)[0]
-            upper = -2 * self.n_samples * log(coverage) * lmbda
-            upper /= chisq
-            lower = 0.0
-        elif side == "lower":
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(confidence)[0]
-            lower = -2 * self.n_samples * log(1 - coverage) * lmbda
-            lower /= chisq
-            upper = inf
-        else:
-            coverage = (coverage + 1) / 2.0
-            alpha = (1 - confidence) / 2.0
-            chisq = ot.ChiSquare(2 * self.n_samples)
-            chisq = chisq.computeQuantile(1 - alpha)[0]
-            upper = -2 * self.n_samples * log(1 - coverage) * lmbda
-            upper /= chisq
-            lower = -2 * self.n_samples * log(coverage) * lmbda
-            lower /= chisq
-
-        limits = (array([lower + gamma]), array([upper + gamma]))
-        return limits
-
-    def _normal_tolerance_interval(self, dist, coverage, confidence=0.95, side="lower"):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level, when data are
-        normally distributed
-
-        :param Normal dist: OT normal distribution
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for one-sided lower TI,
-            'upper' for one-sided upper TI or 'both' for two-sided TI.
-        :return: tolerance limits
-        """
-        mean = dist.marginals[0].getParameter()[0]
-        std = dist.marginals[0].getParameter()[1]
-        if side in ["upper", "lower"]:
-            z_p = ot.Normal().computeQuantile(coverage)[0]
-            delta = z_p * self.n_samples ** 0.5
-            dof = self.n_samples - 1
-            student = ot.Student(dof, delta)
-            student_quantile = student.computeQuantile(confidence)[0]
-            tolerance_factor = old_div(student_quantile, self.n_samples ** 0.5)
-            if side == "upper":
-                upper = mean + tolerance_factor * std
-                limits = (array([-inf]), array([upper]))
-            else:
-                lower = mean - tolerance_factor * std
-                limits = (array([lower]), array([inf]))
-        else:
-            z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
-            left = (1 + 1.0 / self.n_samples) ** 0.5 * z_p
-            chisq = ot.ChiSquare(self.n_samples - 1)
-            right = old_div(
-                (self.n_samples - 1), chisq.computeQuantile(1 - confidence)[0]
-            )
-            right = right ** 0.5
-            weight = self.n_samples - 3 - chisq.computeQuantile(1 - confidence)[0]
-            weight /= 2 * (self.n_samples + 1) ** 2
-            weight = (1 + weight) ** 0.5
-            tolerance_factor = left * right * weight
-            lower = mean - tolerance_factor * std
-            upper = mean + tolerance_factor * std
-            limits = (array([lower]), array([upper]))
-        return limits
-
-    def _lognormal_tolerance_interval(
-        self, dist, coverage, confidence=0.95, side="lower"
-    ):
-        """Compute the tolerance interval (TI) for a given minimum percentage
-        of the population and a given confidence level, when data are
-        normally distributed
-
-        :param LogNormal dist: OT LogNormal distribution
-        :param float coverage: minimum percentage of belonging to the TI.
-        :param float confidence: level of confidence in [0,1]. Default: 0.95.
-        :param str side: kind of interval: 'lower' for one-sided lower TI,
-            'upper' for one-sided upper TI or 'both' for two-sided TI.
-        :return: tolerance limits
-        """
-        dist = OTNormalDistribution(
-            "x",
-            dist.marginals[0].getParameter()[0],
-            dist.marginals[0].getParameter()[1],
-        )
-        lower, upper = self._normal_tolerance_interval(dist, coverage, confidence, side)
-        limits = (exp(lower), exp(upper))
-        return limits
-
-    def quantile(self, prob):
-        """Get the quantile associated to a given probability.
-
-        :param float prob: probability
-        :return: quantile
-        :rtype: float or list(float)
-        """
+    def compute_quantile(
+        self,
+        prob,  # type:float
+    ):  # type: (...) -> Dict[str,ndarray] # noqa: D102
         prob = array([prob])
         result = {
-            name: self.distributions[name]["value"].inverse_cdf(prob)
+            name: self.distributions[name]["value"].compute_inverse_cdf(prob)
             for name in self.names
         }
         return result
 
-    def standard_deviation(self):
-        """Get the standard deviation.
-
-        :return: standard deviation
-        :rtype: float or list(float)
-        """
+    def compute_standard_deviation(
+        self,
+    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {
             name: self.distributions[name]["value"].standard_deviation
             for name in self.names
         }
         return result
 
-    def variance(self):
-        """Get the variance.
-
-        :return: variance
-        :rtype: float or list(float)
-        """
+    def compute_variance(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {
             name: self.distributions[name]["value"].standard_deviation ** 2
             for name in self.names
         }
         return result
 
-    def moment(self, order):
-        """Compute the moment for a given order, either centered or not.
-
-        :param int order: moment index
-        :return: moment
-        :rtype: float or list(float)
-        """
+    def compute_moment(
+        self,
+        order,  # type: int
+    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         dist = self.distributions
         result = [
-            dist[varname]["value"].distribution.getMoment(order)[0]
-            for varname in self.names
+            dist[name]["value"].distribution.getMoment(order)[0] for name in self.names
         ]
         return result
 
-    def range(self):
-        """Get the range of variables.
-
-        :return: range of variables
-        """
+    def compute_range(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
         result = {}
         for name in self.names:
             dist = self.distributions[name]["value"]
             result[name] = dist.math_upper_bound - dist.math_lower_bound
         return result
-
-    @classmethod
-    def get_available_distributions(cls):
-        """ Get available distributions. """
-        return sorted(OTDistributionFitter.AVAILABLE_FACTORIES.keys())
-
-    @classmethod
-    def get_available_criteria(cls):
-        """ Get available goodness-of-fit criteria. """
-        return sorted(OTDistributionFitter.AVAILABLE_FITTING_TESTS.keys())
-
-    @classmethod
-    def get_significance_tests(cls):
-        """ Get significance tests. """
-        return sorted(OTDistributionFitter.SIGNIFICANCE_TESTS)

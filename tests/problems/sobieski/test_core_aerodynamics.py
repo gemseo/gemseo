@@ -20,36 +20,27 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
-from builtins import range
 
-from future import standard_library
 from numpy import array
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics
 
-standard_library.install_aliases()
-
-
-configure_logger(SOFTWARE_NAME)
-
 
 class TestSobieskiAerodynamics(unittest.TestCase):
-    """ """
+    """"""
 
     def setUp(self):
-        """At creation of unittest, initiate a sobieski problem class"""
+        """At creation of unittest, initiate a sobieski problem class."""
         self.problem = SobieskiProblem("complex128")
         self.threshold = 1e-12
         #
 
-    def test_dk_dMach(self):
-        """ """
+    def test_dk_d_mach(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -63,7 +54,7 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         )
 
     def test_dk_dsweep(self):
-        """ """
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -78,8 +69,8 @@ class TestSobieskiAerodynamics(unittest.TestCase):
             places=12,
         )
 
-    def test_dCDmin_dsweep(self):
-        """ """
+    def test_d_c_dmin_dsweep(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -89,13 +80,13 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         x_shared[1] = 35000.0
         lin_cd = sr_aero.compute_dcdmin_dsweep(x_shared).real
         x_shared[4] += 1j * h
-        Fo1 = 0.95 + 1j * 0
+        fo1 = 0.95 + 1j * 0
         self.assertAlmostEqual(
-            lin_cd, sr_aero.compute_cd_min(x_shared, Fo1).imag / h, places=12
+            lin_cd, sr_aero.compute_cd_min(x_shared, fo1).imag / h, places=12
         )
 
-    def test_dCD_dsweep(self):
-        """ """
+    def test_d_cd_dsweep(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -103,17 +94,17 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         h = 1e-30
         x_shared = indata["x_shared"]
         x_shared[1] = 35000.0
-        Fo1 = 0.95 + 1j * 0
-        CL = 0.0916697016134 + 0j
-        Fo2 = 1.00005 + 0j
-        lin_cd = sr_aero.compute_dcd_dsweep(x_shared, CL, Fo2).real
+        fo1 = 0.95 + 1j * 0
+        cl = 0.0916697016134 + 0j
+        fo2 = 1.00005 + 0j
+        lin_cd = sr_aero.compute_dcd_dsweep(x_shared, cl, fo2).real
         x_shared[4] += 1j * h
         self.assertAlmostEqual(
-            lin_cd, sr_aero.compute_cd(x_shared, CL, Fo1, Fo2).imag / h, places=12
+            lin_cd, sr_aero.compute_cd(x_shared, cl, fo1, fo2).imag / h, places=12
         )
 
-    def test_dCD_dMach(self):
-        """ """
+    def test_d_cd_d_mach(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -121,17 +112,17 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         h = 1e-30
         x_shared = indata["x_shared"]
         y_12 = indata["y_12"] * 0.1
-        Fo1 = 0.95 + 1j * 0
-        CL = sr_aero.compute_cl(x_shared, y_12)
-        Fo2 = 1.00005 + 0j
-        lin_cd = sr_aero.compute_dcd_dmach(x_shared, y_12, Fo2).real
+        fo1 = 0.95 + 1j * 0
+        cl = sr_aero.compute_cl(x_shared, y_12)
+        fo2 = 1.00005 + 0j
+        lin_cd = sr_aero.compute_dcd_dmach(x_shared, y_12, fo2).real
         x_shared[2] += 1j * h
         self.assertAlmostEqual(
-            lin_cd, sr_aero.compute_cd(x_shared, CL, Fo1, Fo2).imag / h, places=4
+            lin_cd, sr_aero.compute_cd(x_shared, cl, fo1, fo2).imag / h, places=4
         )
 
-    def test_dCD_dsref(self):
-        """ """
+    def test_d_cd_dsref(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -139,17 +130,17 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         h = 1e-30
         x_shared = indata["x_shared"]
         y_12 = indata["y_12"]
-        Fo1 = 0.95 + 1j * 0
-        Fo2 = 1.00005 + 0j
-        lin_cd = sr_aero.compute_dcd_dsref(x_shared, y_12, Fo2)
+        fo1 = 0.95 + 1j * 0
+        fo2 = 1.00005 + 0j
+        lin_cd = sr_aero.compute_dcd_dsref(x_shared, y_12, fo2)
         x_shared[5] += 1j * h
-        CL = sr_aero.compute_cl(x_shared, y_12)
+        cl = sr_aero.compute_cl(x_shared, y_12)
         self.assertAlmostEqual(
-            lin_cd, sr_aero.compute_cd(x_shared, CL, Fo1, Fo2).imag / h, places=12
+            lin_cd, sr_aero.compute_cd(x_shared, cl, fo1, fo2).imag / h, places=12
         )
 
-    def test_dCL_dh(self):
-        """ """
+    def test_d_cl_dh(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -172,8 +163,8 @@ class TestSobieskiAerodynamics(unittest.TestCase):
             lin_cl, sr_aero.compute_cl(x_shared, y_12).imag / h, places=12
         )
 
-    def test_dCL_dsref(self):
-        """ """
+    def test_d_cl_dsref(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -188,8 +179,8 @@ class TestSobieskiAerodynamics(unittest.TestCase):
             lin_cl, sr_aero.compute_cl(x_shared, y_12).imag / h, places=12
         )
 
-    def test_dCL_dMach(self):
-        """ """
+    def test_d_cl_d_mach(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
@@ -216,18 +207,18 @@ class TestSobieskiAerodynamics(unittest.TestCase):
             lin_cl, sr_aero.compute_cl(x_shared, y_12).imag / h, places=12
         )
 
-    def test_drhoV2_dh(self):
-        """ """
+    def test_drho_v2_dh(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
         )
         h = 1e-30
         x_shared = indata["x_shared"]
-        lin_rhoV2 = sr_aero.compute_drhov2_dh(x_shared).real
+        lin_rho_v2 = sr_aero.compute_drhov2_dh(x_shared).real
         x_shared[1] += 1j * h
         self.assertAlmostEqual(
-            lin_rhoV2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
+            lin_rho_v2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
         )
 
         sr_aero = self.problem.sobieski_aerodynamics
@@ -235,24 +226,24 @@ class TestSobieskiAerodynamics(unittest.TestCase):
             names=SobieskiAerodynamics().get_input_data_names()
         )
         x_shared[1] = 35000.0
-        lin_rhoV2 = sr_aero.compute_drhov2_dh(x_shared).real
+        lin_rho_v2 = sr_aero.compute_drhov2_dh(x_shared).real
         x_shared[1] += 1j * h
         self.assertAlmostEqual(
-            lin_rhoV2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
+            lin_rho_v2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
         )
 
-    def test_drhoV2_dM(self):
-        """ """
+    def test_drho_v2_d_m(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         indata = self.problem.get_default_inputs(
             names=SobieskiAerodynamics().get_input_data_names()
         )
         h = 1e-30
         x_shared = indata["x_shared"]
-        lin_rhoV2 = sr_aero.compute_drhov2_dmach(x_shared).real
+        lin_rho_v2 = sr_aero.compute_drhov2_dmach(x_shared).real
         x_shared[2] += 1j * h
         self.assertAlmostEqual(
-            lin_rhoV2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
+            lin_rho_v2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
         )
 
         sr_aero = self.problem.sobieski_aerodynamics
@@ -261,64 +252,68 @@ class TestSobieskiAerodynamics(unittest.TestCase):
         )
         x_shared = indata["x_shared"]
         x_shared[1] = 35000.0
-        lin_rhoV2 = sr_aero.compute_drhov2_dmach(x_shared).real
+        lin_rho_v2 = sr_aero.compute_drhov2_dmach(x_shared).real
         x_shared[2] += 1j * h
         self.assertAlmostEqual(
-            lin_rhoV2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
+            lin_rho_v2, sr_aero.compute_rhov2(x_shared).imag / h, places=12
         )
 
-    def test_dv_dMach(self):
-        """ """
+    def test_dv_d_mach(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         h = 1e-30
         mach = 1.8
         altitude = 45000.0
-        lin_V = sr_aero.compute_dv_dmach(altitude)
+        lin_v = sr_aero.compute_dv_dmach(altitude)
         self.assertAlmostEqual(
-            lin_V, sr_aero.compute_rho_v(mach + 1j * h, altitude)[1].imag / h, places=12
+            lin_v, sr_aero.compute_rho_v(mach + 1j * h, altitude)[1].imag / h, places=12
         )
 
         sr_aero = self.problem.sobieski_aerodynamics
         h = 1e-30
         mach = 1.4
         altitude = 35000.0
-        lin_V = sr_aero.compute_dv_dmach(altitude)
+        lin_v = sr_aero.compute_dv_dmach(altitude)
         self.assertAlmostEqual(
-            lin_V, sr_aero.compute_rho_v(mach + 1j * h, altitude)[1].imag / h, places=12
+            lin_v, sr_aero.compute_rho_v(mach + 1j * h, altitude)[1].imag / h, places=12
         )
 
-    def test_dV_dh_drho_dh(self):
-        """ """
+    def test_d_v_dh_drho_dh(self):
+        """"""
         sr_aero = self.problem.sobieski_aerodynamics
         h = 1e-30
         mach = 1.6
         altitude = 45000.0
-        dVdh_drhodh_ref = array(sr_aero.compute_rho_v(mach, altitude + 1j * h)).imag / h
-        dVdh_ref = dVdh_drhodh_ref[0]
-        drhodh_ref = dVdh_drhodh_ref[1]
+        d_vdh_drhodh_ref = (
+            array(sr_aero.compute_rho_v(mach, altitude + 1j * h)).imag / h
+        )
+        d_vdh_ref = d_vdh_drhodh_ref[0]
+        drhodh_ref = d_vdh_drhodh_ref[1]
 
-        dVdh_drhodh = array(sr_aero.compute_drho_dh_dv_dh(mach, altitude))
-        dVdh = dVdh_drhodh[0].real
-        drhodh = dVdh_drhodh[1].real
+        d_vdh_drhodh = array(sr_aero.compute_drho_dh_dv_dh(mach, altitude))
+        d_vdh = d_vdh_drhodh[0].real
+        drhodh = d_vdh_drhodh[1].real
 
-        self.assertAlmostEqual(dVdh_ref, dVdh, places=4)
+        self.assertAlmostEqual(d_vdh_ref, d_vdh, places=4)
         self.assertAlmostEqual(drhodh_ref, drhodh, places=4)
 
         altitude = 35000.0
-        dVdh_drhodh_ref = array(sr_aero.compute_rho_v(mach, altitude + 1j * h)).imag / h
-        dVdh_ref = dVdh_drhodh_ref[0]
-        drhodh_ref = dVdh_drhodh_ref[1]
+        d_vdh_drhodh_ref = (
+            array(sr_aero.compute_rho_v(mach, altitude + 1j * h)).imag / h
+        )
+        d_vdh_ref = d_vdh_drhodh_ref[0]
+        drhodh_ref = d_vdh_drhodh_ref[1]
 
-        dVdh_drhodh = array(sr_aero.compute_drho_dh_dv_dh(mach, altitude))
-        dVdh = dVdh_drhodh[0].real
-        drhodh = dVdh_drhodh[1].real
-        self.assertAlmostEqual(dVdh_ref, dVdh, places=4)
+        d_vdh_drhodh = array(sr_aero.compute_drho_dh_dv_dh(mach, altitude))
+        d_vdh = d_vdh_drhodh[0].real
+        drhodh = d_vdh_drhodh[1].real
+        self.assertAlmostEqual(d_vdh_ref, d_vdh, places=4)
         self.assertAlmostEqual(drhodh_ref, drhodh, places=4)
 
     #
 
     def test_jac_aero(self):
-        """ """
+        """"""
         sr = SobieskiAerodynamics("complex128")
         indata = self.problem.get_default_inputs(names=sr.get_input_data_names())
         assert sr.check_jacobian(

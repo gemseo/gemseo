@@ -24,17 +24,12 @@ GGOBI : interactive data visualization software
 
 Export data to the XML file format needed by GGOBI
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import os
-from builtins import open, range, str
 from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Comment, Element, SubElement
-
-from future import standard_library
-
-standard_library.install_aliases()
 
 
 def prettify(elem):
@@ -48,9 +43,7 @@ def prettify(elem):
 
 
 def save_data_arrays_to_xml(variables_names, values_array, file_path="opt_hist.xml"):
-    """
-    Saves an optimization history in numpy format to an xml
-    file to be read by ggobi
+    """Saves an optimization history in numpy format to an xml file to be read by ggobi.
 
     :param variables_names: list of the variables names
     :type variables_names: list(str)

@@ -19,24 +19,19 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
-import logging
-import unittest
 from copy import deepcopy
 from math import cos, exp, log10, sin
 
 import pytest
-from future import standard_library
 from numpy import array, zeros
 from numpy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
-from gemseo import LOGGER, SOFTWARE_NAME
-from gemseo.api import configure_logger, create_discipline
+from gemseo.api import create_discipline
 from gemseo.core.analytic_discipline import AnalyticDiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiMission, SobieskiStructure
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.derivatives_approx import (
     ComplexStep,
     DisciplineJacApprox,
@@ -44,19 +39,14 @@ from gemseo.utils.derivatives_approx import (
     comp_best_step,
 )
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-def test_initFirstOrderFD():
-    """ """
+def test_init_first_order_fd():
+    """"""
     FirstOrderFD(rosen)
 
 
-def test_initComplexStep():
-    """ """
+def test_init_complex_step():
+    """"""
     cplx = ComplexStep(rosen, 1e-30j)
     assert cplx.step == 1e-30
 
@@ -68,7 +58,7 @@ def test_initComplexStep():
 
 
 def get_x_tests():
-    """ """
+    """"""
     return [
         [0.0, 0.0],
         [1.0, 3.0, 5.0],
@@ -92,23 +82,23 @@ def run_tests(xs, fd_app):
         assert err < 1e-4
 
 
-def test_approx_FirstOrderFD():
+def test_approx_first_order_fd():
     run_tests(get_x_tests(), FirstOrderFD(rosen, 1e-8))
 
 
-def test_approx_ComplexStep():
+def test_approx_complex_step():
     run_tests(get_x_tests(), ComplexStep(rosen))
 
 
-def test_approx_ComplexStep_diff_steps_e60():
+def test_approx_complex_step_diff_steps_e60():
     run_tests(get_x_tests(), ComplexStep(rosen, 1e-60))
 
 
-def test_approx_ComplexStep_diff_steps_e200():
+def test_approx_complex_step_diff_steps_e200():
     run_tests(get_x_tests(), ComplexStep(rosen, 1e-200))
 
 
-def test_approx_ComplexStep_diff_steps_e30():
+def test_approx_complex_step_diff_steps_e30():
     run_tests(get_x_tests(), ComplexStep(rosen, 1e-30))
 
 
@@ -158,7 +148,7 @@ def test_opt_step():
             for x in [0.0, 1.0, 3.0]:
 
                 f_p = func(mult * (x + step))
-                f_x = func(mult * (x))
+                f_x = func(mult * x)
                 f_m = func(mult * (x - step))
                 trunc_error, cancel_error, opt_step = comp_best_step(
                     f_p, f_x, f_m, step

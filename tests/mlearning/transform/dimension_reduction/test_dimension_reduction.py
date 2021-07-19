@@ -18,28 +18,25 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-""" Test dimension reduction transformer module. """
-from __future__ import absolute_import, division, unicode_literals
+"""Test dimension reduction transformer module."""
+from __future__ import division, unicode_literals
 
 import pytest
-from future import standard_library
 from numpy import arange
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 
-standard_library.install_aliases()
-
 
 def test_constructor():
-    """ Test constructor. """
+    """Test constructor."""
     dimred = DimensionReduction()
     assert dimred.name == "DimensionReduction"
 
 
 def test_not_implemented():
-    """ Test not implemented methods. """
+    """Test not implemented methods."""
     data = arange(50).reshape((10, 5))
     dimred = DimensionReduction()
     with pytest.raises(NotImplementedError):

@@ -20,28 +20,20 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 
-from future import standard_library
 from numpy import array, ones, zeros
 from scipy.optimize import rosen
 
-from gemseo import SOFTWARE_NAME
-from gemseo.api import configure_logger
 from gemseo.core.func_operations import LinerarComposition, RestrictedFunction
 from gemseo.core.function import MDOFunctionGenerator
 from gemseo.problems.analytical.rosenbrock import RosenMF
 
-standard_library.install_aliases()
 
-
-configure_logger(SOFTWARE_NAME)
-
-
-class Test_FunctionOperations(unittest.TestCase):
-    def test_LinearComposition(self):
+class TestFunctionOperations(unittest.TestCase):
+    def test_linear_composition(self):
         fg = MDOFunctionGenerator(RosenMF(3))
         f1 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([0])})
         f2 = fg.get_function(["x"], ["rosen"], default_inputs={"fidelity": array([1])})
@@ -56,7 +48,7 @@ class Test_FunctionOperations(unittest.TestCase):
         f_1_1.check_grad(ones(1), error_max=1e-4)
         f_1_2.check_grad(ones(1), error_max=1e-4)
 
-    def test_RestrictedFunction(self):
+    def test_restricted_function(self):
         fg = MDOFunctionGenerator(RosenMF(3))
         x = zeros(3)
         f_ref = fg.get_function(["fidelity", "x"], ["rosen"])
