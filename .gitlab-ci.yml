@@ -5,6 +5,7 @@ default:
 stages:
   - check
   - tests
+  - coverage
 
 variables:
   TEST_ALL_ENVS:
@@ -17,6 +18,16 @@ variables:
   MATLAB_PYTHON_WRAPPER_WINDOWS:
       value: ""
       description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
+  CODECOV_VERSION: "2.1.12"
+
+workflow:
+  # Prevent duplicated pipelines,
+  # see https://docs.gitlab.com/14.3/ee/ci/yaml/index.html#switch-between-branch-pipelines-and-merge-request-pipelines.
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
@@ -37,7 +48,6 @@ variables:
 # Base job template.
 .base:
   interruptible: true
-  dependencies: []
 
   # before_script:
     # # Create the env with tox.
@@ -132,9 +142,11 @@ style:
   extends: .base
   stage: tests
   variables:
+    COVERAGE_FILE: $CI_JOB_NAME-coverage.xml
     # Use coverage and generate reports,
     # via env variables because passing extra command line options to tox within the current file is cumbersome.
-    PYTEST_ADDOPTS: --cov --cov-report=term --cov-report=xml --junitxml=report.xml
+    # The junitxml is for showing the number of tests if gitlab UI.
+    PYTEST_ADDOPTS: --cov --cov-report=xml --junitxml=report.xml
     TOX_TESTENV_PASSENV: PYTEST_ADDOPTS
   # cache:
   #   - !reference [.base, cache]
@@ -156,7 +168,10 @@ style:
     when: always
     reports:
       junit: report.xml
-      cobertura: coverage.xml
+      cobertura: $COVERAGE_FILE
+    paths:
+      # For the coverage stage.
+      - $COVERAGE_FILE
 
 # Common settings for windows tests jobs.
 .tests-windows:
@@ -164,8 +179,9 @@ style:
     - .tests
     - .windows
   after_script:
+    - Rename-Item coverage.xml $COVERAGE_FILE
     # Workaround coverage files path issues, see https://gitlab.com/gitlab-org/gitlab/-/issues/217664
-    - (Get-Content coverage.xml) -replace 'filename=".*/site-packages', 'filename="src' |  Out-File "coverage.xml"
+    - (Get-Content $COVERAGE_FILE) -replace 'filename=".*/site-packages', 'filename="src' |  Out-File "$COVERAGE_FILE"
 
 # Common settings for linux (linux) jobs.
 .tests-linux:
@@ -173,8 +189,9 @@ style:
     - .tests
     - .linux
   after_script:
+    - mv coverage.xml $COVERAGE_FILE
     # Workaround coverage files path issues, see https://gitlab.com/gitlab-org/gitlab/-/issues/217664
-    - sed "s|filename=\".*/site-packages|filename=\"src|" -i coverage.xml
+    - sed "s|filename=\".*/site-packages|filename=\"src|" -i $COVERAGE_FILE
 
 # Jobs for the tests stage.
 py27:
@@ -248,3 +265,18 @@ anaconda-env-file-win:
     - .base
     - .windows
     - .anaconda-env-file
+
+# Job for the coverage analysis.
+codecov:
+  stage: coverage
+  extends:
+    - .base
+    - .linux
+  rules:
+    # Only run this job for projects on gitlab.com.
+    - if: '$CI_SERVER_URL == "https://gitlab.com"'
+  script:
+    # Install codecov uploader.
+    - pip install install codecov==$CODECOV_VERSION
+    # Run codecov uploader.
+    - codecov -t $CODECOV_TOKEN -f *-coverage.xml --required
