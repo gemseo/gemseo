@@ -173,40 +173,36 @@ Then update the actual test requirements with:
    All environments and tools shall be checked
    whenever dependencies have been changed.
 
-Anaconda testing
-----------------
-
-Before a release or whenever required,
-the package for ``conda-forge``
-and the anaconda environment files
-shall be tested.
-
-Anaconda package
-~~~~~~~~~~~~~~~~
+Testing pypi packages
+---------------------
 
 Run (append ``-win`` on windows)
 
 .. code-block:: shell
 
-   tox -e anaconda-package
+   tox -e pyX-pypi
 
-Anaconda environment
-~~~~~~~~~~~~~~~~~~~~
+For all the supported Python versions ``X``.
 
-Run (append ``-win`` on windows)
-
-.. code-block:: shell
-
-   tox -e anaconda-envs
-
-Pypi distribution testing
--------------------------
+Testing conda-forge packages
+----------------------------
 
 Run (append ``-win`` on windows)
 
 .. code-block:: shell
 
-   tox -e py27-pypi,py36-pypi,py37-pypi,py38-pypi
+   tox -e pyX-conda-forge
+
+For all the supported Python versions ``X``.
+
+Testing anaconda environment file
+---------------------------------
+
+Run (append ``-win`` on windows)
+
+.. code-block:: shell
+
+   tox -e anaconda-env-file
 
 Making a new release
 --------------------
@@ -221,7 +217,8 @@ Making a new release
 #. Tag.
 #. Run :command:`tox -e create-dist` to create the distribution archives.
 #. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
-#. Run :command:`tox -e py*-pypi{-win}` for all envs to test the pypi package.
+#. Test the pypi packages.
 #. Update the recipe for conda-forge once the update bot sends the PR.
-#. Test the conda-forge packages (TODO: create a tox target)
+#. Test the conda-forge packages.
 #. Merge master to develop so the last tag is a parent commit for defining the dev versions.
+#. Remove the hardcoded version number in :file:`conf.py`.
