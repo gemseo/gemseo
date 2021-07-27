@@ -7,10 +7,12 @@ stages:
   - tests
 
 variables:
-  # Set this variable to true to run all the tox tests envs.
   TEST_ALL_ENVS:
     value: "false"
-    description: "Set to true to run all the tox tests environments."
+    description: "Whether to run the tox tests for all python versions and all platforms."
+  TEST_ANACONDA_ENV_FILES:
+    value: "false"
+    description: "Whether to run the tox tests for the anaconda env files."
   TOX_CONDA_VERSION: "0.8.0"
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
@@ -34,25 +36,22 @@ variables:
   interruptible: true
   dependencies: []
 
-  before_script:
-    # Create the env with tox.
-    - conda create -p .tox-env pip
-    # Install tox-conda (will also install tox).
-    - conda run -p .tox-env --no-capture-output pip install tox-conda==$TOX_CONDA_VERSION
-    # Show debug info on the anaconda settings.
-    - conda info --all
+  # before_script:
+    # # Create the env with tox.
+    # - conda create -p .tox-env pip
+    # # Install tox-conda (will also install tox).
+    # - conda run -p .tox-env --no-capture-output pip install tox-conda==$TOX_CONDA_VERSION
+    # # Show debug info on the anaconda settings.
+    # - conda info --all
 
   script:
     # Run a tox env named after a job name.
-    - conda run
-      -p .tox-env
-      --no-capture-output
-      tox -e $CI_JOB_NAME
+    - tox -e $CI_JOB_NAME
 
-  cache:
-    - key: tox-env-$TOX_CONDA_VERSION
-      paths:
-        - .tox-env
+  # cache:
+  #   - key: tox-env-$TOX_CONDA_VERSION
+  #     paths:
+  #       - .tox-env
 
 # Specific settings for linux jobs.
 .linux:
@@ -63,6 +62,11 @@ variables:
     # Caches on the CI runner host.
     CONDA_PKGS_DIRS: "/opt/gitlab-runner-cache/conda"
     PIP_CACHE_DIR: "/opt/gitlab-runner-cache/pip"
+  before_script:
+    - python -m venv .tox-venv
+    - source .tox-venv/bin/activate
+    - python -m pip install tox-conda==$TOX_CONDA_VERSION
+
 
 # Specific settings for windows jobs.
 .windows:
@@ -73,6 +77,10 @@ variables:
     # Caches on the CI runner host.
     CONDA_PKGS_DIRS: "E:\\conda"
     PIP_CACHE_DIR: "E:\\pip"
+  before_script:
+    - python -m venv .tox-venv
+    - .tox-venv\Scripts\activate.bat
+    - python -m pip install tox-conda==$TOX_CONDA_VERSION
 
 # Jobs for the check stage.
 style:
@@ -86,13 +94,13 @@ style:
     TOX_TESTENV_PASSENV: PIP_CACHE_DIR PRE_COMMIT_HOME
   cache:
     # The extends key does not work for lists.
-    - !reference [.base, cache]
-    - key:
-        files:
-          - requirements/style.txt
-        prefix: $CI_JOB_NAME
-      paths:
-        - .tox/$CI_JOB_NAME
+    # - !reference [.base, cache]
+    # - key:
+    #     files:
+    #       - requirements/style.txt
+    #     prefix: $CI_JOB_NAME
+    #   paths:
+    #     - .tox/$CI_JOB_NAME
     - key:
         files:
           - .pre-commit-config.yaml
@@ -124,21 +132,21 @@ style:
     # via env variables because passing extra command line options to tox within the current file is cumbersome.
     PYTEST_ADDOPTS: --cov --cov-report=term --cov-report=xml --junitxml=report.xml
     TOX_TESTENV_PASSENV: PYTEST_ADDOPTS
-  cache:
-    - !reference [.base, cache]
-    - key:
-        # Define the cache affinity such that it is tied to the content of the tests env.
-        files:
-          # The packages installed in an env are loosely defined in those requirements files
-          #   (not strictly because these files only define the unpinned direct dependencies).
-          - requirements/gemseo.in
-          # We can only have 2 files as cache keys, changes for python 2 shall hopefully follow the ones for python 3.
-          # NOTE: This will be properly fixed when we'll use pip-compile'd gemseo.in.
-          - requirements/gemseo-conda-python3.txt
-        # Some packages will change when the python version changes, hence the tox env name.
-        prefix: $CI_JOB_NAME
-      paths:
-        - .tox/$CI_JOB_NAME
+  # cache:
+  #   - !reference [.base, cache]
+  #   - key:
+  #       # Define the cache affinity such that it is tied to the content of the tests env.
+  #       files:
+  #         # The packages installed in an env are loosely defined in those requirements files
+  #         #   (not strictly because these files only define the unpinned direct dependencies).
+  #         - requirements/gemseo.in
+  #         # We can only have 2 files as cache keys, changes for python 2 shall hopefully follow the ones for python 3.
+  #         # NOTE: This will be properly fixed when we'll use pip-compile'd gemseo.in.
+  #         - requirements/gemseo-conda-python3.txt
+  #       # Some packages will change when the python version changes, hence the tox env name.
+  #       prefix: $CI_JOB_NAME
+  #     paths:
+  #       - .tox/$CI_JOB_NAME
   artifacts:
     # Send the artifacts even on job failure.
     when: always
@@ -215,18 +223,24 @@ py39-win:
     - .tests-windows
     - .additional-tests
 
-# Jobs for testings anaconda environment yaml files.
+# Jobs for testing anaconda env files.
+.anaconda-env-files:
+  rules:
+    # For selecting from gitlab UI
+    - if: '$TEST_ANACONDA_ENV_FILES == "true"'
+    # Run for commits on the master branch
+    - if: '$CI_COMMIT_BRANCH == "master"'
 
 anaconda-envs:
   stage: tests
   extends:
     - .base
     - .linux
-    - .additional-tests
+    - .anaconda-env-files
 
 anaconda-envs-win:
   stage: tests
   extends:
     - .base
     - .windows
-    - .additional-tests
+    - .anaconda-env-files
