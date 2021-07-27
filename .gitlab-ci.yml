@@ -10,9 +10,9 @@ variables:
   TEST_ALL_ENVS:
     value: "false"
     description: "Whether to run the tox tests for all python versions and all platforms."
-  TEST_ANACONDA_ENV_FILES:
+  TEST_ANACONDA_ENV_FILE:
     value: "false"
-    description: "Whether to run the tox tests for the anaconda env files."
+    description: "Whether to run the tox tests for the anaconda env file."
   TOX_CONDA_VERSION: "0.8.0"
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
@@ -224,23 +224,23 @@ py39-win:
     - .additional-tests
 
 # Jobs for testing anaconda env files.
-.anaconda-env-files:
+.anaconda-env-file:
   rules:
     # For selecting from gitlab UI
-    - if: '$TEST_ANACONDA_ENV_FILES == "true"'
+    - if: '$TEST_ANACONDA_ENV_FILE == "true"'
     # Run for commits on the master branch
     - if: '$CI_COMMIT_BRANCH == "master"'
 
-anaconda-envs:
+anaconda-env-file:
   stage: tests
   extends:
     - .base
     - .linux
-    - .anaconda-env-files
+    - .anaconda-env-file
 
-anaconda-envs-win:
+anaconda-env-file-win:
   stage: tests
   extends:
     - .base
     - .windows
-    - .anaconda-env-files
+    - .anaconda-env-file

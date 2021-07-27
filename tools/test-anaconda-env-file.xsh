@@ -7,7 +7,7 @@ trace on
 $XONSH_TRACE_SUBPROC = True
 $RAISE_SUBPROC_ERROR = True
 
-for python_version in ("2", "3"):
+for python_version in ("2",):
     # path to the environment
     env_path = f"{$ENVTMPDIR}/{python_version}"
 
