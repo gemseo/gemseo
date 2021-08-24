@@ -25,6 +25,14 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Unreleased
+**********
+
+Fixed
+-----
+
+- ImportError (backport.unittest_mock) on Python 2.7.
+
 
 Version 3.1.0 (July 2021)
 *************************

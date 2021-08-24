@@ -25,6 +25,7 @@
 from __future__ import unicode_literals
 
 from typing import Union
+from unittest import mock
 
 import pytest
 
@@ -41,7 +42,6 @@ from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
 from gemseo.core.function import MDOLinearFunction  # noqa: E402
 from gemseo.problems.analytical.power_2 import Power2  # noqa: E402
 from gemseo.problems.analytical.rosenbrock import Rosenbrock  # noqa: E402
-from gemseo.utils.py23_compat import mock  # noqa: E402
 
 
 def check_on_problem(
