@@ -122,7 +122,3 @@ if PY2:
 
     # hook in our function override
     decorators._image_directories = _new_image_directories
-
-    import backports.unittest_mock
-
-    backports.unittest_mock.install()

@@ -53,6 +53,11 @@ if PY2:
         """Convert a list of strings to a list of unicode strings."""
         return [s.decode("utf-8") for s in iterable]
 
+    import backports.unittest_mock
+
+    backports.unittest_mock.install()
+    from unittest import mock
+
 
 else:
     string_dtype = "bytes"
@@ -62,6 +67,7 @@ else:
     from functools import lru_cache  # noqa: F401
     from inspect import getfullargspec as _getfullargspec
     from pathlib import Path  # noqa: F401
+    from unittest import mock  # noqa: F401
 
     from fastjsonschema import compile as compile_schema  # noqa: F401
     from fastjsonschema.exceptions import JsonSchemaException  # noqa: F401

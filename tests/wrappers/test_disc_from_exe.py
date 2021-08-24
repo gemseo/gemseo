@@ -24,12 +24,12 @@ import sys
 from copy import deepcopy
 from os.path import dirname, join
 from typing import List
-from unittest import mock
 
 import pytest
 from numpy import array
 
 from gemseo.api import create_discipline
+from gemseo.utils.py23_compat import mock
 from gemseo.wrappers.disc_from_exe import (
     DiscFromExe,
     FoldersIter,
