@@ -21,6 +21,8 @@
 
 from __future__ import division, unicode_literals
 
+from unittest import mock  # noqa: F401
+
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
@@ -28,7 +30,7 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2, mock
+from gemseo.utils.py23_compat import PY2
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared
