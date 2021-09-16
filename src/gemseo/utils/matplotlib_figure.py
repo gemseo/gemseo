@@ -16,7 +16,7 @@
 
 """Services for handling Matplotlib figures, e.g. save and show."""
 
-from typing import Union
+from typing import Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -28,6 +28,7 @@ def save_show_figure(
     fig,  # type: Figure
     show,  # type:bool
     file_path,  # type: Union[str,Path]
+    fig_size=None,  # type: Optional[Tuple[float, float]]
 ):  # type: (...) -> None
     """Save or show a Matplotlib figure.
 
@@ -36,10 +37,14 @@ def save_show_figure(
         show: If True, display the Matplotlib figure.
         file_path: The file path to save the Matplotlib figure.
             If None, do not save the figure.
+        fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
+            If None, use the current size of the figure.
     """
     save = file_path is not None
 
     if save:
+        if fig_size is not None:
+            fig.set_size_inches(fig_size)
         fig.savefig(str(file_path), bbox_inches="tight")
 
     if show:

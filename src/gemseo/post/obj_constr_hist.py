@@ -46,6 +46,8 @@ class ObjConstrHist(OptPostProcessor):
     passed as options.
     """
 
+    DEFAULT_FIG_SIZE = (11.0, 6.0)
+
     def __init__(
         self,
         opt_problem,  # type: OptimizationProblem
@@ -79,7 +81,7 @@ class ObjConstrHist(OptPostProcessor):
             fmin = np.min(obj_history)
             fmax = np.max(obj_history)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
-        fig = plt.figure(figsize=(11, 6))
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
         # objective function
         plt.xlabel("Iterations", fontsize=12)

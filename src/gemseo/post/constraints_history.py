@@ -45,6 +45,8 @@ class ConstraintsHistory(OptPostProcessor):
     It is possible either to save the plot, to show the plot or both.
     """
 
+    DEFAULT_FIG_SIZE = (11.0, 11.0)
+
     def __init__(
         self,
         opt_problem,  # type: OptimizationProblem
@@ -61,6 +63,10 @@ class ConstraintsHistory(OptPostProcessor):
         """
         Args:
             constraints_list: The names of the constraints.
+
+        Raises:
+            ValueError: If a given element of `constraints_list` is not a
+                function.
         """
         # retrieve the constraints values
         add_dv = False
@@ -92,7 +98,11 @@ class ConstraintsHistory(OptPostProcessor):
             nrows += 1
 
         fig, axes = pyplot.subplots(
-            nrows=nrows, ncols=2, sharex=True, sharey=False, figsize=(11, 11)
+            nrows=nrows,
+            ncols=2,
+            sharex=True,
+            sharey=False,
+            figsize=self.DEFAULT_FIG_SIZE,
         )
 
         fig.suptitle("Evolution of the constraints " + "w.r.t. iterations", fontsize=14)

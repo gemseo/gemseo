@@ -45,6 +45,7 @@ from __future__ import division, unicode_literals
 
 from math import exp
 
+from matplotlib import pyplot as plt
 from numpy import array, ones
 
 ###############################################################################
@@ -191,7 +192,7 @@ scenario = create_scenario(
 #    set-up errors may easily occur. Although it is not performed
 #    in this example, it is strongly advised to
 #
-#    - check the interfaces between the several disciplines using a N2 diagram,
+#    - check the interfaces between the several disciplines using an N2 diagram,
 #    - check the MDO process using an XDSM representation
 #
 # Setting the constraints
@@ -276,7 +277,9 @@ scenario.execute(input_data={"max_iter": 10, "algo": "SLSQP"})
 # following plots. Many other post-processings are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()
 
 ###############################################################################
 # .. note::

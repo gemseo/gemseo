@@ -32,24 +32,23 @@ from matplotlib.figure import Figure
 from numpy import array, ndarray
 
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ParallelCoordinates(OptPostProcessor):
-    """Parallel coordinates among design variables, outputs functions and constraints.
+    """Parallel coordinates among design variables, outputs functions and
+    constraints."""
 
-    x- and y- figure sizes can be changed in option.
-    """
+    DEFAULT_FIG_SIZE = (10.0, 2.0)
 
-    @staticmethod
+    @classmethod
     def parallel_coordinates(
+        cls,
         y_data,  # type: ndarray
         x_names,  # type: Sequence[str]
         color_criteria,  # type: Sequence[float]
-        figsize_x,  # type: int
-        figsize_y,  # type: int
     ):  # type: (...) -> Figure
         """Plot the parallel coordinates.
 
@@ -58,14 +57,12 @@ class ParallelCoordinates(OptPostProcessor):
             x_names: The names of the abscissa.
             color_criteria: The values of same length as `y_data`
                 to colorize the lines.
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
         """
         n_x, n_cols = y_data.shape
         assert n_cols == len(x_names)
         assert n_x == len(color_criteria)
         x_values = list(range(n_cols))
-        fig = pyplot.figure(figsize=(figsize_x, figsize_y))
+        fig = pyplot.figure(figsize=cls.DEFAULT_FIG_SIZE)
         main_ax = pyplot.gca()
         c_max = color_criteria.max()
         c_min = color_criteria.min()
@@ -86,15 +83,9 @@ class ParallelCoordinates(OptPostProcessor):
         return fig
 
     def _plot(
-        self,
-        figsize_x=10,  # type: int
-        figsize_y=2,  # type: int
+        self, **options  # type: OptPostProcessorOptionType
     ):  # type: (...) -> None
-        """
-        Args:
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
-        """
+
         all_funcs = self.opt_problem.get_all_functions_names()
         design_variables = self.opt_problem.get_design_variable_names()
         vals, vname, _ = self.database.get_history_array(all_funcs, add_dv=True)
@@ -112,7 +103,7 @@ class ParallelCoordinates(OptPostProcessor):
         obj_val = vals[:, vname.index(obj_name)]
         x_vals = vals[:, vals.shape[1] - len(x_names) :]
         x_vals = self.opt_problem.design_space.normalize_vect(x_vals)
-        fig = self.parallel_coordinates(x_vals, x_names, obj_val, figsize_x, figsize_y)
+        fig = self.parallel_coordinates(x_vals, x_names, obj_val)
         fig.suptitle(
             "Design variables history colored" + " by '" + obj_name + "'  value"
         )
@@ -120,9 +111,7 @@ class ParallelCoordinates(OptPostProcessor):
         self._add_figure(fig, "para_coord_des_vars")
 
         func_vals = vals[:, : vals.shape[1] - len(x_names)]
-        fig = self.parallel_coordinates(
-            func_vals, func_names, obj_val, figsize_x, figsize_y
-        )
+        fig = self.parallel_coordinates(func_vals, func_names, obj_val)
         fig.suptitle(
             "Objective function and constraints history"
             + " colored by '"

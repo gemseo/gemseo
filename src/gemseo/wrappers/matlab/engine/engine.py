@@ -51,6 +51,7 @@ Following this, :class:`.__MatlabEngine` acts like a singleton.
 """
 
 import logging
+import os
 from enum import Enum
 from typing import List, Optional, Tuple, Union  # noqa F401
 
@@ -265,7 +266,7 @@ class __MatlabEngine:
         if add_subfolder:
             str_paths = self.execute_function("genpath", path)
             # first path in list is the path already in list
-            for sub_path in str_paths.split(":")[1:]:
+            for sub_path in str_paths.split(os.pathsep)[1:]:
                 self.add_path(sub_path)
 
     def execute_function(

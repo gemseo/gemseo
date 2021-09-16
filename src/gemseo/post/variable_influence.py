@@ -42,15 +42,15 @@ class VariableInfluence(OptPostProcessor):
     where xi0 is the initial value of the variable
     and xi* is the optimal value of the variable.
 
-    Options of the plot method are the x- and y- figure sizes,
-    the quantile level, the use of a logarithmic scale and
-    the possibility to save the influent variables indices as a NumPy file.
+    Options of the plot method are the quantile level, the use of a
+    logarithmic scale and the possibility to save the influent variables
+    indices as a NumPy file.
     """
+
+    DEFAULT_FIG_SIZE = (20.0, 5.0)
 
     def _plot(
         self,
-        figsize_x=20,  # type: int
-        figsize_y=5,  # type: int
         quantile=0.99,  # type: float
         absolute_value=False,  # type: bool
         log_scale=False,  # type: bool
@@ -58,8 +58,6 @@ class VariableInfluence(OptPostProcessor):
     ):  # type: (...) -> None
         """
         Args:
-            figsize_x: The size of the figure in the horizontal direction (inches).
-            figsize_y: The size of the figure in the vertical direction (inches).
             quantile: Between 0 and  1, the proportion of the total
                 sensitivity to use as a threshold to filter the variables.
             absolute_value: If True, plot the absolute value of the influence.
@@ -95,9 +93,7 @@ class VariableInfluence(OptPostProcessor):
                             sens = absolute(sens)
                         sens_dict["{}_{}".format(func, i)] = sens
 
-        fig = self.__generate_subplots(
-            sens_dict, figsize_x, figsize_y, quantile, log_scale, save_var_files
-        )
+        fig = self.__generate_subplots(sens_dict, quantile, log_scale, save_var_files)
 
         self._add_figure(fig)
 
@@ -164,8 +160,6 @@ class VariableInfluence(OptPostProcessor):
     def __generate_subplots(
         self,
         sens_dict,  # type: Mapping[str, ndarray]
-        figsize_x,  # type: int
-        figsize_y,  # type: int
         quantile=0.99,  # type: float
         log_scale=False,  # type: bool
         save_var_files=False,  # type: bool
@@ -174,8 +168,6 @@ class VariableInfluence(OptPostProcessor):
 
         Args:
             sens_dict: The sensors to plot.
-            figsize_x: The size of the figure in the horizontal direction (inches).
-            figsize_y: The size of the figure in the vertical direction (inches).
             save_var_files: If True, save the influent variables indices in a NumPy file.
 
         Returns:
@@ -200,7 +192,7 @@ class VariableInfluence(OptPostProcessor):
             ncols=ncols,
             sharex=True,
             sharey=False,
-            figsize=(figsize_x, figsize_y),
+            figsize=self.DEFAULT_FIG_SIZE,
         )
         i = 0
         j = -1

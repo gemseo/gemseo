@@ -9,4 +9,4 @@
 Study prototyping
 =================
 
-Prototype a MDO problem from a spreadsheet.
+Prototype an MDO problem from a spreadsheet.

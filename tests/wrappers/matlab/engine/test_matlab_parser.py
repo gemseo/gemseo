@@ -14,6 +14,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import re
+
 import pytest
 
 # skip if matlab API is not found
@@ -83,7 +85,9 @@ from ..matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
 )
 def test_errors(error, match_pattern, path):
     """Test that exception is raised if file is a directory."""
-    with pytest.raises(error, match=match_pattern.format(path)):
+    # Path on windows that may have regex keywords.
+    match = re.escape(match_pattern.format(path))
+    with pytest.raises(error, match=match):
         MatlabParser(path)
 
 

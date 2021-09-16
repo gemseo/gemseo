@@ -34,6 +34,8 @@
 .. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _pyperf: https://pyperf.readthedocs.io
 .. _profiler: https://docs.python.org/3/library/profile.html
+.. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
+.. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
 
 .. _dev:
 
@@ -153,7 +155,13 @@ and installed since it is not done by default during the MATLAB installation.
 
 For testing with `tox`_,
 set the environment variable :envvar:`MATLAB_PYTHON_WRAPPER`
-to point to the path to a ``pip`` installable version of the MATLAB Python API.
+to point to the path to a ``pip`` installable version of the MATLAB Python API,
+with eventually a conditionnal dependency on the Python version:
+
+.. code-block:: console
+
+   export MATLAB_PYTHON_WRAPPER="<path or URL to MATLAB Python API package> ; python_version<'3.9'"
+
 
 pSeven requirements
 ~~~~~~~~~~~~~~~~~~~
@@ -339,7 +347,7 @@ Workflow
 We use the `gitflow`_ for managing git branches.
 For the daily work,
 this basically means that evolutions of |g|
-are done in feature branches created from the develop branch
+are done in feature branches created from the `develop branch`_
 and merged back into it when finished.
 
 Git hooks
@@ -577,6 +585,9 @@ See `pytest-cov`_ for more information.
 
 Documentation
 -------------
+
+The documentation of the `develop branch`_
+is available online: `develop documentation`_.
 
 Generating the doc
 ++++++++++++++++++

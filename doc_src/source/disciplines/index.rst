@@ -201,10 +201,10 @@ or the HDF5 cache strategy with a user-defined name as node name (here :code:`no
    By default, :code:`cache_tolerance` is equal to zero. We can get its value by means of the :attr:`.MDODiscipline.cache_tol` getter
    and change its value by means of the :attr:`.MDODiscipline.cache_tol` setter.
 
-How to execute a :class:`.MDODiscipline`?
-*****************************************
+How to execute an :class:`.MDODiscipline`?
+******************************************
 
-We can execute a :class:`.MDODiscipline`,
+We can execute an :class:`.MDODiscipline`,
 either with its default input values, e.g.:
 
 .. code::

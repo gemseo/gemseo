@@ -34,23 +34,26 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ParetoFront(OptPostProcessor):
-    """Compute the Pareto front Search for all non dominated points.
+    """Compute the Pareto front for a multi-objective problem.
 
-    For each point, check if it exists ``j`` such that there is no lower value
-    for ``obj_values[:,j]`` that does not degrade
-    at least one other objective ``obj_values[:,i]``.
+    The Pareto front of an optimization problem is the set of _non-dominated_ points of
+    the design space for which there is no other point that improves an objective
+    without damaging another.
 
-    Generate a plot or a matrix of plots if there are more than 2 objectives.
-    Plot in red the locally non dominated points for the currrent two objectives.
-    Plot in green the globally (all objectives) Pareto optimal points.
+    This post-processing computes the Pareto front and generates a matrix of plots,
+    one per couple of objectives.
+    For a given plot, the red markers are the non-dominated points according to the
+    objectives of this plot and the green markers are the non-dominated points
+    according to all the objectives.
+    The latter are also called _Pareto optimal points_.
     """
+
+    DEFAULT_FIG_SIZE = (10.0, 10.0)
 
     def _plot(
         self,
         objectives=None,  # type: Optional[Sequence[str]]
         objectives_labels=None,  # type: Optional[Sequence[str]]
-        figsize_x=10.0,  # type: float
-        figsize_y=10.0,  # type: float
         show_non_feasible=True,  # type: bool
     ):  # type: (...) -> None
         """
@@ -59,13 +62,11 @@ class ParetoFront(OptPostProcessor):
                 If None, use the objective function (may be a vector).
             objectives_labels: The labels of the objective components.
                 If None, use the objective name suffixed by an index.
-            figsize_x: The size of figure in the horizontal direction (inches).
-            figsize_y: The size of figure in the vertical direction (inches).
             show_non_feasible: If True, show the non feasible points in the plot.
 
         Raises:
             ValueError: If the numbers of objectives and objectives
-             labels are different.
+            labels are different.
         """
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
@@ -73,23 +74,24 @@ class ParetoFront(OptPostProcessor):
         all_funcs = self.opt_problem.get_all_functions_names()
         all_dv_names = self.opt_problem.design_space.variables_names
 
-        vals, vname = self.__compute_names_and_values(
+        sample_values, all_labels = self.__compute_names_and_values(
             all_dv_names, all_funcs, objectives
         )
 
-        non_feasible_samples = self.__compute_non_feasible_samples(vals)
+        non_feasible_samples = self.__compute_non_feasible_samples(sample_values)
 
         if objectives_labels is not None:
-            if len(vname) != len(objectives_labels):
+            if len(all_labels) != len(objectives_labels):
                 raise ValueError(
-                    "objective_labels shall have the same dimension as vname."
+                    "objective_labels shall have the same dimension as the number"
+                    " of objectives to plot."
                 )
-            vname = objectives_labels
+            all_labels = objectives_labels
 
         fig = generate_pareto_plots(
-            vals,
-            vname,
-            figsize=(figsize_x, figsize_y),
+            sample_values,
+            all_labels,
+            figsize=self.DEFAULT_FIG_SIZE,
             non_feasible_samples=non_feasible_samples,
             show_non_feasible=show_non_feasible,
         )
@@ -105,37 +107,47 @@ class ParetoFront(OptPostProcessor):
         """Compute the names and values of the objective and design variables.
 
         Args:
-             add_dv_names: The design variables names.
+             all_dv_names: The design variables names.
              all_funcs: The function names.
              objectives: The objective names.
 
         Returns:
             The sample values and the sample names.
         """
-        # TODO: Those lines are not covered by the tests. It has to be
-        # investigated to see if it's dead code.
-        if not objectives:
-            # The function list only contains design variables
-            vals = self.database.get_x_history()
-            vname = self.database.set_dv_names(vals[0].shape[0])
-        else:
-            design_variables = []
-            for func in list(objectives):
-                self.__check_objective_name(all_dv_names, all_funcs, func, objectives)
-                self.__move_objective_to_design_variable(
-                    design_variables, func, objectives
-                )
+        design_variables = []
+        for func in list(objectives):
+            self.__check_objective_name(all_dv_names, all_funcs, func, objectives)
+            self.__move_objective_to_design_variable(design_variables, func, objectives)
 
-            if not design_variables:
-                design_variables = None
-                add_dv = False
-            else:
-                add_dv = True
-
-            vals, vname, _ = self.database.get_history_array(
-                objectives, design_variables, add_dv=add_dv
+        if not design_variables:
+            design_variables_labels = []
+            all_data_names = objectives
+            _, objective_labels, _ = self.database.get_history_array(
+                functions=objectives,
+                design_variables_names=None,
+                add_dv=False,
             )
-        return vals, vname
+        elif not objectives:
+            design_variables_labels = self._generate_x_names(variables=design_variables)
+            all_data_names = design_variables
+            objective_labels = []
+        else:
+            design_variables_labels = self._generate_x_names(variables=design_variables)
+            all_data_names = objectives + design_variables
+            _, objective_labels, _ = self.database.get_history_array(
+                functions=objectives,
+                design_variables_names=None,
+                add_dv=False,
+            )
+
+        all_data_names.sort()
+        all_labels = sorted(objective_labels + design_variables_labels)
+
+        sample_values = self.opt_problem.get_data_by_names(
+            names=all_data_names, as_dict=False, filter_non_feasible=False
+        )
+
+        return sample_values, all_labels
 
     def __check_objective_name(
         self,
@@ -147,7 +159,7 @@ class ParetoFront(OptPostProcessor):
         """Check that the objective name is valid.
 
         Args:
-             add_dv_names: The design variables names.
+             all_dv_names: The design variables names.
              all_funcs: The function names.
              func: The function name.
              objectives: The objectives names.
@@ -190,20 +202,20 @@ class ParetoFront(OptPostProcessor):
             design_variables.append(func)
 
     def __compute_non_feasible_samples(
-        self, vals  # type: ndarray
+        self, sample_values  # type: ndarray
     ):  # type: (...) -> ndarray
         """Compute the non-feasible indexes.
 
         Args:
-            vals: The sample values.
+            sample_values: The sample values.
 
         Returns:
-              An array of size ``n_samples``, True if the point is non feasible
+            An array of size ``n_samples``, True if the point is non feasible
         """
         x_feasible, _ = self.opt_problem.get_feasible_points()
         feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
 
-        is_non_feasible = full(vals.shape[0], True)
+        is_non_feasible = full(sample_values.shape[0], True)
         is_non_feasible[feasible_indexes] = False
 
         return is_non_feasible

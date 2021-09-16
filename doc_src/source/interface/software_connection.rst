@@ -16,7 +16,7 @@ Interfacing simulation software
 ===============================
 
 To interface a simulation software with |g|,
-and make a :class:`.MDODiscipline` from it,
+and make an :class:`.MDODiscipline` from it,
 several options are available:
 
 - Your program is a Python function,
@@ -31,7 +31,7 @@ several options are available:
   use :ref:`Excel discipline<xls_discipline>`.
 
 - If your program is a MATLAB or Scilab function there exists a generic interface
-  that allows to connect them to |g| as a :class:`.MDODiscipline`,
+  that allows to connect them to |g| as an :class:`.MDODiscipline`,
   without writing code in a dedicated plugins.
   For the MATLAB case,
   see :ref:`the generic MATLAB wrapper<discipline_matlab>`.

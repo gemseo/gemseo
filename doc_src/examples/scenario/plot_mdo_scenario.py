@@ -61,7 +61,7 @@ configure_logger()
 # Define the discipline
 # ---------------------
 # Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
-# we create a :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
+# we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
 # from a python function:
 
 expressions_dict = {"y": "sin(x)-exp(x)"}

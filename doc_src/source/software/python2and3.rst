@@ -39,7 +39,7 @@ migrate your existing code to be compliant with the |g| 2.0.0 API.
 A common error message that you may encounter is a grammar error when passing
 string options to a |g| object due to an incorrect string encoding. For
 instance, the following error message is obtained when string options with an
-incorrect encoding are passed as options for the execution of a MDO scenario:
+incorrect encoding are passed as options for the execution of an MDO scenario:
 
 
 .. code:: console

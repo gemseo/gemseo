@@ -29,14 +29,16 @@ from os.path import dirname, exists
 
 import numpy as np
 import pytest
-from numpy import allclose, array, inf, ndarray, ones, zeros
+from numpy import allclose, array, array_equal, inf, ndarray, ones, zeros
 from scipy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.function import MDOFunction, MDOLinearFunction
@@ -661,3 +663,92 @@ class TestOptProblem(unittest.TestCase):
         n_iter = len(database)
         n_var = problem.design_space.dimension
         assert dataset.get_data_by_names(name, as_dict=False).shape == (n_iter, n_var)
+
+
+@pytest.mark.parametrize(
+    "filter_non_feasible,expected",
+    [
+        (
+            True,
+            np.array(
+                [[1.0, 1.0, np.power(0.9, 1 / 3)], [0.9, 0.9, np.power(0.9, 1 / 3)]]
+            ),
+        ),
+        (
+            False,
+            np.array(
+                [
+                    [1.0, 1.0, np.power(0.9, 1 / 3)],
+                    [0.9, 0.9, np.power(0.9, 1 / 3)],
+                    [0.0, 0.0, 0.0],
+                    [0.5, 0.5, 0.5],
+                ]
+            ),
+        ),
+    ],
+)
+def test_get_data_by_names(filter_non_feasible, expected):
+    """Test if the data is filtered correctly.
+
+    Args:
+        filter_non_feasible: If True, remove the non-feasible points from
+                the data.
+        expected: The reference data for the test.
+    """
+    # Create a Power2 instance
+    problem = Power2()
+    # Add two feasible points
+    problem.database.store(
+        np.array([1.0, 1.0, np.power(0.9, 1 / 3)]),
+        {"pow2": 2.9, "ineq1": -0.5, "ineq2": -0.5, "eq": 0.0},
+    )
+    problem.database.store(
+        np.array([0.9, 0.9, np.power(0.9, 1 / 3)]),
+        {"pow2": 2.55, "ineq1": -0.229, "ineq2": -0.229, "eq": 0.0},
+    )
+    # Add two non-feasible points
+    problem.database.store(
+        np.array([0.0, 0.0, 0.0]), {"pow2": 0.0, "ineq1": 0.5, "ineq2": 0.5, "eq": 0.9}
+    )
+    problem.database.store(
+        np.array([0.5, 0.5, 0.5]),
+        {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
+    )
+    # Get the data back
+    data = problem.get_data_by_names(
+        names=["x"], as_dict=False, filter_non_feasible=filter_non_feasible
+    )
+    # Check output is filtered when needed
+    assert np.array_equal(data, expected)
+
+
+def test_gradient_with_random_variables():
+    """Check that the Jacobian is correctly computed with random variable."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", "OTUniformDistribution")
+
+    problem = OptimizationProblem(parameter_space)
+    problem.objective = MDOFunction(lambda x: 3 * x ** 2, "func", jac=lambda x: 6 * x)
+    PyDOE().execute(problem, "fullfact", n_samples=3, eval_jac=True)
+
+    data = problem.database.get_func_grad_history("func")
+
+    assert array_equal(data, array([0.0, 3.0, 6.0]))
+
+
+def test_is_mono_objective():
+    """Check the boolean OptimizationProblem.is_mono_objective."""
+    design_space = DesignSpace()
+    design_space.add_variable("")
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(
+        lambda x: array([1.0, 2.0]), name="func", f_type="obj", outvars=["y1", "y2"]
+    )
+
+    assert not problem.is_mono_objective
+
+    problem.objective = MDOFunction(
+        lambda x: x, name="func", f_type="obj", outvars=["y1"]
+    )
+
+    assert problem.is_mono_objective

@@ -21,20 +21,23 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import dirname, exists, join
-
 import pytest
 from matplotlib.testing.decorators import image_comparison
-from numpy import array, ones
+from numpy import array, ones, power
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_design_space, create_discipline, create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.py23_compat import PY2, Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+
+pytestmark = pytest.mark.skipif(
+    not PostFactory().is_available("ScatterPlotMatrix"),
+    reason="ScatterPlotMatrix is not available.",
+)
 
 
 def test_scatter(tmp_wd, pyplot_close_all):
@@ -46,19 +49,18 @@ def test_scatter(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    if factory.is_available("ScatterPlotMatrix"):
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        post = factory.execute(
-            problem,
-            "ScatterPlotMatrix",
-            save=True,
-            file_path="scatter1",
-            variables_list=problem.get_all_functions_names(),
-        )
-        assert len(post.output_files) == 1
-        for outf in post.output_files:
-            assert exists(outf)
+    problem = Power2()
+    OptimizersFactory().execute(problem, "SLSQP")
+    post = factory.execute(
+        problem,
+        "ScatterPlotMatrix",
+        save=True,
+        file_path="scatter1",
+        variables_list=problem.get_all_functions_names(),
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
 
 
 def test_scatter_load(tmp_wd, pyplot_close_all):
@@ -70,29 +72,43 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    if factory.is_available("ScatterPlotMatrix"):
-        problem = OptimizationProblem.import_hdf(POWER2)
-        post = factory.execute(
+    problem = OptimizationProblem.import_hdf(POWER2)
+    post = factory.execute(
+        problem,
+        "ScatterPlotMatrix",
+        save=True,
+        file_path="scatter2",
+        variables_list=problem.get_all_functions_names(),
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variables_list=[])
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_non_existent_var(tmp_wd):
+    """Test exception when a requested variable does not exist.
+
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+    """
+    factory = PostFactory()
+    problem = OptimizationProblem.import_hdf(POWER2)
+    with pytest.raises(
+        ValueError,
+        match=r"Cannot build scatter plot matrix, Function toto is neither "
+        r"among optimization problem functions : .* "
+        r"nor design variables : .*",
+    ):
+        factory.execute(
             problem,
             "ScatterPlotMatrix",
             save=True,
-            file_path="scatter2",
-            variables_list=problem.get_all_functions_names(),
+            variables_list=["toto"],
         )
-        assert len(post.output_files) == 1
-        for outf in post.output_files:
-            assert exists(outf)
-
-        with pytest.raises(Exception):
-            factory.execute(
-                problem, "ScatterPlotMatrix", save=True, variables_list=["I dont exist"]
-            )
-
-        post = factory.execute(
-            problem, "ScatterPlotMatrix", save=True, variables_list=[]
-        )
-        for outf in post.output_files:
-            assert exists(outf)
 
 
 @pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
@@ -180,4 +196,73 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
-        assert exists(outf)
+        assert Path(outf).exists()
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.parametrize(
+    "filter_non_feasible, baseline_images",
+    [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
+)
+@image_comparison(None, extensions=["png"])
+def test_filter_non_feasible(
+    tmp_wd, filter_non_feasible, baseline_images, pyplot_close_all
+):
+    """Test if the filter_non_feasible option works properly.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        filter_non_feasible: If True, remove the non-feasible points from the data.
+        baseline_images: The reference images to be compared.
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    factory = PostFactory()
+    # Create a Power2 instance
+    problem = Power2()
+    # Add feasible points
+    problem.database.store(
+        array([0.79499653, 0.20792012, 0.96630481]),
+        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
+    )
+    problem.database.store(
+        array([0.9, 0.9, power(0.9, 1 / 3)]),
+        {"pow2": 2.55, "ineq1": -0.229, "ineq2": -0.229, "eq": 0.0},
+    )
+    # Add two non-feasible points
+    problem.database.store(
+        array([1.0, 1.0, 0.0]), {"pow2": 2.0, "ineq1": -0.5, "ineq2": -0.5, "eq": 0.9}
+    )
+    problem.database.store(
+        array([0.5, 0.5, 0.5]),
+        {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
+    )
+    post = factory.execute(
+        problem,
+        "ScatterPlotMatrix",
+        file_extension="png",
+        save=False,
+        filter_non_feasible=filter_non_feasible,
+        variables_list=["x"],
+    )
+    post.figures
+
+
+def test_filter_non_feasible_exception():
+    """Test exception when no feasible points are left after filtering."""
+    factory = PostFactory()
+    # Create a Power2 instance
+    problem = Power2()
+    # Add two non-feasible points
+    problem.database.store(
+        array([1.0, 1.0, 0.0]), {"pow2": 2.0, "ineq1": -0.5, "ineq2": -0.5, "eq": 0.9}
+    )
+    problem.database.store(
+        array([0.5, 0.5, 0.5]),
+        {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
+    )
+
+    with pytest.raises(ValueError, match="No feasible points were found!"):
+        factory.execute(
+            problem, "ScatterPlotMatrix", filter_non_feasible=True, variables_list=["x"]
+        )

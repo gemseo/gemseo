@@ -21,65 +21,87 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, exists, join
-
 import pytest
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestConstraintsHistory(unittest.TestCase):
-    """"""
+@pytest.fixture(scope="module")
+def problem():
+    return OptimizationProblem.import_hdf(file_path=POWER2)
 
-    @classmethod
-    def setUpClass(cls):
-        cls.factory = PostFactory()
 
-    def test_constraints_history(self):
-        """"""
-        if self.factory.is_available("ConstraintsHistory"):
-            problem = Power2()
-            OptimizersFactory().execute(problem, "SLSQP")
-            post = self.factory.execute(
-                problem,
-                "ConstraintsHistory",
-                file_path="lines_chart1",
-                save=True,
-                show=False,
-                constraints_list=problem.get_constraints_names(),
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
+@pytest.fixture(scope="module")
+def factory():
+    return PostFactory()
 
-    def test_constraints_history_load(self):
-        """"""
-        if self.factory.is_available("ConstraintsHistory"):
-            problem = OptimizationProblem.import_hdf(file_path=POWER2)
-            post = self.factory.execute(
-                problem,
-                "ConstraintsHistory",
-                save=True,
-                show=False,
-                constraints_list=problem.get_constraints_names(),
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
 
-            self.assertRaises(
-                ValueError,
-                self.factory.execute,
-                problem,
-                "ConstraintsHistory",
-                save=True,
-                show=False,
-                constraints_list=["toto"],
-            )
+def test_constraints_history(tmp_wd, factory):
+    """Test the constraints history post-processing with the Power2 problem.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        factory: Fixture that returns a post-processing factory.
+    """
+    problem = Power2()
+    OptimizersFactory().execute(problem, "SLSQP")
+    post = factory.execute(
+        problem,
+        "ConstraintsHistory",
+        file_path="lines_chart1",
+        save=True,
+        show=False,
+        constraints_list=problem.get_constraints_names(),
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_constraints_history_load(tmp_wd, problem, factory):
+    """Test the radar chart post processing from a database.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
+        factory: Fixture to return a post-processing factory.
+    """
+    post = factory.execute(
+        problem,
+        "ConstraintsHistory",
+        save=True,
+        show=False,
+        constraints_list=problem.get_constraints_names(),
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_function_error(tmp_wd, problem, factory):
+    """Test a ValueError is raised for a non-existent function.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
+        factory: Fixture to return a post-processing factory.
+    """
+    with pytest.raises(
+        ValueError,
+        match="Cannot build constraints history plot, "
+        "function toto is not among the constraints names "
+        "or does not exist.",
+    ):
+        factory.execute(
+            problem,
+            "ConstraintsHistory",
+            save=True,
+            show=False,
+            constraints_list=["toto"],
+        )

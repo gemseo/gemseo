@@ -105,7 +105,7 @@ RE_PATTERN_ARGS_SECTION = re.compile(
 
 # regex pattern for finding the arguments names and description of a google docstring
 RE_PATTERN_ARGS = re.compile(
-    r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\**\w+\s*:))", flags=re.DOTALL
+    r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\n\**\w+\s*:))", flags=re.DOTALL
 )
 
 

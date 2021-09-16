@@ -99,9 +99,7 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-import re
-from os import makedirs
-from os.path import exists, join
+from copy import deepcopy
 from typing import Any, Dict, List, Optional, Union
 
 import six
@@ -110,6 +108,8 @@ from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -188,6 +188,7 @@ class MLAlgo(object):
             }
 
         self.algo = None
+        self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
 
     class DataFormatters(object):
@@ -222,7 +223,7 @@ class MLAlgo(object):
     def save(
         self,
         directory=None,  # type: Optional[str]
-        path=".",  # type: str
+        path=".",  # type: Union[str,Path]
         save_learning_set=False,  # type: bool
     ):  # type: (...) -> str
         """Save the machine learning algorithm.
@@ -239,27 +240,25 @@ class MLAlgo(object):
         if not save_learning_set:
             self.learning_set.data = {}
             self.learning_set.length = 0
-        splitted_class_name = re.findall("[A-Z][a-z]*", self.__class__.__name__)
-        splitted_class_name = [word.lower() for word in splitted_class_name]
-        algo_name = "_".join(splitted_class_name)
-        algo_name += "_" + self.learning_set.name
-        directory = directory or algo_name
-        directory = join(path, directory)
-        if not exists(directory):
-            makedirs(directory)
 
-        filename = join(directory, self.FILENAME)
+        default_directory_name = "{}_{}".format(
+            FilePathManager.to_snake_case(self.__class__.__name__),
+            self.learning_set.name,
+        )
+        directory = Path(path) / (directory or default_directory_name)
+        directory.mkdir(exist_ok=True)
+
         objects = self._get_objects_to_save()
-        with open(filename, "wb") as handle:
+        with (directory / self.FILENAME).open("wb") as handle:
             pickle.dump(objects, handle)
 
         self._save_algo(directory)
 
-        return directory
+        return str(directory)
 
     def _save_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Path
     ):  # type: (...) -> None
         """Save the interfaced machine learning algorithm.
 
@@ -267,13 +266,12 @@ class MLAlgo(object):
             directory: The path to the directory
                 where to save the interfaced machine learning algorithm.
         """
-        filename = join(directory, "algo.pkl")
-        with open(filename, "wb") as handle:
+        with (directory / "algo.pkl").open("wb") as handle:
             pickle.dump(self.algo, handle)
 
     def load_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Union[str,Path]
     ):  # type: (...) -> None
         """Load a machine learning algorithm from a directory.
 
@@ -281,11 +279,8 @@ class MLAlgo(object):
             directory: The path to the directory
                 where the machine learning algorithm is saved.
         """
-
-        filename = join(directory, "algo.pkl")
-        with open(filename, "rb") as handle:
-            algo = pickle.load(handle)
-        self.algo = algo
+        with (Path(directory) / "algo.pkl").open("rb") as handle:
+            self.algo = pickle.load(handle)
 
     def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
         """Return the objects to save.
@@ -298,6 +293,7 @@ class MLAlgo(object):
             "transformer": self.transformer,
             "parameters": self.parameters,
             "algo_name": self.__class__.__name__,
+            "sizes": self.sizes,
             "_trained": self._trained,
         }
         return objects

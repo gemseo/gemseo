@@ -25,6 +25,27 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Unreleased
+**********
+
+Changed
+-------
+
+- The Scatter Plot Matrix post processor now allows the user to filter non-feasible points.
+- OptPostProcessor can change the size of the figures with the method execute().
+- The documentation now includes hints on how to use the add_observable method.
+- The ParetoFront post-processor now shows the correct labels in the plot axis.
+- SensitivityAnalysis can plot indices with values standardized in [0,1].
+- MorrisAnalysis provides new indices: minimum, maximum and relative standard deviation.
+- MorrisAnalysis can compute indices normalized with the empirical output bounds.
+
+Fixed
+-----
+
+- Make OpenTURNS- and pyDOE-based full factorial DOEs work whatever the dimension and number of samples.
+- The Correlations post-processor now sorts labels properly when two or more functions share the
+  same name followed by an underscore.
+- Bug with inherited docstrings.
 
 Version 3.1.0 (July 2021)
 *************************

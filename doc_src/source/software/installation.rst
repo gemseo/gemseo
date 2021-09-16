@@ -168,6 +168,23 @@ try to import the module:
 
 then the installation failed.
 
+Test the |g| dependencies with the API
+--------------------------------------
+
+You can use the function :meth:`~gemseo.api.print_configuration` to print
+the successfully loaded modules and the failed imports with the reason.
+
+.. code-block:: py
+
+    from gemseo.api import print_configuration
+
+    print_configuration()
+
+This function is useful when only some of the |g| features appear to be missing.
+Usually this is related to external libraries that were not installed because the
+user did not request full features.
+See :ref:`dependencies` for more information.
+
 Test with examples
 ------------------
 
@@ -176,9 +193,6 @@ many examples to illustrate the main features of |g|.
 For each example,
 you can download a Python script or a Jupyter Notebook,
 execute it and experiment to test the installation.
-Furthermore,
-you can find :ref:`tutorials <tutorials_sg>`
-mixing several features.
 
 .. _test_gemseo:
 

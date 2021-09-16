@@ -809,13 +809,11 @@ class OpenTURNS(DOELibrary):
         :returns: samples
         :rtype: numpy array
         """
-        self._display_fullfact_warning(n_samples)
-        level = int(n_samples ** (1.0 / dimension) - 2)
-        if level < 1:
-            level = 0
-        levels = [level] * dimension
-        experiment = openturns.Box(levels)
-        return array(experiment.generate())
+        levels = [n_level - 2 for n_level in self._compute_fullfact_levels(n_samples)]
+        if levels[0] < 0:
+            return array([[0.5] * self.problem.dimension])
+
+        return array(openturns.Box(levels).generate())
 
     def __generate_random(self, n_samples, dimension, **options):
         """Generate a DOE using random algo of openturns.

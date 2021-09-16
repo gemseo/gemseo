@@ -34,6 +34,7 @@ if PY2:
     long = long  # noqa: F821
 
     from inspect import getargspec as _getfullargspec
+    from re import match  # noqa: F401
 
     from backports.functools_lru_cache import lru_cache  # noqa: F401
     from pathlib2 import Path  # noqa: F401
@@ -53,6 +54,10 @@ if PY2:
         """Convert a list of strings to a list of unicode strings."""
         return [s.decode("utf-8") for s in iterable]
 
+    def fullmatch(pattern, string, flags=0):
+        """Emulate python-3.4 re.fullmatch()."""
+        return match(r"(?:" + pattern + r")\Z", string, flags=flags)
+
     import backports.unittest_mock
 
     backports.unittest_mock.install()
@@ -67,6 +72,7 @@ else:
     from functools import lru_cache  # noqa: F401
     from inspect import getfullargspec as _getfullargspec
     from pathlib import Path  # noqa: F401
+    from re import fullmatch  # noqa: F401
     from unittest import mock  # noqa: F401
 
     from fastjsonschema import compile as compile_schema  # noqa: F401

@@ -48,6 +48,8 @@ class Robustness(OptPostProcessor):
     and plot the corresponding output boxplot.
     """
 
+    DEFAULT_FIG_SIZE = (8.0, 5.0)
+
     SR1_APPROX = "SR1"
 
     def _plot(
@@ -103,7 +105,7 @@ class Robustness(OptPostProcessor):
                         legend += "_" + str(i + 1)
                     funcs_names.append(legend)
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         fig.suptitle(
             "Box plot of the optimization functions "
             "with normalized stddev {}".format(stddev)

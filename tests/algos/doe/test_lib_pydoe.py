@@ -46,17 +46,6 @@ class TestpyDOE(unittest.TestCase):
         if factory.is_available(self.DOE_LIB_NAME):
             factory.create(self.DOE_LIB_NAME)
 
-    def test_phip(self):
-        """"""
-        algo_name = "fullfact"
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=20
-        )
-        samples = doe_library.samples
-        self.assertAlmostEqual(
-            2.9935556852521019, doe_library.compute_phip_criteria(samples), 6
-        )
-
     def test_export_samples(self):
         """"""
         algo_name = "lhs"

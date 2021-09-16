@@ -22,7 +22,7 @@
 """Abstract class for the computation and analysis of sensitivity indices.
 
 The purpose of a sensitivity analysis is to
-qualify or quantify how the model's uncertain inputs impact its output.
+qualify or quantify how the model's uncertain inputs impact its outputs.
 
 This analysis relies on :class:`.SensitivityAnalysis`
 computed from a :class:`.MDODiscipline` representing the model,
@@ -34,6 +34,7 @@ inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 from __future__ import division, unicode_literals
 
 import logging
+from copy import deepcopy
 from typing import (
     Dict,
     Iterable,
@@ -58,6 +59,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
+from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager, FileType
@@ -67,7 +69,7 @@ from gemseo.utils.py23_compat import Path
 LOGGER = logging.getLogger(__name__)
 
 OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
-IndicesType = Dict[str, Dict[str, ndarray]]
+IndicesType = Dict[str, List[Dict[str, ndarray]]]
 
 
 @six.add_metaclass(
@@ -105,15 +107,16 @@ class SensitivityAnalysis(object):
         self,
         discipline,  # type: MDODiscipline
         parameter_space,  # type: ParameterSpace
-        n_samples,  # type: int
+        n_samples,  # type: Optional[int]
         algo=None,  # type: Optional[str]
-        algo_options=None,  # type: Optional[Mapping]
+        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
     ):  # type: (...) -> None  # noqa: D205,D212,D415
         """
         Args:
             discipline: A discipline.
             parameter_space: A parameter space.
             n_samples: A number of samples.
+                If None, the number of samples is computed by the algorithm.
             algo: The name of the DOE algorithm.
                 If None, use the :attr:`DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
@@ -134,7 +137,7 @@ class SensitivityAnalysis(object):
         self,
         discipline,  # type: MDODiscipline
         parameter_space,  # type: ParameterSpace,
-        n_samples,  # type: int
+        n_samples,  # type: Optional[int]
         **options  # type: DOELibraryOptionType
     ):  # type: (...) -> Dataset
         """Sample the discipline and return the dataset.
@@ -143,6 +146,7 @@ class SensitivityAnalysis(object):
             discipline: A discipline.
             parameter_space: A parameter space.
             n_samples: A number of samples.
+                If None, the number of samples is computed by the algorithm.
             **options: The options for the DOE algorithm.
 
         Returns:
@@ -164,7 +168,7 @@ class SensitivityAnalysis(object):
 
     @property
     def inputs_names(self):  # type: (...) -> List[str]
-        """The name of the inputs."""
+        """The names of the inputs."""
         return self.dataset.get_names(self.dataset.INPUT_GROUP)
 
     def compute_indices(
@@ -282,13 +286,16 @@ class SensitivityAnalysis(object):
         return [item for sublist in result for item in sublist]
 
     def sort_parameters(
-        self, output  # type: Tuple[str,int]
+        self, output  # type: Union[str,Tuple[str,int]]
     ):  # type: (...) -> List[str]
         """Return the parameters sorted in descending order.
 
         Args:
-            output: An output of the form (name, component),
+            output: An output of the form :code:`(name, component)`,
                 where name is the output name and component is the output component.
+                If a string is passed,
+                the tuple :code:`(name, 0)` will be considered
+                corresponding to the first component of the output :code:`name`.
 
         Returns:
             The input parameters sorted in descending order.
@@ -341,6 +348,7 @@ class SensitivityAnalysis(object):
         output,  # type: Union[str,Tuple[str,int]]
         mesh=None,  # type: Optional[ndarray]
         inputs=None,  # type: Optional[Iterable[str]]
+        standardize=False,  # type: bool
         title=None,  # type: Optional[str]
         save=True,  # type: bool
         show=False,  # type: bool
@@ -348,7 +356,7 @@ class SensitivityAnalysis(object):
         directory_path=None,  # type: Optional[Union[str,Path]]
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
-        properties=None,  # type: Mapping
+        properties=None,  # type: Mapping[str,DatasetPlotPropertyType]
     ):  # type: (...) -> Union[Curves,Surfaces]
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 
@@ -364,6 +372,7 @@ class SensitivityAnalysis(object):
                 is represented. Either a (1, p) array for a 1D functional output
                 or a (2, p) array for a 2D one. If None, assume a 1D functional output.
             inputs: The inputs to display. If None, display all inputs.
+            standardize: If True, standardize the indices between 0 and 1 for each output.
             title: The title of the plot. If None, no title is displayed.
             save: If True, save the figure.
             show: If True, show the figure.
@@ -378,12 +387,24 @@ class SensitivityAnalysis(object):
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             properties: The general properties of a :class:`.DatasetPlot`.
+
+        Returns:
+            A bar plot representing the sensitivity indices.
+
+        Raises:
+            NotImplementedError: If the dimension of the mesh is greater than 2.
         """
         dataset = Dataset()
         inputs_names = self._sort_and_filter_input_parameters((output, 0), inputs)
+        if standardize:
+            main_indices = self.standardize_indices(self.main_indices)
+        else:
+            main_indices = self.main_indices
+
         data = []
         for name in inputs_names:
-            data.append([value[name] for value in self.main_indices[output[0]]])
+            data.append([value[name] for value in main_indices[output[0]]])
+
         data = array(data)[:, :, 0]
         dataset.set_from_array(data, [output], sizes={output: data.shape[1]})
         dataset.row_names = inputs_names
@@ -397,6 +418,7 @@ class SensitivityAnalysis(object):
             plot = Surfaces(dataset)
         else:
             raise NotImplementedError
+
         plot.execute(
             save=save,
             show=show,
@@ -414,6 +436,7 @@ class SensitivityAnalysis(object):
         self,
         outputs,  # type: OutputsType
         inputs=None,  # type: Optional[Iterable[str]]
+        standardize=False,  # type: bool
         title=None,  # type: Optional[str]
         save=True,  # type: bool
         show=False,  # type: bool
@@ -439,6 +462,7 @@ class SensitivityAnalysis(object):
                 When a name is specified, all its components are considered.
                 If None, use the default outputs.
             inputs: The inputs to display. If None, display all.
+            standardize: If True, standardize the indices between 0 and 1 for each output.
             title: The title of the plot. If None, no title.
             save: If True, save the figure.
             show: If True, show the figure.
@@ -461,11 +485,18 @@ class SensitivityAnalysis(object):
         dataset = Dataset()
         inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
         data = {name: [] for name in inputs_names}
+        if standardize:
+            main_indices = self.standardize_indices(self.main_indices)
+        else:
+            main_indices = self.main_indices
+
         for output in outputs:
             for name in inputs_names:
-                data[name].append(self.main_indices[output[0]][output[1]][name])
+                data[name].append(main_indices[output[0]][output[1]][name])
+
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
+
         dataset.row_names = [
             "{}({})".format(output[0], output[1]) for output in outputs
         ]
@@ -486,6 +517,7 @@ class SensitivityAnalysis(object):
         self,
         outputs,  # type: OutputsType
         inputs=None,  # type: Optional[Iterable[str]]
+        standardize=False,  # type: bool
         title=None,  # type: Optional[str]
         save=True,  # type: bool
         show=False,  # type: bool
@@ -517,6 +549,7 @@ class SensitivityAnalysis(object):
                 If None, use the default outputs.
             inputs: The inputs to display.
                 If None, display all.
+            standardize: If True, standardize the indices between 0 and 1 for each output.
             title: The title of the plot. If None, no title.
             save: If True, save the figure.
             show: If True, show the figure.
@@ -541,12 +574,19 @@ class SensitivityAnalysis(object):
         dataset = Dataset()
         inputs_names = self._sort_and_filter_input_parameters(outputs[0], inputs)
         data = {name: [] for name in inputs_names}
+        if standardize:
+            main_indices = self.standardize_indices(self.main_indices)
+        else:
+            main_indices = self.main_indices
+
         for output in outputs:
-            for name, value in self.main_indices[output[0]][output[1]].items():
+            for name, value in main_indices[output[0]][output[1]].items():
                 if name in inputs_names:
                     data[name].append(value)
+
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
+
         dataset.row_names = [
             "{}({})".format(output[0], output[1]) for output in outputs
         ]
@@ -751,3 +791,32 @@ class SensitivityAnalysis(object):
             dataset.add_group(method, data, variables, sizes)
         dataset.row_names = rows_names
         return dataset
+
+    @staticmethod
+    def standardize_indices(
+        indices,  # type: IndicesType
+    ):  # type: (...) -> IndicesType
+        """Standardize the sensitivity indices for each output component.
+
+        Each index is replaced by its absolute value divided by the largest index.
+        Thus, the standardized indices belong to the interval :math:`[0,1]`.
+
+        Args:
+            indices: The indices to be standardized.
+
+        Returns:
+            The standardized indices.
+        """
+        new_indices = deepcopy(indices)
+        for output_name, output_indices in indices.items():
+            for output_component, output_component_indices in enumerate(output_indices):
+                max_value = max(
+                    [abs(value)[0] for value in output_component_indices.values()]
+                )
+
+                for input_name, input_indices in output_component_indices.items():
+                    new_indices[output_name][output_component][input_name] = (
+                        abs(input_indices) / max_value
+                    )
+
+        return new_indices

@@ -764,32 +764,8 @@ class OptimizationProblem(object):
         fname = orig_func.name
         normalize_vect = self.design_space.normalize_vect
         unnormalize_vect = self.design_space.unnormalize_vect
-
-        def unnormalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Unnormalize the gradient value.
-
-            Args:
-                x_vect: The normalized value of the gradient.
-
-            Returns:
-                The unnormalized value of the gradient.
-            """
-            return normalize_vect(x_vect, minus_lb=False)
-
-        def normalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Normalize the gradient value.
-
-            Args:
-                x_vect: The unnormalized value of the gradient.
-
-            Returns:
-                The normalized value of the gradient.
-            """
-            return unnormalize_vect(x_vect, minus_lb=False, no_check=True)
+        normalize_gradient = self.design_space.normalize_grad
+        unnormalize_gradient = self.design_space.unnormalize_grad
 
         def wrapped_function(
             x_vect,  # type: ndarray
@@ -1184,19 +1160,7 @@ class OptimizationProblem(object):
             return orig_func
 
         unnormalize_vect = self.design_space.unnormalize_vect
-
-        def normalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Normalize a gradient.
-
-            Args:
-                x_vect: The gradient to be normalized.
-
-            Returns:
-                The normalized gradient.
-            """
-            return unnormalize_vect(x_vect, minus_lb=False, no_check=True)
+        normalize_gradient = self.design_space.normalize_grad
 
         round_int_vars = self.design_space.round_vect
 
@@ -2047,3 +2011,35 @@ class OptimizationProblem(object):
             converted[key] = value
 
         return converted
+
+    def get_data_by_names(
+        self,
+        names,  # type: Union[str,Iterable[str]]
+        as_dict=True,  # type: bool
+        filter_non_feasible=False,  # type: bool
+    ):  # type: (...) -> Union[ndarray, Dict[str,ndarray]]
+        """Return the data for specific names of variables.
+
+        Args:
+            names: The names of the variables.
+            as_dict: If True, return values as dictionary.
+            filter_non_feasible: If True, remove the non-feasible points from
+                the data.
+
+        Returns:
+            The data related to the variables.
+        """
+        dataset = self.export_to_dataset("OptimizationProblem")
+        data = dataset.get_data_by_names(names, as_dict)
+
+        if filter_non_feasible:
+            x_feasible, _ = self.get_feasible_points()
+            feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
+            data = data[feasible_indexes, :]
+
+        return data
+
+    @property
+    def is_mono_objective(self):  # type: (...) -> bool
+        """Whether the optimization problem is mono-objective."""
+        return len(self.objective.outvars) == 1

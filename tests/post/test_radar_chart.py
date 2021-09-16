@@ -21,75 +21,109 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, exists, join
-
 import pytest
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestRadarChart(unittest.TestCase):
-    """"""
+@pytest.fixture(scope="module")
+def problem():
+    return OptimizationProblem.import_hdf(file_path=POWER2)
 
-    def test_radar(self):
-        """"""
-        factory = PostFactory()
-        if factory.is_available("RadarChart"):
-            problem = Power2()
-            OptimizersFactory().execute(problem, "SLSQP")
-            post = factory.execute(
-                problem,
-                "RadarChart",
-                save=True,
-                show=False,
-                constraints_list=problem.get_constraints_names(),
-                iteration=-1,
-                file_path="radar1",
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
 
-    def test_radar_load(self):
-        """"""
-        factory = PostFactory()
-        if factory.is_available("RadarChart"):
-            problem = OptimizationProblem.import_hdf(file_path=POWER2)
-            post = factory.execute(
-                problem,
-                "RadarChart",
-                save=True,
-                show=False,
-                constraints_list=problem.get_constraints_names(),
-                iteration=2,
-                file_path="radar2",
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
-            self.assertRaises(
-                ValueError,
-                factory.execute,
-                problem,
-                "RadarChart",
-                save=True,
-                show=False,
-                constraints_list=["toto"],
-            )
-            self.assertRaises(
-                ValueError,
-                factory.execute,
-                problem,
-                "RadarChart",
-                save=True,
-                show=False,
-                constraints_list=problem.get_constraints_names(),
-                iteration=1000,
-            )
+@pytest.fixture(scope="module")
+def factory():
+    return PostFactory()
+
+
+def test_radar(tmp_wd, factory):
+    """Test the radar chart post-processing with the Power2 problem.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        factory: Fixture that returns a post-processing factory.
+    """
+    problem = Power2()
+    OptimizersFactory().execute(problem, "SLSQP")
+    post = factory.execute(
+        problem,
+        "RadarChart",
+        save=True,
+        show=False,
+        constraints_list=problem.get_constraints_names(),
+        iteration=-1,
+        file_path="radar1",
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_radar_load(tmp_wd, problem, factory):
+    """Test the radar chart post-processing from a database.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
+        factory: Fixture to return a post-processing factory.
+    """
+    post = factory.execute(
+        problem,
+        "RadarChart",
+        save=True,
+        show=False,
+        constraints_list=problem.get_constraints_names(),
+        iteration=2,
+        file_path="radar2",
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_function_error(tmp_wd, problem, factory):
+    """Test a ValueError is raised for a non-existent function.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
+        factory: Fixture to return a post-processing factory.
+    """
+    with pytest.raises(
+        ValueError,
+        match="Cannot build radar chart; "
+        "function toto is not among constraints names"
+        " or does not exist.",
+    ):
+        factory.execute(
+            problem, "RadarChart", save=True, show=False, constraints_list=["toto"]
+        )
+
+
+def test_iteration_error(tmp_wd, problem, factory):
+    """Test a ValueError is raised with ill defined iteration.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
+        factory: Fixture to return a post-processing factory.
+    """
+    with pytest.raises(
+        ValueError,
+        match="iteration should be either equal to -1 or positive and lower than "
+        "maximum iteration = {}".format(len(problem.database)),
+    ):
+        factory.execute(
+            problem,
+            "RadarChart",
+            save=True,
+            show=False,
+            constraints_list=problem.get_constraints_names(),
+            iteration=1000,
+        )

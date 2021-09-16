@@ -19,15 +19,15 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Scenario which drivers are Design of Experiments
-************************************************
-"""
+"""A scenario whose driver is a design of experiments."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any, Optional, Sequence
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
 
 # The detection of formulations requires to import them,
@@ -36,46 +36,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DOEScenario(Scenario):
-    """Design of Experiments scenario, based on MDO scenario but with a DOE driver.
+    """A multidisciplinary scenario to be executed by a design of experiments (DOE).
 
-    The main differences between Scenario and MDOScenario are the allowed
-    inputs
-    in the MDOScenario.json, which differs from DOEScenario.json, at least
-    on the driver names
+    A :class:`DOEScenario` is a particular :class:`.Scenario`
+    whose driver is a DOE.
+    This DOE must be implemented in a :class:`.DOELibrary`.
 
-    MDO Problem description: links the disciplines and the formulation
-    to create an optimization problem.
-    Use the class by instantiation.
-    Create your disciplines beforehand.
-
-    Specify the formulation by giving the class name such as the string
-    "MDF"
-
-    The reference_input_data is the typical input data dict that is provided
-    to the run method of the disciplines
-
-    Specify the objective function name, which must be an output
-    of a discipline of the scenario, with the "objective_name" attribute
-
-    If you want to add additional design constraints,
-    use the add_user_defined_constraint method
-
-    To view the results, use the "post_process" method after execution.
-    You can view:
-
-    - the design variables history, the objective value, the constraints,
-      by using: scenario.post_process("OptHistoryView", show=False, save=True)
-    - Quadratic approximations of the functions close to the
-      optimum, when using gradient based algorithms, by using:
-      scenario.post_process("QuadApprox", method="SR1", show=False,
-      save=True, function="my_objective_name",
-      file_path="appl_dir")
-    - Self Organizing Maps of the design space, by using:
-      scenario.post_process("SOM", save=True, file_path="appl_dir")
-
-    To list post processings on your setup,
-    use the method :attr:`.Scenario.posts`.
-    For more details on their options, go to the **gemseo.post** package.
+    Attributes:
+        seed (int): The seed used by the random number generators for replicability.
     """
 
     # Constants for input variables in json schema
@@ -85,23 +53,26 @@ class DOEScenario(Scenario):
 
     def __init__(
         self,
-        disciplines,
-        formulation,
-        objective_name,
-        design_space,
-        name=None,
-        **formulation_options
-    ):
-        """Constructor, initializes the DOE scenario Objects instantiation and checks
-        are made before run intentionally.
-
-        :param disciplines: the disciplines of the scenario
-        :param formulation: the formulation name,
-            the class name of the formulation in gemseo.formulations
-        :param objective_name: the objective function name
-        :param design_space: the design space
-        :param name: scenario name
-        :param formulation_options: options for creation of the formulation
+        disciplines,  # type: Sequence[MDODiscipline]
+        formulation,  # type: str
+        objective_name,  # type: str
+        design_space,  # type: DesignSpace
+        name=None,  # type: Optional[str]
+        **formulation_options  # type: Any
+    ):  # type: (...) -> None
+        """
+        Args:
+            disciplines: The disciplines
+                used to compute the objective, constraints and observables
+                from the design variables.
+            formulation: The name of the MDO formulation,
+                also the name of a class inheriting from :class:`.MDOFormulation`.
+            objective_name: The name of the objective.
+            design_space: The design space.
+            name: The name to be given to this scenario.
+                If None, use the name of the class.
+            **formulation_options: The options
+                to be passed to the :class:`.MDOFormulation`.
         """
         # This loads the right json grammars from class name
         super(DOEScenario, self).__init__(
@@ -115,12 +86,10 @@ class DOEScenario(Scenario):
         self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
 
-    def _init_algo_factory(self):
-        """Initalizes the algorithms factory."""
+    def _init_algo_factory(self):  # type: (...) -> None
         self._algo_factory = DOEFactory()
 
-    def _run_algorithm(self):
-        """Runs the DOE algo."""
+    def _run_algorithm(self):  # type: (...) -> None
         self.seed += 1
         problem = self.formulation.opt_problem
         algo_name = self.local_data[self.ALGO]
@@ -145,8 +114,7 @@ class DOEScenario(Scenario):
         self.optimization_result = lib.execute(problem, n_samples=n_samples, **options)
         return self.optimization_result
 
-    def _run(self):
-        """Execute the scenario and run the optimization problems."""
+    def _run(self):  # type: (...) -> None
         LOGGER.info(" ")
         LOGGER.info("*** Start DOE Scenario execution ***")
         LOGGER.info("%s", repr(self))

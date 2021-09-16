@@ -63,9 +63,11 @@ class OptHistoryView(OptPostProcessor):
     By default, all design variables are considered. A sublist of design variables can
     be passed as options. Minimum and maximum values for the plot can be passed as
     options. The objective function can also be represented in terms of difference
-    w.r.t. the initial value It is possible either to save the plot, to show the plot or
-    both.
+    w.r.t. the initial value. It is possible either to save the plot, to show the plot
+    or both.
     """
+
+    DEFAULT_FIG_SIZE = (11.0, 6.0)
 
     def __init__(
         self,
@@ -250,7 +252,7 @@ class OptHistoryView(OptPostProcessor):
         n_variables = x_history.shape[1]
         norm_x_history = self._normalize_x_hist(x_history, variables_names)
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
 
         # design variables
@@ -339,7 +341,7 @@ class OptHistoryView(OptPostProcessor):
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
         pylab.plt.xlabel("Iterations", fontsize=12)
         pylab.plt.ylabel("Objective value", fontsize=12)
@@ -378,7 +380,7 @@ class OptHistoryView(OptPostProcessor):
             x_history: The history of the design variables.
             n_iter: The number of iterations.
         """
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
         pylab.plt.xlabel("Iterations", fontsize=12)
         pylab.plt.ylabel("||x-x*||", fontsize=12)
@@ -537,7 +539,7 @@ class OptHistoryView(OptPostProcessor):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         ax1 = fig.add_subplot(grid[0, 0])
         if PY2:
@@ -629,7 +631,7 @@ class OptHistoryView(OptPostProcessor):
         if not self.opt_problem.minimize_objective:
             diag = -diag
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         # matrix
         axe = fig.add_subplot(grid[0, 0])

@@ -35,6 +35,8 @@ class BasicHistory(OptPostProcessor):
     This post-processor requires the names of these selected outputs.
     """
 
+    DEFAULT_FIG_SIZE = (11.0, 6.0)
+
     def _plot(
         self,
         data_list,  # type: Sequence[str]
@@ -49,8 +51,8 @@ class BasicHistory(OptPostProcessor):
         plot = Lines(dataset)
         plot.font_size = 12
         plot.xlabel = "Iterations"
-        plot.figsize_x = 11
-        plot.figsize_y = 6
+        plot.figsize_x = self.DEFAULT_FIG_SIZE[0]
+        plot.figsize_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
         figures = plot.execute(save=False, show=False, variables=data_list)
         for figure in figures:

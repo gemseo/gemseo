@@ -41,6 +41,7 @@ from gemseo.mlearning.core.ml_algo import MLAlgo, TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -262,12 +263,12 @@ def create_clustering_model(
 
 
 def import_mlearning_model(
-    directory,  # type: str
+    directory,  # type: Union[str,Path]
 ):  # type: (...) -> MLAlgo
     """Import a machine learning algorithm from a directory.
 
     Args:
-        directory: The name of the directory.
+        directory: The path to the directory.
 
     Returns:
         A machine learning model.
@@ -285,12 +286,12 @@ def import_mlearning_model(
 
 
 def import_regression_model(
-    directory,  # type: str
+    directory,  # type: Union[str,Path]
 ):  # type: (...) -> MLRegressionAlgo
     """Import a regression model from a directory.
 
     Args:
-        directory: The name of the directory.
+        directory: The path of the directory.
 
     Returns:
         A regression model.
@@ -308,12 +309,12 @@ def import_regression_model(
 
 
 def import_classification_model(
-    directory,  # type: str
+    directory,  # type: Union[str,Path]
 ):  # type: (...) -> MLClassificationAlgo
     """Import a classification model from a directory.
 
     Args:
-        directory: The name of the directory.
+        directory: The path to the directory.
 
     Returns:
         A classification model.
@@ -331,12 +332,12 @@ def import_classification_model(
 
 
 def import_clustering_model(
-    directory,  # type: str
+    directory,  # type: Union[str,Path]
 ):  # type: (...) -> MLClusteringAlgo
     """Import a clustering model from a directory.
 
     Args:
-        directory: The name of the directory.
+        directory: The path to the directory.
 
     Returns:
         A clustering model.

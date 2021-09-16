@@ -19,58 +19,75 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Surrogate discipline baseclass
-******************************
-"""
+"""Surrogate discipline."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Dict, Iterable, Mapping, Optional, Union
 
+from numpy import ndarray
+
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType, TransformerType
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(MDODiscipline):
-    """Surrogate discipline class."""
+    """A :class:`.MDODiscipline` approximating another one with a surrogate model.
+
+    This surrogate model is a regression model implemented as a
+    :class:`.MLRegressionAlgo`. This :class:`.MLRegressionAlgo` is built from an input-
+    output :class:`.Dataset` composed of evaluations of the original discipline.
+    """
 
     def __init__(
         self,
-        surrogate,
-        data=None,
-        transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,
-        disc_name=None,
-        default_inputs=None,
-        input_names=None,
-        output_names=None,
-        **parameters
-    ):
-        """Constructor.
+        surrogate,  # type: Union[str,MLRegressionAlgo]
+        data=None,  # type: Optional[Dataset]
+        transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[TransformerType]
+        disc_name=None,  # type: Optional[str]
+        default_inputs=None,  # type: Optional[Dict[str,ndarray]]
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+        **parameters  # type: MLAlgoParameterType
+    ):  # type: (...) -> None
+        """
+        Args:
+            surrogate: Either the class name
+                or the instance of the :class:`.MLRegressionAlgo`.
+            data: The learning dataset to train the regression model.
+                If None, the regression model is supposed to be trained.
+            transformer: The strategies to transform the variables.
+                The values are instances of :class:`.Transformer`
+                while the keys are the names of
+                either the variables
+                or the groups of variables,
+                e.g. "inputs" or "outputs" in the case of the regression algorithms.
+                If a group is specified,
+                the :class:`.Transformer` will be applied
+                to all the variables of this group.
+                If None, do not transform the variables.
+                The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+                the :class:`.MinMaxScaler` strategy for both input and output variables.
+            disc_name: The name to be given to the surrogate discipline.
+                If None, concatenate :attr:`.ABBR` and ``data.name``.
+            default_inputs: The default values of the inputs.
+                If None, use the center of the learning input space.
+            input_names: The names of the input variables.
+                If None, consider all input variables mentioned in the learning dataset.
+            output_names: The names of the output variables.
+                If None, consider all input variables mentioned in the learning dataset.
+            **parameters: The parameters of the machine learning algorithm.
 
-        :param surrogate: name of the surrogate model algorithm.
-        :type surrogate: str or MLRegressionAlgo
-        :param Dataset data: dataset to train the surrogate. If None,
-            assumes that the surrogate is trained. Default: None.
-        :param dict(Transformer) transformer: transformation strategy for data groups.
-            If None, do not scale data.
-            Default: MLRegressionAlgo.DEFAULT_TRANSFORMER,
-            which is a min/max scaler applied to the inputs
-            and a min/max scaler applied to the outputs.
-        :param str disc_name: name of the surrogate discipline.
-            If None, use surrogate.ABBR + data.name . Default: None
-        :param dict default_inputs: default inputs. If None, use the center of the
-            learning input space. Default: None.
-        :param list(str) input_names: list of input names.
-            If None, use all inputs. Default: None.
-        :param list(str) output_names: list of output names.
-            If None, use all outputs. Default: None.
-        :param parameters: surrogate model parameters.
+        Raises:
+            ValueError: If the learning dataset is missing
+                whilst the regression model is not trained.
         """
         if isinstance(surrogate, MLRegressionAlgo):
             self.regression_model = surrogate
@@ -87,7 +104,7 @@ class SurrogateDiscipline(MDODiscipline):
                 output_names=output_names,
                 **parameters
             )
-            name = self.regression_model.ABBR + "_" + data.name
+            name = "{}_{}".format(self.regression_model.ABBR, data.name)
         disc_name = disc_name or name
         if not self.regression_model.is_trained:
             self.regression_model.learn()
@@ -99,7 +116,7 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
             LOGGER.info("%s", msg)
         if not name.startswith(self.regression_model.ABBR):
-            disc_name = self.regression_model.ABBR + "_" + disc_name
+            disc_name = "{}_{}".format(self.regression_model.ABBR, disc_name)
         msg = MultiLineString()
         msg.add("Use the surrogate discipline: {}", disc_name)
         msg.indent()
@@ -119,7 +136,7 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Jacobian: use finite differences")
         LOGGER.info("%s", msg)
 
-    def __repr__(self):
+    def __repr__(self):  # type: (...) -> str
         model = self.regression_model.__class__.__name__
         data_name = self.regression_model.learning_set.name
         length = len(self.regression_model.learning_set)
@@ -137,7 +154,7 @@ class SurrogateDiscipline(MDODiscipline):
         msg = "SurrogateDiscipline({})".format(", ".join(arguments))
         return msg
 
-    def __str__(self):
+    def __str__(self):  # type: (...) -> str
         data_name = self.regression_model.learning_set.name
         length = len(self.regression_model.learning_set)
         msg = MultiLineString()
@@ -152,47 +169,52 @@ class SurrogateDiscipline(MDODiscipline):
         msg.add("Outputs: {}", pretty_repr(outputs))
         return str(msg)
 
-    def _initialize_grammars(self, input_names=None, output_names=None):
-        """Initializes the inputs and outputs grammars from data."""
-        learning_set = self.regression_model.learning_set
-        in_grp = learning_set.INPUT_GROUP
-        out_grp = learning_set.OUTPUT_GROUP
-        if input_names is None:
-            inputs = learning_set.get_data_by_group(in_grp)[0, :]
-            input_names = learning_set.get_names(in_grp)
-        else:
-            inputs = learning_set.get_data_by_names(input_names, False)[0, :]
-        if output_names is None:
-            outputs = learning_set.get_data_by_group(out_grp)[0, :]
-            output_names = learning_set.get_names(out_grp)
-        else:
-            outputs = learning_set.get_data_by_names(output_names, False)[0, :]
-        inputs = DataConversion.array_to_dict(inputs, input_names, learning_set.sizes)
-        outputs = DataConversion.array_to_dict(
-            outputs, output_names, learning_set.sizes
+    def _initialize_grammars(
+        self,
+        input_names=None,  # type: Optional[Iterable[str]]
+        output_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
+        """Initialize the input and output grammars from the regression model.
+
+        Args:
+            input_names: The names of the inputs to consider.
+                If None, use all the inputs of the regression model.
+            output_names: The names of the inputs to consider.
+                If None, use all the inputs of the regression model.
+        """
+        self.input_grammar.initialize_from_data_names(
+            input_names or self.regression_model.input_names
         )
-        self.input_grammar.initialize_from_base_dict(inputs)
-        self.output_grammar.initialize_from_base_dict(outputs)
+        self.output_grammar.initialize_from_data_names(
+            output_names or self.regression_model.output_names
+        )
 
-    def _set_default_inputs(self, default_inputs=None):
-        """Set default inputs either from the center of the learning input space or from
-        user specification.
+    def _set_default_inputs(
+        self,
+        default_inputs=None,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Set the default values of the inputs.
 
-        :param dict default_inputs: user default inputs.
-            If None, use the learning input space center. Default: None.
+        Args:
+           default_inputs: The default values of the inputs.
+               If None, use the the center of the learning input space.
         """
         if default_inputs is None:
             self._default_inputs = self.regression_model.input_space_center
         else:
             self._default_inputs = default_inputs
 
-    def _run(self):
+    def _run(self):  # type: (...) -> None
         input_data = self.get_input_data()
         output_data = self.regression_model.predict(input_data)
         output_data = {key: val.flatten() for key, val in output_data.items()}
         self.local_data.update(output_data)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]],
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         input_data = self.get_input_data()
         self._init_jacobian(inputs, outputs)
         self.jac = self.regression_model.predict_jacobian(input_data)

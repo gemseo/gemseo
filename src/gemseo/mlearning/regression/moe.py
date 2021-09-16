@@ -62,7 +62,6 @@ which inherits from the :class:`.MLRegressionAlgo` class.
 from __future__ import division, unicode_literals
 
 import logging
-from os.path import join
 from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
 
 from numpy import ndarray, nonzero, unique, where, zeros
@@ -82,6 +81,7 @@ from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -681,29 +681,30 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _save_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Path
     ):  # type: (...) -> None
-        self.clusterer.save(join(directory, "clusterer"))
-        self.classifier.save(join(directory, "classifier"))
+        self.clusterer.save(directory / "clusterer")
+        self.classifier.save(directory / "classifier")
         for i, local_model in enumerate(self.regress_models):
-            local_model.save(join(directory, "local_model_{}".format(i)))
+            local_model.save(directory / "local_model_{}".format(i))
 
     def load_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Union[str,Path]
     ):  # type: (...) -> None
+        directory = Path(directory)
         cluster_factory = ClusteringModelFactory()
         classif_factory = ClassificationModelFactory()
         regress_factory = RegressionModelFactory()
-        self.clusterer = cluster_factory.load(join(directory, "clusterer"))
-        self.classifier = classif_factory.load(join(directory, "classifier"))
+        self.clusterer = cluster_factory.load(directory / "clusterer")
+        self.classifier = classif_factory.load(directory / "classifier")
         self.regress_models = []
         for i in range(self.n_clusters):
             self.regress_models.append(
-                regress_factory.load(join(directory, "local_model_{}".format(i)))
+                regress_factory.load(directory / "local_model_{}".format(i))
             )
 
-    def __str__(self):  # type: (...) -> None
+    def __str__(self):  # type: (...) -> str
         string = MultiLineString()
         string.add(super(MixtureOfExperts, self).__str__())
         string.indent()

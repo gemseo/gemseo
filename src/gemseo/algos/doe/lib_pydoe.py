@@ -197,57 +197,52 @@ class PyDOE(DOELibrary):
             see associated JSON file
         """
         self.seed += 1
-        dim = options[self.DIMENSION]
         if self.algo_name == self.PYDOE_LHS:
-            criterion = options.get(self.CRITERION_KEYWORD)
-            iterations = options.get(self.ITERATION_KEYWORD)
             seed = options.get(self.SEED, self.seed)
             lhs_kwargs = {
                 "samples": options["n_samples"],
-                "criterion": criterion,
-                "iterations": iterations,
+                "criterion": options.get(self.CRITERION_KEYWORD),
+                "iterations": options.get(self.ITERATION_KEYWORD),
             }
             if PY3:
-                random_state = RandomState(seed)
-                lhs_kwargs["random_state"] = random_state
+                lhs_kwargs["random_state"] = RandomState(seed)
             else:
                 set_seed(seed)
-            samples = pyDOE.lhs(dim, **lhs_kwargs)
+            return pyDOE.lhs(options[self.DIMENSION], **lhs_kwargs)
 
-        elif self.algo_name == self.PYDOE_CCDESIGN:
-            samples = pyDOE.ccdesign(
-                dim,
-                center=options[self.CENTER_CC_KEYWORD],
-                alpha=options[self.ALPHA_KEYWORD],
-                face=options[self.FACE_KEYWORD],
+        if self.algo_name == self.PYDOE_CCDESIGN:
+            return self.__translate(
+                pyDOE.ccdesign(
+                    options[self.DIMENSION],
+                    center=options[self.CENTER_CC_KEYWORD],
+                    alpha=options[self.ALPHA_KEYWORD],
+                    face=options[self.FACE_KEYWORD],
+                )
             )
-            # print options[self.CENTER_CC_KEYWORD], samples.shape
-        elif self.algo_name == self.PYDOE_BBDESIGN:
+
+        if self.algo_name == self.PYDOE_BBDESIGN:
             # Initialy designed for quadratic model fitting
             # center point is can be run several times to allow for a more
             # uniform estimate of the prediction variance over the
             # entire design space. Default value of center depends on dv_size
-            samples = pyDOE.bbdesign(dim, center=options.get(self.CENTER_BB_KEYWORD))
-        elif self.algo_name == self.PYDOE_FULLFACT:
-            n_samples = options["n_samples"]
-            self._display_fullfact_warning(n_samples)
-            # Round before floor (int=floor)
-            dims_list = [int(round((n_samples ** (1.0 / dim))))] * dim
-
-            samples = pyDOE.fullfact(dims_list)
-
-        elif self.algo_name == self.PYDOE_2LEVELFACT:
-            samples = pyDOE.ff2n(dim)
-        elif self.algo_name == self.PYDOE_PBDESIGN:
-            samples = pyDOE.pbdesign(dim)
-
-        if self.algo_name != self.PYDOE_LHS:
-            samples = self.__translate(samples)
+            return self.__translate(
+                pyDOE.bbdesign(
+                    options[self.DIMENSION], center=options.get(self.CENTER_BB_KEYWORD)
+                )
+            )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            samples = self._rescale_samples(samples)
+            n_levels = self._compute_fullfact_levels(options["n_samples"])
+            if n_levels[0] == 1:
+                return pyDOE.fullfact(n_levels) + 0.5
 
-        return samples
+            return pyDOE.fullfact(n_levels) / (float(n_levels[0]) - 1)
+
+        if self.algo_name == self.PYDOE_2LEVELFACT:
+            return self.__translate(pyDOE.ff2n(options[self.DIMENSION]))
+
+        if self.algo_name == self.PYDOE_PBDESIGN:
+            return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
 
     @staticmethod
     def is_algorithm_suited(algo_dict, problem):

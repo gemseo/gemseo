@@ -24,6 +24,7 @@
 from __future__ import division, unicode_literals
 
 import logging
+from functools import partial
 from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
@@ -34,6 +35,7 @@ from matplotlib.figure import Figure
 from numpy import atleast_2d, ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.utils.py23_compat import fullmatch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,8 +47,9 @@ class Correlations(OptPostProcessor):
 
     The plot method considers all the variable correlations greater than 95%.
     Another level value, a sublist of variable names or both can be passed as options.
-    The x- and y-figure sizes can also be modified.
     """
+
+    DEFAULT_FIG_SIZE = (15.0, 10.0)
 
     def _plot(
         self,
@@ -113,7 +116,7 @@ class Correlations(OptPostProcessor):
                 if fig is not None:  # Save previous plot
                     fig_indx += 1
                     self._add_figure(fig)
-                fig = pylab.plt.figure()
+                fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
                 mng = pylab.plt.get_current_fig_manager()
                 mng.resize(1200, 900)
                 ticker.MaxNLocator(nbins=3)
@@ -214,25 +217,29 @@ class Correlations(OptPostProcessor):
         Returns:
             The sorted expanded variable names.
         """
-
-        def func_order(
-            x,  # type: str
-        ):  # type: (...) -> Tuple[int, str]
-            """Key function to sort function components.
-
-            Args:
-                x: An element from a list.
-
-            Returns:
-                The Tuple to use in the sort method.
-            """
-
-            for i, func_name in enumerate(func_names):
-                if x.find(func_name) == 0:
-                    return (i, x.replace(func_name, ""))
-
-            return (len(func_names) + 1, x)
-
-        variables_names.sort(key=func_order)
+        variables_names.sort(key=partial(self.func_order, func_names))
         x_names = self._generate_x_names()
+
         return variables_names[: -len(x_names)] + x_names
+
+    @staticmethod
+    def func_order(
+        func_names,  # type: Sequence[str]
+        x,  # type: str
+    ):  # type: (...) -> Tuple[int, str]
+        """Key function to sort function components.
+
+        Args:
+            func_names: The functions names in the required order.
+            x: An element from a list.
+
+        Returns:
+            The index to be given to the sort method and the
+                function name associated to that index.
+        """
+
+        for i, func_name in enumerate(func_names):
+            if fullmatch(r"{}(_\d+)?".format(func_name), x):
+                return (i, x.replace(func_name, ""))
+
+        return (len(func_names) + 1, x)

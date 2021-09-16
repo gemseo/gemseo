@@ -91,17 +91,34 @@ def test_scenario_state(mdf_scenario):
 
 def test_add_user_defined_constraint_error(mdf_scenario):
     # Set the design constraints
-    with pytest.raises(Exception):
-        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], "None")
-
-    with pytest.raises(Exception):
-        mdf_scenario.save_optimization_history("file_path", file_format="toto")
+    with pytest.raises(
+        ValueError,
+        match="Constraint type must be either 'eq' or 'ineq'; got 'foo' instead.",
+    ):
+        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="foo")
 
     mdf_scenario.set_differentiation_method(None)
 
     assert (
         mdf_scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
     )
+
+
+def test_save_optimization_history_exception(mdf_scenario):
+    with pytest.raises(
+        ValueError, match="Cannot export optimization history to file format: foo."
+    ):
+        mdf_scenario.save_optimization_history("file_path", file_format="foo")
+
+
+@pytest.mark.parametrize(
+    "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
+)
+def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd):
+    file_path = tmp_wd / "file_name"
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
+    assert file_path.exists()
 
 
 def test_init_mdf(mdf_scenario):
@@ -131,7 +148,11 @@ def test_basic_idf(tmp_wd, idf_scenario):
 
 def test_backup_error(tmp_wd, mdf_scenario):
     """"""
-    with pytest.raises(ValueError):
+    expected_message = (
+        "Conflicting options for history backup, "
+        "cannot pre load optimization history and erase it!"
+    )
+    with pytest.raises(ValueError, match=expected_message):
         mdf_scenario.set_optimization_history_backup(
             __file__, erase=True, pre_load=True
         )
@@ -158,6 +179,9 @@ def test_backup_0(tmp_wd, mdf_scenario):
     opt_read = OptimizationProblem.import_hdf(filename)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
+
+    mdf_scenario.set_optimization_history_backup(filename, erase=True, pre_load=False)
+    assert not exists(filename)
 
 
 def test_backup_1(tmp_wd, mdf_scenario):
@@ -187,7 +211,11 @@ def test_typeerror_formulation():
     disciplines = [SobieskiPropulsion()]
     design_space = SobieskiProblem().read_design_space()
 
-    with pytest.raises(TypeError):
+    expected_message = (
+        "Formulation must be specified by its name; "
+        "please use GEMSEO_PATH to specify custom formulations."
+    )
+    with pytest.raises(TypeError, match=expected_message):
         MDOScenario(disciplines, 1, "y_4", design_space)
 
 
@@ -268,10 +296,14 @@ def test_adapter_error(idf_scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Can't compute inputs from scenarios: missing_input."
+    ):
         MDOScenarioAdapter(idf_scenario, inputs + ["missing_input"], outputs)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Can't compute outputs from scenarios: missing_output."
+    ):
         MDOScenarioAdapter(idf_scenario, inputs, outputs + ["missing_output"])
 
 

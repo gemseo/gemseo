@@ -11,7 +11,7 @@
 Introduction to machine learning
 ================================
 
-When a :class:`.MDODiscipline` is costly to evaluate, it can be replaced by
+When an :class:`.MDODiscipline` is costly to evaluate, it can be replaced by
 a :class:`.SurrogateDiscipline` cheap to evaluate, e.g. linear model, Kriging,
 RBF regressor, ...
 This :class:`.SurrogateDiscipline` is built from a few evaluations of this

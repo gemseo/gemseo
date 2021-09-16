@@ -641,7 +641,7 @@ def get_expected_nsamples(algo, dim, n_samples=None):
             return 65
     if algo == "OT_FULLFACT":
         if dim == 5:
-            return 32
+            return 1
     if algo == "OT_SOBOL_INDICES":
         if dim == 1:
             return 12

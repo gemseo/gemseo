@@ -149,9 +149,9 @@ class XDSMizer(object):
 
     def monitor(
         self,
-        outdir=".",  # type: str
+        outdir=".",  # type: Optional[str]
         outfilename="xdsm.json",  # type: str
-        print_statuses=False,  # type: str
+        print_statuses=False,  # type: bool
         latex_output=False,  # type: bool
     ):  # type: (...) -> None
         """Monitor the discipline execution by generating XDSM json file on discipline
@@ -159,6 +159,7 @@ class XDSMizer(object):
 
         Args:
             outdir: The name of the directory to store the different files.
+                If None, the current working directory is used.
             outfilename: The name of the JSON file.
             print_statuses: If True, print the statuses in the console at each update.
             latex_output: If True, save the XDSM to tikz, tex and pdf files.
