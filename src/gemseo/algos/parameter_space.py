@@ -424,6 +424,20 @@ class ParameterSpace(DesignSpace):
         desc = str(table)
         return desc
 
+    def normalize_grad(
+        self,
+        g_vect,  # type:ndarray
+    ):  # type: (...) ->ndarray
+        return self.unnormalize_vect(
+            g_vect, minus_lb=False, no_check=True, use_dist=False
+        )
+
+    def unnormalize_grad(
+        self,
+        g_vect,  # type:ndarray
+    ):  # type: (...) ->ndarray
+        return self.normalize_vect(g_vect, minus_lb=False, use_dist=False)
+
     def unnormalize_vect(
         self,
         x_vect,  # type:ndarray
@@ -431,16 +445,25 @@ class ParameterSpace(DesignSpace):
         no_check=False,  # type: bool
         use_dist=True,  # type:bool
     ):  # type: (...) ->ndarray
-        """Unnormalize an unit vector.
+        """Unnormalize a normalized vector of the parameter space.
+
+        If `use_dist` is True,
+        use the inverse cumulative probability distributions of the random variables
+        to unscale the components of the random variables.
+        Otherwise,
+        use the approach defined in :meth:`.DesignSpace.unnormalize_vect`
+        with `minus_lb` and `no_check`.
+
+        For the components of the deterministic variables,
+        use the approach defined in :meth:`.DesignSpace.unnormalize_vect`
+        with `minus_lb` and `no_check`.
 
         Args:
-            x_vect: The unit vector to unnormalize.
-            minus_lb: The type of normalization.
-                If True, remove lower bounds at normalization.
-            no_check: The data checker.
-                If True, do not check that values are in [0,1].
-            use_dist: The statistical scaling.
-                If True, rescale wrt the statistical law.
+            x_vect: The values of the design variables.
+            minus_lb: If True, remove the lower bounds at normalization.
+            no_check: If True, do not check that the values are in [0,1].
+            use_dist: If True, unnormalize the components of the random variables
+                with their inverse cumulative probability distributions.
 
         Returns:
             The unnormalized vector.
@@ -464,23 +487,31 @@ class ParameterSpace(DesignSpace):
         self,
         x_vect,  # type:ndarray
         minus_lb=True,  # type: bool
-        use_dist=False,  # type: bool
+        use_dist=True,  # type: bool
     ):  # type: (...) ->ndarray
-        """Normalize a vector.
+        """Normalize a vector of the parameter space.
+
+        If `use_dist` is True,
+        use the cumulative probability distributions of the random variables
+        to scale the components of the random variables between 0 and 1.
+        Otherwise,
+        use the approach defined in :meth:`.DesignSpace.normalize_vect`
+        with `minus_lb`.
+
+        For the components of the deterministic variables,
+        use the approach defined in :meth:`.DesignSpace.normalize_vect`
+        with `minus_lb`.
 
         Args:
-            x_vect: The vector to normalize.
-            minus_lb: The type of normalization.
-                If True, remove lower bounds at normalization.
-            no_check: The data checker.
-                If True, do not check that values are in [0,1].
-            use_dist: The statistical scaling.
-                If True, rescale wrt the statistical law.
+            x_vect: The values of the design variables.
+            minus_lb: If True, remove the lower bounds at normalization.
+            use_dist: If True, normalize the components of the random variables
+                with their cumulative probability distributions.
 
         Returns:
             The normalized vector.
         """
-        if use_dist:
+        if not use_dist:
             return super(ParameterSpace, self).normalize_vect(x_vect)
 
         data_names = self.variables_names
@@ -504,21 +535,38 @@ class ParameterSpace(DesignSpace):
             if variable not in self.uncertain_variables
         ]
 
-    def extract_uncertain_space(self):  # type: (...) -> ParameterSpace
-        """Extract the uncertain space.
+    def extract_uncertain_space(
+        self,
+        as_design_space=False,  # type: bool
+    ):  # type: (...) -> Union[DesignSpace,ParameterSpace]
+        """Define a new :class:`.DesignSpace` from the uncertain variables only.
+
+        Args:
+            as_design_space: If False,
+                return a :class:`.ParameterSpace`
+                containing the original uncertain variables as is;
+                otherwise,
+                return a :class:`.DesignSpace`
+                where the original uncertain variables are made deterministic.
+                In that case,
+                the bounds of a deterministic variable correspond
+                to the limits of the support of the original probability distribution
+                and the current value correspond to its mean.
 
         Return:
-            The uncertain space.
+            A :class:`.ParameterSpace` defined by the uncertain variables only.
         """
-        uncertain_space = deepcopy(self)
-        uncertain_space.filter(self.uncertain_variables)
+        uncertain_space = deepcopy(self).filter(self.uncertain_variables)
+        if as_design_space:
+            return uncertain_space.to_design_space()
+
         return uncertain_space
 
-    def extract_deterministic_space(self):  # type: (...) -> ParameterSpace
-        """Extract the deterministic space.
+    def extract_deterministic_space(self):  # type: (...) -> DesignSpace
+        """Define a new :class:`.DesignSpace` from the deterministic variables only.
 
         Return:
-            The deterministic space.
+            A :class:`.DesignSpace` defined by the deterministic variables only.
         """
         deterministic_space = DesignSpace()
         for name in self.deterministic_variables:
@@ -576,3 +624,28 @@ class ParameterSpace(DesignSpace):
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
         return parameter_space
+
+    def to_design_space(self):  # type: (...) -> DesignSpace
+        """Convert the parameter space into a :class:`.DesignSpace`.
+
+        The original deterministic variables are kept as is
+        while the original uncertain variables are made deterministic.
+        In that case,
+        the bounds of a deterministic variable correspond
+        to the limits of the support of the original probability distribution
+        and the current value correspond to its mean.
+
+        Return:
+            A :class:`.DesignSpace` where all original variables are made deterministic.
+        """
+        design_space = self.extract_deterministic_space()
+        for name in self.uncertain_variables:
+            design_space.add_variable(
+                name,
+                size=self.get_size(name),
+                var_type=self.get_type(name),
+                l_b=self.get_lower_bound(name),
+                u_b=self.get_upper_bound(name),
+                value=self.get_current_x(name),
+            )
+        return design_space

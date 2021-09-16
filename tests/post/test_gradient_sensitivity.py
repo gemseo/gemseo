@@ -35,21 +35,26 @@ from gemseo.utils.py23_compat import PY2, Path
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
+@pytest.fixture(scope="module")
+def factory():
+    return PostFactory()
+
+
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_import_gradient_sensitivity(tmp_wd, scale_gradients, pyplot_close_all):
+def test_import_gradient_sensitivity(
+    tmp_wd, factory, scale_gradients, pyplot_close_all
+):
     """Test the gradient sensitivity post-processing with an imported problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
+        factory: Fixture that returns a post-processing factory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
-    if not PostFactory().is_available("GradientSensitivity"):
-        return
-
     problem = OptimizationProblem.import_hdf(str(POWER2))
-    post = PostFactory().execute(
+    post = factory.execute(
         problem,
         "GradientSensitivity",
         scale_gradients=scale_gradients,
@@ -61,7 +66,7 @@ def test_import_gradient_sensitivity(tmp_wd, scale_gradients, pyplot_close_all):
 
     x_0 = problem.database.get_x_by_iter(0)
     problem.database[x_0].pop("@eq")
-    post = PostFactory().execute(
+    post = factory.execute(
         problem,
         "GradientSensitivity",
         scale_gradients=scale_gradients,

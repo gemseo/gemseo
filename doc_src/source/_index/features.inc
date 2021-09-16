@@ -12,7 +12,7 @@
 
 Basics of MDO
 *************
-- Analyse your MDO problem and generate a N2 and XDSM diagram without wrapping any tool or writing code :ref:`MDO study analysis <gemseo_study>`
+- Analyse your MDO problem and generate an N2 and XDSM diagram without wrapping any tool or writing code :ref:`MDO study analysis <gemseo_study>`
 - Use different optimization algorithms  :ref:`See more... <optimization>`
 - Use different sampling methods for :term:`design of experiments <DOE>`  :ref:`See more... <optimization>`
 - Use different :ref:`MDO formulations <mdo_formulations>`: :ref:`MDF <mdf_formulation>`, :ref:`IDF <idf_formulation>`, :ref:`bilevel <bilevel_formulation>` and disciplinary optimizer  :ref:`See more... <mdo_formulations>`

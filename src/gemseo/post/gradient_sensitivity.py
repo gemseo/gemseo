@@ -38,22 +38,20 @@ class GradientSensitivity(OptPostProcessor):
     """Histograms of the derivatives of objective and constraints.
 
     The plot method considers the derivatives at the last iteration. The iteration can
-    be changed, as well as the x and y figure sizes.
+    be changed.
     """
+
+    DEFAULT_FIG_SIZE = (10.0, 10.0)
 
     def _plot(
         self,
         iteration=-1,  # type: int
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
         scale_gradients=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             iteration: The iteration to plot the sensitivities;
                 if negative, use the optimum.
-            figsize_x: The size of figure in the horizontal direction (inches).
-            figsize_y: The size of figure in the vertical direction (inches).
             scale_gradients: If True, normalize each gradient
                 w.r.t. the design variables.
         """
@@ -69,8 +67,6 @@ class GradientSensitivity(OptPostProcessor):
             x_names,
             x_ref,
             grad_dict,
-            figsize_x,
-            figsize_y,
             scale_gradients=scale_gradients,
         )
         self._add_figure(fig)
@@ -113,13 +109,12 @@ class GradientSensitivity(OptPostProcessor):
                         grad_dict["{}_{}".format(func, i)] = grad[i, :]
         return grad_dict
 
-    @staticmethod
+    @classmethod
     def __generate_subplots(
+        cls,
         x_names,  # type: Iterable[str]
         x_ref,  # type: ndarray
         grad_dict,  # type: Mapping[str, ndarray]
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
         scale_gradients=False,  # type: bool
     ):  # type: (...)-> Figure
         """Generate the gradients subplots from the data.
@@ -128,8 +123,6 @@ class GradientSensitivity(OptPostProcessor):
             x_names: The variables names.
             x_ref: The reference value for x.
             grad_dict: The gradients to plot.
-            figsize_x: The size of the figure in the horizontal direction (inches).
-            figsize_y: The size of the figure in the vertical direction (inches).
             scale_gradients: If True, normalize the gradients w.r.t. the design variables.
 
         Returns:
@@ -150,7 +143,7 @@ class GradientSensitivity(OptPostProcessor):
             ncols=2,
             sharex=True,
             sharey=False,
-            figsize=(figsize_x, figsize_y),
+            figsize=cls.DEFAULT_FIG_SIZE,
         )
         i = 0
         j = -1

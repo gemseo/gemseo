@@ -20,8 +20,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 import pytest
+from numpy import array
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.problems.analytical.power_2 import Power2
 
 FACTORY = DOEFactory()
@@ -55,3 +57,11 @@ def test_evaluate_samples_multiproc(doe):
         n_processes=2,
         wait_time_between_samples=1,
     )
+
+
+def test_phip_criteria():
+    """Check that the phi-p criterion is well implemented."""
+    power = 3.0
+    samples = array([[0.0, 0.0], [0.0, 2.0], [0.0, 3.0]])
+    expected = sum([val ** (-power) for val in [2.0, 3.0, 1.0]]) ** (1.0 / power)
+    assert DOELibrary.compute_phip_criteria(samples, power) == expected

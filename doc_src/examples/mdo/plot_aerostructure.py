@@ -27,6 +27,8 @@ from __future__ import division, unicode_literals
 
 from copy import deepcopy
 
+from matplotlib import pyplot as plt
+
 from gemseo.api import (
     configure_logger,
     create_discipline,
@@ -161,4 +163,6 @@ system_scenario.add_constraint("lift", "eq", value=0.5)
 system_scenario.execute(
     {"algo": "NLOPT_COBYLA", "max_iter": 7, "algo_options": algo_options}
 )
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.post_process("OptHistoryView", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

@@ -10,14 +10,6 @@
             "type": "integer",
             "min":2
         },
-        "width": {
-            "type": "integer",
-            "min":1
-        },
-        "height": {
-            "type": "integer",
-            "min":1
-        },
         "annotate": {
             "type": "boolean"
         }

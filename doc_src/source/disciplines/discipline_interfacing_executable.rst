@@ -44,7 +44,7 @@ Let's make a discipline out of this from an initial :file:`'inputs.txt'`.
 Implementation of the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The construction of a :class:`.MDODiscipline` consists in three steps:
+The construction of an :class:`.MDODiscipline` consists in three steps:
 
 1. Instantiate the :class:`.MDODiscipline` using the super constructor,
 2. Initialize the grammars using the :meth:`.JSONGrammar.initialize_from_data_names` method,

@@ -21,54 +21,60 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, exists, join
-
 import pytest
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestRobustness(unittest.TestCase):
-    """"""
+@pytest.fixture(scope="module")
+def factory():
+    return PostFactory()
 
-    def test_robustness(self):
-        """"""
-        factory = PostFactory()
-        if factory.is_available("Robustness"):
-            problem = Power2()
-            OptimizersFactory().execute(problem, "SLSQP")
-            post = factory.execute(
-                problem,
-                "Robustness",
-                stddev=0.02,
-                show=False,
-                save=True,
-                file_path="robustness1",
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
 
-    def test_robustness_load(self):
-        """"""
-        factory = PostFactory()
-        if factory.is_available("Robustness"):
-            problem = OptimizationProblem.import_hdf(POWER2)
-            post = factory.execute(
-                problem,
-                "Robustness",
-                stddev=0.02,
-                show=False,
-                save=True,
-                file_path="robustness2",
-            )
-            assert len(post.output_files) == 1
-            for outf in post.output_files:
-                assert exists(outf)
+def test_robustness(tmp_wd, factory):
+    """Test the radar chart post-processing with the Power2 problem.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        factory: Fixture to return a post-processing factory.
+    """
+    problem = Power2()
+    OptimizersFactory().execute(problem, "SLSQP")
+    post = factory.execute(
+        problem,
+        "Robustness",
+        stddev=0.02,
+        show=False,
+        save=True,
+        file_path="robustness1",
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+
+
+def test_robustness_load(tmp_wd, factory):
+    """Test the robustness post-processing from a database.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        factory: Fixture to return a post-processing factory.
+    """
+    problem = OptimizationProblem.import_hdf(POWER2)
+    post = factory.execute(
+        problem,
+        "Robustness",
+        stddev=0.02,
+        show=False,
+        save=True,
+        file_path="robustness2",
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()

@@ -108,7 +108,7 @@ def test_adapter_set_and_reset_x0():
     inputs = ["x_shared"]
     outputs = ["y_4"]
     scenario = get_sobieski_scenario()
-    msg = "Inconsistent options for ScenarioAdapter !"
+    msg = "Inconsistent options for MDOScenarioAdapter."
     with pytest.raises(ValueError, match=msg):
         MDOScenarioAdapter(
             scenario, inputs, outputs, set_x0_before_opt=True, reset_x0_before_opt=True
@@ -201,27 +201,63 @@ def test_chain():
     assert y_4 > 2908.0
 
 
-def test_jacobian_inputs():
+def test_compute_jacobian():
+    scenario = get_sobieski_scenario()
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
+    adapter.execute()
+    adapter._compute_jacobian()
+    expected_output_names = {"y_4", "mult_dot_constr_jac"}
 
+    assert set(adapter.jac.keys()) == expected_output_names
+
+    for output_name in expected_output_names:
+        assert set(adapter.jac[output_name].keys()) == {"x_shared"}
+
+
+def test_compute_jacobian_with_bound_inputs():
+    scenario = get_sobieski_scenario()
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], ["y_4"], set_bounds_before_opt=True
+    )
+    expected_input_names = ["x_shared", "x_1_lower_bnd"]
+    adapter.execute()
+    adapter._compute_jacobian(inputs=expected_input_names)
+    expected_output_names = {"y_4", "mult_dot_constr_jac"}
+
+    assert set(adapter.jac.keys()) == expected_output_names
+
+    for output_name in expected_output_names:
+        assert set(adapter.jac[output_name].keys()) == set(expected_input_names)
+
+
+def test_compute_jacobian_exceptions():
     scenario = get_sobieski_scenario()
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
 
     # Pass invalid inputs
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(inputs=["toto"])
+    with pytest.raises(
+        ValueError, match="The following are not inputs of the adapter: bar, foo."
+    ):
+        adapter._compute_jacobian(inputs=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(outputs=["toto"])
+    with pytest.raises(
+        ValueError, match="The following are not outputs of the adapter: bar, foo."
+    ):
+        adapter._compute_jacobian(outputs=["y_4", "foo", "bar"])
 
+    # Pass invalid differentiated outputs
     scenario.add_constraint(["g_1"])
-    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1"])
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(outputs=["g_1"])
+    scenario.add_constraint(["g_2"])
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
+    with pytest.raises(
+        ValueError, match="Post-optimal Jacobians of g_1, g_2 cannot be computed."
+    ):
+        adapter._compute_jacobian(outputs=["y_4", "g_2", "g_1"])
 
-    # Pass a multi-named objective
+    # Pass a multi-valued objective
     scenario.formulation.opt_problem.objective.outvars = ["y_4"] * 2
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The objective must be single-valued."):
         adapter._compute_jacobian()
 
 

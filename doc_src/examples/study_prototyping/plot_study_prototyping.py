@@ -20,8 +20,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Generate a N2 and XDSM from an Excel description of the MDO problem
-===================================================================
+Generate an N2 and XDSM from an Excel description of the MDO problem
+====================================================================
 """
 from __future__ import division, unicode_literals
 

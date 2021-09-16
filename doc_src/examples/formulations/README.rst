@@ -9,4 +9,4 @@
 MDO formulation
 ===============
 
-Define both work and data flows from a MDO formulation.
+Define both work and data flows from an MDO formulation.

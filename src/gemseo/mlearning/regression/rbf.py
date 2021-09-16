@@ -42,7 +42,6 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-from os.path import join
 from typing import Callable, Dict, Iterable, Optional, Union
 
 from numpy import array, average, exp, finfo, hstack, log, ndarray, sqrt
@@ -54,7 +53,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType, TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.py23_compat import PY3
+from gemseo.utils.py23_compat import PY3, Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -388,13 +387,12 @@ class RBFRegression(MLRegressionAlgo):
 
     def _save_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Path
     ):  # type: (...) -> None
         if PY3:
             super(RBFRegression, self)._save_algo(directory)
         else:
-            filename = join(directory, "algo.pkl")
-            with open(filename, "wb") as handle:
+            with (directory / "algo.pkl").open("wb") as handle:
                 pickled_rbf = pickle.Pickler(handle, protocol=2)
                 pickled_rbf_list = []
                 for rbf in self.algo:
@@ -406,14 +404,14 @@ class RBFRegression(MLRegressionAlgo):
 
     def load_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Union[str,Path]
     ):  # type: (...) -> None
+        directory = Path(directory)
         if PY3:
             super(RBFRegression, self).load_algo(directory)
         else:
-            filename = join(directory, "algo.pkl")
             self.algo = []
-            with open(filename, "rb") as handle:
+            with (directory / "algo.pkl").open("rb") as handle:
                 unpickled_rbf = pickle.Unpickler(handle)
                 unpickled_rbf_list = unpickled_rbf.load()
                 for rbf in unpickled_rbf_list:

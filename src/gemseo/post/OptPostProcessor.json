@@ -19,6 +19,15 @@
         },
         "directory_path": {
             "type": ["string", "null"]
+        },
+        "fig_size": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+                "type": "number"
+            }
+
         }
     },
     "additionalProperties": false,

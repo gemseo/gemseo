@@ -80,9 +80,6 @@ def test_create_bad_option(reset_factory):
         factory.create("MDF", bad_option="bad_value")
 
 
-# This test is flaky, it fails when the full tests suite is ran before, but succeed
-# when ran alone or when ran with all the core tests for instance.
-@pytest.mark.xfail
 def test_parse_docstrings(reset_factory):
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
     formulations = factory.classes

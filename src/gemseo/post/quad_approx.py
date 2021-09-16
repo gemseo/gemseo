@@ -54,6 +54,8 @@ class QuadApprox(OptPostProcessor):
     The function index can be passed as option.
     """
 
+    DEFAULT_FIG_SIZE = (9.0, 6.0)
+
     SR1_APPROX = "SR1"
 
     def __init__(
@@ -111,8 +113,9 @@ class QuadApprox(OptPostProcessor):
         self.grad_opt = grad_opt
         return b_mat
 
-    @staticmethod
+    @classmethod
     def __plot_hessian(
+        cls,
         hessian,  # type: ndarray
         function,  # type: str
     ):  # type: (...) -> Figure
@@ -125,7 +128,7 @@ class QuadApprox(OptPostProcessor):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = pylab.figure()
+        fig = pylab.figure(figsize=cls.DEFAULT_FIG_SIZE)
         pylab.plt.xlabel(r"$x_i$", fontsize=16)
         pylab.plt.ylabel(r"$x_j$", fontsize=16)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
@@ -197,7 +200,7 @@ class QuadApprox(OptPostProcessor):
         xn_vars = np.arange(-1.0, 1.0, 0.01)
         lower_bounds = self.opt_problem.design_space.get_lower_bounds()
         upper_bounds = self.opt_problem.design_space.get_upper_bounds()
-        fig = plt.figure()
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
 
         for i in range(ndv):
             ax_i = plt.subplot(nrows, ncols, i + 1)

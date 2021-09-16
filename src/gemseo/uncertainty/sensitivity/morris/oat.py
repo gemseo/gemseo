@@ -29,13 +29,15 @@ The purpose of the One-At-a-Time (OAT) methodology is to quantify the elementary
 
 .. math::
 
-   df_i = f(X_1+dX_1,\ldots,X_i+dX_i,\ldots,X_d)-f(X_1,\ldots,X_i,\ldots,X_d)
+   df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
+          -
+          f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
 
 associated with a small variation :math:`dX_i` of :math:`X_i` with
 
 .. math::
 
-   df_1 = f(X_1+dX_1,\ldots,X_i,\ldots,X_d)-f(X_1,\ldots,X_i,\ldots,X_d)
+   df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)
 
 The elementary effects :math:`df_1,\ldots,df_d` are computed sequentially
 from an initial point
@@ -52,9 +54,9 @@ from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Dict, Mapping, Tuple
+from typing import Mapping, Tuple
 
-from numpy import ndarray
+from numpy import inf, ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -63,13 +65,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OATSensitivity(MDODiscipline):
-    """A :class:`.MDODiscipline` computing finite differences of another one.
-
-    Args:
-        discipline (MDODiscipline): A discipline.
-        parameter_space (DesignSpace): A parameter space.
-        step (float): A relative finite difference step between 0 and 0.5.
-    """
+    """A :class:`.MDODiscipline` computing finite differences of another one."""
 
     _PREFIX = "fd"
 
@@ -78,7 +74,18 @@ class OATSensitivity(MDODiscipline):
         discipline,  # type: MDODiscipline
         parameter_space,  # type: DesignSpace
         step,  # type: float
-    ):  # type: (...) -> None # noqa: D107
+    ):  # type: (...) -> None # noqa: D107 D205 D212 D415
+        """
+        Args:
+            discipline: A discipline.
+            parameter_space: A parameter space.
+            step: The variation step of an input relative to its range,
+                between 0 and 0.5 (i.e. between 0 and 50% input range variation).
+
+        Raises:
+            ValueError: If the relative variation step is lower than or equal to 0
+                or greater than or equal to 0.5.
+        """
         super(OATSensitivity, self).__init__()
         inputs = parameter_space.variables_names
         self.input_grammar.initialize_from_data_names(inputs)
@@ -89,25 +96,48 @@ class OATSensitivity(MDODiscipline):
         ]
         self.output_grammar.initialize_from_data_names(outputs)
         self.discipline = discipline
+        if not 0 < step < 0.5:
+            raise ValueError(
+                "Relative variation step must be "
+                "strictly comprised between 0 and 0.5; got {}.".format(step)
+            )
         self.step = step
         self.parameter_space = parameter_space
+        self.output_range = {
+            name: [inf, -inf] for name in self.discipline.get_output_data_names()
+        }
+
+    def __update_output_range(
+        self,
+        data,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Update the lower and upper bounds of the outputs from data.
+
+        Args:
+            data: The names and values of the outputs.
+        """
+        for output_name in self.discipline.get_output_data_names():
+            output_value = data[output_name]
+            output_range = self.output_range[output_name]
+            output_range[0] = min(output_value, output_range[0])
+            output_range[1] = max(output_value, output_range[1])
 
     def _run(self):  # type: (...) -> None
-        """Run method."""
         inputs = self.get_input_data()
         self.discipline.execute(inputs)
-        out_prev = self.discipline.local_data
-        for input_name in list(self.get_input_data_names()):
+        previous_data = self.discipline.local_data
+        self.__update_output_range(previous_data)
+        for input_name in self.get_input_data_names():
             inputs = self.__update_inputs(inputs, input_name, self.step)
             self.discipline.execute(inputs)
-            out_curr = self.discipline.local_data
-            out_diff = {
-                name: out_curr[name] - out_prev[name]
-                for name in self.discipline.get_output_data_names()
-            }
-            for name, value in out_diff.items():
-                self.local_data[self.get_fd_name(input_name, name)] = value
-            out_prev = out_curr
+            new_data = self.discipline.local_data
+            self.__update_output_range(new_data)
+            for output_name in self.discipline.get_output_data_names():
+                out_diff_name = self.get_fd_name(input_name, output_name)
+                out_diff_value = new_data[output_name] - previous_data[output_name]
+                self.local_data[out_diff_name] = out_diff_value
+
+            previous_data = new_data
 
     @staticmethod
     def get_io_names(
@@ -119,8 +149,7 @@ class OATSensitivity(MDODiscipline):
             fd_name: A finite difference name.
 
         Returns:
-            The output name.
-            The input name
+            The output name, then the input name.
         """
         split_name = fd_name.split("!")
         output_name = split_name[1]
@@ -148,22 +177,18 @@ class OATSensitivity(MDODiscipline):
         inputs,  # type: Mapping[str,ndarray]
         input_name,  # type:str
         step,  # type:float
-    ):  # type: (...) -> Dict[str,ndarray]
+    ):  # type: (...) -> Mapping[str,ndarray]
         """Update the input data from a finite difference step and an input name.
 
         Args:
             inputs: The original input data.
             input_name: An input name.
-            step: A relative finite difference step between 0 and 0.5.
+            step: The variation step of an input relative to its range,
+                between 0 and 0.5 (i.e. between 0 and 50% input range variation).
 
         Returns:
             The updated input data.
         """
-        if not 0 < step < 0.5:
-            raise ValueError(
-                "Relative finite difference step must be "
-                "strictly comprised between 0 and 0.5; got {}".format(step)
-            )
         inputs = deepcopy(inputs)
         l_b = self.parameter_space.get_lower_bound(input_name)
         u_b = self.parameter_space.get_upper_bound(input_name)

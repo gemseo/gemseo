@@ -46,6 +46,16 @@
 
     <div class="sk-navbar-collapse collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
+        {% if READTHEDOCS %}
+        <li class="nav-item dropdown nav-more-item-dropdown">
+          <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">v. {{ release }}</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            {% for slug, url in versions %}
+              <a class="sk-nav-dropdown-item dropdown-item" href="{{ url }}">{{ slug}}</a>
+            {%- endfor %}
+          </div>
+        </li>
+        {% endif %}
         <li class="nav-item">
           <a class="sk-nav-link nav-link" href="{{ pathto('user_guide') }}">User Guide</a>
         </li>

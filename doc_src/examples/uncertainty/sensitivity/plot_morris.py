@@ -57,7 +57,7 @@ discipline = create_discipline(
 # the deterministic variables :math:`x_1`, :math:`x_2` and :math:`x_3` are replaced
 # with the uncertain variables :math:`X_1`, :math:`X_2` and :math:`X_3`.
 # The latter are independent and identically distributed
-# according to an uniform distribution between :math:`-\pi` and :math:`\pi`:
+# according to a uniform distribution between :math:`-\pi` and :math:`\pi`:
 space = ParameterSpace()
 for variable in ["x1", "x2", "x3"]:
     space.add_random_variable(
@@ -79,9 +79,13 @@ morris.compute_indices()
 pprint.pprint(morris.indices)
 
 #######################################################################################
-# The main indices corresponds to the Spearman correlation indices
+# The main indices corresponds to these empirical means
 # (this main method can be changed with :attr:`.MorrisAnalysis.main_method`):
 pprint.pprint(morris.main_indices)
+
+#######################################################################################
+# and can be interpreted with respect to the empirical bounds of the outputs:
+pprint.pprint(morris.outputs_bounds)
 
 #######################################################################################
 # We can also sort the input parameters by decreasing order of influence

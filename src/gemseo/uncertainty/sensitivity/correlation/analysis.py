@@ -39,6 +39,7 @@ from openturns import (
     Sample,
 )
 
+from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
@@ -108,7 +109,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         parameter_space,  # type: ParameterSpace
         n_samples,  # type: int
         algo=None,  # type:Optional[str]
-        algo_options=None,  # type: Optional[Mapping]
+        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
     ):  # type: (...) -> None  # noqa: D107,D205,D212,D415
         self.__correlation = None
         super(CorrelationAnalysis, self).__init__(

@@ -27,7 +27,7 @@ from os.path import dirname, exists, join, realpath
 
 import numpy as np
 import pytest
-from numpy import array, inf, int32, ones
+from numpy import array, array_equal, inf, int32, ones
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
@@ -566,11 +566,11 @@ class TestDesignSpace(unittest.TestCase):
 
         assert design_space["y"]["value"] is None
 
-        expected = "The parameter indices are comprise between 0 and 1. Got 2."
+        expected = "The parameter indices are comprise between 0 and 1; got 2."
         with pytest.raises(ValueError, match=expected):
             design_space[2]
 
-        expected = "The design space does not contain 'foo'."
+        expected = "Variable 'foo' is not known."
         with pytest.raises(ValueError, match=expected):
             design_space["foo"]
 
@@ -586,3 +586,32 @@ class TestDesignSpace(unittest.TestCase):
         assert (space.get_variables_indexes(["x", "y"]) == array([0, 1, 2, 3, 4])).all()
         assert (space.get_variables_indexes(["x", "z"]) == array([0, 1, 2, 5])).all()
         assert (space.get_variables_indexes(["y", "z"]) == array([3, 4, 5])).all()
+
+
+def test_gradient_normalization():
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=-1.0, u_b=2.0)
+    design_space.add_variable("y", l_b=1.0, u_b=3.0)
+    x_vect = array([0.5, 1.5])
+    assert array_equal(
+        design_space.unnormalize_vect(x_vect, minus_lb=False, no_check=False),
+        design_space.normalize_grad(x_vect),
+    )
+
+
+def test_gradient_unnormalization():
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=-1.0, u_b=2.0)
+    design_space.add_variable("y", l_b=1.0, u_b=3.0)
+    x_vect = array([0.5, 1.5])
+    assert array_equal(
+        design_space.normalize_vect(x_vect, minus_lb=False),
+        design_space.unnormalize_grad(x_vect),
+    )
+
+
+def test_vartype_passed_as_bytes():
+    """Check that a variable type passed as bytes is properly decoded."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", var_type=b"float")
+    assert design_space.variables_types["x"] == DesignSpace.FLOAT

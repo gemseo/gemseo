@@ -24,6 +24,8 @@
 
 from __future__ import division, unicode_literals
 
+import sys
+
 import pytest
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
@@ -67,6 +69,10 @@ TEST_PARAMETERS = {
 }
 
 
+@pytest.mark.skipif(
+    sys.version_info[:2] == (3, 6),
+    reason="Image comparison based on Surfaces does not work with Python 3.6",
+)
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),

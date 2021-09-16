@@ -66,7 +66,7 @@ full features set of |g|.
 All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
-   - openturns >=1.13,<=1.16: designs of experiments
+   - openturns >=1.13,<=1.16: designs of experiments, machine learning, uncertainty quantification
    - pandas >=0.16,<=1.2.4: scatterplot matrix
    - pdfo ==1.0.0: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments

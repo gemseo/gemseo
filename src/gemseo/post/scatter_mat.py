@@ -26,6 +26,7 @@ import logging
 from typing import Sequence
 
 from matplotlib import pyplot
+from numpy import any
 from pandas.core.frame import DataFrame
 
 from gemseo.post.opt_post_processor import OptPostProcessor
@@ -43,22 +44,27 @@ class ScatterPlotMatrix(OptPostProcessor):
     """Scatter plot matrix among design variables, output functions and constraints.
 
     The list of variable names has to be passed as arguments of the plot method.
-    x- and y- figure sizes can be changed in option.
     """
+
+    DEFAULT_FIG_SIZE = (10.0, 10.0)
 
     def _plot(
         self,
         variables_list,  # type: Sequence[str]
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
+        filter_non_feasible=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             variables_list: The functions names or design variables to plot.
                 If the list is empty,
                 plot all design variables.
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
+            filter_non_feasible: If True, remove the non-feasible
+                points from the data.
+
+        Raises:
+            ValueError: If `filter_non_feasible` is set to True and no feasible
+                points exist. If an element from variables_list is not either
+                a function or a design variable.
         """
 
         add_dv = False
@@ -68,11 +74,14 @@ class ScatterPlotMatrix(OptPostProcessor):
 
         if not variables_list:
             # In this case, plot all design variables, no functions.
-            vals = self.database.get_x_history()
-
+            vals = self.opt_problem.get_data_by_names(
+                names=all_dv_names,
+                as_dict=False,
+                filter_non_feasible=filter_non_feasible,
+            )
             # This section creates readable labels for design variables
             # i.e. toto_0, toto_1 if toto is a variable with 2 components
-            x_labels = self.__get_design_var_labels(all_dv_names)
+            x_labels = self._generate_x_names(variables=all_dv_names)
 
         else:
             design_variables = []
@@ -110,7 +119,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                 # This section creates readable labels for design variables
                 # and functions i.e. toto_0, toto_1 if toto is a variable
                 # with 2 components
-                dv_labels = self.__get_design_var_labels(design_variables)
+                dv_labels = self._generate_x_names(variables=design_variables)
                 if variables_list:
                     _, func_labels, _ = self.database.get_history_array(
                         functions=variables_list,
@@ -135,34 +144,22 @@ class ScatterPlotMatrix(OptPostProcessor):
                     add_dv=False,
                 )
                 x_labels.sort()
-            dataset = self.opt_problem.export_to_dataset("OptimizationProblem")
-            vals = dataset.get_data_by_names(vname, False)
+            vals = self.opt_problem.get_data_by_names(
+                names=vname, as_dict=False, filter_non_feasible=filter_non_feasible
+            )
+        if filter_non_feasible and not any(vals):
+            raise ValueError("No feasible points were found!")
         # Next line is a trick for a bug workaround in numpy/matplotlib
         # https://stackoverflow.com/questions/39180873/
         # pandas-dataframe-valueerror-num-must-be-1-num-0-not-1
         vals = (list(x) for x in vals)
         frame = DataFrame(vals, columns=x_labels)
-        scatter_matrix(frame, alpha=1.0, figsize=(figsize_x, figsize_y), diagonal="kde")
+        scatter_matrix(
+            frame,
+            alpha=1.0,
+            figsize=self.DEFAULT_FIG_SIZE,
+            diagonal="kde",
+        )
         fig = pyplot.gcf()
         fig.tight_layout()
         self._add_figure(fig)
-
-    def __get_design_var_labels(self, des_vars):
-        """Create labels for design variables.
-
-        Args:
-            des_vars (list(str)): The design variables to get its labels.
-
-        Returns:
-            list(str): The labels for the design variables.
-        """
-
-        dv_names = []
-        for d_v in des_vars:
-            dv_size = self.opt_problem.design_space.variables_sizes[d_v]
-            if dv_size == 1:
-                dv_names.append(d_v)
-            else:
-                for k in range(dv_size):
-                    dv_names.append("{}_{}".format(d_v, k))
-        return dv_names

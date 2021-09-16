@@ -141,7 +141,7 @@ print(system.get_output_data_names())
 ##########################################################################
 # Coupling chart
 # ^^^^^^^^^^^^^^
-# We can represent these three disciplines by means of a N2 chart.
+# We can represent these three disciplines by means of an N2 chart.
 generate_n2_plot([disc0, disc1, system], save=False, show=True)
 
 ##########################################################################

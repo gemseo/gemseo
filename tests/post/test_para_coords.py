@@ -21,47 +21,44 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, exists, join
-
-import pytest
 from numpy import ones
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.py23_compat import Path
 
-POWER2 = join(dirname(__file__), "power2_opt_pb.h5")
+POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestParaCoords(unittest.TestCase):
-    """"""
+def test_para_coords(tmp_wd):
+    """Test the post processing for the Rosenbrock problem.
 
-    def test_scatter(self):
-        """"""
-        if PostFactory().is_available("ParallelCoordinates"):
-            n = 10
-            problem = Rosenbrock(n)
-            problem.x_0 = ones(n) * 0.99
-            OptimizersFactory().execute(problem, "SLSQP")
-            post = PostFactory().execute(
-                problem,
-                "ParallelCoordinates",
-                save=True,
-                figsize_x=12,
-                file_path="para_coords1",
-            )
-            assert len(post.output_files) == 2
-            for outf in post.output_files:
-                assert exists(outf)
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    n = 10
+    problem = Rosenbrock(n)
+    problem.x_0 = ones(n) * 0.99
+    OptimizersFactory().execute(problem, "SLSQP")
+    post = PostFactory().execute(
+        problem,
+        "ParallelCoordinates",
+        save=True,
+        file_path="para_coords1",
+    )
+    assert len(post.output_files) == 2
+    for outf in post.output_files:
+        assert Path(outf).exists()
 
-    def test_scatter_load(self):
-        """"""
-        if PostFactory().is_available("ParallelCoordinates"):
-            post = PostFactory().execute(
-                POWER2, "ParallelCoordinates", save=True, figsize_x=6
-            )
-            assert len(post.output_files) == 2
-            for outf in post.output_files:
-                assert exists(outf)
+
+def test_para_coords_load(tmp_wd):
+    """Verify the post processing for an imported database.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    post = PostFactory().execute(str(POWER2), "ParallelCoordinates", save=True)
+    assert len(post.output_files) == 2
+    for outf in post.output_files:
+        assert Path(outf).exists()

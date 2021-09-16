@@ -30,8 +30,8 @@
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+# documentation root, use Path.resolve() to make it absolute, like shown here.
+# sys.path.insert(0, str(Path('.').resolve()))
 
 # -- General configuration ------------------------------------------------
 
@@ -44,9 +44,12 @@
 
 import datetime
 import os
+import re
 import sys
 from pathlib import Path
+from typing import Iterable, List, Mapping, Tuple, Union
 
+import requests
 import six
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 from sphinx_gallery.sorting import ExampleTitleSortKey
@@ -57,21 +60,21 @@ import gemseo
 try:
     from optimize.snopt7 import SNOPT_solver  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/snopt"))
+    sys.path.append(str(Path("fake_packages/snopt").resolve()))
 
 try:
     import matlab  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/matlab"))
+    sys.path.append(str(Path("fake_packages/matlab").resolve()))
 
 try:
     import da  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/pseven"))
+    sys.path.append(str(Path("fake_packages/pseven").resolve()))
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir((Path(__file__).resolve()).parent)
 
-sys.path.append(os.path.abspath("_ext"))
+sys.path.append(str(Path("_ext").resolve()))
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -114,28 +117,17 @@ apidoc_output_dir = "_modules"
 apidoc_separate_modules = True
 apidoc_module_first = True
 
-examples_dir = "examples"
-examples_path = os.path.join("..", examples_dir)
+examples_dir = Path("examples")
+examples_path = Path(".." / examples_dir)
 examples_subdirs = [
     subdir
-    for subdir in os.listdir(examples_path)
-    if os.path.isdir(os.path.join(examples_path, subdir))
-    and os.path.isfile(os.path.join(examples_path, subdir, "README.rst"))
+    for subdir in examples_path.iterdir()
+    if (examples_path / subdir).is_dir()
+    and (examples_path / subdir / "README.rst").is_file()
 ]
-tutorials_dir = "tutorials"
-tutorials_path = os.path.join("..", tutorials_dir)
-tutorials_subdirs = [
-    subdir
-    for subdir in os.listdir(tutorials_path)
-    if os.path.isdir(os.path.join(tutorials_path, subdir))
-    and os.path.isfile(os.path.join(tutorials_path, subdir, "README.rst"))
-]
-tmp1 = [os.path.join(examples_path, subdir) for subdir in examples_subdirs]
-tmp2 = [os.path.join(tutorials_path, subdir) for subdir in tutorials_subdirs]
-examples_dirs = tmp1 + tmp2
-tmp1 = [os.path.join(examples_dir, subdir) for subdir in examples_subdirs]
-tmp2 = [os.path.join(tutorials_dir + "_sg", subdir) for subdir in tutorials_subdirs]
-gallery_dirs = tmp1 + tmp2
+
+examples_dirs = [(examples_path / subdir) for subdir in examples_subdirs]
+gallery_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
 
 sphinx_gallery_conf = {
     # path to your example scripts
@@ -482,3 +474,35 @@ def patched_parse(self):
 
 GoogleDocstring._unpatched_parse = GoogleDocstring._parse
 GoogleDocstring._parse = patched_parse
+
+# Setup the multiversion display
+html_context = dict()
+
+
+def __filter_versions(
+    rtd_versions,  # type: Iterable[Mapping[str,Union[str,Mapping[str,str]]]]
+):  # type: (...) -> List[Tuple[str,str]]
+    """Select the active versions with a version number.
+
+    A version number follows the semantic versioning: MAJOR.MINOR.PATCH.
+
+    Args:
+        rtd_versions: The versions returned by the ReadTheDocs API.
+
+    Returns:
+        The active versions with a version number,
+        of the form ``(version_name, version_url)``.
+    """
+    return [
+        (rtd_version["slug"], rtd_version["urls"]["documentation"])
+        for rtd_version in rtd_versions
+        if rtd_version["active"] and re.match(r"\d+\.\d+\.\d+", rtd_version["slug"])
+    ]
+
+
+if os.environ.get("READTHEDOCS") == "True":
+    versions = requests.get(
+        "https://readthedocs.org/api/v3/projects/gemseo/versions/",
+        headers={"Authorization": "token 53f714afc37ec42e882efa094e6e3827202f801d"},
+    ).json()["results"]
+    html_context["versions"] = __filter_versions(versions)

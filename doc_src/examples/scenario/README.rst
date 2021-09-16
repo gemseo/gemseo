@@ -9,4 +9,4 @@
 Scenario
 ========
 
-Automatically create and execute a MDO process.
+Automatically create and execute an MDO process.

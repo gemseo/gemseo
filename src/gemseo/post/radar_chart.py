@@ -46,15 +46,16 @@ class RadarChart(OptPostProcessor):
         self,
         constraints_list,  # type: Sequence[str]
         iteration=-1,  # type: int
-        figsize_x=8,  # type: int
-        figsize_y=8,  # type: int
     ):  # type: (...) -> None
         """
         Args:
             constraints_list: The names of the constraints.
             iteration: The number of iteration to post-process.
-            figsize_x: The size of the figure in horizontal direction (inches).
-            figsize_y: The size of the figure in vertical direction (inches).
+
+        Raises:
+            ValueError: If a given element of `constraints_list` is not a
+                function. If the `iteration` is larger than the maximum
+                iteration or less than -1.
         """
         # retrieve the constraints values
         add_dv = False
@@ -96,8 +97,6 @@ class RadarChart(OptPostProcessor):
             radar.title = "Constraints at last iteration"
         else:
             radar.title = "Constraints at iteration {}".format(iteration)
-        radar.figsize_x = figsize_x
-        radar.figsize_y = figsize_y
         figures = radar.execute(save=False, show=False, display_zero=False)
         for figure in figures:
             self._add_figure(figure)

@@ -44,9 +44,10 @@ LOGGER = logging.getLogger(__name__)
 class SOM(OptPostProcessor):
     """Self organizing map clustering optimization history.
 
-    Options of the plot method are the figure width and height, and the x- and y-
-    numbers of cells in the SOM.
+    Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
+
+    DEFAULT_FIG_SIZE = (12.0, 18.0)
 
     def __init__(
         self,
@@ -95,16 +96,12 @@ class SOM(OptPostProcessor):
         self,
         n_x=4,  # type: int
         n_y=4,  # type: int
-        width=12,  # type: int
-        height=18,  # type: int
         annotate=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             n_x: The number of grids in x.
             n_y: The number of grids in y.
-            width: The width of the figure (in inches).
-            height: The height of the figure (in inches).
             annotate: If True, add label of neuron value to SOM plot.
         """
         criteria_list = [
@@ -115,7 +112,7 @@ class SOM(OptPostProcessor):
         for crit in criteria_list:
             if crit not in all_data:
                 criteria_list.remove(crit)
-        figure = plt.figure(figsize=(width, height), dpi=80)
+        figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
         self.__compute(n_x, n_y)

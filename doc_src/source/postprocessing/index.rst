@@ -31,8 +31,8 @@ which may have been loaded from the disk.
 
 In practice,
 
-- a :class:`~gemseo.core.scenario.Scenario` instance has a :class:`~gemseo.core.formulation.MDOFormulation` attribute,
-- a :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
+- a :class:`~gemseo.core.scenario.Scenario` instance has an :class:`~gemseo.core.formulation.MDOFormulation` attribute,
+- an :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
 - an :class:`~gemseo.algos.opt_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.opt_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case
@@ -41,9 +41,9 @@ Illustration on the Sobieski use case
 The post-processing features are illustrated on MDO results obtained on the :ref:`SSBJ use case <sobieski_problem>`,
 using different types of :code:`formulation` (:ref:`MDF formulation <mdf_formulation>`, :ref:`IDF formulation <idf_formulation>`, ...)
 
-To setup the case, please see :ref:`sobieski_mdo`.
+The following code sets up and executes the problem. It is possible to try different types of MDO strategies by changing
+the :code:`formulation` value. For a detailed explanation on how to setup the case, please see :ref:`sobieski_mdo`.
 
-The code lines follow, modulo the :code:`formulation` value:
 
 .. code::
 
@@ -82,6 +82,12 @@ From this :code:`scenario`, we can apply any kind of post-processing dedicated t
 
     .. automethod:: gemseo.api.execute_post
        :noindex:
+
+.. note::
+
+    Only design variables and functions (objective function, constraints) are stored for post-processing.
+    If you want to be able to plot state variables, you must add them as observables before the problem is executed.
+    Use the :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
 
 What are the post-processing features?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -98,16 +98,17 @@ def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):
     model.learn()
     factory = MLAlgoFactory()
 
-    dirname = model.save(path=str(tmp_path), save_learning_set=True)
-    imported_model = factory.load(dirname)
+    directory_path = model.save(path=tmp_path, save_learning_set=True)
+    imported_model = factory.load(directory_path)
     assert array_equal(
         imported_model.learning_set.get_data_by_names(["x_1"], False),
         model.learning_set.get_data_by_names(["x_1"], False),
     )
     assert imported_model.is_trained
 
-    dirname = model.save(path=str(tmp_path))
-    imported_model = factory.load(dirname)
+    directory_path = model.save(path=tmp_path)
+    imported_model = factory.load(directory_path)
     assert len(model.learning_set) == 0
     assert len(imported_model.learning_set) == 0
     assert imported_model.is_trained
+    assert imported_model.sizes == dataset.sizes

@@ -89,7 +89,7 @@ class MDOFormulation(object):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         maximize_objective=False,  # type: bool
-        **options
+        **options  # type: Any
     ):  # type: (...) -> None # pylint: disable=W0613
         """
         Args:

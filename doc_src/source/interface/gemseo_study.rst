@@ -105,7 +105,7 @@ Usage of the command line executable
 
 gemseo-study [-h] [-o OUT_DIR] [-x] [-l] [-s FIGSIZE] study_file
 
-A tool to generate a N2 and XDSM diagrams from an excel description file.
+A tool to generate an N2 chart and an XDSM diagram from an Excel description file.
 
 positional arguments:
   study_file            XLS file that describes the study
