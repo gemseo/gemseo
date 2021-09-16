@@ -76,8 +76,8 @@ class DataConversion(object):
         """
         if not data_names:
             return array([])
-        values_list = [data_dict[name] for name in data_names]
-        return hstack(values_list)
+
+        return hstack([data_dict[name] for name in data_names])
 
     @staticmethod
     def list_of_dict_to_array(
@@ -124,15 +124,10 @@ class DataConversion(object):
             The concatenation of the values of the passed names.
         """
         dict_to_array = DataConversion.dict_to_array
-        if group is not None:
-            out_array = vstack(
-                [dict_to_array(element[group], data_names) for element in data_list]
-            )
-        else:
-            out_array = array(
-                [dict_to_array(element, data_names) for element in data_list]
-            )
-        return out_array
+        if group is None:
+            return array([dict_to_array(data, data_names) for data in data_list])
+
+        return vstack([dict_to_array(data[group], data_names) for data in data_list])
 
     @staticmethod
     def array_to_dict(
@@ -173,20 +168,23 @@ class DataConversion(object):
         """
         current_position = 0
         array_dict = {}
-        if len(data_array.shape) == 2:
-            for name in data_names:
-                array_dict[name] = data_array[
-                    :, current_position : current_position + data_sizes[name]
+        if data_array.ndim == 2:
+            for data_name in data_names:
+                array_dict[data_name] = data_array[
+                    :, current_position : current_position + data_sizes[data_name]
                 ]
-                current_position += data_sizes[name]
-        elif len(data_array.shape) == 1:
-            for name in data_names:
-                array_dict[name] = data_array[
-                    current_position : current_position + data_sizes[name]
+                current_position += data_sizes[data_name]
+
+        elif data_array.ndim == 1:
+            for data_name in data_names:
+                array_dict[data_name] = data_array[
+                    current_position : current_position + data_sizes[data_name]
                 ]
-                current_position += data_sizes[name]
+                current_position += data_sizes[data_name]
+
         else:
             raise ValueError("Invalid data dimension >2 !")
+
         return array_dict
 
     @staticmethod
@@ -217,20 +215,23 @@ class DataConversion(object):
             with the output components in the first dimension
             and the output components in the second one.
         """
-        curr_out = 0
-        jac_dict = {}
-        for out in outputs:
-            jac_dict[out] = {}
-            out_size = data_sizes[out]
-            curr_in = 0
-            for inpt in inputs:
-                inpt_size = data_sizes[inpt]
-                jac_dict[out][inpt] = flat_jac[
-                    curr_out : curr_out + out_size, curr_in : curr_in + inpt_size
+        output_index = 0
+        jacobian = {}
+        for output_name in outputs:
+            jacobian[output_name] = {}
+            output_size = data_sizes[output_name]
+            input_index = 0
+            for input_name in inputs:
+                input_size = data_sizes[input_name]
+                jacobian[output_name][input_name] = flat_jac[
+                    output_index : output_index + output_size,
+                    input_index : input_index + input_size,
                 ]
-                curr_in += inpt_size
-            curr_out += out_size
-        return jac_dict
+                input_index += input_size
+
+            output_index += output_size
+
+        return jacobian
 
     @staticmethod
     def jac_3dmat_to_dict(
@@ -261,20 +262,24 @@ class DataConversion(object):
             with the output components in the first dimension
             and the output components in the second one.
         """
-        curr_out = 0
-        jac_dict = {}
-        for out in outputs:
-            jac_dict[out] = {}
-            out_size = data_sizes[out]
-            curr_in = 0
-            for inpt in inputs:
-                inpt_size = data_sizes[inpt]
-                jac_dict[out][inpt] = jac[
-                    :, curr_out : curr_out + out_size, curr_in : curr_in + inpt_size
+        output_index = 0
+        jacobian = {}
+        for output_name in outputs:
+            jacobian[output_name] = {}
+            output_size = data_sizes[output_name]
+            input_index = 0
+            for input_name in inputs:
+                input_size = data_sizes[input_name]
+                jacobian[output_name][input_name] = jac[
+                    :,
+                    output_index : output_index + output_size,
+                    input_index : input_index + input_size,
                 ]
-                curr_in += inpt_size
-            curr_out += out_size
-        return jac_dict
+                input_index += input_size
+
+            output_index += output_size
+
+        return jacobian
 
     @staticmethod
     def dict_jac_to_2dmat(
@@ -298,20 +303,23 @@ class DataConversion(object):
             and the second one represents the inputs,
             both preserving the order of variables passed as arguments.
         """
-        n_outs = sum((data_sizes[out] for out in outputs))
-        n_inpts = sum((data_sizes[inpt] for inpt in inputs))
-        flat_jac = zeros((n_outs, n_inpts))
-        curr_out = 0
-        for out in outputs:
-            out_size = data_sizes[out]
-            curr_in = 0
-            for inpt in inputs:
-                inpt_size = data_sizes[inpt]
+        n_outputs = sum((data_sizes[output_name] for output_name in outputs))
+        n_inputs = sum((data_sizes[input_name] for input_name in inputs))
+        flat_jac = zeros((n_outputs, n_inputs))
+        output_index = 0
+        for output_name in outputs:
+            output_size = data_sizes[output_name]
+            input_index = 0
+            for input_name in inputs:
+                input_size = data_sizes[input_name]
                 flat_jac[
-                    curr_out : curr_out + out_size, curr_in : curr_in + inpt_size
-                ] = jac_dict[out][inpt]
-                curr_in += inpt_size
-            curr_out += out_size
+                    output_index : output_index + output_size,
+                    input_index : input_index + input_size,
+                ] = jac_dict[output_name][input_name]
+                input_index += input_size
+
+            output_index += output_size
+
         return flat_jac
 
     @staticmethod
@@ -331,12 +339,27 @@ class DataConversion(object):
             The elementary Jacobian matrices index by Jacobian names.
         """
 
-        flat_jac = {}
-        for out_name, jac_dict_loc in jac_dict.items():
-            for inpt_name, jac_mat in jac_dict_loc.items():
-                flat_name = DataConversion.flat_jac_name(out_name, inpt_name)
-                flat_jac[flat_name] = jac_mat
-        return flat_jac
+        jacobian = {}
+        for output_name, jac_dict_loc in jac_dict.items():
+            for input_name, jac_value in jac_dict_loc.items():
+                jac_name = DataConversion.flat_jac_name(output_name, input_name)
+                jacobian[jac_name] = jac_value
+
+        return jacobian
+
+    @staticmethod
+    def split_flat_jac_name(
+        name,  # type: str
+    ):  # type: (...) -> List[str]
+        """Split the name of a flat Jacobian structure into input and output names.
+
+        Args:
+            name: The name to be splitted into input and output names.
+
+        Returns:
+            The name of the input, then the name of the output.
+        """
+        return name.split(DataConversion.FLAT_JAC_SEP)
 
     @staticmethod
     def flat_jac_name(
@@ -369,17 +392,20 @@ class DataConversion(object):
             The elementary Jacobian matrices index by input and output names.
         """
 
-        jac = {}
-        sep = DataConversion.FLAT_JAC_SEP
-        all_outs = set((key.split(sep)[0]) for key in flat_jac_dict)
-        all_ins = set((key.split(sep)[1]) for key in flat_jac_dict)
+        jac_names = [
+            DataConversion.split_flat_jac_name(jac_name) for jac_name in flat_jac_dict
+        ]
+        output_names = set((jac_name[0]) for jac_name in jac_names)
+        input_names = set((jac_name[1]) for jac_name in jac_names)
 
-        for out_name in all_outs:
-            jac[out_name] = {}
-            for inpt_name in all_ins:
-                flat_name = DataConversion.flat_jac_name(out_name, inpt_name)
-                jac[out_name][inpt_name] = flat_jac_dict[flat_name]
-        return jac
+        jacobian = {}
+        for output_name in output_names:
+            jacobian[output_name] = {}
+            for input_name in input_names:
+                jac_name = DataConversion.flat_jac_name(output_name, input_name)
+                jacobian[output_name][input_name] = flat_jac_dict[jac_name]
+
+        return jacobian
 
     @staticmethod
     def update_dict_from_array(
@@ -413,27 +439,34 @@ class DataConversion(object):
                 "Values array must be a numpy.ndarray, "
                 "got instead: {}.".format(type(values_array))
             )
+
         data = deepcopy(reference_input_data)
+
         if not data_names:
             return data
-        i_min = 0
-        for key in data_names:
-            value_ref = reference_input_data.get(key)
-            if value_ref is None:
-                raise ValueError("Reference data has no item named: {}.".format(key))
-            value_ref = array(reference_input_data[key], copy=False)
-            shape_ref = value_ref.shape
-            value_flatten = value_ref.flatten()  # copy is made here
-            i_max = i_min + len(value_flatten)
+
+        i_min = i_max = 0
+        for data_name in data_names:
+
+            data_value = reference_input_data.get(data_name)
+            if data_value is None:
+                raise ValueError(
+                    "Reference data has no item named: {}.".format(data_name)
+                )
+
+            i_max = i_min + data_value.size
             if len(values_array) < i_max:
                 raise ValueError(
                     "Inconsistent input array size of values array {} "
                     "with reference data shape {} "
-                    "for data named: {}.".format(values_array, shape_ref, key)
+                    "for data named: {}.".format(
+                        values_array, data_value.shape, data_name
+                    )
                 )
-            value_flatten[:] = values_array[i_min:i_max]
-            data[key] = value_flatten.reshape(shape_ref)
+
+            data[data_name] = values_array[i_min:i_max].reshape(data_value.shape)
             i_min = i_max
+
         if i_max != values_array.size:
             raise ValueError(
                 "Inconsistent data shapes:\n"
@@ -444,9 +477,13 @@ class DataConversion(object):
                     values_array.shape,
                     i_max,
                     data_names,
-                    [(k, reference_input_data[k].shape) for k in data_names],
+                    [
+                        (data_name, reference_input_data[data_name].shape)
+                        for data_name in data_names
+                    ],
                 )
             )
+
         return data
 
     @staticmethod
@@ -467,40 +504,103 @@ class DataConversion(object):
         Returns:
             A deep copy of the data mapping.
         """
-        dict_cp = {}
+        deep_copy = {}
         if keys is None:
-            for key, val in data_dict.items():
-                if isinstance(val, ndarray):
-                    dict_cp[key] = val.copy()
+            for key, value in data_dict.items():
+                if isinstance(value, ndarray):
+                    deep_copy[key] = value.copy()
+
                 else:
-                    dict_cp[key] = deepcopy(val)
+                    deep_copy[key] = deepcopy(value)
+
         else:
             common_keys = set(keys) & set(data_dict.keys())
             for key in common_keys:
-                val = data_dict[key]
-                if isinstance(val, ndarray):
-                    dict_cp[key] = val.copy()
+                value = data_dict[key]
+                if isinstance(value, ndarray):
+                    deep_copy[key] = value.copy()
+
                 else:
-                    dict_cp[key] = deepcopy(val)
-        return dict_cp
+                    deep_copy[key] = deepcopy(value)
+
+        return deep_copy
 
     @staticmethod
     def __set_reduce(
-        s_1,  # type: Iterable[Any],
-        s_2,  # type: Iterable[Any]
+        set_1,  # type: Iterable[Any],
+        set_2,  # type: Iterable[Any]
     ):  # type: (...) -> Set[Any]
         """Return a set of unique elements of two merged sets.
 
         Args:
-            s_1: The first set.
-            s_2: The second set.
+            set_1: The first set.
+            set_2: The second set.
 
         Returns:
             The unique elements of the two merged sets.
         """
-        set(s_1)
-        set(s_2)
-        return set(s_1) | set(s_2)
+        set(set_1)
+        set(set_2)
+        return set(set_1) | set(set_2)
+
+    @staticmethod
+    def __get_names(
+        disciplines,  # type: Iterable[MDODiscipline]
+        inputs,  # type: bool
+        recursive,  # type: bool
+    ):  # type: (...) -> List[str]
+        """Return all the input or outputs of the disciplines.
+
+        Args:
+            disciplines: The disciplines.
+            inputs: Whether to return input names or output names.
+            recursive: If True,
+                search for the inputs of the sub-disciplines,
+                when some disciplines are scenarios.
+
+        Returns:
+            The names of the variables.
+        """
+
+        main_disciplines = [
+            discipline for discipline in disciplines if not discipline.is_scenario()
+        ]
+        if recursive:
+            scenarios = [
+                discipline for discipline in disciplines if discipline.is_scenario()
+            ]
+            sub_disciplines = list(
+                f_reduce(
+                    DataConversion.__set_reduce,
+                    (scenario.disciplines for scenario in scenarios),
+                )
+            )
+            return DataConversion.__get_names(
+                sub_disciplines + main_disciplines, inputs, recursive=False
+            )
+
+        def get_data_names(
+            discipline,  # type: MDODiscipline
+        ):  # type: (...) -> List[str]
+            """Return either the input names or output names of a discipline.
+
+            Args:
+                discipline: The discipline.
+
+            Returns:
+                The names of the disciplinary inputs or outputs.
+            """
+            if inputs:
+                return discipline.get_input_data_names()
+            else:
+                return discipline.get_output_data_names()
+
+        return list(
+            f_reduce(
+                DataConversion.__set_reduce,
+                (get_data_names(discipline) for discipline in main_disciplines),
+            )
+        )
 
     @staticmethod
     def get_all_inputs(
@@ -518,25 +618,7 @@ class DataConversion(object):
         Returns:
             The names of the inputs.
         """
-
-        sub_d = [disc for disc in disciplines if not disc.is_scenario()]
-        if recursive:
-            sub_sc = [disc for disc in disciplines if disc.is_scenario()]
-
-            # Take all sub disciplines
-            flat_sub_d = list(
-                f_reduce(
-                    DataConversion.__set_reduce, (scen.disciplines for scen in sub_sc)
-                )
-            )
-            # Take disciplines plus sub disciplines
-            flat_sub_d = flat_sub_d + sub_d
-            return DataConversion.get_all_inputs(flat_sub_d, recursive=False)
-
-        data = f_reduce(
-            DataConversion.__set_reduce, (disc.get_input_data_names() for disc in sub_d)
-        )
-        return list(data)
+        return DataConversion.__get_names(disciplines, True, recursive=recursive)
 
     @staticmethod
     def get_all_outputs(
@@ -554,23 +636,4 @@ class DataConversion(object):
         Returns:
             The names of the outputs.
         """
-
-        sub_d = [disc for disc in disciplines if not disc.is_scenario()]
-        if recursive:
-            sub_sc = [disc for disc in disciplines if disc.is_scenario()]
-
-            # Take all sub disciplines
-            flat_sub_d = list(
-                f_reduce(
-                    DataConversion.__set_reduce, (scen.disciplines for scen in sub_sc)
-                )
-            )
-            # Take disciplines plus sub disciplines
-            flat_sub_d = flat_sub_d + sub_d
-            return DataConversion.get_all_outputs(flat_sub_d, recursive=False)
-
-        data = f_reduce(
-            DataConversion.__set_reduce,
-            (disc.get_output_data_names() for disc in sub_d),
-        )
-        return list(data)
+        return DataConversion.__get_names(disciplines, False, recursive=recursive)
