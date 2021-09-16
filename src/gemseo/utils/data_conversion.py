@@ -19,36 +19,60 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Conversion from a NumPy array into a dictionary of NumPy arrays and vice versa."""
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
 from functools import reduce as f_reduce
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    TYPE_CHECKING,
+    Union,
+)
 
 from numpy import array, hstack, ndarray, vstack, zeros
 
-"""
-Convert arrays/dict of arrays data
-**********************************
-"""
+if TYPE_CHECKING:
+    from gemseo.core.discipline import MDODiscipline
 
 
 class DataConversion(object):
-    """This class contains static methods that convert:
-
-    - data dict into numpy array
-    - numpy array into data dict by updating an existing dict
-    """
+    """Methods to juggle NumPy arrays and dictionaries of Numpy arrays."""
 
     FLAT_JAC_SEP = "!d$_$d!"
 
     @staticmethod
-    def dict_to_array(data_dict, data_names):
-        """Convert a dict into an array.
+    def dict_to_array(
+        data_dict,  # type: Mapping[str,ndarray]
+        data_names,  # type: Iterable[str]
+    ):  # type: (...) -> ndarray
+        """Concatenate some values of a mapping associating values to names.
 
-        :param data_dict: the data dictionary
-        :param data_names: the data keys to concatenate
-        :returns: an array
-        :rtype: ndarray
+        This methods allows to convert:
+
+        .. code-block:: python
+
+            {'x': array([1.])}, 'y': array([2., 3.])}
+
+        into:
+
+        .. code-block:: python
+
+            array([1., 2., 3.])
+
+        Args:
+            data_dict: The mapping to be converted;
+                it associates values to names.
+            data_names: The names to be used for the concatenation.
+
+        Returns:
+            The concatenation of the values of the provided names.
         """
         if not data_names:
             return array([])
@@ -56,14 +80,48 @@ class DataConversion(object):
         return hstack(values_list)
 
     @staticmethod
-    def list_of_dict_to_array(data_list, data_names, group=None):
-        """Convert a list of dict into an array.
+    def list_of_dict_to_array(
+        data_list,  # type: Iterable[Mapping[str,Union[ndarray,Mapping[str,ndarray]]]]
+        data_names,  # type: Iterable[str]
+        group=None,  # type: Optional[str]
+    ):  # type: (...) -> ndarray
+        """Concatenate some values of mappings associating values to names.
 
-        :param data_list: the data list
-        :param data_names: the data keys to concatenate
-        :param group: groupe of keys to concatenate
-        :returns: an array
-        :rtype: ndarray
+        The names can be either grouped:
+
+        .. code-block:: python
+
+            [
+                {'group1':
+                    {'x': array([1.])},
+                 'group2':
+                    {'y': array([1., 1.])}
+                },
+                {'group1':
+                    {'x': array([2.])},
+                 'group2':
+                    {'y': array([2., 2.])}
+                }
+            ]
+
+        or ungrouped:
+
+        .. code-block:: python
+
+            [
+                {'x': array([1.])}, 'y': array([1., 1.])}
+                {'x': array([2.])}, 'y': array([2., 2.])}
+            ]
+
+        Args:
+            data_list: The mappings to be converted;
+                it associates values to names, possibly classified by groups.
+            data_names: The names to be used for the concatenation.
+            group: The name of the group to be considered.
+                If None, the data is assumed to have no group.
+
+        Returns:
+            The concatenation of the values of the passed names.
         """
         dict_to_array = DataConversion.dict_to_array
         if group is not None:
@@ -77,14 +135,41 @@ class DataConversion(object):
         return out_array
 
     @staticmethod
-    def array_to_dict(data_array, data_names, data_sizes):
-        """Convert an array into a dict.
+    def array_to_dict(
+        data_array,  # type: ndarray
+        data_names,  # type: Iterable[str]
+        data_sizes,  # type: Mapping[str,int]
+    ):  # type: (...) -> Dict[str,ndarray]
+        """Convert an NumPy array into a dictionary of NumPy arrays indexed by names.
 
-        :param data_array: the array
-        :param data_names: list of names (keys of the resulting dict)
-        :param data_sizes: dict of (name, size)
-        :returns: a dict
-        :rtype: dict
+        This methods allows to convert:
+
+        .. code-block:: python
+
+            array([1., 2., 3.])
+
+        into:
+
+        .. code-block:: python
+
+            {'x': array([1.])}, 'y': array([2., 3.])}
+
+        Args:
+            data_array: The data array to be converted.
+            data_names: The names to be used as keys of the dictionary.
+                The data array must contain the values of these names in the same order,
+                e.g. ``data_array=array([1.,2.])`` and ``data_names=["x","y"]``
+                implies that ``x=array([1.])`` and ``x=array([2.])``.
+            data_sizes: The sizes of the variables
+                e.g. ``data_array=array([1.,2.,3.])``, ``data_names=["x","y"]``
+                and ``data_sizes={"x":2,"y":1}`` implies that
+                ``x=array([1.,2.])`` and ``x=array([3.])``.
+
+        Returns:
+            The data mapped to the names.
+
+        Raises:
+            ValueError: If the number of dimensions of the data array is greater than 2.
         """
         current_position = 0
         array_dict = {}
@@ -105,13 +190,32 @@ class DataConversion(object):
         return array_dict
 
     @staticmethod
-    def jac_2dmat_to_dict(flat_jac, outputs, inputs, data_sizes):
-        """Converts a full 2D jacobian to a dict of dict sparse format.
+    def jac_2dmat_to_dict(
+        flat_jac,  # type: ndarray
+        outputs,  # type: Iterable[str]
+        inputs,  # type: Iterable[str]
+        data_sizes,  # type: Mapping[str,int]
+    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
+        """Convert a full Jacobian matrix into elementary Jacobian matrices.
 
-        :param flat_jac : the flat 2D jacobian
-        :param inputs: derive outputs wrt inputs
-        :param outputs: outputs to be derived
-        :param data_sizes: dict of (name, size) for names in inputs and outputs
+        The full Jacobian matrix is passed as a two-dimensional NumPy array.
+        Its first dimension represents the outputs
+        and its second one represents the inputs.
+
+        Args:
+            flat_jac: The full Jacobian matrix.
+            inputs: The names of the inputs.
+            outputs: The names of the outputs.
+            data_sizes: The sizes of the inputs and outputs.
+
+        Returns:
+            The Jacobian matrices indexed by the names of the inputs and outputs.
+            Precisely,
+            ``jac[output][input]`` is a two-dimensional NumPy array
+            representing the Jacobian matrix
+            for the input ``input`` and output ``output``,
+            with the output components in the first dimension
+            and the output components in the second one.
         """
         curr_out = 0
         jac_dict = {}
@@ -129,14 +233,33 @@ class DataConversion(object):
         return jac_dict
 
     @staticmethod
-    def jac_3dmat_to_dict(jac, outputs, inputs, data_sizes):
-        """Converts a 3D jacobian (list of 2D jacobians) to a dict of dict sparse
-        format.
+    def jac_3dmat_to_dict(
+        jac,  # type: ndarray
+        outputs,  # type: Iterable[str]
+        inputs,  # type: Iterable[str]
+        data_sizes,  # type: Mapping[str,int]
+    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
+        """Convert several full Jacobian matrices into elementary Jacobian matrices.
 
-        :param jac : list of 2D jacobians
-        :param inputs: derive outputs wrt inputs
-        :param outputs: outputs to be derived
-        :param data_sizes: dict of (name, size) for names in inputs and outputs
+        The full Jacobian matrices are passed as a three-dimensional NumPy array.
+        Its first dimension represents the different full Jacobian matrices,
+        its second dimension represents the outputs
+        and its third one represents the inputs.
+
+        Args:
+            jac: The full Jacobian matrices.
+            inputs: The names of the inputs.
+            outputs: The names of the outputs.
+            data_sizes: The sizes of the inputs and outputs.
+
+        Returns:
+            The Jacobian matrices indexed by the names of the inputs and outputs.
+            Precisely,
+            ``jac[output][input]`` is a three-dimensional NumPy array
+            where ``jac[output][input][i]`` represents the ``i``-th Jacobian matrix
+            for the input ``input`` and output ``output``,
+            with the output components in the first dimension
+            and the output components in the second one.
         """
         curr_out = 0
         jac_dict = {}
@@ -154,13 +277,26 @@ class DataConversion(object):
         return jac_dict
 
     @staticmethod
-    def dict_jac_to_2dmat(jac_dict, outputs, inputs, data_sizes):
-        """Converts a dict of dict sparse format jacobian to a full 2D jacobian.
+    def dict_jac_to_2dmat(
+        jac_dict,  # type: Mapping[str,Mapping[str,ndarray]]
+        outputs,  # type: Iterable[str]
+        inputs,  # type: Iterable[str]
+        data_sizes,  # type: Mapping[str,int]
+    ):  # type: (...) -> ndarray
+        """Convert elementary Jacobian matrices into a full Jacobian matrix.
 
-        :param jac_dict : the jacobian dict of dict
-        :param inputs: derive outputs wrt inputs
-        :param outputs: outputs to be derived
-        :param data_sizes: dict of (name, size) for names in inputs and outputs
+        Args:
+            jac_dict: The elementary Jacobian matrices
+                indexed by the names of the inputs and outputs.
+            inputs: The names of the inputs.
+            outputs: The names of the outputs.
+            data_sizes: The sizes of the inputs and outputs.
+
+        Returns:
+            The full Jacobian matrix
+            whose first dimension represents the outputs
+            and the second one represents the inputs,
+            both preserving the order of variables passed as arguments.
         """
         n_outs = sum((data_sizes[out] for out in outputs))
         n_inpts = sum((data_sizes[inpt] for inpt in inputs))
@@ -179,10 +315,20 @@ class DataConversion(object):
         return flat_jac
 
     @staticmethod
-    def dict_jac_to_dict(jac_dict):
-        """Converts a full 2D jacobian to a flat dict.
+    def dict_jac_to_dict(
+        jac_dict,  # type: Mapping[str,Mapping[str,ndarray]]
+    ):  # type: (...) -> Dict[str,ndarray]
+        """Reindex a mapping of elementary Jacobian matrices by Jacobian names.
 
-        :param jac_dict : the jacobian dict of dict
+        A Jacobian name is built with the method :meth:`.flat_jac_name`
+        from the input and output names.
+
+        Args:
+            jac_dict: The elementary Jacobian matrices
+                indexed by input and output names.
+
+        Returns:
+            The elementary Jacobian matrices index by Jacobian names.
         """
 
         flat_jac = {}
@@ -193,19 +339,34 @@ class DataConversion(object):
         return flat_jac
 
     @staticmethod
-    def flat_jac_name(out_name, inpt_name):
-        """get the flat jacobian name from the full jacobian name.
+    def flat_jac_name(
+        out_name,  # type: str
+        inpt_name,  # type: str
+    ):  # type: (...) -> str
+        """Concatenate the name of the output and input, with a separator.
 
-        :param out_name: name of output
-        :param inpt_name: name of input
+        Args:
+            out_name: The name of the output.
+            inpt_name: The name of the input.
+
+        Returns:
+            The name of the input concatenated to the name of the input.
         """
         return out_name + DataConversion.FLAT_JAC_SEP + inpt_name
 
     @staticmethod
-    def dict_to_jac_dict(flat_jac_dict):
-        """Converts a flat dict to full 2D jacobian.
+    def dict_to_jac_dict(
+        flat_jac_dict,  # type:Mapping[str,ndarray]
+    ):  # type: (...) -> Mapping[str,Mapping[str,ndarray]]
+        """Reindex a mapping of elementary Jacobian matrices by input and output names.
 
-        :param flat_jac_dict : the jacobian dict
+        Args:
+            flat_jac_dict: The elementary Jacobian matrices index by Jacobian names.
+                A Jacobian name is built with the method :meth:`.flat_jac_name`
+                from the input and output names.
+
+        Returns:
+            The elementary Jacobian matrices index by input and output names.
         """
 
         jac = {}
@@ -221,20 +382,36 @@ class DataConversion(object):
         return jac
 
     @staticmethod
-    def update_dict_from_array(reference_input_data, data_names, values_array):
-        """Updates a data dictionary from values array The order of the data in the
-        array follows the order of the data names.
+    def update_dict_from_array(
+        reference_input_data,  # type: Dict[str,ndarray]
+        data_names,  # type: Iterable[str]
+        values_array,  # type: ndarray
+    ):  # type: (...) -> Dict[str,ndarray]
+        """Update a data mapping from data array and names..
 
-        :param reference_input_data: the base input data dict
-        :param data_names: the dict keys to be updated
-        :param values_array: the data array to update the dictionary
-        :returns: the updated data dict
+        The order of the data in the array follows the order of the data names.
+
+        Args:
+            reference_input_data: The reference data to be updated.
+            data_names: The names for which to update the data.
+            values_array: The data with which to update the reference one.
+
+        Returns:
+            The updated data mapping.
+
+        Raises:
+            TypeError: If the data with which to update the reference one
+                if not an NumPy array.
+            ValueError:
+                * If a name for which to update the data is missing
+                  from the reference data.
+                * If the size of the data with which to update the reference one
+                  is inconsistent with the reference data.
         """
         if not isinstance(values_array, ndarray):
             raise TypeError(
                 "Values array must be a numpy.ndarray, "
-                + "got instead :"
-                + str(type(values_array))
+                "got instead: {}.".format(type(values_array))
             )
         data = deepcopy(reference_input_data)
         if not data_names:
@@ -243,43 +420,52 @@ class DataConversion(object):
         for key in data_names:
             value_ref = reference_input_data.get(key)
             if value_ref is None:
-                raise ValueError("Reference data has no item named: " + str(key))
+                raise ValueError("Reference data has no item named: {}.".format(key))
             value_ref = array(reference_input_data[key], copy=False)
             shape_ref = value_ref.shape
             value_flatten = value_ref.flatten()  # copy is made here
             i_max = i_min + len(value_flatten)
             if len(values_array) < i_max:
                 raise ValueError(
-                    "Inconsistent input array size  of values array "
-                    + str(values_array)
-                    + " with reference data shape "
-                    + str(shape_ref)
-                    + "for data named:"
-                    + str(key)
+                    "Inconsistent input array size of values array {} "
+                    "with reference data shape {} "
+                    "for data named: {}.".format(values_array, shape_ref, key)
                 )
             value_flatten[:] = values_array[i_min:i_max]
             data[key] = value_flatten.reshape(shape_ref)
             i_min = i_max
         if i_max != values_array.size:
             raise ValueError(
-                "Inconsistent data shapes !\n"
-                + "Could not use the whole data array of shape "
-                + str(values_array.shape)
-                + " (only reached max index ="
-                + str(i_max)
-                + "),\nwhile updating data dictionary keys "
-                + str(data_names)
-                + "\n of shapes : "
-                + str([(k, reference_input_data[k].shape) for k in data_names])
+                "Inconsistent data shapes:\n"
+                "could not use the whole data array of shape {} "
+                "(only reached max index = {}),\n"
+                "while updating data dictionary keys {}\n"
+                " of shapes : {}.".format(
+                    values_array.shape,
+                    i_max,
+                    data_names,
+                    [(k, reference_input_data[k].shape) for k in data_names],
+                )
             )
         return data
 
     @staticmethod
-    def deepcopy_datadict(data_dict, keys=None):
-        """Performs a deepcopy of a data dict treats numpy arrays specially using
-        array.copy() instead of deepcopy.
+    def deepcopy_datadict(
+        data_dict,  # type: Mapping[str,ndarray]
+        keys=None,  # type:Optional[Iterable[str]]
+    ):
+        """Perform a deep copy of a data mapping.
 
-        :param data_dict: data dict to copy
+        This methods treats the NumPy arrays specially
+        using ``array.copy()`` instead of ``deepcopy``.
+
+        Args:
+            data_dict: The data mapping to be copied.
+            keys: The keys of the mapping to be considered.
+                If None, consider all the mapping keys.
+
+        Returns:
+            A deep copy of the data mapping.
         """
         dict_cp = {}
         if keys is None:
@@ -299,21 +485,38 @@ class DataConversion(object):
         return dict_cp
 
     @staticmethod
-    def __set_reduce(s_1, s_2):
-        """Returns a set of unique elements of merged s_1 and s_2."""
+    def __set_reduce(
+        s_1,  # type: Iterable[Any],
+        s_2,  # type: Iterable[Any]
+    ):  # type: (...) -> Set[Any]
+        """Return a set of unique elements of two merged sets.
+
+        Args:
+            s_1: The first set.
+            s_2: The second set.
+
+        Returns:
+            The unique elements of the two merged sets.
+        """
         set(s_1)
         set(s_2)
         return set(s_1) | set(s_2)
 
     @staticmethod
-    def get_all_inputs(disciplines, recursive=False):
-        """Lists all the inputs of the disciplines Merges the input data from the
-        disicplines grammars.
+    def get_all_inputs(
+        disciplines,  # type: Iterable[MDODiscipline]
+        recursive=False,  # type: bool
+    ):  # type: (...) -> List[str]
+        """Return all the inputs of the disciplines.
 
-        :param disciplines: the list of disciplines to search
-        :param recursive: if True, searches for the inputs of the
-            sub disciplines (when some disciplines are scenarios)
-        :returns: the list of input data
+        Args:
+            disciplines: The disciplines.
+            recursive: If True,
+                search for the inputs of the sub-disciplines,
+                when some disciplines are scenarios.
+
+        Returns:
+            The names of the inputs.
         """
 
         sub_d = [disc for disc in disciplines if not disc.is_scenario()]
@@ -336,15 +539,20 @@ class DataConversion(object):
         return list(data)
 
     @staticmethod
-    def get_all_outputs(disciplines, recursive=False):
-        """Lists all the outputs of the disciplines Merges the output data from the
-        disciplines grammars.
+    def get_all_outputs(
+        disciplines,  # type: Iterable[MDODiscipline]
+        recursive=False,  # type: bool
+    ):  # type: (...) -> List[str]
+        """Return all the outputs of the disciplines.
 
-        :param disciplines: the list of disciplines to search
-        :param recursive: if True, searches for the outputs of the
-            sub disciplines (when some disciplines are scenarios)
+        Args:
+            disciplines: The disciplines.
+            recursive: If True,
+                search for the outputs of the sub-disciplines,
+                when some disciplines are scenarios.
 
-        :returns: the list of output data
+        Returns:
+            The names of the outputs.
         """
 
         sub_d = [disc for disc in disciplines if not disc.is_scenario()]
