@@ -506,22 +506,6 @@ class DataConversion(object):
         return deep_copy
 
     @staticmethod
-    def __set_reduce(
-        set_1,  # type: Iterable[Any],
-        set_2,  # type: Iterable[Any]
-    ):  # type: (...) -> Set[Any]
-        """Return a set of unique elements of two merged sets.
-
-        Args:
-            set_1: The first set.
-            set_2: The second set.
-
-        Returns:
-            The unique elements of the two merged sets.
-        """
-        return set(set_1) | set(set_2)
-
-    @staticmethod
     def __get_names(
         disciplines,  # type: Iterable[MDODiscipline]
         inputs,  # type: bool
@@ -548,10 +532,7 @@ class DataConversion(object):
                 discipline for discipline in disciplines if discipline.is_scenario()
             ]
             sub_disciplines = list(
-                f_reduce(
-                    DataConversion.__set_reduce,
-                    (scenario.disciplines for scenario in scenarios),
-                )
+                set.union(*(set(scenario.disciplines) for scenario in scenarios))
             )
             return DataConversion.__get_names(
                 sub_disciplines + main_disciplines, inputs, recursive=False
@@ -559,22 +540,20 @@ class DataConversion(object):
 
         if inputs:
             return list(
-                f_reduce(
-                    DataConversion.__set_reduce,
-                    (
-                        discipline.get_input_data_names()
+                set.union(
+                    *(
+                        set(discipline.get_input_data_names())
                         for discipline in main_disciplines
-                    ),
+                    )
                 )
             )
         else:
             return list(
-                f_reduce(
-                    DataConversion.__set_reduce,
-                    (
-                        discipline.get_output_data_names()
+                set.union(
+                    *(
+                        set(discipline.get_output_data_names())
                         for discipline in main_disciplines
-                    ),
+                    )
                 )
             )
 
