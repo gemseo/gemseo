@@ -175,24 +175,16 @@ class DataConversion(object):
         Raises:
             ValueError: If the number of dimensions of the data array is greater than 2.
         """
+        if data_array.ndim > 2:
+            raise ValueError("Invalid data dimension >2 !")
+
         current_position = 0
         array_dict = {}
-        if data_array.ndim == 2:
-            for data_name in data_names:
-                array_dict[data_name] = data_array[
-                    :, current_position : current_position + data_sizes[data_name]
-                ]
-                current_position += data_sizes[data_name]
-
-        elif data_array.ndim == 1:
-            for data_name in data_names:
-                array_dict[data_name] = data_array[
-                    current_position : current_position + data_sizes[data_name]
-                ]
-                current_position += data_sizes[data_name]
-
-        else:
-            raise ValueError("Invalid data dimension >2 !")
+        for data_name in data_names:
+            array_dict[data_name] = data_array[
+                ..., current_position : current_position + data_sizes[data_name]
+            ]
+            current_position += data_sizes[data_name]
 
         return array_dict
 
