@@ -385,10 +385,10 @@ class DataConversion(object):
 
         jacobian = {}
         for output_name in output_names:
-            jacobian[output_name] = {}
+            output_jacobian = jacobian[output_name] = {}
             for input_name in input_names:
                 jac_name = DataConversion.flat_jac_name(output_name, input_name)
-                jacobian[output_name][input_name] = flat_jac_dict[jac_name]
+                output_jacobian[input_name] = flat_jac_dict[jac_name]
 
         return jacobian
 
