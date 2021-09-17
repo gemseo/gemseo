@@ -493,7 +493,10 @@ class DataConversion(object):
             A deep copy of the data mapping.
         """
         deep_copy = {}
-        for key in set(keys or {}) & set(data_dict.keys()):
+        selected_keys = set(data_dict.keys())
+        if keys is not None:
+            selected_keys = set(keys) & selected_keys
+        for key in selected_keys:
             value = data_dict[key]
             if isinstance(value, ndarray):
                 deep_copy[key] = value.copy()
