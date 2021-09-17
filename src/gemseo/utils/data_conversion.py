@@ -350,20 +350,6 @@ class DataConversion(object):
         return jacobian
 
     @staticmethod
-    def split_flat_jac_name(
-        name,  # type: str
-    ):  # type: (...) -> List[str]
-        """Split the name of a flat Jacobian structure into input and output names.
-
-        Args:
-            name: The name to be splitted into input and output names.
-
-        Returns:
-            The name of the input, then the name of the output.
-        """
-        return name.split(DataConversion.FLAT_JAC_SEP)
-
-    @staticmethod
     def flat_jac_name(
         out_name,  # type: str
         inpt_name,  # type: str
@@ -395,7 +381,7 @@ class DataConversion(object):
         """
 
         jac_names = [
-            DataConversion.split_flat_jac_name(jac_name) for jac_name in flat_jac_dict
+            jac_name.split(DataConversion.FLAT_JAC_SEP) for jac_name in flat_jac_dict
         ]
         output_names = set(jac_name[0] for jac_name in jac_names)
         input_names = set(jac_name[1] for jac_name in jac_names)
