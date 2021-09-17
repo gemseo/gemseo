@@ -397,8 +397,8 @@ class DataConversion(object):
         jac_names = [
             DataConversion.split_flat_jac_name(jac_name) for jac_name in flat_jac_dict
         ]
-        output_names = set((jac_name[0]) for jac_name in jac_names)
-        input_names = set((jac_name[1]) for jac_name in jac_names)
+        output_names = set(jac_name[0] for jac_name in jac_names)
+        input_names = set(jac_name[1] for jac_name in jac_names)
 
         jacobian = {}
         for output_name in output_names:
