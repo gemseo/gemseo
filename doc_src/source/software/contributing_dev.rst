@@ -654,6 +654,19 @@ use only the value types with no container.
 
 Return types shall match exactly the type of the returned object.
 
+Note that type hinting can import objects required only by the type checking tools
+and cause circular imports.
+If so, use the special constant :attr:`TYPE_CHECKING`
+that's :code:`False` by default
+and :code:`True` when type checking:
+
+.. code::
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from gemseo.api import create_discipline
+
 Linefeeds
 ~~~~~~~~~
 
