@@ -397,7 +397,7 @@ class DataConversion(object):
 
     @staticmethod
     def update_dict_from_array(
-        reference_input_data,  # type: Dict[str,ndarray]
+        reference_input_data,  # type: Mapping[str,ndarray]
         data_names,  # type: Iterable[str]
         values_array,  # type: ndarray
     ):  # type: (...) -> Dict[str,ndarray]
@@ -428,7 +428,7 @@ class DataConversion(object):
                 "got instead: {}.".format(type(values_array))
             )
 
-        data = deepcopy(reference_input_data)
+        data = dict(deepcopy(reference_input_data))
 
         if not data_names:
             return data
