@@ -23,15 +23,12 @@
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
-from functools import reduce as f_reduce
 from typing import (
-    Any,
     Dict,
     Iterable,
     List,
     Mapping,
     Optional,
-    Set,
     TYPE_CHECKING,
     Union,
 )
