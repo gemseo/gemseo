@@ -228,11 +228,12 @@ class DataConversion(object):
         jacobian = {}
         for output_name in outputs:
             jacobian[output_name] = {}
+            output_jacobian = jacobian[output_name]
             output_size = data_sizes[output_name]
             input_index = 0
             for input_name in inputs:
                 input_size = data_sizes[input_name]
-                jacobian[output_name][input_name] = flat_jac[
+                output_jacobian[input_name] = flat_jac[
                     output_index : output_index + output_size,
                     input_index : input_index + input_size,
                 ]
