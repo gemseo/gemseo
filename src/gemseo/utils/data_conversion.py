@@ -548,8 +548,6 @@ class DataConversion(object):
         Returns:
             The unique elements of the two merged sets.
         """
-        set(set_1)
-        set(set_2)
         return set(set_1) | set(set_2)
 
     @staticmethod
