@@ -19,7 +19,7 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Conversion from a NumPy array into a dictionary of NumPy arrays and vice versa."""
+"""Conversion from a NumPy array to a dictionary of NumPy arrays and vice versa."""
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
@@ -54,13 +54,13 @@ class DataConversion(object):
     ):  # type: (...) -> ndarray
         """Concatenate some values of a mapping associating values to names.
 
-        This methods allows to convert:
+        This allows to convert:
 
         .. code-block:: python
 
             {'x': array([1.])}, 'y': array([2., 3.])}
 
-        into:
+        to:
 
         .. code-block:: python
 
@@ -72,7 +72,7 @@ class DataConversion(object):
             data_names: The names to be used for the concatenation.
 
         Returns:
-            The concatenation of the values of the provided names.
+            The concatenation of the values for the provided names.
         """
         if not data_names:
             return array([])
@@ -137,13 +137,13 @@ class DataConversion(object):
     ):  # type: (...) -> Dict[str,ndarray]
         """Convert an NumPy array into a dictionary of NumPy arrays indexed by names.
 
-        This methods allows to convert:
+        This allows to convert:
 
         .. code-block:: python
 
             array([1., 2., 3.])
 
-        into:
+        to:
 
         .. code-block:: python
 
@@ -373,7 +373,7 @@ class DataConversion(object):
             inpt_name: The name of the input.
 
         Returns:
-            The name of the input concatenated to the name of the input.
+            The name of the output concatenated with the name of the input.
         """
         return out_name + DataConversion.FLAT_JAC_SEP + inpt_name
 
@@ -427,7 +427,7 @@ class DataConversion(object):
 
         Raises:
             TypeError: If the data with which to update the reference one
-                if not an NumPy array.
+                is not a NumPy array.
             ValueError:
                 * If a name for which to update the data is missing
                   from the reference data.
@@ -493,7 +493,7 @@ class DataConversion(object):
     ):
         """Perform a deep copy of a data mapping.
 
-        This methods treats the NumPy arrays specially
+        This treats the NumPy arrays specially
         using ``array.copy()`` instead of ``deepcopy``.
 
         Args:
@@ -625,7 +625,7 @@ class DataConversion(object):
         disciplines,  # type: Iterable[MDODiscipline]
         recursive=False,  # type: bool
     ):  # type: (...) -> List[str]
-        """Return all the outputs of the disciplines.
+        """Return all the output names of the disciplines.
 
         Args:
             disciplines: The disciplines.
