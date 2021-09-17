@@ -565,28 +565,26 @@ class DataConversion(object):
                 sub_disciplines + main_disciplines, inputs, recursive=False
             )
 
-        def get_data_names(
-            discipline,  # type: MDODiscipline
-        ):  # type: (...) -> List[str]
-            """Return either the input names or output names of a discipline.
-
-            Args:
-                discipline: The discipline.
-
-            Returns:
-                The names of the disciplinary inputs or outputs.
-            """
-            if inputs:
-                return discipline.get_input_data_names()
-            else:
-                return discipline.get_output_data_names()
-
-        return list(
-            f_reduce(
-                DataConversion.__set_reduce,
-                (get_data_names(discipline) for discipline in main_disciplines),
+        if inputs:
+            return list(
+                f_reduce(
+                    DataConversion.__set_reduce,
+                    (
+                        discipline.get_input_data_names()
+                        for discipline in main_disciplines
+                    ),
+                )
             )
-        )
+        else:
+            return list(
+                f_reduce(
+                    DataConversion.__set_reduce,
+                    (
+                        discipline.get_output_data_names()
+                        for discipline in main_disciplines
+                    ),
+                )
+            )
 
     @staticmethod
     def get_all_inputs(
