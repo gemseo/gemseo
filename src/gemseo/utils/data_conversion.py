@@ -93,12 +93,12 @@ class DataConversion(object):
 
             [
                 {'group1':
-                    {'x': array([1.])},
+                    {'x': array([3.])},
                  'group2':
                     {'y': array([1., 1.])}
                 },
                 {'group1':
-                    {'x': array([2.])},
+                    {'x': array([6.])},
                  'group2':
                     {'y': array([2., 2.])}
                 }
@@ -109,9 +109,18 @@ class DataConversion(object):
         .. code-block:: python
 
             [
-                {'x': array([1.])}, 'y': array([1., 1.])}
-                {'x': array([2.])}, 'y': array([2., 2.])}
+                {'x': array([3.]), 'y': array([1., 1.])},
+                {'x': array([6.]), 'y': array([2., 2.])}
             ]
+
+        For both cases,
+        if ``data_names=["y", "x"]``,
+        the returned object will be
+
+        .. code-block:: python
+
+            array([[1., 1., 3.],
+                   [2., 2., 6.]])
 
         Args:
             data_list: The mappings to be converted;
