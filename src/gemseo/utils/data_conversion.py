@@ -505,25 +505,23 @@ class DataConversion(object):
         return deep_copy
 
     @staticmethod
-    def __get_names(
+    def __get_all_disciplines(
         disciplines,  # type: Iterable[MDODiscipline]
-        inputs,  # type: bool
         recursive,  # type: bool
-    ):  # type: (...) -> List[str]
-        """Return all the input or outputs of the disciplines.
+    ):  # type: (...) -> List[MDODiscipline]
+        """Return both disciplines and sub-disciplines.
 
         Args:
             disciplines: The disciplines.
-            inputs: Whether to return input names or output names.
             recursive: If True,
                 search for the inputs of the sub-disciplines,
                 when some disciplines are scenarios.
 
         Returns:
-            The names of the variables.
+            Both disciplines and sub-disciplines.
         """
 
-        main_disciplines = [
+        all_disciplines = [
             discipline for discipline in disciplines if not discipline.is_scenario()
         ]
         if recursive:
@@ -533,28 +531,9 @@ class DataConversion(object):
             sub_disciplines = list(
                 set.union(*(set(scenario.disciplines) for scenario in scenarios))
             )
-            return DataConversion.__get_names(
-                sub_disciplines + main_disciplines, inputs, recursive=False
-            )
+            return sub_disciplines + all_disciplines
 
-        if inputs:
-            return list(
-                set.union(
-                    *(
-                        set(discipline.get_input_data_names())
-                        for discipline in main_disciplines
-                    )
-                )
-            )
-        else:
-            return list(
-                set.union(
-                    *(
-                        set(discipline.get_output_data_names())
-                        for discipline in main_disciplines
-                    )
-                )
-            )
+        return all_disciplines
 
     @staticmethod
     def get_all_inputs(
@@ -572,7 +551,15 @@ class DataConversion(object):
         Returns:
             The names of the inputs.
         """
-        return DataConversion.__get_names(disciplines, True, recursive=recursive)
+        get_disciplines = DataConversion.__get_all_disciplines
+        return list(
+            set.union(
+                *(
+                    set(discipline.get_input_data_names())
+                    for discipline in get_disciplines(disciplines, recursive=recursive)
+                )
+            )
+        )
 
     @staticmethod
     def get_all_outputs(
@@ -590,4 +577,12 @@ class DataConversion(object):
         Returns:
             The names of the outputs.
         """
-        return DataConversion.__get_names(disciplines, False, recursive=recursive)
+        get_disciplines = DataConversion.__get_all_disciplines
+        return list(
+            set.union(
+                *(
+                    set(discipline.get_output_data_names())
+                    for discipline in get_disciplines(disciplines, recursive=recursive)
+                )
+            )
+        )
