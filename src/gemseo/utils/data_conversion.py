@@ -306,6 +306,7 @@ class DataConversion(object):
         flat_jac = zeros((n_outputs, n_inputs))
         output_index = 0
         for output_name in outputs:
+            output_jac_dict = jac_dict[output_name]
             output_size = data_sizes[output_name]
             input_index = 0
             for input_name in inputs:
@@ -313,7 +314,7 @@ class DataConversion(object):
                 flat_jac[
                     output_index : output_index + output_size,
                     input_index : input_index + input_size,
-                ] = jac_dict[output_name][input_name]
+                ] = output_jac_dict[input_name]
                 input_index += input_size
 
             output_index += output_size
