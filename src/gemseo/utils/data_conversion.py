@@ -481,6 +481,8 @@ class DataConversion(object):
         This treats the NumPy arrays specially
         using ``array.copy()`` instead of ``deepcopy``.
 
+        The items order is not preserved.
+
         Args:
             data_dict: The data mapping to be copied.
             keys: The keys of the mapping to be considered.
