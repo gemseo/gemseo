@@ -481,8 +481,6 @@ class DataConversion(object):
         This treats the NumPy arrays specially
         using ``array.copy()`` instead of ``deepcopy``.
 
-        The items order is not preserved.
-
         Args:
             data_dict: The data mapping to be copied.
             keys: The keys of the mapping to be considered.
@@ -492,9 +490,12 @@ class DataConversion(object):
             A deep copy of the data mapping.
         """
         deep_copy = {}
-        selected_keys = set(data_dict.keys())
+        selected_keys = data_dict.keys()
         if keys is not None:
-            selected_keys = set(keys) & selected_keys
+            selected_keys = [
+                key for key in keys if key in set(keys) & set(selected_keys)
+            ]
+
         for key in selected_keys:
             value = data_dict[key]
             if isinstance(value, ndarray):
