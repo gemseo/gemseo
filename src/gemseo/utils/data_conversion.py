@@ -607,7 +607,7 @@ class DataConversion(object):
         disciplines,  # type: Iterable[MDODiscipline]
         recursive=False,  # type: bool
     ):  # type: (...) -> List[str]
-        """Return all the inputs of the disciplines.
+        """Return all the input names of the disciplines.
 
         Args:
             disciplines: The disciplines.
