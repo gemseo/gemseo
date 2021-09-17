@@ -23,15 +23,7 @@
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
-from typing import (
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    TYPE_CHECKING,
-    Union,
-)
+from typing import TYPE_CHECKING, Dict, Iterable, List, Mapping, Optional, Union
 
 from numpy import array, hstack, ndarray, vstack, zeros
 
