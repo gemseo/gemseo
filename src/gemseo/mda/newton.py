@@ -18,9 +18,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A set of Newton algorithm variants for solving MDAs
-***************************************************
+"""A set of Newton algorithm variants for solving MDAs.
 
 Root finding methods include:
 
@@ -28,16 +26,19 @@ Root finding methods include:
 - `quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
 
 Each of these methods is implemented by a class in this module.
-Both inherits from a common abstract cache.
+Both inherit from a common abstract cache.
 """
 from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
+from typing import Dict, List, Mapping, Optional, Union
 
+from numpy import ndarray
 from numpy.linalg import norm
 from scipy.optimize import root
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import DataConversion
@@ -51,44 +52,17 @@ class MDARoot(MDA):
 
     def __init__(
         self,
-        disciplines,
-        max_mda_iter=10,
-        name=None,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        tolerance=1e-6,
-        linear_solver_tolerance=1e-12,
-        warm_start=False,
-        use_lu_fact=False,
-        log_convergence=False,
-    ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param name: the name of the chain
-        :type name: str
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
-        :param log_convergence: Whether to log the MDA convergence,
-            expressed in terms of normed residuals.
-        """
+        disciplines,  # type: List[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False #type: bool
+    ):  # type: (...) -> None
         self.tolerance = 1e-6
         self.max_mda_iter = 10
         super(MDARoot, self).__init__(
@@ -100,6 +74,7 @@ class MDARoot(MDA):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
         self._initialize_grammars()
@@ -114,16 +89,19 @@ class MDARoot(MDA):
         #    self.parallel_execution = None
         # ==================================================================
 
-    def _initialize_grammars(self):
-        """Define all inputs and outputs of the chain."""
+    def _initialize_grammars(self):  # type: (...) -> None
         for disciplines in self.disciplines:
             self.input_grammar.update_from(disciplines.input_grammar)
             self.output_grammar.update_from(disciplines.output_grammar)
 
-    def execute_all_disciplines(self, input_local_data):
-        """Execute all self.disciplines.
+    def execute_all_disciplines(
+        self,
+        input_local_data,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Execute all the disciplines.
 
-        :param input_local_data: the input data of the disciplines
+        Args:
+            input_local_data: The input data of the disciplines.
         """
         # Set status of sub disciplines
         # if self.parallel_execution is not None:
@@ -161,49 +139,22 @@ class MDANewtonRaphson(MDARoot):
 
     def __init__(
         self,
-        disciplines,
-        max_mda_iter=10,
-        relax_factor=0.99,
-        name=None,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        linear_solver="lgmres",
-        tolerance=1e-6,
-        linear_solver_tolerance=1e-12,
-        warm_start=False,
-        use_lu_fact=False,
-        log_convergence=False,
+        disciplines,  # type: List[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        relax_factor=0.99,  # type: float
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        linear_solver="lgmres",  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False #type:bool
     ):
-        """Constructor.
-
-        :param disciplines: list of disciplines
-        :type disciplines: list(MDODiscipline)
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param relax_factor: relaxation factor in the Newton step (default 1.)
-        :type relax_factor: float
-        :param name: name
-        :type name: str
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param linear_solver: linear solver used to compute the Newton step
-        :type linear_solver: str
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
-        :param log_convergence: Whether to log the MDA convergence,
-            expressed in terms of normed residuals.
+        """
+        Args:
+            relax_factor: The relaxation factor in the Newton step.
         """
         super(MDANewtonRaphson, self).__init__(
             disciplines,
@@ -214,31 +165,32 @@ class MDANewtonRaphson(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
 
     @staticmethod
-    def __check_relax_factor(relax_factor):
+    def __check_relax_factor(
+        relax_factor,  # type: float
+    ):  # type:(...) -> float
         """Check that the relaxation factor in the Newton step is in (0, 1].
 
-        :param relax_factor: relaxation factor
+        Args:
+            relax_factor: The relaxation factor.
         """
         if relax_factor <= 0.0 or relax_factor > 1:
             raise ValueError(
-                "Newton relaxation factor should belong to "
-                + "(0, 1] (current value: "
-                + str(relax_factor)
-                + ")"
+                "Newton relaxation factor should belong to (0, 1] "
+                "(current value: {}).".format(relax_factor)
             )
         return relax_factor
 
-    def _newton_step(self):
-        """Execute the full newton step.
+    def _newton_step(self):  # type: (...) -> None
+        """Execute the full Newton step.
 
-        Computes increment : -[dR/dW]**-1 . R
-        Runs disciplines
+        Compute the increment :math:`-[dR/dW]^{-1}.R` and runs the disciplines.
         """
         newton_dict = self.assembly.compute_newton_step(
             self.local_data,
@@ -253,14 +205,7 @@ class MDANewtonRaphson(MDARoot):
         self.reset_disciplines_statuses()
         self.execute_all_disciplines(exec_data)
 
-    def _run(self):
-        """Run the MDA.
-
-        Run the disciplines in a sequential way until the difference between
-        outputs is under tolerance
-
-        :returns: the local data
-        """
+    def _run(self):  # type: (...) -> None
         if self.warm_start:
             self._couplings_warm_start()
         # execute the disciplines
@@ -348,48 +293,23 @@ class MDAQuasiNewton(MDARoot):
 
     def __init__(
         self,
-        disciplines,
-        max_mda_iter=10,
-        name=None,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        method=HYBRID,
-        use_gradient=False,
-        tolerance=1e-6,
-        linear_solver_tolerance=1e-12,
-        warm_start=False,
-        use_lu_fact=False,
+        disciplines,  # type: List[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        method=HYBRID,  # type: str
+        use_gradient=False,  # type: bool
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
     ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param name: name
-        :type name: str
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param method: method name in scipy root finding,
-            among self.QUASI_NEWTON_METHODS
-        :type method: str
-        :param use_gradient: if True, used the analytic gradient of
-            the discipline
-        :type use_gradient: bool
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
+        """
+        Args:
+            method: The name of the method in scipy root finding,
+                among :attr:`QUASI_NEWTON_METHODS`.
+            use_gradient: Whether to use the analytic gradient of the discipline.
         """
         super(MDAQuasiNewton, self).__init__(
             disciplines,
@@ -400,6 +320,7 @@ class MDAQuasiNewton(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            coupling_structure=coupling_structure,
         )
         if method not in self.QUASI_NEWTON_METHODS:
             msg = "Method " + method + " is not a valid quasi-Newton method"
@@ -409,7 +330,7 @@ class MDAQuasiNewton(MDARoot):
         self.local_residual_history = []
         self.last_outputs = None  # used for computing the residual history
 
-    def _solver_options(self):
+    def _solver_options(self):  # type: (...) -> Dict[str,Union[float,int]]
         """Determine options for the solver, based on the resolution method."""
         options = {}
         if self.method in [
@@ -434,18 +355,11 @@ class MDAQuasiNewton(MDARoot):
             options["maxfev"] = self.max_mda_iter
         return options
 
-    def _methods_with_callback(self):
+    def _methods_with_callback(self):  # type: (...) -> List[str]
         """Determine whether resolution method accepts a callback function."""
         return [self.BROYDEN1, self.BROYDEN2]
 
-    def _run(self):
-        """Run the MDA.
-
-        Runs the disciplines in a sequential way until the difference
-        between outputs is under tolerance
-
-        :returns: the local data
-        """
+    def _run(self):  # type: (...) -> Dict[str,ndarray]
         if self.warm_start:
             self._couplings_warm_start()
         self.reset_disciplines_statuses()
@@ -462,10 +376,13 @@ class MDAQuasiNewton(MDARoot):
             return self.local_data
         options = self._solver_options()
 
-        def fun(x_vect):
+        def fun(
+            x_vect,  # type: ndarray
+        ):  # type: (...) -> ndarray
             """Evaluate all residuals, possibly in parallel.
 
-            :param x_vect: design variables
+            Args:
+                x_vect: The value of the design variables.
             """
             # transform input vector into a dict
             input_values = DataConversion.update_dict_from_array(
@@ -492,10 +409,13 @@ class MDAQuasiNewton(MDARoot):
                 discipline.add_differentiated_inputs(list(to_linearize))
             # linearize the residuals
 
-            def jacobian(x_vect):
-                """Linearize all the residuals.
+            def jacobian(
+                x_vect,  # type: ndarray
+            ):  # type: (...) -> ndarray
+                """Linearize all residuals.
 
-                :param x_vect:design variables
+                Args:
+                    x_vect: The value of the design variables.
                 """
                 # transform input vector into a dict
                 input_values = DataConversion.update_dict_from_array(

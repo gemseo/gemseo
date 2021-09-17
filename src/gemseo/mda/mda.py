@@ -56,6 +56,7 @@ class MDA(MDODiscipline):
         linear_solver_tolerance=1e-12,  # type: float
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False #type: bool
     ):  # type: (...) -> None
         """
@@ -74,6 +75,9 @@ class MDA(MDODiscipline):
                 from the previous coupling solution.
             use_lu_fact: Whether to store a LU factorization of the matrix
                 when using adjoint/forward differentiation.
+                to solve faster multiple RHS problem.
+            coupling_structure: The coupling structure to be used by the MDA.
+                If None, it is created from `disciplines`.
                 to solve faster multiple RHS problem
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
@@ -83,7 +87,9 @@ class MDA(MDODiscipline):
         self.linear_solver_tolerance = linear_solver_tolerance
         self.max_mda_iter = max_mda_iter
         self.disciplines = disciplines
-        self.coupling_structure = MDOCouplingStructure(disciplines)
+        self.coupling_structure = coupling_structure or MDOCouplingStructure(
+            disciplines
+        )
         self.assembly = JacobianAssembly(self.coupling_structure)
         self.residual_history = []
         self.reset_history_each_run = False
