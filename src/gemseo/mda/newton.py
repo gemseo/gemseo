@@ -117,10 +117,6 @@ class MDARoot(MDA):
             self.local_data.update(data)
 
     def _run(self):
-        """Run the MDA.
-
-        To be implemented in concrete classes.
-        """
         raise NotImplementedError()
 
 
@@ -190,7 +186,7 @@ class MDANewtonRaphson(MDARoot):
     def _newton_step(self):  # type: (...) -> None
         """Execute the full Newton step.
 
-        Compute the increment :math:`-[dR/dW]^{-1}.R` and runs the disciplines.
+        Compute the increment :math:`-[dR/dW]^{-1}.R` and run the disciplines.
         """
         newton_dict = self.assembly.compute_newton_step(
             self.local_data,

@@ -64,6 +64,7 @@ class MDA(MDODiscipline):
             disciplines: The disciplines from which to compute the MDA.
             max_mda_iter: The maximum iterations number for the MDA algorithm.
             name: The name to be given to the MDA.
+                If None, use the name of the class.
             grammar_type: The type of the input and output grammars,
                 either :attr:`JSON_GRAMMAR_TYPE` or :attr:`SIMPLE_GRAMMAR_TYPE`.
             tolerance: The tolerance of the iterative direct coupling solver;
@@ -174,9 +175,8 @@ class MDA(MDODiscipline):
         raise NotImplementedError()
 
     def _compute_input_couplings(self):  # type: (...) -> None
-        """Compute the coupling variables that are inputs of the MDA."""
-        inputs = self.get_input_data_names()
-        input_couplings = set(self.strong_couplings) & set(inputs)
+        """Compute the strong couplings that are inputs of the MDA."""
+        input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())
         self._input_couplings = list(input_couplings)
 
     def _current_input_couplings(self):  # type: (...) -> ndarray

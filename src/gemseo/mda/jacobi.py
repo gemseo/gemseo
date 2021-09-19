@@ -84,7 +84,7 @@ class MDAJacobi(MDA):
                 to be used to extrapolate the residuals
                 and save CPU time by reusing the information from the last iterations,
                 either ``None``, ``"m2d"``, or ``"secant"``,
-                m2d is faster but uses the 2 last iterations.
+                ``"m2d"`` is faster but uses the 2 last iterations.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -171,12 +171,13 @@ class MDAJacobi(MDA):
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
     def _run(self):  # type: (...) -> None
-        """Run method of the chain: executes all disciplines in a loop until outputs
-        converge. Stops when.
+        """Execute all disciplines in a loop until outputs converge.
 
-        ||outputs-previous output||/||first outputs|| < self.tolerance
+        Stops when:
 
-        :returns: the local data updated
+        .. math::
+
+            ||outputs-previous output||/||first outputs|| < self.tolerance
         """
         if self.warm_start:
             self._couplings_warm_start()
@@ -287,7 +288,7 @@ class MDAJacobi(MDA):
             dxn_1: The delta couplings at last iteration-1.
             dxn_2: The delta couplings at last iteration-2.
 
-        Returs:
+        Returns:
             The extrapolation coefficients of the 2-delta method.
         """
         mat = concatenate((atleast_2d(dxn - dxn_1), atleast_2d(dxn_1 - dxn_2)))
@@ -314,7 +315,7 @@ class MDAJacobi(MDA):
             cgn_1: The computed couplings at last iteration-1.
 
         Returns:
-            TODO
+            The next iterate.
         """
         d_dxn = dxn - dxn_1
         acc = (cgn - cgn_1) * dot(d_dxn, dxn) / dot(d_dxn, d_dxn)
@@ -345,7 +346,7 @@ class MDAJacobi(MDA):
             gn_2: The computed couplings at last iteration-2.
 
         Returns:
-            TODO
+            The next iterate.
         """
         lamba_min = self._minimize_2md(dxn, dxn_1, dxn_2)
         acc = lamba_min[0] * (g_n - gn_1) + lamba_min[1] * (gn_1 - gn_2)
