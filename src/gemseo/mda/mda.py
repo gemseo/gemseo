@@ -171,9 +171,6 @@ class MDA(MDODiscipline):
                 "Outputs are defined multiple times: {}.".format(multiple_outs)
             )
 
-    def _run(self):  # type: (...) -> None
-        raise NotImplementedError()
-
     def _compute_input_couplings(self):  # type: (...) -> None
         """Compute the strong couplings that are inputs of the MDA."""
         input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())

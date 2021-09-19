@@ -116,9 +116,6 @@ class MDARoot(MDA):
         for data in outputs:
             self.local_data.update(data)
 
-    def _run(self):
-        raise NotImplementedError()
-
 
 class MDANewtonRaphson(MDARoot):
     r"""Newton solver for MDA.
