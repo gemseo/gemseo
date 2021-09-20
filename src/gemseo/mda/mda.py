@@ -88,9 +88,10 @@ class MDA(MDODiscipline):
         self.linear_solver_tolerance = linear_solver_tolerance
         self.max_mda_iter = max_mda_iter
         self.disciplines = disciplines
-        self.coupling_structure = coupling_structure
-        if self.coupling_structure is None:
+        if coupling_structure is None:
             self.coupling_structure = MDOCouplingStructure(disciplines)
+        else:
+            self.coupling_structure = coupling_structure
         self.assembly = JacobianAssembly(self.coupling_structure)
         self.residual_history = []
         self.reset_history_each_run = False
