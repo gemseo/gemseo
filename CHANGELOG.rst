@@ -46,6 +46,8 @@ Fixed
 - The Correlations post-processor now sorts labels properly when two or more functions share the
   same name followed by an underscore.
 - Bug with inherited docstrings.
+- Bug with the MATLAB discipline on Windows.
+- ImportError (backport.unittest_mock) on Python 2.7.
 
 Version 3.1.0 (July 2021)
 *************************

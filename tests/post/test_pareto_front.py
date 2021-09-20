@@ -21,6 +21,8 @@
 
 from __future__ import division, unicode_literals
 
+from unittest import mock  # noqa: F401
+
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
