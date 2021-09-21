@@ -99,7 +99,7 @@ class MDAChain(MDA):
             disciplines,
             sub_mda_class=sub_mda_class,
             sub_coupling_structures=sub_coupling_structures,
-            **sub_mda_options,
+            **sub_mda_options
         )
         self.log_convergence = log_convergence
 
@@ -169,7 +169,7 @@ class MDAChain(MDA):
                         tolerance=self.tolerance,
                         grammar_type=self.grammar_type,
                         coupling_structure=next(sub_coupling_structures_iterator),
-                        **sub_mda_options,
+                        **sub_mda_options
                     )
                     sub_mda.n_processes = self.n_processes
 
