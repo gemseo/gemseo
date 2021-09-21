@@ -97,6 +97,7 @@ extensions = [
     "autodocsumm",
     "add_toctree_functions",
     "gemseo_pre_processor",
+    "default_kwargs_values",
 ]
 
 ################################################################################
@@ -112,6 +113,9 @@ autodoc_typehints = "description"
 
 # Both the class’ and the __init__ method’s docstring are concatenated and inserted.
 autoclass_content = "both"
+
+# Show arguments default values.
+autodoc_kwargs_defaults = True
 
 ################################################################################
 # Settings for napoleon.
