@@ -28,6 +28,7 @@ import numpy as np
 import pytest
 from numpy import ones
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -214,6 +215,23 @@ def test_no_coupling_jac():
     disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
     mda = MDAChain(disciplines)
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+
+
+def test_sub_coupling_structures():
+    """Check that an MDA is correctly instantiated from a coupling structure."""
+    sellar_disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    sub_coupling_structures = [MDOCouplingStructure(sellar_disciplines)]
+    mda_sellar = MDAChain(
+        sellar_disciplines,
+        coupling_structure=coupling_structure,
+        sub_coupling_structures=sub_coupling_structures,
+    )
+    assert mda_sellar.coupling_structure == coupling_structure
+    assert (
+        mda_sellar.mdo_chain.disciplines[0].coupling_structure
+        == sub_coupling_structures[0]
+    )
 
 
 def test_log_convergence():

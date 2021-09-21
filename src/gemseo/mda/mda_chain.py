@@ -22,6 +22,7 @@
 from __future__ import division, unicode_literals
 
 import logging
+from itertools import repeat
 from multiprocessing import cpu_count
 from os.path import join, split
 from typing import Iterable, List, Optional, Sequence, Tuple
@@ -55,6 +56,7 @@ class MDAChain(MDA):
         use_lu_fact=False,  # type: bool
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
         log_convergence=False, #type: bool
         **sub_mda_options
     ):
@@ -66,6 +68,8 @@ class MDAChain(MDA):
                 while in direct mode, linearizing the chain may be cheaper.
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
+            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+                If None, they are created from the sub-disciplines.
             **sub_mda_options: The options to be passed to the sub-MDAs.
         """
         self.n_processes = n_processes
@@ -92,7 +96,10 @@ class MDAChain(MDA):
             self.__chain_linearize = True
 
         self._create_mdo_chain(
-            disciplines, sub_mda_class=sub_mda_class, **sub_mda_options
+            disciplines,
+            sub_mda_class=sub_mda_class,
+            sub_coupling_structures=sub_coupling_structures,
+            **sub_mda_options,
         )
         self.log_convergence = log_convergence
 
@@ -116,6 +123,7 @@ class MDAChain(MDA):
         self,
         disciplines,  # type: List[MDODiscipline]
         sub_mda_class="MDAJacobi",  # type: str
+        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
         **sub_mda_options
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
@@ -123,10 +131,17 @@ class MDAChain(MDA):
         Args:
             sub_mda_class: The name of the class of the sub-MDAs.
             disciplines: The disciplines.
+            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+                If None, they are created from the sub-disciplines.
             **sub_mda_options: The options to be used to initialize the sub-MDAs.
         """
         chained_disciplines = []
         self.sub_mda_list = []
+
+        if sub_coupling_structures is None:
+            sub_coupling_structures = repeat(None)
+
+        sub_coupling_structures_iterator = iter(sub_coupling_structures)
 
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
@@ -153,7 +168,8 @@ class MDAChain(MDA):
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
                         grammar_type=self.grammar_type,
-                        **sub_mda_options
+                        coupling_structure=next(sub_coupling_structures_iterator),
+                        **sub_mda_options,
                     )
                     sub_mda.n_processes = self.n_processes
 
