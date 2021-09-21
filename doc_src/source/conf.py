@@ -42,6 +42,7 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
+import collections
 import datetime
 import os
 import re
@@ -51,7 +52,9 @@ from typing import Iterable, List, Mapping, Tuple, Union
 
 import requests
 import six
-from sphinx.ext.napoleon.docstring import GoogleDocstring
+import sphinx
+import sphinx.ext.autodoc.typehints
+from sphinx.util import inspect, typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
@@ -96,14 +99,29 @@ extensions = [
     "gemseo_pre_processor",
 ]
 
+################################################################################
+# Settings for autodoc.
+
 autodoc_default_options = {
     "inherited-members": True,
     "autosummary": True,
 }
 
+# Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
+
+# Both the class’ and the __init__ method’s docstring are concatenated and inserted.
 autoclass_content = "both"
-napoleon_use_ivar = True
+
+################################################################################
+# Settings for napoleon.
+
+# True to include special members (like __membername__) with docstrings in the documentation.
+# False to fall back to Sphinx’s default behavior.
+napoleon_include_special_with_doc = False
+
+################################################################################
+# Settings for apidoc.
 
 apidoc_module_dir = "../../src/gemseo"
 apidoc_excluded_paths = [
@@ -116,6 +134,9 @@ apidoc_excluded_paths = [
 apidoc_output_dir = "_modules"
 apidoc_separate_modules = True
 apidoc_module_first = True
+
+################################################################################
+# Settings for sphinx_gallery.
 
 examples_dir = Path("examples")
 examples_path = Path(".." / examples_dir)
@@ -140,8 +161,8 @@ sphinx_gallery_conf = {
     "only_warn_on_example_error": True,
 }
 
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = False
+################################################################################
+# Settings for sphinx.
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["templates"]
@@ -439,41 +460,8 @@ rst_prolog = """
 .. |g| replace:: GEMSEO
 """
 
-# -- Extensions to the  Napoleon GoogleDocstring class ---------------------
-
-
-# first, we define new methods for any new sections and add them to the class
-def parse_keys_section(self, section):
-    return self._format_fields("Keys", self._consume_fields())
-
-
-GoogleDocstring._parse_keys_section = parse_keys_section
-
-
-def parse_attributes_section(self, section):
-    return self._format_fields("Attributes", self._consume_fields())
-
-
-GoogleDocstring._parse_attributes_section = parse_attributes_section
-
-
-def parse_class_attributes_section(self, section):
-    return self._format_fields("Class Attributes", self._consume_fields())
-
-
-GoogleDocstring._parse_class_attributes_section = parse_class_attributes_section
-
-
-def patched_parse(self):
-    # we now patch the parse method to guarantee that the the above methods are
-    # assigned to the _section dict
-    self._sections["keys"] = self._parse_keys_section
-    self._sections["class attributes"] = self._parse_class_attributes_section
-    self._unpatched_parse()
-
-
-GoogleDocstring._unpatched_parse = GoogleDocstring._parse
-GoogleDocstring._parse = patched_parse
+################################################################################
+# Settings for readthedocs.
 
 # Setup the multiversion display
 html_context = dict()
@@ -506,3 +494,43 @@ if os.environ.get("READTHEDOCS") == "True":
         headers={"Authorization": "token 53f714afc37ec42e882efa094e6e3827202f801d"},
     ).json()["results"]
     html_context["versions"] = __filter_versions(versions)
+
+
+################################################################################
+# Sphinx workaround for duplicated args when using typehints
+# TODO: remove when it is fixed upstream, see
+# https://github.com/sphinx-doc/sphinx/pull/9648
+
+__ANNOTATION_KIND_TO_PARAM_PREFIX = {
+    inspect.Parameter.VAR_POSITIONAL: "*",
+    inspect.Parameter.VAR_KEYWORD: "**",
+}
+
+
+def record_typehints(
+    app,
+    objtype,
+    name,
+    obj,
+    options,
+    args,
+    retann,
+):
+    """Record type hints to env object."""
+    try:
+        if callable(obj):
+            annotations = app.env.temp_data.setdefault("annotations", {})
+            annotation = annotations.setdefault(name, collections.OrderedDict())
+            sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)
+            for param in sig.parameters.values():
+                if param.annotation is not param.empty:
+                    prefix = __ANNOTATION_KIND_TO_PARAM_PREFIX.get(param.kind, "")
+                    name = f"{prefix}{param.name}"
+                    annotation[name] = typing.stringify(param.annotation)
+            if sig.return_annotation is not sig.empty:
+                annotation["return"] = typing.stringify(sig.return_annotation)
+    except (TypeError, ValueError):
+        pass
+
+
+sphinx.ext.autodoc.typehints.record_typehints = record_typehints

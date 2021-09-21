@@ -124,6 +124,7 @@ MLAlgoParameterType = Optional[Any]
     DocInheritMeta(
         abstract_base_class=True,
         style="google_with_merge",
+        include_special_methods=True,
     )
 )
 class MLAlgo(object):
