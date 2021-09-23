@@ -27,6 +27,7 @@ import unittest
 import numpy as np
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.function import MDOFunction
 from gemseo.core.mdo_scenario import MDOScenario
@@ -229,3 +230,14 @@ class TestMDOFormulation(unittest.TestCase):
         ds = SobieskiProblem().read_design_space()
         f = MDOFormulation([sm], "Y5", ds)
         self.assertRaises(Exception, f.get_expected_workflow)
+
+
+def test_grammar_type():
+    """Check that the grammar type is correctly stored."""
+    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    formulation = MDOFormulation(
+        [discipline], "y", design_space, grammar_type="a_grammar_type"
+    )
+    assert formulation._grammar_type == "a_grammar_type"

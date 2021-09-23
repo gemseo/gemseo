@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.formulations.idf import IDF
 from gemseo.problems.sobieski.core import SobieskiProblem
@@ -276,3 +277,15 @@ class TestIDF(FormulationsBaseTest):
                 current_couplings[coupling_name] - ref_couplings[coupling_name]
             ) / np.linalg.norm(ref_couplings[coupling_name])
             self.assertLess(residual, 1e-3)
+
+
+def test_grammar_type():
+    """Check that the grammar type is correctly used."""
+    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    formulation = IDF(
+        [discipline], "y", design_space, grammar_type=grammar_type, parallel_exec=True
+    )
+    assert formulation._parallel_exec.grammar_type == grammar_type
