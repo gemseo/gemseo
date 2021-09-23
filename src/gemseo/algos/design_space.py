@@ -92,6 +92,7 @@ class DesignSpace(object):
     FLOAT = "float"
     INTEGER = "integer"
     AVAILABLE_TYPES = [FLOAT, INTEGER]
+    __DTYPES = {FLOAT: "float64", INTEGER: "int32"}
     MINIMAL_FIELDS = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
@@ -1186,8 +1187,9 @@ class DesignSpace(object):
             current_x: The value of the current point.
 
         Raises:
-            ValueError: If the value as a wrong dimension.
-            TypeError:
+            ValueError: If the value has a wrong dimension.
+            TypeError: If the current point is neither a mapping of NumPy arrays,
+                a NumPy array nor an :class:`.OptimizationResult`.
         """
         if isinstance(current_x, dict):
             self._current_x = current_x
@@ -1208,8 +1210,7 @@ class DesignSpace(object):
                         self.dimension, current_x.x_opt.size
                     )
                 )
-            x_array = self.array_to_dict(current_x.x_opt)
-            self._current_x = x_array
+            self._current_x = self.array_to_dict(current_x.x_opt)
         else:
             raise TypeError(
                 "The current point should be either an array, "
@@ -1217,6 +1218,17 @@ class DesignSpace(object):
                 "or an optimization result; "
                 "got {} instead.".format(type(current_x))
             )
+
+        for name, value in self._current_x.items():
+            if value is not None:
+                variable_type = self.variables_types[name]
+                if isinstance(variable_type, ndarray):
+                    variable_type = variable_type[0]
+                if variable_type == self.INTEGER:
+                    dtype = self.__DTYPES[variable_type]
+                    value = value.astype(dtype)
+                self._current_x[name] = value
+
         self._check_current_x()
 
     def set_current_variable(

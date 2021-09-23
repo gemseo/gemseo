@@ -390,7 +390,7 @@ class DataConversion(object):
         data_names,  # type: Iterable[str]
         values_array,  # type: ndarray
     ):  # type: (...) -> Dict[str,ndarray]
-        """Update a data mapping from data array and names..
+        """Update a data mapping from data array and names.
 
         The order of the data in the array follows the order of the data names.
 
@@ -442,6 +442,7 @@ class DataConversion(object):
                 )
 
             data[data_name] = values_array[i_min:i_max].reshape(data_value.shape)
+            data[data_name] = data[data_name].astype(data_value.dtype)
             i_min = i_max
 
         if i_max != values_array.size:
