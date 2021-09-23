@@ -72,6 +72,7 @@ class BiLevel(MDOFormulation):
         apply_cstr_tosub_scenarios=True,  # type: bool
         apply_cstr_to_system=True,  # type: bool
         reset_x0_before_opt=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         **mda_options  # type: Any
     ):  # type: (...) -> None
         """
@@ -98,6 +99,7 @@ class BiLevel(MDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
+            grammar_type=grammar_type,
         )
         self._shared_dv = list(design_space.variables_names)
         self.mda1 = None
@@ -285,7 +287,9 @@ class BiLevel(MDOFormulation):
             # Chain MDA -> scenarios exec -> MDA
             chain_dis += sub_opts + [self.mda2]
 
-        self.chain = MDOChain(chain_dis, name="bilevel_chain")
+        self.chain = MDOChain(
+            chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
+        )
 
         if not self.reset_x0_before_opt and self.mda1 is not None:
             run_mda1_orig = self.mda1._run

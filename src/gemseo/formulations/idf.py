@@ -63,6 +63,7 @@ class IDF(MDOFormulation):
         parallel_exec=False,  # type: bool
         use_threading=True,  # type: bool
         start_at_equilibrium=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
     ):  # type: (...) -> None
         """
         Args:
@@ -85,10 +86,11 @@ class IDF(MDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
+            grammar_type=grammar_type,
         )
         if parallel_exec:
             self._parallel_exec = MDOParallelChain(
-                self.disciplines, use_threading=use_threading
+                self.disciplines, use_threading=use_threading, grammar_type=grammar_type
             )
         else:
             self._parallel_exec = None

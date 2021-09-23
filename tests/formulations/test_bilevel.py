@@ -23,7 +23,10 @@ from __future__ import division, unicode_literals
 
 from copy import deepcopy
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline, create_scenario
+from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_test_helper import TestBilevelFormulationBase
 from gemseo.problems.aerostructure.aerostructure_design_space import (
@@ -131,3 +134,28 @@ def test_bilevel_aerostructure():
     system_scenario.execute(
         {"algo": "NLOPT_COBYLA", "max_iter": 5, "algo_options": algo_options}
     )
+
+
+def test_grammar_type():
+    """Check that the grammar type is correctly used."""
+    discipline = AnalyticDiscipline(
+        expressions_dict={"y1": "z+x1+y2", "y2": "z+x2+2*y1"}
+    )
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2")
+    design_space.add_variable("z")
+    scn1 = MDOScenario(
+        [discipline], "DisciplinaryOpt", "y1", design_space.filter(["x1"], copy=True)
+    )
+    scn2 = MDOScenario(
+        [discipline], "DisciplinaryOpt", "y2", design_space.filter(["x2"], copy=True)
+    )
+    grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
+    formulation = BiLevel(
+        [scn1, scn2],
+        "y1",
+        design_space.filter(["z"], copy=True),
+        grammar_type=grammar_type,
+    )
+    assert formulation.chain.grammar_type == grammar_type

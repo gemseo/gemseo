@@ -89,6 +89,7 @@ class MDOFormulation(object):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         maximize_objective=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         **options  # type: Any
     ):  # type: (...) -> None # pylint: disable=W0613
         """
@@ -97,6 +98,9 @@ class MDOFormulation(object):
             objective_name: The name of the objective function.
             design_space: The design space.
             maximize_objective: If True, the objective function is maximized.
+            grammar_type: The type of the input and output grammars,
+                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             **options: The options of the formulation.
         """
         self.check_disciplines(disciplines)
@@ -104,6 +108,12 @@ class MDOFormulation(object):
         self._objective_name = objective_name
         self.opt_problem = OptimizationProblem(design_space)
         self._maximize_objective = maximize_objective
+        self.__grammar_type = grammar_type
+
+    @property
+    def _grammar_type(self):  # type: (...) -> str
+        """The type of the input and output grammars."""
+        return self.__grammar_type
 
     @property
     def design_space(self):  # type: (...) -> DesignSpace
