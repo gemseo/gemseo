@@ -615,3 +615,27 @@ def test_vartype_passed_as_bytes():
     design_space = DesignSpace()
     design_space.add_variable("x", var_type=b"float")
     assert design_space.variables_types["x"] == DesignSpace.FLOAT
+
+
+def test_set_current_x():
+    """Check that set_current_x handles various types of data."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", var_type=design_space.FLOAT)
+    design_space.add_variable("y", var_type=design_space.INTEGER)
+    design_space.add_variable("z")
+    design_space.add_variable("x2", size=2, var_type=[design_space.FLOAT] * 2)
+    design_space.add_variable("y2", size=2, var_type=[design_space.INTEGER] * 2)
+    design_space.set_current_x(
+        {
+            "x": array([0.5]),
+            "y": array([2.0]),
+            "z": None,
+            "x2": array([1.0, 2.0]),
+            "y2": array([1, 2]),
+        }
+    )
+    assert design_space._current_x["x"].dtype.kind == "f"
+    assert design_space._current_x["y"].dtype.kind == "i"
+    assert design_space._current_x["z"] is None
+    assert design_space._current_x["x2"].dtype.kind == "f"
+    assert design_space._current_x["y2"].dtype.kind == "i"
