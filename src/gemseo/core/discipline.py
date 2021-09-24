@@ -40,9 +40,9 @@ from custom_inherit import DocInheritMeta
 from numpy import concatenate, empty, zeros
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.grammar import InvalidDataException, SimpleGrammar
+from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
@@ -488,22 +488,22 @@ class MDODiscipline(object):
         :param input_grammar_file: the input file of the grammar
         :param output_grammar_file: the output file of the grammar
         :param grammar_type: the type of grammar to use, JSON,
-            Simple or yours ! (Default value = JSON_GRAMMAR_TYPE)
+            Simple or yours.
         """
+        factory = GrammarFactory()
+        input_options = {}
+        output_options = {}
         if grammar_type == self.JSON_GRAMMAR_TYPE:
-            self.input_grammar = JSONGrammar(
-                name=self.name + "_input",
-                schema_file=input_grammar_file,
-            )
-            self.output_grammar = JSONGrammar(
-                name=self.name + "_output",
-                schema_file=output_grammar_file,
-            )
-        elif grammar_type == self.SIMPLE_GRAMMAR_TYPE:
-            self.input_grammar = SimpleGrammar(name=self.name + "_input")
-            self.output_grammar = SimpleGrammar(name=self.name + "_output")
-        else:
-            raise ValueError("Unknown grammar type: " + str(grammar_type))
+            input_options.update({"schema_file": input_grammar_file})
+            output_options.update({"schema_file": output_grammar_file})
+
+        grammar_class = "{}Grammar".format(grammar_type)
+        self.input_grammar = factory.create(
+            grammar_class, name="{}_input".format(self.name), **input_options
+        )
+        self.output_grammar = factory.create(
+            grammar_class, name="{}_output".format(self.name), **output_options
+        )
 
     def _run(self):
         """Define the execution of the process, given that data has been checked.

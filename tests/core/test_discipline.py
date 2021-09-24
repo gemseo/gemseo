@@ -33,6 +33,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -111,8 +112,8 @@ def test_get_sub_disciplines():
 def test_instantiate_grammars():
     """Test the instantiation of the grammars."""
     chain = MDOChain([SobieskiAerodynamics()])
-    with pytest.raises(ValueError):
-        chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="None")
+    chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSON")
+    assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 
 
 def test_execute_status_error(sobieski_chain):

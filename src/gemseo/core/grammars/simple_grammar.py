@@ -17,6 +17,7 @@
 """Most basic grammar implementation."""
 
 import logging
+from typing import Any, Iterable, List, Mapping
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
@@ -25,125 +26,153 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SimpleGrammar(AbstractGrammar):
-    """Store the data named and types."""
+    """Store the names and types of the elements as Python lists.
 
-    def __init__(self, name):
-        """Constructor.
+    Attributes:
+        data_names (List[str]): The names of the elements.
+        data_types (List[type]): The types of the elements,
+            stored in the same order as ``data_names``.
+    """
 
-        :param name : grammar name
-        """
+    def __init__(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> None
         super(SimpleGrammar, self).__init__(name)
-        # Data names list
         self.data_names = []
-        # Data types list in the same order as self.data_names
         self.data_types = []
 
-    def load_data(self, data, raise_exception=True):
-        """Loads the data dictionary in the grammar and checks it against self
-        properties.
-
-        :param data: the input data
-        :param raise_exception: if False, no exception is raised
-            when data is invalid (Default value = True)
-        """
+    def load_data(
+        self,
+        data,  # type: Mapping[str,Any]
+        raise_exception=True,  # type: bool
+    ):  # type: (...) -> Mapping[str,Any]
         self.check(data, raise_exception)
         return data
 
-    def check(self, data, raise_exception=True):
-        """Checks local data against self properties.
+    def check(
+        self,
+        data,  # type: Mapping[str,Any]
+        raise_exception=True,  # type: bool
+    ):  # type: (...) -> None
+        """Check the consistency (name and type) of elements with the grammar.
 
-        :param raise_exception: if False, no exception is raised
-            when data is invalid (Default value = True)
+        Args:
+            raise_exception: Whether to raise an exception
+                when the elements are invalid.
+
+        Raises:
+            TypeError: If a data type in the grammar is not a type.
+            InvalidDataException:
+                * If the passed data is not a dictionary.
+                * If a name in the passed data is not in the grammar.
+                * If the type of a value in the passed data does not have
+                  the specified type in the grammar for the corresponding name.
         """
         failed = False
-        if not isinstance(data, dict):
+        if not isinstance(data, Mapping):
             failed = True
-            LOGGER.error("Grammar data is not a dict, in %s", self.name)
+            LOGGER.error("Grammar data is not a mapping, in %s.", self.name)
             if raise_exception:
-                raise InvalidDataException("Invalid data in " + str(self.name))
+                raise InvalidDataException("Invalid data in {}.".format(self.name))
 
-        for data_type in self.data_types:
-            if data_type is not None and not isinstance(data_type, type):
-                msg = "Invalid data type in grammar {} , {} is not a type".format(
-                    self.name, data_type
+        for element_type in self.data_types:
+            if element_type is not None and not isinstance(element_type, type):
+                msg = "Invalid data type in grammar {}, {} is not a type.".format(
+                    self.name, element_type
                 )
                 raise TypeError(msg)
 
-        for data_type, data_name in zip(self.data_types, self.data_names):
-            if data_name not in data:
+        for element_type, element_name in zip(self.data_types, self.data_names):
+            if element_name not in data:
                 failed = True
-                LOGGER.error("Missing input: %s in %s", data_name, self.name)
-            elif not isinstance(data[data_name], data_type):
+                LOGGER.error("Missing input: %s in %s.", element_name, self.name)
+            elif not isinstance(data[element_name], element_type):
                 failed = True
                 LOGGER.error(
-                    "Wrong input type for: %s in %s got %s instead of %s",
-                    data_name,
+                    "Wrong input type for: %s in %s got %s instead of %s.",
+                    element_name,
                     self.name,
-                    type(data[data_name]),
-                    data_type,
+                    type(data[element_name]),
+                    element_type,
                 )
         if failed and raise_exception:
-            raise InvalidDataException("Invalid data in " + str(self.name))
+            raise InvalidDataException("Invalid data in {}.".format(self.name))
 
-    def initialize_from_base_dict(self, typical_data_dict):
-        """Initialize the grammar with types and names from a typical data entry.
-
-        :param typical_data_dict: a data dictionary
-        """
+    def initialize_from_base_dict(
+        self,
+        typical_data_dict,  # type: Mapping[str,Any]
+    ):  # type: (...) -> None
         self.data_names = []
         self.data_types = []
-        for key, value in typical_data_dict.items():
-            self.data_names.append(key)
-            self.data_types.append(type(value))
+        for element_name, element_value in typical_data_dict.items():
+            self.data_names.append(element_name)
+            self.data_types.append(type(element_value))
 
-    def get_data_names(self):
-        """Returns the list of data names.
-
-        :returns: the data names alphabetically sorted
-        """
+    def get_data_names(self):  # type: (...) -> List[str]
         return self.data_names
 
-    def is_all_data_names_existing(self, data_names):
-        """Checks if data_names are present in grammar.
-
-        :param data_names: the data names list
-        :returns: True if all data are in grammar
-        """
-        for data_name in data_names:
-            if not self.is_data_name_existing(data_name):
+    def is_all_data_names_existing(
+        self,
+        data_names,  # type: Iterable[str]
+    ):  # type: (...) -> bool
+        for element_name in data_names:
+            if not self.is_data_name_existing(element_name):
                 return False
         return True
 
-    def _update_field(self, data_name, data_type):
-        """Updates self properties with a new property of data_name,data_type Adds it if
-        self has no property named data_name Updates self.data_types otherwise.
+    def _update_field(
+        self,
+        data_name,  # type: str
+        data_type,  # type: type
+    ):
+        """Update the grammar elements from an element name and an element type.
 
-        :param data_name: the name of the property
-        :param data_type: the type of the property
+        If there is no element with this name,
+        create it and store its type.
+
+        Otherwise,
+        update its type.
+
+        Args:
+            data_name: The name of the element.
+            data_type: The type of the element.
         """
         if data_name in self.data_names:
-            indx = self.data_names.index(data_name)
-            self.data_names[indx] = data_name
-            self.data_types[indx] = data_type
+            data_index = self.data_names.index(data_name)
+            self.data_names[data_index] = data_name
+            self.data_types[data_index] = data_type
         else:
             self.data_names.append(data_name)
             self.data_types.append(data_type)
 
-    def get_type_of_data_named(self, data_name):
-        """Gets the associated type to the data named data_name.
+    def get_type_of_data_named(
+        self,
+        data_name,  # type: str
+    ):  # type: (...) -> str
+        """Return the element type associated to an element name.
 
-        :param data_name: the name of the property
-        :returns: data type associated to data_name
+        Args:
+            data_name: The name of the element.
+
+        Returns:
+            The type of the element associated to the passed element name.
+
+        Raises:
+            ValueError: If the name does not correspond to an element name.
         """
         if not self.is_data_name_existing(data_name):
-            raise ValueError("Unknown data named :" + str(data_name))
-        indx = self.data_names.index(data_name)
-        return self.data_types[indx]
+            raise ValueError("Unknown data named: {}.".format(data_name))
+        data_index = self.data_names.index(data_name)
+        return self.data_types[data_index]
 
-    def update_from(self, input_grammar):
-        """Adds properties coming from another grammar.
-
-        :param input_grammar: the grammar to take inputs from
+    def update_from(
+        self,
+        input_grammar,  # type: AbstractGrammar
+    ):  # type: (...) -> None
+        """
+        Raises:
+            TypeError: If the passed grammar is not an :class:`.AbstractGrammar`.
         """
         if not isinstance(input_grammar, AbstractGrammar):
             msg = self._get_update_error_msg(self, input_grammar)
@@ -151,14 +180,20 @@ class SimpleGrammar(AbstractGrammar):
 
         input_grammar = input_grammar.to_simple_grammar()
 
-        for g_name, g_type in zip(input_grammar.data_names, input_grammar.data_types):
-            self._update_field(g_name, g_type)
+        for element_name, element_type in zip(
+            input_grammar.data_names, input_grammar.data_types
+        ):
+            self._update_field(element_name, element_type)
 
-    def update_from_if_not_in(self, input_grammar, exclude_grammar):
-        """Adds properties coming from input_grammar if they are not in exclude_grammar.
-
-        :param input_grammar: the grammar to take inputs from
-        :param exclude_grammar: exclusion grammar
+    def update_from_if_not_in(
+        self,
+        input_grammar,  # type: AbstractGrammar
+        exclude_grammar,  # type: AbstractGrammar
+    ):  # type: (...) -> None
+        """
+        Raises:
+            TypeError: If a passed grammar is not an :class:`.AbstractGrammar`.
+            ValueError: If types are inconsistent between both passed grammars.
         """
         if not isinstance(input_grammar, AbstractGrammar) or not isinstance(
             exclude_grammar, AbstractGrammar
@@ -169,35 +204,29 @@ class SimpleGrammar(AbstractGrammar):
         input_grammar = input_grammar.to_simple_grammar()
         exclude_grammar = exclude_grammar.to_simple_grammar()
 
-        for g_name, g_type in zip(input_grammar.data_names, input_grammar.data_types):
-            if exclude_grammar.is_data_name_existing(g_name):
-                ex_data_type = exclude_grammar.get_type_of_data_named(g_name)
-                if g_type != ex_data_type:
+        for element_name, element_type in zip(
+            input_grammar.data_names, input_grammar.data_types
+        ):
+            if exclude_grammar.is_data_name_existing(element_name):
+                ex_element_type = exclude_grammar.get_type_of_data_named(element_name)
+                if element_type != ex_element_type:
                     raise ValueError(
-                        "Inconsistent grammar update "
-                        + str(g_type)
-                        + " !="
-                        + str(ex_data_type)
+                        "Inconsistent grammar update {} != {}.".format(
+                            element_type, ex_element_type
+                        )
                     )
             else:
-                self._update_field(g_name, g_type)
+                self._update_field(element_name, element_type)
 
-    def is_data_name_existing(self, data_name):
-        """Checks if data_name is present in grammar.
-
-        :param data_name: the data name
-        :returns: True if data is in grammar
-        """
+    def is_data_name_existing(
+        self,
+        data_name,  # type: str
+    ):  # type: (...) -> bool
         return data_name in self.data_names
 
-    def clear(self):
-        """Clears the data to produce an empty grammar."""
+    def clear(self):  # type: (...) -> None
         self.data_names = []
         self.data_types = []
 
-    def to_simple_grammar(self):
-        """Converts to the base SimpleGrammar type.
-
-        :returns: a SimpleGrammar instance equivalent to self
-        """
+    def to_simple_grammar(self):  # type: (...) -> SimpleGrammar
         return self
