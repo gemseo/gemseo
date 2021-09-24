@@ -75,7 +75,6 @@ from numpy import issubdtype, multiply, nan, ndarray
 from numpy import number as np_number
 from numpy import where
 from numpy.linalg import norm
-from six import string_types
 
 from gemseo.algos.aggregation.aggregation_func import (
     aggregate_iks,
@@ -92,7 +91,7 @@ from gemseo.core.function import MDOFunction, MDOLinearFunction, MDOQuadraticFun
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import PY3, string_array
+from gemseo.utils.py23_compat import PY3, string_array, string_types
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -150,7 +149,6 @@ class OptimizationProblem(object):
             to be called at each new iterate.
         minimize_objective (bool): If True, maximize the objective.
         fd_step (float): The finite differences step.
-        differentiation_method (str): The type differentiation method.
         pb_type (str): The type of optimization problem.
         ineq_tolerance (float): The tolerance for the inequality constraints.
         eq_tolerance (float): The tolerance for the equality constraints.
@@ -169,6 +167,10 @@ class OptimizationProblem(object):
     USER_GRAD = "user"
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
+    __DIFFERENTIATION_CLASSES = {
+        COMPLEX_STEP: ComplexStep,
+        FINITE_DIFFERENCES: FirstOrderFD,
+    }
     NO_DERIVATIVES = "no_derivatives"
     DIFFERENTIATION_METHODS = [
         USER_GRAD,
@@ -205,6 +207,8 @@ class OptimizationProblem(object):
         input_database=None,  # type: Optional[Union[str,Database]]
         differentiation_method=USER_GRAD,  # type: str
         fd_step=1e-7,  # type: float
+        parallel_differentiation=False,  # type: bool
+        **parallel_differentiation_options  # type: Union[int,bool]
     ):  # type: (...) -> None
         # noqa: D205, D212, D415
         """
@@ -217,6 +221,9 @@ class OptimizationProblem(object):
             differentiation_method: The default differentiation method to be applied
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
+            parallel_differentiation: Whether to approximate the derivatives in parallel.
+            **parallel_differentiation_options: The options
+                to approximate the derivatives in parallel.
         """
         self._objective = None
         self.nonproc_objective = None
@@ -228,6 +235,7 @@ class OptimizationProblem(object):
         self.nonproc_new_iter_observables = []
         self.minimize_objective = True
         self.fd_step = fd_step
+        self.__differentiation_method = None
         self.differentiation_method = differentiation_method
         self.pb_type = pb_type
         self.ineq_tolerance = 1e-4
@@ -244,6 +252,62 @@ class OptimizationProblem(object):
         self.__store_listeners = []
         self.__newiter_listeners = []
         self.preprocess_options = {}
+        self.__parallel_differentiation = parallel_differentiation
+        self.__parallel_differentiation_options = parallel_differentiation_options
+
+    def __raise_exception_if_functions_are_already_preprocessed(self):
+        """Raise an exception if the function have already been pre-processed."""
+        if self.__functions_are_preprocessed:
+            raise RuntimeError(
+                "The parallel differentiation cannot be changed "
+                "because the functions have already been pre-processed."
+            )
+
+    @property
+    def parallel_differentiation(self):  # type: (...) -> bool
+        """Whether to approximate the derivatives in parallel."""
+        return self.__parallel_differentiation
+
+    @parallel_differentiation.setter
+    def parallel_differentiation(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self.__raise_exception_if_functions_are_already_preprocessed()
+        self.__parallel_differentiation = value
+
+    @property
+    def parallel_differentiation_options(self):  # type: (...) -> bool
+        """The options to approximate the derivatives in parallel."""
+        return self.__parallel_differentiation_options
+
+    @parallel_differentiation_options.setter
+    def parallel_differentiation_options(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self.__raise_exception_if_functions_are_already_preprocessed()
+        self.__parallel_differentiation_options = value
+
+    @property
+    def differentiation_method(self):  # type: (...) -> str
+        """The differentiation method."""
+        return self.__differentiation_method
+
+    @differentiation_method.setter
+    def differentiation_method(
+        self,
+        value,  # type: str
+    ):  # type: (...) -> None
+        if not isinstance(value, string_types):
+            value = value[0].decode()
+        if value not in self.DIFFERENTIATION_METHODS:
+            raise ValueError(
+                "'{}' is not a differentiation methods; available ones are: '{}'.".format(
+                    value, "', '".join(self.DIFFERENTIATION_METHODS)
+                )
+            )
+        self.__differentiation_method = value
 
     @property
     def objective(self):  # type: (...) -> MDOFunction
@@ -1132,7 +1196,9 @@ class OptimizationProblem(object):
             function = self.__normalize_linear_function(function)
         else:
             function = self.__normalize_and_round(function, normalize, round_ints)
-        self.__add_fd_jac(function)
+
+        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
+            self.__add_fd_jac(function)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         function.force_real = True
@@ -1275,13 +1341,19 @@ class OptimizationProblem(object):
         Args:
             function: The function to be derivated.
         """
-        if self.differentiation_method == self.COMPLEX_STEP:
-            c_s = ComplexStep(function.evaluate, self.fd_step)
-            function.jac = c_s.f_gradient
+        differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
+            self.differentiation_method
+        )
+        if differentiation_class is None:
+            return
 
-        if self.differentiation_method == self.FINITE_DIFFERENCES:
-            f_d = FirstOrderFD(function, self.fd_step)
-            function.jac = f_d.f_gradient
+        differentiation_object = differentiation_class(
+            function.evaluate,
+            step=self.fd_step,
+            parallel=self.__parallel_differentiation,
+            **self.__parallel_differentiation_options
+        )
+        function.jac = differentiation_object.f_gradient
 
     def check(self):  # type: (...) -> None
         """Check if the optimization problem is ready for run.

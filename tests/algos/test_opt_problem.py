@@ -376,9 +376,6 @@ class TestOptProblem(unittest.TestCase):
     def test_differentiation_method(self):
         """"""
         problem = self.__create_pow2_problem()
-        problem.differentiation_method = "None"
-        self.assertRaises(ValueError, problem.check)
-
         problem.differentiation_method = problem.COMPLEX_STEP
         problem.fd_step = 0.0
         self.assertRaises(ValueError, problem.check)
@@ -752,3 +749,59 @@ def test_is_mono_objective():
     )
 
     assert problem.is_mono_objective
+
+
+def test_undefined_differentiation_method():
+    """Check that passing an undefined differentiation raises a ValueError."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            "'foo' is not a differentiation methods; "
+            "available ones are: "
+            "'user', 'complex_step', 'finite_differences', 'no_derivatives'."
+        ),
+    ):
+        OptimizationProblem(DesignSpace(), differentiation_method="foo")
+
+
+@pytest.fixture
+def problem():
+    """A simple optimization problem :math:`max_x x`."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    opt_problem = OptimizationProblem(design_space)
+    opt_problem.objective = MDOFunction(lambda x: x, name="func", f_type="obj")
+    return opt_problem
+
+
+def test_parallel_differentiation(problem):
+    """Check that parallel_differentiation is taken into account."""
+    assert not problem.parallel_differentiation
+    problem.parallel_differentiation = True
+    assert problem.parallel_differentiation
+
+
+def test_parallel_differentiation_options(problem):
+    """Check that parallel_differentiation_options is taken into account."""
+    assert not problem.parallel_differentiation_options
+    problem.parallel_differentiation_options = {"step": 1e-10}
+    assert problem.parallel_differentiation_options == {"step": 1e-10}
+
+
+def test_parallel_differentiation_setting_after_functions_preprocessing(problem):
+    """Check that parallel differentiation cannot be changed after preprocessing."""
+    problem.preprocess_functions()
+    expected_message = (
+        "The parallel differentiation cannot be changed "
+        "because the functions have already been pre-processed."
+    )
+    with pytest.raises(
+        RuntimeError,
+        match=expected_message,
+    ):
+        problem.parallel_differentiation = "user"
+    with pytest.raises(
+        RuntimeError,
+        match=expected_message,
+    ):
+        problem.parallel_differentiation_options = {}
