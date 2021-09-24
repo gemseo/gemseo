@@ -48,6 +48,7 @@ Fixed
 - Bug with inherited docstrings.
 - Bug with the MATLAB discipline on Windows.
 - ImportError (backport.unittest_mock) on Python 2.7.
+- Bug with the 'sample_x' parameter of the pSeven wrapper.
 
 Version 3.1.0 (July 2021)
 *************************
