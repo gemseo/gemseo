@@ -29,9 +29,11 @@ from unittest import mock
 
 import pytest
 
+from gemseo.api import execute_algo
+
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")
 
-from numpy import ones  # noqa: E402
+from numpy import array, ones  # noqa: E402
 from numpy.testing import assert_allclose  # noqa: E402
 
 from gemseo.algos.design_space import DesignSpace  # noqa: E402
@@ -259,3 +261,15 @@ def test_pseven_stop_before_gemseo():
     )
     assert result.status == 0
     assert result.message == "Success"
+
+
+def test_pseven_sample_x():
+    """Check that the input sample is evaluated."""
+    current_x = Rosenbrock().design_space.get_current_x()
+    sample_x = [array([2.0, -2.0]), array([-2.0, 2.0])]
+    problem = Rosenbrock()
+    execute_algo(problem, "PSEVEN", sample_x=sample_x, max_iter=3)
+    database = problem.database
+    assert database.contains_x(current_x)
+    assert database.contains_x(sample_x[0])
+    assert database.contains_x(sample_x[1])

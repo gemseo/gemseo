@@ -629,18 +629,23 @@ class PSevenOpt(OptimizationLibrary):
                         )
                     )
 
-        # Grab the initial sample from the options
-        sample = {
-            "sample_x": options.pop("sample_x", []),
-            "sample_f": options.pop("sample_f", []),
-            "sample_c": options.pop("sample_c", []),
-        }
-
         # Create the pSeven problem
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         initial_x, lower_bnd, upper_bnd = self.get_x0_and_bounds_vects(normalize_ds)
         evaluation_cost_type = options.pop("evaluation_cost_type", None)
         expensive_evaluations = options.pop("expensive_evaluations", None)
+
+        # Grab the initial sample from the options
+        sample_x = options.pop("sample_x", [])
+        if normalize_ds:
+            sample_x = [
+                problem.design_space.normalize_vect(point) for point in sample_x
+            ]
+        sample = {
+            "sample_x": sample_x,
+            "sample_f": options.pop("sample_f", []),
+            "sample_c": options.pop("sample_c", []),
+        }
 
         pseven_problem = PSevenProblem(
             problem,
