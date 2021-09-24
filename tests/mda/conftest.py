@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from typing import List
 
 import pytest
 
@@ -21,5 +21,12 @@ from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
 
 @pytest.fixture
-def sellar_disciplines():
+def sellar_disciplines():  # type: (...)-> List[Sellar1,Sellar2,SellarSystem]
+    """The disciplines of the Sellar problem.
+
+    Returns:
+        * A Sellar1 discipline.
+        * A Sellar2 discipline.
+        * A SellarSystem discipline.
+    """
     return [Sellar1(), Sellar2(), SellarSystem()]
