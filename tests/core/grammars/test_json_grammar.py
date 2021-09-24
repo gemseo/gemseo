@@ -22,6 +22,7 @@
 
 from __future__ import division, unicode_literals
 
+import logging
 from numbers import Number
 from os.path import dirname, exists, join
 
@@ -272,3 +273,18 @@ def test_to_simple_grammar_array_number():
 
     with pytest.raises(InvalidDataException):
         simp.load_data({"X": 1j, "Y": 1.0})
+
+
+def test_to_simple_grammar_string_array(caplog):
+    """Check that a warning message is logged when a JSONGrammar has a string array."""
+    grammar = JSONGrammar(
+        "grammar_with_string_array",
+        schema_file=join(dirname(__file__), "data", "grammar_test4.json"),
+    )
+    caplog.set_level(logging.WARNING)
+    grammar.to_simple_grammar()
+    expected = (
+        "Unsupported type 'string' in JSONGrammar 'grammar_with_string_array' "
+        "for property 'x' in conversion to simple grammar."
+    )
+    assert expected in caplog.text

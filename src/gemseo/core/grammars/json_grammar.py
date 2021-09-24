@@ -27,6 +27,16 @@ from __future__ import division, unicode_literals
 import json
 import logging
 from numbers import Number
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from numpy import generic, ndarray, zeros
 
@@ -38,11 +48,25 @@ from gemseo.utils.py23_compat import PY2, JsonSchemaException, Path, compile_sch
 
 LOGGER = logging.getLogger(__name__)
 
+ElementType = Union[str, float, bool, Sequence[Union[str, float, bool]]]
+NumPyNestedMappingType = Mapping[
+    str, Union[ElementType, ndarray, generic, "NumPyNestedMappingType"]
+]
+MappingSchemaType = Dict[
+    str, Union[ElementType, List[ElementType], "MappingSchemaType"]
+]
+DictSchemaType = Mapping[str, Union[ElementType, List[ElementType], "DictSchemaType"]]
+SerializedGrammarType = Dict[
+    str, Union[ElementType, List[ElementType], "SerializedGrammarType"]
+]
+
 
 class JSONGrammar(AbstractGrammar):
-    """A grammar subclass that stores the input or output data types and structure a
-    MDODiscipline using a JSON format It is able to check the inputs and outputs against
-    a JSON schema."""
+    """A grammar based on a JSON schema.
+
+    Attributes:
+        schema (MutableMappingSchemaBuilder): The JSON schema.
+    """
 
     PROPERTIES_FIELD = "properties"
     REQUIRED_FIELD = "required"
@@ -59,17 +83,20 @@ class JSONGrammar(AbstractGrammar):
 
     def __init__(
         self,
-        name,
-        schema_file=None,
-        schema=None,
-        grammar_type=None,
-        descriptions=None,
+        name,  # type: str
+        schema_file=None,  # type: Optional[Union[str,Path]]
+        schema=None,  # type: Optional[MappingSchemaType]
+        descriptions=None,  # type: Optional[Mapping[str,str]]
     ):
-        """Constructor.
-
-        :param name : grammar name
-        :param schema : a genson Schema  to initialize self
-        :param schema_file : the json schema file
+        """
+        Args:
+            schema_file: The JSON schema file.
+                If None, do not initialize the grammar from a JSON schema file.
+            schema: A genson schema to initialize the grammar.
+                If None,  do not initialize the grammar from a JSON schema.
+            descriptions: The descriptions of the elements,
+                in the form: ``{element_name: element_meaning}``.
+                If None, use the descriptions available in the JSON schema if any.
         """
         super(JSONGrammar, self).__init__(name)
         self._validator = None
@@ -83,48 +110,60 @@ class JSONGrammar(AbstractGrammar):
         else:
             self.initialize_from_base_dict({}, description_dict=descriptions)
 
-    def __repr__(self):
+    def __repr__(self):  # type: (...) -> str
         return "{}, schema: {}".format(self, self.schema.to_json())
 
-    def _init_schema(self):
+    def _init_schema(self):  # type: (...) -> None
         """Initialize the schema."""
         self.schema = MutableMappingSchemaBuilder()
 
-    def clear(self):
-        """Clears the data to produce an empty grammar."""
+    def clear(self):  # type: (...) -> None
         self.__set_grammar_from_dict({})
 
-    def _init_validator(self):
+    def _init_validator(self):  # type: (...) -> None
         """Initialize the validator."""
         schema_dict = self.schema.to_schema()
         schema_dict.pop("id", None)
         self._validator = compile_schema(schema_dict)
 
     @classmethod
-    def cast_array_to_list(cls, data_dict):
-        """Casts the numpy arrays to lists for dictionary values.
+    def cast_array_to_list(
+        cls,
+        data_dict,  # type: NumPyNestedMappingType
+    ):  # type: (...) -> DictSchemaType
+        """Cast the NumPy arrays to lists for dictionary values.
 
-        :param data_dict: the data dictionary
-        :returns: The dict with casted arrays
+        Args:
+            data_dict: The data mapping.
+
+        Returns:
+            The original mapping casted to a dictionary
+            where NumPy arrays have been replaced with lists.
         """
-        out_d = data_dict.copy()
+        dict_of_list = dict(data_dict)
         for key, value in data_dict.items():
             if isinstance(value, (ndarray, generic)):
-                out_d[key] = value.real.tolist()
-            elif isinstance(value, dict):
-                out_d[key] = cls.cast_array_to_list(value)
-        return out_d
+                dict_of_list[key] = value.real.tolist()
+            elif isinstance(value, Mapping):
+                dict_of_list[key] = cls.cast_array_to_list(value)
 
-    def load_data(self, data, raise_exception=True):
-        """Loads the data dictionary in the grammar and checks it against json schema.
+        return dict_of_list
 
-        :param data: the input data
-        :param raise_exception: if False, no exception is raised
-            when data is invalid (Default value = True)
+    def load_data(
+        self,
+        data,  # type: MutableMapping[str,ElementType]
+        raise_exception=True,  # type: bool
+    ):  # type: (...) -> MutableMapping[str,ElementType]
         """
-        if not isinstance(data, dict):
+        Raises:
+            InvalidDataException:
+                * If the passed data is not a dictionary.
+                * If the data is not consistent with the grammar.
+        """
+        if not isinstance(data, MutableMapping):
             raise InvalidDataException(
-                "Input data must be a dictionary: got a {} instead".format(type(data))
+                "Input data must be a mutable mapping; "
+                "got a {} instead.".format(type(data))
             )
 
         if self._validator is None:
@@ -137,24 +176,31 @@ class JSONGrammar(AbstractGrammar):
             self._validator(data_to_check)
         except JsonSchemaException as error:
             error_exist = True
-            msg = "Invalid data in: {}".format(self.name)
+            log_message = ["Invalid data in: {}".format(self.name)]
 
-            if error.args[0].startswith("data must contain"):
-                # Error messages are not clear enough when missing properties
+            error_message = error.args[0]
+            if error_message.startswith("data must contain"):
+                # Error messages are not clear enough when missing elements
                 # All keys are put in the message
-                diff = sorted(set(self.get_data_names()) - set(data.keys()))
-                if diff:
-                    msg += "\nMissing mandatory properties: {}".format(",".join(diff))
-                else:
-                    msg += "\n', error: {}".format(error.args[0])
-            else:
-                msg += "\n', error: {}".format(error.args[0])
+                missing_elements = set(self.get_data_names()) - set(data.keys())
 
-            LOGGER.error(msg)
+                if missing_elements:
+                    log_message.append(
+                        "Missing mandatory elements: {}".format(
+                            ",".join(sorted(missing_elements))
+                        )
+                    )
+                else:
+                    log_message.append(", error: {}".format(error_message))
+            else:
+                log_message.append(", error: {}".format(error_message))
+
+            LOGGER.error("\n".join(log_message))
 
         if error_exist and raise_exception:
-            err = "Invalid data from grammar {}".format(self.name)
-            raise InvalidDataException(err)
+            raise InvalidDataException(
+                "Invalid data from grammar {}.".format(self.name)
+            )
 
         # Check a copy to keep types and arrays but store initial dict for complex
         # Add defaults
@@ -163,126 +209,153 @@ class JSONGrammar(AbstractGrammar):
 
         return data
 
-    def init_from_schema_file(self, schema_path, descriptions=None):
+    def init_from_schema_file(
+        self,
+        schema_path,  # type: Union[str,Path]
+        descriptions=None,  # type: Optional[Mapping[str,str]]
+    ):  # type: (...) -> None
         """Set the grammar from a file.
 
-        :param schema_path: path to the schema file.
+        Args:
+            schema_path: The path to the schema file.
+            descriptions: The descriptions for the elements of the grammar,
+                in the form: ``{element_name: element_meaning}``.
+                If None, use the descriptions from the schema file.
+
+        Raises:
+            FileNotFoundError: If the schema file does not exist.
         """
         schema_path = Path(schema_path)
 
         if not schema_path.exists():
-            msg = "Try to initialize grammar with not existing file: {}".format(
-                schema_path
+            raise FileNotFoundError(
+                "Try to initialize grammar "
+                "with not existing file: {}.".format(schema_path)
             )
-            raise FileNotFoundError(msg)
 
-        schema_dict = json.loads(schema_path.read_text())
-        self.__set_grammar_from_dict(schema_dict, descriptions)
+        schema = json.loads(schema_path.read_text())
+        self.__set_grammar_from_dict(schema, descriptions)
 
-    def __set_grammar_from_dict(self, schema_dict, descriptions=None):
+    def __set_grammar_from_dict(
+        self,
+        schema,  # type: Union[MappingSchemaType,MutableMappingSchemaBuilder]
+        descriptions=None,  # type: Optional[Mapping[str,str]]
+    ):  # type: (...) -> None
         """Set the grammar from a dictionary.
 
         Args:
-            schema_dict: Schema dictionary.
-            descriptions: Properties descriptions, optional.
+            schema: The schema to set the grammar with.
+            descriptions: The descriptions for the elements of the grammar,
+                in the form: ``{element_name: element_meaning}``.
+                If None, use the ``schema`` ones.
         """
         self._init_schema()
-        self.__update_grammar_from_dict(schema_dict, descriptions)
+        self.__update_grammar_from_dict(schema, descriptions)
 
-    def __update_grammar_from_dict(self, schema_dict, descriptions=None):
+    def __update_grammar_from_dict(
+        self,
+        schema,  # type: Union[MappingSchemaType,MutableMappingSchemaBuilder]
+        descriptions=None,  # type: Optional[Mapping[str,str]]
+    ):  # type: (...) -> None
         """Update the grammar from a dictionary.
 
         Args:
-            schema_dict: Schema dictionary.
-            descriptions: Properties descriptions, optional.
+            schema: The schema to update the grammar with.
+            descriptions: The descriptions for the elements of the grammar,
+                in the form: ``{element_name: element_meaning}``.
+                If None, use the ``schema`` ones.
         """
         if descriptions is not None:
-            if not isinstance(schema_dict, dict):
-                schema_dict = schema_dict.to_schema()
-            for ppty_name, ppty_schema in schema_dict["properties"].items():
+            if not isinstance(schema, dict):
+                schema = schema.to_schema()
+
+            for property_name, property_schema in schema["properties"].items():
                 try:
-                    ppty_schema["description"] = descriptions[ppty_name]
+                    property_schema["description"] = descriptions[property_name]
                 except KeyError:
                     LOGGER.debug(
-                        "skipping description for unknown property %s", ppty_name
+                        "skipping description for unknown property %s.", property_name
                     )
 
-        self.__merge_schema(schema_dict)
+        self.__merge_schema(schema)
 
-    def __merge_schema(self, schema):
+    def __merge_schema(
+        self,
+        schema,  # type: MappingSchemaType
+    ):  # type: (...) -> None
         """Merge a schema in the current one.
 
         Args:
-            schema: Schema to merge, could be a schema object or a dictionary.
+            schema: The schema to be merge, could be a schema object or a dictionary.
         """
         self.schema.add_schema(schema)
         self._validator = None
 
     def initialize_from_data_names(
         self,
-        data_names,
-        descriptions=None,
-    ):
-        """Initializes a JSONGrammar from a list of data. All data of the grammar will
-        be set as arrays.
+        data_names,  # type: Iterable[str]
+        descriptions=None,  # type: Optional[Mapping[str,str]]
+    ):  # type: (...) -> None
+        """Initialize the grammar from the names and descriptions of the elements.
 
-        :param data_names: a data names list
+        Use float type.
+
+        Args:
+            descriptions: The descriptions of the elements,
+                in the form: ``{element_name: element_meaning}``.
+                If None, do not initialize the elements with descriptions.
         """
-        data = zeros(1)
-        typical_data_dict = {k: data for k in data_names}
-        self.initialize_from_base_dict(typical_data_dict, description_dict=descriptions)
+        element_value = zeros(1)
+        elements_values = {element_name: element_value for element_name in data_names}
+        self.initialize_from_base_dict(elements_values, description_dict=descriptions)
 
     def initialize_from_base_dict(
         self,
-        typical_data_dict,
-        description_dict=None,
-    ):
-        """Initialize a json grammar with types and names from a typical data entry. The
-        keys of the typical_data_dict will be the names of the data in the grammar. The
-        types of the values of the typical_data_dict will be converted to JSON Schema
-        types and define the properties of the JSON Schema.
+        typical_data_dict,  # type: Mapping[str,ElementType]
+        description_dict=None,  # type: Optional[Mapping[str,str]]
+    ):  # type: (...) -> None
+        """Initialize the grammar with types and names from a typical data entry.
 
-        :param typical_data_dict: a data dictionary with keys as data names
-            and values as a typical value for this data
-        :param description_dict: dictionary of descriptions,
-             {name:meaning} structure
+        The keys of the ``typical_data_dict`` are the names of the elements.
+        The types of the values of the ``typical_data_dict`` will be converted
+        to JSON Schema types and define the elements of the JSON Schema.
+
+        Args:
+            description_dict: The descriptions of the data names,
+                in the form: ``{element_name: element_meaning}``.
+                If None, do not initialize the elements with descriptions.
         """
         # Convert arrays to list as for check
         list_data_dict = self.cast_array_to_list(typical_data_dict)
         self.schema.add_object(list_data_dict)
         self.__set_grammar_from_dict(self.schema, description_dict)
 
-    def get_data_names(self):
-        """Returns the list of data names.
-
-        :returns: the data names, as a dict keys set
-        """
+    def get_data_names(self):  # type: (...) -> List[str]
         return list(self.schema.keys())
 
-    def is_data_name_existing(self, data_name):
-        """Checks if data_name is present in grammar.
-
-        :param data_name: the data name
-        :returns: True if data is in grammar
-        """
+    def is_data_name_existing(
+        self,
+        data_name,  # type: str
+    ):  # type: (...) -> bool
         return data_name in self.get_data_names()
 
-    def is_all_data_names_existing(self, data_names):
-        """Checks if data_names are present in grammar.
-
-        :param data_names: the data names list
-        :returns: True if all data are in grammar
-        """
+    def is_all_data_names_existing(
+        self,
+        data_names,  # type: Iterable[str]
+    ):  # type: (...) -> bool
         exists = self.is_data_name_existing
         for data_name in data_names:
             if not exists(data_name):
                 return False
         return True
 
-    def update_from(self, input_grammar):
-        """Adds properties coming from another grammar.
-
-        :param input_grammar: the grammar to take inputs from
+    def update_from(
+        self,
+        input_grammar,  # type: JSONGrammar
+    ):  # type: (...) -> None
+        """
+        Raises:
+            TypeError: If the passed grammar is not a JSONGrammar.
         """
         if not isinstance(input_grammar, JSONGrammar):
             msg = (
@@ -293,47 +366,52 @@ class JSONGrammar(AbstractGrammar):
 
         self.__merge_schema(input_grammar.schema)
 
-    def to_simple_grammar(self):
-        """Creates a SimpleGrammar from self, preserving the features if possible
-        Ignores the features of JSONGrammar that are not supported by SimpleGrammar.
+    def to_simple_grammar(self):  # type: (...) -> SimpleGrammar
+        """Convert to the base :class:`.SimpleGrammar` type.
 
-        :returns: a SimpleGrammar instance
+        Ignore the features of JSONGrammar that are not supported by SimpleGrammar.
+
+        Returns:
+            A :class:`.SimpleGrammar` equivalent to the current grammar.
         """
         grammar = SimpleGrammar(self.name)
         schema_dict = self.schema.to_schema()
         properties = schema_dict.get(self.PROPERTIES_FIELD, {})
 
-        for prop, desc in properties.items():
-            grammar.data_names.append(prop)
-            if "type" not in desc or desc["type"] not in self.TYPES_MAP:
-                d_type = None
+        for property_name, property_description in properties.items():
+            grammar.data_names.append(property_name)
+            property_json_type = property_description.get("type")
+            if property_json_type not in self.TYPES_MAP:
+                property_type = None
             else:
-                d_type = self.TYPES_MAP[desc["type"]]
-            grammar.data_types.append(d_type)
+                property_type = self.TYPES_MAP[property_description["type"]]
 
-            if d_type == "array":
-                sub_type = desc["items"].get("type")
-                if sub_type not in ["number", "integer", None]:
-                    msg = "Unsupported type {sub_type} in JSONGrammar {name}"
-                    msg += "for property {prop} in conversion to simple grammar"
-                    err = msg.format(sub_type=sub_type, name=self.name, prop=prop)
-                    LOGGER.warning(err)
+            grammar.data_types.append(property_type)
 
-            for prop_name in ["minItems", "maxItems", "additionalItems", "contains"]:
-                if prop_name in desc:
-                    msg = "Unsupported feature {desc} in JSONGrammar {name}"
-                    msg += "for property {prop} in conversion to simple grammar"
-                    err = msg.format(desc=desc, name=self.name, prop=prop)
-                    LOGGER.warning(err)
+            if property_json_type == "array" and "items" in property_description:
+                property_json_sub_type = property_description["items"].get("type")
+                if property_json_sub_type not in ["number", "integer", None]:
+                    message = (
+                        "Unsupported type '{}' in JSONGrammar '{}' "
+                        "for property '{}' in conversion to simple grammar."
+                    ).format(property_json_sub_type, self.name, property_name)
+                    LOGGER.warning(message)
+
+            for feature in ["minItems", "maxItems", "additionalItems", "contains"]:
+                if feature in property_description:
+                    message = (
+                        "Unsupported feature '{}' in JSONGrammar '{}' "
+                        "for property '{}' in conversion to simple grammar."
+                    ).format(feature, self.name, property_name)
+                    LOGGER.warning(message)
 
         return grammar
 
-    def update_from_if_not_in(self, input_grammar, exclude_grammar):
-        """Adds objects coming from input_grammar if they are not in exclude_grammar.
-
-        :param input_grammar: the grammar to take inputs from
-        :param exclude_grammar: exclusion grammar
-        """
+    def update_from_if_not_in(
+        self,
+        input_grammar,  # type: JSONGrammar
+        exclude_grammar,  # type: JSONGrammar
+    ):  # type: (...) -> None
         if not (
             isinstance(input_grammar, self.__class__)
             and isinstance(exclude_grammar, self.__class__)
@@ -344,49 +422,69 @@ class JSONGrammar(AbstractGrammar):
         schema = MutableMappingSchemaBuilder()
         schema.add_schema(input_grammar.schema)
 
-        for name in exclude_grammar.schema.keys():
+        for element_name in exclude_grammar.schema.keys():
             try:
-                del schema[name]
+                del schema[element_name]
             except KeyError:
                 pass
 
         self.__merge_schema(schema)
 
-    def restrict_to(self, data_names):
-        """Restrict the grammar to given names.
+    def restrict_to(
+        self,
+        data_names,  # type: Sequence[str]
+    ):  # type: (...) -> None
+        """Restrict the grammar to the given names.
 
-        :param data_names: the names of the data to restrict the grammar to
+        Args:
+            data_names: The names of the elements to restrict the grammar to.
         """
-        for name in list(self.schema.keys()):
-            if name not in data_names:
-                self.remove_item(name)
+        for element_name in list(self.schema.keys()):
+            if element_name not in data_names:
+                self.remove_item(element_name)
 
-    def remove_item(self, item_name):
-        """Removes an item from the grammar.
+    def remove_item(
+        self,
+        item_name,  # type: str
+    ):  # type: (...) -> None
+        """Remove an element from the grammar from its name.
 
-        :param item_name: the item name to be removed
+        Args:
+            item_name: The name of the element to be removed.
         """
         del self.schema[item_name]
 
-    def set_item_value(self, item_name, item_value):
-        """Sets the value of an item.
+    def set_item_value(
+        self,
+        item_name,  # type: str
+        item_value,  # type: Dict[str,str]
+    ):  # type: (...) -> None
+        """Set the value of an element.
 
-        :param item_name: the item name to be modified
-        :param item_value: value of the item
+        Args:
+            item_name: The name of the element.
+            item_value: The value of the element.
+
+        Raises:
+            ValueError: If the item is not in the grammar.
         """
         if not self.is_data_name_existing(item_name):
-            raise ValueError("Item {} not in grammar {}".format(item_name, self.name))
-        self_dict = self.schema.to_schema()
-        self_dict[self.PROPERTIES_FIELD][item_name] = item_value
+            raise ValueError("Item {} not in grammar {}.".format(item_name, self.name))
+        schema = self.schema.to_schema()
+        schema[self.PROPERTIES_FIELD][item_name] = item_value
 
-        self.__set_grammar_from_dict(self_dict)
+        self.__set_grammar_from_dict(schema)
 
-    def write_schema(self, path=None):
+    def write_schema(
+        self,
+        path=None,  # type: Optional[Path,str]
+    ):  # type: (...) -> None
         """Write the schema to a file.
 
         Args:
-            path: Write to this path, if None then write to a file named after the
-                grammar and with .json extension.
+            path: The file path.
+                If None,
+                then write to a file named after the grammar and with .json extension.
         """
         if path is None:
             path = Path(self.name).with_suffix(".json")
@@ -410,22 +508,27 @@ class JSONGrammar(AbstractGrammar):
                 path.open("w", encoding="utf-8"),
             )
 
-    def __getstate__(self):
+    def __getstate__(self):  # type: (...) -> SerializedGrammarType
         """Used by pickle to define what to serialize.
 
-        :returns: the dict to serialize
+        Returns:
+            The dict to serialize.
         """
-        out_d = dict(self.__dict__)
-        out_d.pop("_validator")
+        deserialized_grammar = dict(self.__dict__)
+        deserialized_grammar.pop("_validator")
         # genson schema cannot be pickled: use its dictionary representation
-        out_d["schema"] = self.schema.to_schema()
-        return out_d
+        deserialized_grammar["schema"] = self.schema.to_schema()
+        return deserialized_grammar
 
-    def __setstate__(self, data_dict):
+    def __setstate__(
+        self,
+        serialized_grammar,  # type: SerializedGrammarType
+    ):  # type: (...) -> None
         """Used by pickle to define what to deserialize.
 
-        :param data_dict : update self dict from data_dict to deserialize
+        Args:
+            data_dict: update self dict from data_dict to deserialize.
         """
-        self.__dict__.update(data_dict)
+        self.__dict__.update(serialized_grammar)
         # genson schema cannot be pickled: use its dictionary representation
-        self.__set_grammar_from_dict(data_dict.pop("schema"))
+        self.__set_grammar_from_dict(serialized_grammar.pop("schema"))
