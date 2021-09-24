@@ -209,8 +209,7 @@ scenario.post_process(
     save=False,
     show=False,
     variables_list=["-y_4", "g_1"],
-    figsize_x=14,
-    figsize_y=14,
+    fig_size=(14, 14),
 )
 
 ##############################################################################
@@ -226,8 +225,6 @@ scenario.post_process("Robustness", save=False, show=False)
 ##############################################################################
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process(
-    "VariableInfluence", save=False, show=False, figsize_x=14, figsize_y=14
-)
+scenario.post_process("VariableInfluence", save=False, show=False, fig_size=(14, 14))
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

@@ -38,7 +38,7 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # .. _sobieski_use_case:
 #
 # Solving with an :ref:`MDF formulation <mdf_formulation>`
-# -------------------------------------------------------
+# --------------------------------------------------------
 #
 # In this example, we solve the range optimization using the following
 # :ref:`MDF formulation <mdf_formulation>`:
@@ -102,7 +102,7 @@ disciplines = create_discipline(
 #    to import them.
 #
 #    See :ref:`api`.
-##############################################################################
+#
 # Step 2: Creation of :class:`.Scenario`
 # --------------------------------------
 #

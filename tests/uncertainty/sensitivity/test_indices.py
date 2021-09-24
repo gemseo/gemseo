@@ -20,7 +20,7 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-"""Tests for the class SensitivityIndices."""
+"""Tests for the class SensitivityAnalysis."""
 
 from __future__ import division, unicode_literals
 
@@ -216,7 +216,7 @@ def test_inputs_names(mock_sensitivity_analysis):
     """Check the value of the attribute input_names.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
     """
     assert mock_sensitivity_analysis.inputs_names == ["x1", "x2"]
 
@@ -226,7 +226,7 @@ def test_sort_parameters(mock_sensitivity_analysis, output):
     """Check if the parameters are well sorted.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
         output: The value used to sort the parameters.
     """
     parameters = mock_sensitivity_analysis.sort_parameters(output)
@@ -234,10 +234,10 @@ def test_sort_parameters(mock_sensitivity_analysis, output):
 
 
 def test_convert_to_dataset(mock_sensitivity_analysis):
-    """Check if the SensitivityIndices are well converted to Dataset.
+    """Check if the sensitivity indices are well converted to Dataset.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
     """
     dataset = mock_sensitivity_analysis.export_to_dataset()
     assert isinstance(dataset, Dataset)

@@ -97,8 +97,7 @@ scenario.post_process(
     constraints_list=["g_1", "g_2", "g_3"],
     save=False,
     show=False,
-    figsize_x=5,
-    figsize_y=5,
+    fig_size=(5, 5),
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
