@@ -63,8 +63,7 @@ DISC_DESCR_16D = [
 ]
 
 
-@pytest.mark.usefixtures("tmp_wd", "sellar_disciplines")
-def test_sellar(sellar_disciplines):
+def test_sellar(tmp_wd, sellar_disciplines):
     """"""
     mda_chain = MDAChain(
         sellar_disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
