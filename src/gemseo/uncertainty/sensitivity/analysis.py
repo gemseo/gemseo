@@ -762,7 +762,7 @@ class SensitivityAnalysis(object):
         return fig
 
     def export_to_dataset(self):  # type: (...) -> Dataset
-        """Convert this :class:`.SensitivityIndices` instance into a :class:`.Dataset`.
+        """Convert :attr:`.SensitivityAnalysis.indices` into a :class:`.Dataset`.
 
         Returns:
             Dataset: The sensitivity indices.

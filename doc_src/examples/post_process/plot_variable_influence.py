@@ -90,8 +90,6 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # df/dxi * (xi* - xi0) where xi0 is the initial value of the variable
 # and xi* is the optimal value of the variable plots any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
-scenario.post_process(
-    "VariableInfluence", save=False, show=False, figsize_x=15, figsize_y=12
-)
+scenario.post_process("VariableInfluence", save=False, show=False, fig_size=(15, 12))
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
