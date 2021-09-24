@@ -24,17 +24,14 @@ from __future__ import division, unicode_literals
 
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda_factory import MDAFactory
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
 
-def test_jacobi_sobieski():
+def test_jacobi_sobieski(sellar_disciplines):
     """Test the execution of Jacobi on Sobieski."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda = MDAFactory().create("MDAJacobi", disciplines, max_mda_iter=2)
+    mda = MDAFactory().create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
     mda.execute()
 
-    disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
-    mda2 = MDAJacobi(disciplines2, max_mda_iter=2)
+    mda2 = MDAJacobi(sellar_disciplines, max_mda_iter=2)
     mda2.execute()
 
     for k, v in mda2.local_data.items():
