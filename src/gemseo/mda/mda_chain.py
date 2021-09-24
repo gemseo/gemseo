@@ -25,7 +25,7 @@ import logging
 from itertools import repeat
 from multiprocessing import cpu_count
 from os.path import join, split
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
@@ -58,7 +58,7 @@ class MDAChain(MDA):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
         log_convergence=False, #type: bool
-        **sub_mda_options
+        **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
     ):
         """
         Args:
@@ -124,7 +124,7 @@ class MDAChain(MDA):
         disciplines,  # type: List[MDODiscipline]
         sub_mda_class="MDAJacobi",  # type: str
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
-        **sub_mda_options
+        **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
 

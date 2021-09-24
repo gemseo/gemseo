@@ -23,12 +23,17 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import List, Sequence
+from typing import Iterable, List, Optional, Sequence, Union
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.factory import Factory
 from gemseo.mda.mda import MDA
 
 LOGGER = logging.getLogger(__name__)
+
+MDA_OPTION_TYPE = Union[
+    float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]
+]
 
 
 class MDAFactory(object):
@@ -42,7 +47,7 @@ class MDAFactory(object):
         self,
         mda_name,  # type: str
         disciplines,  # type: Sequence[str]
-        **options
+        **options  # type: Optional[MDA_OPTION_TYPE]
     ):  # type: (...) -> MDA
         """Create a MDA.
 
