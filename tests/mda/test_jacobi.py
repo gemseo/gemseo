@@ -22,28 +22,13 @@
 
 from __future__ import division, unicode_literals
 
-from numpy import array, complex128, float64, ones
+from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.chains import SobieskiMDAJacobi
 
 from .test_gauss_seidel import SelfCoupledDisc
-
-
-def get_sellar_initial():
-    """Generate initial solution."""
-    x_local = array([0.0], dtype=float64)
-    x_shared = array([1.97763888, 0.0], dtype=float64)
-    y_0 = ones(1, dtype=complex128)
-    y_1 = ones(1, dtype=complex128)
-    return x_local, x_shared, y_0, y_1
-
-
-def get_sellar_initial_input_data():
-    """Build dictionary with initial solution."""
-    x_local, x_shared, y_0, y_1 = get_sellar_initial()
-    return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
 
 
 def test_jacobi_sobieski():
