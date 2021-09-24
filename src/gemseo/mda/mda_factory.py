@@ -32,7 +32,7 @@ from gemseo.mda.mda import MDA
 
 LOGGER = logging.getLogger(__name__)
 
-MDA_OPTION_TYPE = Union[
+MDAOptionType = Union[
     float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]
 ]
 
@@ -47,7 +47,7 @@ class MDAFactory(object):
         self,
         mda_name,  # type: str
         disciplines,  # type: Sequence[MDODiscipline]
-        **options  # type: Optional[MDA_OPTION_TYPE]
+        **options  # type: Optional[MDAOptionType]
     ):  # type: (...) -> MDA
         """Create a MDA.
 
