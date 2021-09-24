@@ -41,7 +41,6 @@ class MDAFactory(object):
     """MDA factory to create the MDA from a name or a class."""
 
     def __init__(self):  # type: (...) -> None
-        """Search for subclasses of MDA."""
         self.factory = Factory(MDA, ("gemseo.mda",))
 
     def create(
