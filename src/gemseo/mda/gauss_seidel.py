@@ -21,7 +21,7 @@
 """A Gauss Seidel algorithm for solving MDAs."""
 from __future__ import division, unicode_literals
 
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -51,7 +51,7 @@ class MDAGaussSeidel(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         name=None,  # type: Optional[str]
         max_mda_iter=10,  # type: int
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str

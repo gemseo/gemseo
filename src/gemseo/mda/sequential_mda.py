@@ -21,7 +21,7 @@
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
 from __future__ import division, unicode_literals
 
-from typing import List, Optional, Sequence
+from typing import Optional, Sequence
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -35,7 +35,7 @@ class MDASequential(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         mda_sequence,  # type: Sequence[MDA]
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
@@ -102,7 +102,7 @@ class GSNewtonMDA(MDASequential):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
         tolerance=1e-6,  # type: float

@@ -23,7 +23,7 @@ from __future__ import division, unicode_literals
 
 import logging
 from multiprocessing import cpu_count
-from typing import Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -48,7 +48,7 @@ class MDA(MDODiscipline):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         max_mda_iter=10,  # type: int
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
@@ -258,7 +258,8 @@ class MDA(MDODiscipline):
     def get_expected_dataflow(
         self,
     ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
-        all_disc = [self] + self.disciplines
+        all_disc = [self]
+        all_disc.extend(self.disciplines)
         graph = DependencyGraph(all_disc)
         res = graph.get_disciplines_couplings()
         return res

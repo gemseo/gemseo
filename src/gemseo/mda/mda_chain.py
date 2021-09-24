@@ -46,7 +46,7 @@ class MDAChain(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         sub_mda_class="MDAJacobi",
         max_mda_iter=20,  # type: int
         name=None,  # type: Optional[str]
@@ -121,7 +121,7 @@ class MDAChain(MDA):
 
     def _create_mdo_chain(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         sub_mda_class="MDAJacobi",  # type: str
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
         **sub_mda_options  # type: Optional[Union[float,int,bool,str]]

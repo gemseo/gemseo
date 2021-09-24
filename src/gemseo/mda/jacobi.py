@@ -23,7 +23,7 @@ from __future__ import division, unicode_literals
 import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, Mapping, Optional, Sequence
 
 from numpy import atleast_2d, concatenate, dot, ndarray
 from numpy.linalg import lstsq
@@ -63,7 +63,7 @@ class MDAJacobi(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         max_mda_iter=10,  # type: int
         name=None,  # type: Optional[str]
         n_processes=N_CPUS,  # type: int

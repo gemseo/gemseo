@@ -32,7 +32,7 @@ from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Sequence, Union
 
 from numpy import ndarray
 from numpy.linalg import norm
@@ -52,7 +52,7 @@ class MDARoot(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         max_mda_iter=10,  # type: int
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
@@ -132,7 +132,7 @@ class MDANewtonRaphson(MDARoot):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         max_mda_iter=10,  # type: int
         relax_factor=0.99,  # type: float
         name=None,  # type: Optional[str]
@@ -286,7 +286,7 @@ class MDAQuasiNewton(MDARoot):
 
     def __init__(
         self,
-        disciplines,  # type: List[MDODiscipline]
+        disciplines,  # type: Sequence[MDODiscipline]
         max_mda_iter=10,  # type: int
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
@@ -443,11 +443,15 @@ class MDAQuasiNewton(MDARoot):
         self.last_outputs = y_0
         if self.method in self._methods_with_callback():
 
-            def callback(y_k, _):
+            def callback(
+                y_k,  # type: ndarray
+                _,
+            ):  # type: (...) -> None
                 """Store the current residual in the history.
 
-                :param y_k: couling variables
-                :param _: ignored
+                Args:
+                    y_k: The coupling variables.
+                    _: ignored
                 """
                 delta = norm((y_k - self.last_outputs).real) / norm_0
                 self.residual_history.append((delta, 0))  # iter number?
