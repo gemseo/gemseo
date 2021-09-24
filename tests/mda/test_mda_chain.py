@@ -34,7 +34,6 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
     SobieskiMission,
@@ -64,12 +63,11 @@ DISC_DESCR_16D = [
 ]
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_sellar():
+@pytest.mark.usefixtures("tmp_wd", "sellar_disciplines")
+def test_sellar(sellar_disciplines):
     """"""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda_chain = MDAChain(
-        disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
+        sellar_disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
     )
     input_data = {
         "x_local": np.array([0.7]),
@@ -91,12 +89,11 @@ def test_sellar():
     assert exists(res_file)
 
 
-def test_sellar_chain_linearize():
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+def test_sellar_chain_linearize(sellar_disciplines):
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain = MDAChain(
-        disciplines,
+        sellar_disciplines,
         tolerance=1e-13,
         max_mda_iter=30,
         chain_linearize=True,
@@ -161,10 +158,9 @@ def test_simple_grammar_type(in_gtype):
         assert type(smda.input_grammar) == SimpleGrammar
 
 
-def test_mix_sim_jsongrammar():
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+def test_mix_sim_jsongrammar(sellar_disciplines):
     mda_chain_s = MDAChain(
-        disciplines,
+        sellar_disciplines,
         grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
     )
     assert type(mda_chain_s.input_grammar) == SimpleGrammar
@@ -172,7 +168,7 @@ def test_mix_sim_jsongrammar():
     out_1 = mda_chain_s.execute()
 
     mda_chain = MDAChain(
-        disciplines,
+        sellar_disciplines,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
     )
     assert type(mda_chain.input_grammar) == JSONGrammar
@@ -217,9 +213,8 @@ def test_no_coupling_jac():
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
 
 
-def test_sub_coupling_structures():
+def test_sub_coupling_structures(sellar_disciplines):
     """Check that an MDA is correctly instantiated from a coupling structure."""
-    sellar_disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     coupling_structure = MDOCouplingStructure(sellar_disciplines)
     sub_coupling_structures = [MDOCouplingStructure(sellar_disciplines)]
     mda_sellar = MDAChain(

@@ -40,13 +40,7 @@ DIRNAME = os.path.dirname(__file__)
 
 
 @pytest.fixture
-def sellar_disciplines():
-    return [Sellar1(), Sellar2(), SellarSystem()]
-
-
-@pytest.fixture
 def sellar_mda(sellar_disciplines):
-    # initialize MDA from Sellar disciplines.
     return MDAGaussSeidel(sellar_disciplines)
 
 

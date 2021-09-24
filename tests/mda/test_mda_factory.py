@@ -22,33 +22,29 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
 
-class TestMDAFactory(unittest.TestCase):
-    """Tests of MDA factory."""
+def test_jacobi_sobieski():
+    """Test the execution of Jacobi on Sobieski."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = MDAFactory().create("MDAJacobi", disciplines, max_mda_iter=2)
+    mda.execute()
 
-    def test_jacobi_sobieski(self):
-        """Test the execution of Jacobi on Sobieski."""
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        mda = MDAFactory().create("MDAJacobi", disciplines, max_mda_iter=2)
-        mda.execute()
+    disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
+    mda2 = MDAJacobi(disciplines2, max_mda_iter=2)
+    mda2.execute()
 
-        disciplines2 = [Sellar1(), Sellar2(), SellarSystem()]
-        mda2 = MDAJacobi(disciplines2, max_mda_iter=2)
-        mda2.execute()
+    for k, v in mda2.local_data.items():
+        assert (v == mda.local_data[k]).all()
 
-        for k, v in mda2.local_data.items():
-            assert (v == mda.local_data[k]).all()
 
-    def test_available_mdas(self):
-        factory = MDAFactory()
-        avail = factory.mdas
-        assert len(avail) > 2
+def test_available_mdas():
+    factory = MDAFactory()
+    avail = factory.mdas
+    assert len(avail) > 2
 
-        for mda in avail:
-            assert factory.is_available(mda)
+    for mda in avail:
+        assert factory.is_available(mda)

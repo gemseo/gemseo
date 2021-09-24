@@ -303,6 +303,9 @@ class MDAQuasiNewton(MDARoot):
             method: The name of the method in scipy root finding,
                 among :attr:`QUASI_NEWTON_METHODS`.
             use_gradient: Whether to use the analytic gradient of the discipline.
+
+        Raises:
+            ValueError: If the method is not a valid quasi-Newton method.
         """
         super(MDAQuasiNewton, self).__init__(
             disciplines,
@@ -316,7 +319,7 @@ class MDAQuasiNewton(MDARoot):
             coupling_structure=coupling_structure,
         )
         if method not in self.QUASI_NEWTON_METHODS:
-            msg = "Method " + method + " is not a valid quasi-Newton method"
+            msg = "Method '{}' is not a valid quasi-Newton method.".format(method)
             raise ValueError(msg)
         self.method = method
         self.use_gradient = use_gradient
