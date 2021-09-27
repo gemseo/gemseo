@@ -198,3 +198,12 @@ class TestNewton(unittest.TestCase):
         mda = MDAQuasiNewton([sc_disc], tolerance=1e-14, max_mda_iter=40)
         out = mda.execute()
         assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+
+
+def test_log_convergence():
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = MDANewtonRaphson(disciplines)
+    assert not mda.log_convergence
+    mda = MDANewtonRaphson(disciplines, log_convergence=True)
+    assert mda.log_convergence

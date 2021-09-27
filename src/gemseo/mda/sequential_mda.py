@@ -87,6 +87,16 @@ class MDASequential(MDA):
         self.mda_sequence = mda_sequence
         for mda in self.mda_sequence:
             mda.reset_history_each_run = True
+            self._log_convergence = self._log_convergence or mda.log_convergence
+
+    @MDA.log_convergence.setter
+    def log_convergence(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self._log_convergence = value
+        for mda in self.mda_sequence:
+            mda.log_convergence = value
 
     def _initialize_grammars(self):
         """Defines all inputs and outputs."""
@@ -127,6 +137,7 @@ class GSNewtonMDA(MDASequential):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
+        log_convergence=False,
         **newton_mda_options
     ):
         """Constructor.
@@ -164,8 +175,15 @@ class GSNewtonMDA(MDASequential):
         :type use_lu_fact: bool
         :param newton_mda_options: options passed to the MDANewtonRaphson
         :type newton_mda_options: dict
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
-        mda_gs = MDAGaussSeidel(disciplines, max_mda_iter=max_mda_iter_gs, name=None)
+        mda_gs = MDAGaussSeidel(
+            disciplines,
+            max_mda_iter=max_mda_iter_gs,
+            name=None,
+            log_convergence=log_convergence,
+        )
         mda_gs.tolerance = tolerance
         mda_newton = MDANewtonRaphson(
             disciplines,
@@ -175,6 +193,7 @@ class GSNewtonMDA(MDASequential):
             grammar_type=grammar_type,
             linear_solver=linear_solver,
             use_lu_fact=use_lu_fact,
+            log_convergence=log_convergence,
             **newton_mda_options
         )
         sequence = [mda_gs, mda_newton]

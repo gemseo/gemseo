@@ -22,6 +22,7 @@
 
 from __future__ import division, unicode_literals
 
+import logging
 import os
 
 import numpy as np
@@ -150,3 +151,24 @@ def test_consistency_fail(desc):
         match="Too many coupling constraints|Outputs are defined multiple times",
     ):
         MDA(disciplines)
+
+
+def test_log_convergence(caplog):
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+
+    mda = MDA(disciplines)
+    assert not mda.log_convergence
+
+    mda.log_convergence = True
+    assert mda.log_convergence
+
+    caplog.set_level(logging.INFO)
+
+    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), 1)
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" not in caplog.text
+
+    mda._compute_residual(
+        np.array([1, 2]), np.array([2, 1]), 1, log_normed_residual=True
+    )
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" in caplog.text

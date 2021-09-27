@@ -30,6 +30,7 @@ from numpy import array
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
 
 
@@ -129,3 +130,12 @@ class SelfCoupledDisc(MDODiscipline):
         self.jac = {}
         self.jac["y"] = {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])}
         self.jac["o"] = {"y": array([[1.0]]), "x": array([[1.0]])}
+
+
+def test_log_convergence():
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = MDAGaussSeidel(disciplines)
+    assert not mda.log_convergence
+    mda = MDAGaussSeidel(disciplines, log_convergence=True)
+    assert mda.log_convergence

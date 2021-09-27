@@ -59,6 +59,7 @@ class MDARoot(MDA):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
+        log_convergence=False,
     ):
         """Constructor.
 
@@ -85,6 +86,8 @@ class MDARoot(MDA):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         self.tolerance = 1e-6
         self.max_mda_iter = 10
@@ -97,6 +100,7 @@ class MDARoot(MDA):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            log_convergence=log_convergence,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -167,6 +171,7 @@ class MDANewtonRaphson(MDARoot):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
+        log_convergence=False,
     ):
         """Constructor.
 
@@ -197,6 +202,8 @@ class MDANewtonRaphson(MDARoot):
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
         :type use_lu_fact: bool
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         super(MDANewtonRaphson, self).__init__(
             disciplines,
@@ -207,8 +214,8 @@ class MDANewtonRaphson(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            log_convergence=log_convergence,
         )
-
         self.relax_factor = self.__check_relax_factor(relax_factor)
         self.linear_solver = linear_solver
 
@@ -265,7 +272,11 @@ class MDANewtonRaphson(MDARoot):
         # store initial residual
         current_iter = 1
         self._compute_residual(
-            current_couplings, new_couplings, current_iter, first=True
+            current_couplings,
+            new_couplings,
+            current_iter,
+            first=True,
+            log_normed_residual=self.log_convergence,
         )
         current_couplings = new_couplings
 
@@ -275,7 +286,12 @@ class MDANewtonRaphson(MDARoot):
 
             # store current residual
             current_iter += 1
-            self._compute_residual(current_couplings, new_couplings, current_iter)
+            self._compute_residual(
+                current_couplings,
+                new_couplings,
+                current_iter,
+                log_normed_residual=self.log_convergence,
+            )
             current_couplings = new_couplings
 
 

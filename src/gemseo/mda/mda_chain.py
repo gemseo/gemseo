@@ -56,6 +56,7 @@ class MDAChain(MDA):
         tolerance=1e-6,
         use_lu_fact=False,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+        log_convergence=False,
         **sub_mda_options
     ):
         """Constructor.
@@ -87,6 +88,8 @@ class MDAChain(MDA):
             either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
         :param sub_mda_options: options dict passed to the sub mda
         :type sub_mda_options: dict
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         self.n_processes = n_processes
         self.mdo_chain = None
@@ -113,12 +116,23 @@ class MDAChain(MDA):
         self._create_mdo_chain(
             disciplines, sub_mda_class=sub_mda_class, **sub_mda_options
         )
+        self.log_convergence = log_convergence
+
         self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
         # cascade the tolerance
         for sub_mda in self.sub_mda_list:
             sub_mda.tolerance = self.tolerance
+
+    @MDA.log_convergence.setter
+    def log_convergence(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self._log_convergence = value
+        for mda in self.sub_mda_list:
+            mda.log_convergence = value
 
     def _create_mdo_chain(
         self, disciplines, sub_mda_class="MDAJacobi", **sub_mda_options
