@@ -320,8 +320,24 @@ class MDA(MDODiscipline):
         show=False,
         figsize_x=10,
         figsize_y=10,
+        reference_jacobian_path=None,
+        save_reference_jacobian=False,
+        indices=None,
     ):
-        """Check if the jacobian provided by the linearize() method is correct.
+        """Check if the analytical Jacobian is correct with respect to a reference one.
+
+        If `reference_jacobian_path` is not `None`
+        and `save_reference_jacobian` is `True`,
+        compute the reference Jacobian with the approximation method
+        and save it in `reference_jacobian_path`.
+
+        If `reference_jacobian_path` is not `None`
+        and `save_reference_jacobian` is `False`,
+        do not compute the reference Jacobian
+        but read it from `reference_jacobian_path`.
+
+        If `reference_jacobian_path` is `None`,
+        compute the reference Jacobian without saving it.
 
         :param input_data: input data dict (Default value = None)
         :param derr_approx: derivative approximation method: COMPLEX_STEP
@@ -353,6 +369,19 @@ class MDA(MDODiscipline):
         :param show: if True, open the figure
         :param figsize_x: x size of the figure in inches
         :param figsize_y: y size of the figure in inches
+        :param reference_jacobian_path: The path of the reference Jacobian file.
+        :param save_reference_jacobian: Whether to save the reference Jacobian.
+        :param indices: The indices of the inputs and outputs
+            for the different sub-Jacobian matrices,
+            formatted as ``{variable_name: variable_components}``
+            where ``variable_components`` can be either
+            an integer, e.g. `2`
+            a sequence of integers, e.g. `[0, 3]`,
+            a slice, e.g. `slice(0,3)`,
+            the ellipsis symbol (`...`)
+            or `None`, which is the same as ellipsis.
+            If a variable name is missing, consider all its components.
+            If None, consider all the components of all the ``inputs`` and ``outputs``.
         :returns: True if the check is accepted, False otherwise
         """
         # Strong couplings are not linearized
@@ -371,23 +400,26 @@ class MDA(MDODiscipline):
                 outputs.remove(str_cpl)
 
         return super(MDA, self).check_jacobian(
-            input_data,
-            derr_approx,
-            step,
-            threshold,
-            linearization_mode,
-            inputs,
-            outputs,
-            parallel,
-            n_processes,
-            use_threading,
-            wait_time_between_fork,
-            auto_set_step,
-            plot_result,
-            file_path,
-            show,
-            figsize_x,
-            figsize_y,
+            input_data=input_data,
+            derr_approx=derr_approx,
+            step=step,
+            threshold=threshold,
+            linearization_mode=linearization_mode,
+            inputs=inputs,
+            outputs=outputs,
+            parallel=parallel,
+            n_processes=n_processes,
+            use_threading=use_threading,
+            wait_time_between_fork=wait_time_between_fork,
+            auto_set_step=auto_set_step,
+            plot_result=plot_result,
+            file_path=file_path,
+            show=show,
+            figsize_x=figsize_x,
+            figsize_y=figsize_y,
+            reference_jacobian_path=reference_jacobian_path,
+            save_reference_jacobian=save_reference_jacobian,
+            indices=indices,
         )
 
     def _termination(self, current_iter):

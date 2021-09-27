@@ -2403,18 +2403,18 @@ class MDOFunctionGenerator(object):
 
         if not self.discipline.is_all_inputs_existing(input_names_list):
             raise ValueError(
-                "Some elements of {} are not inputs of the discipline; "
-                "{} available inputs are: {}.".format(
+                "Some elements of {} are not inputs of the discipline {}; "
+                "available inputs are: {}.".format(
                     input_names_list,
-                    self.discipline.names,
+                    self.discipline.name,
                     self.discipline.get_input_data_names(),
                 )
             )
 
         if not self.discipline.is_all_outputs_existing(output_names_list):
             raise ValueError(
-                "Some elements of {} are not outputs of the discipline; "
-                "{} available outputs are: {}.".format(
+                "Some elements of {} are not outputs of the discipline {}; "
+                "available outputs are: {}.".format(
                     output_names_list,
                     self.discipline.name,
                     ", ".join(self.discipline.get_output_data_names()),
