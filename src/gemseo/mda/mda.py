@@ -60,6 +60,7 @@ class MDA(MDODiscipline):
         linear_solver_tolerance=1e-12,
         warm_start=False,
         use_lu_fact=False,
+        log_convergence=False,
     ):
         """Constructor.
 
@@ -78,6 +79,8 @@ class MDA(MDODiscipline):
         :param use_lu_fact: if True, when using adjoint/forward
             differenciation, store a LU factorization of the matrix
             to solve faster multiple RHS problem
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         super(MDA, self).__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
@@ -99,8 +102,20 @@ class MDA(MDODiscipline):
         self.use_lu_fact = use_lu_fact
         # By default dont use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
-
         self._check_consistency()
+        self._log_convergence = log_convergence
+
+    @property
+    def log_convergence(self):  # type: (...) -> bool
+        """Whether to log the MDA convergence."""
+        return self._log_convergence
+
+    @log_convergence.setter
+    def log_convergence(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self._log_convergence = value
 
     def _check_consistency(self):
         """Checks if there are not more than 1 equation per variable, for instance if a
@@ -275,7 +290,13 @@ class MDA(MDODiscipline):
 
     # fixed point methods
     def _compute_residual(
-        self, current_couplings, new_couplings, current_iter, first=False, store_it=True
+        self,
+        current_couplings,
+        new_couplings,
+        current_iter,
+        first=False,
+        store_it=True,
+        log_normed_residual=False,
     ):
         """Compute the residual on the inputs of the MDA.
 
@@ -286,6 +307,7 @@ class MDA(MDODiscipline):
         :param current_iter: the current iteration of the fixed point
         :param first: if True, first residual of the fixed point
             (Default value = False)
+        :param log_normed_residual: Whether to log the normed residual.
         """
         if first and self.reset_history_each_run:
             self.residual_history = []
@@ -296,6 +318,13 @@ class MDA(MDODiscipline):
         if self.norm0 == 0:
             self.norm0 = 1
         self.normed_residual = normed_residual / self.norm0
+        if log_normed_residual:
+            LOGGER.info(
+                "%s running... Normed residual = %s (iter. %s)",
+                self.name,
+                "{:.2e}".format(self.normed_residual),
+                current_iter,
+            )
 
         if store_it:
             self.residual_history.append((self.normed_residual, current_iter))

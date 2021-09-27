@@ -65,3 +65,28 @@ class TestSequential(unittest.TestCase):
         assert exists(filename)
         y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
         assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+
+
+def test_log_convergence():
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = GSNewtonMDA(disciplines)
+    assert not mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert not sub_mda.log_convergence
+
+    mda = GSNewtonMDA(disciplines, log_convergence=True)
+    assert mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert sub_mda.log_convergence
+
+    mda = GSNewtonMDA(disciplines)
+    mda.log_convergence = True
+    assert mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert sub_mda.log_convergence
+
+    mda.log_convergence = False
+    assert not mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert not sub_mda.log_convergence

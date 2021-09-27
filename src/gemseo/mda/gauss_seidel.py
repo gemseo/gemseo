@@ -59,6 +59,7 @@ class MDAGaussSeidel(MDA):
         warm_start=False,
         use_lu_fact=False,
         over_relax_factor=1.0,
+        log_convergence=False,
     ):
         """Constructor.
 
@@ -90,6 +91,8 @@ class MDAGaussSeidel(MDA):
             or faster if 1<over_relax_factor<=2.
             If over_relax_factor =1., it is deactivated
         :type over_relax_factor: float
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         super(MDAGaussSeidel, self).__init__(
@@ -101,6 +104,7 @@ class MDAGaussSeidel(MDA):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            log_convergence=log_convergence,
         )
         assert over_relax_factor > 0.0
         assert over_relax_factor <= 2.0
@@ -152,7 +156,11 @@ class MDAGaussSeidel(MDA):
 
             new_couplings = self._current_strong_couplings()
             self._compute_residual(
-                current_couplings, new_couplings, current_iter, first=current_iter == 0
+                current_couplings,
+                new_couplings,
+                current_iter,
+                first=current_iter == 0,
+                log_normed_residual=self.log_convergence,
             )
             # store current residuals
             current_iter += 1

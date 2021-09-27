@@ -77,6 +77,7 @@ class MDAJacobi(MDA):
         warm_start=False,
         use_lu_fact=False,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+        log_convergence=False,
     ):
         """Constructor.
 
@@ -113,6 +114,8 @@ class MDAJacobi(MDA):
         :param grammar_type: the type of grammar to use for IO declaration
             either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
         :type grammar_type: str
+        :param log_convergence: Whether to log the MDA convergence,
+            expressed in terms of normed residuals.
         """
         self.n_processes = n_processes
         super(MDAJacobi, self).__init__(
@@ -124,6 +127,7 @@ class MDAJacobi(MDA):
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
+            log_convergence=log_convergence,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -207,7 +211,11 @@ class MDAJacobi(MDA):
         # store initial residual
         current_iter = 1
         self._compute_residual(
-            current_couplings, new_couplings, current_iter, first=True
+            current_couplings,
+            new_couplings,
+            current_iter,
+            first=True,
+            log_normed_residual=self._log_convergence,
         )
         current_couplings = new_couplings
 
@@ -217,7 +225,12 @@ class MDAJacobi(MDA):
 
             # store current residual
             current_iter += 1
-            self._compute_residual(current_couplings, new_couplings, current_iter)
+            self._compute_residual(
+                current_couplings,
+                new_couplings,
+                current_iter,
+                log_normed_residual=self._log_convergence,
+            )
             x_np1 = self._compute_nex_iterate(current_couplings, new_couplings)
             current_couplings = x_np1
 

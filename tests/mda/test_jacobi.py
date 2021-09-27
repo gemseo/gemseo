@@ -136,3 +136,12 @@ class TestMDAJacobi(unittest.TestCase):
         mda = MDAJacobi([sc_disc], tolerance=1e-14, max_mda_iter=40)
         out = mda.execute()
         assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+
+
+def test_log_convergence():
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = MDAJacobi(disciplines)
+    assert not mda._log_convergence
+    mda = MDAJacobi(disciplines, log_convergence=True)
+    assert mda._log_convergence

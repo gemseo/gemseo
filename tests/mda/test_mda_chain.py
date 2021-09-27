@@ -214,3 +214,16 @@ def test_no_coupling_jac():
     disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
     mda = MDAChain(disciplines)
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+
+
+def test_log_convergence():
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda_chain = MDAChain(disciplines)
+    assert not mda_chain.log_convergence
+    for mda in mda_chain.sub_mda_list:
+        assert not mda.log_convergence
+
+    mda_chain.log_convergence = True
+    assert mda_chain.log_convergence
+    for mda in mda_chain.sub_mda_list:
+        assert mda.log_convergence
