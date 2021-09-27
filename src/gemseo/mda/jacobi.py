@@ -40,8 +40,9 @@ N_CPUS = cpu_count()
 
 
 class MDAJacobi(MDA):
-    """Perform a MDA analysis using a Jacobi algorithm, an iterative technique to solve
-    the linear system:
+    """Perform a MDA analysis using a Jacobi algorithm.
+
+    This algorithm is an iterative technique to solve the linear system:
 
     .. math::
 
@@ -223,7 +224,8 @@ class MDAJacobi(MDA):
     ):  # type: (...) -> Dict[str,ndarray]
         """Compute the next iterate given the evaluation of the couplings.
 
-        Eventually compute the secant method acceleration.
+        Eventually compute the convergence acceleration term
+        according to the secant or m2d methods.
 
         See:
         Iterative residual-based vector methods to accelerate
@@ -274,7 +276,7 @@ class MDAJacobi(MDA):
         dxn_1,  # type:ndarray
         dxn_2,  # type:ndarray
     ):  # type: (...) -> ndarray
-        """Compute the extrapolation coefficients of the 2-delta method.
+        """Compute the next iterate according to the m2d method.
 
         Minimize the sub-problem in the d-2 method.
         Use a least squares solver to find he minimizer of:
@@ -301,7 +303,7 @@ class MDAJacobi(MDA):
         cgn,  # type: ndarray
         cgn_1,  # type: ndarray
     ):  # type: (...) -> ndarray
-        """Compute the secant acceleration.
+        """Compute the next iterate according to the secant method.
 
         From the paper:
         "Iterative residual-based vector methods to accelerate
