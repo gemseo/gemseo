@@ -809,9 +809,12 @@ class OpenTURNS(DOELibrary):
         :returns: samples
         :rtype: numpy array
         """
-        levels = [n_level - 2 for n_level in self._compute_fullfact_levels(n_samples)]
+        levels = [
+            n_level - 2
+            for n_level in self._compute_fullfact_levels(n_samples, dimension)
+        ]
         if levels[0] < 0:
-            return array([[0.5] * self.problem.dimension])
+            return array([[0.5] * dimension])
 
         return array(openturns.Box(levels).generate())
 

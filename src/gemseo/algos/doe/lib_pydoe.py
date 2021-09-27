@@ -232,7 +232,9 @@ class PyDOE(DOELibrary):
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            n_levels = self._compute_fullfact_levels(options["n_samples"])
+            n_levels = self._compute_fullfact_levels(
+                options["n_samples"], options["dimension"]
+            )
             if n_levels[0] == 1:
                 return pyDOE.fullfact(n_levels) + 0.5
 
