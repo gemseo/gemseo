@@ -114,7 +114,7 @@ class GSNewtonMDA(MDASequential):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False, #type: bool
+        log_convergence=False,  # type: bool
         **newton_mda_options  # type: float
     ):
         """

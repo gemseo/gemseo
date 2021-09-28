@@ -61,7 +61,7 @@ class MDARoot(MDA):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False #type: bool
+        log_convergence=False,  # type: bool
     ):  # type: (...) -> None
         self.tolerance = 1e-6
         self.max_mda_iter = 10
@@ -143,7 +143,7 @@ class MDANewtonRaphson(MDARoot):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False #type:bool
+        log_convergence=False,  # type:bool
     ):
         """
         Args:
