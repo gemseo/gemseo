@@ -49,6 +49,9 @@ Fixed
 - Bug with the MATLAB discipline on Windows.
 - ImportError (backport.unittest_mock) on Python 2.7.
 - Bug with the 'sample_x' parameter of the pSeven wrapper.
+- The MDO Scenario example subsections are now correctly named.
+- The Gantt Chart, Basic History, Constraints History and
+  Scatter Plot Matrix pages in the documentation now render the example plots correctly.
 
 Version 3.1.0 (July 2021)
 *************************

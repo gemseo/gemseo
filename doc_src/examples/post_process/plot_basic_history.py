@@ -91,7 +91,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # This method requires the list of variable names to plot.
 scenario.post_process("BasicHistory", data_list=["-y_4"], save=False, show=True)
 scenario.post_process(
-    "BasicHistory", data_list=["g_1", "g_2", "g_3"], save=False, show=True
+    "BasicHistory", data_list=["g_1", "g_2", "g_3"], save=False, show=False
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

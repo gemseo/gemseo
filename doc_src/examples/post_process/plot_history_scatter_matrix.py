@@ -92,7 +92,7 @@ design_variables = ["x_shared", "x_1", "x_2", "x_3"]
 scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
-    show=True,
+    show=False,
     variables_list=design_variables + ["-y_4"],
 )
 # Workaround for HTML rendering, instead of ``show=True``
