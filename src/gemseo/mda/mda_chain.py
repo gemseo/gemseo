@@ -57,7 +57,7 @@ class MDAChain(MDA):
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
-        log_convergence=False, #type: bool
+        log_convergence=False,  # type: bool
         **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
     ):
         """
@@ -66,8 +66,6 @@ class MDAChain(MDA):
                 Otherwise, linearize the overall MDA with base class method.
                 This last option is preferred to minimize computations in adjoint mode,
                 while in direct mode, linearizing the chain may be cheaper.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
             sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
                 If None, they are created from the sub-disciplines.
             **sub_mda_options: The options to be passed to the sub-MDAs.

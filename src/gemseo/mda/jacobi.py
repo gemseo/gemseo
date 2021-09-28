@@ -76,7 +76,7 @@ class MDAJacobi(MDA):
         use_lu_fact=False,  # type: bool
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False, #type: bool
+        log_convergence=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
@@ -93,8 +93,6 @@ class MDAJacobi(MDA):
                 This is important to note
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
         """
         self.n_processes = n_processes
         super(MDAJacobi, self).__init__(

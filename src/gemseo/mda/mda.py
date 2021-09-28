@@ -57,7 +57,7 @@ class MDA(MDODiscipline):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False #type: bool
+        log_convergence=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
@@ -79,7 +79,6 @@ class MDA(MDODiscipline):
                 to solve faster multiple RHS problem.
             coupling_structure: The coupling structure to be used by the MDA.
                 If None, it is created from `disciplines`.
-                to solve faster multiple RHS problem
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
         """
@@ -297,7 +296,7 @@ class MDA(MDODiscipline):
         current_iter,  # type: int
         first=False,  # type: bool
         store_it=True,  # type: bool
-        log_normed_residual=False,#type: bool
+        log_normed_residual=False,  # type: bool
     ):  # type: (...) -> ndarray
         """Compute the residual on the inputs of the MDA.
 
@@ -354,7 +353,7 @@ class MDA(MDODiscipline):
         figsize_y=10,  # type: float
         reference_jacobian_path=None,
         save_reference_jacobian=False,
-        indices=None
+        indices=None,
     ):  # type: (...) -> bool
         """Check if the analytical Jacobian is correct with respect to a reference one.
 

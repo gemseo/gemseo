@@ -61,7 +61,7 @@ class MDAGaussSeidel(MDA):
         use_lu_fact=False,  # type: bool
         over_relax_factor=1.0,  # type: float
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False #type: bool
+        log_convergence=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
@@ -69,8 +69,6 @@ class MDAGaussSeidel(MDA):
                 used to make the method more robust,
                 if ``0<over_relax_factor<1`` or faster if ``1<over_relax_factor<=2``.
                 If ``over_relax_factor =1.``, it is deactivated.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
         """
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         super(MDAGaussSeidel, self).__init__(
