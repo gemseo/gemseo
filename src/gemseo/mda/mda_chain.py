@@ -18,18 +18,18 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-An advanced MDA splitting algorithm based on graphs
-***************************************************
-"""
+"""An advanced MDA splitting algorithm based on graphs."""
 from __future__ import division, unicode_literals
 
 import logging
+from itertools import repeat
 from multiprocessing import cpu_count
 from os.path import join, split
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.mda.mda import MDA
@@ -39,57 +39,36 @@ N_CPUS = cpu_count()
 
 
 class MDAChain(MDA):
-    """The **MDAChain** computes a chain of subMDAs and simple evaluations.
+    """A chain of sub-MDAs.
 
-    The execution sequence is provided by the
-    :class:`.DependencyGraph` class.
+    The execution sequence is provided by the :class:`.DependencyGraph`.
     """
 
     def __init__(
         self,
-        disciplines,
+        disciplines,  # type: Sequence[MDODiscipline]
         sub_mda_class="MDAJacobi",
-        max_mda_iter=20,
-        name=None,
-        n_processes=N_CPUS,
-        chain_linearize=False,
-        tolerance=1e-6,
-        use_lu_fact=False,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        log_convergence=False,
-        **sub_mda_options
+        max_mda_iter=20,  # type: int
+        name=None,  # type: Optional[str]
+        n_processes=N_CPUS,  # type: int
+        chain_linearize=False,  # type: bool
+        tolerance=1e-6,  # type: float
+        use_lu_fact=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
+        log_convergence=False,  # type: bool
+        **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
     ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param sub_mda_class: the class to instantiate for sub MDAs
-        :type sub_mda_class: str
-        :param max_mda_iter: maximum number of iterations for sub MDAs
-        :type max_mda_iter: int
-        :param name: name of self
-        :type name: str
-        :param n_processes: number of processes for parallel run
-        :type n_processes: int
-        :param chain_linearize: linearize the chain of execution, if True
-            Otherwise, linearize the oveall MDA with base class method
-            Last option is preferred to minimize computations in adjoint mode
-            in direct mode, chain_linearize may be cheaper
-        :type chain_linearize: bool
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :param sub_mda_options: options dict passed to the sub mda
-        :type sub_mda_options: dict
-        :param log_convergence: Whether to log the MDA convergence,
-            expressed in terms of normed residuals.
+        """
+        Args:
+            chain_linearize: Whether to linearize the chain of execution.
+                Otherwise, linearize the overall MDA with base class method.
+                This last option is preferred to minimize computations in adjoint mode,
+                while in direct mode, linearizing the chain may be cheaper.
+            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+                If None, they are created from the sub-disciplines.
+            **sub_mda_options: The options to be passed to the sub-MDAs.
         """
         self.n_processes = n_processes
         self.mdo_chain = None
@@ -104,6 +83,7 @@ class MDAChain(MDA):
             tolerance=tolerance,
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
+            coupling_structure=coupling_structure,
         )
 
         if (
@@ -114,7 +94,10 @@ class MDAChain(MDA):
             self.__chain_linearize = True
 
         self._create_mdo_chain(
-            disciplines, sub_mda_class=sub_mda_class, **sub_mda_options
+            disciplines,
+            sub_mda_class=sub_mda_class,
+            sub_coupling_structures=sub_coupling_structures,
+            **sub_mda_options
         )
         self.log_convergence = log_convergence
 
@@ -135,17 +118,28 @@ class MDAChain(MDA):
             mda.log_convergence = value
 
     def _create_mdo_chain(
-        self, disciplines, sub_mda_class="MDAJacobi", **sub_mda_options
+        self,
+        disciplines,  # type: Sequence[MDODiscipline]
+        sub_mda_class="MDAJacobi",  # type: str
+        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
+        **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
 
-        :param sub_mda_class: class of sub-MDAs in
-            {Jacobi, GS, Newton, Sequential}
-        :param disciplines: list of disciplines
-        :param sub_mda_options: options passed to the MDA at construction
+        Args:
+            sub_mda_class: The name of the class of the sub-MDAs.
+            disciplines: The disciplines.
+            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+                If None, they are created from the sub-disciplines.
+            **sub_mda_options: The options to be used to initialize the sub-MDAs.
         """
         chained_disciplines = []
         self.sub_mda_list = []
+
+        if sub_coupling_structures is None:
+            sub_coupling_structures = repeat(None)
+
+        sub_coupling_structures_iterator = iter(sub_coupling_structures)
 
         for parallel_tasks in self.coupling_structure.sequence:
             # to parallelize, check if 1 < len(parallel_tasks)
@@ -172,6 +166,7 @@ class MDAChain(MDA):
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
                         grammar_type=self.grammar_type,
+                        coupling_structure=next(sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
                     sub_mda.n_processes = self.n_processes
@@ -188,30 +183,21 @@ class MDAChain(MDA):
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
         )
 
-    def _initialize_grammars(self):
-        """Define all inputs and outputs of the chain."""
+    def _initialize_grammars(self):  # type: (...) -> None
         self.input_grammar.update_from(self.mdo_chain.input_grammar)
         self.output_grammar.update_from(self.mdo_chain.output_grammar)
 
-    def _run(self):
-        """Execute the chained MDA."""
+    def _run(self):  # type -> None
         if self.warm_start:
             self._couplings_warm_start()
         self.local_data = self.mdo_chain.execute(self.local_data)
         return self.local_data
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """Actual computation of the jacobians.
-
-        :param inputs: linearization should be performed with respect
-            to inputs list. If None, linearization
-            should be performed wrt all inputs
-            (Default value = None)
-        :param outputs: linearization should be performed on
-            outputs list.
-            If None, linearization should be
-            performed on all chain_outputs (Default value = None)
-        """
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Sequence[str]]
+        outputs=None,  # type: Optional[Sequence[str]]
+    ):  # type: (...) -> None
         if self.__chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
             self.mdo_chain.add_differentiated_outputs(outputs)
@@ -222,96 +208,72 @@ class MDAChain(MDA):
         else:
             super(MDAChain, self)._compute_jacobian(inputs, outputs)
 
-    def add_differentiated_inputs(self, inputs=None):
-        """Add inputs to the differentiation list.
-
-        Updates self._differentiated_inputs with inputs
-
-        :param inputs: list of inputs variables to differentiate
-            if None, all inputs of discipline are used (Default value = None)
-        """
+    def add_differentiated_inputs(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         MDA.add_differentiated_inputs(self, inputs)
         if self.__chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
-    def add_differentiated_outputs(self, outputs=None):
-        """Add outputs to the differentiation list.
-
-        Updates self._differentiated_inputs with inputs
-
-        :param outputs: list of output variables to differentiate
-            if None, all outputs of discipline are used
-        """
+    def add_differentiated_outputs(
+        self,
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> None
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self.__chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
 
     @property
-    def normed_residual(self):
-        """Accessor to the normed_residuals, computed from the sub_mdas residuals."""
+    def normed_residual(self):  # type: (...) -> float
+        """The normed_residuals, computed from the sub-MDAs residuals."""
         return sum((mda.normed_residual ** 2 for mda in self.sub_mda_list)) ** 0.5
 
     @normed_residual.setter
-    def normed_residual(self, normed_residual):
+    def normed_residual(
+        self,
+        normed_residual,  # type: float
+    ):  # type: (...) ->None
         """Set the normed_residual.
 
-        Has no effect, since the normed residuals are defined by sub mdas residuals
-        (see associated property)
+        Has no effect,
+        since the normed residuals are defined by sub-MDAs residuals
+        (see associated property).
 
         Here for compatibility with mother class.
         """
         pass
 
-    def get_expected_dataflow(self):
-        """Get the expected dataflow.
-
-        See MDOChain.get_expected_dataflow
-        """
+    def get_expected_dataflow(
+        self,
+    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
         return self.mdo_chain.get_expected_dataflow()
 
-    def get_expected_workflow(self):
-        """Get the expected workflow.
-
-        See MDOChain.get_expected_workflow
-        """
+    def get_expected_workflow(self):  # type: (...) ->SerialExecSequence
         exec_s = SerialExecSequence(self)
         workflow = self.mdo_chain.get_expected_workflow()
         exec_s.extend(workflow)
         return exec_s
 
-    def reset_statuses_for_run(self):
-        """Set all the statuses to PENDING."""
+    def reset_statuses_for_run(self):  # type: (...) -> None
         super(MDAChain, self).reset_statuses_for_run()
         self.mdo_chain.reset_statuses_for_run()
 
     def plot_residual_history(
         self,
-        show=False,
-        save=True,
-        n_iterations=None,
-        logscale=None,
-        filename=None,
-        figsize=(50, 10),
-    ):
-        """Generate a plot of the residual history All residuals are stored in the
-        history ; only the final residual of the converged MDA is plotted at each
-        optimization iteration.
-
-        :param show: if True, displays the plot on screen
-            (Default value = False)
-        :param save: if True, saves the plot as a PDF file
-            (Default value = True)
-        :param n_iterations: if not None, fix the number of iterations in
-            the x axis (Default value = None)
-        :param logscale: if not None, fix the logscale in the y axis
-            (Default value = None)
-        :param filename: Default value = None)
-        """
+        show=False,  # type: bool
+        save=True,  # type: bool
+        n_iterations=None,  # type: Optional[int]
+        logscale=None,  # type: Optional[Tuple[int,int]]
+        filename=None,  # type: Optional[str]
+        figsize=(50, 10),  # type: Tuple[int,int]
+    ):  # type: (...) -> None
         for sub_mda in self.sub_mda_list:
             if filename is not None:
                 s_filename = split(filename)
                 filename = join(
-                    s_filename[0], sub_mda.__class__.__name__ + "_" + s_filename[1]
+                    s_filename[0],
+                    "{}_{}".format(sub_mda.__class__.__name__, s_filename[1]),
                 )
             sub_mda.plot_residual_history(
                 show, save, n_iterations, logscale, filename, figsize

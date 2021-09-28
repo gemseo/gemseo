@@ -18,12 +18,12 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A chain of MDAs to build hybrids of MDA algorithms sequentially
-***************************************************************
-"""
+"""A chain of MDAs to build hybrids of MDA algorithms sequentially."""
 from __future__ import division, unicode_literals
 
+from typing import Optional, Sequence
+
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.mda import MDA
@@ -31,45 +31,24 @@ from gemseo.mda.newton import MDANewtonRaphson
 
 
 class MDASequential(MDA):
-    """Perform a MDA defined as a sequence of elementary MDAs."""
+    """A sequence of elementary MDAs."""
 
     def __init__(
         self,
-        disciplines,
-        mda_sequence,
-        name=None,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        max_mda_iter=10,
-        tolerance=1e-6,
-        linear_solver_tolerance=1e-12,
-        warm_start=False,
-        use_lu_fact=False,
-    ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param mda_sequence: sequence of MDAs
-        :type mda_sequence: list(MDA)
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param name: name
-        :type name: str
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param use_lu_fact: use LU factorization
-        :type use_lu_fact: bool
+        disciplines,  # type: Sequence[MDODiscipline]
+        mda_sequence,  # type: Sequence[MDA]
+        name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        max_mda_iter=10,  # type: int
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+    ):  # type: (...) -> None
+        """
+        Args:
+            mda_sequence: The sequence of MDAs.
         """
         super(MDASequential, self).__init__(
             disciplines,
@@ -79,6 +58,7 @@ class MDASequential(MDA):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
+            coupling_structure=coupling_structure,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -98,17 +78,13 @@ class MDASequential(MDA):
         for mda in self.mda_sequence:
             mda.log_convergence = value
 
-    def _initialize_grammars(self):
-        """Defines all inputs and outputs."""
+    def _initialize_grammars(self):  # type: (...) -> None
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
-    def _run(self):
-        """Runs the MDAs in a sequential way.
-
-        :returns: the local data
-        """
+    def _run(self):  # type: (...) -> None
+        """Run the MDAs in a sequential way."""
         self._couplings_warm_start()
         # execute MDAs in sequence
         if self.reset_history_each_run:
@@ -122,61 +98,33 @@ class MDASequential(MDA):
 
 
 class GSNewtonMDA(MDASequential):
-    """Perform some GaussSeidel iterations and then NewtonRaphson iterations."""
+    """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
     def __init__(
         self,
-        disciplines,
-        name=None,
+        disciplines,  # type: Sequence[MDODiscipline]
+        name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        tolerance=1e-6,
-        max_mda_iter=10,
-        relax_factor=0.99,
-        linear_solver="lgmres",
-        max_mda_iter_gs=3,
-        linear_solver_tolerance=1e-12,
-        warm_start=False,
-        use_lu_fact=False,
-        log_convergence=False,
-        **newton_mda_options
+        tolerance=1e-6,  # type: float
+        max_mda_iter=10,  # type: int
+        relax_factor=0.99,  # type: float
+        linear_solver="lgmres",  # type: str
+        max_mda_iter_gs=3,  # type: int
+        linear_solver_tolerance=1e-12,  # type: float
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type: bool
+        **newton_mda_options  # type: float
     ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param name: name
-        :type name: str
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param relax_factor: relaxation factor
-        :type relax_factor: float
-        :param linear_solver: type of linear solver to be used to solve
-            the Newton problem
-        :type linear_solver: str
-        :param max_mda_iter_gs: maximum number of iterations of the GaussSeidel
-            solver
-        :type max_mda_iter_gs: int
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
-        :param newton_mda_options: options passed to the MDANewtonRaphson
-        :type newton_mda_options: dict
-        :param log_convergence: Whether to log the MDA convergence,
-            expressed in terms of normed residuals.
+        """
+        Args:
+            relax_factor: The relaxation factor.
+            linear_solver: The type of linear solver
+                to be used to solve the Newton problem.
+            max_mda_iter_gs: The maximum number of iterations
+                of the Gauss-Seidel solver.
+            **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
         mda_gs = MDAGaussSeidel(
             disciplines,
@@ -193,6 +141,7 @@ class GSNewtonMDA(MDASequential):
             grammar_type=grammar_type,
             linear_solver=linear_solver,
             use_lu_fact=use_lu_fact,
+            coupling_structure=coupling_structure,
             log_convergence=log_convergence,
             **newton_mda_options
         )
@@ -206,4 +155,5 @@ class GSNewtonMDA(MDASequential):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
+            coupling_structure=coupling_structure,
         )

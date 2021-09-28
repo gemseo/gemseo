@@ -13,38 +13,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A Jacobi algorithm for solving MDAs."""
 from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
+from typing import Dict, Mapping, Optional, Sequence
 
-from numpy import atleast_2d, concatenate, dot
+from numpy import atleast_2d, concatenate, dot, ndarray
 from numpy.linalg import lstsq
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import DataConversion
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-A Jacobi algorithm for solving MDAs
-***********************************
-"""
-
 
 LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
 
 
 class MDAJacobi(MDA):
-    """Perform a MDA analysis using a Jacobi algorithm, an iterative technique to solve
-    the linear system:
+    """Perform a MDA analysis using a Jacobi algorithm.
+
+    This algorithm is an iterative technique to solve the linear system:
 
     .. math::
 
@@ -66,56 +64,35 @@ class MDAJacobi(MDA):
 
     def __init__(
         self,
-        disciplines,
-        max_mda_iter=10,
-        name=None,
-        n_processes=N_CPUS,
-        acceleration=M2D_ACCELERATION,
-        tolerance=1e-6,
-        linear_solver_tolerance=1e-12,
-        use_threading=True,
-        warm_start=False,
-        use_lu_fact=False,
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
-        log_convergence=False,
-    ):
-        """Constructor.
-
-        :param disciplines: the disciplines list
-        :type disciplines: list(MDODiscipline)
-        :param max_mda_iter: maximum number of iterations
-        :type max_mda_iter: int
-        :param name: the name of the chain
-        :type name: str
-        :param n_processes: maximum number of processors on which to run
-        :type n_processes: int
-        :param acceleration: type of acceleration to be used to extrapolate
-            the residuals and save CPU time by reusing the information
-            from the last iterations, either None, or m2d, or secant,
-            m2d is faster but uses the 2 last iterations
-        :type acceleration: str
-        :param tolerance: tolerance of the iterative direct coupling solver,
-            norm of the current residuals divided by initial residuals norm
-            shall be lower than the tolerance to stop iterating
-        :type tolerance: float
-        :param linear_solver_tolerance: Tolerance of the linear solver
-            in the adjoint equation
-        :type linear_solver_tolerance: float
-        :param use_threading: use multithreading for parallel executions
-            otherwise use multiprocessing
-        :type use_threading: bool
-        :param warm_start: if True, the second iteration and ongoing
-            start from the previous coupling solution
-        :type warm_start: bool
-        :param use_lu_fact: if True, when using adjoint/forward
-            differenciation, store a LU factorization of the matrix
-            to solve faster multiple RHS problem
-        :type use_lu_fact: bool
-        :param grammar_type: the type of grammar to use for IO declaration
-            either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE
-        :type grammar_type: str
-        :param log_convergence: Whether to log the MDA convergence,
-            expressed in terms of normed residuals.
+        disciplines,  # type: Sequence[MDODiscipline]
+        max_mda_iter=10,  # type: int
+        name=None,  # type: Optional[str]
+        n_processes=N_CPUS,  # type: int
+        acceleration=M2D_ACCELERATION,  # type: str
+        tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
+        use_threading=True,  # type: bool
+        warm_start=False,  # type: bool
+        use_lu_fact=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        log_convergence=False,  # type: bool
+    ):  # type: (...) -> None
+        """
+        Args:
+            n_processes: The maximum number of processors on which to run.
+            acceleration: The type of acceleration
+                to be used to extrapolate the residuals
+                and save CPU time by reusing the information from the last iterations,
+                either ``None``, ``"m2d"``, or ``"secant"``,
+                ``"m2d"`` is faster but uses the 2 last iterations.
+            use_threading: Whether to use threads instead of processes
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
         """
         self.n_processes = n_processes
         super(MDAJacobi, self).__init__(
@@ -127,6 +104,7 @@ class MDAJacobi(MDA):
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
+            coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
         self._initialize_grammars()
@@ -140,13 +118,13 @@ class MDAJacobi(MDA):
             disciplines, n_processes, use_threading
         )
 
-    def _compute_input_couplings(self):
+    def _compute_input_couplings(self):  # type: (...) -> None
         """Compute all the coupling variables that are inputs of the MDA.
 
         This must be overloaded here because the Jacobi algorithm induces a delay
         between the couplings, the strong couplings may be fully resolved but the weak
         ones may need one more iteration. The base MDA class uses strong couplings only
-        which is not satisfying here if all disciplines are not strongly coupled
+        which is not satisfying here if all disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines()) == len(
             self.disciplines
@@ -157,16 +135,19 @@ class MDAJacobi(MDA):
         strong_cpl = self.coupling_structure.get_all_couplings()
         self._input_couplings = set(strong_cpl) & set(inputs)
 
-    def _initialize_grammars(self):
-        """Defines all inputs and outputs of the chain."""
+    def _initialize_grammars(self):  # type: (...) -> None
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
-    def execute_all_disciplines(self, input_local_data):
-        """Executes all self.disciplines.
+    def execute_all_disciplines(
+        self,
+        input_local_data,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Execute all the disciplines.
 
-        :param input_local_data: the input data of the disciplines
+        Args:
+            input_local_data: The input data of the disciplines.
         """
         self.reset_disciplines_statuses()
 
@@ -182,20 +163,20 @@ class MDAJacobi(MDA):
         for data in outputs:
             self.local_data.update(data)
 
-    def get_expected_workflow(self):
-        """See MDA.get_expected_workflow."""
+    def get_expected_workflow(self):  # type: (...) ->LoopExecSequence
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
             sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
-    def _run(self):
-        """Run method of the chain: executes all disciplines in a loop until outputs
-        converge. Stops when.
+    def _run(self):  # type: (...) -> None
+        """Execute all disciplines in a loop until outputs converge.
 
-        ||outputs-previous output||/||first outputs|| < self.tolerance
+        Stops when:
 
-        :returns: the local data updated
+        .. math::
+
+            ||outputs-previous output||/||first outputs|| < self.tolerance
         """
         if self.warm_start:
             self._couplings_warm_start()
@@ -234,18 +215,28 @@ class MDAJacobi(MDA):
             x_np1 = self._compute_nex_iterate(current_couplings, new_couplings)
             current_couplings = x_np1
 
-    def _compute_nex_iterate(self, current_couplings, new_couplings):
-        """Compute the next iterate given the evaluation of the couplings Eventually
-        computes the secant method acceleration, see.
+    def _compute_nex_iterate(
+        self,
+        current_couplings,  # type: ndarray
+        new_couplings,  # type: ndarray
+    ):  # type: (...) -> Dict[str,ndarray]
+        """Compute the next iterate given the evaluation of the couplings.
 
-        See :
+        Eventually compute the convergence acceleration term
+        according to the secant or m2d methods.
+
+        See:
         Iterative residual-based vector methods to accelerate
         fixed point iterations, Isabelle Ramiere, Thomas Helfer
 
-        :param current_couplings: input couplings of the disciplines
-            given for evaluation at the last iterations
-        :param current_couplings: computed couplings of the disciplines
-            at the last iterations
+        Args:
+            current_couplings: The input couplings of the disciplines
+                given for evaluation at the last iterations.
+            current_couplings: The computed couplings of the disciplines
+                at the last iterations.
+
+        Returns:
+            The next iterate.
         """
 
         self._dx_n.append(new_couplings - current_couplings)
@@ -278,54 +269,84 @@ class MDAJacobi(MDA):
         return x_np1
 
     @staticmethod
-    def _minimize_2md(dxn, dxn_1, dxn_2):
-        """Compute the extrapolation coefficients of the 2-delta method Minimizes the
-        sub problem in the d-2 method Use a least squares solver to find he minimizer
-        of.
+    def _minimize_2md(
+        dxn,  # type:ndarray
+        dxn_1,  # type:ndarray
+        dxn_2,  # type:ndarray
+    ):  # type: (...) -> ndarray
+        """Compute the next iterate according to the m2d method.
 
-        dxn - x[0] * (dxn - dxn_1) - x[1] * (dxn_1 - dxn_2)
+        Minimize the sub-problem in the d-2 method.
+        Use a least squares solver to find he minimizer of:
 
-        :param dxn: delta couplings at last iteration
-        :param dxn_1: delta couplings at last iteration-1
-        :param dxn_2: delta couplings at last iteration-2
-        :returns: lambda
+        .. math::
+
+            dxn - x[0] * (dxn - dxn_1) - x[1] * (dxn_1 - dxn_2)
+
+        Args:
+            dxn: The delta couplings at last iteration.
+            dxn_1: The delta couplings at last iteration-1.
+            dxn_2: The delta couplings at last iteration-2.
+
+        Returns:
+            The extrapolation coefficients of the 2-delta method.
         """
         mat = concatenate((atleast_2d(dxn - dxn_1), atleast_2d(dxn_1 - dxn_2)))
         return lstsq(mat.T, dxn, rcond=None)[0]
 
     @staticmethod
-    def _compute_secant_acc(dxn, dxn_1, cgn, cgn_1):
-        """secant acceleration.
+    def _compute_secant_acc(
+        dxn,  # type: ndarray
+        dxn_1,  # type: ndarray
+        cgn,  # type: ndarray
+        cgn_1,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Compute the next iterate according to the secant method.
 
-        from the paper:
+        From the paper:
         "Iterative residual-based vector methods to accelerate
         fixed point iterations",  Isabelle Ramiere, Thomas Helfer
+        (secant acceleration: page 15 equation (41)).
 
-        secant acceleration: page 15 equation (41)
+        Args:
+            dxn: The delta couplings at last iteration.
+            dxn_1: The delta couplings at last iteration-1.
+            cgn: The computed couplings at last iteration.
+            cgn_1: The computed couplings at last iteration-1.
 
-        :param dxn: delta couplings at last iteration
-        :param dxn_1: delta couplings at last iteration-1
-        :param cgn: computed couplings at last iteration
-        :param cgn_1: computed couplings at last iteration-1
+        Returns:
+            The next iterate.
         """
         d_dxn = dxn - dxn_1
         acc = (cgn - cgn_1) * dot(d_dxn, dxn) / dot(d_dxn, d_dxn)
         return cgn - acc
 
-    def _compute_m2d_acc(self, dxn, dxn_1, dxn_2, g_n, gn_1, gn_2):
-        """2-delta acceleration.
+    def _compute_m2d_acc(
+        self,
+        dxn,  # type: ndarray
+        dxn_1,  # type: ndarray
+        dxn_2,  # type: ndarray
+        g_n,  # type: ndarray
+        gn_1,  # type: ndarray
+        gn_2,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Compute the 2-delta acceleration.
 
-        from the paper:
+        From the paper:
         "Iterative residual-based vector methods to accelerate
         fixed point iterations",  Isabelle Ramiere, Thomas Helfer
         page 22 eq (50)
 
-        :param dxn: delta couplings at last iteration
-        :param dxn_1: delta couplings at last iteration-1
-        :param dxn_2: delta couplings at last iteration-2
-        :param g_n: computed couplings at last iteration
-        :param gn_1: computed couplings at last iteration-1
-        :param gn_2: computed couplings at last iteration-2
+        Args:
+            dxn: The delta couplings at last iteration.
+            dxn_1: The delta couplings at last iteration-1.
+            dxn_2: The delta couplings at last iteration-2.
+            g_n: The computed couplings at last iteration.
+            gn_1: The computed couplings at last iteration-1.
+            gn_2: The computed couplings at last iteration-2.
+
+        Returns:
+            The next iterate.
         """
         lamba_min = self._minimize_2md(dxn, dxn_1, dxn_2)
         acc = lamba_min[0] * (g_n - gn_1) + lamba_min[1] * (gn_1 - gn_2)

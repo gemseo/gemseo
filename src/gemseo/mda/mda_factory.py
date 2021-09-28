@@ -23,47 +23,57 @@
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Iterable, List, Optional, Sequence, Union
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory
 from gemseo.mda.mda import MDA
 
 LOGGER = logging.getLogger(__name__)
 
+MDAOptionType = Optional[
+    Union[float, int, bool, str, Iterable[MDOCouplingStructure], Sequence[MDA]]
+]
+
 
 class MDAFactory(object):
     """MDA factory to create the MDA from a name or a class."""
 
-    def __init__(self):
-        """Initializes the factory: scans the directories to search for subclasses of
-        MDA.
-
-        Searches in "GEMSEO_PATH" and gemseo.mda
-        """
+    def __init__(self):  # type: (...) -> None
         self.factory = Factory(MDA, ("gemseo.mda",))
 
-    def create(self, mda_name, disciplines, **options):
+    def create(
+        self,
+        mda_name,  # type: str
+        disciplines,  # type: Sequence[MDODiscipline]
+        **options  # type: MDAOptionType
+    ):  # type: (...) -> MDA
         """Create a MDA.
 
-        :param mda_name: name of the MDA (its classname)
-        :param disciplines: list of the disciplines
-        :param options: additional options specific
-            to the MDA
+        Args:
+            mda_name: The name of the MDA (its class name).
+            disciplines: The disciplines.
+            **options: The options of the MDA.
         """
 
         return self.factory.create(mda_name, disciplines=disciplines, **options)
 
     @property
-    def mdas(self):
-        """Lists the available classes.
-
-        :returns : the list of classes names
-        """
+    def mdas(self):  # type: (...) -> List[str]
+        """The names of the available MDAs."""
         return self.factory.classes
 
-    def is_available(self, mda_name):
-        """Checks the availability of a MDA.
+    def is_available(
+        self,
+        mda_name,  # type: str
+    ):  # type: (...) -> bool
+        """Check the availability of an MDA.
 
-        :param mda_name :  name of the MDA
-        :returns: True if the MDA is available
+        Args:
+            mda_name: The name of the MDA.
+
+        Returns:
+            Whether the MDA is available.
         """
         return self.factory.is_available(mda_name)

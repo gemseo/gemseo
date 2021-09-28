@@ -22,126 +22,103 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-
-import pytest
-from numpy import array, complex128, float64, ones
+from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.chains import SobieskiMDAJacobi
 
 from .test_gauss_seidel import SelfCoupledDisc
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestMDAJacobi(unittest.TestCase):
-    """Tests of Jacobi MDA."""
-
-    @staticmethod
-    def test_jacobi_sobieski():
-        """Test the execution of Jacobi on Sobieski."""
-        mda = SobieskiMDAJacobi()
-        mda.execute()
-        mda.default_inputs["x_shared"] += 0.02
-        mda.warm_start = True
-        mda.execute()
-        assert mda.residual_history[-1][0] < 1e-4
-
-    def test_secant_acceleration(self):
-        tolerance = 1e-12
-        mda = SobieskiMDAJacobi(tolerance=tolerance, max_mda_iter=30, acceleration=None)
-        mda.execute()
-        #         mda.plot_residual_history(False, True, filename="Jacobi.pdf")
-        nit1 = mda.residual_history[-1][-1]
-
-        mda = SobieskiMDAJacobi(
-            tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
-        )
-        mda.execute()
-        mda.plot_residual_history(False, True, filename="Jacobi_secant.pdf")
-        nit2 = mda.residual_history[-1][-1]
-
-        mda = SobieskiMDAJacobi(
-            tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
-        )
-        mda.execute()
-        mda.plot_residual_history(False, True, filename="Jacobi_m2d.pdf")
-        nit3 = mda.residual_history[-1][-1]
-        assert nit2 < nit1
-        assert nit3 < nit1
-        assert nit3 < nit2
-
-    @staticmethod
-    def test_mda_jacobi_parallel():
-        """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
-        mda_seq = SobieskiMDAJacobi()
-        outdata_seq = mda_seq.execute()
-
-        mda_parallel = SobieskiMDAJacobi(n_processes=4)
-        mda_parallel.reset_statuses_for_run()
-        outdata_parallel = mda_parallel.execute()
-
-        for key, value in outdata_seq.items():
-            assert array(outdata_parallel[key] == value).all()
-
-    @staticmethod
-    def get_sellar_initial():
-        """Generate initial solution."""
-        x_local = array([0.0], dtype=float64)
-        x_shared = array([1.97763888, 0.0], dtype=float64)
-        y_0 = ones(1, dtype=complex128)
-        y_1 = ones(1, dtype=complex128)
-        return x_local, x_shared, y_0, y_1
-
-    @staticmethod
-    def get_sellar_initial_input_data():
-        """Build dictionary with initial solution."""
-        x_local, x_shared, y_0, y_1 = TestMDAJacobi.get_sellar_initial()
-        return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
-
-    def test_jacobi_sellar(self):
-        """Test the execution of Jacobi on Sobieski."""
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        mda = MDAJacobi(disciplines)
-        mda.execute()
-
-        assert mda.residual_history[-1][0] < 1e-4
-
-    def test_expected_workflow(self):
-        """Test MDAJacobi workflow should be list of one tuple of disciplines (meaning
-        parallel execution)"""
-        disc1 = MDODiscipline()
-        disc2 = MDODiscipline()
-        disc3 = MDODiscipline()
-        disciplines = [disc1, disc2, disc3]
-
-        mda = MDAJacobi(disciplines, n_processes=1)
-        expected = (
-            "{MDAJacobi(None), [MDODiscipline(None), MDODiscipline(None), "
-            "MDODiscipline(None), ], }"
-        )
-        self.assertEqual(str(mda.get_expected_workflow()), expected)
-
-        mda = MDAJacobi(disciplines, n_processes=2)
-        expected = (
-            "{MDAJacobi(None), (MDODiscipline(None), MDODiscipline(None), "
-            "MDODiscipline(None), ), }"
-        )
-        self.assertEqual(str(mda.get_expected_workflow()), expected)
-
-    def test_self_coupled(self):
-        sc_disc = SelfCoupledDisc()
-        mda = MDAJacobi([sc_disc], tolerance=1e-14, max_mda_iter=40)
-        out = mda.execute()
-        assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+def test_jacobi_sobieski():
+    """Test the execution of Jacobi on Sobieski."""
+    mda = SobieskiMDAJacobi()
+    mda.execute()
+    mda.default_inputs["x_shared"] += 0.02
+    mda.warm_start = True
+    mda.execute()
+    assert mda.residual_history[-1][0] < 1e-4
 
 
-def test_log_convergence():
+def test_secant_acceleration(tmp_wd):
+    tolerance = 1e-12
+    mda = SobieskiMDAJacobi(tolerance=tolerance, max_mda_iter=30, acceleration=None)
+    mda.execute()
+    nit1 = mda.residual_history[-1][-1]
+
+    mda = SobieskiMDAJacobi(
+        tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
+    )
+    mda.execute()
+    mda.plot_residual_history(False, True, filename="Jacobi_secant.pdf")
+    nit2 = mda.residual_history[-1][-1]
+
+    mda = SobieskiMDAJacobi(
+        tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
+    )
+    mda.execute()
+    mda.plot_residual_history(False, True, filename="Jacobi_m2d.pdf")
+    nit3 = mda.residual_history[-1][-1]
+    assert nit2 < nit1
+    assert nit3 < nit1
+    assert nit3 < nit2
+
+
+def test_mda_jacobi_parallel():
+    """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
+    mda_seq = SobieskiMDAJacobi()
+    outdata_seq = mda_seq.execute()
+
+    mda_parallel = SobieskiMDAJacobi(n_processes=4)
+    mda_parallel.reset_statuses_for_run()
+    outdata_parallel = mda_parallel.execute()
+
+    for key, value in outdata_seq.items():
+        assert array(outdata_parallel[key] == value).all()
+
+
+def test_jacobi_sellar(sellar_disciplines):
+    """Test the execution of Jacobi on Sobieski."""
+    mda = MDAJacobi(sellar_disciplines)
+    mda.execute()
+
+    assert mda.residual_history[-1][0] < 1e-4
+
+
+def test_expected_workflow():
+    """Test MDAJacobi workflow should be list of one tuple of disciplines (meaning
+    parallel execution)"""
+    disc1 = MDODiscipline()
+    disc2 = MDODiscipline()
+    disc3 = MDODiscipline()
+    disciplines = [disc1, disc2, disc3]
+
+    mda = MDAJacobi(disciplines, n_processes=1)
+    expected = (
+        "{MDAJacobi(None), [MDODiscipline(None), MDODiscipline(None), "
+        "MDODiscipline(None), ], }"
+    )
+    assert str(mda.get_expected_workflow()) == expected
+
+    mda = MDAJacobi(disciplines, n_processes=2)
+    expected = (
+        "{MDAJacobi(None), (MDODiscipline(None), MDODiscipline(None), "
+        "MDODiscipline(None), ), }"
+    )
+    assert str(mda.get_expected_workflow()) == expected
+
+
+def test_self_coupled():
+    sc_disc = SelfCoupledDisc()
+    mda = MDAJacobi([sc_disc], tolerance=1e-14, max_mda_iter=40)
+    out = mda.execute()
+    assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+
+
+def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda = MDAJacobi(disciplines)
+    mda = MDAJacobi(sellar_disciplines)
     assert not mda._log_convergence
-    mda = MDAJacobi(disciplines, log_convergence=True)
+    mda = MDAJacobi(sellar_disciplines, log_convergence=True)
     assert mda._log_convergence

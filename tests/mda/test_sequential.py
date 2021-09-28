@@ -22,65 +22,53 @@
 
 from __future__ import division, unicode_literals
 
-import os
-import unittest
 from os.path import exists
 
 import numpy as np
-import pytest
 
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
-from gemseo.problems.sellar.sellar import Y_1, Y_2, Sellar1, Sellar2, SellarSystem
-
-DIRNAME = os.path.dirname(__file__)
+from gemseo.problems.sellar.sellar import Y_1, Y_2
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestSequential(unittest.TestCase):
-    """Test the sequential MDA."""
+def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
 
-    @staticmethod
-    def test_sequential_mda_sellar():
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda1 = MDAJacobi(sellar_disciplines, max_mda_iter=1)
+    mda2 = MDANewtonRaphson(sellar_disciplines)
+    mda_sequence = [mda1, mda2]
 
-        mda1 = MDAJacobi(disciplines, max_mda_iter=1)
-        mda2 = MDANewtonRaphson(disciplines)
-        mda_sequence = [mda1, mda2]
+    mda = MDASequential(sellar_disciplines, mda_sequence, max_mda_iter=20)
+    mda.reset_history_each_run = True
+    mda.execute()
 
-        mda = MDASequential(disciplines, mda_sequence, max_mda_iter=20)
-        mda.reset_history_each_run = True
-        mda.execute()
+    y_ref = np.array([0.80004953, 1.79981434])
+    y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
+    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
-        y_ref = np.array([0.80004953, 1.79981434])
-        y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-        assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+    mda3 = GSNewtonMDA(sellar_disciplines, max_mda_iter=4)
+    mda3.execute()
+    filename = "GS_sellar.pdf"
+    mda3.plot_residual_history(show=False, save=True, filename=filename)
 
-        mda3 = GSNewtonMDA(disciplines, max_mda_iter=4)
-        mda3.execute()
-        filename = "GS_sellar.pdf"
-        mda3.plot_residual_history(show=False, save=True, filename=filename)
-
-        assert exists(filename)
-        y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
-        assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+    assert exists(filename)
+    y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
+    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
 
-def test_log_convergence():
+def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda = GSNewtonMDA(disciplines)
+    mda = GSNewtonMDA(sellar_disciplines)
     assert not mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert not sub_mda.log_convergence
 
-    mda = GSNewtonMDA(disciplines, log_convergence=True)
+    mda = GSNewtonMDA(sellar_disciplines, log_convergence=True)
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert sub_mda.log_convergence
 
-    mda = GSNewtonMDA(disciplines)
+    mda = GSNewtonMDA(sellar_disciplines)
     mda.log_convergence = True
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:

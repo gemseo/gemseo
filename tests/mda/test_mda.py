@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -39,11 +40,8 @@ DIRNAME = os.path.dirname(__file__)
 
 
 @pytest.fixture
-def sellar_mda():
-    # initialize disciplines, MDA and input data
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda_sellar = MDAGaussSeidel(disciplines)
-    return mda_sellar
+def sellar_mda(sellar_disciplines):
+    return MDAGaussSeidel(sellar_disciplines)
 
 
 @pytest.fixture(scope="module")
@@ -151,6 +149,15 @@ def test_consistency_fail(desc):
         match="Too many coupling constraints|Outputs are defined multiple times",
     ):
         MDA(disciplines)
+
+
+def test_coupling_structure(sellar_disciplines):
+    """Check that an MDA is correctly instantiated from a coupling structure."""
+    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    mda_sellar = MDAGaussSeidel(
+        sellar_disciplines, coupling_structure=coupling_structure
+    )
+    assert mda_sellar.coupling_structure == coupling_structure
 
 
 def test_log_convergence(caplog):
