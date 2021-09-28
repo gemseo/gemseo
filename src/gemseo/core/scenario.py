@@ -27,9 +27,7 @@ from __future__ import division, unicode_literals
 import inspect
 import logging
 from os import remove
-from os.path import abspath, basename
-from os.path import dirname as pdirname
-from os.path import exists
+from os.path import basename, exists
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 from six import string_types
@@ -168,7 +166,7 @@ class Scenario(MDODiscipline):
                 used as a base name for the JSON schemas to import:
                 `name_input.json` and `name_output.json`.
         """
-        comp_dir = abspath(pdirname(inspect.getfile(Scenario)))
+        comp_dir = str(Path(inspect.getfile(self.__class__)).parent)
         input_grammar_file = self.auto_get_grammar_file(True, name, comp_dir)
         output_grammar_file = self.auto_get_grammar_file(False, name, comp_dir)
         self._instantiate_grammars(input_grammar_file, output_grammar_file)
