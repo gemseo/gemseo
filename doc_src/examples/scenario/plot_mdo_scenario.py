@@ -81,15 +81,29 @@ design_space = create_design_space()
 design_space.add_variable("x", 1, l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
 
 #############################################################################
-# Define the DOE scenario
+# Define the MDO scenario
 # -----------------------
 # Then, by means of the :meth:`~gemseo.api.create_scenario` API function,
-# we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+# we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
 # and the :class:`.DesignSpace` defined above:
 
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="MDO"
 )
+
+#############################################################################
+# What about the differentiation method?
+# --------------------------------------
+# The :class:`.AnalyticDiscipline` automatically differentiates the
+# expressions to obtain the Jacobian matrices. Therefore, there is no need to
+# define a differentiation method in this case. Keep in mind that for a
+# generic discipline with no defined Jacobian function, you can use the
+# :meth:`.Scenario.set_differentiation_method` method to define a numerical
+# approximation of the gradients.
+#
+# .. code::
+#
+#    scenario.set_differentiation_method('user')
 
 #############################################################################
 # Execute the MDO scenario

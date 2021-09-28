@@ -93,7 +93,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # the background color represents a qualitative view of these values: active
 # areas are white, violated ones are red and satisfied ones are green.
 scenario.post_process(
-    "ConstraintsHistory", constraints_list=all_constraints, save=False, show=True
+    "ConstraintsHistory", constraints_list=all_constraints, save=False, show=False
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
