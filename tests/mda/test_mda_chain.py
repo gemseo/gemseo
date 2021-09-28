@@ -228,9 +228,8 @@ def test_sub_coupling_structures(sellar_disciplines):
     )
 
 
-def test_log_convergence():
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda_chain = MDAChain(disciplines)
+def test_log_convergence(sellar_disciplines):
+    mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.log_convergence
     for mda in mda_chain.sub_mda_list:
         assert not mda.log_convergence

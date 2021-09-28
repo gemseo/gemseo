@@ -116,10 +116,9 @@ def test_self_coupled():
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
 
-def test_log_convergence():
+def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda = MDAJacobi(disciplines)
+    mda = MDAJacobi(sellar_disciplines)
     assert not mda._log_convergence
-    mda = MDAJacobi(disciplines, log_convergence=True)
+    mda = MDAJacobi(sellar_disciplines, log_convergence=True)
     assert mda._log_convergence

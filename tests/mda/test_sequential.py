@@ -56,20 +56,19 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
     assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
 
-def test_log_convergence():
+def test_log_convergence(sellar_disciplines):
     """Check that the boolean log_convergence is correctly set."""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda = GSNewtonMDA(disciplines)
+    mda = GSNewtonMDA(sellar_disciplines)
     assert not mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert not sub_mda.log_convergence
 
-    mda = GSNewtonMDA(disciplines, log_convergence=True)
+    mda = GSNewtonMDA(sellar_disciplines, log_convergence=True)
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert sub_mda.log_convergence
 
-    mda = GSNewtonMDA(disciplines)
+    mda = GSNewtonMDA(sellar_disciplines)
     mda.log_convergence = True
     assert mda.log_convergence
     for sub_mda in mda.mda_sequence:
