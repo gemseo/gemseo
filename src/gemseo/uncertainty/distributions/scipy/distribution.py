@@ -64,6 +64,7 @@ from gemseo.uncertainty.distributions.distribution import (
     StandardParametersType,
 )
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
+from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -125,9 +126,12 @@ class SPDistribution(Distribution):
             self.distribution_name, self.parameters
         )
         math_support = str(self.support)
-        LOGGER.info("|_ Mathematical support: %s ", math_support)
         num_range = str(self.range)
-        LOGGER.info("|_ Numerical range: %s", num_range)
+        msg = MultiLineString()
+        msg.indent()
+        msg.add("Mathematical support: {}", math_support)
+        msg.add("Numerical range: {}", num_range)
+        LOGGER.debug("%s", msg)
 
     def compute_samples(
         self,
@@ -183,13 +187,15 @@ class SPDistribution(Distribution):
         try:
             sp_dist = getattr(sp_stats, distribution)
         except Exception:
-            raise ValueError("%s is an unknown scipy distribution. " % distribution)
+            raise ValueError(
+                "{} is an unknown scipy distribution.".format(distribution)
+            )
         try:
             sp_dist(**parameters)
         except Exception:
             raise ValueError(
-                "%s does not take these arguments. "
-                "More details on: %s" % (distribution, SP_WEBSITE)
+                "{} does not take these arguments; "
+                "more details on: {}.".format(distribution, SP_WEBSITE)
             )
         sp_dist = [sp_dist(**parameters)] * self.dimension
         self.__set_bounds(sp_dist)

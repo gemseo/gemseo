@@ -196,7 +196,7 @@ class Distribution(object):
         msg.indent()
         msg.add("Distribution: {}", self)
         msg.add("Dimension: {}", dimension)
-        LOGGER.info("%s", msg)
+        LOGGER.debug("%s", msg)
 
     def __str__(self):
         # type: (...) -> str
