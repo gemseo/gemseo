@@ -134,7 +134,7 @@ class ComposedDistribution(Distribution):
                 distribution.dimension,
                 distribution,
             )
-        LOGGER.info("%s", msg)
+        LOGGER.debug("%s", msg)
 
     def _set_bounds(
         self,

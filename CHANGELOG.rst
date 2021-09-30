@@ -39,6 +39,7 @@ Changed
 - MorrisAnalysis provides new indices: minimum, maximum and relative standard deviation.
 - MorrisAnalysis can compute indices normalized with the empirical output bounds.
 - The IO grammar files of a scenario are located in the same directory as its class.
+- Distribution, ParameterSpace and OpenTURNS use now the logger mainly at debug level.
 
 Fixed
 -----

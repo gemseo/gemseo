@@ -117,13 +117,13 @@ class ParameterSpace(DesignSpace):
         Args:
             copula: A name of copula defining the dependency between random variables.
         """
-        LOGGER.info("*** Create a new parameter space ***")
+        LOGGER.debug("*** Create a new parameter space ***")
         super(ParameterSpace, self).__init__()
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
         if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
-            raise ValueError("{} is not a copula name".format(copula))
+            raise ValueError("{} is not a copula name.".format(copula))
         self._copula = copula
 
     def is_uncertain(
@@ -200,7 +200,7 @@ class ParameterSpace(DesignSpace):
             distribution, variable=name, dimension=size, **parameters
         )
         variable = distribution.variable_name
-        LOGGER.info("Add the random variable: %s", variable)
+        LOGGER.debug("Add the random variable: %s.", variable)
         self.distributions[variable] = distribution
         self.uncertain_variables.append(variable)
         self._build_composed_distribution()
@@ -328,17 +328,17 @@ class ParameterSpace(DesignSpace):
         """
         error_msg = (
             "obj must be a dictionary whose keys are the variables "
-            "names and values are arrays whose dimensions are the "
-            "variables ones and components are in [0, 1]"
+            "names and values are arrays "
+            "whose dimensions are the variables ones and components are in [0, 1]."
         )
         if not isinstance(obj, dict):
             raise TypeError(error_msg)
         for variable, value in obj.items():
             if variable not in self.uncertain_variables:
                 LOGGER.debug(
-                    "%s is not defined in the probability space."
-                    " Available variables are [%s]."
-                    " Use uniform distribution for %s.",
+                    "%s is not defined in the probability space; "
+                    "available variables are [%s]; "
+                    "use uniform distribution for %s.",
                     variable,
                     ", ".join(self.uncertain_variables),
                     variable,

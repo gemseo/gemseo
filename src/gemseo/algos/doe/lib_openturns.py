@@ -36,6 +36,7 @@ from numpy import ndarray
 from openturns.viewer import View
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -323,19 +324,21 @@ class OpenTURNS(DOELibrary):
             option = array(option)
             if np_max(option) > 1.0:
                 raise ValueError(
-                    "Upper bound of levels must be <=1: %s given" % np_max(option)
+                    "Upper bound of levels must be lower than or equal to 1; "
+                    "{} given.".format(np_max(option))
                 )
             if np_min(option) < 0.0:
                 raise ValueError(
-                    "Lower bound of levels must be >=1: %s given" % np_min(option)
+                    "Lower bound of levels must be greater than or equal to 0; "
+                    "{} given.".format(np_min(option))
                 )
             options[self.LEVEL_KEYWORD] = option
         else:
             raise TypeError(
-                "Error for levels definition in DOE design:"
-                + "a tuple or a list is expected whereas ",
-                type(option),
-                " is provided",
+                "Error for levels definition in DOE design; "
+                "a tuple or a list is expected whereas {} is provided.".format(
+                    type(option)
+                )
             )
         return options
 
@@ -350,16 +353,17 @@ class OpenTURNS(DOELibrary):
             if len(center) != dimension:
                 raise ValueError(
                     "Inconsistent length of 'centers' list argument "
-                    + "compared to design vector size: %s vs %s"
-                    % (dimension, len(center))
+                    "compared to design vector size: {} vs {}.".format(
+                        dimension, len(center)
+                    )
                 )
             options[self.CENTER_KEYWORD] = array(center)
         else:
             raise TypeError(
-                "Error for 'centers' definition in DOE design:"
-                + "a tuple or a list is expected whereas ",
-                type(center),
-                " is provided",
+                "Error for 'centers' definition in DOE design; "
+                "a tuple or a list is expected whereas {} is provided.".format(
+                    type(center)
+                )
             )
         return options
 
@@ -387,7 +391,7 @@ class OpenTURNS(DOELibrary):
         del options[self.DIMENSION]
         n_samples = options[self.N_SAMPLES]
         del options[self.N_SAMPLES]
-        LOGGER.info("Generation of %s DOE with OpenTurns", self.algo_name)
+        LOGGER.debug("Generation of %s DOE with OpenTurns.", self.algo_name)
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             distribution_name, options = self.__get_distribution(options)
             samples = self.__generate_lhs(
@@ -431,27 +435,19 @@ class OpenTURNS(DOELibrary):
             opt = options[keyword]
             if not isinstance(opt, float):
                 raise TypeError(
-                    keyword + " value must be a float : ", type(opt), " given"
+                    "{} value must be a float: {} given.".format(keyword, type(opt))
                 )
             if u_b is not None:
                 if opt > u_b:
                     raise ValueError(
-                        keyword
-                        + " value must be < "
-                        + str(u_b)
-                        + " : "
-                        + str(opt)
-                        + " given"
+                        "{} value must be lower than {}; "
+                        "{} given.".format(keyword, u_b, opt)
                     )
             if l_b is not None:
                 if opt < l_b:
                     raise ValueError(
-                        keyword
-                        + " value must be > "
-                        + str(l_b)
-                        + " : "
-                        + str(opt)
-                        + " given"
+                        "{} value must be greater than {}; "
+                        "{} given.".format(keyword, l_b, opt)
                     )
             options[keyword] = opt
         else:
@@ -467,8 +463,7 @@ class OpenTURNS(DOELibrary):
         if self.LEVEL_KEYWORD not in options:
             raise KeyError(
                 "Missing  parameter 'levels', "
-                + "tuple of normalized levels  "
-                + "in [0,1] you need in your design"
+                "tuple of normalized levels in [0,1] you need in your design."
             )
         options = self.__set_level_option(options)
         if self.CENTER_KEYWORD not in options:
@@ -486,9 +481,12 @@ class OpenTURNS(DOELibrary):
         """
         levels = options[self.LEVEL_KEYWORD]
         centers = options[self.CENTER_KEYWORD]
-        LOGGER.info("Composite design:")
-        LOGGER.info("    - centers: %s", str(centers))
-        LOGGER.info("    - levels: %s", str(levels))
+        msg = MultiLineString()
+        msg.add("Composite design:")
+        msg.indent()
+        msg.add("centers: {}", centers)
+        msg.add("levels: {}", levels)
+        LOGGER.debug("%s", msg)
         if self.algo_name == self.OT_COMPOSITE:
             experiment = openturns.Composite(centers, levels)
         elif self.algo_name == self.OT_AXIAL:
@@ -543,8 +541,8 @@ class OpenTURNS(DOELibrary):
         if self.__comp_dist is None:
             n_distrib = len(self.__distr_list)
             if n_distrib == 0:
-                LOGGER.info(
-                    "Creating default composed distribution based on %s",
+                LOGGER.debug(
+                    "Creating default composed distribution based on %s.",
                     distribution_name,
                 )
                 self.create_distribution(distribution_name)
@@ -559,19 +557,18 @@ class OpenTURNS(DOELibrary):
                 )
             elif n_distrib != dimension:
                 raise ValueError(
-                    "Size mismatch between number"
-                    " of distribution and problem: "
-                    "{} vs. {}".format(dimension, n_distrib)
+                    "Size mismatch between number of distribution and problem: "
+                    "{} vs {}.".format(dimension, n_distrib)
                 )
         elif self.__comp_dist.getDimension() != dimension:
             raise ValueError(
-                "Size mismatch between ComposedDistribution and "
-                "problem: {} vs. {}".format(dimension, self.__comp_dist.getDimension())
+                "Size mismatch between ComposedDistribution and problem: "
+                "{} vs. {}".format(dimension, self.__comp_dist.getDimension())
             )
         else:
-            LOGGER.info(
-                "Using composed distribution previously created: %s",
-                str(self.__comp_dist.getDistributionCollection()),
+            LOGGER.debug(
+                "Using composed distribution previously created: %s.",
+                self.__comp_dist.getDistributionCollection(),
             )
 
     def check_distribution_name(self, distribution_name):
@@ -582,11 +579,10 @@ class OpenTURNS(DOELibrary):
         """
         if distribution_name not in self.DISTRIBUTION_LIST:
             raise ValueError(
-                "Distribution '"
-                + distribution_name
-                + "' is not available. "
-                + "Please switch to one of the followings: "
-                + str(self.DISTRIBUTION_LIST)
+                "Distribution '{}' is not available; "
+                "please switch to one of the followings: {}.".format(
+                    distribution_name, self.DISTRIBUTION_LIST
+                )
             )
 
     def create_distribution(self, distribution_name="Uniform", **options):
@@ -607,23 +603,22 @@ class OpenTURNS(DOELibrary):
         options = self.__check_float(options, self.END_KEYWORD, 0.75, u_b=1, l_b=0)
 
         if distribution_name == self.OT_UNIFORM:
-            LOGGER.info("Creation of a uniform distribution")
+            LOGGER.debug("Creation of a uniform distribution.")
             self.__distr_list.append(openturns.Uniform(0, 1))
         elif distribution_name == self.OT_TRIANGULAR:
             dist_center = options[self.CENTER_KEYWORD]
-            LOGGER.info(
-                "Creation of a triangular distribution" " with center: %s",
-                str(dist_center),
+            LOGGER.debug(
+                "Creation of a triangular distribution with center %s.", dist_center
             )
             self.__distr_list.append(openturns.Triangular(0.0, dist_center, 1.0))
         elif distribution_name == self.OT_TRAPEZOIDAL:
             lower_bound = options[self.START_KEYWORD]
             upper_bound = options[self.END_KEYWORD]
-            LOGGER.info(
+            LOGGER.debug(
                 "Creation of a trapezoidal distribution "
-                "with lower/upper bounds: %s %s",
-                str(lower_bound),
-                str(upper_bound),
+                "with lower bound %s and upper bound %s.",
+                lower_bound,
+                upper_bound,
             )
             self.__distr_list.append(
                 openturns.Trapezoidal(0.0, lower_bound, upper_bound, 1.0)
@@ -634,8 +629,8 @@ class OpenTURNS(DOELibrary):
                 options, self.STD_KEYWORD, 0.447214 * 0.5, u_b=1, l_b=0
             )
             std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution" ": mu (mean) %g and sigma (std) %g",
+            LOGGER.debug(
+                "Creation of a %s distribution: mu (mean) %g and sigma (std) %g",
                 distribution_name,
                 mean,
                 std,
@@ -644,7 +639,7 @@ class OpenTURNS(DOELibrary):
             beta.setParameter(openturns.BetaMuSigma()([mean, std, 0.0, 1.0]))
             self.__distr_list.append(beta)
         elif distribution_name == self.OT_ARCSINE:
-            LOGGER.info("Creation of a %s", str(distribution_name))
+            LOGGER.debug("Creation of a %s.", distribution_name)
             arcs = openturns.Arcsine(0.0, 1.0)
             self.__distr_list.append(arcs)
         elif distribution_name == self.OT_TRUNCNORMAL:
@@ -653,8 +648,8 @@ class OpenTURNS(DOELibrary):
                 options, self.STD_KEYWORD, 0.5 / 3.75, u_b=1, l_b=0
             )
             std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g",
+            LOGGER.debug(
+                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g.",
                 distribution_name,
                 mean,
                 std,
@@ -667,8 +662,8 @@ class OpenTURNS(DOELibrary):
                 options, self.STD_KEYWORD, 0.5 / 3.75, u_b=1, l_b=0
             )
             std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g",
+            LOGGER.debug(
+                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g.",
                 distribution_name,
                 mean,
                 std,
@@ -678,9 +673,12 @@ class OpenTURNS(DOELibrary):
     def display_distributions_list(self):
         """Display list of distributions use or that will be used for DOE design based
         on LHS or Monte-Carlo methods."""
-        LOGGER.info("List of distributions:")
-        for distrib in self.__distr_list:
-            LOGGER.info(distrib)
+        msg = MultiLineString()
+        msg.add("List of distributions:")
+        msg.indent()
+        for distribution in self.__distr_list:
+            msg.add(str(distribution))
+        LOGGER.info("%s", msg)
 
     def get_distributions_list(self):
         """Accessor for distributions list.
@@ -717,9 +715,8 @@ class OpenTURNS(DOELibrary):
                 criterion = self.CRITERIA[criterion]()
             except KeyError:
                 raise ValueError(
-                    "{} is not an available criterion. Available ones are: {}".format(
-                        criterion, self.CRITERIA
-                    )
+                    "{} is not an available criterion; "
+                    "available ones are: {}.".format(criterion, self.CRITERIA)
                 )
             annealing = options.get(self.ANNEALING, True)
             if annealing:
@@ -728,8 +725,8 @@ class OpenTURNS(DOELibrary):
                     temperature = self.TEMPERATURES[temperature]()
                 except KeyError:
                     raise ValueError(
-                        "{} is not an available temperature profil."
-                        "Available ones are: {}".format(temperature, self.TEMPERATURES)
+                        "{} is not an available temperature profile; "
+                        "available ones are: {}.".format(temperature, self.TEMPERATURES)
                     )
                 algo = openturns.SimulatedAnnealingLHS(lhs, temperature, criterion)
                 design = algo.generate()
