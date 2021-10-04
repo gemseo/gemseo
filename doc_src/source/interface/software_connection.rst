@@ -30,11 +30,13 @@ several options are available:
 - You have an Excel workbooks,
   use :ref:`Excel discipline<xls_discipline>`.
 
-- If your program is a MATLAB or Scilab function there exists a generic interface
-  that allows to connect them to |g| as an :class:`.MDODiscipline`,
-  without writing code in a dedicated plugins.
-  For the MATLAB case,
-  see :ref:`the generic MATLAB wrapper<discipline_matlab>`.
+- If your program is a MATLAB function, there is a generic interface
+  that allows to connect it to |g| as an :class:`.MDODiscipline`,
+  without writing code in a dedicated plugin.
+  See :ref:`the generic MATLAB wrapper<discipline_matlab>`.
+
+- For Scilab functions, `a plugin is available <https://gitlab.com/gemseo/dev/gemseo-scilab>`_.
+  With it, you can create an :class:`.MDODiscipline` that runs Scilab code directly from |g|.
 
 - If your program is an executable,
   you have two options.
