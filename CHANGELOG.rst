@@ -91,6 +91,7 @@ Fixed
 - Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
 - The NLopt library wrapper now handles user functions that return ndarrays properly.
 - Bug with the 'measure_options' arguments of MLAlgoAssessor and MLAlgoSelection.
+- Backward compatibility with the legacy logger named "GEMSEO".
 - The constraints names are now correctly formed with the minus sign and offset value if any.
 - The image comparison tests in post/dataset no longer leave the generated files when completed.
 - DesignSpace no longer logs an erroneous warning when unnormalizing an unbounded variable.
