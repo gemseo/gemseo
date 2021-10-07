@@ -96,7 +96,6 @@ class MDAGaussSeidel(MDA):
         assert over_relax_factor > 0.0
         assert over_relax_factor <= 2.0
         self.over_relax_factor = over_relax_factor
-        self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
 

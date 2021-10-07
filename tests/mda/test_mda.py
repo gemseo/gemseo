@@ -31,9 +31,14 @@ import pytest
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
 DIRNAME = os.path.dirname(__file__)
@@ -149,6 +154,29 @@ def test_consistency_fail(desc):
         match="Too many coupling constraints|Outputs are defined multiple times",
     ):
         MDA(disciplines)
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
+@pytest.mark.parametrize(
+    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+)
+def test_array_couplings(mda_class, grammar_type):
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        grammar_type=grammar_type,
+    )
+
+    a_disc = disciplines[0]
+    a_disc.input_grammar.remove_item("y1")
+    a_disc.default_inputs["y1"] = 2.0
+    a_disc.input_grammar.initialize_from_base_dict({"y1": 2.0})
+    assert not a_disc.input_grammar.is_type_array("y1")
+
+    with pytest.raises(InvalidDataException):
+        a_disc.execute({"x": 2.0})
+
+    with pytest.raises(ValueError, match="must be of type array"):
+        mda_class(disciplines, grammar_type=grammar_type)
 
 
 def test_convergence_warning(caplog):

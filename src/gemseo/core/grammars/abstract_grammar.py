@@ -55,6 +55,9 @@ class AbstractGrammar(object):
     It is mainly used to store the names and types
     of the inputs and outputs of an :class:`.MDODiscipline`.
 
+    Grammars supports __contains__ special method, so that one can test
+    if an element is in the grammar with the statement `"x" in grammar`.
+
     Attributes:
         name (str): The name of the grammar.
     """
@@ -73,6 +76,12 @@ class AbstractGrammar(object):
 
     def __str__(self):  # type: (...) -> str
         return "grammar name: {}".format(self.name)
+
+    def __contains__(
+        self,
+        item,  # type: str
+    ):  # type: (...) -> bool
+        return self.is_data_name_existing(item)
 
     def load_data(
         self,
@@ -109,6 +118,22 @@ class AbstractGrammar(object):
 
         Args:
             input_grammar: The grammar to take the elements from.
+        """
+        raise NotImplementedError()
+
+    def is_type_array(
+        self, data_name  # type: str
+    ):  # type: (...) -> bool
+        """Check if an element is an array.
+
+        Args:
+            data_name: The name of the element.
+
+        Returns:
+            Whether the element is an array.
+
+        Raises:
+            ValueError: If the name does not correspond to an element name.
         """
         raise NotImplementedError()
 

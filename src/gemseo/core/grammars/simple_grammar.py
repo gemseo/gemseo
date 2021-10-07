@@ -17,32 +17,81 @@
 """Most basic grammar implementation."""
 
 import logging
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
+
+from numpy import ndarray
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.utils.py23_compat import Path
+from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SimpleGrammar(AbstractGrammar):
-    """Store the names and types of the elements as Python lists.
-
-    Attributes:
-        data_names (List[str]): The names of the elements.
-        data_types (List[type]): The types of the elements,
-            stored in the same order as ``data_names``.
-    """
+    """A Grammar based on the names and types of the elements specified by a
+    dictionnary."""
 
     def __init__(
         self,
         name,  # type: str
+        names_to_types=None,  # type: Optional[Mapping[str,type]]
         **kwargs  # type: Union[str,Path]
     ):  # type: (...) -> None
+        """
+        Args:
+            name: The grammar name.
+            names_to_types: The mapping defining the data names as keys,
+                and data types as values.
+                If None, the grammar is empty.
+        """
         super(SimpleGrammar, self).__init__(name)
-        self.data_names = []
-        self.data_types = []
+        if names_to_types is None:
+            self._names_to_types = {}
+        else:
+            self._names_to_types = names_to_types
+            self._check_types()
+
+    @property
+    def data_names(self):  # type: (...) -> List[str]
+        """The names of the elements."""
+        return list(self._names_to_types.keys())
+
+    @property
+    def data_types(self):  # type: (...) -> List[type]
+        """The types of the elements."""
+        return list(self._names_to_types.values())
+
+    def _check_types(self):  # type: (...) -> None
+        """Check that the elements names to types mapping contains only acceptable type
+        specifications, ie, are a type or None.
+
+        Raises:
+            TypeError: When at least one type specification is not a type.
+        """
+        for obj_name, obj in self._names_to_types.items():
+            if obj is not None and not isinstance(obj, type):
+                raise TypeError(
+                    (
+                        "{} is not a type and cannot be used as a"
+                        " type specification for the element named {} in the grammar {}."
+                    ).format(obj, obj_name, self.name)
+                )
+
+    def add_elements(
+        self, **data  # type: Mapping[str,type]
+    ):  # type: (...) -> Iterable[str]
+        """Add or update elements from their names and types.
+
+        >> grammar.add_elements(a=str, b=int)
+        >> grammar.add_elements(**names_to_types)
+
+        Args:
+            names_to_types: The names and types to add.
+        """
+        self._names_to_types.update(**data)
+        self._check_types()
 
     def load_data(
         self,
@@ -76,40 +125,40 @@ class SimpleGrammar(AbstractGrammar):
             failed = True
             LOGGER.error("Grammar data is not a mapping, in %s.", self.name)
             if raise_exception:
-                raise InvalidDataException("Invalid data in {}.".format(self.name))
+                raise InvalidDataException("Invalid data in: {}.".format(self.name))
 
-        for element_type in self.data_types:
-            if element_type is not None and not isinstance(element_type, type):
-                msg = "Invalid data type in grammar {}, {} is not a type.".format(
-                    self.name, element_type
+        error_message = MultiLineString()
+        error_message.add("Invalid data in {}", self.name)
+        for element_name, element_type in self._names_to_types.items():
+            element_value = data.get(element_name)
+            if element_value is None:
+                failed = True
+                error_message.add(
+                    "Missing mandatory elements: {} in grammar {}.".format(
+                        element_name, self.name
+                    )
                 )
-                raise TypeError(msg)
+            elif element_type is not None and not isinstance(
+                element_value, element_type
+            ):
+                failed = True
+                error_message.add(
+                    "Wrong input type for: {} in {} got {} instead of {}.".format(
+                        element_name, self.name, type(data[element_name]), element_type
+                    )
+                )
 
-        for element_type, element_name in zip(self.data_types, self.data_names):
-            if element_name not in data:
-                failed = True
-                LOGGER.error("Missing input: %s in %s.", element_name, self.name)
-            elif not isinstance(data[element_name], element_type):
-                failed = True
-                LOGGER.error(
-                    "Wrong input type for: %s in %s got %s instead of %s.",
-                    element_name,
-                    self.name,
-                    type(data[element_name]),
-                    element_type,
-                )
+        LOGGER.error(error_message)
         if failed and raise_exception:
-            raise InvalidDataException("Invalid data in {}.".format(self.name))
+            raise InvalidDataException(str(error_message))
 
     def initialize_from_base_dict(
         self,
         typical_data_dict,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
-        self.data_names = []
-        self.data_types = []
-        for element_name, element_value in typical_data_dict.items():
-            self.data_names.append(element_name)
-            self.data_types.append(type(element_value))
+        self.add_elements(
+            **{name: type(value) for name, value in typical_data_dict.items()}
+        )
 
     def get_data_names(self):  # type: (...) -> List[str]
         return self.data_names
@@ -118,8 +167,9 @@ class SimpleGrammar(AbstractGrammar):
         self,
         data_names,  # type: Iterable[str]
     ):  # type: (...) -> bool
-        for element_name in data_names:
-            if not self.is_data_name_existing(element_name):
+        get = self._names_to_types.get
+        for name in data_names:
+            if get(name) is None:
                 return False
         return True
 
@@ -140,13 +190,7 @@ class SimpleGrammar(AbstractGrammar):
             data_name: The name of the element.
             data_type: The type of the element.
         """
-        if data_name in self.data_names:
-            data_index = self.data_names.index(data_name)
-            self.data_names[data_index] = data_name
-            self.data_types[data_index] = data_type
-        else:
-            self.data_names.append(data_name)
-            self.data_types.append(data_type)
+        self._names_to_types[data_name] = data_type
 
     def get_type_of_data_named(
         self,
@@ -163,10 +207,29 @@ class SimpleGrammar(AbstractGrammar):
         Raises:
             ValueError: If the name does not correspond to an element name.
         """
-        if not self.is_data_name_existing(data_name):
+        if data_name not in self._names_to_types:
             raise ValueError("Unknown data named: {}.".format(data_name))
-        data_index = self.data_names.index(data_name)
-        return self.data_types[data_index]
+        return self._names_to_types[data_name]
+
+    def is_type_array(
+        self, data_name  # type: str
+    ):  # type: (...) -> bool
+        element_type = self.get_type_of_data_named(data_name)
+        return issubclass(element_type, ndarray)
+
+    def remove_item(
+        self,
+        item_name,  # type: str
+    ):  # type: (...) -> None
+        """Remove an element.
+
+        Args:
+            item_name: The name of the element to be removed.
+
+        Raises:
+            KeyError: When item_name is not in the grammar.
+        """
+        del self._names_to_types[item_name]
 
     def update_from(
         self,
@@ -181,11 +244,7 @@ class SimpleGrammar(AbstractGrammar):
             raise TypeError(msg)
 
         input_grammar = input_grammar.to_simple_grammar()
-
-        for element_name, element_type in zip(
-            input_grammar.data_names, input_grammar.data_types
-        ):
-            self._update_field(element_name, element_type)
+        self._names_to_types.update(input_grammar._names_to_types)
 
     def update_from_if_not_in(
         self,
@@ -218,17 +277,16 @@ class SimpleGrammar(AbstractGrammar):
                         )
                     )
             else:
-                self._update_field(element_name, element_type)
+                self._names_to_types[element_name] = element_type
 
     def is_data_name_existing(
         self,
         data_name,  # type: str
     ):  # type: (...) -> bool
-        return data_name in self.data_names
+        return data_name in self._names_to_types
 
     def clear(self):  # type: (...) -> None
-        self.data_names = []
-        self.data_types = []
+        self._names_to_types = {}
 
     def to_simple_grammar(self):  # type: (...) -> SimpleGrammar
         return self

@@ -119,6 +119,7 @@ class MDAChain(MDA):
         self.log_convergence = log_convergence
 
         self._initialize_grammars()
+        self._check_consistency()
         self._set_default_inputs()
         self._compute_input_couplings()
         # cascade the tolerance
@@ -201,8 +202,20 @@ class MDAChain(MDA):
         )
 
     def _initialize_grammars(self):  # type: (...) -> None
+        """Define all inputs and outputs of the chain."""
+        if self.mdo_chain is None:  # First call by super class must be ignored.
+            return
         self.input_grammar.update_from(self.mdo_chain.input_grammar)
         self.output_grammar.update_from(self.mdo_chain.output_grammar)
+
+    def _check_consistency(self):
+        """Check if there is no more than 1 equation per variable.
+
+        For instance if a strong coupling is not also a self coupling.
+        """
+        if self.mdo_chain is None:  # First call by super class must be ignored.
+            return
+        super(MDAChain, self)._check_consistency()
 
     def _run(self):  # type -> None
         if self.warm_start:

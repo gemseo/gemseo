@@ -155,6 +155,7 @@ class MDF(MDOFormulation):
     def _remove_couplings_from_ds(self):  # type: (...) -> None
         """Remove the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
-        for coupling in self.mda.strong_couplings:
+
+        for coupling in self.mda.all_couplings:
             if coupling in design_space.variables_names:
                 design_space.remove_variable(coupling)

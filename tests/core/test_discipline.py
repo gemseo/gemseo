@@ -41,6 +41,7 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.problems.sobieski.wrappers_sg import SobieskiStructureSG
 
 
 def check_jac_equals(
@@ -139,14 +140,26 @@ def test_check_input_data_exception_chain(sobieski_chain):
         chain.check_input_data(indata)
 
 
-def test_check_input_data_exception():
+@pytest.mark.parametrize(
+    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+)
+def test_check_input_data_exception(grammar_type):
     """Test the check input data exception."""
-    struct = SobieskiStructure()
+    if grammar_type == MDODiscipline.SIMPLE_GRAMMAR_TYPE:
+        struct = SobieskiStructureSG()
+    else:
+        struct = SobieskiStructure()
     struct_inputs = struct.input_grammar.get_data_names()
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataException, match="Missing mandatory elements: x_1"):
         struct.check_input_data(indata)
+
+    struct.execute(indata)
+
+    del struct.default_inputs["x_1"]
+    with pytest.raises(InvalidDataException, match="Invalid input data in"):
+        struct.execute(indata)
 
 
 def test_outputs():

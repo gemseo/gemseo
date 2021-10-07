@@ -83,7 +83,6 @@ class MDARoot(MDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
         # parallel execution
@@ -104,7 +103,7 @@ class MDARoot(MDA):
         self,
         input_local_data,  # type: Mapping[str,ndarray]
     ):  # type: (...) -> None
-        """Execute all the disciplines.
+        """Execute all self.disciplines.
 
         Args:
             input_local_data: The input data of the disciplines.

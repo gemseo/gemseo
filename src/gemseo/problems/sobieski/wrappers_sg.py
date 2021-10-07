@@ -25,7 +25,7 @@ SSBJ Disciplines wrappers
 """
 from __future__ import division, unicode_literals
 
-from numpy import array
+from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sobieski.core import SobieskiProblem
@@ -51,13 +51,11 @@ class SobieskiBaseWrapperSimpleGram(MDODiscipline):
         self.init_values = {}
         self.dtype = dtype
 
-    def _auto_set_all_numpy_types(self):
-        """Sets the data types of grammars to numpy array."""
-        arr_type = type(array([0.0], dtype=self.dtype))
-        n_inputs = len(self.input_grammar.get_data_names())
-        n_outputs = len(self.output_grammar.get_data_names())
-        self.input_grammar.data_types = [arr_type] * n_inputs
-        self.output_grammar.data_types = [arr_type] * n_outputs
+    def _set_default_inputs(self):
+        """Sets the default inputs from grammrs and SobieskiProblem."""
+        self.default_inputs = self.sobieski_problem.get_default_inputs(
+            self.get_input_data_names()
+        )
 
     def _run(self):
         """Run the discipline."""
@@ -77,9 +75,11 @@ class SobieskiMissionSG(SobieskiBaseWrapperSimpleGram):
         :type dtype: str
         """
         super(SobieskiMissionSG, self).__init__(dtype=dtype)
-        self.input_grammar.data_names = ["y_14", "y_24", "y_34", "x_shared"]
-        self.output_grammar.data_names = ["y_4"]
-        self._auto_set_all_numpy_types()
+        self.input_grammar.add_elements(
+            **dict.fromkeys(("y_14", "y_24", "y_34", "x_shared"), ndarray)
+        )
+        self.output_grammar.add_elements(y_4=ndarray)
+        self._set_default_inputs()
 
     def _run(self):
         """Compute range."""
@@ -108,9 +108,13 @@ class SobieskiStructureSG(SobieskiBaseWrapperSimpleGram):
     def __init__(self, dtype=DTYPE_DOUBLE):
         """Constructor of wrapper for weight computation."""
         super(SobieskiStructureSG, self).__init__(dtype=dtype)
-        self.input_grammar.data_names = ["x_1", "y_21", "y_31", "x_shared"]
-        self.output_grammar.data_names = ["y_1", "y_11", "y_12", "y_14", "g_1"]
-        self._auto_set_all_numpy_types()
+        self.input_grammar.add_elements(
+            **dict.fromkeys(["x_1", "y_21", "y_31", "x_shared"], ndarray)
+        )
+        self.output_grammar.add_elements(
+            **dict.fromkeys(["y_1", "y_11", "y_12", "y_14", "g_1"], ndarray)
+        )
+        self._set_default_inputs()
 
     def _run(self):
         """Compute weight."""
@@ -146,9 +150,13 @@ class SobieskiAerodynamicsSG(SobieskiBaseWrapperSimpleGram):
         :type dtype: str
         """
         super(SobieskiAerodynamicsSG, self).__init__(dtype=dtype)
-        self.input_grammar.data_names = ["x_2", "y_12", "y_32", "x_shared"]
-        self.output_grammar.data_names = ["y_2", "y_21", "y_23", "y_24", "g_2"]
-        self._auto_set_all_numpy_types()
+        self.input_grammar.add_elements(
+            **dict.fromkeys(["x_2", "y_12", "y_32", "x_shared"], ndarray)
+        )
+        self.output_grammar.add_elements(
+            **dict.fromkeys(["y_2", "y_21", "y_23", "y_24", "g_2"], ndarray)
+        )
+        self._set_default_inputs()
 
     def _run(self):
         """Compute aerodynamics."""
@@ -183,9 +191,13 @@ class SobieskiPropulsionSG(SobieskiBaseWrapperSimpleGram):
         :type dtype: str
         """
         super(SobieskiPropulsionSG, self).__init__(dtype=dtype)
-        self.input_grammar.data_names = ["x_3", "y_23", "x_shared"]
-        self.output_grammar.data_names = ["y_3", "y_34", "y_31", "y_32", "g_3"]
-        self._auto_set_all_numpy_types()
+        self.input_grammar.add_elements(
+            **dict.fromkeys(["x_3", "y_23", "x_shared"], ndarray)
+        )
+        self.output_grammar.add_elements(
+            **dict.fromkeys(["y_3", "y_34", "y_31", "y_32", "g_3"], ndarray)
+        )
+        self._set_default_inputs()
 
     def _run(self):
         """Compute propulsion."""

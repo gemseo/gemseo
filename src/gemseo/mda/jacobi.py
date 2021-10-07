@@ -118,7 +118,6 @@ class MDAJacobi(MDA):
             linear_solver=linear_solver,
             linear_solver_options=linear_solver_options,
         )
-        self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
         self.acceleration = acceleration
@@ -145,11 +144,6 @@ class MDAJacobi(MDA):
         inputs = self.get_input_data_names()
         strong_cpl = self.coupling_structure.get_all_couplings()
         self._input_couplings = set(strong_cpl) & set(inputs)
-
-    def _initialize_grammars(self):  # type: (...) -> None
-        for discipline in self.disciplines:
-            self.input_grammar.update_from(discipline.input_grammar)
-            self.output_grammar.update_from(discipline.output_grammar)
 
     def execute_all_disciplines(
         self,
