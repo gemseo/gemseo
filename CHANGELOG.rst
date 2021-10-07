@@ -28,6 +28,13 @@ and this project adheres to
 Unreleased
 **********
 
+Added
+-----
+- A button to change the tagged version of GEMSEO is available on the documentation hosted by Read the Docs.
+- A GrammarFactory used by MDODiscipline allows to plug new grammars for data checking.
+- The documentation now includes a link to the gemseo-scilab plugin.
+- ParetoFront: an example of a BiLevel scenario to compute the Pareto front has been added the examples.
+
 Changed
 -------
 
@@ -44,10 +51,12 @@ Changed
 - MDA warns if it stops when reaching ``max_mda_iter`` but before reaching the tolerance criteria.
 - Add max line search steps option in scipy L-BFGS-B
 - A Pareto front computation example using a bi-level scenario has been added to the documentation.
-
-Added
------
-- The documentation now includes a link to the gemseo-scilab plugin.
+- An analytical Jacobian can be checked for subsets of input and output names and components.
+- An analytical Jacobian can be checked from a reference file.
+- The grammar type can be passed to the sub-processes through the formulations.
+- The convergence of an MDA can be logged.
+- The coupling structure can be directly passed to an MDA.
+- A ParameterSpace can be casted into a DesignSpace.
 
 Fixed
 -----
@@ -64,6 +73,11 @@ Fixed
   Scatter Plot Matrix pages in the documentation now render the example plots correctly.
 - Bug in the print_configuration method, the configuration table is now shown properly.
 - Typo in the function name get_scenario_differenciation.
+- Bug with integer elements casted into
+- A SurrogateDiscipline can now be instantiated from an MLAlgo saved without its learning set.
+- An OptimizationProblem can now normalize and unnormalize gradient with uncertain variables.
+- Fix levels option for Full-Factorial doe: now this option is taken into account and enables to build an anisotropic sample.
+- Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
 
 Version 3.1.0 (July 2021)
 *************************
