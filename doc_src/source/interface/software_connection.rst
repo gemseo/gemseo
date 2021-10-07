@@ -21,7 +21,7 @@ several options are available:
 
 - Your program is a Python function,
   you can use :class:`.AutoPyDiscipline`,
-  see :ref:`sphx_glr_tutorials_sg_mdo_plot_gemseo_in_10_minutes.py`.
+  see :ref:`GEMSEO in ten minutes <gemseo_10min>`.
 
 - You have simple analytic expressions,
   use :ref:`AnalyticDiscipline<analyticdiscipline>`,
@@ -30,18 +30,20 @@ several options are available:
 - You have an Excel workbooks,
   use :ref:`Excel discipline<xls_discipline>`.
 
-- If your program is a MATLAB or Scilab function there exists a generic interface
-  that allows to connect them to |g| as an :class:`.MDODiscipline`,
-  without writing code in a dedicated plugins.
-  For the MATLAB case,
-  see :ref:`the generic MATLAB wrapper<discipline_matlab>`.
+- If your program is a MATLAB function, there is a generic interface
+  that allows to connect it to |g| as an :class:`.MDODiscipline`,
+  without writing code in a dedicated plugin.
+  See :ref:`the generic MATLAB wrapper<discipline_matlab>`.
+
+- For Scilab functions, `a plugin is available <https://gitlab.com/gemseo/dev/gemseo-scilab>`_.
+  With it, you can create an :class:`.MDODiscipline` that runs Scilab code directly from |g|.
 
 - If your program is an executable,
   you have two options.
   Either you use the :ref:`disc_from_exe`
   to wrap a single executable and the inputs and outputs file,
   with the help of a Graphical User Interface.
-  Or use a workflow engine (next point)
+  Or use a workflow engine (next point).
 
 - Interface a discipline with a :term:`workflow engine`,
   and then integrate the :term:`workflow engine`
@@ -82,7 +84,7 @@ allowing a strong flexibility.
     This may rely on third party technologies provided by the platform.
 
 
-The next sections goes into the details of the wrapping of a :term:`discipline` in |g|.
+The next sections go into the details of the wrapping of a :term:`discipline` in |g|.
 
 The basics of wrappers
 ----------------------
@@ -127,14 +129,13 @@ such as checking data,
 listing the required data,
 etc.
 
-- :class:`.SimpleGrammar`: it manipulates the list of required data
-   names,
+- :class:`.SimpleGrammar`: it manipulates the list of required data names,
    and a list of the associated types (string,
    float,
    numpy.ndarray or any type provided).
    There is also a dictionary of
    default values that adds default values to the data if they are not
-   provided,
+   provided.
 
 - :class:`.JSONGrammar`: a :term:`JSON`-based grammar.
    You must provide a JSON file that
@@ -225,7 +226,7 @@ has two mandatory data: the optimization algorithm and the maximum number of ite
 Examples of data checking by the grammars
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-An advantage of the JSON schema is that there exists implementations in many languages.
+An advantage of the JSON schema is that it is implemented in many languages.
 Python has a json-schema package,
 which
 can check data against a JSON schema and provide clear error messages,
@@ -337,27 +338,27 @@ it will call the public :code:`execute` method,
 that will:
 
 #. Add default inputs to the input_data if some inputs are not defined
-   in :code:`input_data` but exist in :attr:`!MDODiscipline.default_inputs`
+   in :code:`input_data` but exist in :attr:`!MDODiscipline.default_inputs`.
 #. Check if the last execution of the discipline was called with
    identical inputs,
    buffered in :attr:`!MDODiscipline._in_buffered`,
    if yes,
    directly
-   return :attr:`!MDODiscipline._out_buffered`
+   return :attr:`!MDODiscipline._out_buffered`.
 #. Cache the inputs,
-   *i.e.* stores :code:`input_data` in :attr:`!MDODiscipline.cache`
-#. Check the input data against  :attr:`!MDODiscipline.input_grammar`
-#. if :attr:`!MDODiscipline.data_processor` is not None: run the data pre-processor,
-   to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!MDODiscipline._run` method
-#. update :attr:`!MDODiscipline.status` to RUNNING
-#. call the :meth:`!MDODiscipline._run` method,
-   that shall be defined by subclasses
-#. if  :attr:`!MDODiscipline.data_processor`  is not None: run the post processor,
-   to eventually convert data from discipline types to |g| types (typically numpy arrays)
-#. check the output data
-#. store the outputs,
-   *i.e.* stores  :meth:`!MDODiscipline.local_data` in :attr:`!MDODiscipline.cache`
-#. update the :attr:`!MDODiscipline.status` to DONE or FAILED
-#. update accumulated execution time :attr:`!MDODiscipline.exec_time`
+   *i.e.* stores :code:`input_data` in :attr:`!MDODiscipline.cache`.
+#. Check the input data against  :attr:`!MDODiscipline.input_grammar`.
+#. If :attr:`!MDODiscipline.data_processor` is not None: run the data pre-processor,
+   to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!MDODiscipline._run` method.
+#. Update :attr:`!MDODiscipline.status` to RUNNING.
+#. Call the :meth:`!MDODiscipline._run` method,
+   that shall be defined by subclasses.
+#. If  :attr:`!MDODiscipline.data_processor` is not None: run the post processor,
+   to eventually convert data from discipline types to |g| types (typically numpy arrays).
+#. Check the output data.
+#. Store the outputs,
+   *i.e.* stores  :meth:`!MDODiscipline.local_data` in :attr:`!MDODiscipline.cache`.
+#. Update the :attr:`!MDODiscipline.status` to DONE or FAILED.
+#. Update accumulated execution time :attr:`!MDODiscipline.exec_time`.
 
 A complete example of discipline integration is given in :ref:`sellar_mdo`.

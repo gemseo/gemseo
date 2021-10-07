@@ -45,6 +45,10 @@ Changed
 - Add max line search steps option in scipy L-BFGS-B
 - A Pareto front computation example using a bi-level scenario has been added to the documentation.
 
+Added
+-----
+- The documentation now includes a link to the gemseo-scilab plugin.
+
 Fixed
 -----
 
