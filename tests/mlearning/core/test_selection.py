@@ -56,7 +56,11 @@ def test_constructor(dataset):
     assert not selector.candidates
     assert not selector.measure_options["multioutput"]
 
-    with pytest.raises(ValueError):
+    expected = (
+        "MLAlgoSelection does not support multioutput; "
+        "the measure shall return one value."
+    )
+    with pytest.raises(ValueError, match=expected):
         MLAlgoSelection(dataset, MSEMeasure, multioutput=True)
 
 

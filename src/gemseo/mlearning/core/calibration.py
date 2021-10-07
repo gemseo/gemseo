@@ -143,9 +143,9 @@ class MLAlgoAssessor(MDODiscipline):
         self.transformer = transformer
         self.algos = []
 
-        if "multioutput" in measure_options and measure_options["multioutput"]:
+        if self.measure_options.get("multioutput", False):
             raise ValueError("MLAlgoAssessor does not support multioutput.")
-        measure_options[self.MULTIOUTPUT] = False
+        self.measure_options[self.MULTIOUTPUT] = False
 
     def _run(self):  # type: (...) -> None
         """Run method.
