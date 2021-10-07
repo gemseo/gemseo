@@ -40,12 +40,17 @@ class RadarChart(DatasetPlot):
         display_zero=True,  # type: bool
         connect=False,  # type: bool
         radial_ticks=False,  # type: bool
+        n_levels=6,  # type: int
+        scientific_notation=True,  # type: bool
     ):  # type: (...) -> List[Figure]
         """
         Args:
-            display_zero: If True, display the line where the output is equal to zero.
-            connect: If True, connect the elements of a series with a line.
-            radial_ticks: If True, align the ticks names with the radius.
+            display_zero: Whether to display the line where the output is equal to zero.
+            connect: Whether to connect the elements of a series with a line.
+            radial_ticks: Whether to align the ticks names with the radius.
+            n_levels: The number of grid levels.
+            scientific_notation: Whether to format the grid levels
+                with the scientific notation.
         """
         linestyle = "-o" if connect else "o"
 
@@ -58,8 +63,10 @@ class RadarChart(DatasetPlot):
         variables_names = self.dataset.columns_names
         if self.rmin is None:
             self.rmin = all_data.min()
+
         if self.rmax is None:
             self.rmax = all_data.max()
+
         dimension = sum(sizes.values())
 
         # computes angles
@@ -73,8 +80,10 @@ class RadarChart(DatasetPlot):
                 name: colormap(color)
                 for name, color in zip(series_names, linspace(0, 1, len(all_data)))
             }
+
         if self.linestyle is None:
             self.linestyle = {name: linestyle for name in series_names}
+
         for index, data in enumerate(all_data):
             name = series_names[index]
             data = data.tolist()
@@ -87,6 +96,7 @@ class RadarChart(DatasetPlot):
                 lw=1,
                 label=name,
             )
+
         if display_zero and self.rmin < 0:
             circle = plt.Circle(
                 (0, 0),
@@ -98,6 +108,7 @@ class RadarChart(DatasetPlot):
                 zorder=10,
             )
             plt.gca().add_artist(circle)
+
         theta_degree = rad2deg(theta[:-1])
         axe.set_thetagrids(theta_degree, variables_names)
         if radial_ticks:
@@ -114,13 +125,24 @@ class RadarChart(DatasetPlot):
                 )
                 if 90 < angle <= 180:
                     angle = 360 - (180 - angle)
+
                 if 180 < angle < 270:
                     angle = angle - 180
+
                 lab.set_rotation(angle)
                 labels.append(lab)
+
             axe.set_xticklabels([])
+
         axe.set_rlim([self.rmin, self.rmax])
-        axe.set_rticks(linspace(self.rmin, self.rmax, 6))
+        rticks = linspace(self.rmin, self.rmax, n_levels)
+        if scientific_notation:
+            rticks_labels = ["{:.2e}".format(value) for value in rticks]
+        else:
+            rticks_labels = rticks
+
+        axe.set_rticks(rticks)
+        axe.set_yticklabels(rticks_labels)
         axe.legend(
             loc="upper left", fontsize=self.font_size, bbox_to_anchor=(1.05, 1.0)
         )

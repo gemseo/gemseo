@@ -56,6 +56,7 @@ TEST_PARAMETERS = {
     "with_display_zero": ({"display_zero": False}, ["RadarChart_without_zero"]),
     "with_connect": ({"connect": True}, ["RadarChart_connect"]),
     "with_radial_ticks": ({"radial_ticks": True}, ["RadarChart_radial_ticks"]),
+    "with_n_levels": ({"n_levels": 3}, ["RadarChart_n_levels"]),
 }
 
 
