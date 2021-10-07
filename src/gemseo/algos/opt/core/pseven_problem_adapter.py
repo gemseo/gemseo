@@ -31,7 +31,11 @@ from numpy import array, atleast_1d, concatenate, full, full_like, ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import TerminationCriterion
-from gemseo.core.function import MDOFunction, MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOFunction,
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
 
 
 class CostType(Enum):

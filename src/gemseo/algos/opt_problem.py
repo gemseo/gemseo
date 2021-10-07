@@ -69,9 +69,18 @@ import numpy
 from numpy import abs as np_abs
 from numpy import all as np_all
 from numpy import any as np_any
-from numpy import argmin, array, array_equal, concatenate, inf, insert
-from numpy import isnan as np_isnan
-from numpy import issubdtype, multiply, nan, ndarray
+from numpy import (
+    argmin,
+    array,
+    array_equal,
+    concatenate,
+    inf,
+    insert,
+    issubdtype,
+    multiply,
+    nan,
+    ndarray,
+)
 from numpy import number as np_number
 from numpy import where
 from numpy.linalg import norm
@@ -85,9 +94,14 @@ from gemseo.algos.aggregation.aggregation_func import (
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
 from gemseo.core.dataset import Dataset
-from gemseo.core.function import MDOFunction, MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOFunction,
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
+from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
+from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -648,12 +662,12 @@ class OptimizationProblem(object):
         """
         return len(self.constraints) > 0
 
-    def __notify_store_listeners(self):  # type: (...) -> None
+    def _notify_store_listeners(self):  # type: (...) -> None
         """Notify the listeners that a new store has been made in the database."""
         for func in self.__store_listeners:
             func()
 
-    def __notify_newiter_listeners(
+    def _notify_newiter_listeners(
         self,
         xvect=None,  # type: Optional[ndarray]
     ):  # type: (...) -> None
@@ -807,147 +821,6 @@ class OptimizationProblem(object):
             act_funcs[func] = where(val <= tol, True, False)
 
         return act_funcs
-
-    def __wrap_in_database(
-        self,
-        orig_func,  # type: MDOFunction
-        normalized=True,  # type: bool
-        is_observable=False,  # type: bool
-    ):  # type: (...) -> MDOFunction
-        """Wrap a function, test its presence in the database and store its evaluation.
-
-        Args:
-            orig_func: The function to be wrapped in the database.
-            normalized: If True, the input of the function are assumed normalized.
-            is_observable: If True, new_iter_listeners are not called
-                when function is called (avoid recursive call)
-
-        Returns:
-            The wrapped function.
-        """
-        fname = orig_func.name
-        normalize_vect = self.design_space.normalize_vect
-        unnormalize_vect = self.design_space.unnormalize_vect
-        normalize_gradient = self.design_space.normalize_grad
-        unnormalize_gradient = self.design_space.unnormalize_grad
-
-        def wrapped_function(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Wrapped provided function in order to give to optimizer.
-
-            Args:
-                x_vect: The value of the design variables.
-
-            Returns:
-                The evaluation of the function for this value of design variables.
-            """
-            if np_any(np_isnan(x_vect)):
-                raise DesvarIsNan(
-                    "Design Variables contain a NaN value ! {}".format(x_vect)
-                )
-            if normalized:
-                xn_vect = x_vect
-                xu_vect = unnormalize_vect(xn_vect)
-            else:
-                xu_vect = x_vect
-                xn_vect = normalize_vect(xu_vect)
-            # try to retrieve the evaluation
-            value = None
-            if not self.database.get(xu_vect, False) and not is_observable:
-                if normalized:
-                    self.__notify_newiter_listeners(xn_vect)
-                else:
-                    self.__notify_newiter_listeners(xu_vect)
-            else:
-                value = self.database.get_f_of_x(fname, xu_vect)
-            if value is None:
-                # if not evaluated yet, evaluate
-                if normalized:
-                    value = orig_func(xn_vect)
-                else:
-                    value = orig_func(xu_vect)
-                if self.stop_if_nan and np_any(np_isnan(value)):
-                    raise FunctionIsNan(
-                        "Function {} is NaN for x={}".format(fname, xu_vect)
-                    )
-                values_dict = {fname: value}
-                # store (x, f(x)) in database
-                self.database.store(xu_vect, values_dict)
-                self.__notify_store_listeners()
-
-            return value
-
-        db_func = MDOFunction(
-            wrapped_function,
-            name=fname,
-            f_type=orig_func.f_type,
-            expr=orig_func.expr,
-            args=orig_func.args,
-            dim=orig_func.dim,
-            outvars=orig_func.outvars,
-        )
-
-        if orig_func.has_jac():
-
-            def dwrapped_function(
-                x_vect,  # type: ndarray
-            ):  # type: (...) -> ndarray
-                """Wrapped provided gradient in order to give to optimizer.
-
-                Args:
-                    x_vect: The value of the design variables.
-
-                Returns:
-                    The evaluation of the gradient for this value of design variables.
-                """
-                if np_any(np_isnan(x_vect)):
-                    raise FunctionIsNan(
-                        "Design Variables contain a NaN value! {}".format(x_vect)
-                    )
-                if normalized:
-                    xn_vect = x_vect
-                    xu_vect = unnormalize_vect(xn_vect)
-                else:
-                    xu_vect = x_vect
-                    xn_vect = normalize_vect(xu_vect)
-                # try to retrieve the evaluation
-                jac_u = None
-                if not self.database.get(xu_vect, False):
-                    self.__notify_newiter_listeners()
-                else:
-                    jac_u = self.database.get_f_of_x(
-                        Database.get_gradient_name(fname), xu_vect
-                    )
-
-                if jac_u is not None:
-                    jac_n = normalize_gradient(jac_u)
-                else:
-                    # if not evaluated yet, evaluate
-                    if normalized:
-                        jac_n = orig_func.jac(xn_vect).real
-                        jac_u = unnormalize_gradient(jac_n)
-                    else:
-                        jac_u = orig_func.jac(xu_vect).real
-                        jac_n = normalize_gradient(jac_u)
-                    if np_any(np_isnan(jac_n)) and self.stop_if_nan:
-                        raise FunctionIsNan(
-                            "Function {}'s Jacobian is NaN "
-                            "for x={}".format(fname, xu_vect)
-                        )
-                    values_dict = {Database.get_gradient_name(fname): jac_u}
-                    # store (x, j(x)) in database
-                    self.database.store(xu_vect, values_dict)
-                    self.__notify_store_listeners()
-                if normalized:
-                    jac = jac_n
-                else:
-                    jac = jac_u
-                return jac
-
-            db_func.jac = dwrapped_function
-
-        return db_func
 
     def add_callback(
         self,
@@ -1177,7 +1050,7 @@ class OptimizationProblem(object):
 
         Args:
             function: The scaled and derived function to be pre-processed.
-            normalize: If True, then the function is normalized.
+            normalize: If True, then the function will be normalized.
             use_database: If True, then the function is wrapped in the database.
             round_ints: If True, then round the integer variables.
             is_observable: If True, new_iter_listeners are not called
@@ -1195,7 +1068,7 @@ class OptimizationProblem(object):
         if isinstance(function, MDOLinearFunction) and not round_ints and normalize:
             function = self.__normalize_linear_function(function)
         else:
-            function = self.__normalize_and_round(function, normalize, round_ints)
+            function = NormFunction(function, normalize, round_ints, self)
 
         if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
             self.__add_fd_jac(function)
@@ -1203,91 +1076,8 @@ class OptimizationProblem(object):
         # Cast to real value, the results can be a complex number (ComplexStep)
         function.force_real = True
         if use_database:
-            function = self.__wrap_in_database(function, normalize, is_observable)
+            function = NormDBFunction(function, normalize, is_observable, self)
         return function
-
-    def __normalize_and_round(
-        self,
-        orig_func,  # type: MDOFunction
-        normalize,  # type: bool
-        round_ints,  # type: bool
-    ):  # type: (...) -> MDOFunction
-        """Create a function using a scaled input vector.
-
-        Args:
-            orig_func: The original function.
-            normalize: If True, then the function is normalized.
-            round_ints: If True, then round the integer variables.
-
-        Returns:
-            A normalized and differentiated function.
-        """
-        if (not normalize) and (not round_ints):
-            return orig_func
-
-        unnormalize_vect = self.design_space.unnormalize_vect
-        normalize_gradient = self.design_space.normalize_grad
-
-        round_int_vars = self.design_space.round_vect
-
-        def f_wrapped(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Evaluate the original function.
-
-            Args:
-                x_vect: An input vector.
-
-            Returns:
-                The value of the function at this input vector.
-            """
-            if normalize:
-                x_vect = unnormalize_vect(x_vect)
-            if round_ints:
-                x_vect = round_int_vars(x_vect)
-            return orig_func(x_vect)
-
-        normed_func = MDOFunction(
-            f_wrapped,
-            name=orig_func.name,
-            f_type=orig_func.f_type,
-            expr=orig_func.expr,
-            args=orig_func.args,
-            dim=orig_func.dim,
-            outvars=orig_func.outvars,
-        )
-
-        def df_wrapped(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Evaluate the gradient of the original function.
-
-            Args:
-                x_vect: An input vector.
-
-            Returns:
-                The value of the gradient of the original function at this input vector.
-
-            Raises:
-                ValueError: If the original function does not provide a Jacobian matrix.
-            """
-            if not orig_func.has_jac():
-                raise ValueError(
-                    "Selected user gradient but function {} "
-                    "has no Jacobian matrix !".format(orig_func)
-                )
-            if normalize:
-                x_vect = unnormalize_vect(x_vect)
-            if round_ints:
-                x_vect = round_int_vars(x_vect)
-            g_u = orig_func.jac(x_vect)
-            if normalize:
-                return normalize_gradient(g_u)
-            return g_u
-
-        normed_func.jac = df_wrapped
-
-        return normed_func
 
     def __normalize_linear_function(
         self,

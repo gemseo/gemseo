@@ -14,6 +14,9 @@ variables:
     value: "false"
     description: "Whether to run the tox tests for the anaconda env file."
   TOX_CONDA_VERSION: "0.8.0"
+  MATLAB_PYTHON_WRAPPER_WINDOWS:
+      value: ""
+      description: Enable with "git+file:////C:\python-matlab@windows ; python_version<'3.9'"
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
@@ -77,6 +80,7 @@ variables:
     # Caches on the CI runner host.
     CONDA_PKGS_DIRS: "E:\\conda"
     PIP_CACHE_DIR: "E:\\pip"
+    MATLAB_PYTHON_WRAPPER: $MATLAB_PYTHON_WRAPPER_WINDOWS
   before_script:
     - python -m venv .tox-venv
     - .tox-venv\Scripts\activate.bat

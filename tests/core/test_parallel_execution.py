@@ -28,7 +28,7 @@ from numpy import array, complex128, equal, ones
 from scipy.optimize import rosen
 
 from gemseo.api import create_discipline
-from gemseo.core.function import MDOFunctionGenerator
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.parallel_execution import (
     DiscParallelExecution,
     DiscParallelLinearization,
@@ -60,7 +60,6 @@ def function_raising_exception(counter):
 class TestParallelExecution(unittest.TestCase):
     """Test the parallel execution."""
 
-    @pytest.mark.skip_under_windows
     def test_functional(self):
         n = 10
         function_list = [rosen] * n
@@ -141,7 +140,6 @@ class TestParallelExecution(unittest.TestCase):
             assert s_1.local_data[Y_1] == outs[i][Y_1]
             assert s_1.local_data[Y_1] == output_list[i]
 
-    @pytest.mark.skip_under_windows
     def test_parallel_lin(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelLinearization(disciplines)
@@ -166,7 +164,6 @@ class TestParallelExecution(unittest.TestCase):
                     assert (dfdx == j_ref[f][x]).all()
                     assert (dfdx == outs[i][f][x]).all()
 
-    @pytest.mark.skip_under_windows
     def test_disc_parallel_threading_proc(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelExecution(
@@ -193,7 +190,6 @@ class TestParallelExecution(unittest.TestCase):
             use_threading=True,
         )
 
-    @pytest.mark.skip_under_windows
     def test_async_call(self):
 
         disc = create_discipline("SobieskiMission")

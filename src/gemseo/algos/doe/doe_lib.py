@@ -28,8 +28,10 @@ from __future__ import division, unicode_literals
 
 import logging
 import traceback
-from typing import List, Union
+from typing import Iterable, List, Optional, Union
 
+import six
+from custom_inherit import DocInheritMeta
 from numpy import ndarray, savetxt
 from scipy.spatial import distance
 
@@ -41,6 +43,13 @@ LOGGER = logging.getLogger(__name__)
 DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
 
 
+@six.add_metaclass(
+    DocInheritMeta(
+        abstract_base_class=True,
+        style="google_with_merge",
+        include_special_methods=True,
+    )
+)
 class DOELibrary(DriverLib):
     """Abstract class to use for DOE library link See DriverLib."""
 
@@ -49,6 +58,7 @@ class DOELibrary(DriverLib):
     SAMPLES_TAG = "samples"
     PHIP_CRITERIA = "phi^p"
     N_SAMPLES = "n_samples"
+    LEVEL_KEYWORD = "levels"
     EVAL_JAC = "eval_jac"
     N_PROCESSES = "n_processes"
     WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
@@ -138,6 +148,74 @@ class DOELibrary(DriverLib):
         self.evaluate_samples(eval_jac, n_processes, wait_time_between_samples)
         return self.get_optimum_from_database()
 
+    def _generate_fullfact(
+        self,
+        dimension,
+        n_samples=None,  # type: Optional[int]
+        levels=None,  # type: Optional[Union[int, Iterable[int]]]
+    ):  # type: (...) -> ndarray
+        """Generate a full-factorial DOE.
+
+        Generate a full-factorial DOE based on either the number of samples,
+        or the number of levels per input direction.
+        When the number of samples is prescribed,
+        the levels are deduced and are uniformly distributed among all the inputs.
+
+        Args:
+            dimension: The dimension of the parameter space.
+            n_samples: The maximum number of samples from which the number of levels
+                per input is deduced.
+                The number of samples which is finally applied
+                is the product of the numbers of levels.
+                If ``None``, the algorithm uses the number of levels per input dimension
+                provided by the argument ``levels``.
+            levels: The number of levels per input direction.
+                If ``levels`` is given as a scalar value, the same number of
+                levels is used for all the inputs.
+                If ``None``, the number of samples provided in argument ``n_samples``
+                is used in order to deduce the levels.
+
+        Returns:
+            The values of the DOE.
+
+        Raises:
+            ValueError:
+                * If neither ``n_samples`` nor ``levels`` is provided.
+                * If both ``n_samples`` and ``levels`` are provided.
+        """
+
+        if not levels and not n_samples:
+            raise ValueError(
+                "Either 'n_samples' or 'levels' is required as an input "
+                "parameter for the full-factorial DOE."
+            )
+        if levels and n_samples:
+            raise ValueError(
+                "Only one input parameter among 'n_samples' and 'levels' "
+                "must be given for the full-factorial DOE."
+            )
+
+        if n_samples is not None:
+            levels = self._compute_fullfact_levels(n_samples, dimension)
+
+        if isinstance(levels, int):
+            levels = [levels] * dimension
+
+        return self._generate_fullfact_from_levels(levels)
+
+    def _generate_fullfact_from_levels(
+        self, levels  # Iterable[int]
+    ):  # type: (...) -> ndarray
+        """Generate the full-factorial DOE from levels per input direction.
+
+        Args:
+            levels: The number of levels per input direction.
+
+        Returns:
+            The values of the DOE.
+        """
+        raise NotImplementedError()
+
     def _compute_fullfact_levels(self, n_samples, dimension):
         """Compute the number of levels per input dimension for a full factorial design.
 
@@ -171,6 +249,9 @@ class DOELibrary(DriverLib):
             raise RuntimeError("Samples are None, execute method before export")
         savetxt(doe_output_file, self.samples, delimiter=",")
 
+    def _worker(self, sample):
+        return self.problem.evaluate_functions(sample, self.eval_jac)
+
     def evaluate_samples(
         self, eval_jac=False, n_processes=1, wait_time_between_samples=0
     ):
@@ -179,15 +260,15 @@ class DOELibrary(DriverLib):
         :param eval_jac: if True, the jacobian is also evaluated
             (Default value = False)
         """
+        self.eval_jac = eval_jac
         unnormalize_vect = self.problem.design_space.unnormalize_vect
         unnormalize_grad = self.problem.design_space.normalize_vect
         round_vect = self.problem.design_space.round_vect
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
-            all_funcs = self.problem.evaluate_functions
             n_samples = len(self.samples)
             # Create a list of tasks: execute functions
-            workers = [lambda sample: all_funcs(sample, eval_jac)] * n_samples
+            workers = [self._worker] * n_samples
             parallel = ParallelExecution(workers, n_processes=n_processes)
             parallel.wait_time_between_fork = wait_time_between_samples
             # Define a callback function to store the samples on the fly

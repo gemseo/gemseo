@@ -35,6 +35,7 @@ from scipy.optimize import rosen, rosen_der
 from gemseo.algos.database import Database, HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.py23_compat import PY2
 
 DIRNAME = dirname(os.path.realpath(__file__))
 FAIL_HDF = join(DIRNAME, "fail.hdf5")
@@ -394,7 +395,59 @@ def test_missing_tag():
     assert f_history == [[value, gradient], [0.0, "NA"]]
 
 
-def test__str__():
+def test__str__database():
+    """Test that the string representation of the database is correct."""
+    database = Database()
+    x1 = array([1.0, 2.0])
+    x2 = array([3.0, 4.5])
+    value1 = rosen(x1)
+    value2 = rosen(x2)
+    database.store(x1, {"Rosenbrock": value1}, add_iter=False)
+    database.store(x2, {"Rosenbrock": value2}, add_iter=False)
+
+    if PY2:
+        ref = (
+            "OrderedDict([([1. 2.], {u'Rosenbrock': 100.0}), "
+            "([3.  4.5], {u'Rosenbrock': 2029.0})])"
+        )
+    else:
+        ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
+
+    assert database.__str__() == ref
+
+
+def test_filter_database():
+    """Test that the database is correctly filtered."""
+    database = Database()
+    x1 = array([1.0, 2.0])
+    x2 = array([3.0, 4.5])
+    value1 = rosen(x1)
+    der_value1 = rosen_der(x1)
+    value2 = rosen(x2)
+    der_value2 = rosen_der(x2)
+    database.store(x1, {"Rosenbrock": value1, "@Rosenbrock": der_value1})
+    database.store(x2, {"Rosenbrock": value2, "@Rosenbrock": der_value2})
+
+    # before filter
+    assert database.get_value(x1) == {
+        "Rosenbrock": value1,
+        "@Rosenbrock": der_value1,
+        "Iter": [1],
+    }
+    assert database.get_value(x2) == {
+        "Rosenbrock": value2,
+        "@Rosenbrock": der_value2,
+        "Iter": [2],
+    }
+
+    database.filter(["Rosenbrock"])
+
+    # after filter
+    assert database.get_value(x1) == {"Rosenbrock": value1}
+    assert database.get_value(x2) == {"Rosenbrock": value2}
+
+
+def test__str__hashable_ndarray():
     """Tests the string representation."""
     x_array = array([1.0, 1.0])
     x_hash = HashableNdarray(x_array)

@@ -40,7 +40,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import configure_logger, execute_post
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = configure_logger()
 

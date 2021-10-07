@@ -26,10 +26,11 @@ OpenTUNRS DOE algorithms wrapper
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Iterable
 
 import openturns
 from matplotlib import pyplot as plt
-from numpy import array
+from numpy import array, full
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
@@ -172,7 +173,6 @@ class OpenTURNS(DOELibrary):
     ]
 
     # Optional parameters
-    LEVEL_KEYWORD = "levels"
     CENTER_KEYWORD = "centers"
     DISTRIBUTION_KEYWORD = "distribution_name"
     MEAN_KEYWORD = "mu"
@@ -180,7 +180,7 @@ class OpenTURNS(DOELibrary):
     START_KEYWORD = "start"
     END_KEYWORD = "end"
     DOE_SETTINGS_OPTIONS = [
-        LEVEL_KEYWORD,
+        DOELibrary.LEVEL_KEYWORD,
         DISTRIBUTION_KEYWORD,
         MEAN_KEYWORD,
         STD_KEYWORD,
@@ -225,7 +225,7 @@ class OpenTURNS(DOELibrary):
         levels=None,
         centers=None,
         eval_jac=False,
-        n_samples=1,
+        n_samples=None,
         mu=0.5,
         sigma=None,
         start=0.25,
@@ -244,7 +244,8 @@ class OpenTURNS(DOELibrary):
 
         :param distribution_name: distribution name
         :type distribution_name: str
-        :param levels: levels for axial, factorial and composite designs
+        :param levels: levels for axial, full-factorial (box), factorial
+            and composite designs
         :type levels: array
         :param centers: centers for axial, factorial and composite designs
         :type centers: array
@@ -284,8 +285,6 @@ class OpenTURNS(DOELibrary):
         :type max_time: float
         :param kwargs: additional arguments
         """
-        if levels is None:
-            levels = [0.0, 0.25, 0.5]
         if centers is None:
             centers = [0.5]
         if sigma is None:
@@ -387,11 +386,11 @@ class OpenTURNS(DOELibrary):
             see associated JSON file
         """
         self.seed += 1
-        dimension = options[self.DIMENSION]
-        del options[self.DIMENSION]
-        n_samples = options[self.N_SAMPLES]
-        del options[self.N_SAMPLES]
-        LOGGER.debug("Generation of %s DOE with OpenTurns.", self.algo_name)
+        dimension = options.pop(self.DIMENSION)
+        n_samples = options.pop(self.N_SAMPLES, None)
+
+        LOGGER.info("Generation of %s DOE with OpenTurns", self.algo_name)
+
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             distribution_name, options = self.__get_distribution(options)
             samples = self.__generate_lhs(
@@ -405,7 +404,8 @@ class OpenTURNS(DOELibrary):
                 n_samples, dimension, distribution_name=distribution_name, **options
             )
         elif self.algo_name == self.OT_FULLFACT:
-            samples = self.__generate_fullfact(n_samples, dimension)
+            levels = options.pop(self.LEVEL_KEYWORD, None)
+            samples = self._generate_fullfact(dimension, n_samples, levels)
         elif self.algo_name in (self.OT_COMPOSITE, self.OT_AXIAL, self.OT_FACTORIAL):
             options = self.__check_stratified_options(dimension, options)
             samples = self.__generate_stratified(options)
@@ -798,22 +798,39 @@ class OpenTURNS(DOELibrary):
         data = array(experiment.generate())
         return data
 
-    def __generate_fullfact(self, n_samples, dimension):
-        """Generate a DOE using Monte-Carlo algo of openturns.
+    def _generate_fullfact_from_levels(
+        self,
+        levels,  # type: Iterable[int]
+    ):  # type: (...) -> ndarray
 
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension.
-        :returns: samples
-        :rtype: numpy array
-        """
-        levels = [
-            n_level - 2
-            for n_level in self._compute_fullfact_levels(n_samples, dimension)
-        ]
-        if levels[0] < 0:
-            return array([[0.5] * dimension])
+        # This method relies on openturns.Box.
+        # This latter assumes that the levels provided correspond to the intermediate
+        # levels between lower and upper bounds, while GEMSEO includes these bounds
+        # in the definition of the levels, so we substract 2 in order to get
+        # only intermediate levels.
+        levels = [level - 2 for level in levels]
 
-        return array(openturns.Box(levels).generate())
+        # If any level is negative, we take them out, generate the DOE,
+        # then append the DOE with 0.5 for the missing levels.
+        ot_indices = []
+        ot_levels = []
+        for ot_index, ot_level in enumerate(levels):
+            if ot_level >= 0:
+                ot_levels.append(ot_level)
+                ot_indices.append(ot_index)
+
+        if not ot_levels:
+            doe = full([1, len(levels)], 0.5)
+            return doe
+
+        ot_doe = array(openturns.Box(ot_levels).generate())
+
+        if len(ot_levels) == len(levels):
+            return ot_doe
+
+        doe = full([ot_doe.shape[0], len(levels)], 0.5)
+        doe[:, ot_indices] = ot_doe
+        return doe
 
     def __generate_random(self, n_samples, dimension, **options):
         """Generate a DOE using random algo of openturns.

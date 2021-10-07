@@ -1,0 +1,56 @@
+{
+  "name": "GMRES_options",
+  "required": [
+    "max_iter"
+  ],
+  "properties": {
+    "max_iter": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "preconditioner": {
+    },
+    "tol": {
+      "type": "number",
+      "minimum": 0.0
+    },
+    "atol": {
+      "type": ["null","number"],
+      "minimum": 0.0
+    },
+    "x0": {
+      "type": ["null","array"],
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1
+    },
+    "inner_m": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "outer_k": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "outer_v": { },
+    "store_outer_Av": {
+      "type": "boolean"
+    },
+    "prepend_outer_vbool": {
+      "type": "boolean"
+    },
+    "use_ilu_precond": {
+      "type": "boolean"
+    },
+    "save_when_fail": {
+      "type": "boolean"
+    },
+    "store_residuals": {
+      "type": "boolean"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object"
+}

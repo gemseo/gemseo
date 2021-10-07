@@ -98,6 +98,8 @@ class DiagonalDOE(DOELibrary):
             see associated JSON file
         """
         reverse = options.get("reverse", [])
+        if reverse is None:
+            reverse = []
         names = self.problem.design_space.variables_names
         sizes = self.problem.design_space.variables_sizes
         name_by_index = {}

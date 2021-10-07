@@ -26,7 +26,7 @@ from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.utils.py23_compat import PY2
 
 

@@ -11,8 +11,10 @@
 DOE algorithms options
 ======================
 
-A simple way to solve an :class:`.OptimizationProblem` is to use the API method
-:meth:`~gemseo.api.execute_algo`. E.g.
+A simple way to solve an :class:`.OptimizationProblem` through a DOE
+is to use the API method :meth:`~gemseo.api.execute_algo`
+with any choice of DOE algorithm.
+E.g.
 
 .. code::
 
@@ -22,10 +24,29 @@ A simple way to solve an :class:`.OptimizationProblem` is to use the API method
 	problem = Rosenbrock()
 	sol = execute_algo(problem, "OT_LHS", n_samples=20)
 
-They are also used in all MDO and DOE scenarios in the dictionary
-passed to the :meth:`.MDODiscipline.execute` method.
+In addition to these arguments, many options can be prescribed depending on the choice
+of the algorithm. The list of all the optional arguments are given below.
 
-List of available algorithms :
+An other way to execute a DOE algorithm is through a :class:`.DOEScenario`,
+calling the :code:`execute()` function.
+In such case, any optional parameters can be prescribed through the argument :code:`algo_options`
+with a dictionary.
+E.g.
+
+.. code::
+
+    from gemseo.api import create_discipline, read_design_space, \
+    create_scenario, configure_logger
+
+    discipline = create_discipline("SobieskiStructure")
+
+    design_space = read_design_space("sobieski_design_space.txt")
+
+    scenario = create_scenario(discipline, "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE")
+    scenario.execute({"algo": "fullfact", "n_samples": 2, "algo_options": {"ftol_rel":1e-6, "ineq_tolerance":1e-3}})
+
+
+List of available algorithms:
 {% for algo in doe_algos%}:ref:`{{algo}}_options` -
 {% endfor %}
 

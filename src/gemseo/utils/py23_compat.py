@@ -63,7 +63,6 @@ if PY2:
     backports.unittest_mock.install()
     from unittest import mock
 
-
 else:
     string_dtype = "bytes"
     long = int

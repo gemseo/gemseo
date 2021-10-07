@@ -29,8 +29,8 @@ import logging
 from os.path import exists
 
 import h5py
-from future.utils import with_metaclass
 from numpy import append, array, bytes_, unicode_
+from six import with_metaclass
 
 from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, to_real
 from gemseo.utils.data_conversion import DataConversion

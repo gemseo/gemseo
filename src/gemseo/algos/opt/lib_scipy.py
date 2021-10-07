@@ -43,7 +43,7 @@ class ScipyOpt(OptimizationLibrary):
 
     OPTIONS_MAP = {
         # Available only in the doc !
-        # OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
+        OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
         OptimizationLibrary.LS_STEP_SIZE_MAX: "stepmx",
         OptimizationLibrary.MAX_FUN_EVAL: "maxfun",
         OptimizationLibrary.PG_TOL: "gtol",
@@ -116,7 +116,7 @@ class ScipyOpt(OptimizationLibrary):
         stepmx=0.0,
         minfev=0.0,
         scale=None,
-        rescale=None,
+        rescale=-1,
         offset=None,
         **kwargs
     ):
@@ -269,6 +269,7 @@ class ScipyOpt(OptimizationLibrary):
         options.pop(self.MAX_ITER)
         if self.algo_name != "TNC":
             options.pop("xtol")
+
         opt_result = optimize.minimize(
             fun=fun,
             x0=x_0,

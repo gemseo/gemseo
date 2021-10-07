@@ -21,7 +21,7 @@
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
 from __future__ import division, unicode_literals
 
-from typing import Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -32,6 +32,8 @@ from gemseo.mda.newton import MDANewtonRaphson
 
 class MDASequential(MDA):
     """A sequence of elementary MDAs."""
+
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("mda_sequence",)
 
     def __init__(
         self,
@@ -45,6 +47,8 @@ class MDASequential(MDA):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         """
         Args:
@@ -58,6 +62,9 @@ class MDASequential(MDA):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
+            use_lu_fact=use_lu_fact,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
         self._initialize_grammars()
@@ -108,12 +115,13 @@ class GSNewtonMDA(MDASequential):
         tolerance=1e-6,  # type: float
         max_mda_iter=10,  # type: int
         relax_factor=0.99,  # type: float
-        linear_solver="lgmres",  # type: str
+        linear_solver="DEFAULT",  # type: str
         max_mda_iter_gs=3,  # type: int
         linear_solver_tolerance=1e-12,  # type: float
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        linear_solver_options=None,  # type: Mapping[str,Any]
         log_convergence=False,  # type: bool
         **newton_mda_options  # type: float
     ):
@@ -143,6 +151,7 @@ class GSNewtonMDA(MDASequential):
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
+            linear_solver_options=linear_solver_options,
             **newton_mda_options
         )
         sequence = [mda_gs, mda_newton]
@@ -155,5 +164,7 @@ class GSNewtonMDA(MDASequential):
             tolerance=tolerance,
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )

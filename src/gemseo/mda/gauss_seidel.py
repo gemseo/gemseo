@@ -21,7 +21,7 @@
 """A Gauss Seidel algorithm for solving MDAs."""
 from __future__ import division, unicode_literals
 
-from typing import Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -49,6 +49,12 @@ class MDAGaussSeidel(MDA):
        x_{k+1} = L_*^{-1}(b-Ux_k)
     """
 
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
+        "strong_couplings",
+        "over_relax_factor",
+        "normed_residual",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -62,6 +68,8 @@ class MDAGaussSeidel(MDA):
         over_relax_factor=1.0,  # type: float
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         """
         Args:
@@ -82,6 +90,8 @@ class MDAGaussSeidel(MDA):
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
         )
         assert over_relax_factor > 0.0
         assert over_relax_factor <= 2.0

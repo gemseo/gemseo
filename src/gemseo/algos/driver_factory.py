@@ -43,7 +43,7 @@ class DriverFactory(object):
         """Initializes the factory: scans the directories to search for subclasses of
         DriverLib.
 
-        Searches in "GEMSEO_PATH" and gemseo.mda
+        Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package
         """
         self.factory = Factory(driver_lib_class, (driver_package,))
         self.__algo_name_to_lib_name = {}
@@ -88,7 +88,7 @@ class DriverFactory(object):
 
         :param name: library or algorithm name
         :type name: string
-        :returns: library according to context (optimization or DOE)
+        :returns: library according to context (optimization or DOE for instance)
         """
         lib_name = self.__algo_name_to_lib_name.get(name)
         algo_name = None

@@ -23,7 +23,7 @@ from __future__ import division, unicode_literals
 import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
-from typing import Dict, Mapping, Optional, Sequence
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 from numpy import atleast_2d, concatenate, dot, ndarray
 from numpy.linalg import lstsq
@@ -62,6 +62,13 @@ class MDAJacobi(MDA):
     SECANT_ACCELERATION = "secant"
     M2D_ACCELERATION = "m2d"
 
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
+        "parallel_execution",
+        "sizes",
+        "acceleration",
+        "n_processes",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -77,6 +84,8 @@ class MDAJacobi(MDA):
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         """
         Args:
@@ -106,6 +115,8 @@ class MDAJacobi(MDA):
             grammar_type=grammar_type,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
         )
         self._initialize_grammars()
         self._set_default_inputs()

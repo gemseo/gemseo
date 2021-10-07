@@ -3,10 +3,10 @@
     "description": "Run a DOE from samples provided either as an array or as a file",
     "properties": {
          "doe_file": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "samples":{
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
                 "type": "array",
                 "items": {

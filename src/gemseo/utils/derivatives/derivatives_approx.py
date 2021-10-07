@@ -101,7 +101,7 @@ class DisciplineJacApprox(object):
             wait_time_between_fork: The time waited between two forks
                 of the process / thread.
         """
-        from gemseo.core.function import MDOFunctionGenerator
+        from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 
         self.discipline = discipline
         self.approx_method = approx_method

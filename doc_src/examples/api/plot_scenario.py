@@ -32,7 +32,7 @@ from gemseo.api import (
     create_discipline,
     create_scenario,
     get_available_scenario_types,
-    get_scenario_differenciation_modes,
+    get_scenario_differentiation_modes,
     get_scenario_inputs_schema,
     get_scenario_options_schema,
     monitor_scenario,
@@ -112,9 +112,9 @@ print(get_scenario_inputs_schema(scenario))
 ##########################################################################
 # Get scenario differentiation modes
 # ----------------------------------
-# The :meth:`~gemseo.api.get_scenario_differenciation_modes` can be used to
+# The :meth:`~gemseo.api.get_scenario_differentiation_modes` can be used to
 # get the available differentiation modes of a scenario:
-print(get_scenario_differenciation_modes())
+print(get_scenario_differentiation_modes())
 
 ##########################################################################
 # Monitor a scenario

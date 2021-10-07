@@ -39,6 +39,8 @@ DTYPE_DOUBLE = "float64"
 class SobieskiBaseWrapper(MDODiscipline):
     """Base wrapper for Sobieski problem discipline wrappers and JSON grammars."""
 
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("dtype",)
+
     def __init__(self, dtype=DTYPE_DOUBLE):
         """Constructor.
 
@@ -52,15 +54,6 @@ class SobieskiBaseWrapper(MDODiscipline):
             self.get_input_data_names()
         )
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
-
-    def get_attributes_to_serialize(self):
-        """Defines the attributes to be serialized Can be overloaded by disciplines.
-
-        :returns: the list of attributes names
-        """
-        base_d = super(SobieskiBaseWrapper, self).get_attributes_to_serialize()
-        base_d.append("dtype")
-        return base_d
 
     def __setstate__(self, d):
         """Used by pickle to define what to deserialize.
@@ -77,7 +70,9 @@ class SobieskiBaseWrapper(MDODiscipline):
 
 class SobieskiMission(SobieskiBaseWrapper):
 
-    """Sobieski range wrapper using Breguet formula."""
+    """Sobieski range wrapper using the Breguet formula."""
+
+    _ATTR_TO_SERIALIZE = SobieskiBaseWrapper._ATTR_TO_SERIALIZE + ("enable_delay",)
 
     def __init__(self, dtype=DTYPE_DOUBLE, enable_delay=False):
         """Constructor of wrapper for range computation.

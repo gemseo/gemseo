@@ -24,7 +24,7 @@
 Driver library
 ==============
 
-A driver library aims to solve an :class:`.DriverLib`
+A driver library aims to solve an :class:`.OptimizationProblem`
 using a particular algorithm from a particular family of numerical methods.
 This algorithm will be in charge of evaluating the objective and constraints
 functions at different points of the design space, using the
@@ -41,16 +41,17 @@ and :class:`.OptimizationLibrary`.
 
 from __future__ import division, unicode_literals
 
-import inspect
 import io
 import logging
 import string
-from os.path import dirname, exists, join
 from time import time
+from typing import Callable, Union
 
 import tqdm
 from numpy import ones_like, where, zeros_like
+from tqdm.utils import _unicode, disp_len
 
+from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import (
@@ -62,9 +63,6 @@ from gemseo.algos.stop_criteria import (
     TerminationCriterion,
     XtolReached,
 )
-from gemseo.core.grammar import InvalidDataException
-from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
@@ -119,8 +117,41 @@ class ProgressBar(tqdm.tqdm):
 
         return rate, " it/{}".format(unit)
 
+    def status_printer(
+        self, file  # type: Union[io.TextIOWrapper, io.StringIO]
+    ):  # type: (...) -> Callable[[str], None]
+        """Overload the status_printer method to avoid the use of closures.
 
-class DriverLib(object):
+        Args:
+            file: Specifies where to output the progress messages.
+
+        Returns:
+            The function to print the status in the progress bar.
+        """
+        self._last_len = [0]
+        return self._print_status
+
+    def _print_status(self, s):
+        len_s = disp_len(s)
+        self.fp.write(
+            _unicode("\r{}{}".format(s, (" " * max(self._last_len[0] - len_s, 0))))
+        )
+        self.fp.flush()
+        self._last_len[0] = len_s
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # A file-like stream cannot be pickled.
+        del state["fp"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        # Set back the file-like stream to its state as done in tqdm.__init__.
+        self.fp = tqdm.utils.DisableOnWriteError(TqdmToLogger(), tqdm_instance=self)
+
+
+class DriverLib(AlgoLib):
     """Abstract class for DOE & optimization libraries interfaces.
 
     Lists available methods in the library for the proposed
@@ -140,11 +171,6 @@ class DriverLib(object):
         FINITE_DIFF_METHOD,
     ]
 
-    LIB = "lib"
-    INTERNAL_NAME = "internal_algo_name"
-    OPTIONS_DIR = "options"
-    OPTIONS_MAP = {}
-    PROBLEM_TYPE = "problem_type"
     REQUIRE_GRAD = "require_grad"
     HANDLE_EQ_CONS = "handle_equality_constraints"
     HANDLE_INEQ_CONS = "handle_inequality_constraints"
@@ -162,55 +188,13 @@ class DriverLib(object):
     def __init__(self):
         """Constructor."""
         # Library settings and check
-        self.lib_dict = {}
-        self.algo_name = None
-        self.internal_algo_name = None
-        self.problem = None
-        self.opt_grammar = None
+        super(DriverLib, self).__init__()
         self.__progress_bar = None
         self.__max_iter = 0
         self.__iter = 0
         self._start_time = None
         self._max_time = None
-
-    def init_options_grammar(self, algo_name):
-        """Initializes the options grammar.
-
-        :param algo_name: name of the algorithm
-        """
-        # Try algo name convention which has the prioryty over
-        # library options
-        basename = algo_name.upper() + "_options.json"
-        lib_dir = inspect.getfile(self.__class__)
-        opt_dir = join(dirname(lib_dir), self.OPTIONS_DIR)
-        algo_schema_file = join(opt_dir, basename)
-        if exists(algo_schema_file):
-            schema_file = algo_schema_file
-        else:
-            # Try to load library options convention by default
-            basename = self.__class__.__name__.upper() + "_options.json"
-            lib_schema_file = join(opt_dir, basename)
-
-            if exists(lib_schema_file):
-                schema_file = lib_schema_file
-            else:
-                msg = "Options grammar file " + algo_schema_file
-                msg += " for algorithm: " + algo_name
-                msg += " not found. And library options grammar file "
-                msg += lib_schema_file + " not found either."
-                raise ValueError(msg)
-
-        descr_dict = get_options_doc(self.__class__._get_options)
-        self.opt_grammar = JSONGrammar(
-            algo_name, schema_file=schema_file, descriptions=descr_dict
-        )
-
-        return self.opt_grammar
-
-    @property
-    def algorithms(self):
-        """Return the available algorithms."""
-        return list(self.lib_dict.keys())
+        self.__message = None
 
     def init_iter_observer(self, max_iter, message):
         """Initialize the iteration observer.
@@ -224,9 +208,10 @@ class DriverLib(object):
             raise ValueError("max_iter must be >=1, got {}".format(max_iter))
         self.__max_iter = max_iter
         self.__iter = len(self.problem.database)
+        self.__message = message
         self.__progress_bar = ProgressBar(
             total=self.__max_iter,
-            desc=message,
+            desc=self.__message,
             ascii=False,
             file=TqdmToLogger(),
         )
@@ -289,60 +274,6 @@ class DriverLib(object):
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
             LOGGER.info("%s", problem.design_space)
 
-    def driver_has_option(self, option_key):
-        """Checks if the option key exists.
-
-        :param option_key: the name of the option
-        :return: True if the option is in the grammar
-        """
-        return self.opt_grammar.is_data_name_existing(option_key)
-
-    def _process_options(self, **options):
-        """After _get_options is called, the options are converted to algorithm specific
-        options, and checked.
-
-        :param options: driver options
-        """
-        for option_key in list(options.keys()):  # Copy keys on purpose
-            # Remove extra options added in the _get_option method of the
-            # driver
-            if not self.driver_has_option(option_key):
-                del options[option_key]
-            elif option_key == self.INEQ_TOLERANCE:
-                self.problem.ineq_tolerance = options[option_key]
-                del options[option_key]
-            elif option_key == self.EQ_TOLERANCE:
-                self.problem.eq_tolerance = options[option_key]
-                del options[option_key]
-            elif options[option_key] is None:
-                del options[option_key]
-
-        try:
-            self.opt_grammar.load_data(options)
-        except InvalidDataException:
-            raise ValueError("Invalid options for algorithm " + self.opt_grammar.name)
-        for option_key in list(options.keys()):  # Copy keys on purpose
-            lib_option_key = self.OPTIONS_MAP.get(option_key)
-            # Overload with specific keys
-            if lib_option_key is not None:
-                options[lib_option_key] = options[option_key]
-                if lib_option_key != option_key:
-                    del options[option_key]
-
-        return options
-
-    def _check_ignored_options(self, options):
-        """Check that the user did not passed options that do not exist for this driver.
-
-        Raises a warning if it is the case
-        :param options: options dict
-        """
-        for option_key in options:
-            if not self.driver_has_option(option_key):
-                msg = "Driver " + self.algo_name + " has no option " + option_key
-                msg += ", option is ignored !"
-                LOGGER.warning(msg)
-
     def execute(self, problem, algo_name=None, **options):
         """Executes the driver.
 
@@ -358,9 +289,9 @@ class DriverLib(object):
         if self.algo_name is None:
             raise ValueError(
                 "Algorithm name must be either passed as "
-                + "argument or set by the attribute self.algo_name"
+                "argument or set by the attribute self.algo_name"
             )
-        self.__check_algorithm(self.algo_name, problem)
+        self._check_algorithm(self.algo_name, problem)
         self.init_options_grammar(self.algo_name)
         use_database = options.get(self.USE_DATABASE_OPTION, True)
         normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
@@ -384,6 +315,21 @@ class DriverLib(object):
         self._post_run(problem, algo_name, result, **options)
 
         return result
+
+    def _process_specific_option(self, options, option_key):
+        """Process one option as a special treatment, at the begining of the general
+        treatment and checks of _process_options.
+
+        Args:
+            options: The options as preprocessed by _process_options.
+            option_key: The current option key to process.
+        """
+        if option_key == self.INEQ_TOLERANCE:
+            self.problem.ineq_tolerance = options[option_key]
+            del options[option_key]
+        elif option_key == self.EQ_TOLERANCE:
+            self.problem.eq_tolerance = options[option_key]
+            del options[option_key]
 
     def _termination_criterion_raised(self, error):  # pylint: disable=W0613
         """Retrieve the best known iterate when max iter has been reached.
@@ -462,61 +408,6 @@ class DriverLib(object):
         """
         raise NotImplementedError()
 
-    def __check_algorithm(self, algo_name, problem):
-        """Checks that algorithm required by user is available and adapted to the
-        problem. Set optimization library Set algorithm name according to optimization
-        library requirements.
-
-        :param algo_name : name of algorithm
-        :type algo_name: str
-        :param problem: optimization problem
-        :type problem: OptimizationProblem
-        """
-        # Check that the algorithm is available
-        if algo_name not in self.lib_dict:
-            raise KeyError(
-                "Requested optimization algorithm"
-                + " %s is not in list of available algorithms %s"
-                % (algo_name, list(self.lib_dict.keys()))
-            )
-
-        # Check that the algorithm is suited to the problem
-        algo_dict = self.lib_dict[self.algo_name]
-        if not self.is_algorithm_suited(algo_dict, problem):
-            raise ValueError(
-                "Algorithm {} is not adapted to the problem.".format(algo_name)
-            )
-
-    @staticmethod
-    def _display_result(result):
-        """Displays the optimization result.
-
-        :param result: the result to display
-        """
-        LOGGER.info("Algorithm execution finished, result is:")
-        LOGGER.info(result)
-
-    @staticmethod
-    def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem according to its algo dict.
-
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
-        """
-        raise NotImplementedError()
-
-    def filter_adapted_algorithms(self, problem):
-        """Filters the algorithms capable of solving the problem.
-
-        :param problem: the opt_problem to be solved
-        :returns: the list of adapted algorithms names
-        """
-        available = []
-        for algo_name, algo_dict in self.lib_dict.items():
-            if self.is_algorithm_suited(algo_dict, problem):
-                available.append(algo_name)
-        return available
-
     def is_algo_requires_grad(self, algo_name):
         """Returns True if the algorithm requires a gradient evaluation.
 
@@ -524,7 +415,7 @@ class DriverLib(object):
         """
         lib_alg = self.lib_dict.get(algo_name, None)
         if lib_alg is None:
-            raise ValueError("Algorithm " + str(algo_name) + " is not available !")
+            raise ValueError("Algorithm {} is not available.".format(algo_name))
 
         return lib_alg.get(self.REQUIRE_GRAD, False)
 

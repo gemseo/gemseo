@@ -22,11 +22,9 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import exists
-
 import numpy as np
 import pytest
-from numpy import ones
+from numpy import array, isclose, ones
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -40,6 +38,7 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.utils.py23_compat import Path
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -85,7 +84,7 @@ def test_sellar(tmp_wd, sellar_disciplines):
     )
     mda_chain.plot_residual_history(filename="mda_chain_residuals")
     res_file = "MDAJacobi_mda_chain_residuals.png"
-    assert exists(res_file)
+    assert Path(res_file).exists()
 
 
 def test_sellar_chain_linearize(sellar_disciplines):
@@ -238,3 +237,14 @@ def test_log_convergence(sellar_disciplines):
     assert mda_chain.log_convergence
     for mda in mda_chain.sub_mda_list:
         assert mda.log_convergence
+
+
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of MDAChain in parallel.
+
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`.
+    """
+    obj = generate_parallel_doe_data("MDAChain")
+    assert isclose(array([obj]), array([608.175]), atol=1e-3)

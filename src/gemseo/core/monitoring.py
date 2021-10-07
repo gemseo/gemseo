@@ -24,7 +24,7 @@ Monitoring mechanism to track |g| execution (update events)
 """
 from __future__ import division, unicode_literals
 
-from future.utils import with_metaclass
+from six import with_metaclass
 
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 

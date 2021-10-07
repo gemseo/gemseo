@@ -41,7 +41,7 @@ from gemseo.algos.opt.core.pseven_problem_adapter import CostType  # noqa: E402
 from gemseo.algos.opt.lib_pseven import GlobalMethod  # noqa: E402
 from gemseo.algos.opt.opt_factory import OptimizersFactory  # noqa: E402
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
-from gemseo.core.function import MDOLinearFunction  # noqa: E402
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction  # noqa: E402
 from gemseo.problems.analytical.power_2 import Power2  # noqa: E402
 from gemseo.problems.analytical.rosenbrock import Rosenbrock  # noqa: E402
 

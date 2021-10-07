@@ -26,19 +26,23 @@ from __future__ import division, unicode_literals
 
 import atexit
 import os
-from os import getcwd
+import shutil
+import tempfile
+from typing import Any, List, Mapping, Optional
+from uuid import uuid4
 
 from numpy import array
 
+from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.py23_compat import Path
+
+cwd = Path.cwd()
 try:
-    cwd = getcwd()
     import xlwings
 except ImportError:
     # error will be reported if the discipline is used
-    os.chdir(cwd)
+    os.chdir(str(cwd))
     xlwings = None
-
-from gemseo.core.discipline import MDODiscipline
 
 
 class XLSDiscipline(MDODiscipline):
@@ -51,11 +55,24 @@ class XLSDiscipline(MDODiscipline):
         is only working under Windows and MacOS.
     """
 
-    def __init__(self, xls_file_path, macro_name="execute"):
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "_xls_file_path",
+        "input_names",
+        "output_names",
+        "macro_name",
+        "_copy_xls_at_setstate",
+    )
+
+    def __init__(
+        self,
+        xls_file_path,  # type: str
+        macro_name="execute",  # type: Optional[str]
+        copy_xls_at_setstate=False,  # type: bool
+    ):  # type: (...) -> None
         """Initialize xls file path and macro.
 
         Inputs must be specified in the "Inputs" sheet, in the following
-        format (A and B are the first two columns)
+        format (A and B are the first two columns).
 
         +---+---+
         | A | B |
@@ -68,13 +85,14 @@ class XLSDiscipline(MDODiscipline):
         Where a is the name of the first input, and 1 is its default value
         b is the name of the second one, and 2 its default value.
 
-        There must be no empty lines between the inputs
+        There must be no empty lines between the inputs.
 
 
            The number of rows is arbitrary but they must be contiguous and
-           start at line 1
+           start at line 1.
 
-           And same for the "Outputs" sheet (A and B are the first two columns)
+           The same applies for the "Outputs" sheet
+           (A and B are the first two columns).
 
 
         +---+---+
@@ -83,77 +101,123 @@ class XLSDiscipline(MDODiscipline):
         | c | 3 |
         +---+---+
 
-        Where c is the only output. There may be multiple.
+        Where c is the only output. They may be multiple.
 
-           if the file is a .xlsm, a macro named "execute" *must* exist
+           If the file is a .xlsm, a macro named "execute" *must* exist
            and will be called by the _run method before retrieving
            the outputs. The macro has no arguments, it takes its inputs in the
-           Inputs sheet, and write the outputs to the "Outputs" sheet
+           Inputs sheet, and write the outputs to the "Outputs" sheet.
 
            Alternatively, the user may provide a macro name to the constructor,
-           or None if no macro shall be executed
+           or None if no macro shall be executed.
 
+        Args:
+            xls_file_path: The path to the excel file. If the file is a `.xlsm`,
+                a macro named "execute" must exist and will be called by the _run
+                method before retrieving the outputs.
+            macro_name: The name of the macro to be executed for a `.xlsm` file.
+                If None is provided, do not run a macro.
+            copy_xls_at_setstate: If True, create a copy of the original Excel file
+                for each of the pickled parallel processes. This option is required
+                to be set to True for parallelization in Windows platforms.
 
-        Parameters
-        ----------
-        xls_file_path : str
-            path to the excel file
-            if the file is a .xlsm, a macro named "execute" must exist
-            and will be called by the _run method before retrieving
-            the outputs
-        macro_name : str
-            name of the macro to be executed for a .xlsm file
-            if None is provided, do not run a macro
+        Raises:
+            ImportError: If `xlwings` cannot be imported.
         """
         if xlwings is None:
             raise ImportError("cannot import xlwings")
-
-        self._book = None
-
-        try:
-            self._xls_app = xlwings.App(visible=False)
-        # wide except because I cannot tell what is the exception raised by xlwings
-        except:  # noqa: E722,B001
-            raise RuntimeError("xlwings requires Microsoft Excel")
-
         super(XLSDiscipline, self).__init__()
-        self._xls_file_path = xls_file_path
+        self._xls_file_path = Path(xls_file_path)
+        self._xls_app = None
         self.macro_name = macro_name
-
-        # Close the app when exiting
-        atexit.register(self._xls_app.quit)
-
-        self._book = xlwings.Book(xls_file_path)
-        sh_names = [sheet.name for sheet in self._book.sheets]
-        if "Inputs" not in sh_names:
-            raise ValueError(
-                "Workbook must contain a sheet named 'Inputs' "
-                + "that define the inputs of the discipline"
-            )
-        if "Outputs" not in sh_names:
-            raise ValueError(
-                "Workbook must contain a sheet named 'Outputs' "
-                + "that define the outputs of the discipline"
-            )
         self.input_names = None
         self.output_names = None
+        self._book = None
+        self._copy_xls_at_setstate = copy_xls_at_setstate
 
+        self.__init_workbook()
         self._init_grammars()
         self._init_defaults()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def close(self):
-        """Close the workbook."""
-        if self._book is not None:
-            self._book.close()
-            self._book = None
+    def __init_workbook(self):  # type: (...) -> None
+        """Initialize a workbook.
 
-    def __del__(self):
-        # ensures that the gc automatically release the resources held by the book
-        self.close()
+        Raises:
+            ValueError: If there is no sheet in the Excel file
+                named "Inputs" or if there is no sheet named
+                "Outputs".
+        """
 
-    def __read_sheet_col(self, sheet_name, column=0):
-        """Read a specific column of the sheet."""
+        try:
+            self._xls_app = xlwings.App(visible=False)
+            self._xls_app.interactive = False
+        # wide except because I cannot tell what is the exception raised by xlwings
+        except:  # noqa: E722,B001
+            raise RuntimeError("xlwings requires Microsoft Excel")
+
+        # Close the app when exiting
+        atexit.register(self._xls_app.quit)
+
+        self._book = self._xls_app.books.open(str(self._xls_file_path))
+        sh_names = [sheet.name for sheet in self._book.sheets]
+
+        if "Inputs" not in sh_names:
+            raise ValueError(
+                "Workbook must contain a sheet named 'Inputs' "
+                "that define the inputs of the discipline"
+            )
+        if "Outputs" not in sh_names:
+            raise ValueError(
+                "Workbook must contain a sheet named 'Outputs' "
+                "that define the outputs of the discipline"
+            )
+
+    def __setstate__(
+        self, state  # type: Mapping[str, Any]
+    ):  # type: (...) -> None
+        super(XLSDiscipline, self).__setstate__(state)
+        self._book = None
+        self._xls_app = None
+        if self._copy_xls_at_setstate:
+            temp_dir = Path(tempfile.gettempdir())
+            temp_path = temp_dir / self._xls_file_path.name.replace(
+                ".xls", str(uuid4()) + ".xls"
+            )
+            shutil.copy2(str(self._xls_file_path), str(temp_path))
+            self._xls_file_path = temp_path
+        self.__init_workbook()
+
+    def get_attributes_to_serialize(self):  # type: (...) -> List[str]
+        """Overload pickle method to define which attributes are to be serialized.
+
+        Returns:
+             The attributes to serialize.
+        """
+        base = super(XLSDiscipline, self).get_attributes_to_serialize()
+        base += [
+            "_xls_file_path",
+            "input_names",
+            "output_names",
+            "macro_name",
+            "_copy_xls_at_setstate",
+        ]
+        return base
+
+    def __read_sheet_col(
+        self,
+        sheet_name,  # type: str
+        column=0,  # type: int
+    ):  # type: (...) -> List[List[str], List[str], List[float], List[float]]
+        """Read a specific column of the sheet.
+
+        Args:
+            sheet_name: The name of the sheet to be read.
+            column: The number of the column to be read.
+
+        Returns:
+            The column values.
+        """
         sht = self._book.sheets[sheet_name]
         i = 0
         value = sht[i, column].value
@@ -162,18 +226,22 @@ class XLSDiscipline(MDODiscipline):
             values.append(value)
             i += 1
             value = sht[i, column].value
-
         return values
 
-    def _init_grammars(self):
+    def _init_grammars(self):  # type: (...) -> None
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
         self.input_names = self.__read_sheet_col("Inputs", 0)
         self.output_names = self.__read_sheet_col("Outputs", 0)
         self.input_grammar.initialize_from_data_names(self.input_names)
         self.output_grammar.initialize_from_data_names(self.output_names)
 
-    def _init_defaults(self):
-        """Initialize the default input values."""
+    def _init_defaults(self):  # type: (...) -> None
+        """Initialize the default input values.
+
+        Raises:
+            ValueError: If the "Inputs" sheet does not have the same number of
+                entries in the name column and the value column.
+        """
         inputs = self.__read_sheet_col("Inputs", 1)
         if len(inputs) != len(self.input_names):
             msg = (
@@ -182,33 +250,39 @@ class XLSDiscipline(MDODiscipline):
             )
             raise ValueError(msg)
 
-        self.default_inputs = dict(zip(self.input_names, inputs))
+        self.default_inputs = {k: array([v]) for k, v in zip(self.input_names, inputs)}
 
-    def __write_inputs(self, input_data):
+    def __write_inputs(
+        self, input_data  # type: Mapping[str, float]
+    ):  # type: (...) -> None
         """Write the inputs values to the Inputs sheet."""
         sht = self._book.sheets["Inputs"]
         for i, key in enumerate(self.input_names):
             sht[i, 1].value = input_data[key][0]
 
-    def _run(self):
+    def _run(self):  # type: (...) -> None
         """Run the discipline.
 
-        Eventually calls the execute macro
+        Eventually calls the execute macro.
+
+        Raises:
+            RuntimeError: If the macro fails to be executed.
+            ValueError: If the "Outputs" sheet does not have the same number of
+                entries in the name column and the value column.
         """
         self.__write_inputs(self.local_data)
-        if self._xls_file_path.endswith(".xlsm") and self.macro_name is not None:
+        if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
             except Exception as err:
                 macro_name = self.macro_name
                 msg = "Failed to run '{}' macro: {}.".format(macro_name, err)
                 raise RuntimeError(msg)
-
         out_vals = self.__read_sheet_col("Outputs", 1)
         if len(out_vals) != len(self.output_names):
             msg = (
                 "Inconsistent Outputs sheet, names (first columns) and "
-                " values column (second) must be of the same length."
+                "values column (second) must be of the same length."
             )
             raise ValueError(msg)
 

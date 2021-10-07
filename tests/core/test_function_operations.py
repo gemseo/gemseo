@@ -27,8 +27,8 @@ import unittest
 from numpy import array, ones, zeros
 from scipy.optimize import rosen
 
-from gemseo.core.func_operations import LinerarComposition, RestrictedFunction
-from gemseo.core.function import MDOFunctionGenerator
+from gemseo.core.func_operations import LinearComposition, RestrictedFunction
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.problems.analytical.rosenbrock import RosenMF
 
 
@@ -43,8 +43,8 @@ class TestFunctionOperations(unittest.TestCase):
         assert f2(x) == rosen(x)
 
         interp_op = array([[0.3], [0.4], [0.5]])
-        f_1_1 = LinerarComposition(f1, interp_op)
-        f_1_2 = LinerarComposition(f2, interp_op)
+        f_1_1 = LinearComposition(f1, interp_op)
+        f_1_2 = LinearComposition(f2, interp_op)
         f_1_1.check_grad(ones(1), error_max=1e-4)
         f_1_2.check_grad(ones(1), error_max=1e-4)
 

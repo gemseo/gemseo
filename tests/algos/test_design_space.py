@@ -402,8 +402,9 @@ class TestDesignSpace(unittest.TestCase):
         self.assertRaises(Exception, design_space.add_variable, "error", l_b=1.0, u_b=0)
 
         design_space = DesignSpace()
-        design_space.add_variable("x", 1, DesignSpace.FLOAT, 0.0, 2.0)
-        design_space.set_current_x({"x": None})
+        design_space.add_variable("x1", 1, DesignSpace.FLOAT, 0.0, 2.0)
+        design_space.add_variable("x2", 1, DesignSpace.FLOAT, 0.0, 2.0)
+        design_space.set_current_x({"x1": np.array([1.0]), "x2": None})
         assert not design_space.has_current_x()
 
     def get_sob_ds(self):
@@ -639,3 +640,43 @@ def test_set_current_x():
     assert design_space._current_x["z"] is None
     assert design_space._current_x["x2"].dtype.kind == "f"
     assert design_space._current_x["y2"].dtype.kind == "i"
+
+
+@pytest.mark.parametrize(
+    "input_vec, ref",
+    [
+        (np.array([-10, -20, 5, 5]), np.array([-10, -20, 0.5, 0.5])),
+        (np.array([-10.0, -20, 5.0, 5]), np.array([-10, -20, 0.5, 0.5])),
+    ],
+)
+def test_normalize_vect(input_vec, ref):
+    """Test that the normalization is correctly computed whether the input values are
+    floats or integers."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x_1", 2, DesignSpace.FLOAT, array([None, 0.0]), array([0.0, None])
+    )
+    design_space.add_variable("x_2", 1, DesignSpace.FLOAT, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, DesignSpace.INTEGER, 0.0, 10.0)
+
+    assert design_space.normalize_vect(input_vec) == pytest.approx(ref)
+
+
+@pytest.mark.parametrize(
+    "input_vec, ref",
+    [
+        (np.array([-10, -20, 0, 1]), np.array([-10, -20, 0, 10])),
+        (np.array([-10.0, -20, 0.5, 1]), np.array([-10, -20, 5, 10])),
+    ],
+)
+def test_unnormalize_vect(input_vec, ref):
+    """Test that the unnormalization is correctly computed whether the input values are
+    floats or integers."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x_1", 2, DesignSpace.FLOAT, array([None, 0.0]), array([0.0, None])
+    )
+    design_space.add_variable("x_2", 1, DesignSpace.FLOAT, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, DesignSpace.INTEGER, 0.0, 10.0)
+
+    assert design_space.unnormalize_vect(input_vec) == pytest.approx(ref)

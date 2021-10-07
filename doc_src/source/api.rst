@@ -314,11 +314,11 @@ Get scenario schema for inputs and options
 Get scenario differentiation modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The API function :meth:`~gemseo.api.get_scenario_differenciation_modes` can be used to get the available differentiation modes of a scenario:
+The API function :meth:`~gemseo.api.get_scenario_differentiation_modes` can be used to get the available differentiation modes of a scenario:
 
 .. code::
 
-   >>> get_scenario_differenciation_modes()
+   >>> get_scenario_differentiation_modes()
    ['user', 'complex_step', 'finite_differences', 'no_derivatives']
 
 Create a scenario

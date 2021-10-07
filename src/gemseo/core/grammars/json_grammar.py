@@ -202,8 +202,8 @@ class JSONGrammar(AbstractGrammar):
                 "Invalid data from grammar {}.".format(self.name)
             )
 
-        # Check a copy to keep types and arrays but store initial dict for complex
-        # Add defaults
+            # Check a copy to keep types and arrays but store initial dict for complex
+            # Add defaults
         for key, value in data_to_check.items():
             data.setdefault(key, value)
 

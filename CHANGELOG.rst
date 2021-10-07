@@ -32,6 +32,7 @@ Changed
 -------
 
 - The Scatter Plot Matrix post processor now allows the user to filter non-feasible points.
+- The matrix linear problem solvers libraries are now handled by a Factory and can then be extended by plugins.
 - OptPostProcessor can change the size of the figures with the method execute().
 - The documentation now includes hints on how to use the add_observable method.
 - The ParetoFront post-processor now shows the correct labels in the plot axis.
@@ -40,6 +41,9 @@ Changed
 - MorrisAnalysis can compute indices normalized with the empirical output bounds.
 - The IO grammar files of a scenario are located in the same directory as its class.
 - Distribution, ParameterSpace and OpenTURNS use now the logger mainly at debug level.
+- MDA warns if it stops when reaching ``max_mda_iter`` but before reaching the tolerance criteria.
+- Add max line search steps option in scipy L-BFGS-B
+- A Pareto front computation example using a bi-level scenario has been added to the documentation.
 
 Fixed
 -----
@@ -54,6 +58,8 @@ Fixed
 - The MDO Scenario example subsections are now correctly named.
 - The Gantt Chart, Basic History, Constraints History and
   Scatter Plot Matrix pages in the documentation now render the example plots correctly.
+- Bug in the print_configuration method, the configuration table is now shown properly.
+- Typo in the function name get_scenario_differenciation.
 
 Version 3.1.0 (July 2021)
 *************************

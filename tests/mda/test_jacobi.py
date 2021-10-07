@@ -22,7 +22,7 @@
 
 from __future__ import division, unicode_literals
 
-from numpy import array
+from numpy import array, isclose
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
@@ -122,3 +122,14 @@ def test_log_convergence(sellar_disciplines):
     assert not mda._log_convergence
     mda = MDAJacobi(sellar_disciplines, log_convergence=True)
     assert mda._log_convergence
+
+
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of Jacobi in parallel.
+
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`.
+    """
+    obj = generate_parallel_doe_data("MDAJacobi")
+    assert isclose(array([obj]), array([608.175]), atol=1e-3)

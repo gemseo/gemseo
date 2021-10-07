@@ -21,111 +21,135 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
 from os.path import dirname
 
-from future.utils import with_metaclass
+import pytest
+from six import with_metaclass
 
 from gemseo.utils.singleton import (
-    SingleInstancePerAttributeEq,
+    Multiton,
     SingleInstancePerAttributeId,
     SingleInstancePerFileAttribute,
+    _Multiton,
 )
 
 
-class TestSingleton(unittest.TestCase):
-    """Test the signletons."""
+class MultitonOneArg(Multiton):
+    def __init__(self, arg):
+        pass
 
-    def test_sing_attr(self):
-        class SingleEq(with_metaclass(SingleInstancePerAttributeEq, object)):
-            def __init__(self, arg):
-                super(SingleEq, self).__init__()
-                self.arg = arg
 
-        a = SingleEq(1)
-        b = SingleEq(1)
-        c = SingleEq(2)
-        assert a == b
-        assert a != c
+class MultitonTwoArgs(Multiton):
+    def __init__(self, arg, kwarg):
+        pass
 
-        class SingleEq2(with_metaclass(SingleInstancePerAttributeEq, object)):
-            def __init__(self, arg=None):
-                super(SingleEq2, self).__init__()
 
-        d = SingleEq2()
-        e = SingleEq2(None)
-        assert d == e
+@pytest.mark.parametrize(
+    "cls,kwarg_name", ((MultitonOneArg, None), (MultitonTwoArgs, "kwarg"))
+)
+def test_multiton(cls, kwarg_name):
+    """Verify the multiton behavior.
 
-    def test_sing_id(self):
-        class SingleId(with_metaclass(SingleInstancePerAttributeId, object)):
-            def __init__(self, arg):
-                super(SingleId, self).__init__()
-                self.arg = arg
+    Args:
+        cls: The multiton class.
+        kwarg_name: The name of the kwarg, None otherwise.
+    """
+    if kwarg_name is None:
+        kwargs = {}
+    else:
+        kwargs = {"kwarg": 0}
 
-        a = SingleId(self)
-        b = SingleId(self)
-        c = SingleId(a)
-        assert a == b
-        assert a != c
+    a = cls(0, **kwargs)
 
-        class SingleIdFail(with_metaclass(SingleInstancePerAttributeId, object)):
-            def __init__(self):
-                super(SingleIdFail, self).__init__()
+    assert a is cls(0, **kwargs)
 
-        self.assertRaises(ValueError, SingleIdFail)
+    assert a is not cls(1, **kwargs)
 
-    def test_sing_file(self):
 
-        file_loc = __file__
+def test_multiton_cache_clear():
+    # The cache is not empty because of the Multiton* classes declared in the module.
+    assert _Multiton._cache
+    _Multiton.cache_clear()
+    assert not _Multiton._cache
 
-        class SingleFile(with_metaclass(SingleInstancePerFileAttribute, object)):
-            def __init__(self, arg):
-                super(SingleFile, self).__init__()
-                self.arg = arg
 
-        a = SingleFile(file_loc)
-        b = SingleFile(file_loc)
-        c = SingleFile(dirname(file_loc))
-        assert a == b
-        assert a != c
-        self.assertRaises(TypeError, SingleFile, self)
+def test_sing_id():
+    class SingleId(with_metaclass(SingleInstancePerAttributeId, object)):
+        def __init__(self, arg):
+            super(SingleId, self).__init__()
+            self.arg = arg
 
-        class SingleFileFail(with_metaclass(SingleInstancePerFileAttribute, object)):
-            def __init__(self):
-                super(SingleFileFail, self).__init__()
+    a = SingleId(0)
+    b = SingleId(0)
+    c = SingleId(a)
+    assert a is b
+    assert a is not c
 
-        self.assertRaises(ValueError, SingleFileFail)
+    class SingleIdFail(with_metaclass(SingleInstancePerAttributeId, object)):
+        def __init__(self):
+            super(SingleIdFail, self).__init__()
 
-    def test_id_collision_inst(self):
-        class SingleId1(with_metaclass(SingleInstancePerAttributeId, object)):
-            def __init__(self, arg):
-                super(SingleId1, self).__init__()
-                self.arg = arg
+    with pytest.raises(ValueError):
+        SingleIdFail()
 
-        class SingleId2(with_metaclass(SingleInstancePerAttributeId, object)):
-            def __init__(self, arg):
-                super(SingleId2, self).__init__()
-                self.arg = arg
 
-        toto = type("TOTO")()
-        s1 = SingleId1(toto)
-        s2 = SingleId2(toto)
+def test_sing_file():
 
-        assert not isinstance(s1, type(s2))
+    file_loc = __file__
 
-    def test_id_collision_file(self):
-        class SingleFId1(with_metaclass(SingleInstancePerFileAttribute, object)):
-            def __init__(self, arg):
-                super(SingleFId1, self).__init__()
-                self.arg = arg
+    class SingleFile(with_metaclass(SingleInstancePerFileAttribute, object)):
+        def __init__(self, arg):
+            super(SingleFile, self).__init__()
+            self.arg = arg
 
-        class SingleFId2(with_metaclass(SingleInstancePerFileAttribute, object)):
-            def __init__(self, arg):
-                super(SingleFId2, self).__init__()
-                self.arg = arg
+    a = SingleFile(file_loc)
+    b = SingleFile(file_loc)
+    c = SingleFile(dirname(file_loc))
+    assert a is b
+    assert a != c
 
-        toto = type("TOTO2")()
-        s1 = SingleFId1(toto)
-        s2 = SingleFId2(toto)
+    with pytest.raises(ValueError):
+        SingleFile()
 
-        assert not isinstance(s1, type(s2))
+    class SingleFileFail(with_metaclass(SingleInstancePerFileAttribute, object)):
+        def __init__(self):
+            super(SingleFileFail, self).__init__()
+
+    with pytest.raises(ValueError):
+        SingleFileFail()
+
+
+def test_id_collision_inst():
+    class SingleId1(with_metaclass(SingleInstancePerAttributeId, object)):
+        def __init__(self, arg):
+            super(SingleId1, self).__init__()
+            self.arg = arg
+
+    class SingleId2(with_metaclass(SingleInstancePerAttributeId, object)):
+        def __init__(self, arg):
+            super(SingleId2, self).__init__()
+            self.arg = arg
+
+    toto = type("TOTO")()
+    s1 = SingleId1(toto)
+    s2 = SingleId2(toto)
+
+    assert not isinstance(s1, type(s2))
+
+
+def test_id_collision_file():
+    class SingleFId1(with_metaclass(SingleInstancePerFileAttribute, object)):
+        def __init__(self, arg):
+            super(SingleFId1, self).__init__()
+            self.arg = arg
+
+    class SingleFId2(with_metaclass(SingleInstancePerFileAttribute, object)):
+        def __init__(self, arg):
+            super(SingleFId2, self).__init__()
+            self.arg = arg
+
+    toto = type("TOTO2")()
+    s1 = SingleFId1(toto)
+    s2 = SingleFId2(toto)
+
+    assert not isinstance(s1, type(s2))

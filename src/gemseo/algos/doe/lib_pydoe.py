@@ -27,6 +27,7 @@ from __future__ import division, unicode_literals
 
 import logging
 
+from numpy import array, ndarray
 from numpy.random import RandomState
 from numpy.random import seed as set_seed
 
@@ -119,7 +120,7 @@ class PyDOE(DOELibrary):
         eval_jac=False,
         center_bb=None,
         center_cc=None,
-        n_samples=1,
+        n_samples=None,
         levels=None,
         n_processes=1,
         wait_time_between_samples=0.0,
@@ -147,7 +148,7 @@ class PyDOE(DOELibrary):
         :type center_cc: tuple
         :param n_samples: number of samples
         :type n_samples: int
-        :param levels: levels for axial, factorial and composite designs
+        :param levels: level in each direction for the full-factorial design
         :type levels: array
         :param n_processes: number of processes
         :type n_processes: int
@@ -232,19 +233,36 @@ class PyDOE(DOELibrary):
             )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            n_levels = self._compute_fullfact_levels(
-                options["n_samples"], options["dimension"]
+            return self._generate_fullfact(
+                options[self.DIMENSION],
+                levels=options.get(self.LEVEL_KEYWORD),
+                n_samples=options.get(self.N_SAMPLES),
             )
-            if n_levels[0] == 1:
-                return pyDOE.fullfact(n_levels) + 0.5
-
-            return pyDOE.fullfact(n_levels) / (float(n_levels[0]) - 1)
 
         if self.algo_name == self.PYDOE_2LEVELFACT:
             return self.__translate(pyDOE.ff2n(options[self.DIMENSION]))
 
         if self.algo_name == self.PYDOE_PBDESIGN:
             return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
+
+    def _generate_fullfact_from_levels(
+        self, levels  # Iterable[int]
+    ):  # type: (...) -> ndarray
+        doe = pyDOE.fullfact(levels)
+
+        # Because pyDOE return the DOE where the values of levels are integers from 0 to
+        # the maximum level number,
+        # we need to divide by levels - 1.
+        # To not divide by zero,
+        # we first find the null denominators,
+        # we replace them by one,
+        # then we change the final values of the DOE by 0.5.
+        divide_factor = array(levels) - 1
+        null_indices = divide_factor == 0
+        divide_factor[null_indices] = 1
+        doe /= divide_factor
+        doe[:, null_indices] = 0.5
+        return doe
 
     @staticmethod
     def is_algorithm_suited(algo_dict, problem):

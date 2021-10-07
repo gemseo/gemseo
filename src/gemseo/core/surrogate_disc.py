@@ -46,6 +46,8 @@ class SurrogateDiscipline(MDODiscipline):
     output :class:`.Dataset` composed of evaluations of the original discipline.
     """
 
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("regression_model",)
+
     def __init__(
         self,
         surrogate,  # type: Union[str,MLRegressionAlgo]

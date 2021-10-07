@@ -34,7 +34,7 @@ from gemseo.algos.opt.core.pseven_problem_adapter import (  # noqa: E402
     PSevenProblem,
 )
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
-from gemseo.core.function import (  # noqa: E402
+from gemseo.core.mdofunctions.mdo_function import (  # noqa: E402
     MDOFunction,
     MDOLinearFunction,
     MDOQuadraticFunction,

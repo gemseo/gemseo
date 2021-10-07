@@ -29,8 +29,8 @@ import numpy as np
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.function import MDOFunction
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.data_conversion import DataConversion

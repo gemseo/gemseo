@@ -32,7 +32,7 @@ from numpy import atleast_1d, atleast_2d
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.stop_criteria import TerminationCriterion
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 

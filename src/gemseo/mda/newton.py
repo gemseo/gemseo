@@ -32,7 +32,7 @@ from __future__ import division, unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Dict, List, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
 from numpy import ndarray
 from numpy.linalg import norm
@@ -50,6 +50,8 @@ LOGGER = logging.getLogger(__name__)
 class MDARoot(MDA):
     """Abstract class implementing MDAs based on (Quasi-)Newton methods."""
 
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + ("strong_couplings",)
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -62,6 +64,8 @@ class MDARoot(MDA):
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         self.tolerance = 1e-6
         self.max_mda_iter = 10
@@ -76,6 +80,8 @@ class MDARoot(MDA):
             use_lu_fact=use_lu_fact,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
         )
         self._initialize_grammars()
         self._set_default_inputs()
@@ -130,6 +136,14 @@ class MDANewtonRaphson(MDARoot):
        x_{k+1} = x_k - \alpha f'(x_k)^{-1} f(x_k)
     """
 
+    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
+        "assembly",
+        "relax_factor",
+        "linear_solver",
+        "linear_solver_options",
+        "matrix_type",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -137,13 +151,14 @@ class MDANewtonRaphson(MDARoot):
         relax_factor=0.99,  # type: float
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        linear_solver="lgmres",  # type: str
+        linear_solver="DEFAULT",  # type: str
         tolerance=1e-6,  # type: float
         linear_solver_tolerance=1e-12,  # type: float
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type:bool
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):
         """
         Args:
@@ -158,6 +173,8 @@ class MDANewtonRaphson(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
         )
@@ -190,6 +207,8 @@ class MDANewtonRaphson(MDARoot):
             self.strong_couplings,
             self.relax_factor,
             self.linear_solver,
+            matrix_type=self.matrix_type,
+            **self.linear_solver_options
         )
         # update current solution with Newton step
         exec_data = deepcopy(self.local_data)
@@ -284,6 +303,13 @@ class MDAQuasiNewton(MDARoot):
         DF_SANE,
     ]
 
+    _ATTR_TO_SERIALIZE = MDARoot._ATTR_TO_SERIALIZE + (
+        "method",
+        "use_gradient",
+        "assembly",
+        "normed_residual",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -297,6 +323,8 @@ class MDAQuasiNewton(MDARoot):
         warm_start=False,  # type: bool
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):
         """
         Args:
@@ -316,6 +344,8 @@ class MDAQuasiNewton(MDARoot):
             linear_solver_tolerance=linear_solver_tolerance,
             warm_start=warm_start,
             use_lu_fact=use_lu_fact,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
         if method not in self.QUASI_NEWTON_METHODS:
@@ -370,7 +400,9 @@ class MDAQuasiNewton(MDARoot):
             )
             LOGGER.warning(msg)
             return self.local_data
+
         options = self._solver_options()
+        self.current_iter = 0
 
         def fun(
             x_vect,  # type: ndarray
@@ -380,6 +412,7 @@ class MDAQuasiNewton(MDARoot):
             Args:
                 x_vect: The value of the design variables.
             """
+            self.current_iter += 1
             # transform input vector into a dict
             input_values = DataConversion.update_dict_from_array(
                 self.local_data, couplings, x_vect
@@ -467,6 +500,8 @@ class MDAQuasiNewton(MDARoot):
         y_opt = root(
             fun, x0=y_0, method=self.method, jac=jac, callback=callback, options=options
         )
+        self._warn_convergence_criteria(self.current_iter)
+
         # transform optimal vector into a dict
         self.local_data = DataConversion.update_dict_from_array(
             self.local_data, couplings, y_opt.x

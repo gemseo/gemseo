@@ -110,6 +110,38 @@ class MDODiscipline(object):
     RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
     N_CPUS = cpu_count()
 
+    _ATTR_TO_SERIALIZE = (
+        "residual_variables",
+        "output_grammar",
+        "name",
+        "local_data",
+        "jac",
+        "input_grammar",
+        "_status",
+        "cache",
+        "n_calls",
+        "n_calls_linearize",
+        "_differentiated_inputs",
+        "_differentiated_outputs",
+        "data_processor",
+        "_is_linearized",
+        "_linearization_mode",
+        "_default_inputs",
+        "re_exec_policy",
+        "exec_time",
+        "_cache_type",
+        "_cache_file_path",
+        "_cache_tolerance",
+        "_cache_hdf_node_name",
+        "_linearize_on_last_state",
+        "_cache_was_loaded",
+        "grammar_type",
+        "comp_dir",
+        "exec_for_lin",
+        "_in_data_hash_dict",
+        "_jac_approx",
+    )
+
     __time_stamps_mp_manager = None
     time_stamps = None
 
@@ -1574,37 +1606,7 @@ class MDODiscipline(object):
         """
         # pylint warning ==> method could be a function but when overriden,
         # it is a function==> self is required
-        return [
-            "residual_variables",
-            "output_grammar",
-            "name",
-            "local_data",
-            "jac",
-            "input_grammar",
-            "_status",
-            "cache",
-            "n_calls",
-            "n_calls_linearize",
-            "_differentiated_inputs",
-            "_differentiated_outputs",
-            "data_processor",
-            "_is_linearized",
-            "_linearization_mode",
-            "_default_inputs",
-            "re_exec_policy",
-            "exec_time",
-            "_cache_type",
-            "_cache_file_path",
-            "_cache_tolerance",
-            "_cache_hdf_node_name",
-            "_linearize_on_last_state",
-            "_cache_was_loaded",
-            "grammar_type",
-            "comp_dir",
-            "exec_for_lin",
-            "_in_data_hash_dict",
-            "_jac_approx",
-        ]
+        return list(self._ATTR_TO_SERIALIZE)
 
     def __getstate__(self):
         """Used by pickle to define what to serialize.

@@ -23,6 +23,7 @@
 import pytest
 from numpy import array
 
+from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
 
@@ -39,7 +40,12 @@ def import_or_skip_xlwings():
 
 @pytest.fixture(scope="module")
 def skip_if_xlwings_is_not_usable(import_or_skip_xlwings):
-    """Fixture to skip a test when xlwings has no usable excel."""
+    """Fixture to skip a test when xlwings has no usable excel.
+
+    Args:
+        import_or_skip_xlwings: Fixture to skip a test when
+            xlwings cannot be imported.
+    """
     xlwings = import_or_skip_xlwings
 
     try:
@@ -51,7 +57,12 @@ def skip_if_xlwings_is_not_usable(import_or_skip_xlwings):
 
 @pytest.fixture(scope="module")
 def skip_if_xlwings_is_usable(import_or_skip_xlwings):
-    """Fixture to skip a test when xlwings has usable excel."""
+    """Fixture to skip a test when xlwings has usable excel.
+
+    Args:
+        import_or_skip_xlwings: Fixture to skip a test when
+            xlwings cannot be imported.
+    """
     xlwings = import_or_skip_xlwings
 
     try:
@@ -71,22 +82,65 @@ def test_missing_xlwings(skip_if_xlwings_is_usable):
 
 
 def test_basic(skip_if_xlwings_is_not_usable):
+    """Simple test, the output is the sum of the inputs.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip a test
+            when xlwings has no usable excel.
+    """
     xlsd = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"))
     xlsd.execute(INPUT_DATA)
     assert xlsd.local_data["c"] == 23.5
-    xlsd.close()
 
 
 @pytest.mark.parametrize("file_id", range(1, 4))
 def test_error_init(skip_if_xlwings_is_not_usable, file_id):
+    """Test that errors are raised for files without the proper format.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip a test
+            when xlwings has no usable excel.
+        file_id: The id of the test file.
+    """
     with pytest.raises(ValueError):
         XLSDiscipline(FILE_PATH_PATTERN.format(file_id))
 
 
 def test_error_execute(skip_if_xlwings_is_not_usable):
+    """Check that an exception is raised for incomplete data.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip a test
+            when xlwings has no usable excel.
+    """
     disc = XLSDiscipline(FILE_PATH_PATTERN.format(4))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"Inconsistent Outputs sheet, names \(first columns\) and "
+        r"values column \(second\) must be of the same length.",
+    ):
         disc.execute(INPUT_DATA)
+
+
+def test_multiprocessing(skip_if_xlwings_is_not_usable):
+    """Test the parallel execution xls disciplines.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip a test
+            when xlwings has no usable excel.
+    """
+    xlsd = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"), copy_xls_at_setstate=True)
+    xlsd_2 = XLSDiscipline(str(DIR_PATH / "test_excel.xlsx"), copy_xls_at_setstate=True)
+
+    parallel_execution = DiscParallelExecution(
+        [xlsd, xlsd_2], use_threading=False, n_processes=2
+    )
+    parallel_execution.execute(
+        [{"a": array([2.0]), "b": array([1.0])}, {"a": array([5.0]), "b": array([3.0])}]
+    )
+
+    assert xlsd.get_output_data() == {"c": array([3.0])}
+    assert xlsd_2.get_output_data() == {"c": array([8.0])}
 
 
 #         def test_macro(self):

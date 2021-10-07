@@ -146,7 +146,7 @@ Scenario
 - :meth:`~gemseo.api.get_available_scenario_types`
 - :meth:`~gemseo.api.get_scenario_options_schema`
 - :meth:`~gemseo.api.get_scenario_inputs_schema`
-- :meth:`~gemseo.api.get_scenario_differenciation_modes`
+- :meth:`~gemseo.api.get_scenario_differentiation_modes`
 
 Surrogates
 ----------
@@ -448,7 +448,7 @@ def get_algorithm_options_schema(algorithm_name, output_json=False, pretty_print
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             schema = _get_schema(opts_gram, output_json, pretty_print)
             return schema
-    raise ValueError("Algorithm named " + str(algorithm_name) + " is not available.")
+    raise ValueError("Algorithm named {} is not available.".format(algorithm_name))
 
 
 def get_discipline_inputs_schema(discipline, output_json=False, pretty_print=False):
@@ -760,10 +760,10 @@ def get_scenario_options_schema(scenario_type, output_json=False, pretty_print=F
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError("Unknown scenario type " + str(scenario_type))
+        raise ValueError("Unknown scenario type {}".format(scenario_type))
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
@@ -797,7 +797,7 @@ def get_scenario_inputs_schema(scenario, output_json=False, pretty_print=False):
     monitor_scenario
     get_available_scenario_types
     get_scenario_options_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     return get_discipline_inputs_schema(scenario, output_json, pretty_print)
 
@@ -828,7 +828,7 @@ def get_discipline_options_defaults(discipline_name):
     return factory.get_default_options_values(discipline_name)
 
 
-def get_scenario_differenciation_modes():
+def get_scenario_differentiation_modes():
     """List the available differenciation modes of a scenario.
 
     :returns: List of differenciation modes.
@@ -836,8 +836,8 @@ def get_scenario_differenciation_modes():
 
     Examples
     --------
-    >>> from gemseo.api import get_scenario_differenciation_modes
-    >>> get_scenario_differenciation_modes()
+    >>> from gemseo.api import get_scenario_differentiation_modes
+    >>> get_scenario_differentiation_modes()
 
     See also
     --------
@@ -850,6 +850,10 @@ def get_scenario_differenciation_modes():
     from gemseo.algos.opt_problem import OptimizationProblem
 
     return OptimizationProblem.DIFFERENTIATION_METHODS
+
+
+# TODO: to be deprecated
+get_scenario_differenciation_modes = get_scenario_differentiation_modes
 
 
 def get_available_scenario_types():
@@ -869,7 +873,7 @@ def get_available_scenario_types():
     monitor_scenario
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     return ["MDO", "DOE"]
 
@@ -1082,7 +1086,7 @@ def create_scenario(
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     from gemseo.core.doe_scenario import DOEScenario
     from gemseo.core.mdo_scenario import MDOScenario
@@ -1116,9 +1120,7 @@ def create_scenario(
         )
 
     raise ValueError(
-        "Unknown scenario type :"
-        + str(scenario_type)
-        + ", use one of : 'MDO' or 'DOE'."
+        "Unknown scenario type: {}, use one of : 'MDO' or 'DOE'.".format(scenario_type)
     )
 
 
@@ -1349,7 +1351,7 @@ def execute_post(to_post_proc, post_name, **options):
     elif isinstance(to_post_proc, string_types):
         opt_problem = OptimizationProblem.import_hdf(to_post_proc)
     else:
-        raise TypeError("Cannot post process type : " + str(type(to_post_proc)))
+        raise TypeError("Cannot post process type: {}".format(type(to_post_proc)))
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
@@ -1395,7 +1397,7 @@ def execute_algo(opt_problem, algo_name, algo_type="opt", **options):
         factory = DOEFactory()
     else:
         raise ValueError(
-            "Unknown algo type: " + str(algo_type) + ", please use 'doe' or 'opt' !"
+            "Unknown algo type: {}, please use 'doe' or 'opt' !".format(algo_type)
         )
 
     return factory.execute(opt_problem, algo_name, **options)
@@ -1416,7 +1418,7 @@ def monitor_scenario(scenario, observer):
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     from gemseo.core.monitoring import Monitoring
 
@@ -1451,7 +1453,9 @@ def print_configuration():
         MDAFactory,
         PostFactory,
     ):
-        LOGGER.info("%s", factory().factory)
+        factory_repr = repr(factory().factory)
+        LOGGER.info("%s", factory_repr)
+        print(factory_repr)  # noqa: T001
 
 
 def read_design_space(file_path, header=None):
