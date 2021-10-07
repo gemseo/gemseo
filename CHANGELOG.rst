@@ -135,6 +135,7 @@ Added
 - Gantt chart generation to visualize the disciplines execution time.
 - An interactive web N2 chart allowing to expand or collapse the groups of strongly coupled disciplines.
 - Support pSeven algorithms for single-objective optimization.
+- DOELibrary.compute_doe computes a DOE based on a design space.
 
 Fixed
 -----

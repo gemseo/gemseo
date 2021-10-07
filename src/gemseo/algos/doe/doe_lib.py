@@ -35,6 +35,7 @@ from custom_inherit import DocInheritMeta
 from numpy import ndarray, savetxt
 from scipy.spatial import distance
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.core.parallel_execution import ParallelExecution
 
@@ -346,3 +347,29 @@ class DOELibrary(DriverLib):
                 return samples_n
             return samples
         return samples
+
+    def compute_doe(
+        self,
+        variables_space,  # type: DesignSpace
+        size,  # type: int
+        normalize=False,  # type: bool
+        **options  # type: DOELibraryOptionType
+    ):  # type: (...) -> ndarray
+        """Compute a design of experiments (DOE) in a variables space.
+
+        Args:
+            variables_space: The variables space to be sampled.
+            size: The size of the DOE.
+            normalize: Whether to normalize the points between 0 and 1.
+            **options: The options of the DOE algorithm.
+
+        Returns:
+            The design of experiments
+            whose rows are the samples and columns the variables.
+        """
+        doe = self._generate_samples(
+            n_samples=size, dimension=variables_space.dimension, **options
+        )
+        if normalize:
+            return doe
+        return variables_space.unnormalize_vect(doe)
