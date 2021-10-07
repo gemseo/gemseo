@@ -60,6 +60,8 @@ Changed
 - The coupling structure can be directly passed to an MDA.
 - A ParameterSpace can be casted into a DesignSpace.
 - The grammar types "JSON" and "Simple" are replaced by the classes names "JSONGrammar" and "SimpleGrammar".
+- RadarChart uses the scientific notation as default format for the grid levels
+  and allows to change the discretization of the grid.
 
 Fixed
 -----
