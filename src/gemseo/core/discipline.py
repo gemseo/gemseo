@@ -75,7 +75,7 @@ class MDODiscipline(object):
     input grammar, call your software, and write the outputs
     to the output grammar.
 
-    The JSON Grammar are automatically detected when in the same
+    The JSONGrammar files are automatically detected when in the same
     folder as your subclass module and named "CLASSNAME_input.json"
     use auto_detect_grammar_files=True to activate this option
     """
@@ -86,8 +86,9 @@ class MDODiscipline(object):
     STATUS_RUNNING = "RUNNING"
     STATUS_FAILED = "FAILED"
 
-    JSON_GRAMMAR_TYPE = "JSON"
-    SIMPLE_GRAMMAR_TYPE = "Simple"
+    __DEPRECATED_GRAMMAR_TYPES = {"JSON": "JSONGrammar", "Simple": "SimpleGrammar"}
+    JSON_GRAMMAR_TYPE = "JSONGrammar"
+    SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
 
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
@@ -519,22 +520,22 @@ class MDODiscipline(object):
 
         :param input_grammar_file: the input file of the grammar
         :param output_grammar_file: the output file of the grammar
-        :param grammar_type: the type of grammar to use, JSON,
-            Simple or yours.
+        :param grammar_type: the type of grammar to use, "JSONGrammar",
+            "SimpleGrammar" or yours.
         """
         factory = GrammarFactory()
-        input_options = {}
-        output_options = {}
-        if grammar_type == self.JSON_GRAMMAR_TYPE:
-            input_options.update({"schema_file": input_grammar_file})
-            output_options.update({"schema_file": output_grammar_file})
+        grammar_type = self.__DEPRECATED_GRAMMAR_TYPES.get(grammar_type, grammar_type)
+        # TODO: deprecate this at some point.
 
-        grammar_class = "{}Grammar".format(grammar_type)
         self.input_grammar = factory.create(
-            grammar_class, name="{}_input".format(self.name), **input_options
+            grammar_type,
+            name="{}_input".format(self.name),
+            schema_file=input_grammar_file,
         )
         self.output_grammar = factory.create(
-            grammar_class, name="{}_output".format(self.name), **output_options
+            grammar_type,
+            name="{}_output".format(self.name),
+            schema_file=output_grammar_file,
         )
 
     def _run(self):

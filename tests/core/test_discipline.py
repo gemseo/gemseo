@@ -112,7 +112,7 @@ def test_get_sub_disciplines():
 def test_instantiate_grammars():
     """Test the instantiation of the grammars."""
     chain = MDOChain([SobieskiAerodynamics()])
-    chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSON")
+    chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSONGrammar")
     assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 
 

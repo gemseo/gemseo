@@ -17,10 +17,11 @@
 """Most basic grammar implementation."""
 
 import logging
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Union
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ class SimpleGrammar(AbstractGrammar):
     def __init__(
         self,
         name,  # type: str
+        **kwargs  # type: Union[str,Path]
     ):  # type: (...) -> None
         super(SimpleGrammar, self).__init__(name)
         self.data_names = []
