@@ -61,3 +61,28 @@ def test_pretty_repr():
     assert (
         pretty_repr(MDODiscipline) == "<class 'gemseo.core.discipline.MDODiscipline'>"
     )
+
+
+def test_replace():
+    msg = MultiLineString()
+    msg.add("123")
+    msg.add("4526")
+    expected = "\n".join(("13", "456"))
+    repl = msg.replace("2", "")
+    assert str(repl) == expected
+
+    msg = MultiLineString()
+    msg.add("123")
+    repl = msg.replace("5", "9")
+    assert "123" == str(repl)
+
+
+def test_add():
+    msg = MultiLineString()
+    msg.add("123")
+    msg2 = MultiLineString()
+    msg2.add("456")
+
+    expected = "\n".join(("123", "456"))
+    assert str(msg + msg2) == expected
+    assert str(msg + "456") == expected

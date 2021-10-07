@@ -495,9 +495,7 @@ def test_create_discipline(tmp_wd):
         "cache_type": MDODiscipline.SIMPLE_CACHE,
     }
 
-    with pytest.raises(
-        InvalidDataException, match="Invalid data from grammar MDODiscipline_options"
-    ):
+    with pytest.raises(InvalidDataException, match="Invalid data in"):
         create_discipline("SobieskiMission", **options_fail)
 
 

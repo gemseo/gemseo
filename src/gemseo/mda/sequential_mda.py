@@ -67,7 +67,6 @@ class MDASequential(MDA):
             linear_solver_options=linear_solver_options,
             coupling_structure=coupling_structure,
         )
-        self._initialize_grammars()
         self._set_default_inputs()
         self._compute_input_couplings()
 
@@ -86,6 +85,7 @@ class MDASequential(MDA):
             mda.log_convergence = value
 
     def _initialize_grammars(self):  # type: (...) -> None
+        """Define all the inputs and outputs."""
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)

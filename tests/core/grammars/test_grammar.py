@@ -20,13 +20,12 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-from __future__ import division, unicode_literals
 
 from os.path import dirname, join
 
 import numpy as np
 import pytest
-from numpy import array
+from numpy import array, ndarray
 
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -46,36 +45,25 @@ def get_indict():
 
 def get_base_grammar_from_inherit():
     """"""
-
-    class MyGrammar(SimpleGrammar):
-        """"""
-
-        def __init__(self, name):
-            super(MyGrammar, self).__init__(name)
-            self.data_names = [
-                "Mach",
-                "Cl",
-                "Turbulence_model",
-                "Navier-Stokes",
-                "bounds",
-            ]
-            self.data_types = [float, float, type("str"), type(True), np.array]
-
-    return MyGrammar("CFD_inputs")
+    return SimpleGrammar(
+        "CFD_inputs",
+        names_to_types={
+            "Mach": float,
+            "Cl": float,
+            "Turbulence_model": str,
+            "Navier-Stokes": type(True),
+            "bounds": ndarray,
+        },
+    )
 
 
 def get_base_grammar_from_instanciation():
-    """"""
     my_grammar = SimpleGrammar("CFD_inputs")
-    my_grammar.data_names = [
-        "Mach",
-        "Cl",
-        "Turbulence_model",
-        "Navier-Stokes",
-        "bounds",
-    ]
-    my_grammar.data_types = [float, float, type("str"), type(True), np.array]
-
+    my_grammar.add_elements(Mach=float)
+    my_grammar.add_elements(Cl=float)
+    my_grammar.add_elements(Turbulence_model=str)
+    my_grammar.add_elements(**{"Navier-Stokes": bool})
+    my_grammar.add_elements(bounds=np.ndarray)
     return my_grammar
 
 
@@ -96,8 +84,8 @@ def check_g1_in_g2(g1, g2):
     for g1_name, g1_type in zip(g1.data_names, g2.data_types):
         assert g1_name in g2.data_names
         assert g1_name in g2.get_data_names()
-        indx = g1.data_names.index(g1_name)
-        assert g1_type == g2.data_types[indx]
+        indx = list(g1.data_names).index(g1_name)
+        assert g1_type == list(g2.data_types)[indx]
         assert g2.is_data_name_existing(g1_name)
 
 
@@ -139,9 +127,10 @@ def test_update_from():
     ge.update_from(g)
     # Check no updates are added again
     assert n == len(ge.data_names)
-    g.data_types[-1] = "unknowntype"
-    with pytest.raises(Exception):
-        ge.update_from_if_not_in(*(ge, g))
+    with pytest.raises(
+        TypeError, match="is not a type and cannot be used as a type specification"
+    ):
+        g.add_elements(**{g.data_names[0]: "unknowntype"})
 
     my_grammar = SimpleGrammar("toto")
     my_grammar.initialize_from_base_dict({"X": 2})
@@ -153,28 +142,20 @@ def test_update_from():
 
 
 def test_invalid_data():
-    gram = SimpleGrammar("dummy")
-    gram.data_names = ["X"]
-    gram.data_types = [float]
-
+    gram = SimpleGrammar("dummy", {"X": float})
     gram.load_data({"X": 1.1})
-    for data in [
-        {},
-        {"Mach": 2},
-        {"X": "1"},
-        {"X": "/opt"},
-        {"X": array([1.0])},
-        1,
-        "X",
-    ]:
-        with pytest.raises(InvalidDataException):
-            gram.load_data(data)
 
-    gram = SimpleGrammar("dummy")
-    gram.data_names = ["X"]
-    gram.data_types = ["x"]
     with pytest.raises(TypeError):
-        gram.load_data({"X": 1.1})
+        SimpleGrammar("dummy", {"X": "x"})
+
+
+@pytest.mark.parametrize(
+    "data", [{}, {"Mach": 2}, {"X": "1"}, {"X": "/opt"}, {"X": array([1.0])}, 1, "X"]
+)
+def test_invalid_data2(data):
+    gram = SimpleGrammar("dummy", {"X": float})
+    with pytest.raises(InvalidDataException):
+        gram.load_data(data)
 
 
 def test_is_alldata_exist():
@@ -218,3 +199,44 @@ def test_update_from_ifnotin_simple_json(infile):
     assert sorted(sgrammar.get_data_names()) == sorted(
         list(set(jgrammar.get_data_names()) - set(exclude_grammar.get_data_names()))
     )
+
+
+def test_add_remove_item():
+    grammar = SimpleGrammar("")
+    assert "a" not in grammar
+    assert not grammar.is_data_name_existing("a")
+    grammar.add_elements(a=int)
+    assert "a" in grammar.get_data_names()
+    assert grammar.is_data_name_existing("a")
+    assert "a" in grammar
+
+    grammar.remove_item("a")
+    assert not grammar.data_types
+    assert not grammar.data_names
+    assert not grammar.is_data_name_existing("a")
+
+
+@pytest.mark.parametrize("grammar_type", [JSONGrammar, SimpleGrammar])
+def test_is_array(grammar_type):
+    grammar = grammar_type("Grammar")
+    grammar.initialize_from_base_dict({"a": array([1]), "b": 1, "c": [1]})
+    assert "a" in grammar
+    assert grammar.is_type_array("a")
+    assert not grammar.is_type_array("b")
+    assert grammar.is_type_array("c") == (grammar_type == JSONGrammar)
+
+
+def test_array_type():
+    grammar = SimpleGrammar("g")
+    grammar.initialize_from_base_dict({"a": array([1.0])})
+    with pytest.raises(InvalidDataException):
+        grammar.load_data({"x": 2.0})
+
+
+def test_add_elements():
+    grammar = SimpleGrammar("g")
+    grammar.add_elements(x=int)
+    assert "x" in grammar
+
+    with pytest.raises(TypeError, match="is not a type"):
+        grammar.add_elements(x=1)

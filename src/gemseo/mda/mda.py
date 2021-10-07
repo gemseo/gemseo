@@ -18,7 +18,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for all Multi-disciplinary Design Analyses (MDA)."""
+"""Base class for all Multi-disciplinary Design Analyses (MDA).."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -112,18 +112,33 @@ class MDA(MDODiscipline):
         self.residual_history = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
+
         # Don't erase coupling values before calling _compute_jacobian
+
         self._linearize_on_last_state = True
         self.norm0 = None
         self.normed_residual = 1.0
         self.strong_couplings = self.coupling_structure.strong_couplings()
+        self.all_couplings = self.coupling_structure.get_all_couplings()
         self._input_couplings = []
         self.matrix_type = JacobianAssembly.SPARSE
         self.use_lu_fact = use_lu_fact
         # By default dont use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
+
+        self._initialize_grammars()
         self._check_consistency()
+        self._check_couplings_types()
         self._log_convergence = log_convergence
+
+    def _initialize_grammars(self):  # type: (...) -> None
+        """Define all the inputs and outputs of the MDA.
+
+        Add all the outputs of all the disciplines to the outputs.
+        """
+        for discipline in self.disciplines:
+            self.input_grammar.update_from(discipline.input_grammar)
+            self.output_grammar.update_from(discipline.output_grammar)
 
     @property
     def log_convergence(self):  # type: (...) -> bool
@@ -258,6 +273,26 @@ class MDA(MDODiscipline):
                         input_name
                     ]
 
+    def _check_couplings_types(self):  # type: (...) -> None
+        """Check that the coupling variables are of type array in the grammars.
+
+        Raises:
+            ValueError: When at least one of the coupling variables is not an array.
+        """
+        not_arrays = []
+        for discipline in self.disciplines:
+            for grammar in (discipline.input_grammar, discipline.output_grammar):
+                for coupling in self.all_couplings:
+                    exists = grammar.is_data_name_existing(coupling)
+                    if exists and not grammar.is_type_array(coupling):
+                        not_arrays.append(coupling)
+
+        not_arrays = sorted(set(not_arrays))
+        if not_arrays:
+            raise ValueError(
+                "The coupling variables {} must be of type array.".format(not_arrays)
+            )
+
     def reset_disciplines_statuses(self):  # type: (...) -> None
         """Reset all the statuses of the disciplines."""
         for discipline in self.disciplines:
@@ -296,7 +331,7 @@ class MDA(MDODiscipline):
             self.local_data,
             outputs,
             inputs,
-            self.coupling_structure.get_all_couplings(),
+            self.all_couplings,
             tol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
@@ -444,8 +479,7 @@ class MDA(MDODiscipline):
             inputs = self.get_input_data_names()
 
         inputs = list(iter(inputs))
-        all_couplings = self.coupling_structure.get_all_couplings()
-        for str_cpl in all_couplings:
+        for str_cpl in self.all_couplings:
             if str_cpl in inputs:
                 inputs.remove(str_cpl)
 
@@ -453,7 +487,7 @@ class MDA(MDODiscipline):
             outputs = self.get_output_data_names()
 
         outputs = list(iter(outputs))
-        for str_cpl in all_couplings:
+        for str_cpl in self.all_couplings:
             if str_cpl in outputs:
                 outputs.remove(str_cpl)
 

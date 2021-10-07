@@ -288,3 +288,16 @@ def test_to_simple_grammar_string_array(caplog):
         "for property 'x' in conversion to simple grammar."
     )
     assert expected in caplog.text
+
+
+def test_is_type_array_errors():
+    fpath = join(dirname(__file__), "data", "grammar_test1.json")
+    gram = JSONGrammar(name="toto", schema_file=fpath)
+    with pytest.raises(ValueError, match="is not in the grammar"):
+        gram.is_type_array("IDONTEXIST")
+
+
+def test_properties_dict():
+    gram = JSONGrammar("")
+    with pytest.raises(ValueError, match="Schema has no properties"):
+        gram.properties_dict

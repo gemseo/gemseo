@@ -45,6 +45,7 @@ from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.py23_compat import PY2, JsonSchemaException, Path, compile_schema
+from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
@@ -101,6 +102,8 @@ class JSONGrammar(AbstractGrammar):
         super(JSONGrammar, self).__init__(name)
         self._validator = None
         self.schema = None
+        self._schema_dict = None
+        self._properties_dict = None
         self._init_schema()
 
         if schema is not None:
@@ -116,15 +119,38 @@ class JSONGrammar(AbstractGrammar):
     def _init_schema(self):  # type: (...) -> None
         """Initialize the schema."""
         self.schema = MutableMappingSchemaBuilder()
+        self._schema_dict = None
+        self._properties_dict = None
+
+    @property
+    def schema_dict(self):  # type: (...) -> Dict[str,DictSchemaType]
+        """The dictionary representation of the schema."""
+        if self._schema_dict is None:
+            self._schema_dict = self.schema.to_schema()
+        return self._schema_dict
+
+    @property
+    def properties_dict(self):  # type: (...) -> Dict[str,DictSchemaType]
+        """The dictionnary representation of the properties of the schema.
+
+        Raises:
+            ValueError: When the schema has no properties.
+        """
+        if self._properties_dict is None:
+            self._properties_dict = self.schema_dict.get("properties")
+            if self._properties_dict is None:
+                raise ValueError(
+                    "Schema has no properties: {}.".format(self.schema_dict)
+                )
+        return self._properties_dict
 
     def clear(self):  # type: (...) -> None
         self.__set_grammar_from_dict({})
 
     def _init_validator(self):  # type: (...) -> None
         """Initialize the validator."""
-        schema_dict = self.schema.to_schema()
-        schema_dict.pop("id", None)
-        self._validator = compile_schema(schema_dict)
+        self.schema_dict.pop("id", None)
+        self._validator = compile_schema(self.schema_dict)
 
     @classmethod
     def cast_array_to_list(
@@ -162,21 +188,20 @@ class JSONGrammar(AbstractGrammar):
         """
         if not isinstance(data, MutableMapping):
             raise InvalidDataException(
-                "Input data must be a mutable mapping; "
+                "Data must be a mutable mapping; "
                 "got a {} instead.".format(type(data))
             )
 
         if self._validator is None:
             self._init_validator()
 
-        error_exist = False
         data_to_check = self.cast_array_to_list(data)
 
         try:
             self._validator(data_to_check)
         except JsonSchemaException as error:
-            error_exist = True
-            log_message = ["Invalid data in: {}".format(self.name)]
+            log_message = MultiLineString()
+            log_message.add("Invalid data in: {}".format(self.name))
 
             error_message = error.args[0]
             if error_message.startswith("data must contain"):
@@ -185,22 +210,20 @@ class JSONGrammar(AbstractGrammar):
                 missing_elements = set(self.get_data_names()) - set(data.keys())
 
                 if missing_elements:
-                    log_message.append(
+                    log_message.add(
                         "Missing mandatory elements: {}".format(
                             ",".join(sorted(missing_elements))
                         )
                     )
                 else:
-                    log_message.append(", error: {}".format(error_message))
+                    log_message.add(", error: {}".format(error_message))
             else:
-                log_message.append(", error: {}".format(error_message))
+                log_message.add(", error: {}".format(error_message))
 
-            LOGGER.error("\n".join(log_message))
+            LOGGER.error(log_message)
 
-        if error_exist and raise_exception:
-            raise InvalidDataException(
-                "Invalid data from grammar {}.".format(self.name)
-            )
+            if raise_exception:
+                raise InvalidDataException(str(log_message))
 
             # Check a copy to keep types and arrays but store initial dict for complex
             # Add defaults
@@ -270,12 +293,9 @@ class JSONGrammar(AbstractGrammar):
                 schema = schema.to_schema()
 
             for property_name, property_schema in schema["properties"].items():
-                try:
-                    property_schema["description"] = descriptions[property_name]
-                except KeyError:
-                    LOGGER.debug(
-                        "skipping description for unknown property %s.", property_name
-                    )
+                descr = descriptions.get(property_name)
+                if descr is not None:
+                    property_schema["description"] = descr
 
         self.__merge_schema(schema)
 
@@ -289,7 +309,7 @@ class JSONGrammar(AbstractGrammar):
             schema: The schema to be merge, could be a schema object or a dictionary.
         """
         self.schema.add_schema(schema)
-        self._validator = None
+        self.__reset_schema_attrs()
 
     def initialize_from_data_names(
         self,
@@ -337,15 +357,23 @@ class JSONGrammar(AbstractGrammar):
         self,
         data_name,  # type: str
     ):  # type: (...) -> bool
-        return data_name in self.get_data_names()
+        return data_name in self.schema._properties
+
+    def is_type_array(
+        self, data_name  # type: str
+    ):  # type: (...) -> bool
+        if not self.is_data_name_existing(data_name):
+            raise ValueError("{} is not in the grammar.".format(data_name))
+        prop = self.properties_dict.get(data_name)
+        return "array" == prop.get("type")
 
     def is_all_data_names_existing(
         self,
         data_names,  # type: Iterable[str]
     ):  # type: (...) -> bool
-        exists = self.is_data_name_existing
+        properties = self.schema._properties
         for data_name in data_names:
-            if not exists(data_name):
+            if data_name not in properties:
                 return False
         return True
 
@@ -375,18 +403,18 @@ class JSONGrammar(AbstractGrammar):
             A :class:`.SimpleGrammar` equivalent to the current grammar.
         """
         grammar = SimpleGrammar(self.name)
-        schema_dict = self.schema.to_schema()
+        schema_dict = self.schema_dict
         properties = schema_dict.get(self.PROPERTIES_FIELD, {})
 
+        names_to_types = {}
         for property_name, property_description in properties.items():
-            grammar.data_names.append(property_name)
             property_json_type = property_description.get("type")
             if property_json_type not in self.TYPES_MAP:
                 property_type = None
             else:
                 property_type = self.TYPES_MAP[property_description["type"]]
 
-            grammar.data_types.append(property_type)
+            names_to_types[property_name] = property_type
 
             if property_json_type == "array" and "items" in property_description:
                 property_json_sub_type = property_description["items"].get("type")
@@ -405,6 +433,7 @@ class JSONGrammar(AbstractGrammar):
                     ).format(feature, self.name, property_name)
                     LOGGER.warning(message)
 
+        grammar.add_elements(**names_to_types)
         return grammar
 
     def update_from_if_not_in(
@@ -453,6 +482,13 @@ class JSONGrammar(AbstractGrammar):
             item_name: The name of the element to be removed.
         """
         del self.schema[item_name]
+        self.__reset_schema_attrs()
+
+    def __reset_schema_attrs(self):  # type: (...) -> None
+        """Resets the validator, properties dict and schema dict conversions."""
+        self._validator = None
+        self._properties_dict = None
+        self._schema_dict = None
 
     def set_item_value(
         self,
@@ -470,7 +506,7 @@ class JSONGrammar(AbstractGrammar):
         """
         if not self.is_data_name_existing(item_name):
             raise ValueError("Item {} not in grammar {}.".format(item_name, self.name))
-        schema = self.schema.to_schema()
+        schema = self.schema_dict
         schema[self.PROPERTIES_FIELD][item_name] = item_value
 
         self.__set_grammar_from_dict(schema)
@@ -517,7 +553,7 @@ class JSONGrammar(AbstractGrammar):
         deserialized_grammar = dict(self.__dict__)
         deserialized_grammar.pop("_validator")
         # genson schema cannot be pickled: use its dictionary representation
-        deserialized_grammar["schema"] = self.schema.to_schema()
+        deserialized_grammar["schema"] = self.schema_dict
         return deserialized_grammar
 
     def __setstate__(
