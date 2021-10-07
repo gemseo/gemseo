@@ -100,6 +100,9 @@ class Database(object):
           the iterations (when several iterations are stored for a same point,
           this means that the point has been replicated during the process at
           these iterations).
+
+    Attributes:
+        name (str): The name of the database.
     """
 
     missing_value_tag = "NA"
@@ -108,12 +111,22 @@ class Database(object):
     ITER_TAG = "Iter"
 
     def __init__(
-        self, input_hdf_file=None  # type: Optional[str]
+        self,
+        input_hdf_file=None,  # type: Optional[str]
+        name=None,  # type: Optional[str]
     ):  # type: (...) -> None
         """
         Args:
             input_hdf_file: The path to a HDF5 file from which the database is created.
+                If None, do not import a database.
+            name: The name to be given to the database.
+                If None, use the class name.
         """
+        if name is None:
+            self.name = self.__class__.__name__
+        else:
+            self.name = name
+
         self.__dict = OrderedDict()
         self.__max_iteration = 0
         # Call functions when store is called

@@ -23,9 +23,6 @@
 
 from __future__ import division, unicode_literals
 
-import os
-from os.path import dirname, exists, join
-
 import pytest
 from numpy import arange, array, ones
 from numpy.linalg import norm
@@ -35,10 +32,10 @@ from scipy.optimize import rosen, rosen_der
 from gemseo.algos.database import Database, HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.py23_compat import PY2, Path
 
-DIRNAME = dirname(os.path.realpath(__file__))
-FAIL_HDF = join(DIRNAME, "fail.hdf5")
+DIRNAME = Path(__file__).parent
+FAIL_HDF = DIRNAME / "fail.hdf5"
 
 
 def test_init():
@@ -82,9 +79,9 @@ def test_write_read(tmp_wd):
     problem = Rosenbrock()
     OptimizersFactory().execute(problem, "L-BFGS-B")
     database = problem.database
-    outf = "rosen.hdf"
+    outf = tmp_wd / "rosen.hdf"
     database.export_hdf(outf)
-    assert exists(outf)
+    assert outf.exists()
     fname = problem.objective.name
 
     loaded_db = Database(outf)
@@ -285,10 +282,10 @@ def test_ggobi_export(tmp_wd):
     problem = Rosenbrock()
     database = problem.database
     OptimizersFactory().execute(problem, "L-BFGS-B")
-    file_path = "opt_hist.xml"
-    database.export_to_ggobi(file_path=file_path)
-    database.export_to_ggobi(file_path=file_path)
-    path_exists = os.path.exists(file_path)
+    file_path = tmp_wd / "opt_hist.xml"
+    database.export_to_ggobi(file_path=str(file_path))
+    database.export_to_ggobi(file_path=str(file_path))
+    path_exists = file_path.exists()
     assert path_exists
 
 
@@ -309,8 +306,8 @@ def test_hdf_grad_export(tmp_wd):
 
 def test_hdf_import():
     """Tests import from HDF."""
-    inf = join(DIRNAME, "rosen_grad.hdf5")
-    database = Database(input_hdf_file=inf)
+    inf = DIRNAME / "rosen_grad.hdf5"
+    database = Database(input_hdf_file=str(inf))
 
     fname = "rosen"
     gname = Database.get_gradient_name(fname)
@@ -326,7 +323,7 @@ def test_hdf_import():
 
 def test_hdf_import_sob():
     """Tests import from HDF."""
-    inf = join(DIRNAME, "mdf_backup.h5")
+    inf = DIRNAME / "mdf_backup.h5"
     database = Database(input_hdf_file=inf)
     hist_x = database.get_x_history()
     assert len(hist_x) == 5
@@ -340,11 +337,11 @@ def test_hdf_import_sob():
 def test_opendace_import(tmp_wd):
     """Tests import from Opendace."""
     database = Database()
-    inf = join(DIRNAME, "rae2822_cl075_085_mach_068_074.xml")
-    database.import_from_opendace(inf)
-    outfpath = "rae2822_cl075_085_mach_068_074_cp.hdf5"
+    inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
+    database.import_from_opendace(str(inf))
+    outfpath = tmp_wd / "rae2822_cl075_085_mach_068_074_cp.hdf5"
     database.export_hdf(outfpath)
-    assert os.path.exists(outfpath)
+    assert outfpath.exists()
 
 
 def test_duplicates():
@@ -494,3 +491,13 @@ def test_get_last_n_x():
 
     with pytest.raises(ValueError):
         database.get_last_n_x(4)
+
+
+def test_name():
+    """Check the name of the database."""
+
+    class NewDatabase(Database):
+        pass
+
+    assert NewDatabase().name == "NewDatabase"
+    assert Database(name="my_database").name == "my_database"

@@ -1684,7 +1684,7 @@ class OptimizationProblem(object):
 
     def export_to_dataset(
         self,
-        name,  # type: str
+        name=None,  # type: Optional[str]
         by_group=True,  # type: bool
         categorize=True,  # type: bool
         opt_naming=True,  # type: bool
@@ -1702,6 +1702,7 @@ class OptimizationProblem(object):
 
         Args:
             name: A name to be given to the dataset.
+                If None, use the name of the :attr:`database`.
             by_group: If True, then store the data by group.
                 Otherwise, store them by variables.
             categorize: If True, then distinguish
@@ -1714,6 +1715,9 @@ class OptimizationProblem(object):
         Returns:
             A dataset built from the database of the optimization problem.
         """
+        if name is None:
+            name = self.database.name
+
         dataset = Dataset(name, by_group)
 
         # Set the different groups

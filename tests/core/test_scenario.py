@@ -21,7 +21,6 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import exists
 from typing import Sequence
 
 import pytest
@@ -142,8 +141,8 @@ def test_basic_idf(tmp_wd, idf_scenario):
         outdir=str(tmp_wd), json_output=True, html_output=True, open_browser=False
     )
 
-    assert exists("xdsm.json")
-    assert exists("xdsm.html")
+    assert (tmp_wd / "xdsm.json").exists()
+    assert (tmp_wd / "xdsm.html").exists()
 
 
 def test_backup_error(tmp_wd, mdf_scenario):
@@ -174,14 +173,14 @@ def test_backup_0(tmp_wd, mdf_scenario):
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
 
-    assert exists(filename)
+    assert (tmp_wd / filename).exists()
 
     opt_read = OptimizationProblem.import_hdf(filename)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
     mdf_scenario.set_optimization_history_backup(filename, erase=True, pre_load=False)
-    assert not exists(filename)
+    assert not (tmp_wd / filename).exists()
 
 
 def test_backup_1(tmp_wd, mdf_scenario):
@@ -357,3 +356,8 @@ def test_add_observable_not_available(
     msg = "^No discipline known by formulation MDF has all outputs named .*"
     with pytest.raises(ValueError, match=msg):
         mdf_scenario.add_observable("toto")
+
+
+def test_database_name(mdf_scenario):
+    """Check the name of the database."""
+    assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
