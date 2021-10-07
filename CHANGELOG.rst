@@ -83,6 +83,7 @@ Fixed
 - Fix levels option for Full-Factorial doe: now this option is taken into account and enables to build an anisotropic sample.
 - Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
 - The NLopt library wrapper now handles user functions that return ndarrays properly.
+- Bug with the 'measure_options' arguments of MLAlgoAssessor and MLAlgoSelection.
 
 Version 3.1.0 (July 2021)
 *************************

@@ -115,10 +115,10 @@ class MLAlgoSelection(object):
 
         self.candidates = []
 
-        if "multioutput" in measure_options and measure_options["multioutput"]:
+        if self.measure_options.get("multioutput", False):
             raise ValueError(
-                "MLAlgoSelection does not support multioutput. "
-                "The measure shall return one value."
+                "MLAlgoSelection does not support multioutput; "
+                "the measure shall return one value."
             )
         self.measure_options["multioutput"] = False
 
