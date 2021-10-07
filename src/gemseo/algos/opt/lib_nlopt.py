@@ -20,29 +20,33 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""NLOPT library wrapper."""
+"""NLopt library wrapper."""
 
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any, Callable, Dict, Optional, Union
 
 import nlopt
 from nlopt import RoundoffLimited
-from numpy import atleast_1d, atleast_2d
+from numpy import atleast_1d, atleast_2d, ndarray
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
+NLoptOptionsType = Union[bool, int, float]
+
 
 class NloptRoundOffException(Exception):
-    """Nlopt roundoff error."""
+    """NLopt roundoff error."""
 
 
 class Nlopt(OptimizationLibrary):
-    """NLOPT optimization library interface.
+    """NLopt optimization library interface.
 
     See OptimizationLibrary.
     """
@@ -111,8 +115,7 @@ class Nlopt(OptimizationLibrary):
         -5: FORCED_STOP,
     }
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self):  # type: (...) -> None
         super(Nlopt, self).__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
@@ -196,57 +199,46 @@ class Nlopt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_abs=1e-14,  # pylint: disable=W0221
-        xtol_abs=1e-14,
-        max_time=0,
-        max_iter=999,
-        ftol_rel=1e-8,
-        xtol_rel=1e-8,
-        ctol_abs=1e-6,
-        stopval=None,
-        normalize_design_space=True,
-        eq_tolerance=1e-2,
-        ineq_tolerance=1e-4,
-        init_step=0.25,
-        **kwargs
-    ):
-        r"""Sets the options
+        ftol_abs=1e-14,  # type: float  # pylint: disable=W0221
+        xtol_abs=1e-14,  # type: float
+        max_time=0.0,  # type: float
+        max_iter=999,  # type: int
+        ftol_rel=1e-8,  # type: float
+        xtol_rel=1e-8,  # type: float
+        ctol_abs=1e-6,  # type: float
+        stopval=None,  # type: Optional[float]
+        normalize_design_space=True,  # type: bool
+        eq_tolerance=1e-2,  # type: float
+        ineq_tolerance=1e-4,  # type: float
+        init_step=0.25,  # type: float
+        **kwargs  # type: Any
+    ):  # type: (...) -> Dict[str, NLoptOptionsType]
+        r"""Retrieve the options of the Nlopt library.
 
-        :param max_iter: maximum number of iterations
-        :type max_iter: int
-        :param ftol_abs: Objective function tolerance
-        :type ftol_abs: float
-        :param xtol_abs: Design parameter tolerance
-        :type xtol_abs: float
-        :param ftol_rel: Relative objective function tolerance
-        :type ftol_rel: float
-        :param xtol_rel: Relative design parameter tolerance
-        :type xtol_rel: float
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param ctol_abs: Absolute tolerance for constraints
-        :type ctol_abs: float
-        :param normalize_design_space: If True, scales variables in [0, 1]
-        :type normalize_design_space: bool
-        :param stopval: Stop when an objective value of at least stopval
-            is found:
-            stop minimizing when an objective value :math:`\leq` stopval is
-            found,
-            or stop maximizing a value :math:`\geq` stopval is found.
-        :type stopval: float
-        :param eq_tolerance: equality tolerance
-        :type eq_tolerance: float
-        :param ineq_tolerance: inequality tolerance
-        :type ineq_tolerance: float
-        :param kwargs: additional options
-        :type kwargs: kwargs
-        :param init_step: initial step size for derivavtive free algorithms
-            increasing init_step will make the initial DOE in COBYLA
-            wider steps in the design variables. By defaults, each variable
-            is set to x0 + a perturbation that worths 0.25*(ub_i-x0_i) for i
-            in xrange(len(x0))
-        :type init_step: float
+        Args:
+            ftol_abs: The absolute tolerance on the objective function.
+            xtol_abs: The absolute tolerance on the design parameters.
+            max_time: The maximum runtime in seconds. The value 0 means no runtime limit.
+            max_iter: The maximum number of iterations.
+            ftol_rel: The relative tolerance on the objective function.
+            xtol_rel: The relative tolerance on the design parameters.
+            ctol_abs: The absolute tolerance on the constraints.
+            stopval: The objective value at which the optimization will stop.
+                Stop minimizing when an objective value :math:`\leq` stopval is
+                found, or stop maximizing when a value :math:`\geq` stopval
+                is found. If None, this termination condition will not be active.
+            normalize_design_space: If True, normalize the design variables between 0 and 1.
+            eq_tolerance: The tolerance on the equality constraints.
+            ineq_tolerance: The tolerance on the inequality constraints.
+            init_step: The initial step size for derivative-free algorithms.
+                Increasing init_step will make the initial DOE in COBYLA
+                take wider steps in the design variables. By default, each variable
+                is set to x0 plus a perturbation given by
+                0.25*(ub_i-x0_i) for i=0, …, len(x0)-1.
+            **kwargs: The additional algorithm-specific options.
+
+        Returns:
+            The NLopt library options with their values.
         """
         nds = normalize_design_space
         popts = self._process_options(
@@ -267,34 +259,59 @@ class Nlopt(OptimizationLibrary):
 
         return popts
 
-    def __opt_objective_grad_nlopt(self, xn_vect, grad):
-        """Objective function + gradient function of the optimizer for nlopt.
+    def __opt_objective_grad_nlopt(
+        self,
+        xn_vect,  # type: ndarray
+        grad,  # type: ndarray
+    ):  # type: (...) -> float
+        """Evaluate the objective and gradient functions for NLopt.
 
-        :param xn_vect: normalized design vector
-        :param grad: gradient array
-        :returns: objective Gradients array
-        :rtype: float
+        Args:
+            xn_vect: The normalized design variables vector.
+            grad: The gradient of the objective function.
+
+        Returns:
+            The evaluation of the objective function for the given `xn_vect`.
         """
         obj_func = self.problem.objective
         if grad.size > 0:
             grad[:] = obj_func.jac(xn_vect)
-        return obj_func.func(xn_vect).real
+        return float(obj_func.func(xn_vect).real)
 
-    def __make_constraint(self, func, jac, index_cstr):
-        """Builds nlopt-like constraints: no vector functions allowed The database will
-        avoid multiple evaluations.
+    def __make_constraint(
+        self,
+        func,  # type: Callable[[ndarray], ndarray]
+        jac,  # type: Callable[[ndarray], ndarray]
+        index_cstr,  # type: int
+    ):  # type: (...) -> Callable[[ndarray, ndarray], ndarray]
+        """Build NLopt-like constraints.
 
-        :param func: function pointer
-        :param jac: jacobian pointer
-        :param index_cstr: index of the constraint
+        No vector functions are allowed. The database will avoid
+        multiple evaluations.
+
+        Args:
+            func: The function pointer.
+            jac: The Jacobian pointer.
+            index_cstr: The index of the constraint.
+
+        Returns:
+            The constraint function.
         """
 
-        def cstr_fun_grad(xn_vect, grad):
-            """Function which is given as a pointer to optimizer for constraints and
-            constraints gradient if required.
+        def cstr_fun_grad(
+            xn_vect,  # type: ndarray
+            grad,  # type: ndarray
+        ):  # type: (...) -> ndarray
+            """Define the function to be given as a pointer to the optimizer.
 
-            :param xn_vect: normalized design vector
-            :param grad: gradient array
+            Used to compute constraints and constraints gradients if required.
+
+            Args:
+                xn_vect: The normalized design vector.
+                grad: The gradient of the objective function.
+
+            Returns:
+                The result of evaluating the function for a given constraint.
             """
             if self.lib_dict[self.algo_name][self.REQUIRE_GRAD]:
                 if grad.size > 0:
@@ -306,13 +323,16 @@ class Nlopt(OptimizationLibrary):
 
         return cstr_fun_grad
 
-    def __add_constraints(self, nlopt_problem, ctol=0.0):
-        """Function that add all constraints (UDF+formulation) to optimization
-        algorithm.
+    def __add_constraints(
+        self,
+        nlopt_problem,  # type: nlopt.opt
+        ctol=0.0,  # type: float
+    ):  # type: (...) -> None
+        """Add all the constraints to the optimization problem.
 
-        :param nlopt_problem: optimization problem
-        :rtype: unconstrainted nlopt problem
-        :returns: updated nlnlopt_problem
+        Args:
+            nlopt_problem: The optimization problem.
+            ctol: The absolute tolerance on the constraints.
         """
         for constraint in self.problem.constraints:
             f_type = constraint.f_type
@@ -326,11 +346,19 @@ class Nlopt(OptimizationLibrary):
                 elif f_type == MDOFunction.TYPE_EQ:
                     nlopt_problem.add_equality_constraint(nl_fun, ctol)
 
-    def __set_prob_options(self, nlopt_problem, **opt_options):
-        """Settings of options for nlopt algorithms.
+    def __set_prob_options(
+        self,
+        nlopt_problem,  # type: nlopt.opt
+        **opt_options  # type: Any
+    ):  # type: (...) -> nlopt.opt
+        """Set the options for the NLopt algorithm.
 
-        :param nlopt_problem: optimization problem from nlopt
-        :param opt_options: optimization options of nlopt
+        Args:
+            nlopt_problem: The optimization problem from NLopt.
+            **opt_options: The NLopt optimization options.
+
+        Returns:
+            The updated NLopt problem.
         """
         # ALready 0 by default
         # nlopt_problem.set_xtol_abs(0.0)
@@ -347,14 +375,23 @@ class Nlopt(OptimizationLibrary):
 
         return nlopt_problem
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: NLoptOptionsType
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see associated JSON file.
+
+        Returns:
+            The optimization result.
+
+        Raises:
+            TerminationCriterion: If the driver stops for some reason.
         """
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
-        # Get the  bounds anx x0
+        # Get the bounds anx x0
         x_0, l_b, u_b = self.get_x0_and_bounds_vects(normalize_ds)
 
         nlopt_problem = nlopt.opt(self.internal_algo_name, x_0.shape[0])
@@ -372,12 +409,11 @@ class Nlopt(OptimizationLibrary):
             nlopt_problem.optimize(x_0.real)
         except (RoundoffLimited, RuntimeError) as err:
             LOGGER.error(
-                "NLOPT run failed : %s, %s",
+                "NLopt run failed: %s, %s",
                 str(err.args[0]),
                 str(err.__class__.__name__),
             )
             raise TerminationCriterion()
-        # status = nlopt_problem.last_optimize_result()
         message = self.NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
         status = nlopt_problem.last_optimize_result()
         return self.get_optimum_from_database(message, status)
