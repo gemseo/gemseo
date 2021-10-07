@@ -25,7 +25,7 @@ import logging
 from itertools import repeat
 from multiprocessing import cpu_count
 from os.path import join, split
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
@@ -44,6 +44,19 @@ class MDAChain(MDA):
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
 
+    _ATTR_TO_SERIALIZE = MDA._ATTR_TO_SERIALIZE + (
+        "mdo_chain",
+        "_chain_linearize",
+        "lin_cache_tol_fact",
+        "assembly",
+        "coupling_structure",
+        "linear_solver",
+        "linear_solver_options",
+        "linear_solver_tolerance",
+        "matrix_type",
+        "use_lu_fact",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -58,6 +71,8 @@ class MDAChain(MDA):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
         log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
         **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
     ):
         """
@@ -72,7 +87,7 @@ class MDAChain(MDA):
         """
         self.n_processes = n_processes
         self.mdo_chain = None
-        self.__chain_linearize = chain_linearize
+        self._chain_linearize = chain_linearize
         self.sub_mda_list = []
 
         # compute execution sequence of the disciplines
@@ -84,14 +99,16 @@ class MDAChain(MDA):
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
             coupling_structure=coupling_structure,
+            linear_solver=linear_solver,
+            linear_solver_options=linear_solver_options,
         )
 
         if (
             not self.coupling_structure.get_all_couplings()
-            and not self.__chain_linearize
+            and not self._chain_linearize
         ):
             LOGGER.warning("No coupling in MDA, switching chain_linearize to True")
-            self.__chain_linearize = True
+            self._chain_linearize = True
 
         self._create_mdo_chain(
             disciplines,
@@ -198,7 +215,7 @@ class MDAChain(MDA):
         inputs=None,  # type: Optional[Sequence[str]]
         outputs=None,  # type: Optional[Sequence[str]]
     ):  # type: (...) -> None
-        if self.__chain_linearize:
+        if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
             self.mdo_chain.add_differentiated_outputs(outputs)
             # the Jacobian of the MDA chain is the Jacobian of the MDO chain
@@ -213,7 +230,7 @@ class MDAChain(MDA):
         inputs=None,  # type: Optional[Iterable[str]]
     ):  # type: (...) -> None
         MDA.add_differentiated_inputs(self, inputs)
-        if self.__chain_linearize:
+        if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
     def add_differentiated_outputs(
@@ -221,7 +238,7 @@ class MDAChain(MDA):
         outputs=None,  # type: Optional[Iterable[str]]
     ):  # type: (...) -> None
         MDA.add_differentiated_outputs(self, outputs=outputs)
-        if self.__chain_linearize:
+        if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
 
     @property

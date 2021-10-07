@@ -37,7 +37,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
@@ -85,6 +85,8 @@ class Scenario(MDODiscipline):
     L_BOUNDS = "l_bounds"
     ALGO = "algo"
     ALGO_OPTIONS = "algo_options"
+
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE
 
     def __init__(
         self,

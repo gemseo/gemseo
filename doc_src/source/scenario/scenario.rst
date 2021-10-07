@@ -303,10 +303,11 @@ or sampling the problem, e.g.
    - Both :class:`.MDOScenario` and :class:`.DOEScenario` use the :code:`algo` argument:
 
        - Available values of :code:`algo` argument can be found by means of the :meth:`.Scenario.get_available_driver_names` method of the :class:`.Scenario` class,
+       - Any algorithm options are provided through the argument :code:`algo_options` with a dictionary.
        - Algorithm options for :class:`.MDOScenario` can be found here: :ref:`gen_opt_algos`
        - Algorithm options for :class:`.DOEScenario` can be found here: :ref:`gen_doe_algos`
 
-   - :class:`.MDOScenario` also requires the :code:`max_iter` mandatory argument corresponding to the maximum number of iterations in the :code:`algo` optimization algorithm.  Optional arguments are referenced here: :ref:`gen_opt_algos`,
+   - :class:`.MDOScenario` also requires the :code:`max_iter` mandatory argument corresponding to the maximum number of iterations in the :code:`algo` optimization algorithm. Optional arguments are referenced here: :ref:`gen_opt_algos`,
    - :class:`.DOEScenario` also requires the :code:`n_samples` mandatory argument corresponding to the number of samples in the :code:`algo` sampling algorithm. Optional arguments are referenced here: :ref:`gen_doe_algos`.
 
 .. seealso::

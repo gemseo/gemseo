@@ -34,7 +34,10 @@ from numpy import ndarray
 from gemseo.algos.opt.core.pseven_problem_adapter import CostType, PSevenProblem
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
 from gemseo.utils.base_enum import CamelCaseEnum
 
 

@@ -32,7 +32,7 @@ from numpy import sum as np_sum
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 

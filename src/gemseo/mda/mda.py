@@ -23,7 +23,7 @@ from __future__ import division, unicode_literals
 
 import logging
 from multiprocessing import cpu_count
-from typing import Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -45,6 +45,17 @@ class MDA(MDODiscipline):
     FINITE_DIFFERENCES = "finite_differences"
 
     N_CPUS = cpu_count()
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "disciplines",
+        "warm_start",
+        "_input_couplings",
+        "reset_history_each_run",
+        "norm0",
+        "residual_history",
+        "tolerance",
+        "max_mda_iter",
+        "_log_convergence",
+    )
 
     def __init__(
         self,
@@ -58,6 +69,8 @@ class MDA(MDODiscipline):
         use_lu_fact=False,  # type: bool
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         log_convergence=False,  # type: bool
+        linear_solver="DEFAULT",  # type: str
+        linear_solver_options=None,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
         """
         Args:
@@ -81,10 +94,14 @@ class MDA(MDODiscipline):
                 If None, it is created from `disciplines`.
             log_convergence: Whether to log the MDA convergence,
                 expressed in terms of normed residuals.
+            linear_solver: The name of the linear solver.
+            linear_solver_options: The options passed to the linear solver factory.
         """
         super(MDA, self).__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
+        self.linear_solver = linear_solver
         self.linear_solver_tolerance = linear_solver_tolerance
+        self.linear_solver_options = linear_solver_options or {}
         self.max_mda_iter = max_mda_iter
         self.disciplines = disciplines
         if coupling_structure is None:
@@ -286,6 +303,8 @@ class MDA(MDODiscipline):
             use_lu_fact=self.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
             force_no_exec=force_no_exec,
+            linear_solver=self.linear_solver,
+            **self.linear_solver_options
         )
 
     # fixed point methods
@@ -461,6 +480,30 @@ class MDA(MDODiscipline):
             indices=indices,
         )
 
+    def _warn_convergence_criteria(
+        self,
+        current_iter,  # type: int
+    ):  # type: (...) -> Tuple[bool,bool]
+        """Log a warning if max_iter is reached and if max residuals is above tolerance.
+
+        Args:
+            current_iter: The current iteration of the MDA.
+
+        Returns:
+            * Whether the normed residual is lower than the tolerance.
+            * Whether the maximum number of iterations is reached.
+        """
+
+        residual_is_small = self.normed_residual <= self.tolerance
+        max_iter_is_reached = self.max_mda_iter <= current_iter
+        if max_iter_is_reached and not residual_is_small:
+            msg = (
+                "%s has reached its maximum number of iterations "
+                "but the normed residual %s is still above the tolerance %s."
+            )
+            LOGGER.warning(msg, self.name, self.normed_residual, self.tolerance)
+        return residual_is_small, max_iter_is_reached
+
     def _termination(
         self,
         current_iter,  # type: int
@@ -473,9 +516,10 @@ class MDA(MDODiscipline):
         Returns:
             Whether to stop the MDA algorithm.
         """
-        stop = self.normed_residual <= self.tolerance
-        stop = stop or self.max_mda_iter <= current_iter
-        return stop
+        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria(
+            current_iter
+        )
+        return residual_is_small or max_iter_is_reached
 
     def _set_cache_tol(
         self,

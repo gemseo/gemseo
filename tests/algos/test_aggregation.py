@@ -31,7 +31,7 @@ from gemseo.algos.aggregation.aggregation_func import (
     aggregate_sum_square,
 )
 from gemseo.api import execute_algo
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 
 

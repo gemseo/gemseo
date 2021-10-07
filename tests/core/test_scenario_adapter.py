@@ -28,12 +28,13 @@ from numpy import all as np_all
 from numpy import allclose, array, matmul, ones, zeros, zeros_like
 
 from gemseo.core.chain import MDOChain
-from gemseo.core.function import MDOFunction, MDOFunctionGenerator
 from gemseo.core.mdo_scenario import (
     MDOObjScenarioAdapter,
     MDOScenario,
     MDOScenarioAdapter,
 )
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,

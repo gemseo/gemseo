@@ -14,13 +14,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest
-from numpy import array, array_equal, atleast_2d
+from numpy import allclose, array, array_equal, atleast_2d
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+
+@pytest.fixture()
+def doe_problem_dim_2():
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=2, l_b=-2.0, u_b=2.0)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: sum(x), "func")
+    return problem
 
 
 @pytest.mark.parametrize(
@@ -79,3 +88,62 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
 
     assert data.ndim == expected_ndim
     assert data.shape[0] == expected_shape_0
+
+
+@pytest.mark.parametrize(
+    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+)
+@pytest.mark.parametrize(
+    "options, expected",
+    [
+        (
+            {"levels": [2, 3]},
+            array([[-2, -2], [2, -2], [-2, 0], [2, 0], [-2, 2], [2, 2]]),
+        ),
+        (
+            {"levels": [2, 1]},
+            array([[-2, 0], [2, 0]]),
+        ),
+        ({"levels": 1}, array([[0, 0]])),
+    ],
+)
+def test_fullfact_levels(
+    doe_problem_dim_2, doe_library_class, algo_name, options, expected
+):
+    """Check that ``levels`` option in full-factorial is correctly taken into
+    account."""
+
+    doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+    assert allclose(doe_problem_dim_2.database.get_x_history(), expected)
+
+
+@pytest.mark.parametrize(
+    "doe_library_class, algo_name", [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")]
+)
+@pytest.mark.parametrize(
+    "options, error_msg",
+    [
+        (
+            {},
+            "Either 'n_samples' or 'levels' is required as an input parameter "
+            "for the full-factorial DOE.",
+        ),
+        (
+            {"n_samples": 6, "levels": [2, 2]},
+            "Only one input parameter among 'n_samples' and 'levels' must be given "
+            "for the full-factorial DOE.",
+        ),
+        ({"levels": -1}, None),  # Raised by grammar, do not check the message
+    ],
+)
+def test_fullfact_error(
+    doe_problem_dim_2, doe_library_class, algo_name, options, error_msg
+):
+    """Check that an error is raised if both levels and n_sample are provided, or if
+    none of them are provided.
+
+    Also check negative levels
+    """
+
+    with pytest.raises(ValueError, match=error_msg):
+        doe_library_class().execute(doe_problem_dim_2, algo_name, **options)

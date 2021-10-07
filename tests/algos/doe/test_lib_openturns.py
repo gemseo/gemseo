@@ -659,7 +659,8 @@ def get_options(algo_name, dim):
 
     """
     options = {"n_samples": 13}
-    options["levels"] = [0.1, 0.9]
+    if algo_name != "OT_FULLFACT":
+        options["levels"] = [0.1, 0.9]
     options["centers"] = [0.5] * dim
     return options
 

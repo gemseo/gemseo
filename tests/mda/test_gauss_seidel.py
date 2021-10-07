@@ -22,16 +22,15 @@
 
 from __future__ import division, unicode_literals
 
-import os
-
 import pytest
-from numpy import array
+from numpy import array, isclose
 
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
+from gemseo.utils.py23_compat import Path
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -49,7 +48,7 @@ def test_sobieski():
 
     filename = "SobieskiMDAGS_residual_history.pdf"
     mda.plot_residual_history(save=True, filename=filename)
-    assert os.path.exists(filename)
+    assert Path(filename).exists
 
 
 def test_expected_workflow():
@@ -139,3 +138,14 @@ def test_log_convergence():
     assert not mda.log_convergence
     mda = MDAGaussSeidel(disciplines, log_convergence=True)
     assert mda.log_convergence
+
+
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of GaussSeidel in parallel.
+
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`.
+    """
+    obj = generate_parallel_doe_data("MDAGaussSeidel")
+    assert isclose(array([obj]), array([608.185]), atol=1e-3)

@@ -102,7 +102,8 @@ disciplines = create_discipline(
 #    to import them.
 #
 #    See :ref:`api`.
-#
+
+##############################################################################
 # Step 2: Creation of :class:`.Scenario`
 # --------------------------------------
 #
@@ -222,16 +223,21 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # Step 3: Execution and visualization of the results
 # --------------------------------------------------
 #
-# The algorithm options are provided as a dictionary to the execution
+# The algorithm arguments are provided as a dictionary to the execution
 # method of the scenario:
-algo_options = {"max_iter": 10, "algo": "SLSQP"}
+algo_args = {"max_iter": 10, "algo": "SLSQP"}
 ##############################################################################
 # .. warning::
 #
-#    The mandatory options are the maximum number of iterations and the algorithm name.
+#    The mandatory arguments are the maximum number of iterations and the algorithm name.
+#    Any other options of the optimization algorithm can be prescribed through
+#    the argument :code:`algo_options` with a dictionary, e.g.
+#    :code:`algo_args =
+#    {"max_iter": 10, "algo": "SLSQP": "algo_options": {"ftol_rel": 1e-6}}`.
+#    This list of available algorithm options are detailed here: :ref:`gen_opt_algos`.
 #
 # The scenario is executed by means of the line:
-scenario.execute(algo_options)
+scenario.execute(algo_args)
 ##############################################################################
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~

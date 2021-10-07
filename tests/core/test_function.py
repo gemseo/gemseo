@@ -30,9 +30,9 @@ from numpy import allclose, array, eye, matmul, ones, zeros
 from numpy.linalg import norm
 from scipy import optimize
 
-from gemseo.core.function import (
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import (
     MDOFunction,
-    MDOFunctionGenerator,
     MDOLinearFunction,
     MDOQuadraticFunction,
 )

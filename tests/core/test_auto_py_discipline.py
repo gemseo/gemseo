@@ -28,7 +28,7 @@ from scipy.optimize import rosen, rosen_der
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_design_space, create_mda, create_scenario, execute_algo
 from gemseo.core.auto_py_discipline import AutoPyDiscipline, to_arrays_dict
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.utils.py23_compat import Path
 
 

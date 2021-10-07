@@ -619,17 +619,17 @@ class DesignSpace(object):
             )
 
     def has_current_x(self):  # type: (...) -> bool
-        """Check if the current design value is defined.
+        """Check if the current design value is defined for all variables.
 
         Returns:
-            Whether the current design value is defined.
+            Whether the current design value is defined for all variables.
         """
         if self._current_x is None or len(self._current_x) != len(self.variables_names):
             return False
         for val in self._current_x.values():
-            if val is not None:
-                return True
-        return False
+            if val is None:
+                return False
+        return True
 
     def check(self):  # type: (...) -> None
         """Check the state of the design space.
@@ -949,8 +949,14 @@ class DesignSpace(object):
         """
         if not self.__norm_data_is_computed:
             self.__update_normalization_vars()
+
         # Normalize the relevant components:
-        norm_vect = array(x_vect, copy=True)
+        if self.has_current_x():
+            current_dtype = self.get_current_x().dtype
+        else:
+            current_dtype = float
+        norm_vect = x_vect.astype(current_dtype, copy=True)
+
         # In case lb=ub
         norm_inds = self.__norm_inds
 
@@ -1092,7 +1098,11 @@ class DesignSpace(object):
 
                 LOGGER.warning(msg)
         # Unnormalize the relevant components:
-        unnorm_vect = array(x_vect, copy=True)
+        if self.has_current_x():
+            current_dtype = self.get_current_x().dtype
+        else:
+            current_dtype = float
+        unnorm_vect = x_vect.astype(current_dtype, copy=True)
 
         n_dims = len(x_vect.shape)
         if n_dims == 1:

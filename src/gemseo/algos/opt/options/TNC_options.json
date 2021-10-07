@@ -23,8 +23,7 @@
              "minimum": 0.0
         },
         "scale": {
-            "required": ["items"],
-            "type": "array",
+            "type": ["null","array"],
             "items":	{
                 		"type": "number",
                 		"minItems": 1
@@ -34,7 +33,7 @@
 			"type": "boolean"
 		},
         "offset": {
-            "type": "number"
+            "type": ["null","number"]
         },
         "disp": {
             "type": "number"
@@ -69,8 +68,7 @@
             "minimum": 0.0
         },
         "rescale":{
-            "type": "number",
-            "minimum": 0.0
+            "type": "number"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

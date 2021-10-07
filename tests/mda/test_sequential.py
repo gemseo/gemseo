@@ -22,14 +22,13 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import exists
-
 import numpy as np
 
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
 from gemseo.problems.sellar.sellar import Y_1, Y_2
+from gemseo.utils.py23_compat import Path
 
 
 def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
@@ -51,7 +50,7 @@ def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
     filename = "GS_sellar.pdf"
     mda3.plot_residual_history(show=False, save=True, filename=filename)
 
-    assert exists(filename)
+    assert Path(filename).exists
     y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
     assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
@@ -78,3 +77,14 @@ def test_log_convergence(sellar_disciplines):
     assert not mda.log_convergence
     for sub_mda in mda.mda_sequence:
         assert not sub_mda.log_convergence
+
+
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of GaussSeidel in parallel.
+
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`.
+    """
+    obj = generate_parallel_doe_data("GSNewtonMDA")
+    assert np.isclose(np.array([obj]), np.array([608.175]), atol=1e-3)

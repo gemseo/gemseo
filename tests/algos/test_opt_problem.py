@@ -29,7 +29,7 @@ from os.path import dirname, exists
 
 import numpy as np
 import pytest
-from numpy import allclose, array, array_equal, inf, ndarray, ones, zeros
+from numpy import allclose, array, array_equal, cos, inf, ndarray, ones, sin, zeros
 from scipy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
@@ -41,7 +41,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.function import MDOFunction, MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.wrappers import SobieskiProblem, SobieskiStructure
@@ -805,3 +805,16 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(problem)
         match=expected_message,
     ):
         problem.parallel_differentiation_options = {}
+
+
+def test_int_opt_problem():
+    """Test the execution of an optimization problem with integer variables."""
+    f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", 1, l_b=1, u_b=3, value=1 * ones(1), var_type="integer"
+    )
+    problem = OptimizationProblem(design_space)
+    problem.objective = -f_1
+    OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
+    assert problem.get_optimum()[1] == array([2.0])

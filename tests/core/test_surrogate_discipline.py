@@ -22,11 +22,12 @@
 from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose
+from numpy import allclose, array, concatenate
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.surrogate_disc import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegression
 
@@ -109,3 +110,30 @@ def test_linearize(dataset):
     assert allclose(out["y_1"]["x_2"][0], 3.0)
     assert allclose(out["y_2"]["x_1"][0], -2.0)
     assert allclose(out["y_2"]["x_2"][0], -3.0)
+
+
+def test_parallel_execute(dataset):
+    """Test the execution of the surrogate discipline in parallel."""
+    surr_1 = SurrogateDiscipline("LinearRegression", dataset)
+    surr_2 = SurrogateDiscipline("LinearRegression", dataset)
+
+    parallel_execution = DiscParallelExecution(
+        [surr_1, surr_2], use_threading=False, n_processes=2
+    )
+    parallel_execution.execute(
+        [
+            {"x_1": array([0.5]), "x_2": array([0.5])},
+            {"x_1": array([1.0]), "x_2": array([1.0])},
+        ]
+    )
+
+    assert allclose(
+        concatenate(list(surr_1.get_outputs_by_name(["y_1", "y_2"]))),
+        array([3.5, -3.5]),
+        atol=1e-3,
+    )
+    assert allclose(
+        concatenate(list(surr_2.get_outputs_by_name(["y_1", "y_2"]))),
+        array([6.0, -6.0]),
+        atol=1e-3,
+    )

@@ -30,8 +30,8 @@ from numpy.linalg import norm
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOFunctionGenerator
 from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,

@@ -69,6 +69,10 @@ class TestJacobianAssembly(unittest.TestCase):
             assembly._JacobianAssembly__check_inputs(
                 ["y_4"], ["x_3"], coupl_vars=["x_3"]
             )
+        with self.assertRaises(ValueError):
+            assembly.total_derivatives(
+                in_data, ["y_4"], ["x_3"], ["y_12"], mode="ERROR"
+            )
 
     def test_check_errors_consistency(self):
         disciplines = [SobieskiAerodynamics(), SobieskiMission()]

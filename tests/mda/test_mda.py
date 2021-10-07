@@ -151,6 +151,30 @@ def test_consistency_fail(desc):
         MDA(disciplines)
 
 
+def test_convergence_warning(caplog):
+    mda = MDA([Sellar1()])
+    mda.tolerance = 1.0
+    mda.normed_residual = 2.0
+    mda.max_mda_iter = 1
+    caplog.clear()
+    residual_is_small, _ = mda._warn_convergence_criteria(10)
+    assert not residual_is_small
+    assert len(caplog.records) == 1
+    assert (
+        "MDA has reached its maximum number of iterations" in caplog.records[0].message
+    )
+
+    mda.normed_residual = 1e-14
+    residual_is_small, _ = mda._warn_convergence_criteria(1)
+    assert residual_is_small
+
+    mda.max_mda_iter = 2
+    _, max_iter_is_reached = mda._warn_convergence_criteria(2)
+    assert max_iter_is_reached
+    _, max_iter_is_reached = mda._warn_convergence_criteria(1)
+    assert not max_iter_is_reached
+
+
 def test_coupling_structure(sellar_disciplines):
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = MDOCouplingStructure(sellar_disciplines)

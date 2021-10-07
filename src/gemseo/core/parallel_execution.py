@@ -18,21 +18,45 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Parallel execution of disciplines and functions using multiprocessing
-*********************************************************************
-"""
+"""Parallel execution of disciplines and functions using multiprocessing."""
 from __future__ import division, unicode_literals
 
 import logging
 import multiprocessing as mp
-import os
 import queue
 import threading as th
 import time
 import traceback
+from typing import Union
 
 LOGGER = logging.getLogger(__name__)
+
+
+def worker(
+    par_exe,  # type: Union[ParallelExecution, DiscParallelExecution, DiscParallelLinearization]
+    queue_in,  # type: queue.Queue
+    queue_out,  # type: queue.Queue
+):  # type: (...) -> None
+    """Execute a function while there are args left in the queue_in.
+
+    Args:
+        par_exe: The parallel execution object that contains the function
+            to be executed.
+        queue_in: The inputs to be evaluated.
+        queue_out: The queue object where the outputs of the function will
+            be saved.
+    """
+
+    for args in iter(queue_in.get, None):
+        try:
+            function_output = par_exe._run_task_by_index(*args)
+        except Exception as err:
+            traceback.print_exc()
+            queue_out.put((args[0], err))
+            queue_in.task_done()
+            continue
+        queue_out.put(function_output)
+        queue_in.task_done()
 
 
 class ParallelExecution(object):
@@ -66,13 +90,6 @@ class ParallelExecution(object):
         self.worker_list = worker_list
         self.n_processes = n_processes
         self.use_threading = use_threading
-
-        if not self.use_threading and os.name == "nt":
-            raise ValueError(
-                "Multiprocessing is not currently supported on"
-                " Windows. Please try to use multithreading"
-                " instead."
-            )
 
         if use_threading:
             ids = set(id(worker) for worker in worker_list)
@@ -136,31 +153,16 @@ class ParallelExecution(object):
             queue_in = mananger.Queue()
             queue_out = mananger.Queue()
 
-        def worker():
-            """Worker method executes a function while there are args left in the
-            queue_in."""
-            for args in iter(queue_in.get, None):
-                try:
-                    function_output = self._run_task_by_index(*args)
-                except Exception as err:
-                    traceback.print_exc()
-                    queue_out.put((args[0], err))
-                    queue_in.task_done()
-                    continue
-                queue_out.put(function_output)
-                queue_in.task_done()
-
         processes = []
         if self.use_threading:
             for _ in range(self.n_processes):
-                thread = th.Thread(target=worker)
+                thread = th.Thread(target=worker, args=(self, queue_in, queue_out))
                 thread.daemon = True
                 thread.start()
                 processes.append(thread)
         else:
             for _ in range(self.n_processes):
-
-                proc = mp.Process(target=worker)
+                proc = mp.Process(target=worker, args=(self, queue_in, queue_out))
                 proc.daemon = True
                 proc.start()
                 processes.append(proc)
@@ -203,9 +205,7 @@ class ParallelExecution(object):
         self._update_local_objects(ordered_outputs)
 
         # Filters outputs, eventually
-        filtered_outputs = self._filter_ordered_outputs(ordered_outputs)
-
-        return filtered_outputs
+        return self._filter_ordered_outputs(ordered_outputs)
 
     @staticmethod
     def _filter_ordered_outputs(ordered_outputs):

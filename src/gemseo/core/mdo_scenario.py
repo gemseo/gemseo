@@ -67,6 +67,13 @@ class MDOScenario(Scenario):
     MAX_ITER = "max_iter"
     X_OPT = "x_opt"
 
+    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + (
+        "formulation",
+        "disciplines",
+        "clear_history_before_run",
+        "_algo_factory",
+    )
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
@@ -157,6 +164,17 @@ class MDOScenarioAdapter(MDODiscipline):
     LOWER_BND_SUFFIX = "_lower_bnd"
     UPPER_BND_SUFFIX = "_upper_bnd"
     MULTIPLIER_SUFFIX = "_multiplier"
+
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "scenario",
+        "_inputs_list",
+        "_reset_x0_before_opt",
+        "_x_dict_0",
+        "_set_x0_before_opt",
+        "_set_bounds_before_opt",
+        "_outputs_list",
+        "_output_multipliers",
+    )
 
     def __init__(
         self,

@@ -25,7 +25,7 @@ from numpy import allclose, array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction, MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
 

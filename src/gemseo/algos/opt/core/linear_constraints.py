@@ -21,7 +21,7 @@
 """Build matrices from linear constraints for solvers."""
 from numpy import hstack, isfinite, vstack, zeros
 
-from gemseo.core.function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 
 
 def build_constraints_matrices(constraints, constraint_type):

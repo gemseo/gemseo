@@ -23,41 +23,110 @@ from __future__ import division, unicode_literals
 
 from copy import deepcopy
 
+import pytest
+
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_discipline, create_scenario
+from gemseo.api import create_design_space, create_discipline, create_scenario
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.formulations.bilevel import BiLevel
-from gemseo.formulations.bilevel_test_helper import TestBilevelFormulationBase
+from gemseo.formulations.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 
-class TestBilevelFormulation(TestBilevelFormulationBase):
-    def test_execute(self):
-        """"""
-        scenario = self.build_bilevel(
-            apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
-        )
+@pytest.fixture
+def sobieski_bilevel_scenario():
+    """Fixture from an existing function."""
+    return create_sobieski_bilevel_scenario()
 
-        for i in range(1, 4):
-            scenario.add_constraint(["g_" + str(i)], "ineq")
-        scenario.formulation.get_expected_workflow()
 
-        for i in range(3):
-            cstrs = scenario.disciplines[i].formulation.opt_problem.constraints
-            assert len(cstrs) == 1
-            assert cstrs[0].name == "g_" + str(i + 1)
+@pytest.fixture
+def dummy_bilevel_scenario():  # type (...) -> MDOScenario
+    """Create a dummy BiLevel scenario.
 
-        cstrs_sys = scenario.formulation.opt_problem.constraints
-        assert len(cstrs_sys) == 0
-        self.assertRaises(ValueError, scenario.add_constraint, ["toto"], "ineq")
+    It has to be noted that there is no strongly coupled discipline in this example.
+    It implies that MDA1 will not be created. Yet, MDA2 will be created,
+    as it is built with all the sub-disciplines passed to the BiLevel formulation.
 
-    def test_get_sub_options_grammar(self):
-        self.assertRaises(ValueError, BiLevel.get_sub_options_grammar)
-        self.assertRaises(ValueError, BiLevel.get_default_sub_options_values)
-        BiLevel.get_default_sub_options_values(mda_name="MDAJacobi")
+    Returns: A dummy BiLevel MDOScenario.
+    """
+    disc_expressions = {
+        "disc_1": (["x_1"], ["a"]),
+        "disc_2": (["a", "x_2"], ["b"]),
+        "disc_3": (["x", "x_3", "b"], ["obj"]),
+    }
+    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc(
+        disc_expressions
+    )
+
+    system_design_space = create_design_space()
+    system_design_space.add_variable("x_3")
+
+    sub_design_space_1 = create_design_space()
+    sub_design_space_1.add_variable("x_1")
+    sub_scenario_1 = create_scenario(
+        disciplines=[discipline_1, discipline_3],
+        formulation="MDF",
+        objective_name="obj",
+        design_space=sub_design_space_1,
+        maximize_objective=False,
+    )
+
+    sub_design_space_2 = create_design_space()
+    sub_design_space_2.add_variable("x_2")
+    sub_scenario_2 = create_scenario(
+        disciplines=[discipline_2, discipline_3],
+        formulation="MDF",
+        objective_name="obj",
+        design_space=sub_design_space_2,
+        maximize_objective=False,
+    )
+
+    scenario = create_scenario(
+        disciplines=[sub_scenario_1, sub_scenario_2],
+        formulation="BiLevel",
+        objective_name="obj",
+        design_space=system_design_space,
+        maximize_objective=False,
+    )
+    return scenario
+
+
+def test_execute(sobieski_bilevel_scenario):
+    """Test the execution of the Sobieski BiLevel Scenario."""
+    scenario = sobieski_bilevel_scenario(
+        apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
+    )
+
+    for i in range(1, 4):
+        scenario.add_constraint(["g_" + str(i)], "ineq")
+    scenario.formulation.get_expected_workflow()
+
+    for i in range(3):
+        cstrs = scenario.disciplines[i].formulation.opt_problem.constraints
+        assert len(cstrs) == 1
+        assert cstrs[0].name == "g_" + str(i + 1)
+
+    cstrs_sys = scenario.formulation.opt_problem.constraints
+    assert len(cstrs_sys) == 0
+    with pytest.raises(ValueError):
+        scenario.add_constraint(["toto"], "ineq")
+
+
+def test_get_sub_options_grammar_errors():
+    """Test that errors are raised if no MDA name is provided."""
+    with pytest.raises(ValueError):
+        BiLevel.get_sub_options_grammar()
+    with pytest.raises(ValueError):
+        BiLevel.get_default_sub_options_values()
+
+
+def test_get_sub_options_grammar():
+    """Test that the MDAJacobi sub-options can be retrieved."""
+    BiLevel.get_default_sub_options_values(mda_name="MDAJacobi")
 
 
 def test_bilevel_aerostructure():
@@ -159,3 +228,42 @@ def test_grammar_type():
         grammar_type=grammar_type,
     )
     assert formulation.chain.grammar_type == grammar_type
+
+
+def test_bilevel_weak_couplings(dummy_bilevel_scenario):
+    """Test that the adapters contains the discipline weak couplings.
+
+    This test generates a bi-level scenario which does not aim to be run as it has no
+    physical significance. It is checked that the weak couplings are present in the
+    inputs (resp. outputs) of the adapters, if they are in the top_level inputs (resp.
+    outputs) of the adapter.
+    """
+    # a and b are weak couplings of all the disciplines,
+    # and they are in the top-level outputs of the first adapter
+    disciplines = dummy_bilevel_scenario.formulation.chain.disciplines
+    assert "b" in disciplines[0].get_input_data_names()
+    assert "a" in disciplines[0].get_output_data_names()
+
+    # a is a weak coupling of all the disciplines,
+    # and it is in the top-level inputs of the second adapter
+    assert "a" in disciplines[1].get_input_data_names()
+
+    # a is a weak coupling of all the disciplines,
+    # and is in the top-level inputs of the second adapter
+    assert "b" in disciplines[1].get_output_data_names()
+
+
+def test_bilevel_mda_getter(dummy_bilevel_scenario):
+    """Test that the user can access the MDA1 and MDA2."""
+    # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
+    assert dummy_bilevel_scenario.formulation.mda1 is None
+    assert "obj" in dummy_bilevel_scenario.formulation.mda2.get_output_data_names()
+
+
+def test_bilevel_mda_setter(dummy_bilevel_scenario):
+    """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
+    discipline = create_discipline("SellarSystem")
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        dummy_bilevel_scenario.formulation.mda1 = discipline
+    with pytest.raises(AttributeError, match="can't set attribute"):
+        dummy_bilevel_scenario.formulation.mda2 = discipline

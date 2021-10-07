@@ -41,7 +41,7 @@ from gemseo.algos.aggregation.core import (
     sum_square_agg,
     sum_square_agg_jac_v,
 )
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def check_constraint_type(
