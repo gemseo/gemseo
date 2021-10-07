@@ -59,6 +59,7 @@ Changed
 - The convergence of an MDA can be logged.
 - The coupling structure can be directly passed to an MDA.
 - A ParameterSpace can be casted into a DesignSpace.
+- The grammar types "JSON" and "Simple" are replaced by the classes names "JSONGrammar" and "SimpleGrammar".
 
 Fixed
 -----

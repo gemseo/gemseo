@@ -25,7 +25,7 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 import six
 from custom_inherit import DocInheritMeta
 from numpy import ndarray, zeros
+
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -60,10 +62,12 @@ class AbstractGrammar(object):
     def __init__(
         self,
         name,  # type: str
+        **kwargs  # type: Union[str,Path]
     ):  # type: (...) -> None
         """
         Args:
             name: The name to be given to the grammar.
+            **kwargs: The options of the grammar.
         """
         self.name = name
 
