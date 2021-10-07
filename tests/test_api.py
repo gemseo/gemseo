@@ -24,14 +24,16 @@ from __future__ import division, unicode_literals
 import json
 import re
 from copy import deepcopy
+from unittest import mock
 
 import pytest
-from numpy import array, cos, linspace
+from numpy import arange, array, cos, linspace
 from numpy import pi as np_pi
 from numpy import sin
 from six import string_types
 
 from gemseo.api import (
+    compute_doe,
     create_cache,
     create_design_space,
     create_discipline,
@@ -814,3 +816,28 @@ def test_print_configuration(capfd):
 
         expected = re.compile(header_patterns, re.MULTILINE)
         assert bool(re.search(expected, out))
+
+
+@pytest.fixture(scope="module")
+def variables_space():
+    """A mock design space."""
+    design_space = mock.Mock()
+    design_space.dimension = 2
+    design_space.unnormalize_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
+    return design_space
+
+
+def test_compute_doe_normalized(variables_space):
+    """Check the computation of a normalized DOE in a variables space."""
+    points = compute_doe(variables_space, 3, "lhs", normalize=True)
+    assert points.shape == (3, 2)
+    assert points.max() <= 1.0
+    assert points.min() >= 0.0
+    variables_space.unnormalize_vect.assert_not_called()
+
+
+def test_compute_doe_nonnormalized(variables_space):
+    """Check the computation of a non-normalized DOE in a variables space."""
+    points = compute_doe(variables_space, 3, "lhs")
+    assert points.shape == (3, 2)
+    variables_space.unnormalize_vect.assert_called_once()

@@ -162,10 +162,14 @@ from __future__ import division, unicode_literals
 
 import logging
 import re
-from typing import List, Optional  # noqa F401
+from typing import Any, List, Optional  # noqa F401
 
+from numpy import ndarray
 from six import string_types
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
@@ -1688,3 +1692,40 @@ def load_dataset(dataset, **options):
     from gemseo.problems.dataset.factory import DatasetFactory
 
     return DatasetFactory().create(dataset, **options)
+
+
+def compute_doe(
+    variables_space,  # type: DesignSpace
+    size,  # type: int
+    algo_name,  # type: str
+    normalize=False,  # type: bool
+    **options  # type: DOELibraryOptionType
+):  # type: (...) -> ndarray
+    """Compute a design of experiments (DOE) in a variables space.
+
+    Args:
+        variables_space: The variables space to be sampled.
+        size: The size of the DOE.
+        algo_name: The DOE algorithm.
+        normalize: Whether to normalize the points between 0 and 1.
+        **options: The options of the DOE algorithm.
+
+    Returns:
+          The design of experiments
+          whose rows are the samples and columns the variables.
+
+    Examples
+    --------
+    >>> from gemseo.api import compute_doe, create_design_space
+    >>> variables_space = create_design_space()
+    >>> variables_space.add_variable("x", 2, l_b=-1.0, u_b=1.0)
+    >>> doe = compute_doe(variables_space, 5, "lhs")
+
+    See also
+    --------
+    get_available_doe_algorithms
+    get_algorithm_options_schema
+    execute_algo
+    """
+    library = DOEFactory().create(algo_name)
+    return library.compute_doe(variables_space, size, normalize, **options)
