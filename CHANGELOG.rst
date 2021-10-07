@@ -82,6 +82,7 @@ Fixed
 - An OptimizationProblem can now normalize and unnormalize gradient with uncertain variables.
 - Fix levels option for Full-Factorial doe: now this option is taken into account and enables to build an anisotropic sample.
 - Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
+- The NLopt library wrapper now handles user functions that return ndarrays properly.
 
 Version 3.1.0 (July 2021)
 *************************
