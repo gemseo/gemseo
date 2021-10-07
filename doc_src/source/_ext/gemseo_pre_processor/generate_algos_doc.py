@@ -135,16 +135,28 @@ def render_template(template_name, **template_keywords):
 def split_param_type(options_dict):
     for algo in options_dict.keys():
         for option in options_dict[algo].keys():
-            tmp = re.split(
-                r":type ([\*\w]+): (.*?)", options_dict[algo][option]["description"]
-            )
+            try:
+                tmp = re.split(
+                    r":type ([\*\w]+): (.*?)", options_dict[algo][option]["description"]
+                )
+            except KeyError:
+                print(
+                    "ERROR: failed to detect description for {} of algorithm {}".format(
+                        option, algo
+                    )
+                )
+                tmp = [""] * 4
+
             options_dict[algo][option]["description"] = tmp[0]
+
             if len(tmp) == 4:
                 options_dict[algo][option]["ptype"] = tmp[3].strip()
             else:
                 options_dict[algo][option]["ptype"] = "Unknown"
+
             if options_dict[algo][option]["type"] == "":
                 options_dict[algo][option]["type"] = "Unknown"
+
             # sphinx uses "ptype" to display the type of an argument.
             # The latter is read from the docstrings.
             # If it is "Unknown", we use the type found in the grammar
