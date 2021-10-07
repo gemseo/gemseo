@@ -16,7 +16,7 @@ variables:
   TOX_CONDA_VERSION: "0.8.0"
   MATLAB_PYTHON_WRAPPER_WINDOWS:
       value: ""
-      description: Enable with "git+file:////C:\python-matlab@windows ; python_version<'3.9'"
+      description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
