@@ -47,6 +47,8 @@ Changed
 - MorrisAnalysis provides new indices: minimum, maximum and relative standard deviation.
 - MorrisAnalysis can compute indices normalized with the empirical output bounds.
 - The IO grammar files of a scenario are located in the same directory as its class.
+- Database has a name used by OptimizationProblem to name the Dataset;
+  this is the name of the corresponding Scenario if any.
 - Distribution, ParameterSpace and OpenTURNS use now the logger mainly at debug level.
 - MDA warns if it stops when reaching ``max_mda_iter`` but before reaching the tolerance criteria.
 - Add max line search steps option in scipy L-BFGS-B
@@ -71,6 +73,7 @@ Fixed
 - The MDO Scenario example subsections are now correctly named.
 - The Gantt Chart, Basic History, Constraints History and
   Scatter Plot Matrix pages in the documentation now render the example plots correctly.
+- The name used to export an OptimizationProblem to a Dataset is no longer mandatory.
 - Bug in the print_configuration method, the configuration table is now shown properly.
 - Typo in the function name get_scenario_differenciation.
 - Bug with integer elements casted into

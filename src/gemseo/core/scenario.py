@@ -125,6 +125,7 @@ class Scenario(MDODiscipline):
         self._init_formulation(
             formulation, objective_name, design_space, **formulation_options
         )
+        self.formulation.opt_problem.database.name = self.name
         self.post_factory = PostFactory()
         self._update_input_grammar()
 
