@@ -50,6 +50,7 @@ Changed
 - Database has a name used by OptimizationProblem to name the Dataset;
   this is the name of the corresponding Scenario if any.
 - Distribution, ParameterSpace and OpenTURNS use now the logger mainly at debug level.
+- A dumped MDODiscipline can now be loaded with the API function ``import_discipline``.
 - MDA warns if it stops when reaching ``max_mda_iter`` but before reaching the tolerance criteria.
 - Add max line search steps option in scipy L-BFGS-B
 - A Pareto front computation example using a bi-level scenario has been added to the documentation.
@@ -60,6 +61,7 @@ Changed
 - The coupling structure can be directly passed to an MDA.
 - A ParameterSpace can be casted into a DesignSpace.
 - The grammar types "JSON" and "Simple" are replaced by the classes names "JSONGrammar" and "SimpleGrammar".
+- A dumped MDODiscipline can now be loaded with the API function import_discipline().
 - RadarChart uses the scientific notation as default format for the grid levels
   and allows to change the discretization of the grid.
 
@@ -76,6 +78,7 @@ Fixed
 - The MDO Scenario example subsections are now correctly named.
 - The Gantt Chart, Basic History, Constraints History and
   Scatter Plot Matrix pages in the documentation now render the example plots correctly.
+- The SurrogateDiscipline can now be serialized.
 - The name used to export an OptimizationProblem to a Dataset is no longer mandatory.
 - Bug in the print_configuration method, the configuration table is now shown properly.
 - Typo in the function name get_scenario_differenciation.

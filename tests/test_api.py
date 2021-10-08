@@ -73,6 +73,7 @@ from gemseo.api import (
     get_scenario_inputs_schema,
     get_scenario_options_schema,
     get_surrogate_options_schema,
+    import_discipline,
     load_dataset,
     monitor_scenario,
     print_configuration,
@@ -839,3 +840,18 @@ def test_compute_doe_nonnormalized(variables_space):
     points = compute_doe(variables_space, 3, "lhs")
     assert points.shape == (3, 2)
     variables_space.unnormalize_vect.assert_called_once()
+
+
+def test_import_discipline(tmp_wd):
+    """Check that a discipline performs correctly after import."""
+    file_path = tmp_wd / "saved_discipline.pkl"
+
+    discipline = create_discipline("AnalyticDiscipline", expressions_dict={"y": "2*x"})
+    discipline.execute()
+    discipline.serialize(file_path)
+
+    loaded_discipline = import_discipline(file_path)
+    loaded_discipline.execute()
+
+    assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
+    assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
