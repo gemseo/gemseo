@@ -229,6 +229,15 @@ def test_grammar_type():
     )
     assert formulation.chain.grammar_type == grammar_type
 
+    for discipline in formulation.chain.disciplines:
+        assert discipline.grammar_type == grammar_type
+
+    for scenario_adapter in formulation.scenario_adapters:
+        assert scenario_adapter.grammar_type == grammar_type
+
+    assert formulation.mda1.grammar_type == grammar_type
+    assert formulation.mda2.grammar_type == grammar_type
+
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario):
     """Test that the adapters contains the discipline weak couplings.

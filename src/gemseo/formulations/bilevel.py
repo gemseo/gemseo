@@ -171,7 +171,11 @@ class BiLevel(MDOFormulation):
             adapter_inputs = self._compute_adapter_inputs(scenario, use_non_shared_vars)
             adapter_outputs = self._compute_adapter_outputs(scenario, output_functions)
             adapter = adapter_class(
-                scenario, adapter_inputs, adapter_outputs, **adapter_options
+                scenario,
+                adapter_inputs,
+                adapter_outputs,
+                grammar_type=self._grammar_type,
+                **adapter_options
             )
             adapters.append(adapter)
         return adapters
@@ -321,7 +325,9 @@ class BiLevel(MDOFormulation):
         """
         disc_mda1 = self.couplstr.strongly_coupled_disciplines()
         if len(disc_mda1) > 0:
-            self._mda1 = self._mda_factory.create(mda_name, disc_mda1, **mda_options)
+            self._mda1 = self._mda_factory.create(
+                mda_name, disc_mda1, grammar_type=self._grammar_type, **mda_options
+            )
             self._mda1.warm_start = True
         else:
             LOGGER.warning(
@@ -330,7 +336,9 @@ class BiLevel(MDOFormulation):
             )
 
         disc_mda2 = self.get_sub_disciplines()
-        self._mda2 = self._mda_factory.create(mda_name, disc_mda2, **mda_options)
+        self._mda2 = self._mda_factory.create(
+            mda_name, disc_mda2, grammar_type=self._grammar_type, **mda_options
+        )
 
         self._mda2.warm_start = False
 
@@ -361,7 +369,9 @@ class BiLevel(MDOFormulation):
 
         if self.__parallel_scenarios:
             use_threading = self._multithread_scenarios
-            par_chain = MDOParallelChain(sub_opts, use_threading=use_threading)
+            par_chain = MDOParallelChain(
+                sub_opts, use_threading=use_threading, grammar_type=self._grammar_type
+            )
             chain_dis += [par_chain]
         else:
             # Chain MDA -> scenarios exec -> MDA

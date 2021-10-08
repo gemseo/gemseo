@@ -25,7 +25,17 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Union,
+)
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -245,3 +255,28 @@ class AbstractGrammar(object):
                 grammar1.__class__.__name__,
             )
         return "{}.".format(msg)
+
+    def restrict_to(
+        self,
+        data_names,  # type: Sequence[str]
+    ):  # type: (...) -> None
+        """Restrict the grammar to the given names.
+
+        Args:
+            data_names: The names of the elements to restrict the grammar to.
+        """
+        raise NotImplementedError
+
+    def remove_item(
+        self,
+        item_name,  # type: str
+    ):  # type: (...) -> None
+        """Remove an element.
+
+        Args:
+            item_name: The name of the element to be removed.
+
+        Raises:
+            KeyError: When the element is not in the grammar.
+        """
+        raise NotImplementedError

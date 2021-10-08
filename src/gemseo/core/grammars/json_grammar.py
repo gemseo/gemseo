@@ -463,24 +463,15 @@ class JSONGrammar(AbstractGrammar):
         self,
         data_names,  # type: Sequence[str]
     ):  # type: (...) -> None
-        """Restrict the grammar to the given names.
-
-        Args:
-            data_names: The names of the elements to restrict the grammar to.
-        """
         for element_name in list(self.schema.keys()):
             if element_name not in data_names:
-                self.remove_item(element_name)
+                del self.schema[element_name]
+        self.__reset_schema_attrs()
 
     def remove_item(
         self,
         item_name,  # type: str
     ):  # type: (...) -> None
-        """Remove an element from the grammar from its name.
-
-        Args:
-            item_name: The name of the element to be removed.
-        """
         del self.schema[item_name]
         self.__reset_schema_attrs()
 
