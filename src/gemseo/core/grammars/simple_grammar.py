@@ -17,7 +17,7 @@
 """Most basic grammar implementation."""
 
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Sequence, Union
 
 from numpy import ndarray
 
@@ -217,18 +217,18 @@ class SimpleGrammar(AbstractGrammar):
         element_type = self.get_type_of_data_named(data_name)
         return issubclass(element_type, ndarray)
 
+    def restrict_to(
+        self,
+        data_names,  # type: Sequence[str]
+    ):  # type: (...) -> None
+        for element_name in self.data_names:
+            if element_name not in data_names:
+                del self._names_to_types[element_name]
+
     def remove_item(
         self,
         item_name,  # type: str
     ):  # type: (...) -> None
-        """Remove an element.
-
-        Args:
-            item_name: The name of the element to be removed.
-
-        Raises:
-            KeyError: When item_name is not in the grammar.
-        """
         del self._names_to_types[item_name]
 
     def update_from(

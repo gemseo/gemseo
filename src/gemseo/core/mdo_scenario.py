@@ -186,6 +186,7 @@ class MDOScenarioAdapter(MDODiscipline):
         set_bounds_before_opt=False,  # type: bool
         cache_type=MDODiscipline.SIMPLE_CACHE,  # type: str
         output_multipliers=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
     ):  # type: (...) -> None
         """
         Args:
@@ -216,7 +217,9 @@ class MDOScenarioAdapter(MDODiscipline):
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
         name = "{}_adapter".format(scenario.name)
-        super(MDOScenarioAdapter, self).__init__(name, cache_type=cache_type)
+        super(MDOScenarioAdapter, self).__init__(
+            name, cache_type=cache_type, grammar_type=grammar_type
+        )
 
         self._update_grammars()
         self._dv_in_names = None
