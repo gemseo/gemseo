@@ -86,6 +86,7 @@ Fixed
 - Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
 - The NLopt library wrapper now handles user functions that return ndarrays properly.
 - Bug with the 'measure_options' arguments of MLAlgoAssessor and MLAlgoSelection.
+- The constraints names are now correctly formed with the minus sign and offset value if any.
 
 Version 3.1.0 (July 2021)
 *************************

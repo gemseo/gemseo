@@ -120,16 +120,10 @@ class OptimizationResult(object):
                 self.n_obj_call,
             )
         if self.constraints_values and len(self.constraints_values) < 20:
-            msg.add("Constraints values w.r.t. 0: ")
+            msg.add("Constraints values:")
             msg.indent()
             for c_name in sorted(self.constraints_values.keys()):
-                if c_name.startswith("-"):
-                    name = str(c_name[1:])
-                    values = str(-self.constraints_values[c_name])
-                else:
-                    name = str(c_name)
-                    values = str(self.constraints_values[c_name])
-                msg.add("{} = {}", name, values)
+                msg.add("{} = {}", c_name, self.constraints_values[c_name])
         return str(msg)
 
     def get_data_dict_repr(self):
