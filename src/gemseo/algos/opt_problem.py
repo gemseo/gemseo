@@ -402,24 +402,35 @@ class OptimizationProblem(object):
             cstr_type: The type of the constraint.
                 Either equality or inequality.
             positive: If True, then the inequality constraint is positive.
+
+        Raises:
+            TypeError: When the constraint of a linear optimization problem
+                is not an :class:`MDOLinearFunction`.
+            ValueError: When the type of the constraint is missing.
         """
         self.check_format(cstr_func)
         if self.pb_type == OptimizationProblem.LINEAR_PB and not isinstance(
             cstr_func, MDOLinearFunction
         ):
-            raise TypeError("Constraint must be an MDOLinearFunction")
+            raise TypeError(
+                "The constraint of a linear optimization problem "
+                "must be an MDOLinearFunction."
+            )
         ctype = cstr_type or cstr_func.f_type
         cstr_repr = self.repr_constraint(cstr_func, ctype, value, positive)
         if value is not None:
             cstr_func = cstr_func.offset(-value)
         if positive:
-            cstr_func = -cstr_func  # Operator overloading in MDOFunction
+            cstr_func = -cstr_func
+
         if cstr_type is not None:
             cstr_func.f_type = cstr_type
         else:
             if not cstr_func.is_constraint():
-                msg = "Constraint type must be provided, either in the "
-                msg += "function attributes or to the add_constraint method"
+                msg = (
+                    "Constraint type must be provided, "
+                    "either in the function attributes or to the add_constraint method."
+                )
                 raise ValueError(msg)
         cstr_func.special_repr = cstr_repr
         self.constraints.append(cstr_func)

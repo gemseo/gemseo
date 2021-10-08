@@ -33,6 +33,7 @@ from typing import (
     NoReturn,
     Optional,
     Sequence,
+    Sized,
     Tuple,
     Union,
 )
@@ -633,6 +634,11 @@ class MDOFunction(object):
             min_self.expr = min_self.expr.replace("-", "+")
             min_self.expr = min_self.expr.replace("++", "-")
             min_self.expr = "-" + min_self.expr
+            min_self.name = self.name
+            min_self.name = min_self.name.replace("+", "++")
+            min_self.name = min_self.name.replace("-", "+")
+            min_self.name = min_self.name.replace("++", "-")
+            min_self.name = "-" + min_self.name
 
         return min_self
 
@@ -645,6 +651,24 @@ class MDOFunction(object):
             other: The function to multiply by.
         """
         return MultiplyOperator(other, mdo_function=self)
+
+    @staticmethod
+    def _compute_operation_expression(
+        operand_1,  # type: str
+        operator,  # type: str
+        operand_2,  # type: Union[str,float,int]
+    ):  # type: (...)->str
+        """Return the string expression of an operation between two operands.
+
+        Args:
+            operand_1: The first operand.
+            operator: The operator applying to both operands.
+            operand_2: The second operand.
+
+        Returns:
+            The string expression of the sum of the operands.
+        """
+        return "{} {} {}".format(operand_1, operator, operand_2)
 
     def offset(
         self, value  # type: Union[ndarray, Number]
@@ -1488,25 +1512,35 @@ class Offset(MDOFunction):
             value: The offset value.
             mdo_function: The original MDOFunction object.
         """
+        name = mdo_function.name
         self.__value = value
         self.__mdo_function = mdo_function
+
         expr = self.__mdo_function.expr
-        if expr is not None:
-            if value < 0:
-                expr = "{} - {}".format(expr, -value)
-            else:
-                expr = "{} + {}".format(expr, abs(value))
+        if expr is None:
+            expr = name
+
+        if isinstance(value, Sized):
+            operator = "+"
+            operand_2 = "offset"
         else:
-            offset_is_negative = value < 0
-            if hasattr(offset_is_negative, "__len__"):
-                offset_is_negative = offset_is_negative.all()
-            if offset_is_negative:
-                expr = "{} - {}".format(self.__mdo_function.name, -value)
+            if value < 0:
+                operator = "-"
+                operand_2 = -value
             else:
-                expr = "{} + {}".format(self.__mdo_function.name, abs(value))
+                operator = "+"
+                operand_2 = value
+
+        name = self.__mdo_function._compute_operation_expression(
+            name, operator, operand_2
+        )
+        expr = self.__mdo_function._compute_operation_expression(
+            expr, operator, operand_2
+        )
+
         super(Offset, self).__init__(
             self._wrapped_function,
-            name=self.__mdo_function.name,
+            name=name,
             f_type=self.__mdo_function.f_type,
             expr=expr,
             args=self.__mdo_function.args,
