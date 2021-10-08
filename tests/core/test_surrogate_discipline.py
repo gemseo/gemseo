@@ -137,3 +137,16 @@ def test_parallel_execute(dataset):
         array([6.0, -6.0]),
         atol=1e-3,
     )
+
+
+def test_serialize(dataset, tmp_wd):
+    """Check the serialization of a surroate discipline."""
+    file_path = tmp_wd / "discipline.pkl"
+    discipline = SurrogateDiscipline("LinearRegression", dataset)
+    discipline.serialize(file_path)
+
+    loaded_discipline = SurrogateDiscipline.deserialize(file_path)
+    loaded_discipline.execute()
+
+    for name in discipline.local_data:
+        assert allclose(discipline.local_data[name], loaded_discipline.local_data[name])

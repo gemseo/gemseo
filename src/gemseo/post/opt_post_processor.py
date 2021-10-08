@@ -169,7 +169,7 @@ class OptPostProcessor(object):
             **options: The options of the post-processor.
 
         Returns:
-            The figure, to be customized if not closed.
+            The figures, to be customized if not closed.
 
         Raises:
             ValueError: If the `opt_problem.database` is empty.

@@ -44,6 +44,7 @@ from gemseo.core.grammar import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 # TODO: remove try except when py2 is no longer supported
@@ -1582,7 +1583,8 @@ class MDODiscipline(object):
 
         :param out_file: destination file for serialization
         """
-        with open(out_file, "wb") as outfobj:
+        out_file = Path(out_file)
+        with out_file.open("wb") as outfobj:
             pickler = pickle.Pickler(outfobj, protocol=2)
             pickler.dump(self)
 
@@ -1593,7 +1595,8 @@ class MDODiscipline(object):
         :param in_file: input file for serialization
         :returns: a discipline instance
         """
-        with open(in_file, "rb") as in_fobj:
+        in_file = Path(in_file)
+        with in_file.open("rb") as in_fobj:
             pickler = pickle.Unpickler(in_fobj)
             return pickler.load()
 
