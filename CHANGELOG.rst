@@ -64,6 +64,7 @@ Changed
 - A dumped MDODiscipline can now be loaded with the API function import_discipline().
 - RadarChart uses the scientific notation as default format for the grid levels
   and allows to change the discretization of the grid.
+- DesignSpace can have a name.
 
 Fixed
 -----

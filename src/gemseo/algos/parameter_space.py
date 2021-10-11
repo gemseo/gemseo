@@ -85,6 +85,7 @@ from gemseo.uncertainty.distributions.factory import (
     DistributionParametersType,
 )
 from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -111,14 +112,16 @@ class ParameterSpace(DesignSpace):
 
     def __init__(
         self,
+        hdf_file=None,  # type: Optional[Union[str,Path]]
         copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
+        name=None,  # type: Optional[str]
     ):  # type: (...) -> None
         """
         Args:
             copula: A name of copula defining the dependency between random variables.
         """
         LOGGER.debug("*** Create a new parameter space ***")
-        super(ParameterSpace, self).__init__()
+        super(ParameterSpace, self).__init__(hdf_file=hdf_file, name=name)
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
