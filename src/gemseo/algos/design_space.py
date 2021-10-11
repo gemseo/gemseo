@@ -73,10 +73,26 @@ from six import string_types
 
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.third_party.prettytable import PrettyTable
+from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.py23_compat import Path, string_array, strings_to_unicode_list
 
 LOGGER = logging.getLogger(__name__)
+
+
+class DesignVariableType(BaseEnum):
+    """A type of design variable."""
+
+    FLOAT = "float"
+    INTEGER = "integer"
+
+
+VarType = Union[
+    str,
+    Sequence[str],
+    DesignVariableType,
+    Sequence[DesignVariableType],
+]
 
 
 class DesignSpace(object):
@@ -87,12 +103,28 @@ class DesignSpace(object):
     In addition,
     it provides the current values of these variables
     that can be used as the initial solution of an :class:`.OptimizationProblem`.
+
+    Attributes:
+        name (Optional[str]): The name of the space.
+        variables_names (List[str]): The names of the variables.
+        dimension (int): The total dimension of the space,
+            corresponding to the sum of the sizes of the variables.
+        variables_sizes (Dict[str,int]): The sizes of the variables.
+        variables_types (Dict[str,ndarray]): The types of the variables components,
+            which can be any :attr:`DesignVariableType`.
+        normalize (Dict[str,ndarray]): The normalization policies
+            of the variables components indexed by the variables names;
+            if `True`, the component can be normalized.
     """
 
-    FLOAT = "float"
-    INTEGER = "integer"
+    FLOAT = DesignVariableType.FLOAT
+    INTEGER = DesignVariableType.INTEGER
     AVAILABLE_TYPES = [FLOAT, INTEGER]
-    __DTYPES = {FLOAT: "float64", INTEGER: "int32"}
+    __TYPE_NAMES = tuple(x.value for x in DesignVariableType)
+    __TYPES_TO_DTYPES = {
+        DesignVariableType.FLOAT.value: "float64",
+        DesignVariableType.INTEGER.value: "int32",
+    }
     MINIMAL_FIELDS = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES = ["name", "lower_bound", "value", "upper_bound", "type"]
 
@@ -111,13 +143,17 @@ class DesignSpace(object):
     def __init__(
         self,
         hdf_file=None,  # type: Optional[Union[str,Path]]
+        name=None,  # type: Optional[str]
     ):  # type: (...) -> None
         """
         Args:
             hdf_file: The path to the file
                 containing the description of an initial design space.
                 If None, start with an empty design space.
+            name: The name to be given to the design space,
+                `None` if the design space is unnamed.
         """
+        self.name = name
         self.variables_names = []
         self.dimension = 0
         self.variables_sizes = {}
@@ -245,7 +281,7 @@ class DesignSpace(object):
         self,
         name,  # type: str
         size=1,  # type: int
-        var_type=FLOAT,  # type: Optional[Union[str,Sequence[str]]]
+        var_type=DesignVariableType.FLOAT,  # type: VarType
         l_b=None,  # type: Optional[Union[float,ndarray]]
         u_b=None,  # type: Optional[Union[float,ndarray]]
         value=None,  # type:  Optional[Union[float,ndarray]]
@@ -255,9 +291,8 @@ class DesignSpace(object):
         Args:
             name: The name of the variable.
             size: The size of the variable.
-            var_type: Either the type of the variable (see :attr:`AVAILABLE_TYPES`)
+            var_type: Either the type of the variable
                 or the types of its components.
-                If None, use :attr:`FLOAT` as variable type.
             l_b: The lower bound of the variable.
                 If None, use :math:`-\infty`.
             u_b: The upper bound of the variable.
@@ -270,7 +305,8 @@ class DesignSpace(object):
                 or if the size is not a positive integer.
         """
         if name in self.variables_names:
-            raise ValueError("Variable '{}' already exists".format(name))
+            raise ValueError("Variable '{}' already exists.".format(name))
+
         if size <= 0 or int(size) != size:
             raise ValueError(
                 "The size of '{}' should be a positive integer.".format(name)
@@ -303,7 +339,7 @@ class DesignSpace(object):
         self,
         name,  # type: str
         size,  # type: int
-        var_type=None,  # type: Optional[Union[str,Sequence[str]]]
+        var_type=DesignVariableType.FLOAT,  # type: VarType
     ):  # type: (...) -> None
         """Add a type to a variable.
 
@@ -312,41 +348,38 @@ class DesignSpace(object):
             size: The size of the variable.
             var_type: Either the type of the variable (see :attr:`AVAILABLE_TYPES`)
                 or the types of its components.
-                If None, use :attr:`FLOAT` as variable type.
 
         Raises:
             ValueError: Either if the number of component types is different
                 from the variable size or if a variable type is unknown.
         """
-        if isinstance(var_type, bytes):
-            var_type = var_type.decode()
-        if var_type is None:
-            var_type = self.FLOAT
-        if hasattr(var_type, "__iter__") and not isinstance(var_type, string_types):
-            if len(var_type) != size:
-                raise ValueError(
-                    "The list of types for variable '{}' should be of size {}.".format(
-                        name, size
-                    )
+        if not hasattr(var_type, "__iter__") or isinstance(
+            var_type, (string_types, DesignVariableType, bytes)
+        ):
+            var_type = [var_type] * size
+
+        if len(var_type) != size:
+            raise ValueError(
+                "The list of types for variable '{}' should be of size {}.".format(
+                    name, size
                 )
-            # a type for each component
-            var_type = [
-                v_type.decode() if isinstance(v_type, bytes) else v_type
-                for v_type in var_type
-            ]
-            for v_type in var_type:
-                if v_type not in self.AVAILABLE_TYPES:
-                    msg = 'The type "{0}" of {1} is not known.'.format(v_type, name)
-                    raise ValueError(msg)
-            self.variables_types[name] = array(var_type)
+            )
 
-        else:
-            # same type for all components
-            if var_type not in self.AVAILABLE_TYPES:
-                raise ValueError("Type '{}' is not known.".format(var_type))
-            var_type_array = array([var_type] * size)
-            self.variables_types[name] = var_type_array
+        var_types = []
 
+        for v_type in var_type:
+            if isinstance(v_type, bytes):
+                v_type = v_type.decode()
+
+            if isinstance(v_type, string_types) and v_type not in self.__TYPE_NAMES:
+                msg = 'The type "{0}" of {1} is not known.'.format(v_type, name)
+                raise ValueError(msg)
+            elif v_type in DesignVariableType:
+                v_type = v_type.value
+
+            var_types += [v_type]
+
+        self.variables_types[name] = array(var_types)
         self.__norm_data_is_computed = False
 
     def _add_norm_policy(
@@ -385,7 +418,7 @@ class DesignSpace(object):
         normalize = empty(size)
         for i in range(size):
             var_type = variables_types[i]
-            if var_type in (DesignSpace.INTEGER, DesignSpace.FLOAT):
+            if var_type in self.__TYPES_TO_DTYPES:
                 if (
                     self._lower_bounds[name][i] == -inf
                     or self._upper_bounds[name][i] == inf
@@ -502,7 +535,7 @@ class DesignSpace(object):
             )
 
         # Check if some components of an integer variable are not integer.
-        if self.variables_types[name][0] == self.INTEGER:
+        if self.variables_types[name][0] == DesignVariableType.INTEGER.value:
             indices = all_indices - set(list(where(self.__is_integer(value))[0]))
             for idx in indices:
                 raise ValueError(
@@ -583,8 +616,8 @@ class DesignSpace(object):
         inds = where(u_b < l_b)[0]
         if inds.size != 0:
             raise ValueError(
-                "The bounds of variable '{}'{} are not valid: {}!<{}".format(
-                    name, inds, l_b[inds], l_b[inds]
+                "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
+                    name, inds, u_b[inds], l_b[inds]
                 )
             )
 
@@ -714,7 +747,7 @@ class DesignSpace(object):
                     )
                     raise ValueError(msg)
                 if (
-                    self.variables_types[name][0] == self.INTEGER
+                    self.variables_types[name][0] == DesignVariableType.INTEGER.value
                 ) and not self.__is_integer(x_real):
                     msg = (
                         "The component '{}'{}{} of the given array is not an integer "
@@ -767,7 +800,7 @@ class DesignSpace(object):
             x_dict = x_vec
         else:
             raise TypeError(
-                "Expected dict or array for x_vec argument;"
+                "Expected dict or array for x_vec argument; "
                 "got {}.".format(type(x_vec))
             )
 
@@ -803,7 +836,7 @@ class DesignSpace(object):
         """
         if sorted(set(self.variables_names)) != sorted(set(self._current_x.keys())):
             raise ValueError(
-                "Expected current_x variables: {}; got {}".format(
+                "Expected current_x variables: {}; got {}.".format(
                     self.variables_names, list(self._current_x.keys())
                 )
             )
@@ -909,7 +942,7 @@ class DesignSpace(object):
         var_ind_list = []
         for var in self.variables_names:
             # Store the mask of int variables
-            to_one = self.variables_types[var] == self.INTEGER
+            to_one = self.variables_types[var] == DesignVariableType.INTEGER.value
             var_ind_list.append(to_one)
         self.__int_vars_indices = concatenate(var_ind_list)
         self.__norm_data_is_computed = True
@@ -1216,7 +1249,7 @@ class DesignSpace(object):
             if current_x.x_opt.size != self.dimension:
                 raise ValueError(
                     "Invalid x_opt, "
-                    "dimension mismatch: {} != {}".format(
+                    "dimension mismatch: {} != {}.".format(
                         self.dimension, current_x.x_opt.size
                     )
                 )
@@ -1234,9 +1267,8 @@ class DesignSpace(object):
                 variable_type = self.variables_types[name]
                 if isinstance(variable_type, ndarray):
                     variable_type = variable_type[0]
-                if variable_type == self.INTEGER:
-                    dtype = self.__DTYPES[variable_type]
-                    value = value.astype(dtype)
+                if variable_type == DesignVariableType.INTEGER.value:
+                    value = value.astype(self.__TYPES_TO_DTYPES[variable_type])
                 self._current_x[name] = value
 
         self._check_current_x()
@@ -1644,11 +1676,12 @@ class DesignSpace(object):
                 for the :class:`.PrettyTable` view
                 generated by :meth:`get_pretty_table`.
         """
+        output_file = Path(output_file)
         table = self.get_pretty_table(fields)
         table.border = False
         for option, val in table_options.items():
             table.__setattr__(option, val)
-        with open(output_file, "w") as outf:
+        with output_file.open("w") as outf:
             table_str = header_char + table.get_string()
             outf.write(table_str)
 
@@ -1717,14 +1750,20 @@ class DesignSpace(object):
             if var_type_field in col_map:
                 var_type = str_data[k : k + size, col_map[var_type_field]].tolist()
             else:
-                var_type = None
+                var_type = DesignVariableType.FLOAT
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
             k += size
         design_space.check()
         return design_space
 
     def __str__(self):  # type:(...) -> str
-        return "Design Space:\n" + self.get_pretty_table().get_string()
+        if self.name is None:
+            header_suffix = ""
+        else:
+            header_suffix = " {}".format(self.name)
+        header = "Design space:{}\n".format(header_suffix)
+
+        return header + self.get_pretty_table().get_string()
 
     def project_into_bounds(
         self,

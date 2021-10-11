@@ -409,3 +409,9 @@ def test_gradient_unnormalization():
         parameter_space.normalize_vect(x_vect, minus_lb=False, use_dist=True),
         parameter_space.unnormalize_grad(x_vect),
     )
+
+
+def test_parameter_space_name():
+    """Check the naming of a parameter space."""
+    assert ParameterSpace().name is None
+    assert ParameterSpace(name="my_name").name == "my_name"
