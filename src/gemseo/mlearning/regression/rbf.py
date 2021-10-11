@@ -26,10 +26,10 @@ as a weighted sum of kernel functions centered on the learning input data:
 
 .. math::
 
-    y = w_1K(\|x-x_1\|;\epsilon) + w_2K(\|x-x_2\|;\epsilon) + ...
+    y = w_1K(\|x-x_1\|;\epsilon) + w_2K(\|x-x_2\|;\epsilon) + \ldots
         + w_nK(\|x-x_n\|;\epsilon)
 
-and the coefficients :math:`(w_1, w_2, ..., w_n)` are estimated
+and the coefficients :math:`(w_1, w_2, \ldots, w_n)` are estimated
 by least squares minimization.
 
 Dependence
@@ -50,7 +50,7 @@ from scipy.interpolate import Rbf
 from six import string_types
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.py23_compat import PY3, Path
@@ -61,7 +61,10 @@ SavedObjectType = Union[SavedObjectType, float, Callable]
 
 
 class RBFRegression(MLRegressionAlgo):
-    r"""Regression based on radial basis functions.
+    r"""Regression based on radial basis functions (RBFs).
+
+    This model relies on `the SciPy class :class:`scipy.interpolate.Rbf`.
+    <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 
     Attributes:
         der_function (Callable[[ndarray],ndarray]): The derivative
@@ -98,29 +101,59 @@ class RBFRegression(MLRegressionAlgo):
         transformer=None,  # type: Optional[TransformerType]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
-        function=MULTIQUADRIC,  # type: str
+        function=MULTIQUADRIC,  # type: Union[str, Callable[[float,float],float]]
         der_function=None,  # type: Optional[Callable[[ndarray],ndarray]]
         epsilon=None,  # type: Optional[float]
-        **parameters  # type: Optional[MLAlgoParameterType]
+        smooth=0.0,  # type: float
+        norm="euclidean",  # type: Union[str,Callable[[ndarray,ndarray],float]]
     ):  # type: (...) -> None
         r"""
         Args:
-            function: The radial basis function.
+            function: The radial basis function taking a radius ``r`` as input,
+                representing a distance between two points.
+
+                If string,
+                then it must be one of the following:
+
+                .. code::
+
+                    'multiquadric': sqrt((r/self.epsilon)**2 + 1)
+                    'inverse': 1.0/sqrt((r/self.epsilon)**2 + 1)
+                    'gaussian': exp(-(r/self.epsilon)**2)
+                    'linear': r
+                    'cubic': r**3
+                    'quintic': r**5
+                    'thin_plate': r**2 * log(r)
+
+                If callable,
+                then it must take two arguments ``(self, r)``,
+                e.g. ``lambda self, r: return sqrt((r/self.epsilon)**2 + 1)``
+                for the multiquadric function.
+                The epsilon parameter will be available as ``self.epsilon``.
+                Other keyword arguments passed in will be available as well.
+
             der_function: The derivative of the radial basis function,
                 only to be provided if ``function`` is a callable
                 and if the use of the model with its derivative is required.
-                If None and if ``function`` is a callable,
+                If ``None`` and if ``function`` is a callable,
                 an error will be raised.
-                If None and if ``function`` is a string,
+                If ``None`` and if ``function`` is a string,
                 the class will look for its internal implementation
                 and will raise an error if it is missing.
-                The der_function shall take three arguments
-                (input_data, norm_input_data, eps).
+                The ``der_function`` shall take three arguments
+                (``input_data``, ``norm_input_data``, ``eps``).
                 For a RBF of the form function(:math:`r`),
                 der_function(:math:`x`, :math:`|x|`, :math:`\epsilon`) shall
                 return :math:`\epsilon^{-1} x/|x| f'(|x|/\epsilon)`.
-            epsilon: An adjustable constant for Gaussian or multiquadrics functions.
-                If None, use the average distance between input data.
+            epsilon: An adjustable constant for Gaussian or multiquadric functions.
+                If ``None``, use the average distance between input data.
+            smooth: The degree of smoothness,
+                ``0`` involving an interpolation of the learning points.
+            norm: The distance metric to be used,
+                either a distance function name `known by SciPy
+                <https://docs.scipy.org/doc/scipy/reference/generated/
+                scipy.spatial.distance.cdist.html>`_
+                or a function that computes the distance between two points.
         """
         if isinstance(function, string_types):
             function = str(function)
@@ -131,7 +164,8 @@ class RBFRegression(MLRegressionAlgo):
             output_names=output_names,
             function=function,
             epsilon=epsilon,
-            **parameters
+            smooth=smooth,
+            norm=norm,
         )
         self.y_average = 0.0
         self.der_function = der_function
@@ -310,12 +344,25 @@ class RBFRegression(MLRegressionAlgo):
         output_data -= self.y_average
         if PY3:
             args = list(input_data.T) + [output_data]
-            self.algo = Rbf(*args, mode="N-D", **self.parameters)
+            self.algo = Rbf(
+                *args,
+                mode="N-D",
+                function=self.parameters["function"],
+                epsilon=self.parameters["epsilon"],
+                smooth=self.parameters["smooth"],
+                norm=self.parameters["norm"]
+            )
         else:
             self.algo = []
             for output in range(output_data.shape[1]):
                 args = hstack([input_data, output_data[:, [output]]])
-                rbf = Rbf(*args.T, **self.parameters)
+                rbf = Rbf(
+                    *args.T,
+                    function=self.parameters["function"],
+                    epsilon=self.parameters["epsilon"],
+                    smooth=self.parameters["smooth"],
+                    norm=self.parameters["norm"]
+                )
                 self.algo.append(rbf)
 
     def _predict(
@@ -398,7 +445,7 @@ class RBFRegression(MLRegressionAlgo):
                 for rbf in self.algo:
                     pickled_rbf_list.append({})
                     for key in rbf.__dict__.keys():
-                        if key not in ["_function", "norm"]:
+                        if key != "_function":
                             pickled_rbf_list[-1][key] = rbf.__getattribute__(key)
                 pickled_rbf.dump(pickled_rbf_list)
 
@@ -420,6 +467,9 @@ class RBFRegression(MLRegressionAlgo):
                         array([10, 20, 30]),
                         array([100, 200, 300]),
                         function=rbf["function"],
+                        epsilon=rbf["epsilon"],
+                        smooth=rbf["smooth"],
+                        norm=rbf["norm"],
                     )
                     for key, value in rbf.items():
                         algo_i.__setattr__(key, value)
