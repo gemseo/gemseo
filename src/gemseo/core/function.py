@@ -20,12 +20,14 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Legacy module with the MDOFunction classes."""
+from gemseo.core.mdofunctions.function_generator import (  # noqa: F401
+    MDOFunctionGenerator,
+)
 from gemseo.core.mdofunctions.mdo_function import ApplyOperator  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import Concatenate  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import ConvexLinearApprox  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import FunctionRestriction  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import MDOFunction  # noqa: F401
-from gemseo.core.mdofunctions.mdo_function import MDOFunctionGenerator  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction  # noqa: F401
 from gemseo.core.mdofunctions.mdo_function import MultiplyOperator  # noqa: F401
