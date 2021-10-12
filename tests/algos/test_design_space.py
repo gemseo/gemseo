@@ -22,6 +22,7 @@
 
 from __future__ import division, unicode_literals
 
+import logging
 import re
 
 import numpy as np
@@ -1009,3 +1010,15 @@ def test_unnormalize_vect(input_vec, ref):
     design_space.add_variable("x_3", 1, DesignSpace.INTEGER, 0.0, 10.0)
 
     assert design_space.unnormalize_vect(input_vec) == pytest.approx(ref)
+
+
+def test_unnormalize_vect_logging(caplog):
+    """Check the warning logged when unnormalizing a vector."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1)  # unbounded variable
+    design_space.add_variable("y", 2, l_b=-3.0, u_b=4.0)  # bounded variable
+    design_space.unnormalize_vect(array([2.0, -5.0, 6.0]))
+    msg = "All components of the normalized vector should be between 0 and 1."
+    msg += " Lower bounds violated: {}.".format(array([-5.0]))
+    msg += " Upper bounds violated: {}.".format(array([6.0]))
+    assert ("gemseo.algos.design_space", logging.WARNING, msg) in caplog.record_tuples
