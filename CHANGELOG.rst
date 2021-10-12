@@ -91,6 +91,7 @@ Fixed
 - The NLopt library wrapper now handles user functions that return ndarrays properly.
 - Bug with the 'measure_options' arguments of MLAlgoAssessor and MLAlgoSelection.
 - The constraints names are now correctly formed with the minus sign and offset value if any.
+- The image comparison tests in post/dataset no longer leave the generated files when completed.
 
 Version 3.1.0 (July 2021)
 *************************
