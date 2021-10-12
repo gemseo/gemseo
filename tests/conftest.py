@@ -15,20 +15,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """Test helpers."""
-
+import contextlib
 import os
 import sys
+import tempfile
 
 import matplotlib.pyplot as plt
+import matplotlib.testing.decorators
 import pytest
 
 from gemseo.core.factory import Factory
 from gemseo.utils.py23_compat import PY2, Path
 
 
-@pytest.fixture()
-def tmp_wd(tmp_path):
-    """Fixture to move into a temporary directory forth and back.
+def __tmp_wd(tmp_path):
+    """Generator to move into a temporary directory forth and back.
 
     Return the path to the temporary directory.
     """
@@ -38,6 +39,10 @@ def tmp_wd(tmp_path):
         yield tmp_path
     finally:
         os.chdir(str(prev_cwd))
+
+
+# Fixture to more into a temporary directory.
+tmp_wd = pytest.fixture()(__tmp_wd)
 
 
 def pytest_sessionstart(session):
@@ -91,6 +96,7 @@ def reset_factory():
     Factory.cache_clear()
 
 
+# Backup before we monkey patch.
 if PY2:
     # workaround to get image_comparison working
     import matplotlib
@@ -122,7 +128,23 @@ if PY2:
 
     # hook in our function override
     decorators._image_directories = _new_image_directories
+original_image_directories = matplotlib.testing.decorators._image_directories
 
+# Context manager to change the current working directory to a temporary one.
+__ctx_tmp_wd = contextlib.contextmanager(__tmp_wd)
+
+
+def _image_directories(func):
+    """Create the result_images directory in a temporary parent directory."""
+    with __ctx_tmp_wd(tempfile.mkdtemp()):
+        baseline_dir, result_dir = original_image_directories(func)
+    return baseline_dir, result_dir
+
+
+matplotlib.testing.decorators._image_directories = _image_directories
+
+
+if PY2:
     import backports.unittest_mock
 
     backports.unittest_mock.install()
