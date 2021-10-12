@@ -66,6 +66,7 @@ class MDAChain(MDA):
         n_processes=N_CPUS,  # type: int
         chain_linearize=False,  # type: bool
         tolerance=1e-6,  # type: float
+        linear_solver_tolerance=1e-12,  # type: float
         use_lu_fact=False,  # type: bool
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
@@ -96,6 +97,7 @@ class MDAChain(MDA):
             max_mda_iter=max_mda_iter,
             name=name,
             tolerance=tolerance,
+            linear_solver_tolerance=linear_solver_tolerance,
             use_lu_fact=use_lu_fact,
             grammar_type=grammar_type,
             coupling_structure=coupling_structure,
