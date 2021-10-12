@@ -128,6 +128,7 @@ class MDA(MDODiscipline):
 
         self._initialize_grammars()
         self._check_consistency()
+        self.__check_linear_solver_options()
         self._check_couplings_types()
         self._log_convergence = log_convergence
 
@@ -151,6 +152,23 @@ class MDA(MDODiscipline):
         value,  # type: bool
     ):  # type: (...) -> None
         self._log_convergence = value
+
+    def __check_linear_solver_options(self):  # type: (...) -> None
+        """Check the linear solver options.
+
+        The linear solver tolerance cannot be set
+        using the linear solver option dictionary,
+        as it is set using the linear_solver_tolerance keyword argument.
+
+        Raises:
+            ValueError: If the 'tol' keyword is in linear_solver_options.
+        """
+        if "tol" in self.linear_solver_options:
+            msg = (
+                "The linear solver tolerance shall be set"
+                " using the linear_solver_tolerance argument."
+            )
+            raise ValueError(msg)
 
     def _check_consistency(self):  # type: (...) -> None
         """Check if there are not more than one equation per variable.
@@ -327,6 +345,7 @@ class MDA(MDODiscipline):
         # the same as the current value
         exec_cache_tol = self.lin_cache_tol_fact * self.tolerance
         force_no_exec = exec_cache_tol != 0.0
+        self.__check_linear_solver_options()
         self.jac = self.assembly.total_derivatives(
             self.local_data,
             outputs,

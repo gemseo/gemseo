@@ -62,6 +62,69 @@ DISC_DESCR_16D = [
 ]
 
 
+def test_set_linear_solver_tolerance(sellar_disciplines):
+    """Test that the linear solver tolerance can be set at the object instantiation."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-12,
+        linear_solver_tolerance=1e-6,
+        max_mda_iter=20,
+        chain_linearize=False,
+    )
+    assert mda_chain.linear_solver_tolerance == 1e-6
+
+
+def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines):
+    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+
+    In this test, we check that an exception is raised at the MDA instantiation.
+    """
+    linear_solver_options = {"tol": 1e-6}
+    msg = (
+        "The linear solver tolerance shall be set"
+        " using the linear_solver_tolerance argument."
+    )
+    with pytest.raises(ValueError, match=msg):
+        MDAChain(
+            sellar_disciplines,
+            tolerance=1e-12,
+            max_mda_iter=20,
+            chain_linearize=False,
+            linear_solver_options=linear_solver_options,
+        )
+
+
+def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplines):
+    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+
+    In this test, we check that the exception is raised when linearizing the MDA.
+    """
+    linear_solver_options = {"tol": 1e-6}
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-12,
+        max_mda_iter=20,
+        chain_linearize=False,
+    )
+    mda_chain.linear_solver_options = linear_solver_options
+    input_data = {
+        "x_local": np.array([0.7]),
+        "x_shared": np.array([1.97763897, 0.2]),
+        "y_0": np.array([1.0]),
+        "y_1": np.array([1.0]),
+    }
+    inputs = ["x_local", "x_shared"]
+    outputs = ["obj", "c_1", "c_2"]
+    mda_chain.add_differentiated_inputs(inputs)
+    mda_chain.add_differentiated_outputs(outputs)
+    msg = (
+        "The linear solver tolerance shall be set"
+        " using the linear_solver_tolerance argument."
+    )
+    with pytest.raises(ValueError, match=msg):
+        mda_chain.linearize(input_data)
+
+
 def test_sellar(tmp_wd, sellar_disciplines):
     """"""
     mda_chain = MDAChain(
