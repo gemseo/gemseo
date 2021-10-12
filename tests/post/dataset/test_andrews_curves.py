@@ -76,7 +76,7 @@ def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
         dataset (Dataset): A dataset.
         pyplot_close_all: Prevents figures aggregation.
     """
-    AndrewsCurves(dataset)._plot(classifier="c")
+    AndrewsCurves(dataset)._plot({}, classifier="c")
 
 
 def test_error(dataset):
@@ -87,4 +87,4 @@ def test_error(dataset):
     """
     expected = "Classifier must be one of these names: c, x, y, z"
     with pytest.raises(ValueError, match=expected):
-        AndrewsCurves(dataset)._plot(classifier="foo")
+        AndrewsCurves(dataset)._plot({}, classifier="foo")
