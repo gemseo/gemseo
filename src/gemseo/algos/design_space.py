@@ -1111,23 +1111,31 @@ class DesignSpace(object):
         Raises:
             ValueError: If the array to be unnormalized is not one- or two-dimensional.
         """
+        n_dims = x_vect.ndim
+        if n_dims not in [1, 2]:
+            raise ValueError(
+                "The array to be unnormalized must be 1d or 2d, got {}d.".format(n_dims)
+            )
         if not self.__norm_data_is_computed:
             self.__update_normalization_vars()
         norm_inds = self.__norm_inds
         l_bounds = self.__lower_bounds_array
         if not no_check:
-            # Get the indexes of the components to be unnormalized:
             # Check whether the input components are between 0 and 1:
-            if (x_vect < -1e-12).any() or (x_vect > 1 + 1e-12).any():
+            if n_dims == 1:
+                bounded = x_vect[norm_inds]
+            else:
+                bounded = x_vect[:, norm_inds]
+            if (bounded < -1e-12).any() or (bounded > 1 + 1e-12).any():
                 msg = (
                     "All components of the normalized vector should be between 0 and 1."
                 )
-                lb_viol = x_vect[x_vect < -1e-12]
+                lb_viol = bounded[bounded < -1e-12]
                 if lb_viol.size != 0:
-                    msg += " lower bounds violated: {}".format(lb_viol)
-                ub_viol = x_vect[x_vect > 1 + 1e-12]
+                    msg += " Lower bounds violated: {}.".format(lb_viol)
+                ub_viol = bounded[bounded > 1 + 1e-12]
                 if ub_viol.size != 0:
-                    msg += " upper bounds violated: {}".format(ub_viol)
+                    msg += " Upper bounds violated: {}.".format(ub_viol)
 
                 LOGGER.warning(msg)
         # Unnormalize the relevant components:
@@ -1137,19 +1145,14 @@ class DesignSpace(object):
             current_dtype = float
         unnorm_vect = x_vect.astype(current_dtype, copy=True)
 
-        n_dims = len(x_vect.shape)
         if n_dims == 1:
             unnorm_vect[norm_inds] *= self._norm_factor[norm_inds]
             if minus_lb:
                 unnorm_vect[norm_inds] += l_bounds[norm_inds]
-        elif n_dims == 2:
+        else:
             unnorm_vect[:, norm_inds] *= self._norm_factor[norm_inds]
             if minus_lb:
                 unnorm_vect[:, norm_inds] += l_bounds[norm_inds]
-        else:
-            raise ValueError(
-                "The array to be unnormalized must be 1d or 2d, got {}d.".format(n_dims)
-            )
         inds_fixed = self.__to_zero
         if inds_fixed.size > 0:
             if n_dims == 1:
