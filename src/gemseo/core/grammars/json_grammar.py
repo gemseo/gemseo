@@ -295,9 +295,27 @@ class JSONGrammar(AbstractGrammar):
             for property_name, property_schema in schema["properties"].items():
                 descr = descriptions.get(property_name)
                 if descr is not None:
-                    property_schema["description"] = descr
+                    self.__add_description_to_types(descr, property_schema)
 
         self.__merge_schema(schema)
+
+    def __add_description_to_types(
+        self,
+        description,  # type: str
+        property_schema,  # type: Mapping[str, str]
+    ):  # type: (...) -> None
+        """Add the description for all the types found in the schema of a parameter.
+
+        Args:
+            description: The description of the parameter.
+            property_schema: The schema of the parameter.
+        """
+
+        if "anyOf" in property_schema:
+            for each_type in property_schema["anyOf"]:
+                each_type["description"] = description
+        else:
+            property_schema["description"] = description
 
     def __merge_schema(
         self,

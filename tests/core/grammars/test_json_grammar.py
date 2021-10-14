@@ -31,7 +31,7 @@ from numpy import array, ndarray
 
 from gemseo.core.grammar import InvalidDataException, SimpleGrammar
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.py23_compat import PY2, Path
 
 
 def get_indict():
@@ -263,13 +263,13 @@ def test_to_simple_grammar_array_number():
 
     if PY2:
         # workaround for genson that uses unordered dict
-        assert set(simp.data_types) == {Number, ndarray}
+        assert set(simp.data_types) == {Number, ndarray, None}
     else:
-        assert simp.data_types == [Number, ndarray]
+        assert simp.data_types == [Number, ndarray, None]
 
-    simp.load_data({"X": 1, "Y": array([1.0])})
-    simp.load_data({"X": 1.0, "Y": array([1])})
-    simp.load_data({"X": 1j, "Y": array([1.0j])})
+    simp.load_data({"X": 1, "Y": array([1.0]), "Z": 10})
+    simp.load_data({"X": 1.0, "Y": array([1]), "Z": array([10])})
+    simp.load_data({"X": 1j, "Y": array([1.0j]), "Z": 1j})
 
     with pytest.raises(InvalidDataException):
         simp.load_data({"X": 1j, "Y": 1.0})
@@ -301,3 +301,24 @@ def test_properties_dict():
     gram = JSONGrammar("")
     with pytest.raises(ValueError, match="Schema has no properties"):
         gram.properties_dict
+
+
+def test_description_with_anyof_types_parameter():
+    """Test that the description of a parameter is correctly taken into account when
+    ``anyOf`` tag is used to define several types."""
+
+    description = {
+        "X": "description of X",
+        "Y": "description of Y",
+        "Z": "description of Z",
+    }
+
+    json_file = Path(__file__).parent / "data" / "grammar_test3.json"
+    json_grammar = JSONGrammar("my_json", json_file, descriptions=description)
+    json_dict = json_grammar.schema.to_dict()
+    properties = json_dict["properties"]
+
+    assert properties["X"]["description"] == description["X"]
+    assert properties["Y"]["description"] == description["Y"]
+    assert properties["Z"]["anyOf"][0]["description"] == description["Z"]
+    assert properties["Z"]["anyOf"][1]["description"] == description["Z"]
