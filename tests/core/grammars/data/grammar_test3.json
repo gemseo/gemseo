@@ -14,7 +14,19 @@
             "type": "array",
             "id": "y_0",
 			"minItems":1
-        }
+        },
+        "Z": {"anyOf":
+        [{
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+           }
+          },
+          {"type": "integer",
+            "minimum": 1}
+        ]}
     },
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
