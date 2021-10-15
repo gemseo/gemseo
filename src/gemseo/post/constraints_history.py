@@ -26,12 +26,11 @@ from typing import Sequence
 
 import numpy as np
 from matplotlib import pyplot
-from matplotlib.colors import SymLogNorm
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib_ import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -130,11 +129,7 @@ class ConstraintsHistory(OptPostProcessor):
             vmax = max(vmax, np.max(np.abs(cstr_matrix)))
             extent = -0.5, nb_iter - 0.5, np.min(cstr_matrix), np.max(cstr_matrix)
 
-            # On python 2, base is not defined as a parameter in SymLogNorm()
-            if PY2:
-                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax)
-            else:
-                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=np.e)
+            norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax)
 
             axe.imshow(
                 cstr_matrix,

@@ -28,13 +28,10 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
 import pylab
-from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatter, MaxNLocator
 from numpy import abs as np_abs
-from numpy import append, arange, argmin, array, atleast_2d, concatenate
-from numpy import e as npe
-from numpy import hstack, isnan
+from numpy import append, arange, argmin, array, atleast_2d, concatenate, hstack, isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
@@ -49,7 +46,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib_ import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -542,22 +539,13 @@ class OptHistoryView(OptPostProcessor):
         fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         ax1 = fig.add_subplot(grid[0, 0])
-        if PY2:
-            im1 = ax1.imshow(
-                cstr_matrix,
-                cmap=cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
-            )
-        else:
-            im1 = ax1.imshow(
-                cstr_matrix,
-                cmap=cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=npe),
-            )
+        im1 = ax1.imshow(
+            cstr_matrix,
+            cmap=cmap,
+            interpolation="nearest",
+            aspect="auto",
+            norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
+        )
         if hasnan > 0:
             x_absc_nan = where(idx_nan.any(axis=0))[0]
             for x_i in x_absc_nan:
@@ -642,22 +630,13 @@ class OptHistoryView(OptPostProcessor):
         axe.xaxis.set_major_locator(MaxNLocator(integer=True))
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
         linthresh = 10 ** (np_log10(vmax) - 5.0)
-        if PY2:
-            img = axe.imshow(
-                diag.real,
-                cmap=self.cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
-            )
-        else:
-            img = axe.imshow(
-                diag.real,
-                cmap=self.cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=npe),
-            )
+        img = axe.imshow(
+            diag.real,
+            cmap=self.cmap,
+            interpolation="nearest",
+            aspect="auto",
+            norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
+        )
         axe.invert_yaxis()
 
         # colorbar
