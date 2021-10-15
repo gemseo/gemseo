@@ -31,7 +31,6 @@ from typing import Optional
 import numpy as np
 import pylab
 from matplotlib import pyplot
-from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatter
 from numpy import ndarray
@@ -41,7 +40,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib_ import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -134,11 +133,7 @@ class QuadApprox(OptPostProcessor):
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
         linthresh = 10 ** (np.log10(vmax) - 5.0)
 
-        # On python 2, base is not defined as a parameter in SymLogNorm()
-        if PY2:
-            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
-        else:
-            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=np.e)
+        norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
 
         # SymLog is a symmetric log scale adapted to negative values
         pylab.imshow(

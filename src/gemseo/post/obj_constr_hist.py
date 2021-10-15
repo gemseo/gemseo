@@ -27,14 +27,13 @@ from typing import Optional, Sequence, Tuple
 import matplotlib.gridspec as gridspec
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib_ import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -121,13 +120,7 @@ class ObjConstrHist(OptPostProcessor):
         vmin = -vmax
         extent = -0.5, nb_iter - 0.5, fmin, fmax
 
-        # On python 2, base is not defined as a parameter in SymLogNorm()
-        if PY2:
-            norm = SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75)
-        else:
-            norm = SymLogNorm(
-                linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75, base=np.e
-            )
+        norm = SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75)
 
         im1 = ax1.imshow(
             values,

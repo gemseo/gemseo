@@ -93,6 +93,7 @@ Fixed
 - The constraints names are now correctly formed with the minus sign and offset value if any.
 - The image comparison tests in post/dataset no longer leave the generated files when completed.
 - DesignSpace no longer logs an erroneous warning when unnormalizing an unbounded variable.
+- Post-processings based on SymLogNorm (matplotlib) now works with Python 3.6.
 
 Version 3.1.0 (July 2021)
 *************************
