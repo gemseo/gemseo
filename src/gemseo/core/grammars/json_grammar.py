@@ -47,6 +47,15 @@ from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.py23_compat import PY2, JsonSchemaException, Path, compile_schema
 from gemseo.utils.string_tools import MultiLineString
 
+if PY2:
+    import jsonschema
+    from jsonschema import ValidationError
+else:
+    # TODO: remove when py27 is gone
+    class ValidationError(BaseException):
+        pass
+
+
 LOGGER = logging.getLogger(__name__)
 
 ElementType = Union[str, float, bool, Sequence[Union[str, float, bool]]]
@@ -150,6 +159,16 @@ class JSONGrammar(AbstractGrammar):
     def _init_validator(self):  # type: (...) -> None
         """Initialize the validator."""
         self.schema_dict.pop("id", None)
+
+        if PY2:
+            # Use jsonschema instead of fastjsonschema when a property has anyOf.
+            for value in self.schema_dict.get("properties", {}).values():
+                if "anyOf" in value:
+                    self._validator = jsonschema.validators.validator_for(
+                        self.schema_dict
+                    )(self.schema_dict).validate
+                    return
+
         self._validator = compile_schema(self.schema_dict)
 
     @classmethod
@@ -199,7 +218,7 @@ class JSONGrammar(AbstractGrammar):
 
         try:
             self._validator(data_to_check)
-        except JsonSchemaException as error:
+        except (JsonSchemaException, ValidationError) as error:
             log_message = MultiLineString()
             log_message.add("Invalid data in: {}".format(self.name))
 
