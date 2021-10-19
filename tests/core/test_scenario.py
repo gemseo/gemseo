@@ -38,29 +38,49 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.problems.sobieski.wrappers_sg import (
+    SobieskiAerodynamicsSG,
+    SobieskiMissionSG,
+    SobieskiPropulsionSG,
+    SobieskiStructureSG,
+)
 
 
-def build_mdo_scenario(formulation):
+def build_mdo_scenario(
+    formulation,  # type: str
+    grammar_type=MDOScenario.JSON_GRAMMAR_TYPE,  # type: str
+):  # type: (...) -> MDOScenario
     """Build the scenario for SSBJ.
 
     Args:
-        formulation (str): The name of the scenario formulation.
+        formulation: The name of the scenario formulation.
+        grammar_type: The grammar type.
 
     Returns:
-        MDOScenario: The scenario.
+        The MDOScenario.
     """
-    disciplines = [
-        SobieskiPropulsion(),
-        SobieskiAerodynamics(),
-        SobieskiMission(),
-        SobieskiStructure(),
-    ]
+    if grammar_type == MDOScenario.JSON_GRAMMAR_TYPE:
+        disciplines = [
+            SobieskiPropulsion(),
+            SobieskiAerodynamics(),
+            SobieskiMission(),
+            SobieskiStructure(),
+        ]
+    elif grammar_type == MDOScenario.SIMPLE_GRAMMAR_TYPE:
+        disciplines = [
+            SobieskiPropulsionSG(),
+            SobieskiAerodynamicsSG(),
+            SobieskiMissionSG(),
+            SobieskiStructureSG(),
+        ]
+
     design_space = SobieskiProblem().read_design_space()
     scenario = MDOScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
         design_space=design_space,
+        grammar_type=grammar_type,
         maximize_objective=True,
     )
     return scenario
@@ -68,13 +88,35 @@ def build_mdo_scenario(formulation):
 
 @pytest.fixture()
 def mdf_scenario():
-    """Return a MDOScenario with MDF formulation."""
+    """Return a MDOScenario with MDF formulation and JSONGrammar.
+
+    Returns:
+        The MDOScenario.
+    """
     return build_mdo_scenario("MDF")
 
 
 @pytest.fixture()
+def mdf_variable_grammar_scenario(request):
+    """Return a MDOScenario with MDF formulation and custom grammar.
+
+    Args:
+        request: An auxiliary variable to retrieve the grammar type with
+            pytest.mark.parametrize and the option `indirect=True`.
+
+    Returns:
+        The MDOScenario.
+    """
+    return build_mdo_scenario("MDF", request.param)
+
+
+@pytest.fixture()
 def idf_scenario():
-    """Return a MDOScenario with IDF formulation."""
+    """Return a MDOScenario with IDF formulation and JSONGrammar.
+
+    Return:
+        The MDOScenario.
+    """
     return build_mdo_scenario("IDF")
 
 
@@ -183,24 +225,35 @@ def test_backup_0(tmp_wd, mdf_scenario):
     assert not (tmp_wd / filename).exists()
 
 
-def test_backup_1(tmp_wd, mdf_scenario):
+@pytest.mark.parametrize(
+    "mdf_variable_grammar_scenario",
+    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    indirect=True,
+)
+def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     """Test the optimization backup with generation of plots during convergence.
 
     tests that when used, the backup does not call the original objective
     """
     filename = "opt_history.h5"
-    mdf_scenario.set_optimization_history_backup(
+    mdf_variable_grammar_scenario.set_optimization_history_backup(
         filename, erase=False, pre_load=True, generate_opt_plot=False
     )
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     opt_read = OptimizationProblem.import_hdf(filename)
 
-    assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
+    assert len(opt_read.database) == len(
+        mdf_variable_grammar_scenario.formulation.opt_problem.database
+    )
 
     assert (
         norm(
-            array(mdf_scenario.formulation.opt_problem.database.get_x_history())
-            - array(mdf_scenario.formulation.opt_problem.database.get_x_history())
+            array(
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+            )
+            - array(
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+            )
         )
         == 0.0
     )
@@ -218,7 +271,12 @@ def test_typeerror_formulation():
         MDOScenario(disciplines, 1, "y_4", design_space)
 
 
-def test_get_optimization_results(mdf_scenario):
+@pytest.mark.parametrize(
+    "mdf_variable_grammar_scenario",
+    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    indirect=True,
+)
+def test_get_optimization_results(mdf_variable_grammar_scenario):
     """Test the optimization results accessor.
 
     Test the case when the Optimization results are available.
@@ -237,9 +295,9 @@ def test_get_optimization_results(mdf_scenario):
         is_feasible=is_feasible,
     )
 
-    mdf_scenario.optimization_result = opt_results
+    mdf_variable_grammar_scenario.optimization_result = opt_results
 
-    optimum = mdf_scenario.get_optimum()
+    optimum = mdf_variable_grammar_scenario.get_optimum()
 
     assert optimum.x_opt == x_opt
     assert optimum.f_opt == f_opt

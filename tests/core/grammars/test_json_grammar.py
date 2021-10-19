@@ -24,7 +24,6 @@ from __future__ import division, unicode_literals
 
 import logging
 from numbers import Number
-from os.path import dirname, exists, join
 
 import pytest
 from numpy import array, ndarray
@@ -32,6 +31,8 @@ from numpy import array, ndarray
 from gemseo.core.grammar import InvalidDataException, SimpleGrammar
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.py23_compat import PY2, Path
+
+TEST_PATH = Path(__file__).parent / "data"
 
 
 def get_indict():
@@ -188,8 +189,8 @@ def test_update_from_dict():
 
 
 def test_invalid_data():
-    fpath = join(dirname(__file__), "data", "grammar_test1.json")
-    assert exists(fpath)
+    fpath = TEST_PATH / "grammar_test1.json"
+    assert Path(fpath).exists()
     gram = JSONGrammar(name="toto", schema_file=fpath)
     gram.load_data({"X": 1})
     gram.load_data({"X": 1.1})
@@ -199,8 +200,8 @@ def test_invalid_data():
 
 
 def test_init_from_unexisting_schema():
-    fpath = join(dirname(__file__), "IDONTEXIST.json")
-    assert not exists(fpath)
+    fpath = TEST_PATH / "IDONTEXIST.json"
+    assert not Path(fpath).exists()
     with pytest.raises(Exception):
         JSONGrammar("toto", fpath)
 
@@ -211,7 +212,7 @@ def test_write_schema():
     fpath = "out_test.json"
     g.initialize_from_base_dict(typical_data_dict={"X": 1})
     g.write_schema(fpath)
-    assert exists(fpath)
+    assert Path(fpath).exists()
 
 
 def test_set_item():
@@ -231,16 +232,14 @@ def test_set_item():
     "infile", ["grammar_test1.json", "grammar_test2.json", "grammar_test3.json"]
 )
 def test_to_simple_grammar_names(infile):
-    grammar = JSONGrammar(infile, schema_file=join(dirname(__file__), "data", infile))
+    grammar = JSONGrammar(infile, schema_file=TEST_PATH / infile)
     simp = grammar.to_simple_grammar()
     assert sorted(simp.get_data_names()) == sorted(grammar.get_data_names())
     assert grammar.name == simp.name
 
 
 def test_to_simple_grammar_number():
-    grammar = JSONGrammar(
-        "number", schema_file=join(dirname(__file__), "data", "grammar_test1.json")
-    )
+    grammar = JSONGrammar("number", schema_file=TEST_PATH / "grammar_test1.json")
     simp = grammar.to_simple_grammar()
     assert simp.data_types == [Number]
 
@@ -256,9 +255,7 @@ def test_to_simple_grammar_number():
 
 
 def test_to_simple_grammar_array_number():
-    grammar = JSONGrammar(
-        "number", schema_file=join(dirname(__file__), "data", "grammar_test3.json")
-    )
+    grammar = JSONGrammar("number", schema_file=TEST_PATH / "grammar_test3.json")
     simp = grammar.to_simple_grammar()
 
     if PY2:
@@ -279,19 +276,19 @@ def test_to_simple_grammar_string_array(caplog):
     """Check that a warning message is logged when a JSONGrammar has a string array."""
     grammar = JSONGrammar(
         "grammar_with_string_array",
-        schema_file=join(dirname(__file__), "data", "grammar_test4.json"),
+        schema_file=TEST_PATH / "grammar_test4.json",
     )
     caplog.set_level(logging.WARNING)
     grammar.to_simple_grammar()
     expected = (
         "Unsupported type 'string' in JSONGrammar 'grammar_with_string_array' "
-        "for property 'x' in conversion to simple grammar."
+        "for property 'X' in conversion to simple grammar."
     )
     assert expected in caplog.text
 
 
 def test_is_type_array_errors():
-    fpath = join(dirname(__file__), "data", "grammar_test1.json")
+    fpath = TEST_PATH / "grammar_test1.json"
     gram = JSONGrammar(name="toto", schema_file=fpath)
     with pytest.raises(ValueError, match="is not in the grammar"):
         gram.is_type_array("IDONTEXIST")
@@ -322,3 +319,23 @@ def test_description_with_anyof_types_parameter():
     assert properties["Y"]["description"] == description["Y"]
     assert properties["Z"]["anyOf"][0]["description"] == description["Z"]
     assert properties["Z"]["anyOf"][1]["description"] == description["Z"]
+
+
+@pytest.mark.parametrize(
+    "file_name, element, expected",
+    [("grammar_test1.json", "X", True), ("grammar_test3.json", "Z", False)],
+)
+def test_required(file_name, element, expected):
+    """Test that the required data names are handled correctly.
+
+    Args:
+        file_name: The json grammar test file.
+        element: The element of the grammar to test.
+        expected: The expected boolean to get.
+    """
+    fpath = TEST_PATH / file_name
+    gram = JSONGrammar(name="toto", schema_file=fpath)
+    assert expected == gram.is_required(element)
+
+    simple_g = gram.to_simple_grammar()
+    assert expected == simple_g.is_required(element)
