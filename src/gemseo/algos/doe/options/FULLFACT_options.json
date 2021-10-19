@@ -1,0 +1,41 @@
+{
+    "name": "fullfact_options",
+    "description": "General Full-Factorial algorithm from the pyDOE library",
+    "id": "https://pythonhosted.org/pyDOE/factorial.html#general-full-factorial",
+    "properties": {
+        "n_samples":{
+            "type":  ["null", "integer"],
+             "minimum": 1
+        },
+        "levels": {"anyOf":
+        [{
+          "type": ["null","array"],
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+          {"type": "integer",
+            "minimum": 1}
+        ]},
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

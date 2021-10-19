@@ -56,10 +56,11 @@ def test_grammar_fail():
 
     with pytest.raises(
         ValueError,
-        match="Options grammar file .+"
-        " for algorithm: .+"
-        " not found. And library options grammar file .+"
-        " not found either.",
+        match=(
+            "Neither the options grammar file .+ for the algorithm 'unknown' "
+            "nor the options grammar file .+ for the library 'DriverLib' "
+            "has been found."
+        ),
     ):
         DriverLib().init_options_grammar("unknown")
 

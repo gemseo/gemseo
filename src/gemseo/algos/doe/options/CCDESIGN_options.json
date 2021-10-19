@@ -1,0 +1,41 @@
+{
+    "name": "ccdesign_options",
+    "description": "Central-Composite algorithm from the pyDOE library",
+    "id": "https://pythonhosted.org/pyDOE/rsm.html#central-composite",
+    "properties": {
+         "alpha": {
+            "type": "string",
+            "enum": ["orthogonal", "o", "rotatable", "r"]
+        },
+        "face": {
+            "type": "string",
+            "enum": ["circumscribed", "ccc", "inscribed", "cci", "faced", "ccf"]
+        },
+        "center_cc": {
+            "type": ["null","array"],
+            "items":	{
+                		"type": "integer",
+                		"maxItems": 2,
+                		"minItems": 2
+                		}
+        },
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}
