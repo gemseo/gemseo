@@ -1,0 +1,42 @@
+{
+    "name": "lhs_options",
+    "description": "Latin-Hypercube algorithm from the pyDOE library",
+    "id": "https://pythonhosted.org/pyDOE/randomized.html#latin-hypercube",
+    "properties": {
+        "criterion": {
+            "type": ["null", "string"],
+            "enum": ["center", "c", "maximin", "m", "centermaximin", "cm",
+                     "correlation", "corr", null]
+        },
+        "iterations": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "n_samples":{
+            "type":  "integer",
+             "minimum": 1
+        },
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+        "seed": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

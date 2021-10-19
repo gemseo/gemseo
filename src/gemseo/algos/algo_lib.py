@@ -25,7 +25,6 @@ from __future__ import unicode_literals
 
 import inspect
 import logging
-from os.path import dirname, exists, join
 from typing import Any, Dict, List, Mapping, MutableMapping
 
 from numpy import ndarray
@@ -33,6 +32,7 @@ from numpy import ndarray
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
@@ -84,28 +84,27 @@ class AlgoLib(object):
 
         :param algo_name: The name of the algorithm.
         """
-        # Try algo name convention which has the prioryty over
-        # library options
-        basename = algo_name.upper() + "_options.json"
-        lib_dir = inspect.getfile(self.__class__)
-        opt_dir = join(dirname(lib_dir), self.OPTIONS_DIR)
-        algo_schema_file = join(opt_dir, basename)
+        library_directory = Path(inspect.getfile(self.__class__)).parent
+        options_directory = library_directory / self.OPTIONS_DIR
+        algo_schema_file = options_directory / "{}_options.json".format(
+            algo_name.upper()
+        )
+        lib_schema_file = options_directory / "{}_options.json".format(
+            self.__class__.__name__.upper()
+        )
 
-        if exists(algo_schema_file):
+        if algo_schema_file.exists():
             schema_file = algo_schema_file
+        elif lib_schema_file.exists():
+            schema_file = lib_schema_file
         else:
-            # Try to load library options convention by default
-            basename = self.__class__.__name__.upper() + "_options.json"
-            lib_schema_file = join(opt_dir, basename)
-
-            if exists(lib_schema_file):
-                schema_file = lib_schema_file
-            else:
-                msg = "Options grammar file " + algo_schema_file
-                msg += " for algorithm: " + algo_name
-                msg += " not found. And library options grammar file "
-                msg += lib_schema_file + " not found either."
-                raise ValueError(msg)
+            msg = (
+                "Neither the options grammar file {} for the algorithm '{}' "
+                "nor the options grammar file {} for the library '{}' has been found."
+            ).format(
+                algo_schema_file, algo_name, lib_schema_file, self.__class__.__name__
+            )
+            raise ValueError(msg)
 
         descr_dict = get_options_doc(self.__class__._get_options)
         self.opt_grammar = JSONGrammar(

@@ -1,29 +1,16 @@
 {
-    "name": "OPENTURNS_options",
-    "description": "DOE algorithms from the OpenTURNS library",
-    "id": "http://www.openturns.org/",
+    "name": "OT_OPT_LHS_options",
+    "description": "Optimal LHS DOE from the OpenTURNS library",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.OptimalLHSExperiment.html",
     "properties": {
+        "n_samples":{
+            "type": "integer",
+             "minimum": 1
+        },
          "distribution_name": {
             "type": "string",
             "enum": ["Arcsine","Beta","Dirichlet","Normal","TruncatedNormal",
 					 "Triangular","Trapezoidal","Uniform"]
-        },
-        "levels": {"anyOf":
-        [{
-          "type": ["null", "array"],
-          "minItems": 1,
-          "items": {
-            "type": "number",
-            "minimum": 0,
-            "exclusiveMinimum": true
-          }
-        },
-          {"type": "integer",
-            "minimum": 1}
-        ]},
-        "n_samples":{
-            "type": ["null", "integer"],
-             "minimum": 1
         },
         "mu":{
             "type": "number"
@@ -36,24 +23,6 @@
         },
         "end":{
             "type": "number"
-        },
-        "centers": {
-            "type": ["number", "array"],
-            "items":	{
-                		"type": "number",
-                		"minItems": 1
-                		}
-        },
-         "eval_jac":{
-            "type": "boolean"
-        },
-        "n_processes": {
-        	"type" : "integer",
-        	"minimum":1
-        },
-        "wait_time_between_samples": {
-        	"type" : "number",
-        	"minimum":0
         },
          "temperature": {
             "type": "string",
@@ -69,6 +38,17 @@
         "n_replicates": {
         	"type" : "integer",
         	"minimum":1
+        },
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
         },
         "seed": {
                 "type" : "integer",

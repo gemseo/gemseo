@@ -1,0 +1,50 @@
+{
+    "name": "OT_MONTE_CARLO_options",
+    "description": "Monte Carlo DOE from the OpenTURNS library",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.MonteCarloLHS.html",
+    "properties": {
+        "n_samples":{
+            "type": "integer",
+             "minimum": 1
+        },
+         "distribution_name": {
+            "type": "string",
+            "enum": ["Arcsine","Beta","Dirichlet","Normal","TruncatedNormal",
+					 "Triangular","Trapezoidal","Uniform"]
+        },
+        "mu":{
+            "type": "number"
+        },
+        "sigma":{
+            "type": "number"
+        },
+         "start":{
+            "type": "number"
+        },
+        "end":{
+            "type": "number"
+        },
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+        "seed": {
+                "type" : "integer",
+                "minimum":1
+        },
+		"max_time": {
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

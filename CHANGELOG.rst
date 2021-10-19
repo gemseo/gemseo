@@ -95,6 +95,7 @@ Fixed
 - The image comparison tests in post/dataset no longer leave the generated files when completed.
 - DesignSpace no longer logs an erroneous warning when unnormalizing an unbounded variable.
 - Post-processings based on SymLogNorm (matplotlib) now works with Python 3.6.
+- DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 
 Version 3.1.0 (July 2021)
 *************************

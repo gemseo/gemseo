@@ -1,0 +1,45 @@
+{
+    "name": "OT_FULLFACT_options",
+    "description": "Full-factorial DOE based on the Box DOE from the OpenTURNS library",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Box.html",
+    "properties": {
+        "n_samples":{
+            "type":  ["null", "integer"],
+             "minimum": 1
+        },
+        "levels": {"anyOf":
+        [{
+          "type": ["null","array"],
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+          {"type": "integer",
+            "minimum": 1}
+        ]},
+         "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+        "seed": {
+                "type" : "integer",
+                "minimum":1
+        },
+		"max_time": {
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}
