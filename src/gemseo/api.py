@@ -1231,21 +1231,33 @@ def configure_logger(
     >>> import logging
     >>> configure_logger(logging.WARNING)
     """
-    logger = logging.getLogger(logger_name)
+    if logger_name == "GEMSEO":
+        # TODO: deprecate this at some point.
+        # For backward compatibility, create the logger named after the modules
+        # and set an alias pointing to the same logger instance.
+        logger = logging.getLogger("gemseo")
+        logging.Logger.manager.loggerDict["GEMSEO"] = logger
+    else:
+        logger = logging.getLogger(logger_name)
+
     logger.setLevel(level)
     formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
+
     # remove all existing handlers
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
+
     stream_handler = MultiLineStreamHandler()
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
+
     if filename is not None:
         file_handler = MultiLineFileHandler(
             filename, mode=filemode, delay=True, encoding="utf-8"
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
     return logger
 
 
