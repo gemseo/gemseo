@@ -21,8 +21,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
-from os.path import dirname, join
-
 import numpy as np
 import pytest
 from numpy import array, ndarray
@@ -30,6 +28,9 @@ from numpy import array, ndarray
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.utils.py23_compat import Path
+
+TEST_PATH = Path(__file__).parent / "data"
 
 
 def get_indict():
@@ -59,11 +60,11 @@ def get_base_grammar_from_inherit():
 
 def get_base_grammar_from_instanciation():
     my_grammar = SimpleGrammar("CFD_inputs")
-    my_grammar.add_elements(Mach=float)
-    my_grammar.add_elements(Cl=float)
-    my_grammar.add_elements(Turbulence_model=str)
-    my_grammar.add_elements(**{"Navier-Stokes": bool})
-    my_grammar.add_elements(bounds=np.ndarray)
+    my_grammar.update_elements(Mach=float)
+    my_grammar.update_elements(Cl=float)
+    my_grammar.update_elements(Turbulence_model=str)
+    my_grammar.update_elements(**{"Navier-Stokes": bool})
+    my_grammar.update_elements(bounds=np.ndarray)
     return my_grammar
 
 
@@ -130,7 +131,7 @@ def test_update_from():
     with pytest.raises(
         TypeError, match="is not a type and cannot be used as a type specification"
     ):
-        g.add_elements(**{g.data_names[0]: "unknowntype"})
+        g.update_elements(**{g.data_names[0]: "unknowntype"})
 
     my_grammar = SimpleGrammar("toto")
     my_grammar.initialize_from_base_dict({"X": 2})
@@ -177,9 +178,7 @@ def test_get_type_of_data_error():
 )
 def test_update_from_simple_json(infile):
     sgrammar = SimpleGrammar("simple")
-    jgrammar = JSONGrammar(
-        "jgrammar", schema_file=join(dirname(__file__), "data", infile)
-    )
+    jgrammar = JSONGrammar("jgrammar", schema_file=TEST_PATH / infile)
     sgrammar.update_from(jgrammar)
     assert sorted(sgrammar.get_data_names()) == sorted(jgrammar.get_data_names())
 
@@ -189,11 +188,9 @@ def test_update_from_simple_json(infile):
 )
 def test_update_from_ifnotin_simple_json(infile):
     sgrammar = SimpleGrammar("simple")
-    jgrammar = JSONGrammar(
-        "jgrammar", schema_file=join(dirname(__file__), "data", infile)
-    )
+    jgrammar = JSONGrammar("jgrammar", schema_file=TEST_PATH / infile)
     exclude_grammar = JSONGrammar(
-        "jgrammar", schema_file=join(dirname(__file__), "data", "grammar_test1.json")
+        "jgrammar", schema_file=TEST_PATH / "grammar_test1.json"
     )
     sgrammar.update_from_if_not_in(jgrammar, exclude_grammar)
     assert sorted(sgrammar.get_data_names()) == sorted(
@@ -205,7 +202,7 @@ def test_add_remove_item():
     grammar = SimpleGrammar("")
     assert "a" not in grammar
     assert not grammar.is_data_name_existing("a")
-    grammar.add_elements(a=int)
+    grammar.update_elements(a=int)
     assert "a" in grammar.get_data_names()
     assert grammar.is_data_name_existing("a")
     assert "a" in grammar
@@ -235,8 +232,45 @@ def test_array_type():
 
 def test_add_elements():
     grammar = SimpleGrammar("g")
-    grammar.add_elements(x=int)
+    grammar.update_elements(x=int)
     assert "x" in grammar
 
     with pytest.raises(TypeError, match="is not a type"):
-        grammar.add_elements(x=1)
+        grammar.update_elements(x=1)
+
+
+def test_update_required_not_in_grammar():
+    """Test an error is raised when setting a non-existent element as required."""
+    grammar = SimpleGrammar("g")
+
+    with pytest.raises(KeyError, match="Data named x is not in the grammar."):
+        grammar.update_required_elements(x=True)
+
+
+def test_update_required_not_bool():
+    """Test that an error is raised when no boolean value is given to
+    update_required_elements."""
+    grammar = SimpleGrammar("g")
+    grammar.update_elements(x=int)
+
+    with pytest.raises(TypeError, match="Boolean is required for element x."):
+        grammar.update_required_elements(x=int)
+
+
+def test_init_with_required():
+    """Test that the grammar is established correctly when given required elements."""
+    grammar = SimpleGrammar(
+        "g",
+        names_to_types={"toto": str, "foo": int, "toto2": int},
+        required_names={"toto": False, "foo": True},
+    )
+    assert not grammar.is_required("toto")
+    assert grammar.is_required("foo")
+    assert grammar.is_required("toto2")
+
+
+def test_is_required_error():
+    """Check that an error is raised for elements that are not in the grammar."""
+    grammar = SimpleGrammar("g", names_to_types={"toto": str})
+    with pytest.raises(ValueError, match="Element foo is not in the grammar."):
+        grammar.is_required("foo")

@@ -194,6 +194,12 @@ class JSONGrammar(AbstractGrammar):
 
         return dict_of_list
 
+    def is_required(
+        self, element_name  # type: str
+    ):  # type: (...) -> bool
+        required_element_names = self.schema_dict.get("required", [element_name])
+        return element_name in required_element_names
+
     def load_data(
         self,
         data,  # type: MutableMapping[str,ElementType]
@@ -470,7 +476,16 @@ class JSONGrammar(AbstractGrammar):
                     ).format(feature, self.name, property_name)
                     LOGGER.warning(message)
 
-        grammar.add_elements(**names_to_types)
+        grammar.update_elements(**names_to_types)
+
+        required_data_names = self.schema_dict.get("required", [])
+        grammar.update_required_elements(**dict.fromkeys(required_data_names, True))
+
+        optional_data_names = set(self.schema_dict.get("properties", [])) - set(
+            required_data_names
+        )
+        grammar.update_required_elements(**dict.fromkeys(optional_data_names, False))
+
         return grammar
 
     def update_from_if_not_in(

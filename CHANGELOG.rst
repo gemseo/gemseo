@@ -34,6 +34,7 @@ Added
 - A GrammarFactory used by MDODiscipline allows to plug new grammars for data checking.
 - The documentation now includes a link to the gemseo-scilab plugin.
 - ParetoFront: an example of a BiLevel scenario to compute the Pareto front has been added the examples.
+- Scenario, MDOScenario and DOEScenario now include the argument ``grammar_type``.
 
 Changed
 -------

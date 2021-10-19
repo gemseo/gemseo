@@ -280,3 +280,64 @@ class AbstractGrammar(object):
             KeyError: When the element is not in the grammar.
         """
         raise NotImplementedError
+
+    def get_type_from_python_type(
+        self, python_type  # type: type
+    ):  # type: (...) -> type
+        """Return the grammar type that corresponds to a given Python type.
+
+        Args:
+            python_type: The Python type.
+
+        Return:
+            The equivalent grammar type.
+        """
+        raise NotImplementedError
+
+    def update_elements(
+        self,
+        python_typing=False,  # type: bool
+        **elements  # type: Mapping[str,type]
+    ):  # type: (...) -> None
+        """Add or update elements from their names and types.
+
+        >> grammar.update_elements(a=str, b=int)
+        >> grammar.update_elements(a=str, b=int, python_typing=True)
+        >> grammar.update_elements(**names_to_types)
+
+        Args:
+            python_typing: If True, handle automatically the conversion from
+                Python type to grammar type.
+            **elements: The names to types bindings of the elements to add or update.
+        """
+        raise NotImplementedError
+
+    def update_required_elements(
+        self, **elements  # type: Mapping[str, bool]
+    ):  # type: (...) -> None
+        """Add or update the required elements in the grammar.
+
+        Args:
+            **elements: The names of the elements bound to whether they shall be required.
+
+        Raises:
+            KeyError: If a given element name is not in the grammar.
+            TypeError: If a given element name is not associated to a boolean value.
+        """
+        raise NotImplementedError
+
+    def is_required(
+        self, element_name  # type: str
+    ):  # type: (...) -> bool
+        """Check if an element is required in the grammar.
+
+        Args:
+            element_name: The data name to check.
+
+        Returns:
+            Whether the element name is required.
+
+        Raises:
+            ValueError: If the given element is not in the grammar.
+        """
+        raise NotImplementedError

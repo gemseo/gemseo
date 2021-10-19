@@ -58,6 +58,7 @@ class DOEScenario(Scenario):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         **formulation_options  # type: Any
     ):  # type: (...) -> None
         """
@@ -71,6 +72,8 @@ class DOEScenario(Scenario):
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
+            grammar_type: The type of grammar to use for IO declaration
+                , e.g. JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
             **formulation_options: The options
                 to be passed to the :class:`.MDOFormulation`.
         """
@@ -81,6 +84,7 @@ class DOEScenario(Scenario):
             objective_name,
             design_space,
             name,
+            grammar_type,
             **formulation_options
         )
         self.seed = 0
@@ -120,3 +124,11 @@ class DOEScenario(Scenario):
         LOGGER.info("%s", repr(self))
         self._run_algorithm()
         LOGGER.info("*** DOE Scenario run terminated ***")
+
+    def _update_grammar_input(self):  # type: (...) -> None
+        self.input_grammar.update_elements(
+            algo=str, n_samples=int, algo_options=dict, python_typing=True
+        )
+        self.input_grammar.update_required_elements(
+            algo=True, n_samples=False, algo_options=False
+        )

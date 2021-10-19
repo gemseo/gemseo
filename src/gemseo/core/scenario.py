@@ -95,6 +95,7 @@ class Scenario(MDODiscipline):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         **formulation_options  # type: Any
     ):  # type: (...) -> None
         """
@@ -108,6 +109,8 @@ class Scenario(MDODiscipline):
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
+            grammar_type: The type of grammar to use for IO declaration
+                either JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
             **formulation_options: The options
                 to be passed to the :class:`.MDOFormulation`.
         """
@@ -120,10 +123,14 @@ class Scenario(MDODiscipline):
         self._check_disciplines()
         self._init_algo_factory()
         self._form_factory = self._formulation_factory
-        super(Scenario, self).__init__(name=name)
+        super(Scenario, self).__init__(name=name, grammar_type=grammar_type)
         self._init_base_grammar(self.__class__.__name__)
         self._init_formulation(
-            formulation, objective_name, design_space, **formulation_options
+            formulation,
+            objective_name,
+            design_space,
+            grammar_type=grammar_type,
+            **formulation_options
         )
         self.formulation.opt_problem.database.name = self.name
         self.post_factory = PostFactory()
@@ -172,7 +179,9 @@ class Scenario(MDODiscipline):
         comp_dir = str(Path(inspect.getfile(self.__class__)).parent)
         input_grammar_file = self.auto_get_grammar_file(True, name, comp_dir)
         output_grammar_file = self.auto_get_grammar_file(False, name, comp_dir)
-        self._instantiate_grammars(input_grammar_file, output_grammar_file)
+        self._instantiate_grammars(
+            input_grammar_file, output_grammar_file, grammar_type=self.grammar_type
+        )
 
     def set_differentiation_method(
         self,
@@ -517,7 +526,17 @@ class Scenario(MDODiscipline):
         """Update the input grammar from the names of available drivers."""
         available_algos = self.get_available_driver_names()
         algo_grammar = {"type": "string", "enum": available_algos}
-        self.input_grammar.set_item_value("algo", algo_grammar)
+        # TODO: Implement a cleaner solution to handle SimpleGrammar,
+        #  use enum not str.
+
+        if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
+            self.input_grammar.set_item_value("algo", algo_grammar)
+        else:
+            self._update_grammar_input()
+
+    def _update_grammar_input(self):  # type: (...) -> None
+        """Update the inputs of a Grammar."""
+        raise NotImplementedError()
 
     @staticmethod
     def is_scenario():  # type: (...) -> bool

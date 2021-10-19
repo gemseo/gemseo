@@ -40,7 +40,7 @@ from custom_inherit import DocInheritMeta
 from numpy import concatenate, empty, zeros
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammar import AbstractGrammar, InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
@@ -137,7 +137,7 @@ class MDODiscipline(object):
         "_cache_hdf_node_name",
         "_linearize_on_last_state",
         "_cache_was_loaded",
-        "grammar_type",
+        "_grammar_type",
         "comp_dir",
         "exec_for_lin",
         "_in_data_hash_dict",
@@ -180,7 +180,7 @@ class MDODiscipline(object):
         """
         self.input_grammar = None  # : input grammar
         self.output_grammar = None  # : output grammar
-        self.grammar_type = grammar_type
+        self._grammar_type = grammar_type
         self.comp_dir = None
 
         # : data converters between execute and _run
@@ -239,7 +239,7 @@ class MDODiscipline(object):
             output_grammar_file = self.auto_get_grammar_file(False)
 
         self._instantiate_grammars(
-            input_grammar_file, output_grammar_file, grammar_type
+            input_grammar_file, output_grammar_file, self._grammar_type
         )
 
         self.local_data = {}  # : the inputs and outputs data
@@ -331,6 +331,11 @@ class MDODiscipline(object):
         :param value: the value of n_calls_linearize
         """
         self._n_calls_linearize.value = value
+
+    @property
+    def grammar_type(self):  # type: (...) -> AbstractGrammar
+        """The grammar type."""
+        return self._grammar_type
 
     def auto_get_grammar_file(self, is_input=True, name=None, comp_dir=None):
         """Use a naming convention to associate a grammar file to a discipline.

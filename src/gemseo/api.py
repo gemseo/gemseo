@@ -1129,6 +1129,7 @@ def create_scenario(
     design_space,  # type: Union[DesignSpace,str,Path]
     name=None,  # type: Optional[str]
     scenario_type="MDO",  # type: str
+    grammar_type="JSONGrammar",  # type: str
     maximize_objective=False,  # type: bool
     **options  # type: Any
 ):  # type: (...) -> Scenario
@@ -1145,6 +1146,8 @@ def create_scenario(
         name: The name to be given to this scenario.
             If None, use the name of the class.
         scenario_type: The type of the scenario, e.g. "MDO" or "DOE".
+        grammar_type: The type of grammar to use for IO declaration,
+            e.g. "JSONGrammar" or "SimpleGrammar".
         maximize_objective: Whether to maximize the objective.
         **options: The options
             to be passed to the :class:`.MDOFormulation`.
@@ -1182,6 +1185,7 @@ def create_scenario(
             objective_name,
             design_space,
             name,
+            grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options
         )
@@ -1193,6 +1197,7 @@ def create_scenario(
             objective_name,
             design_space,
             name,
+            grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options
         )

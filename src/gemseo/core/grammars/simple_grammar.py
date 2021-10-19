@@ -15,11 +15,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """Most basic grammar implementation."""
-
 import logging
+from collections import defaultdict
 from typing import Any, Iterable, List, Mapping, Optional, Sequence, Union
 
 from numpy import ndarray
+from six import text_type
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
@@ -30,13 +31,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SimpleGrammar(AbstractGrammar):
-    """A Grammar based on the names and types of the elements specified by a
-    dictionnary."""
+    """A grammar based on the names and types of the elements specified by a
+    dictionary."""
 
     def __init__(
         self,
         name,  # type: str
         names_to_types=None,  # type: Optional[Mapping[str,type]]
+        required_names=None,  # type: Optional[Mapping[str,bool]]
         **kwargs  # type: Union[str,Path]
     ):  # type: (...) -> None
         """
@@ -45,6 +47,9 @@ class SimpleGrammar(AbstractGrammar):
             names_to_types: The mapping defining the data names as keys,
                 and data types as values.
                 If None, the grammar is empty.
+            required_names: The mapping defining the required data names as keys,
+                bound to whether the data name is required. If None,
+                all data names are required.
         """
         super(SimpleGrammar, self).__init__(name)
         if names_to_types is None:
@@ -52,6 +57,43 @@ class SimpleGrammar(AbstractGrammar):
         else:
             self._names_to_types = names_to_types
             self._check_types()
+
+        self._default_callable = (
+            lambda: True
+        )  # Callable to be assigned to defaultdict.default_factory at init
+        self._required_names = defaultdict(self._default_callable)
+        self._required_names.update(self._names_to_types)
+
+        if required_names is not None:
+            self._required_names.update(required_names)
+
+    def is_required(
+        self, element_name  # type: str
+    ):  # type: (...) -> bool
+
+        self._required_names.default_factory = None
+
+        try:
+            return self._required_names[element_name]
+        except KeyError:
+            raise ValueError("Element {} is not in the grammar.".format(element_name))
+        finally:
+            self._required_names.default_factory = self._default_callable
+
+    def update_required_elements(
+        self, **elements  # type: Mapping[str, bool]
+    ):  # type: (...) -> None
+
+        for element_name, element_value in elements.items():
+            if element_name not in self._names_to_types:
+                raise KeyError(
+                    "Data named {} is not in the grammar.".format(element_name)
+                )
+            if not isinstance(element_value, bool):
+                raise TypeError(
+                    "Boolean is required for element {}.".format(element_name)
+                )
+        self._required_names.update(elements)
 
     @property
     def data_names(self):  # type: (...) -> List[str]
@@ -79,18 +121,26 @@ class SimpleGrammar(AbstractGrammar):
                     ).format(obj, obj_name, self.name)
                 )
 
-    def add_elements(
-        self, **data  # type: Mapping[str,type]
-    ):  # type: (...) -> Iterable[str]
-        """Add or update elements from their names and types.
+    def get_type_from_python_type(
+        self, python_type  # type: type
+    ):  # type: (...) -> type
 
-        >> grammar.add_elements(a=str, b=int)
-        >> grammar.add_elements(**names_to_types)
+        if python_type == str:
+            return text_type
+        else:
+            return python_type
 
-        Args:
-            names_to_types: The names and types to add.
-        """
-        self._names_to_types.update(**data)
+    def update_elements(
+        self,
+        python_typing=False,  # type: bool
+        **elements  # type: Mapping[str,type]
+    ):  # type: (...) -> None
+
+        if python_typing:
+            for element_name, element_value in elements.items():
+                elements[element_name] = self.get_type_from_python_type(element_value)
+
+        self._names_to_types.update(**elements)
         self._check_types()
 
     def load_data(
@@ -109,6 +159,7 @@ class SimpleGrammar(AbstractGrammar):
         """Check the consistency (name and type) of elements with the grammar.
 
         Args:
+            data: The elements to be checked.
             raise_exception: Whether to raise an exception
                 when the elements are invalid.
 
@@ -130,16 +181,18 @@ class SimpleGrammar(AbstractGrammar):
         error_message = MultiLineString()
         error_message.add("Invalid data in {}", self.name)
         for element_name, element_type in self._names_to_types.items():
-            element_value = data.get(element_name)
-            if element_value is None:
+
+            if element_name not in data and self._required_names[element_name]:
                 failed = True
                 error_message.add(
-                    "Missing mandatory elements: {} in grammar {}.".format(
+                    "Missing mandatory elements: {} in grammar {}".format(
                         element_name, self.name
                     )
                 )
-            elif element_type is not None and not isinstance(
-                element_value, element_type
+            elif (
+                element_name in data
+                and element_type is not None
+                and not isinstance(data.get(element_name), element_type)
             ):
                 failed = True
                 error_message.add(
@@ -148,15 +201,16 @@ class SimpleGrammar(AbstractGrammar):
                     )
                 )
 
-        LOGGER.error(error_message)
-        if failed and raise_exception:
-            raise InvalidDataException(str(error_message))
+        if failed:
+            LOGGER.error(error_message)
+            if raise_exception:
+                raise InvalidDataException(str(error_message))
 
     def initialize_from_base_dict(
         self,
         typical_data_dict,  # type: Mapping[str,Any]
     ):  # type: (...) -> None
-        self.add_elements(
+        self.update_elements(
             **{name: type(value) for name, value in typical_data_dict.items()}
         )
 

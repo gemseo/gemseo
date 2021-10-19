@@ -81,6 +81,7 @@ class MDOScenario(Scenario):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         **formulation_options  # type: Any
     ):  # type: (...) -> None
         """
@@ -94,6 +95,8 @@ class MDOScenario(Scenario):
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
+            grammar_type: The type of grammar to use for IO declaration
+                , e.g. JSON_GRAMMAR_TYPE or SIMPLE_GRAMMAR_TYPE.
             **formulation_options: The options
                 to be passed to the :class:`.MDOFormulation`.
         """
@@ -104,6 +107,7 @@ class MDOScenario(Scenario):
             objective_name,
             design_space,
             name,
+            grammar_type,
             **formulation_options
         )
         self.clear_history_before_run = False
@@ -147,6 +151,14 @@ class MDOScenario(Scenario):
 
     def _init_algo_factory(self):
         self._algo_factory = OptimizersFactory()
+
+    def _update_grammar_input(self):  # type: (...) -> None
+        self.input_grammar.update_elements(
+            algo=str, max_iter=int, algo_options=dict, python_typing=True
+        )
+        self.input_grammar.update_required_elements(
+            algo=True, max_iter=True, algo_options=False
+        )
 
 
 class MDOScenarioAdapter(MDODiscipline):

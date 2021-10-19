@@ -2,7 +2,7 @@
     "name": "grammar_test4",
     "required": ["X"],
     "properties": {
-		"x": {
+		"X": {
             "items": {
                 "type": "string"
             },
