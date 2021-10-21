@@ -68,7 +68,9 @@ class RMSEMeasure(MSEMeasure):
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_learn(samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_learn(
+            samples=samples, multioutput=multioutput
+        )
         return mse ** 0.5
 
     def evaluate_test(
@@ -77,7 +79,9 @@ class RMSEMeasure(MSEMeasure):
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_test(test_data, samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_test(
+            test_data, samples=samples, multioutput=multioutput
+        )
         return mse ** 0.5
 
     def evaluate_kfolds(
@@ -85,8 +89,14 @@ class RMSEMeasure(MSEMeasure):
         n_folds=5,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_kfolds(n_folds, samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_kfolds(
+            n_folds=n_folds,
+            samples=samples,
+            multioutput=multioutput,
+            randomize=randomize,
+        )
         return mse ** 0.5
 
     def evaluate_bootstrap(
@@ -96,6 +106,6 @@ class RMSEMeasure(MSEMeasure):
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_bootstrap(
-            n_replicates, samples, multioutput
+            n_replicates=n_replicates, samples=samples, multioutput=multioutput
         )
         return mse ** 0.5

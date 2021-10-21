@@ -22,6 +22,8 @@
 """Test quality measure module."""
 from __future__ import division, unicode_literals
 
+from unittest.mock import Mock
+
 import pytest
 from numpy import array
 
@@ -76,5 +78,44 @@ def test_is_better():
 
 
 def test_assure_samples(measure):
-    assert measure._assure_samples([1, 2]) == [1, 2]
+    assert measure._assure_samples([1, 2]).tolist() == [1, 2]
     assert measure._assure_samples(None) == array([0])
+
+
+@pytest.fixture
+def algo_with_three_samples():
+    learning_set = Mock()
+    learning_set.n_samples = 5
+    algo = Mock()
+    algo.learning_set = learning_set
+    return algo
+
+
+@pytest.mark.parametrize("samples", [None, [0, 2, 3]])
+@pytest.mark.parametrize("n_folds", [2, 3])
+@pytest.mark.parametrize("randomize", [False, True])
+def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
+    """Check that randomized cross-validation works correctly."""
+    measure = MLQualityMeasure(algo_with_three_samples)
+    folds, final_samples = measure._compute_folds(samples, n_folds, randomize)
+    assert len(folds) == n_folds
+    assert set.union(*(set(fold) for fold in folds)) == set(final_samples)
+    assert sum([len(fold) == 0 for fold in folds]) == 0
+
+    if samples is None:
+        assert set(final_samples) == {0, 1, 2, 3, 4}
+    else:
+        assert set(final_samples) == {0, 2, 3}
+
+    replicates = []
+    for _ in range(10):
+        _, final_samples = measure._compute_folds(samples, n_folds, randomize)
+        replicates.append(final_samples.tolist())
+
+    replicates = array(replicates)
+
+    all_replicates_are_identical = max(replicates.var(0)) == 0
+    if randomize:
+        assert not all_replicates_are_identical
+    else:
+        assert all_replicates_are_identical

@@ -28,7 +28,7 @@ from __future__ import division, unicode_literals
 
 from typing import Dict, List, NoReturn, Optional, Union
 
-from numpy import arange, array_split
+from numpy import arange
 from numpy import delete as npdelete
 from numpy import ndarray, unique
 from numpy.random import choice
@@ -130,16 +130,16 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         n_folds=5,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        indices = self._assure_samples(samples)
-        folds = array_split(indices, n_folds)
+        folds, samples = self._compute_folds(samples, n_folds, randomize)
 
         data = self._get_data()
 
         qualities = []
         for n_fold in range(n_folds):
             test_indices = folds[n_fold]
-            train_indices = npdelete(indices, test_indices)
+            train_indices = npdelete(samples, test_indices)
             self.algo.learn(samples=train_indices)
             test_data = data[test_indices]
             predictions = self.algo.predict(test_data)

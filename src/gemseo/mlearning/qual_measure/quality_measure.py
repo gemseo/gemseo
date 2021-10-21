@@ -25,11 +25,12 @@ The concept of quality measure is implemented with the :class:`.MLQualityMeasure
 """
 from __future__ import division, unicode_literals
 
-from typing import List, NoReturn, Optional, Union
+from typing import List, NoReturn, Optional, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import arange, ndarray
+from numpy import arange, array, array_split, ndarray
+from numpy.random import shuffle
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -159,13 +160,16 @@ class MLQualityMeasure(object):
             The value of the quality measure.
         """
         n_samples = self.algo.learning_set.n_samples
-        return self.evaluate_kfolds(n_folds=n_samples, multioutput=multioutput)
+        return self.evaluate_kfolds(
+            samples=samples, n_folds=n_samples, multioutput=multioutput
+        )
 
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using the k-folds technique.
 
@@ -175,6 +179,7 @@ class MLQualityMeasure(object):
                 If None, use the whole learning dataset.
             multioutput: If True, return the quality measure for each
                 output component. Otherwise, average these measures.
+            randomize: Whether to shuffle the samples before dividing them in folds.
 
         Returns:
             The value of the quality measure.
@@ -231,7 +236,7 @@ class MLQualityMeasure(object):
 
     def _assure_samples(
         self,
-        samples,  # type: List[int]
+        samples,  # type: Optional[List[int]]
     ):  # type: (...) -> Union[List[int],ndarray]
         """Get the list of all samples if samples is None.
 
@@ -242,5 +247,29 @@ class MLQualityMeasure(object):
             The samples.
         """
         if samples is None:
-            samples = arange(self.algo.learning_set.n_samples)
-        return samples
+            return arange(self.algo.learning_set.n_samples)
+        else:
+            return array(samples)
+
+    def _compute_folds(
+        self,
+        samples,  # type: Optional[List[int]]
+        n_folds,  # type: int
+        randomize,  # type: bool
+    ):  # type: (...) -> Tuple[List[ndarray],Union[List[int],ndarray]]
+        """Divide the elements into folds.
+
+        Args:
+            samples: The samples to be split into folds.
+                If None, use all the samples.
+            n_folds: The number of folds.
+            randomize: Whether to shuffle the elements before splitting them.
+
+        Returns:
+            * The folds defined as sub-sets of `samples`.
+            * The original samples.
+        """
+        samples = self._assure_samples(samples)
+        if randomize:
+            shuffle(samples)
+        return array_split(samples, n_folds), samples
