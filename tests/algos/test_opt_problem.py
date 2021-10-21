@@ -21,7 +21,6 @@
 
 from __future__ import division, unicode_literals
 
-import timeit
 from functools import partial
 from unittest import mock
 
@@ -571,6 +570,11 @@ def test_add_listeners():
 
 
 def test_append_export(tmp_wd):
+    """Test the export of an HDF5 file with append mode.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
     problem = Rosenbrock()
     problem.preprocess_functions()
     func = problem.objective
@@ -583,9 +587,7 @@ def test_append_export(tmp_wd):
         func(array([0.1, 1.0 / (i + 1.0)]))
 
     # Export again with append mode
-    t0 = timeit.default_timer()
     problem.export_hdf(file_path_db, append=True)
-    dt1 = timeit.default_timer() - t0
 
     read_db = Database(file_path_db)
     assert len(read_db) == n_calls
@@ -593,14 +595,10 @@ def test_append_export(tmp_wd):
     i += 1
     func(array([0.1, 1.0 / (i + 1.0)]))
 
-    # Export again with append mode and check that it is much faster
-    t0 = timeit.default_timer()
+    # Export again with identical elements plus a new one.
     problem.export_hdf(file_path_db, append=True)
-    dt2 = timeit.default_timer() - t0
     read_db = Database(file_path_db)
     assert len(read_db) == n_calls + 1
-
-    assert dt1 / dt2 > 2.0  # 70 in practice
 
 
 def test_grad_normalization(pow2_problem):
