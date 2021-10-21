@@ -22,14 +22,14 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from numpy import array
 from numpy import int as np_int
 from sklearn import cluster
 from sklearn.preprocessing import StandardScaler
 
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
@@ -56,9 +56,14 @@ class KMeans(OptPostProcessor):
         directory_path=None,  # type: Optional[Union[str,Path]]
         file_name=None,  # type: Optional[str]
         file_extension=None,  # type: Optional[str]
-        **options  # type: OptPostProcessorOptionType
+        fig_size=None,  # type: Optional[Tuple[float, float]]
+        n_clusters=5,  # type: int
     ):  # type: (...) -> None
-        self.__build_clusters(**options)
+        """
+        Args:
+            n_clusters: The number of clusters.
+        """
+        self.__build_clusters(n_clusters=n_clusters)
 
     def __build_clusters(
         self,

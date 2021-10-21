@@ -973,7 +973,7 @@ class OptimizationProblem(object):
         use_database=True,  # type: bool
         round_ints=True,  # type: bool
     ):  # type: (...) -> None
-        """Pre-process all the functions and eventually the gradien.
+        """Pre-process all the functions and eventually the gradient.
 
         Required to wrap the objective function and constraints with the database
         and eventually the gradients by complex step or finite differences.

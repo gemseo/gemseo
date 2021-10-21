@@ -20,15 +20,17 @@
         "directory_path": {
             "type": ["string", "null"]
         },
-        "fig_size": {
-            "type": "array",
-            "minItems": 2,
-            "maxItems": 2,
-            "items": {
-                "type": "number"
+        "fig_size": {"anyOf":[
+            {"type": "null"},
+            {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                    "type": "number"
+                }
             }
-
-        }
+        ]}
     },
     "additionalProperties": false,
     "$schema": "http://json-schema.org/draft-04/schema",

@@ -26,6 +26,7 @@ PyDOE algorithms wrapper
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Optional, Sequence, Tuple
 
 from numpy import array, ndarray
 from numpy.random import RandomState
@@ -113,53 +114,41 @@ class PyDOE(DOELibrary):
 
     def _get_options(
         self,
-        alpha="orthogonal",
-        face="faced",
-        criterion=None,
-        iterations=5,
-        eval_jac=False,
-        center_bb=None,
-        center_cc=None,
-        n_samples=None,
-        levels=None,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        seed=1,
-        max_time=0,
+        alpha="orthogonal",  # type: str
+        face="faced",  # type: str
+        criterion=None,  # type: Optional[str]
+        iterations=5,  # type: int
+        eval_jac=False,  # type: bool
+        center_bb=None,  # type: Optional[int]
+        center_cc=None,  # type: Optional[Tuple[int,int]]
+        n_samples=None,  # type: Optional[int]
+        levels=None,  # type: Optional[Sequence[int]]
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        seed=1,  # type: int
+        max_time=0,  # type: float
         **kwargs
     ):  # pylint: disable=W0221
-        """Sets the options.
+        """Set the options.
 
-        :param alpha: effect the variance, either "orthogonal" or "rotatable"
-        :type alpha: str
-        :param face: The relation between the start points and the corner
-            (factorial) points, either "circumscribed", "inscribed" or "faced"
-        :type face: str
-        :param criterion: Default value = None)
-        :type criterion:
-        :param iterations: Default value = 5)
-        :type iterations:
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param center_bb: number of center points for Box-Behnken design
-        :type center_bb: int
-        :param center_cc: 2-tuple of center points for the central
-            composite design
-        :type center_cc: tuple
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param levels: level in each direction for the full-factorial design
-        :type levels: array
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param seed: seed value.
-        :type seed: int
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            alpha: effect the variance, either "orthogonal" or "rotatable"
+            face: The relation between the start points and the corner
+                (factorial) points, either "circumscribed", "inscribed" or "faced".
+            criterion: Default value = None.
+            iterations: The number of iterations.
+            eval_jac: Whether to evaluate the jacobian.
+            center_bb: The number of center points for Box-Behnken design.
+            center_cc: The center points for the central
+                composite design.
+            n_samples: The number of samples.
+            levels: The level in each direction for the full-factorial design.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            seed: The seed value.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
         """
         if center_cc is None:
             center_cc = [4, 4]

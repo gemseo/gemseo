@@ -111,7 +111,7 @@ class GSNewtonMDA(MDASequential):
         self,
         disciplines,  # type: Sequence[MDODiscipline]
         name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         tolerance=1e-6,  # type: float
         max_mda_iter=10,  # type: int
         relax_factor=0.99,  # type: float
@@ -132,6 +132,8 @@ class GSNewtonMDA(MDASequential):
                 to be used to solve the Newton problem.
             max_mda_iter_gs: The maximum number of iterations
                 of the Gauss-Seidel solver.
+            log_convergence: Whether to log the MDA convergence,
+                expressed in terms of normed residuals.
             **newton_mda_options: The options passed to :class:`.MDANewtonRaphson`.
         """
         mda_gs = MDAGaussSeidel(

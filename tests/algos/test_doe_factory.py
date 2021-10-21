@@ -23,20 +23,60 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+import pytest
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_pydoe import PyDOE
 
 
-class TestDOEFactory(unittest.TestCase):
-    """"""
+@pytest.fixture
+def factory():
+    """The DOE factory."""
+    return DOEFactory()
 
-    def test_is_available_error(self):
-        """"""
-        factory = DOEFactory()
-        self.assertFalse(factory.is_available("None"))
 
-    def test_error(self):
-        """"""
-        factory = DOEFactory()
-        self.assertRaises(Exception, lambda: factory.create("idontexist"))
+def test_is_available(factory):
+    """Check that the method is_available works."""
+    assert factory.is_available("fullfact")
+    assert not factory.is_available("unknown_algo_name")
+
+
+def test_algorithms(factory):
+    """Check that the property algorithms works."""
+    assert "fullfact" in factory.algorithms
+
+
+def test_algo_names_to_libraries(factory):
+    """Check that the property algo_names_to_libraries works."""
+    assert factory.algo_names_to_libraries["fullfact"] == "PyDOE"
+
+
+def test_libraries(factory):
+    """Check that the property libraries works."""
+    assert {"CustomDOE", "DiagonalDOE", "PyDOE"} <= set(factory.libraries)
+
+
+def test_create_from_algo_name(factory):
+    """Check that the method create works from an algorithm name."""
+    lib = factory.create("fullfact")
+    assert isinstance(lib, PyDOE)
+    assert lib.algo_name == "fullfact"
+
+
+def test_create_from_library_name(factory):
+    """Check that the method create works from a DOE library name."""
+    lib = factory.create("PyDOE")
+    assert isinstance(lib, PyDOE)
+    assert lib.algo_name is None
+
+
+def test_create_from_unknown_name(factory):
+    """Check that the method create raises an ImportError from an unknown name."""
+    with pytest.raises(
+        ImportError,
+        match=(
+            "No algorithm or library of algorithms named 'unknown_name' "
+            "is available; available algorithms are .+"
+        ),
+    ):
+        factory.create("unknown_name")

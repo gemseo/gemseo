@@ -23,6 +23,7 @@
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any
 
 from numpy import isfinite, real
 from scipy import optimize
@@ -84,55 +85,81 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        max_iter=999,
-        ftol_rel=1e-9,
-        ftol_abs=1e-9,
-        xtol_rel=1e-9,
-        xtol_abs=1e-9,
-        workers=1,
-        updating="immediate",
-        atol=0,
-        init="latinhypercube",
-        recombination=0.7,
-        tol=0.01,
-        popsize=15,
-        strategy="best1bin",
-        sampling_method="simplicial",
-        niters=1,
-        n=100,
-        seed=1,
-        polish=True,
-        **kwargs
+        max_iter=999,  # type: int
+        ftol_rel=1e-9,  # type: float
+        ftol_abs=1e-9,  # type: float
+        xtol_rel=1e-9,  # type: float
+        xtol_abs=1e-9,  # type: float
+        workers=1,  # type: int
+        updating="immediate",  # type: str
+        atol=0,  # type: float
+        init="latinhypercube",  # type: str
+        recombination=0.7,  # type: float
+        tol=0.01,  # type: float
+        popsize=15,  # type: int
+        strategy="best1bin",  # type: str
+        sampling_method="simplicial",  # type: str
+        niters=1,  # type: int
+        n=100,  # type: int
+        seed=1,  # type: int
+        polish=True,  # type: bool
+        **kwargs  # type: Any
     ):  # pylint: disable=W0221
-        r"""Sets the options default values
+        r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
         go to scipy.optimize documentation:
         https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
-        :param max_iter: maximum number of iterations, ie unique calls to f(x)
-        :type max_iter: int
-        :param ftol_rel: stop criteria, relative tolerance on the
-               objective function,
-               if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_rel: float
-        :param ftol_abs: stop criteria, absolute tolerance on the objective
-               function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_abs: float
-        :param xtol_rel: stop criteria, relative tolerance on the
-               design variables,
-               if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop
-               (Default value = 1e-9)
-        :type xtol_rel: float
-        :param xtol_abs: stop criteria, absolute tolerance on the
-               design variables,
-               if norm(xk-xk+1)<= xtol_abs: stop
-               (Default value = 1e-9)
-        :type xtol_abs: float
-        :param kwargs: other algorithms options
-        :type kwargs: kwargs
+        Args:
+            max_iter: The maximum number of iterations, i.e. unique calls to f(x).
+            ftol_rel: stop criteria, relative tolerance on the
+                objective function,
+                if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop
+            ftol_abs: stop criteria, absolute tolerance on the objective
+                function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop
+            xtol_rel: stop criteria, relative tolerance on the
+                design variables,
+                if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop
+            xtol_abs: stop criteria, absolute tolerance on the
+                design variables,
+                if norm(xk-xk+1)<= xtol_abs: stop
+            seed: Used for repeatable minimizations.
+                If None, the ``numpy.random.RandomState`` singleton is used.
+            strategy: The differential evolution strategy to use.
+            tol: The relative tolerance for convergence.
+            atol: The absolute tolerance for convergence.
+            mutation: The mutation constant.
+            recombination: The recombination constant.
+            polish: Whether to use the L-BFGS-B algorithm
+                to polish the best population member at the end.
+            init: Either the type of population initialization to be used
+                or an array specifying the initial population.
+            updating: If ``"immediate"``,
+                the best solution vector is continuously updated
+                within a single generation.
+                With 'deferred',
+                the best solution vector is updated once per generation.
+                Only 'deferred' is compatible with parallelization,
+                and the ``workers`` keyword can over-ride this option.
+            workers: Used for multi-processing.
+            initial_temp: The initial temperature.
+            visit: The parameter for visiting distribution.
+            restart_temp_ratio:
+            accept: The parameter for acceptance distribution.
+            n: The number of sampling points
+                used in the construction of the simplicial complex.
+            iters: The number of iterations
+                used in the construction of the simplicial complex.
+            sampling_method: The method to compute the initial points.
+                Current built in sampling method options
+                are ``halton``, ``sobol`` and ``simplicial``.
+            popsize: A multiplier for setting the total population size.
+                restart_temp_ratio: During the annealing process,
+                temperature is decreasing,
+                when it reaches ``initial_temp * restart_temp_ratio``,
+                the reannealing process is triggered.
+            **kwargs: other algorithms options
         """
         popts = self._process_options(
             max_iter=max_iter,

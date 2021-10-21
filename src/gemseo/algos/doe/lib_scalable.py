@@ -25,6 +25,7 @@ Build a diagonal DOE for scalable model construction
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Optional, Sequence
 
 from numpy import array
 
@@ -54,31 +55,26 @@ class DiagonalDOE(DOELibrary):
 
     def _get_options(
         self,
-        eval_jac=False,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        n_samples=1,
-        reverse=None,
-        max_time=0,
+        eval_jac=False,  # type: bool
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        n_samples=1,  # type: int
+        reverse=None,  # type: Optional[Sequence[str]]
+        max_time=0,  # type: int
         **kwargs
     ):  # pylint: disable=W0221
-        """Sets the options.
+        """Set the options.
 
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param reverse: list of dimensions or variables to sample from their
-            upper bounds to their lower bounds. Default: None.
-        :type reverse: list(str)
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            eval_jac: Whether to evaluate jacobian.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            n_samples: The number of samples.
+            reverse: The dimensions or variables to sample from their
+                upper bounds to their lower bounds.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
         """
         wtbs = wait_time_between_samples
         return self._process_options(

@@ -26,7 +26,7 @@
 .. _conventional commits: https://www.conventionalcommits.org
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
-.. _editable mode: https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
+.. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
 .. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
 .. _mypy: http://mypy-lang.org
 .. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types

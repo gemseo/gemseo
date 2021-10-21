@@ -26,7 +26,7 @@ OpenTUNRS DOE algorithms wrapper
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable
+from typing import Iterable, Optional, Sequence
 
 import openturns
 from matplotlib import pyplot as plt
@@ -221,69 +221,52 @@ class OpenTURNS(DOELibrary):
 
     def _get_options(
         self,
-        distribution_name="Uniform",  # pylint: disable=W0221
-        levels=None,
-        centers=None,
-        eval_jac=False,
-        n_samples=None,
-        mu=0.5,
-        sigma=None,
-        start=0.25,
-        end=0.75,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        criterion="C2",
-        temperature="Geometric",
-        annealing=True,
-        n_replicates=1000,
-        seed=1,
-        max_time=0,
+        distribution_name="Uniform",  # type: str
+        levels=None,  # type: Optional[int,Sequence[int]]
+        centers=None,  # type: Optional[Sequence[int]]
+        eval_jac=False,  # type: bool
+        n_samples=None,  # type: Optional[int]
+        mu=0.5,  # type: float
+        sigma=None,  # type: Optional[float]
+        start=0.25,  # type: float
+        end=0.75,  # type: float
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        criterion="C2",  # type: str
+        temperature="Geometric",  # type: str
+        annealing=True,  # type: bool
+        n_replicates=1000,  # type: int
+        seed=1,  # type: int
+        max_time=0,  # type: float
         **kwargs
     ):
-        """Sets the options.
+        """Set the options.
 
-        :param distribution_name: distribution name
-        :type distribution_name: str
-        :param levels: levels for axial, full-factorial (box), factorial
-            and composite designs
-        :type levels: array
-        :param centers: centers for axial, factorial and composite designs
-        :type centers: array
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param mu: mean of a random variable for beta, normal and
-            truncated normal distributions
-        :type mu: float
-        :param sigma: standard deviation for beta, normal and
-            truncated normal distributions
-        :type sigma: float
-        :param start: level start for trapezoidal distribution
-        :type start: float
-        :param end: level end for trapezoidal distribution
-        :type end: float
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param criterion: space-filling criterion, either "C2", "PhiP" or "MinDist".
-            Default: "C2".
-        :type criterion: str
-        :param temperature: temperature profil for simulated annealing,
-            either "Geometric" or "Linear". Default: "Geometric".
-        :param annealing: if True, use simulated annealing to optimize LHS. Otherwise,
-            use crude Monte Carlo. Default: True.
-        :type annealing: bool
-        :param n_replicates: number of Monte Carlo replicates to optimize LHS.
-            Default: 1000.
-        :type n_replicates: int
-        :param seed: seed value.
-        :type seed: int
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            distribution_name: The distribution name.
+            levels: The levels for axial, full-factorial (box), factorial
+                and composite designs.
+            centers: The centers for axial, factorial and composite designs.
+            eval_jac: Whether to evaluate the jacobian.
+            n_samples: The number of samples.
+            mu: The mean of a random variable for beta, normal and
+                truncated normal distributions.
+            sigma: The standard deviation for beta, normal and
+                truncated normal distributions.
+            start: The start level for the trapezoidal distribution.
+            end: The end level for the trapezoidal distribution.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            criterion: The space-filling criterion, either "C2", "PhiP" or "MinDist".
+            temperature: The temperature profile for simulated annealing,
+                either "Geometric" or "Linear".
+            annealing: If True, use simulated annealing to optimize LHS. Otherwise,
+                use crude Monte Carlo.
+            n_replicates: The number of Monte Carlo replicates to optimize LHS.
+            seed: The seed value.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
         """
         if centers is None:
             centers = [0.5]

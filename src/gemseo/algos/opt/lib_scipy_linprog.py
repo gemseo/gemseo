@@ -19,6 +19,8 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
+from typing import Any, Callable, Optional
+
 from numpy import isfinite
 from scipy.optimize import linprog
 
@@ -90,41 +92,39 @@ class ScipyLinprog(OptimizationLibrary):
         for algo_dict in self.lib_dict.values():
             algo_dict.update(common_items)
 
-    def _get_options(  # pylint: disable=W0221
+    def _get_options(
         self,
-        max_iter=999,
-        autoscale=False,
-        presolve=True,
-        redundancy_removal=True,
-        callback=None,
-        verbose=False,
-        normalize_design_space=True,
-        **kwargs
+        max_iter=999,  # type: int
+        autoscale=False,  # type: bool
+        presolve=True,  # type: bool
+        redundancy_removal=True,  # type: bool
+        callback=None,  # type: Optional[Callable]
+        verbose=False,  # type: bool
+        normalize_design_space=True,  # type: bool
+        disp=False,  # type: bool
+        **kwargs  # type: Any
     ):
-        """Retrieve the options of the library. Defines default values for options using
-        keyword arguments.
+        """Retrieve the options of the library.
 
-        :param max_iter: maximum number of iterations, i.e. unique calls to the
-            objective function
-        :type max_iter: int, optional
-        :param autoscale: if True then the linear problem is scaled
-            Refer to the SciPy documentation for more details.
-        :type autoscale: bool, optional
-        :param presolve: if True then attempt to detect infeasibility,
-            unboundedness or problem simplifications before solving
-            Refer to the SciPy documentation for more details.
-        :type presolve: bool, optional
-        :param redundancy_removal: if True then linearly dependent
-            equality-constraints are removed
-        :type redundancy_removal: bool, optional
-        :param verbose: if True then convergence messages are printed
-        :type verbose: bool, optional
-        :param callback: function to be called at least once per iteration
-            Takes a scipy.optimize.OptimizeResult as single argument.
-            Refer to the SciPy documentation for more details.
-        :type callback: callable, optional
-        :param kwargs: other algorithms options
-        :type kwargs: kwargs
+        Defines default values for options using keyword arguments.
+
+        Args:
+            max_iter: The maximum number of iterations, i.e. unique calls to the
+                objective function.
+            autoscale: If True, scale the linear problem.
+                Refer to the SciPy documentation for more details.
+            presolve: If True, attempt to detect infeasibility,
+                unboundedness or problem simplifications before solving.
+                Refer to the SciPy documentation for more details.
+            redundancy_removal: If True, remove linearly dependent
+                equality-constraints.
+            verbose: If True, then convergence messages are printed.
+            callback: A function to be called at least once per iteration.
+                Takes a scipy.optimize.OptimizeResult as single argument.
+                Refer to the SciPy documentation for more details.
+            disp: Whether to print convergence messages.
+            normalize_design_space: If True, scales variables in [0, 1].
+            **kwargs: The other algorithms options.
         """
         normalize_ds = normalize_design_space
         options = self._process_options(

@@ -60,7 +60,7 @@ class MDAChain(MDA):
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]
-        sub_mda_class="MDAJacobi",
+        sub_mda_class="MDAJacobi",  # type: str
         max_mda_iter=20,  # type: int
         name=None,  # type: Optional[str]
         n_processes=N_CPUS,  # type: int
@@ -78,6 +78,8 @@ class MDAChain(MDA):
     ):
         """
         Args:
+            sub_mda_class: The class name of the sub-MDA.
+            n_processes: The number of processes.
             chain_linearize: Whether to linearize the chain of execution.
                 Otherwise, linearize the overall MDA with base class method.
                 This last option is preferred to minimize computations in adjoint mode,
