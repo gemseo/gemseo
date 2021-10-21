@@ -18,31 +18,29 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
-"""
-Build a diagonal DOE for scalable model construction
-****************************************************
-"""
+"""Build a diagonal DOE for scalable model construction."""
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence, Union
 
-from numpy import array
+from numpy import array, ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+
+OptionType = Optional[Union[str, int, float, bool, Sequence[str]]]
 
 LOGGER = logging.getLogger(__name__)
 
 
 class DiagonalDOE(DOELibrary):
 
-    """Class used for creation of a diagonal DOE."""
+    """Class used to create a diagonal DOE."""
 
     ALGO_LIST = ["DiagonalDOE"]
     ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
 
     def __init__(self):
-        """Constructor, initializes the DOE samples."""
         super(DiagonalDOE, self).__init__()
 
         for algo in self.ALGO_LIST:
@@ -61,8 +59,8 @@ class DiagonalDOE(DOELibrary):
         n_samples=1,  # type: int
         reverse=None,  # type: Optional[Sequence[str]]
         max_time=0,  # type: int
-        **kwargs
-    ):  # pylint: disable=W0221
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
         """Set the options.
 
         Args:
@@ -71,10 +69,13 @@ class DiagonalDOE(DOELibrary):
             wait_time_between_samples: The waiting time between two samples.
             n_samples: The number of samples.
             reverse: The dimensions or variables to sample from their
-                upper bounds to their lower bounds.
+                upper bounds to their lower bounds. If None, reverse = [].
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             **kwargs: The additional arguments.
+
+        Returns:
+            The processed options.
         """
         wtbs = wait_time_between_samples
         return self._process_options(
@@ -87,11 +88,17 @@ class DiagonalDOE(DOELibrary):
             **kwargs
         )
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the DOE samples.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see the associated JSON file.
+
+        Return:
+            The DOE samples.
         """
         reverse = options.get("reverse", [])
         if reverse is None:

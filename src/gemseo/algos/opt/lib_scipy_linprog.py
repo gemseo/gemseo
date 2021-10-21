@@ -19,10 +19,10 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from numpy import isfinite
-from scipy.optimize import linprog
+from scipy.optimize import OptimizeResult, linprog
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
@@ -98,33 +98,37 @@ class ScipyLinprog(OptimizationLibrary):
         autoscale=False,  # type: bool
         presolve=True,  # type: bool
         redundancy_removal=True,  # type: bool
-        callback=None,  # type: Optional[Callable]
+        callback=None,  # type: Optional[Callable[[OptimizeResult], Any]]
         verbose=False,  # type: bool
         normalize_design_space=True,  # type: bool
         disp=False,  # type: bool
         **kwargs  # type: Any
-    ):
+    ):  # type: (...) -> Dict[str, Any]
         """Retrieve the options of the library.
 
-        Defines default values for options using keyword arguments.
+        Define the default values for the options using the keyword arguments.
 
         Args:
             max_iter: The maximum number of iterations, i.e. unique calls to the
                 objective function.
-            autoscale: If True, scale the linear problem.
+            autoscale: If True, then the linear problem is scaled.
                 Refer to the SciPy documentation for more details.
-            presolve: If True, attempt to detect infeasibility,
+            presolve: If True, then attempt to detect infeasibility,
                 unboundedness or problem simplifications before solving.
                 Refer to the SciPy documentation for more details.
-            redundancy_removal: If True, remove linearly dependent
-                equality-constraints.
-            verbose: If True, then convergence messages are printed.
+            redundancy_removal: If True, then linearly dependent
+                equality-constraints are removed.
             callback: A function to be called at least once per iteration.
                 Takes a scipy.optimize.OptimizeResult as single argument.
+                If None, no function is called.
                 Refer to the SciPy documentation for more details.
-            disp: Whether to print convergence messages.
+            verbose: If True, then the convergence messages are printed.
             normalize_design_space: If True, scales variables in [0, 1].
-            **kwargs: The other algorithms options.
+            disp: Whether to print convergence messages.
+            **kwargs: The other algorithm's options.
+
+        Returns:
+            The processed options.
         """
         normalize_ds = normalize_design_space
         options = self._process_options(
@@ -139,13 +143,16 @@ class ScipyLinprog(OptimizationLibrary):
         )
         return options
 
-    def _run(self, **options):
+    def _run(
+        self, **options  # type: Any
+    ):  # type: (...) -> OptimizationResult
         """Run the algorithm.
 
-        :param options: options dictionary for the algorithm
-        :type options: dict
-        :returns: the optimization result
-        :rtype: OptimizationResult
+        Args:
+            **options: options dictionary for the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # Remove the normalization option from the algorithm options
         options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)

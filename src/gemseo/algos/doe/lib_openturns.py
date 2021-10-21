@@ -19,14 +19,11 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-OpenTUNRS DOE algorithms wrapper
-********************************
-"""
+"""OpenTUNRS DOE algorithms wrapper."""
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, Optional, Sequence
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import openturns
 from matplotlib import pyplot as plt
@@ -38,6 +35,8 @@ from openturns.viewer import View
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.string_tools import MultiLineString
+
+OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -238,21 +237,26 @@ class OpenTURNS(DOELibrary):
         n_replicates=1000,  # type: int
         seed=1,  # type: int
         max_time=0,  # type: float
-        **kwargs
-    ):
-        """Set the options.
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str,OptionType]
+        r"""Set the options.
 
         Args:
             distribution_name: The distribution name.
             levels: The levels for axial, full-factorial (box), factorial
-                and composite designs.
+                and composite designs. If None, the number of samples is
+                used in order to deduce the levels.
             centers: The centers for axial, factorial and composite designs.
+                If None, centers = 0.5.
             eval_jac: Whether to evaluate the jacobian.
-            n_samples: The number of samples.
+            n_samples: The number of samples. If None, the algorithm uses
+                the number of levels per input dimension provided by the
+                argument ``levels``.
             mu: The mean of a random variable for beta, normal and
                 truncated normal distributions.
             sigma: The standard deviation for beta, normal and
-                truncated normal distributions.
+                truncated normal distributions. If None,
+                :math:`\sigma = 0.447214 * 0.5`.
             start: The start level for the trapezoidal distribution.
             end: The end level for the trapezoidal distribution.
             n_processes: The number of processes.
@@ -267,6 +271,9 @@ class OpenTURNS(DOELibrary):
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             **kwargs: The additional arguments.
+
+        Returns:
+            The processed options.
         """
         if centers is None:
             centers = [0.5]
@@ -296,10 +303,21 @@ class OpenTURNS(DOELibrary):
 
         return popts
 
-    def __set_level_option(self, options):
-        """Check that level options is properly defined for stratified DOE.
+    def __set_level_option(
+        self, options  # type: Mapping[str,OptionType]
+    ):  # type: (...) -> Dict[str,OptionType]
+        """Check the `levels` option definition for a stratified DOE.
 
-        :param options: the options dict for the DOE
+        Args:
+            options: The options for the DOE.
+
+        Returns:
+            The options for the DOE.
+
+        Raises:
+            ValueError: If the upper bound of levels is greater than 1.
+                If the lower bound of levels is lower than 0.
+            TypeError: If `levels` is given with a wrong type.
         """
         option = options[self.LEVEL_KEYWORD]
         if isinstance(option, (list, tuple)):
@@ -324,11 +342,24 @@ class OpenTURNS(DOELibrary):
             )
         return options
 
-    def __set_center_option(self, dimension, options):
-        """Check that center level options is properly defined for stratified DOE.
+    def __set_center_option(
+        self,
+        dimension,  # type: int
+        options,  # type: Mapping[str,OptionType]
+    ):  # type: (...) -> Dict[str,OptionType]
+        """Check the `centers` option definition for a stratified DOE.
 
-        :param str dimension: parameter space dimension.
-        :param options: the options dict for the DOE
+        Args:
+            dimension: The parameter space dimension.
+            options: The options for the DOE.
+
+        Returns:
+            The options for the DOE.
+
+        Raises:
+            ValueError: If the length of `centers` is inconsistent with the
+                design vector size.
+            TypeError: If `centers` is given with the wrong type.
         """
         center = options[self.CENTER_KEYWORD]
         if isinstance(center, (list, tuple)):
@@ -349,11 +380,19 @@ class OpenTURNS(DOELibrary):
             )
         return options
 
-    def __get_distribution(self, options):
-        """If no distribution is provided (a name or a list of composed distributions)
-        then a default setting is done.
+    def __get_distribution(
+        self, options  # type: Mapping[str,OptionType]
+    ):  # type: (...) -> Tuple[str, Dict[str,OptionType]]
+        """Set the distribution to be used.
 
-        :param options: the options dict for the distribution
+        If no distribution is provided (a name or a list of composed distributions)
+        then the `DISTRIBUTION_DEFAULT` is used.
+
+        Args:
+            options: The options for the DOE.
+
+        Returns:
+            The distribution name and the options for the DOE.
         """
         if self.DISTRIBUTION_KEYWORD in options:
             distribution_name = options[self.DISTRIBUTION_KEYWORD]
@@ -362,11 +401,17 @@ class OpenTURNS(DOELibrary):
             distribution_name = self.DISTRIBUTION_DEFAULT
         return distribution_name, options
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see associated JSON file.
+
+        Returns:
+            The samples for the DOE.
         """
         self.seed += 1
         dimension = options.pop(self.DIMENSION)
@@ -399,20 +444,32 @@ class OpenTURNS(DOELibrary):
         return samples
 
     @staticmethod
-    def __check_float(options, keyword, default=0, u_b=None, l_b=None):
-        """Base function to check if the keyword exist in dictionary and set a default
-        value.
+    def __check_float(
+        options,  # type: Mapping[str,OptionType]
+        keyword,  # type: str
+        default=0,  # type: float
+        u_b=None,  # type: Optional[float]
+        l_b=None,  # type: Optional[float]
+    ):  # type: (...) -> Dict[str,OptionType]
+        """Check if `keyword` exists in `options` and set a default value.
 
-        :param options: dictionary of optional parameters
-        :type  options: dictionary
-        :param keyword: name of the optional keyword
-        :type  keyword: string
-        :param default: default value
-        :type  default: float
-        :param u_b: upper bound
-        :type  u_b: float
-        :param l_b: lower bound
-        :type  l_b: float
+        Args:
+            options: The optional parameters.
+            keyword: The name of the optional keyword.
+            default: The default value to be set.
+            u_b: The upper bound. If None, the value is not verified
+                against this criterion.
+            l_b: The lower bound. If None, the value is not verified
+                against this criterion.
+
+        Returns:
+            The updated options.
+
+        Raises:
+            ValueError: If the value of the keyword is greater than the given
+                upper bound.
+                If the value of the keyword is lower than the given lower bound.
+            TypeError: If the value associated to the keyword is not a float.
         """
         if keyword in options:
             opt = options[keyword]
@@ -437,11 +494,22 @@ class OpenTURNS(DOELibrary):
             options[keyword] = default
         return options
 
-    def __check_stratified_options(self, dimension, options):
-        """Check that mandatory inputs for composite design are set.
+    def __check_stratified_options(
+        self,
+        dimension,  # type: int
+        options,  # type: Mapping[str,OptionType]
+    ):  # type: (...) -> Dict[str,OptionType]
+        """Check that the mandatory inputs for the composite design are set.
 
-        :param int dimension: parameter space dimension.
-        :param options: the options
+        Args:
+            dimension: The parameter space dimension.
+            options: The options of the DOE.
+
+        Returns:
+            The updated options.
+
+        Raises:
+            KeyError: If the key `levels` is not in `options`.
         """
         if self.LEVEL_KEYWORD not in options:
             raise KeyError(
@@ -455,12 +523,16 @@ class OpenTURNS(DOELibrary):
             options = self.__set_center_option(dimension, options)
         return options
 
-    def __generate_stratified(self, options):
-        """Generate a DOE using composite algo of openturns.
+    def __generate_stratified(
+        self, options  # type: Mapping[str,OptionType]
+    ):  # type: (...) -> ndarray
+        """Generate the samples of a DOE using the composite algo of openturns.
 
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            options: The options of the DOE.
+
+        Returns:
+            The samples for the DOE.
         """
         levels = options[self.LEVEL_KEYWORD]
         centers = options[self.CENTER_KEYWORD]
@@ -481,14 +553,19 @@ class OpenTURNS(DOELibrary):
         samples = self._rescale_samples(samples)
         return samples
 
-    def __generate_seq(self, n_samples, dimension):
-        """Generate a DOE using LHS algo of openturns.
+    def __generate_seq(
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+    ):  # type: (...) -> ndarray
+        """Generate the samples of a DOE using the LHS algo of openturns.
 
-        :param n_samples: number of samples in DOE
-        :type  n_samples: integer
-        :param int dimension: parameter space dimension.
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples for the DOE.
+            dimension: The parameter space dimension.
+
+        Rreturns:
+            The samples for the DOE.
         """
         if self.algo_name == self.OT_FAURE:
             self.__sequence = openturns.FaureSequence
@@ -503,23 +580,36 @@ class OpenTURNS(DOELibrary):
         seq = self.__sequence(dimension).generate(n_samples)
         return array(seq)
 
-    def create_composed_distributions(self):
+    def create_composed_distributions(self):  # type: (...) -> None
         """Create a composed distribution from a list of distributions."""
         self.__comp_dist = openturns.ComposedDistribution(self.__distr_list)
 
-    def get_composed_distributions(self):
-        """Returns the composed distributions.
+    def get_composed_distributions(
+        self,
+    ):  # type: (...) -> openturns.ComposedDistribution
+        """Return the composed distributions.
 
-        :returns: composed distributions
-        :rtype: openturns.ComposedDistribution
+        Returns:
+            The composed distribution.
         """
         return self.__comp_dist
 
-    def __check_composed_distribution(self, distribution_name, dimension):
-        """Checks the composed distribution.
+    def __check_composed_distribution(
+        self,
+        distribution_name,  # type: str
+        dimension,  # type: int
+    ):  # type: (...) -> None
+        """Check the composed distribution.
 
-        :param str distribution_name: name of the distribution
-        :param int dimension: parameter space dimension.
+        Args:
+            distribution_name: The name of the distribution.
+            dimension: The parameter space dimension.
+
+        Raises:
+            ValueError: If the given dimension is different from the
+                the one of the problem.
+                If the ComposedDistribution does not match the given
+                dimension.
         """
         if self.__comp_dist is None:
             n_distrib = len(self.__distr_list)
@@ -554,11 +644,16 @@ class OpenTURNS(DOELibrary):
                 self.__comp_dist.getDistributionCollection(),
             )
 
-    def check_distribution_name(self, distribution_name):
-        """Check that distribution is available.
+    def check_distribution_name(
+        self, distribution_name  # type: str
+    ):  # type: (...) -> None
+        """Check that the distribution is available.
 
-        :param distribution_name: name of the distribution
-        :type distribution_name: string
+        Args:
+            distribution_name: The name of the distribution.
+
+        Raises:
+            ValueError: If the distribution is not available.
         """
         if distribution_name not in self.DISTRIBUTION_LIST:
             raise ValueError(
@@ -568,16 +663,18 @@ class OpenTURNS(DOELibrary):
                 )
             )
 
-    def create_distribution(self, distribution_name="Uniform", **options):
-        """Create a distribution for all design vectors and add it to the list of
-        distributions.
+    def create_distribution(
+        self,
+        distribution_name="Uniform",  # type: str
+        **options  # type: OptionType
+    ):  # type: (...) -> None
+        """Create a distribution for all the design vectors.
 
-        :param distribution_name: name of the distribution
-           (Default value = "Uniform")
-        :type distribution_name: str
-        :param options: optional parameters
-        :type options: dict
-        :param options: OT distributions options
+        Also add it to the list of distributions.
+
+        Args:
+            distribution_name: The name of the distribution.
+            **options: The openturns distribution options.
         """
         self.check_distribution_name(distribution_name)
         options = self.__check_float(options, self.MEAN_KEYWORD, 0.5, u_b=1, l_b=0)
@@ -653,9 +750,8 @@ class OpenTURNS(DOELibrary):
             )
             self.__distr_list.append(openturns.Normal(mean, std))
 
-    def display_distributions_list(self):
-        """Display list of distributions use or that will be used for DOE design based
-        on LHS or Monte-Carlo methods."""
+    def display_distributions_list(self):  # type: (...) -> None
+        """Display the distributions in use for DOE's based on LHS or Monte-Carlo."""
         msg = MultiLineString()
         msg.add("List of distributions:")
         msg.indent()
@@ -663,26 +759,35 @@ class OpenTURNS(DOELibrary):
             msg.add(str(distribution))
         LOGGER.info("%s", msg)
 
-    def get_distributions_list(self):
-        """Accessor for distributions list.
+    def get_distributions_list(self):  # type: (...) -> List[str]
+        """Accessor for the distributions list.
 
-        :returns: distribution list
-        :rtype: list
+        Returns:
+            The distribution list.
         """
         return self.__distr_list
 
     def __generate_lhs(
-        self, n_samples, dimension, distribution_name="Uniform", **options
-    ):
-        """Generate a DOE using LHS algo of openturns.
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+        distribution_name="Uniform",  # type: str
+        **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples for a DOE using the LHS algo of openturns.
 
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension.
-        :param distribution_name: name of the distribution
-        :type  distribution_name: string
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples for the DOE.
+            dimension: The parameter space dimension.
+            distribution_name: The name of the distribution.
+            **options: The options of the DOE.
+
+        Returns:
+            The samples for the DOE.
+
+        Raises:
+            ValueError: If the given `criterion` is not available.
+                If the given `temperature` is not available.
         """
         self.__check_composed_distribution(
             distribution_name=distribution_name, dimension=dimension
@@ -728,7 +833,7 @@ class OpenTURNS(DOELibrary):
     @staticmethod
     def __compute_centered_lhs(
         samples,  # type:ndarray
-    ):  # type:(...) ->ndarray
+    ):  # type:(...) -> ndarray
         """Center the samples resulting from a Latin hypercube sampling.
 
         Args:
@@ -742,17 +847,22 @@ class OpenTURNS(DOELibrary):
         return centered_samples
 
     def __generate_mc(
-        self, n_samples, dimension, distribution_name="Uniform", **options
-    ):
-        """Generate a DOE using Monte-Carlo algo of openturns.
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+        distribution_name="Uniform",  # type: str
+        **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples of a DOE using the Monte-Carlo algo of openturns.
 
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension
-        :param distribution_name: name of the distribution
-        :type  distribution_name: string
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples for the DOE.
+            dimension: The parameter space dimension.
+            distribution_name: The name of the distribution.
+            **options: The options of the DOE.
+
+        Returns:
+            The samples of the DOE.
         """
         self.__check_composed_distribution(
             distribution_name=distribution_name, dimension=dimension
@@ -763,13 +873,21 @@ class OpenTURNS(DOELibrary):
         experiment = openturns.MonteCarloExperiment(self.__comp_dist, n_samples)
         return array(experiment.generate())
 
-    def __generate_sobol(self, n_samples, dimension, **options):
-        """Generate a DOE using Sobol' sampling.
+    def __generate_sobol(
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+        **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples of a DOE using Sobol sampling.
 
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples for the DOE.
+            dimension: The parameter space dimension.
+            **options: The options of the DOE.
+
+        Returns:
+            The samples for the DOE.
         """
         seed = options.get(self.SEED, self.seed)
         openturns.RandomGenerator.SetSeed(seed)
@@ -785,7 +903,6 @@ class OpenTURNS(DOELibrary):
         self,
         levels,  # type: Iterable[int]
     ):  # type: (...) -> ndarray
-
         # This method relies on openturns.Box.
         # This latter assumes that the levels provided correspond to the intermediate
         # levels between lower and upper bounds, while GEMSEO includes these bounds
@@ -815,14 +932,21 @@ class OpenTURNS(DOELibrary):
         doe[:, ot_indices] = ot_doe
         return doe
 
-    def __generate_random(self, n_samples, dimension, **options):
-        """Generate a DOE using random algo of openturns.
+    def __generate_random(
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+        **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples of a DOE using the random algo of openturns.
 
-        :param n_samples: number of samples in DOE
-        :type  n_samples: integer
-        :param int dimension: parameter space dimension
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples for the DOE.
+            dimension: The parameter space dimension.
+            **options: The options of the DOE.
+
+        Returns:
+            The samples for the DOE.
         """
         seed = options.get(self.SEED, self.seed)
         openturns.RandomGenerator.SetSeed(seed)
@@ -832,13 +956,15 @@ class OpenTURNS(DOELibrary):
         return array(samples_list)
 
     @staticmethod
-    def plot_distribution(distribution, show=False):
+    def plot_distribution(
+        distribution,  # type: openturns.Distribution
+        show=False,  # type: bool
+    ):  # type: (...) -> None
         """Plot the density PDF & the CDF (cumulative) of a given distribution.
 
-        :param distribution: the distribution to plot
-        :type distribution: openturns.Distribution
-        :param show: show plot (Default value = False)
-        :type show: bool
+        Args:
+            distribution: The distribution to plot.
+            show: Whether to show the plot.
         """
         distribution.setDescription(["x"])
         pdf_graph = distribution.drawPDF()

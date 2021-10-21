@@ -23,12 +23,13 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Any
+from typing import Any, Dict, Union
 
-from numpy import isfinite, real
+from numpy import isfinite, ndarray, real
 from scipy import optimize
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         xtol_abs=1e-9,  # type: float
         workers=1,  # type: int
         updating="immediate",  # type: str
-        atol=0,  # type: float
+        atol=0.0,  # type: float
         init="latinhypercube",  # type: str
         recombination=0.7,  # type: float
         tol=0.01,  # type: float
@@ -104,7 +105,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         seed=1,  # type: int
         polish=True,  # type: bool
         **kwargs  # type: Any
-    ):  # pylint: disable=W0221
+    ):  # type: (...) -> Dict[str, Any] # pylint: disable=W0221
         r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
@@ -113,53 +114,54 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
         Args:
             max_iter: The maximum number of iterations, i.e. unique calls to f(x).
-            ftol_rel: stop criteria, relative tolerance on the
-                objective function,
-                if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop
-            ftol_abs: stop criteria, absolute tolerance on the objective
-                function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop
-            xtol_rel: stop criteria, relative tolerance on the
-                design variables,
-                if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop
-            xtol_abs: stop criteria, absolute tolerance on the
-                design variables,
-                if norm(xk-xk+1)<= xtol_abs: stop
-            seed: Used for repeatable minimizations.
-                If None, the ``numpy.random.RandomState`` singleton is used.
-            strategy: The differential evolution strategy to use.
-            tol: The relative tolerance for convergence.
-            atol: The absolute tolerance for convergence.
-            mutation: The mutation constant.
-            recombination: The recombination constant.
-            polish: Whether to use the L-BFGS-B algorithm
-                to polish the best population member at the end.
-            init: Either the type of population initialization to be used
-                or an array specifying the initial population.
-            updating: If ``"immediate"``,
-                the best solution vector is continuously updated
-                within a single generation.
+            ftol_rel: A stop criteria, the relative tolerance on the
+               objective function.
+               If abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, the absolute tolerance on the objective
+               function. If abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, the relative tolerance on the
+               design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, the absolute tolerance on the
+                   design variables. If norm(xk-xk+1)<= xtol_abs: stop.
+            workers: The number of processes for parallel execution.
+            updating: The strategy to update the solution vector.
+                If ``"immediate"``, the best solution vector is continuously
+                updated within a single generation.
                 With 'deferred',
                 the best solution vector is updated once per generation.
                 Only 'deferred' is compatible with parallelization,
                 and the ``workers`` keyword can over-ride this option.
-            workers: Used for multi-processing.
-            initial_temp: The initial temperature.
-            visit: The parameter for visiting distribution.
-            restart_temp_ratio:
-            accept: The parameter for acceptance distribution.
-            n: The number of sampling points
-                used in the construction of the simplicial complex.
-            iters: The number of iterations
-                used in the construction of the simplicial complex.
+            atol: The absolute tolerance for convergence.
+            init: Either the type of population initialization to be used
+                or an array specifying the initial population.
+            recombination: The recombination constant, should be in the
+                range [0, 1].
+            tol: The relative tolerance for convergence.
+            popsize: A multiplier for setting the total population size.
+                The population has popsize * len(x) individuals.
+            strategy: The differential evolution strategy to use.
             sampling_method: The method to compute the initial points.
                 Current built in sampling method options
                 are ``halton``, ``sobol`` and ``simplicial``.
-            popsize: A multiplier for setting the total population size.
-                restart_temp_ratio: During the annealing process,
+            n: The number of sampling points
+                used in the construction of the simplicial complex.
+            seed: The seed to be used for repeatable minimizations.
+                If None, the ``numpy.random.RandomState`` singleton is used.
+            polish: Whether to use the L-BFGS-B algorithm
+                to polish the best population member at the end.
+            mutation: The mutation constant.
+            recombination: The recombination constant.
+            initial_temp: The initial temperature.
+            visit: The parameter for the visiting distribution.
+            accept: The parameter for the acceptance distribution.
+            niters: The number of iterations
+                used in the construction of the simplicial complex.
+            restart_temp_ratio: During the annealing process,
                 temperature is decreasing,
                 when it reaches ``initial_temp * restart_temp_ratio``,
                 the reannealing process is triggered.
-            **kwargs: other algorithms options
+            **kwargs: The other algorithms options.
+
         """
         popts = self._process_options(
             max_iter=max_iter,
@@ -184,10 +186,16 @@ class ScipyGlobalOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: Any
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options for the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # remove normalization from options for algo
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
@@ -198,9 +206,18 @@ class ScipyGlobalOpt(OptimizationLibrary):
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
 
-        def real_part_fun(x_vect):
-            """Wraps the function and returns the real part."""
-            return real(self.problem.objective.func(x_vect))
+        def real_part_fun(
+            x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the function and return the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the objective function.
+            """
+            return real(self.problem.objective.func(x))
 
         fun = real_part_fun
 

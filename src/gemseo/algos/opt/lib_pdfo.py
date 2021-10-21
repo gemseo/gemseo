@@ -23,13 +23,16 @@
 from __future__ import division
 
 import logging
-from typing import Any
+from typing import Any, Dict, Optional, Union
 
-from numpy import inf, isfinite, real
+from numpy import inf, isfinite, ndarray, real
 from pdfo import pdfo
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.utils.py23_compat import PY2
+
+OptionType = Optional[Union[str, int, float, bool, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -106,8 +109,8 @@ class PDFOOpt(OptimizationLibrary):
         chkfunval=False,  # type: bool
         ensure_bounds=True,  # type: bool
         normalize_design_space=True,  # type: bool
-        **kwargs  # type: Any
-    ):
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, Any]
         r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
@@ -148,7 +151,7 @@ class PDFOOpt(OptimizationLibrary):
             ensure_bounds: Whether to project the design vector
                 onto the design space before execution.
             normalize_design_space: If True, normalize the design space.
-            **kwargs: The other algorithms options.
+            **kwargs: The other algorithm's options.
         """
         nds = normalize_design_space
         popts = self._process_options(
@@ -172,10 +175,16 @@ class PDFOOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options of the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # remove normalization from options for algo
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
@@ -191,9 +200,18 @@ class PDFOOpt(OptimizationLibrary):
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
 
-        def real_part_fun(x_vect):
-            """Wraps the function and returns the real part."""
-            return real(self.problem.objective.func(x_vect))
+        def real_part_fun(
+            x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the objective function and keep the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the function.
+            """
+            return real(self.problem.objective.func(x))
 
         if ensure_bounds:
             fun = self.ensure_bounds(real_part_fun, normalize_ds)
