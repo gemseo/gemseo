@@ -28,7 +28,7 @@ from __future__ import division, unicode_literals
 
 from typing import List, NoReturn, Optional, Union
 
-from numpy import arange, array_split
+from numpy import arange
 from numpy import delete as npdelete
 from numpy import ndarray, unique
 from numpy.random import choice
@@ -85,10 +85,9 @@ class MLErrorMeasure(MLQualityMeasure):
         n_folds=5,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        inds = samples
-        folds = array_split(inds, n_folds)
+        folds, samples = self._compute_folds(samples, n_folds, randomize)
 
         in_grp = self.algo.learning_set.INPUT_GROUP
         out_grp = self.algo.learning_set.OUTPUT_GROUP
@@ -98,7 +97,7 @@ class MLErrorMeasure(MLQualityMeasure):
         qualities = []
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            train = npdelete(inds, fold)
+            train = npdelete(samples, fold)
             self.algo.learn(samples=train)
             expected = outputs[fold]
             predicted = self.algo.predict(inputs[fold])
