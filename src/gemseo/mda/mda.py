@@ -240,7 +240,7 @@ class MDA(MDODiscipline):
             return array([])
         return concatenate(couplings)
 
-    def _retreive_diff_inouts(
+    def _retrieve_diff_inouts(
         self,
         force_all=False,  # type: bool
     ):  # type: (...) -> Tuple[Union[Set[str],List[str]],Union[Set[str],List[str]]]
@@ -268,7 +268,7 @@ class MDA(MDODiscipline):
 
             return inputs, outputs
 
-        return MDODiscipline._retreive_diff_inouts(self, False)
+        return MDODiscipline._retrieve_diff_inouts(self, False)
 
     def _couplings_warm_start(self):  # type: (...) -> None
         """Load the previous couplings values to local data."""
