@@ -1,5 +1,5 @@
 {
-    "name": "LineChart_options",
+    "name": "BasicHistory_options",
     "required": ["data_list"],
     "properties": {
         "data_list":{

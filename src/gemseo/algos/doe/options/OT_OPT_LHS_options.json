@@ -12,6 +12,20 @@
             "enum": ["Arcsine","Beta","Dirichlet","Normal","TruncatedNormal",
 					 "Triangular","Trapezoidal","Uniform"]
         },
+        "levels": {"anyOf":
+        [{"type": "null"},
+          {
+          "type": ["null", "array"],
+          "minItems": 1,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+          {"type": "integer",
+            "minimum": 1}
+        ]},
         "mu":{
             "type": "number"
         },

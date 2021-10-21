@@ -28,6 +28,7 @@ SNOPT optimization library wrapper
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any
 
 from numpy import append, array, concatenate
 from numpy import float as np_float
@@ -113,29 +114,33 @@ class SnOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_rel=1e-9,
-        ftol_abs=1e-9,
-        xtol_rel=1e-9,
-        xtol_abs=1e-9,
-        max_time=0,
-        max_iter=999,  # pylint: disable=W0221
-        normalize_design_space=True,
-        **kwargs
+        ftol_rel=1e-9,  # type: float
+        ftol_abs=1e-9,  # type: float
+        xtol_rel=1e-9,  # type: float
+        xtol_abs=1e-9,  # type: float
+        max_time=0,  # type: float
+        max_iter=999,  # type: int # pylint: disable=W0221
+        normalize_design_space=True,  # type: bool
+        **kwargs  # type: Any
     ):
-        """Sets the options.
+        """Set the options.
 
-        :param ftol_abs: Objective function tolerance
-        :type ftol_abs: float
-        :param xtol_abs: Design parameter tolerance
-        :type xtol_abs: float
-        :param iprint: Default value = 1000)
-        :type iprint: int
-        :param max_time: Maximum time
-        :type max_time: float
-        :param max_iter: Default value = 999)
-        :type max_iter: int
-        :param kwargs: additional options
-        :type kwargs: kwargs
+        Args:
+            ftol_rel: A stop criteria, relative tolerance on the
+                objective function,
+                if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, absolute tolerance on the objective
+                function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, relative tolerance on the
+                design variables,
+                if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, absolute tolerance on the
+                design variables,
+                if norm(xk-xk+1)<= xtol_abs: stop.
+            max_time: The maximum time.
+            max_iter: The maximum number of iterations.
+            normalize_design_space: If True, scales variables in [0, 1].
+            **kwargs: The additional options.
         """
         nds = normalize_design_space
         return self._process_options(

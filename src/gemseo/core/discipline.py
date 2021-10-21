@@ -75,7 +75,13 @@ def default_dict_factory():  # type: (...) -> Dict
     return defaultdict(None)
 
 
-@six.add_metaclass(DocInheritMeta())
+@six.add_metaclass(
+    DocInheritMeta(
+        abstract_base_class=True,
+        style="google_with_merge",
+        include_special_methods=True,
+    )
+)
 class MDODiscipline(object):
     """A software integrated in the workflow.
 

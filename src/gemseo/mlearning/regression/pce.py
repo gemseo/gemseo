@@ -134,7 +134,7 @@ class PCERegression(MLRegressionAlgo):
         output_names=None,  # type: Optional[Iterable[str]]
         strategy=LS_STRATEGY,  # type: str
         degree=2,  # type: int
-        n_quad=None,  # type:Optional[int]
+        n_quad=None,  # type: Optional[int]
         stieltjes=True,  # type: bool
         sparse_param=None,  # type: Optional[Mapping[str,Union[int,float]]]
     ):  # type: (...) -> None

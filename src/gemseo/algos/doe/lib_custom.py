@@ -86,31 +86,23 @@ class CustomDOE(DOELibrary):
         wait_time_between_samples=0.0,  # type: float
         **kwargs
     ):  # type: (...) -> Dict[str,OptionType]
-        """Sets the options.
+        """Set the options.
 
-        :param doe_file: Either the file, the filename, or the generator to read.
-        :type doe_file: str
-        :param samples: The samples.
-        :type samples: array
-        :param delimiter: The string used to separate values.
-            If None, use whitespace.
-        :type delimiter: str
-        :param comments:  The characters or list of characters
-            used to indicate the start of a comment.
-            None implies no comments.
-        :type comments: str
-        :param skiprows: skip the first `skiprows` lines
-        :type skiprows: int
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            doe_file: Either the file path or the generator to read.
+            samples: The samples.
+            delimiter: The character used to separate the values.
+                If None, use whitespace.
+            comments:  The characters or list of characters
+                used to indicate the start of a comment.
+                None implies no comments.
+            skiprows: Skip the first `skiprows` lines.
+            eval_jac: Whether to evaluate the jacobian.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
         """
         wtbs = wait_time_between_samples
         return self._process_options(
