@@ -20,29 +20,37 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-"""
-SNOPT optimization library wrapper
-**********************************
-"""
+"""SNOPT optimization library wrapper."""
 
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Any
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from numpy import append, array, concatenate
 from numpy import float as np_float
 from numpy import float64, hstack
 from numpy import int as np_int
-from numpy import isinf, ones, reshape
+from numpy import isinf, ndarray, ones, reshape
 from numpy import str as np_str
 from numpy import vstack, where, zeros
 from optimize.snopt7 import SNOPT_solver
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 INFINITY = 1e30
+
+OptionType = Optional[Union[str, int, float, bool, ndarray]]
+
+SNOPT_preprocess_type = Tuple[
+    Callable[[int, int, int, int, ndarray, int], Any],
+    ndarray,
+    ndarray,
+    ndarray(dtype=np_str),
+    int,
+]
 
 
 class SnOpt(OptimizationLibrary):
@@ -121,25 +129,25 @@ class SnOpt(OptimizationLibrary):
         max_time=0,  # type: float
         max_iter=999,  # type: int # pylint: disable=W0221
         normalize_design_space=True,  # type: bool
-        **kwargs  # type: Any
-    ):
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, Any]
         """Set the options.
 
         Args:
-            ftol_rel: A stop criteria, relative tolerance on the
-                objective function,
-                if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
-            ftol_abs: A stop criteria, absolute tolerance on the objective
-                function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop.
-            xtol_rel: A stop criteria, relative tolerance on the
-                design variables,
-                if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
-            xtol_abs: A stop criteria, absolute tolerance on the
-                design variables,
-                if norm(xk-xk+1)<= xtol_abs: stop.
-            max_time: The maximum time.
-            max_iter: The maximum number of iterations.
-            normalize_design_space: If True, scales variables in [0, 1].
+            ftol_rel: A stop criteria, the relative tolerance on the
+               objective function.
+               If abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, the absolute tolerance on the objective
+               function. If abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, the relative tolerance on the
+               design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, the absolute tolerance on the
+                   design variables. If norm(xk-xk+1)<= xtol_abs: stop.
+            max_time: max_time: The maximum runtime in seconds,
+                disabled if 0.
+            max_iter: The maximum number of iterations,
+                i.e. unique calls to f(x).
+            normalize_design_space: If True, scales variables to [0, 1].
             **kwargs: The additional options.
         """
         nds = normalize_design_space
@@ -155,13 +163,20 @@ class SnOpt(OptimizationLibrary):
         )
 
     @staticmethod
-    def __eval_func(func, xn_vect):
-        """Evaluates a function Trys to call it, if it fails, returns a -1 status.
+    def __eval_func(
+        func,  # type: Callable[[ndarray], ndarray]
+        xn_vect,  # type: ndarray
+    ):  # type: (...) -> Tuple[ndarray, int]
+        """Evaluate a function at the given points.
 
-        :param func: the function to call
-        :param xn_vect : the arguments for evaluation
-        :returns: function value
-        :rtype: numpy
+        Try to call it, if it fails, return a -1 status.
+
+        Args
+            func: The function to call.
+            xn_vect : The arguments for the function evaluation.
+
+        Returns:
+            The function value at `xn_vect` and the status of the evaluation.
         """
         try:
             val = func(xn_vect)
@@ -174,33 +189,41 @@ class SnOpt(OptimizationLibrary):
 
     # cb_ means callback and avoids pylint to raise warnings
     # about unused arguments
-    def cb_opt_objective_snoptb(self, mode, nn_obj, xn_vect, n_state=0):
-        r"""Objective function + objective gradient  of the optimizer for snOpt
-        (from web.stanford.edu/group/SOL/guides/sndoc7.pdf)
+    def cb_opt_objective_snoptb(
+        self,
+        mode,  # type: int
+        nn_obj,  # type: int
+        xn_vect,  # type: ndarray
+        n_state=0,  # type: int
+    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        r"""Evaluate the objective function and gradient.
 
-        :param mode: indicates whether obj or gradient or both must
-            be assigned during the present call of function
-            (0 :math:`\leq` mode :math:`\leq` 2).
-            mode = 2, assign obj and the known components of gradient
-            mode = 1, assign the known components of gradient. obj is ignored.
-            mode = 0, only obj need be assigned; gradient is ignored.
-        :param nn_obj: number of design variables
-        :param xn_vect: normalized design vector
-        :param n_state: indicator for first and last call to current function
-            n_state = 0: NTR
-            n_state = 1: first call to driver.cb_opt_objective_snoptb
-            n_state > 1, snOptB is calling subroutine for the last time and:
-            n_state = 2       and the current x is optimal
-            n_state  = 3, the problem appears to be infeasible
-            n_state  = 4, the problem appears to be unbounded;
-            n_state  = 5,  an iterations limit was reached. (Default value = 0)
-        :returns: status: may be used to indicate that you
-            are unable to evaluate
-            obj_f or its gradients at the current x.
-            (For example, the problem functions may not be defined there).
-            obj_f, objective function (except perhaps if mode = 1)
-            objective jacobian array (except perhaps if mode = 0)
-        :rtype: integer, np array, np array
+        Use the snOpt conventions for mode and status
+        (from web.stanford.edu/group/SOL/guides/sndoc7.pdf).
+
+        Args:
+            mode: Flag to indicate whether the obj, the gradient or both must
+                be assigned during the present call of the function
+                (0 :math:`\leq` mode :math:`\leq` 2).
+                mode = 2, assign the obj and the known components of the gradient.
+                mode = 1, assign the known components of gradient. obj is ignored.
+                mode = 0, only the obj needs to be assigned; the
+                gradient is ignored.
+            nn_obj: The number of design variables.
+            xn_vect: The normalized design vector.
+            n_state: An indicator for the first and last call to the current
+                function.
+                n_state = 0: NTR.
+                n_state = 1: first call to driver.cb_opt_objective_snoptb.
+                n_state > 1, snOptB is calling subroutine for the last time and:
+                n_state = 2       and the current x is optimal
+                n_state  = 3, the problem appears to be infeasible
+                n_state  = 4, the problem appears to be unbounded;
+                n_state  = 5,  an iterations limit was reached.
+
+        Returns:
+            The solution status, the evaluation of the objective function and its
+                gradient.
 
         """
         obj_func = self.problem.objective
@@ -222,13 +245,17 @@ class SnOpt(OptimizationLibrary):
                 status = -1
         return status, obj_f, obj_df
 
-    def __snoptb_create_c(self, xn_vect):
-        """Private function that returns evaluation of constraints at design vector
-        xn_vect.
+    def __snoptb_create_c(
+        self, xn_vect  # type: ndarray
+    ):  # type: (...) -> Tuple[ndarray, int]
+        """Return the evaluation of the constraints at the design vector.
 
-        :param xn_vect: normalized design variable vector
-        :returns: evaluation of constraints at xn_vect
-        :rtype: numpy array
+        Args:
+            xn_vect: The normalized design variables vector.
+
+        Returns:
+            The evaluation of the constraints at `xn_vect` and the status of
+                the evaluation.
         """
         cstr = array([])
         for constraint in self.problem.get_eq_constraints():
@@ -244,13 +271,17 @@ class SnOpt(OptimizationLibrary):
             cstr = hstack((cstr, c_val))
         return cstr, 1
 
-    def __snoptb_create_dc(self, xn_vect):
-        """Private function that returns evaluation of constraints gradient at design
-        vector xn_vect.
+    def __snoptb_create_dc(
+        self, xn_vect  # type: ndarray
+    ):  # type: (...) -> Tuple[ndarray, int]
+        """Evaluate the constraints gradient at the design vector xn_vect.
 
-        :param xn_vect: normalized design variable vector
-        :returns: evaluation of constraints gradient at xn_vect
-        :rtype: numpy array
+        Args:
+            xn_vect: The normalized design variables vector.
+
+        Returns:
+            The evaluation of the constraints gradient at xn_vect and the status
+                of the computation.
         """
         dcstr = array([])
         # First equality constraints then inequality
@@ -278,37 +309,45 @@ class SnOpt(OptimizationLibrary):
 
     # cb_ means callback and avoids pylint to raise warnings
     # about unused arguments
-    def cb_opt_constraints_snoptb(self, mode, nn_con, nn_jac, ne_jac, xn_vect, n_state):
-        """Constraints function + constraints gradient of the optimizer for snOpt (from
-        web.stanford.edu/group/SOL/guides/sndoc7.pdf)
+    def cb_opt_constraints_snoptb(
+        self,
+        mode,  # type: int
+        nn_con,  # type: int
+        nn_jac,  # type: int
+        ne_jac,  # type: int
+        xn_vect,  # type: ndarray
+        n_state,  # type: int
+    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        """Evaluate the constraint functions and their gradient.
 
-        :param mode: indicates whether obj or gradient or both must
-            be assigned during the present call of function (0 ≤ mode ≤ 2).
-            mode = 2, assign obj and the known components of gradient
-            mode = 1, assign the known components of gradient. obj is ignored.
-            mode = 0, only obj need be assigned; gradient is ignored.
-        :param nn_con: number of non-linear constraints
-        :param nn_jac: number of dv involved in non-linear
-            constraint functions
-        :param ne_jac: number of non-zero elements in constraints gradient.
-            dcstr is 2D
-            ==> ne_jac = nn_con*nn_jac
-        :param xn_vect: normalized design vector
-        :param n_state: indicator for first and last call to current function
-            n_state = 0: NTR
-            n_state = 1: first call to driver.cb_opt_objective_snoptb
-            n_state > 1, snOptB is calling subroutine for the last time and:
-            n_state = 2       and the current x is optimal
-            n_state  = 3, the problem appears to be infeasible
-            n_state  = 4, the problem appears to be unbounded;
-            n_state  = 5,  an iterations limit was reached.
-        :returns: status: may be used to indicate that you are unable to
-            evaluate
-            cstr or its gradients at the current x.
-            (For example, the problem functions may not be defined there).
-            cstr: constraints function (except perhaps if mode = 1)
-            dcstr constraints jacobian array (except perhaps if mode = 0)
-        :rtype: integer, np array, np array
+        Use the snOpt conventions (from
+        web.stanford.edu/group/SOL/guides/sndoc7.pdf).
+
+        Args:
+            mode: A flag that indicates whether the obj, the gradient or both must
+                be assigned during the present call of function (0 ≤ mode ≤ 2).
+                mode = 2, assign obj and the known components of gradient.
+                mode = 1, assign the known components of gradient. obj is ignored.
+                mode = 0, only obj need be assigned; gradient is ignored.
+            nn_con: The number of non-linear constraints.
+            nn_jac: The number of dv involved in non-linear
+                constraint functions.
+            ne_jac: The number of non-zero elements in the constraints gradient.
+                If dcstr is 2D, then ne_jac = nn_con*nn_jac.
+            xn_vect: The normalized design vector.
+            n_state: An indicator for the first and last call to the current
+                function
+                n_state = 0: NTR.
+                n_state = 1: first call to driver.cb_opt_objective_snoptb.
+                n_state > 1, snOptB is calling subroutine for the last time and:
+                n_state = 2       and the current x is optimal
+                n_state  = 3, the problem appears to be infeasible
+                n_state  = 4, the problem appears to be unbounded;
+                n_state  = 5,  an iterations limit was reached.
+
+        Returns:
+            The solution status, the evaluation of the constraint function and
+                its gradient.
         """
         if mode == 0:
             cstr, status = self.__snoptb_create_c(xn_vect)
@@ -339,34 +378,58 @@ class SnOpt(OptimizationLibrary):
     # cb_ means callback and avoids pylint to raise warnings
     # about unused arguments
     @staticmethod
-    def cb_snopt_dummy_func(mode, nn_con, nn_jac, ne_jac, xn_vect, n_state):
-        """Dummy function required for unconstrained problem.
+    def cb_snopt_dummy_func(
+        mode,  # type: int
+        nn_con,  # type: int
+        nn_jac,  # type: int
+        ne_jac,  # type: int
+        xn_vect,  # type: ndarray
+        n_state,  # type: int
+    ):  # type: (...) -> float
+        """Return a dummy output for unconstrained problems.
 
-        :param mode: param nn_con:
-        :param nn_jac: param ne_jac:
-        :param xn_vect: param n_state:
-        :param nn_con:
-        :param ne_jac:
-        :param n_state:
+        Args:
+            mode: A flag that indicates whether the obj, the gradient or both must
+                be assigned during the present call of function (0 ≤ mode ≤ 2).
+                mode = 2, assign obj and the known components of gradient.
+                mode = 1, assign the known components of gradient. obj is ignored.
+                mode = 0, only obj need be assigned; gradient is ignored.
+            nn_con: The number of non-linear constraints.
+            nn_jac: The number of dv involved in non-linear
+                constraint functions.
+            ne_jac: The number of non-zero elements in the constraints gradient.
+                If dcstr is 2D, then ne_jac = nn_con*nn_jac.
+            xn_vect: The normalized design vector.
+            n_state: An indicator for the first and last call to the current
+                function
+                n_state = 0: NTR.
+                n_state = 1: first call to driver.cb_opt_objective_snoptb.
+                n_state > 1, snOptB is calling subroutine for the last time and:
+                n_state = 2       and the current x is optimal
+                n_state  = 3, the problem appears to be infeasible
+                n_state  = 4, the problem appears to be unbounded;
+                n_state  = 5,  an iterations limit was reached.
+
+        Returns:
+            A dummy output.
         """
         return 1.0
 
-    def __preprocess_snopt_constraints(self, names):
-        """Private function to set snopt parameters according to constraints.
+    def __preprocess_snopt_constraints(
+        self, names  # type: ndarray(dtype=np_str)
+    ):  # type: (...) -> SNOPT_preprocess_type
+        """Set the snopt parameters according to the constraints.
 
-        :param names: numpy array of string which store
-            design variable names and constraint names in snopt
-            internal process
-        :returns:  pointer to constraint value & gradient,
-            array of lower bound constraints,
-            array of upper bound constraints,
-            design variable names and constraint names,
-            n_constraints,
-            function computation
-        :rtype: numpy array of np.float64,
-            numpy array of np.float64,
-            numpy array of string,
-            integer
+        Args:
+            names: The names of the design variables and constraints to
+                be stored in the snopt internal process.
+
+        Returns:
+            The pointer to the constraint value & gradient,
+            the array of lower bound constraints,
+            the array of upper bound constraints,
+            the design variable names and constraint names,
+            and the number of constraints.
         """
         blc = array(())
         buc = array(())
@@ -393,11 +456,20 @@ class SnOpt(OptimizationLibrary):
             funcon = self.cb_opt_constraints_snoptb
         return funcon, blc, buc, names, n_constraints
 
-    def _run(self, **options):
-        """Runs the algorim, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see the associated JSON file.
+
+        Returns:
+            The optimization result.
+
+        Raises:
+            KeyError: If an unknown option or incorrect type is provided.
         """
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         # Get the  bounds anx x0

@@ -84,25 +84,30 @@ class CustomDOE(DOELibrary):
         eval_jac=False,  # type: bool
         n_processes=1,  # type: int
         wait_time_between_samples=0.0,  # type: float
-        **kwargs
+        **kwargs  # type: OptionType
     ):  # type: (...) -> Dict[str,OptionType]
         """Set the options.
 
         Args:
-            doe_file: Either the file path or the generator to read.
-            samples: The samples.
-            delimiter: The character used to separate the values.
+            doe_file: Either a file path or the generator to read.
+                If None, the samples are used and must be provided.
+            samples: The samples. If None, the `doe_file` is used and must be
+                provided.
+            delimiter: The character used to separate values.
                 If None, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
                 None implies no comments.
-            skiprows: Skip the first `skiprows` lines.
+            skiprows: The number of first lines to skip.
             eval_jac: Whether to evaluate the jacobian.
             n_processes: The number of processes.
             wait_time_between_samples: The waiting time between two samples.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
             **kwargs: The additional arguments.
+
+        Returns:
+            The processed options.
         """
         wtbs = wait_time_between_samples
         return self._process_options(
@@ -129,7 +134,7 @@ class CustomDOE(DOELibrary):
 
         Args:
             doe_file: Either the file, the filename, or the generator to read.
-            delimiter: The string used to separate values.
+            delimiter: The character used to separate values.
                 If None, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
@@ -163,8 +168,14 @@ class CustomDOE(DOELibrary):
         self, **options  # type: OptionType
     ):  # type: (...) -> ndarray
         """
+        Returns:
+            The samples.
+
         Raises:
-            ValueError: If the dimension is different from the problem one.
+            ValueError: If no `doe_file` and no `samples` are given.
+                If both `doe_file` and `samples` are given.
+                If the dimension of `samples` is different from the
+                one of the problem.
         """
         error_message = (
             "The algorithm CustomDOE requires "
