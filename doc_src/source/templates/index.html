@@ -3,238 +3,50 @@
 {% block content %}
 <div class="container-fluid sk-landing-bg py-3">
   <div class="container sk-landing-container">
-    <div style="text-align:center;"><img src="_static/logo-small.png" width="30%"/><h2 class="sk-landing-subheader text-shadow">A Generic Engine for Multidisciplinary Scenarios,<br/> Exploration and Optimization</h2></div>
+    <div style="text-align:center;">
+      <img src="_static/logo-small.png" width="30%"/>
+      <h2 class="sk-landing-subheader text-shadow">A Generic Engine for Multidisciplinary Scenarios,<br/> Exploration and Optimization</h2>
+    </div>
     <div class="container-fluid sk-landing-bg py-3">
-		<div class="row">
-			<div class="col-md-5">
-			  <img src="_static/gemseo_schema.png"/>
-			</div>
-			<div class="col-md-7 mb-3 mb-md-0">
-				<ul class="sk-landing-header-body">
-					<li>Automation of MDO processes based on MDO formulations</li>
-					<li>Features: coupling, optimization, design of experiments, visualization, surrogate modeling, machine learning, uncertainty quantification, ...
-					<li>Easy to embed in simulation platforms or to use as a standalone software</li>
-					<li>Can use tools in Python, Matlab, Excel, Scilab, executables, ...</li>
-					<li>Built on NumPy, SciPy and Matplotlib</li>
-					<li>Open source (GNU LGPL v3.0), commercially usable - <a href='software/licenses.html'>see licenses</a>
-					<li>Source code is available on <a href="https://gitlab.com/gemseo/dev/gemseo" target="_blank">gitlab</a>
-				</ul>
-			</div>
-		</div>
-	</div>
-	</div>
-	<div style="text-align:center;">
-	  <a class="btn sk-landing-btn mb-1" href="software/installation.html" role="button"><i class="fa fa-plug"></i> Installation</a>
-	  <a class="btn sk-landing-btn mb-1" href="contributing.html" role="button"><i class="fab fa-gitlab"></i> Contributing</a>
-      <a class="btn sk-landing-btn mb-1" href="aboutus.html" role="button"><i class="fas fa-users"></i> About us</a>
-      <a class="btn sk-landing-btn mb-1" href="software/changelog.html" role="button"><i class="fa fa-history"></i> Changelog</a>
-	  <a class="btn sk-landing-btn mb-1"
-          href="examples/mdo/plot_gemseo_in_10_minutes.html" role="button"><i
-              class="fa fa-play-circle"></i> GEMSEO in 10 minutes</a><br/>
-	</div>
-	<div style="text-align:center;">
-	  <strong>Current version: {{ release }}</strong>
+      <div class="row">
+        <div class="col-md-5">
+          <img src="_static/gemseo_schema.png"/>
+        </div>
+        <div class="col-md-7 mb-3 mb-md-0">
+          <ul class="sk-landing-header-body">
+            <li>Automation of MDO processes based on MDO formulations</li>
+            <li>Features: coupling, optimization, design of experiments, visualization, surrogate modeling, machine learning, uncertainty quantification, ...
+            <li>Easy to embed in simulation platforms or to use as a standalone software</li>
+            <li>Can use tools in Python, Matlab, Excel, Scilab, executables, ...</li>
+            <li>Built on NumPy, SciPy and Matplotlib</li>
+            <li>Open source (GNU LGPL v3.0), commercially usable - <a href='software/licenses.html'>see licenses</a>
+            <li>Source code is available on <a href="https://gitlab.com/gemseo/dev/gemseo" target="_blank">gitlab</a>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+  <div style="text-align:center;">
+    <a class="btn sk-landing-btn mb-1" href="software/installation.html" role="button"><i class="fa fa-plug"></i> Installation</a>
+    <a class="btn sk-landing-btn mb-1" href="contributing.html" role="button"><i class="fab fa-gitlab"></i> Contributing</a>
+    <a class="btn sk-landing-btn mb-1" href="aboutus.html" role="button"><i class="fas fa-users"></i> About us</a>
+    <a class="btn sk-landing-btn mb-1" href="software/changelog.html" role="button"><i class="fa fa-history"></i> Changelog</a>
+    <a class="btn sk-landing-btn mb-1" href="examples/mdo/plot_gemseo_in_10_minutes.html" role="button"><i class="fa fa-play-circle"></i> GEMSEO in 10 minutes</a><br/>
+  </div>
+  <div style="text-align:center;">
+    <strong>Current version: {{ release }}</strong>
+  </div>
 </div>
 
+{% from 'block.html' import displayblock %}
 <div class="container sk-landing-container pt-3 body" role="main">
   <h2 class="sk-landing-blocksection text-shadow bw-lines" id="main_concepts"><span>Main Concepts</span></h2>
   <div class="row no-gutters">
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Discipline</h4>
-          <p class="card-text">Define an input-output discipline to interface a model.</p>
-          <p class="card-text"><strong>Interfaces:</strong>
-          <a href="disciplines/analytic_discipline.html">analytic expressions</a>,
-          <a href="disciplines/discipline_interfacing_executable.html">executable</a>,
-          <a href="surrogate.html">surrogate model</a>,
-          <a href="interface/software_connection.html">much more</a>.
-          </p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="discipline.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/discipline/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Design space</h4>
-          <p class="card-text">Define a set of parameters, typically design parameters.</p>
-          <p class="card-text"><strong>Types:</strong>
-          <a href="_modules/gemseo.algos.design_space.html">deterministic parameter space</a>,
-          <a href="_modules/gemseo.algos.parameter_space.html">uncertain (or mixed) parameter space</a>
-          </p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="design_space/design_space.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/design_space/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Scenario</h4>
-          <p class="card-text">Define an evaluation process over a design space
-          for a set of disciplines and a given objective.</p>
-          <p class="card-text"><strong>Types:</strong>
-          <a href="_modules/gemseo.core.doe_scenario.html">DOE scenario</a>,
-          <a href="_modules/gemseo.core.mdo_scenario.html">MDO scenario</a></p>
-          </p>
-        </div>
-	    <div class="row"><div class="col" style="text-align: center;"><a href="scenario.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/scenario/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Saving &#x26; Storing Data</h4>
-          <p class="card-text">Store disciplinary evaluations in a <a href="caching.html">cache</a>,
-          either in memory or saved in a file. Use a <a href="dataset.html">dataset</a> to store many kinds of data and make them easy to handle for visualization, display and query purposes.</p>
-        </div>
-		  <div class="row"><div class="col" style="text-align: center;"><a href="saving_data.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/cache/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
+    {%- for block in main_concepts %}{{ displayblock(block) }}{%- endfor %}
   </div>
   <h2 class="sk-landing-blocksection text-shadow bw-lines"><span>Features</span></h2>
   <div class="row no-gutters">
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Study Prototyping</h4>
-          <p class="card-text">An intuitive tool to discover MDO without writing any code, and define the right MDO problem and process.
-          From an Excel workbook, specify your disciplines, design space, objective and constraints,
-          select an MDO formulation and plot both coupling structure (<a href="mdo/coupling.html#n2-chart">N2 chart</a>) and MDO process (<a href="mdo/mdo_formulations.html#xdsm-visualization">XDSM</a>), even before wrapping any software.</p>
-        </div>
- 		<div class="row"><div class="col" style="text-align: center;"><a
-                    href="interface/gemseo_study.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/study_prototyping/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye" class="button-blocksection-global"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Optimization</h4>
-          <p class="card-text">Define, solve and post-process an optimization problem from an optimization algorithm.</p>
-          <p class="card-text"><strong>Algorithms:</strong>
-          <a href="algorithms/opt_algos.html#l-bfgs-b">BFGS</a>, <a href="algorithms/opt_algos.html#nlopt-bobyqa">BOBYQA</a>, <a href="algorithms/opt_algos.html#nlopt-cobyla">COBYLA</a>, <a href="algorithms/opt_algos.html#l-bfgs-b">L-BFGS-B</a>, <a href="algorithms/opt_algos.html#nlopt-mma">MMA</a>, <a href="algorithms/opt_algos.html#nlopt-newuoa">NEWUOA</a>, <a href="algorithms/opt_algos.html#odd">ODD</a>, <a href="algorithms/opt_algos.html#slsqp">SLSQP</a>, <a href="algorithms/opt_algos.html#tnc">TNC</a>
-          </p>
-          <p class="card-text card-dependencies">based on
-          <a href="https://nlopt.readthedocs.io/en/latest/" target="_blank">nlopt</a>,
-          <a href="https://www.scipy.org/" target="_blank">scipy</a>,
-          <a href="https://github.com/snopt/snopt-python" target="_blank">snopt</a> and
-          <a href="https://www.pdfo.net" target="_blank">pdfo</a>.</p>
-        </div>
-		  <div class="row"><div class="col" style="text-align: center;"><a href="optimization.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/optimization_problem/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/opt_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">DOE &#x26; Trade-off</h4>
-          <p class="card-text">Define, solve and post-process a trade-off problem from a DOE (design of experiments) algorithm.</p>
-          <p class="card-text">
-          <strong>Design of experiments:</strong> <a href="algorithms/doe_algos.html#ot-axial">axial</a>, <a href="algorithms/doe_algos.html#ff2n">bilevel full-factorial</a>, <a href="algorithms/doe_algos.html#bbdesign">Box-Behnken</a>, <a href="algorithms/doe_algos.html#ccdesign">central-composite</a>, <a href="algorithms/doe_algos.html#ot-composite">composite</a>, <a href="algorithms/doe_algos.html#customdoe">custom</a>, <a href="algorithms/doe_algos.html#diagonaldoe">diagonal</a>, <a href="algorithms/doe_algos.html#faure">Faure</a>, <a href="algorithms/doe_algos.html#fullfact">full factorial</a>, <a href="algorithms/doe_algos.html#ot-halton">Halton</a>, <a href="algorithms/doe_algos.html#ot-haselgrove">Haselgrove</a>, <a href="algorithms/doe_algos.html#ot-lhs">LHS</a>, <a href="algorithms/doe_algos.html#ot-monte-carlo">Monte-Carlo</a>, <a href="algorithms/doe_algos.html#pbdesign">Plackett-Burman</a>, <a href="algorithms/doe_algos.html#ot-reverse-halton">reverse Halton</a>, <a href="algorithms/doe_algos.html#ot-sobol">Sobol</a>
-          </p>
-          <p class="card-text card-dependencies">based on
-          <a href="http://www.openturns.org/" target="_blank">OpenTURNS</a> and
-          <a href="https://pythonhosted.org/pyDOE/" target="_blank">pyDOE</a></p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="mdo.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/doe/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/doe_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">MDO formulations</h4>
-          <p class="card-text">Define the way as the disciplinary coupling is formulated and managed by the optimization or DOE algorithm.</p>
-          <p class="card-text"><strong>Formulations:</strong>
-          <a href="mdo/mdo_formulations.html#bilevel-formulation">bilevel</a>, <a href="mdo/mdo_formulations.html#idf">IDF</a>, <a href="mdo/mdo_formulations.html#MDF">MDF</a>, <a href="mdo/mdo_formulations.html">standard optimization</a>
-          </p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="mdo/mdo_formulations.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/formulations/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/formulation_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">MDA</h4>
-          <p class="card-text">Find the coupled state of a multidisciplinary system using a Multi-Disciplinary Analysis.</p>
-          <p class="card-text">
-          	<strong>Algorithms</strong>: <a href="algorithms/mda_algos.html#mdagaussseidel">Gauss-Seidel</a>, <a href="algorithms/mda_algos.html#mdajacobi">Jacobi</a>, <a href="algorithms/mda_algos.html#mdachain">MDA chain</a>, <a href="algorithms/mda_algos.html#mdanewtonraphson">Newton-Raphson</a>, <a href="algorithms/mda_algos.html#mdaquasinewton">Quasi-Newton</a>, <a href="algorithms/mda_algos.html#gsnewtonmda">Gauss-Seidel/Newton</a>
-          </p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="mdo/mda.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/mda/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/mda_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Visualization</h4>
-          <p class="card-text">Generate graphical post-processings of optimization histories.</p>
-          <p class="card-text">
-          <strong>Visualizations:</strong>: <a href="algorithms/post_algos.html#basichistory">basic history</a>, <a href="algorithms/post_algos.html#constraintshistory">constraint history</a>, <a href="algorithms/post_algos.html#correlations">correlations</a>, <a href="algorithms/post_algos.html#gradientsensitivity">gradient sensitivity</a>, <a href="algorithms/post_algos.html#kmeans">k-means</a>, <a href="algorithms/post_algos.html#objconstrhist">objective and constraint history</a>, <a href="algorithms/post_algos.html#opthistoryview">optimization history view</a>, <a href="algorithms/post_algos.html#parallelcoordinates">parallel coordinates</a>, <a href="algorithms/post_algos.html#quadapprox">quadratic approximation</a>, <a href="algorithms/post_algos.html#radarchart">radar chart</a>, <a href="algorithms/post_algos.html#robustness">robustness</a>, <a href="algorithms/post_algos.html#scatterplotmatrix">scatter matrix</a>, <a href="algorithms/post_algos.html#som">self organizing map</a>, <a href="algorithms/post_algos.html#variableinfluence">variable influence</a>.
-          </p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="postprocessing/index.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/post_process/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/post_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Surrogate models</h4>
-          <p class="card-text">Replace a discipline by a surrogate one relying on a machine learning regression model.</p>
-          <p class="card-text"><strong>Surrogate models</strong>:
-          <a href="algorithms/surrogate_algos.html#gaussianprocessregression">Gaussian process regression (kriging)</a>,
-          <a href="algorithms/surrogate_algos.html#linearregression">linear model</a>, <a href="algorithms/surrogate_algos.html#rbfregression">radial basis regression</a>, <a href="algorithms/surrogate_algos.html#pceregression">polynomial chaos expansion</a> and surrogate quality measures.
-          </p>
-          <p class="card-text card-dependencies">based on
-          <a href="https://scikit-learn.org/stable/" target="_blank">scikit-learn</a> and
-          <a href="http://www.openturns.org/" target="_blank">OpenTURNS</a></p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="surrogate.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/surrogate/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/surrogate_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Scalable models</h4>
-          <p class="card-text">Use scalable data-driven models to compare MDO formulations and algorithms for different problem dimensions.
-          </p>
-          <p class="card-text"><strong>Features:</strong>
-          <a href="scalable_models/index.html#benchmark-mdo-formulations-based-on-scalable-disciplines">scalability study</a>,
-          <a href="scalable_models/index.html#scalable-mdo-problem">scalable problem</a>,
-          <a href="scalable_models/index.html#scalable-discipline">scalable discipline</a>,
-          <a href="scalable_models/index.html#scalable-diagonal-model">diagonal-based</a>,
-          ...</p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="scalable.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/scalable/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div>	</div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Machine learning</h4>
-          <p class="card-text">Apply clustering, classification and regression methods from the machine learning community.</p>
-          <p class="card-text"><strong>Features:</strong> <a href="machine_learning/clustering/clustering_models.html">clustering</a>, <a href="machine_learning/classification/classification_models.html">classification</a>, <a href="machine_learning/regression/regression_models.html">regression</a>, <a href="machine_learning/qual_measure/quality_measures.html">quality measures</a>, <a href="machine_learning/qual_measure/calibration_and_selection.html">calibration</a>, <a href="machine_learning/transform/transformer.html">data transformation</a>.</p>
-          <p class="card-text card-dependencies">based on
-          <a href="https://scikit-learn.org/stable/" target="_blank">scikit-learn</a> and
-          <a href="http://www.openturns.org/" target="_blank">OpenTURNS</a></p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="machine_learning.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="text-align: center;"><a href="examples/mlearning/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div><div class="col" style="text-align: center;"><a href="algorithms/mlearning_algos.html" role="button" class="button-blocksection-global"><i class="far fa-edit"></i><span class="button-blocksection"><br/>Options</span></a></div></div>
-      </div>
-    </div>
-    <div class="col-md-4 col-sm-6 mb-3 px-md-2 sk-px-xl-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h4 class="sk-card-title">Uncertainty</h4>
-          <p class="card-text">Define, propagate, analyze and manage uncertainties.</p>
-          <p class="card-text"><strong>Features:</strong> <a href="uncertainty/distribution.html">distribution</a>, <a href="uncertainty/parameter_space.html">uncertain space</a>, empirical and parametric <a href="uncertainty/statistics.html">statistics</a>, <a href="_modules/gemseo.uncertainty.distributions.openturns.fitting.html">distribution fitting</a>, <a href="uncertainty/sensitivity.html">sensitivity analysis</a>, ...</p>
-          <p class="card-text card-dependencies">based on
-          <a href="http://www.openturns.org/" target="_blank">OpenTURNS</a></p>
-        </div>
-		<div class="row"><div class="col" style="text-align: center;"><a href="uncertainty.html" role="button" class="button-blocksection-global"><i class="fas fa-info"></i><span class="button-blocksection"><br/>Read more</span></a></div><div class="col" style="
-		text-align: center;"><a href="examples/uncertainty/index.html" role="button" class="button-blocksection-global"><i class="far fa-eye"></i><span class="button-blocksection"><br/>Examples</span></a></div></div>
-      </div>
-    </div>
+    {%- for block in features %}{{ displayblock(block) }}{%- endfor %}
   </div>
 </div>
 

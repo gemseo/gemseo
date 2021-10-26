@@ -63,6 +63,17 @@ class ScipyLinalgAlgos(LinearSolverLib):
         "prepend_outer_v",
     )
 
+    __WEBSITE = "https://docs.scipy.org/doc/scipy/reference/generated/{}.html"
+    __WEBPAGE = "scipy.sparse.linalg.{}"
+    __WEBPAGES = {
+        "BICG": __WEBPAGE.format("bicg"),
+        "GMRES": __WEBPAGE.format("gmres"),
+        "LGMRES": __WEBPAGE.format("lgmres"),
+        "QMR": __WEBPAGE.format("qmr"),
+        "BICGSTAB": __WEBPAGE.format("bicgstab"),
+        "DEFAULT": __WEBPAGE.format("splu"),
+    }
+
     def __init__(self):  # type: (...) -> None
         super(ScipyLinalgAlgos, self).__init__()
         self.methods_map = {
@@ -76,6 +87,10 @@ class ScipyLinalgAlgos(LinearSolverLib):
         self.lib_dict = {
             name: self.get_default_properties(name) for name in self.methods_map.keys()
         }
+        self.lib_dict["DEFAULT"]["description"] = (
+            "This starts by LGMRES, but if it fails, "
+            "switches to GMRES, then direct method super LU factorization."
+        )
 
     @classmethod
     def get_default_properties(
@@ -97,6 +112,8 @@ class ScipyLinalgAlgos(LinearSolverLib):
             cls.LHS_MUST_BE_SYMMETRIC: False,
             cls.LHS_CAN_BE_LINEAR_OPERATOR: True,
             cls.INTERNAL_NAME: algo_name,
+            "description": "Linear solver implemented in the SciPy library.",
+            "website": cls.__WEBSITE.format(algo_name),
         }
 
     def _get_options(
