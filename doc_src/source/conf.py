@@ -47,12 +47,12 @@ import datetime
 import os
 import re
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Iterable, List, Mapping, Tuple, Union
 
 import requests
 import six
-import sphinx
 import sphinx.ext.autodoc.typehints
 from sphinx.util import inspect, typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
@@ -78,6 +78,10 @@ except ImportError:
 os.chdir((Path(__file__).resolve()).parent)
 
 sys.path.append(str(Path("_ext").resolve()))
+sys.path.append(str(Path("templates").resolve()))
+
+from gemseo_templator.blocks import features  # noqa E402
+from gemseo_templator.blocks import main_concepts  # noqa E402
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -538,3 +542,7 @@ def record_typehints(
 
 
 sphinx.ext.autodoc.typehints.record_typehints = record_typehints
+
+
+html_context["features"] = [asdict(feature) for feature in features]
+html_context["main_concepts"] = [asdict(main_concept) for main_concept in main_concepts]

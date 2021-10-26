@@ -27,6 +27,7 @@ import jinja2
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import _get_schema
 from gemseo.core.factory import Factory
@@ -256,7 +257,7 @@ class AlgoOptionsDoc:
         doc = template.render(
             algo_type=self.algo_type,
             long_algo_type=self.long_algo_type,
-            algos=self.algos_names,
+            algos=sorted(self.algos_names),
             modules=self.modules,
             options=self.options,
             websites=self.websites,
@@ -440,6 +441,7 @@ def main(gen_opts_path: Union[str, Path]) -> None:
         OptPostProcessorAlgoOptionsDoc("post", "Post-processing", PostFactory()),
         DriverOptionsDoc("doe", "DOE", DOEFactory()),
         DriverOptionsDoc("opt", "Optimization", OptimizersFactory()),
+        DriverOptionsDoc("linear_solver", "Linear solver", LinearSolversFactory()),
     ]
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()
