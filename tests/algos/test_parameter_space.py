@@ -97,7 +97,9 @@ def test_to_design_space(mixed_space):
         design_space.get_upper_bound("y")[0]
         == mixed_space.distributions["y"].math_upper_bound[0]
     )
-    assert design_space.get_current_x("y")[0] == mixed_space.distributions["y"].mean[0]
+    assert (
+        design_space.get_current_x(["y"])[0] == mixed_space.distributions["y"].mean[0]
+    )
 
 
 def test_extract_deterministic_space(mixed_space):
@@ -128,7 +130,8 @@ def test_extract_uncertain_space_as_design_space(mixed_space):
         == mixed_space.distributions["y"].math_upper_bound[0]
     )
     assert (
-        uncertain_space.get_current_x("y")[0] == mixed_space.distributions["y"].mean[0]
+        uncertain_space.get_current_x(["y"])[0]
+        == mixed_space.distributions["y"].mean[0]
     )
 
 

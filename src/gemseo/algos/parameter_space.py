@@ -649,6 +649,6 @@ class ParameterSpace(DesignSpace):
                 var_type=self.get_type(name),
                 l_b=self.get_lower_bound(name),
                 u_b=self.get_upper_bound(name),
-                value=self.get_current_x(name),
+                value=self.get_current_x([name]),
             )
         return design_space
