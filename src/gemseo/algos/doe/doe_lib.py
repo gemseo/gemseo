@@ -64,6 +64,8 @@ class DOELibrary(DriverLib):
     N_PROCESSES = "n_processes"
     WAIT_TIME_BETWEEN_SAMPLES = "wait_time_between_samples"
     DIMENSION = "dimension"
+    _VARIABLES_NAMES = "variables_names"
+    _VARIABLES_SIZES = "variables_sizes"
     SEED = "seed"
 
     def __init__(self):
@@ -112,6 +114,8 @@ class DOELibrary(DriverLib):
         problem.stop_if_nan = False
         LOGGER.info("%s", problem)
         options[self.DIMENSION] = self.problem.dimension
+        options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
+        options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
         self.samples = self._generate_samples(**options)
         self.init_iter_observer(len(self.samples), "DOE sampling")
         self.problem.add_callback(self.new_iteration_callback)
@@ -367,6 +371,8 @@ class DOELibrary(DriverLib):
             The design of experiments
             whose rows are the samples and columns the variables.
         """
+        options[self._VARIABLES_NAMES] = variables_space.variables_names
+        options[self._VARIABLES_SIZES] = variables_space.variables_sizes
         doe = self._generate_samples(
             n_samples=size, dimension=variables_space.dimension, **options
         )
