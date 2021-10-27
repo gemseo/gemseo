@@ -50,7 +50,7 @@ FAIL_HDF = DIRNAME / "fail2.hdf5"
 
 
 @pytest.fixture
-def pow2_problem():
+def pow2_problem():  # type: (...) -> OptimizationProblem
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
     x_0 = np.ones(3)
@@ -758,7 +758,7 @@ def test_undefined_differentiation_method():
 
 
 @pytest.fixture
-def problem():
+def problem():  # type: (...) -> OptimizationProblem
     """A simple optimization problem :math:`max_x x`."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0, u_b=1, value=0.5)
@@ -821,3 +821,53 @@ def test_int_opt_problem():
     problem.objective = -f_1
     OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
     assert problem.get_optimum()[1] == array([2.0])
+
+
+@pytest.fixture(scope="module")
+def constrained_problem():  # type: (...) -> OptimizationProblem
+    """A constrained optimisation problem with multidimensional constraints."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, value=1.0)
+    objective = MDOFunction(lambda x: x.sum(), "f")
+    constraint_1d = MDOFunction(lambda x: x[0], "g")
+    constraint_2d = MDOFunction(lambda x: x, "h")
+    problem = OptimizationProblem(design_space)
+    problem.objective = objective
+    problem.add_constraint(constraint_1d, cstr_type="ineq")
+    problem.add_constraint(constraint_2d, cstr_type="eq")
+    return problem
+
+
+def test_get_functions_dimensions(constrained_problem):
+    """Check the computation of the functions dimensions."""
+    dimensions = constrained_problem.get_functions_dimensions()
+    assert dimensions == {"f": 1, "g": 1, "h": 2}
+
+
+@pytest.mark.parametrize(
+    ["design", "n_unsatisfied"],
+    [
+        (array([0.0, 0.0]), 0),
+        (array([-1.0, 0.0]), 1),
+        (array([-1.0, -1.0]), 2),
+        (array([1.0, 1.0]), 3),
+    ],
+)
+def test_get_number_of_unsatisfied_constraints(
+    constrained_problem, design, n_unsatisfied
+):
+    """Check the computation of the number of unsatisfied constraints."""
+    assert (
+        constrained_problem.get_number_of_unsatisfied_constraints(design)
+        == n_unsatisfied
+    )
+
+
+def test_get_scalar_constraints_names(constrained_problem):
+    """Check the computation of the scalar constraints names."""
+    scalar_names = constrained_problem.get_scalar_constraints_names()
+    assert set(scalar_names) == {
+        "g",
+        "h{}0".format(DesignSpace.SEP),
+        "h{}1".format(DesignSpace.SEP),
+    }

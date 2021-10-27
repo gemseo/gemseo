@@ -83,6 +83,7 @@ from numpy import (
 )
 from numpy import number as np_number
 from numpy import where
+from numpy.core import atleast_1d
 from numpy.linalg import norm
 
 from gemseo.algos.aggregation.aggregation_func import (
@@ -1920,3 +1921,60 @@ class OptimizationProblem(object):
     def is_mono_objective(self):  # type: (...) -> bool
         """Whether the optimization problem is mono-objective."""
         return len(self.objective.outvars) == 1
+
+    def get_functions_dimensions(self):  # type: (...) -> Dict[str, int]
+        """Return the dimensions of the outputs of the problem functions.
+
+        Returns:
+            The dimensions of the outputs of the problem functions.
+            The dictionary keys are the functions names
+            and the values are the functions dimensions.
+        """
+        design_variables = self.design_space.get_current_x()
+        values, _ = self.evaluate_functions(design_variables, normalize=False)
+        return {name: atleast_1d(value).size for name, value in values.items()}
+
+    def get_number_of_unsatisfied_constraints(
+        self,
+        design_variables,  # type: ndarray
+    ):  # type: (...) -> int
+        """Return the number of scalar constraints not satisfied by design variables.
+
+        Args:
+            design_variables: The design variables.
+
+        Returns:
+            The number of unsatisfied scalar constraints.
+        """
+        n_unsatisfied = 0
+        values, _ = self.evaluate_functions(design_variables, normalize=False)
+        for constraint in self.constraints:
+            value = atleast_1d(values[constraint.name])
+            if constraint.f_type == MDOFunction.TYPE_EQ:
+                value = numpy.absolute(value)
+                tolerance = self.eq_tolerance
+            else:
+                tolerance = self.ineq_tolerance
+            n_unsatisfied += sum(value > tolerance)
+        return n_unsatisfied
+
+    def get_scalar_constraints_names(self):  # type: (...) -> List[str]
+        """Return the names of the scalar constraints.
+
+        Returns:
+            The names of the scalar constraints.
+        """
+        constraints_names = list()
+        dimensions = self.get_functions_dimensions()
+        for name in self.get_constraints_names():
+            dimension = dimensions[name]
+            if dimension == 1:
+                constraints_names.append(name)
+            else:
+                constraints_names.extend(
+                    [
+                        "{}{}{}".format(name, DesignSpace.SEP, index)
+                        for index in range(dimension)
+                    ]
+                )
+        return constraints_names

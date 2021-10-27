@@ -35,6 +35,9 @@ Added
 - The documentation now includes a link to the gemseo-scilab plugin.
 - ParetoFront: an example of a BiLevel scenario to compute the Pareto front has been added the examples.
 - Scenario, MDOScenario and DOEScenario now include the argument ``grammar_type``.
+- It is now possible to get the number of constraints not satisfied by a design in an OptimizationProblem.
+- The names of the scalar constraints in an OptimizationProblem can be retrieved as a list.
+- The dimensions of the outputs for functions in an OptimizationProblem are now available as a dictionary.
 
 Changed
 -------
