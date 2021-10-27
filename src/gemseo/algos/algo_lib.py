@@ -304,9 +304,8 @@ class AlgoLib(object):
         # Check that the algorithm is available
         if algo_name not in self.lib_dict:
             raise KeyError(
-                "Requested algorithm"
-                + " %s is not in list of available algorithms %s"
-                % (algo_name, list(self.lib_dict.keys()))
+                "Requested algorithm {} is not in list of available algorithms: "
+                "{}.".format(algo_name, ", ".join(self.lib_dict.keys()))
             )
 
         # Check that the algorithm is suited to the problem
