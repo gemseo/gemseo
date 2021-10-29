@@ -223,9 +223,8 @@ class AlgoLib(object):
         """
         for option_key in options:
             if not self.driver_has_option(option_key):
-                msg = "Driver " + self.algo_name + " has no option " + option_key
-                msg += ", option is ignored !"
-                LOGGER.warning(msg)
+                msg = "Driver %s has no option %s, option is ignored."
+                LOGGER.warning(msg, self.algo_name, option_key)
 
     def execute(
         self,
