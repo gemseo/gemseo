@@ -32,6 +32,7 @@ from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
 from openturns.viewer import View
+from packaging import version
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.string_tools import MultiLineString
@@ -816,7 +817,10 @@ class OpenTURNS(DOELibrary):
                         "{} is not an available temperature profile; "
                         "available ones are: {}.".format(temperature, self.TEMPERATURES)
                     )
-                algo = openturns.SimulatedAnnealingLHS(lhs, temperature, criterion)
+                if version.parse(openturns.__version__) < version.parse("1.17.0"):
+                    algo = openturns.SimulatedAnnealingLHS(lhs, temperature, criterion)
+                else:
+                    algo = openturns.SimulatedAnnealingLHS(lhs, criterion, temperature)
                 design = algo.generate()
             else:
                 n_replicates = options.get(self.N_REPLICATES, 1000)
