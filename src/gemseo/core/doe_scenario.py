@@ -95,27 +95,28 @@ class DOEScenario(Scenario):
 
     def _run_algorithm(self):  # type: (...) -> None
         self.seed += 1
-        problem = self.formulation.opt_problem
+
         algo_name = self.local_data[self.ALGO]
-        n_samples = self.local_data.get(self.N_SAMPLES)
         options = self.local_data.get(self.ALGO_OPTIONS)
         if options is None:
             options = {}
-        if self.N_SAMPLES in options:
-            LOGGER.warning(
-                "Double definition of algorithm option n_samples, " "keeping value: %s",
-                n_samples,
-            )
-            options.pop(self.N_SAMPLES)
 
-        if self.ALGO_OPTIONS in self.local_data:
-            options = self.local_data[self.ALGO_OPTIONS]
         lib = self._algo_factory.create(algo_name)
         lib.init_options_grammar(algo_name)
-        if self.SEED in lib.opt_grammar.get_data_names():
-            if self.SEED not in options:
-                options[self.SEED] = self.seed
-        self.optimization_result = lib.execute(problem, n_samples=n_samples, **options)
+        if self.SEED in lib.opt_grammar.get_data_names() and self.SEED not in options:
+            options[self.SEED] = self.seed
+
+        if self.N_SAMPLES in lib.opt_grammar.get_data_names():
+            n_samples = self.local_data.get(self.N_SAMPLES)
+            if self.N_SAMPLES in options:
+                LOGGER.warning(
+                    "Double definition of algorithm option n_samples, keeping value: %s.",
+                    n_samples,
+                )
+            options[self.N_SAMPLES] = n_samples
+
+        self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
+
         return self.optimization_result
 
     def _run(self):  # type: (...) -> None

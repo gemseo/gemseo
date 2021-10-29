@@ -101,6 +101,7 @@ Fixed
 - Post-processings based on SymLogNorm (matplotlib) now works with Python 3.6.
 - DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
+- DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
 
 Version 3.1.0 (July 2021)
 *************************
