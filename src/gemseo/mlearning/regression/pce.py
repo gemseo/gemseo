@@ -154,7 +154,7 @@ class PCERegression(MLRegressionAlgo):
                 to compute the marginal number of points by input dimension.
                 If None, this degree will be set equal
                 to the polynomial degree of the PCE plus one.
-            stieltjes: Use the Stieltjes method.
+            stieltjes: Whether to use the Stieltjes method.
             sparse_param: The parameters for the Sparse Cleaning Truncation
                 Strategy and/or hyperbolic truncation of the initial basis:
 

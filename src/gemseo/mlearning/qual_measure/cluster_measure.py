@@ -26,7 +26,8 @@ The concept of clustering quality measure is implemented with the
 """
 from __future__ import division, unicode_literals
 
-from typing import Dict, List, NoReturn, Optional, Union
+from copy import deepcopy
+from typing import Dict, NoReturn, Optional, Sequence, Union
 
 from numpy import arange
 from numpy import delete as npdelete
@@ -56,7 +57,7 @@ class MLClusteringMeasure(MLQualityMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
@@ -78,8 +79,8 @@ class MLClusteringMeasure(MLQualityMeasure):
         Args:
             data: The reference data.
             labels: The predicted labels.
-            multioutput: If True, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether to return the quality measure
+                for each output component; if not, average these measures.
 
         Returns:
             The value of the quality measure.
@@ -113,7 +114,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
@@ -128,7 +129,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
@@ -136,13 +137,15 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
         data = self._get_data()
 
+        algo = deepcopy(self.algo)
+
         qualities = []
         for n_fold in range(n_folds):
             test_indices = folds[n_fold]
             train_indices = npdelete(samples, test_indices)
-            self.algo.learn(samples=train_indices)
+            algo.learn(samples=train_indices)
             test_data = data[test_indices]
-            predictions = self.algo.predict(test_data)
+            predictions = algo.predict(test_data)
             quality = self._compute_measure(test_data, predictions, multioutput)
             qualities.append(quality)
 
@@ -153,25 +156,24 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
-        if isinstance(samples, list):
-            n_samples = len(samples)
-        else:
-            n_samples = samples.size
+        n_samples = samples.size
         indices = arange(n_samples)
 
         data = self._get_data()
+
+        algo = deepcopy(self.algo)
 
         qualities = []
         for _ in range(n_replicates):
             train_indices = unique(choice(n_samples, n_samples))
             test_indices = npdelete(indices, train_indices)
-            self.algo.learn(samples=[samples[index] for index in train_indices])
+            algo.learn(samples=[samples[index] for index in train_indices])
             test_data = data[[samples[index] for index in test_indices]]
-            predictions = self.algo.predict(test_data)
+            predictions = algo.predict(test_data)
 
             quality = self._compute_measure(test_data, predictions, multioutput)
             qualities.append(quality)
@@ -191,8 +193,8 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         Args:
             data: The reference data.
             labels: The predicted labels.
-            multioutput: If True, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether to return the quality measure
+                for each output component. If not, average these measures.
 
         Returns:
             The value of the quality measure.

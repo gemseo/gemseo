@@ -178,7 +178,7 @@ class MLAlgoCalibration(object):
     Attributes:
         algo_assessor (MLAlgoAssessor): The assessor for the machine learning algorithm.
         calibration_space (DesignSpace): The space defining the calibration variables.
-        maximize_objective (bool): If True, seek to maximize the quality measure.
+        maximize_objective (bool): Whether to maximize the quality measure.
         dataset (Dataset): The learning dataset.
         optimal_parameters (Dict[str,ndarray]): The optimal parameters
             for the machine learning algorithm.

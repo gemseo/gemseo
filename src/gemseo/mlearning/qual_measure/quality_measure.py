@@ -25,7 +25,7 @@ The concept of quality measure is implemented with the :class:`.MLQualityMeasure
 """
 from __future__ import division, unicode_literals
 
-from typing import List, NoReturn, Optional, Tuple, Union
+from typing import List, NoReturn, Optional, Sequence, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -33,9 +33,10 @@ from numpy import arange, array, array_split, ndarray
 from numpy.random import shuffle
 
 from gemseo.core.dataset import Dataset
+from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 
-OptionType = Optional[Union[List[int], bool, int, Dataset]]
+OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 
 
 @six.add_metaclass(
@@ -72,7 +73,7 @@ class MLQualityMeasure(object):
     def evaluate(
         self,
         method=LEARN,  # type: str
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         **options  # type: Optional[OptionType]
     ):  # type: (...) -> Union[float,ndarray]
         """Evaluate the quality measure.
@@ -107,7 +108,7 @@ class MLQualityMeasure(object):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using the learning dataset.
@@ -115,8 +116,8 @@ class MLQualityMeasure(object):
         Args:
             samples: The indices of the learning samples.
                 If None, use the whole learning dataset.
-            multioutput: If True, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether to return the quality measure
+                for each output component. If not, average these measures.
 
         Returns:
             The value of the quality measure.
@@ -126,7 +127,7 @@ class MLQualityMeasure(object):
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using a test dataset.
@@ -145,7 +146,7 @@ class MLQualityMeasure(object):
 
     def evaluate_loo(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         """Evaluate the quality measure using the leave-one-out technique.
@@ -167,7 +168,7 @@ class MLQualityMeasure(object):
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
     ):  # type: (...) -> NoReturn
@@ -189,7 +190,7 @@ class MLQualityMeasure(object):
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using the bootstrap technique.
@@ -236,8 +237,8 @@ class MLQualityMeasure(object):
 
     def _assure_samples(
         self,
-        samples,  # type: Optional[List[int]]
-    ):  # type: (...) -> Union[List[int],ndarray]
+        samples,  # type: Optional[Sequence[int]]
+    ):  # type: (...) -> ndarray
         """Get the list of all samples if samples is None.
 
         Args:
@@ -253,10 +254,10 @@ class MLQualityMeasure(object):
 
     def _compute_folds(
         self,
-        samples,  # type: Optional[List[int]]
+        samples,  # type: Optional[Sequence[int]]
         n_folds,  # type: int
         randomize,  # type: bool
-    ):  # type: (...) -> Tuple[List[ndarray],Union[List[int],ndarray]]
+    ):  # type: (...) -> Tuple[List[ndarray],ndarray]
         """Divide the elements into folds.
 
         Args:
@@ -273,3 +274,12 @@ class MLQualityMeasure(object):
         if randomize:
             shuffle(samples)
         return array_split(samples, n_folds), samples
+
+
+class MLQualityMeasureFactory(Factory):
+    """A factory of :class:`.MLQualityMeasure`."""
+
+    def __init__(self):
+        super(MLQualityMeasureFactory, self).__init__(
+            MLQualityMeasure, ("gemseo.mlearning.qual_measure",)
+        )

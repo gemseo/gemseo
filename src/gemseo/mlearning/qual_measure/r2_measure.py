@@ -41,6 +41,7 @@ where
 """
 from __future__ import division, unicode_literals
 
+from copy import deepcopy
 from typing import List, NoReturn, Optional, Union
 
 from numpy import atleast_2d
@@ -92,6 +93,8 @@ class R2Measure(MLErrorMeasure):
 
         multiout = "raw_values" if multioutput else "uniform_average"
 
+        algo = deepcopy(self.algo)
+
         num = 0
         ymean = mean(outputs, axis=0)
         ymean = atleast_2d(ymean)
@@ -100,9 +103,9 @@ class R2Measure(MLErrorMeasure):
         for n_fold in range(n_folds):
             fold = folds[n_fold]
             train = npdelete(samples, fold)
-            self.algo.learn(samples=train)
+            algo.learn(samples=train)
             expected = outputs[fold]
-            predicted = self.algo.predict(inputs[fold])
+            predicted = algo.predict(inputs[fold])
             tmp = mean_squared_error(expected, predicted, multioutput=multiout)
             num += tmp * len(fold)
 

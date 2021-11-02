@@ -55,13 +55,18 @@ from __future__ import division, unicode_literals
 from itertools import product
 from typing import Optional, Sequence, Tuple, Union
 
+from six import string_types
+
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import (
+    MLQualityMeasure,
+    MLQualityMeasureFactory,
+)
 from gemseo.mlearning.qual_measure.quality_measure import (
     OptionType as MeasureOptionType,
 )
@@ -85,7 +90,7 @@ class MLAlgoSelection(object):
     def __init__(
         self,
         dataset,  # type: Dataset
-        measure,  # type: str
+        measure,  # type: Union[str,MLQualityMeasure]
         eval_method=MLQualityMeasure.LEARN,  # type: str
         samples=None,  # type: Optional[Sequence[int]]
         **measure_options  # type:MeasureOptionType
@@ -107,7 +112,11 @@ class MLAlgoSelection(object):
             ValueError: If the unsupported "multioutput" option is enabled.
         """
         self.dataset = dataset
-        self.measure = measure
+        if isinstance(measure, string_types):
+            self.measure = MLQualityMeasureFactory().get_class(measure)
+        else:
+            self.measure = measure
+
         self.measure_options = dict(
             samples=samples, method=eval_method, **measure_options
         )
@@ -187,8 +196,8 @@ class MLAlgoSelection(object):
                 algo = algo_new
                 quality = quality_new
 
-        # Learn on the entire dataset if a cross-validation scheme was used
-        algo.learn(self.measure_options["samples"])
+        if not algo.is_trained:
+            algo.learn(self.measure_options["samples"])
 
         self.candidates.append((algo, quality))
 
@@ -204,7 +213,7 @@ class MLAlgoSelection(object):
         in the calibration space.
 
         Args:
-            return_quality: If True, the quality of the best model will be returned.
+            return_quality: Whether to return the quality of the best model.
 
         Returns:
             The best model and its quality if required.
