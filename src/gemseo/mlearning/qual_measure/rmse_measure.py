@@ -41,7 +41,7 @@ where
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Optional, Union
+from typing import Optional, Sequence, Union
 
 from numpy import ndarray
 
@@ -65,7 +65,7 @@ class RMSEMeasure(MSEMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_learn(
@@ -76,7 +76,7 @@ class RMSEMeasure(MSEMeasure):
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_test(
@@ -87,7 +87,7 @@ class RMSEMeasure(MSEMeasure):
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
@@ -102,7 +102,7 @@ class RMSEMeasure(MSEMeasure):
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_bootstrap(

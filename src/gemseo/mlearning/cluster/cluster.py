@@ -37,7 +37,7 @@ which inherits from :class:`.MLClusteringAlgo`.
 """
 from __future__ import division, unicode_literals
 
-from typing import Dict, Iterable, List, NoReturn, Optional, Union
+from typing import Dict, Iterable, NoReturn, Optional, Sequence, Union
 
 from numpy import atleast_2d, ndarray, unique, zeros
 
@@ -67,7 +67,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
         data,  # type:Dataset
         transformer=None,  # type: Optional[TransformerType]
         var_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type:MLAlgoParameterType
+        **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         super(MLClusteringAlgo, self).__init__(
             data, transformer=transformer, var_names=var_names, **parameters
@@ -75,11 +75,11 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
         self.labels = None
         self.n_clusters = None
 
-    def learn(
+    def _learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        indices,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> None
-        super(MLClusteringAlgo, self).learn(samples=samples)
+        super(MLClusteringAlgo, self)._learn(indices)
         if self.labels is None:
             raise ValueError("self._fit() shall assign labels.")
         self.n_clusters = unique(self.labels).shape[0]

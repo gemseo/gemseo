@@ -117,7 +117,7 @@ class PolynomialRegression(LinearRegression):
         """
         Args:
             degree: The polynomial degree.
-            fit_intercept: If True, fit intercept.
+            fit_intercept: Whether to fit the intercept.
             penalty_level: The penalty level greater or equal to 0.
                 If 0, there is no penalty.
             l2_penalty_ratio: The penalty ratio

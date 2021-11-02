@@ -363,7 +363,7 @@ def get_mlearning_options(
 
     Args:
         model_name: The name of the machine learning algorithm.
-        output_json: Apply JSON format for the schema.
+        output_json: Whether to apply JSON format for the schema.
         pretty_print: Whether to print the schema in a pretty table.
 
     Returns:
@@ -391,7 +391,7 @@ def get_regression_options(
 
     Args:
         model_name: The name of the regression model.
-        output_json: Apply JSON format for the schema.
+        output_json: Whether to apply JSON format for the schema.
         pretty_print: Print the schema in a pretty table.
 
     Returns:
@@ -419,7 +419,7 @@ def get_classification_options(
 
     Args:
         model_name: The name of the classification model.
-        output_json: Apply JSON format for the schema.
+        output_json: Whether to apply JSON format for the schema.
         pretty_print: Print the schema in a pretty table.
 
     Returns:
@@ -447,7 +447,7 @@ def get_clustering_options(
 
     Args:
         model_name: The name of the clustering model.
-        output_json: Apply JSON format for the schema.
+        output_json: Whether to apply JSON format for the schema.
         pretty_print: Print the schema in a pretty table.
 
     Returns:

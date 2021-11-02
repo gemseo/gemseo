@@ -85,7 +85,7 @@ class MLAlgoFactory(object):
             ml_algo: The name of a machine learning algorithm (its class name).
 
         Returns:
-            The availability of the machine learning algorithm.
+            Whether the machine learning algorithm is available.
         """
         return self.factory.is_available(ml_algo)
 

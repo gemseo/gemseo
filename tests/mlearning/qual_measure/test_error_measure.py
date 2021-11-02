@@ -25,8 +25,11 @@ from __future__ import division, unicode_literals
 import pytest
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
+from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from gemseo.utils.py23_compat import xrange
 
 
 @pytest.fixture
@@ -50,3 +53,16 @@ def test_evaluate(measure):
         measure.evaluate_kfolds(n_folds=5)
     with pytest.raises(NotImplementedError):
         measure.evaluate_bootstrap(n_replicates=100)
+
+
+@pytest.mark.parametrize(
+    "method",
+    ["bootstrap", "kfolds"],
+)
+def test_resampling_based_measure(method):
+    """Check that a resampling-based measure does not re-train the algo (but a copy)."""
+    dataset = RosenbrockDataset(opt_naming=False)
+    algo = PolynomialRegression(dataset, degree=2)
+    measure = MSEMeasure(algo)
+    measure.evaluate(method)
+    assert list(algo.learning_samples_indices) == list(xrange(len(dataset)))

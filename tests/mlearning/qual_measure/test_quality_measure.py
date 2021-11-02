@@ -29,7 +29,10 @@ from numpy import array
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import (
+    MLQualityMeasure,
+    MLQualityMeasureFactory,
+)
 
 
 @pytest.fixture(scope="module")
@@ -80,6 +83,11 @@ def test_is_better():
 def test_assure_samples(measure):
     assert measure._assure_samples([1, 2]).tolist() == [1, 2]
     assert measure._assure_samples(None) == array([0])
+
+
+def test_factory():
+    """Check that the factory of MLQualityMeasure works correctly."""
+    assert "MSEMeasure" in MLQualityMeasureFactory().classes
 
 
 @pytest.fixture

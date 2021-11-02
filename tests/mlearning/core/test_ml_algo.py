@@ -30,7 +30,7 @@ from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import Path, xrange
 
 
 class NewMLAlgo(MLAlgo):
@@ -39,7 +39,11 @@ class NewMLAlgo(MLAlgo):
     LIBRARY = "NewLibrary"
 
     def learn(self, samples=None):
+        super(NewMLAlgo, self).learn(samples=samples)
         self._trained = True
+
+    def _learn(self, indices):
+        pass
 
 
 @pytest.fixture
@@ -63,23 +67,25 @@ def test_constructor(dataset):
     assert kmeans.is_trained
 
 
-def test_notimplementederror(dataset):
-    """Test notimplementederror."""
-    ml_algo = MLAlgo(dataset)
-    with pytest.raises(NotImplementedError):
-        ml_algo.learn()
+def test_learning_samples(dataset):
+    algo = NewMLAlgo(dataset)
+    algo.learn()
+    assert list(algo.learning_samples_indices) == list(xrange(len(dataset)))
+    algo = NewMLAlgo(dataset)
+    algo.learn(samples=[0, 1])
+    assert algo.learning_samples_indices == [0, 1]
 
 
-def test_str(dataset):
+@pytest.mark.parametrize("samples", [xrange(10), [1, 2]])
+@pytest.mark.parametrize("trained", [False, True])
+def test_str(dataset, samples, trained):
     """Test string representation."""
     ml_algo = NewMLAlgo(dataset)
-    expected = "\n".join(
-        [
-            "NewMLAlgo()",
-            "   based on the NewLibrary library",
-            "   built from 10 learning samples",
-        ]
-    )
+    ml_algo._learning_samples_indices = samples
+    ml_algo._trained = trained
+    expected = "\n".join(["NewMLAlgo()", "   based on the NewLibrary library"])
+    if ml_algo.is_trained:
+        expected += "\n   built from {} learning samples".format(len(samples))
     assert str(ml_algo) == expected
 
 

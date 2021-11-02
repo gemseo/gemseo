@@ -99,6 +99,7 @@ Fixed
 - The image comparison tests in post/dataset no longer leave the generated files when completed.
 - DesignSpace no longer logs an erroneous warning when unnormalizing an unbounded variable.
 - Post-processings based on SymLogNorm (matplotlib) now works with Python 3.6.
+- Resampling-based MLQualityMeasure no longer re-train the original ML model, but a copy.
 - DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.

@@ -30,7 +30,7 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import division, unicode_literals
 
-from typing import Iterable, List, NoReturn, Optional
+from typing import Iterable, NoReturn, Optional, Sequence
 
 from numpy import hstack, ndarray
 
@@ -67,9 +67,9 @@ class MLUnsupervisedAlgo(MLAlgo):
         )
         self.var_names = var_names or data.variables
 
-    def learn(
+    def _learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        indices,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> None
         if set(self.var_names) == set(self.learning_set.variables):
             data = []
@@ -88,11 +88,10 @@ class MLUnsupervisedAlgo(MLAlgo):
                 data.append(sub_data)
             data = hstack(data)
 
-        if samples is not None:
-            data = data[samples]
+        if indices is not None:
+            data = data[indices]
 
         self._fit(data)
-        self._trained = True
 
     def _fit(
         self,

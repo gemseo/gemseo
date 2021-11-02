@@ -100,7 +100,7 @@ from __future__ import division, unicode_literals
 import logging
 import pickle
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -109,7 +109,7 @@ from numpy import ndarray
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import Path, xrange
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -161,7 +161,7 @@ class MLAlgo(object):
 
     def __init__(
         self,
-        data,  # type:Dataset
+        data,  # type: Dataset
         transformer=None,  # type: Optional[TransformerType]
         **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None
@@ -191,6 +191,7 @@ class MLAlgo(object):
         self.algo = None
         self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
+        self._learning_samples_indices = xrange(len(self.learning_set))
 
     class DataFormatters(object):
         """Decorators for the internal MLAlgo methods."""
@@ -200,14 +201,33 @@ class MLAlgo(object):
         """Return whether the algorithm is trained."""
         return self._trained
 
+    @property
+    def learning_samples_indices(self):  # type: (...) -> Sequence[int]
+        """The indices of the learning samples used for the training."""
+        return self._learning_samples_indices
+
     def learn(
         self,
-        samples=None,  # type: List[int]
+        samples=None,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> None
         """Train the machine learning algorithm from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
+                If None, use the whole learning dataset.
+        """
+        if samples is not None:
+            self._learning_samples_indices = samples
+        self._learn(samples)
+        self._trained = True
+
+    def _learn(
+        self, indices  # type: Optional[Sequence[int]]
+    ):  # type: (...) -> None
+        """Define the indices of the learning samples.
+
+        Args:
+            indices: The indices of the learning samples.
                 If None, use the whole learning dataset.
         """
         raise NotImplementedError
@@ -218,7 +238,10 @@ class MLAlgo(object):
         msg.indent()
         if self.LIBRARY is not None:
             msg.add("based on the {} library", self.LIBRARY)
-        msg.add("built from {} learning samples", self.learning_set.length)
+        if self.is_trained:
+            msg.add(
+                "built from {} learning samples", len(self._learning_samples_indices)
+            )
         return str(msg)
 
     def save(
@@ -232,8 +255,8 @@ class MLAlgo(object):
         Args:
             directory: The name of the directory to save the algorithm.
             path: The path to parent directory where to create the directory.
-            save_learning_set: If False, do not save the learning set
-                to lighten the saved files.
+            save_learning_set: Whether to save the learning set
+                or get rid of it to lighten the saved files.
 
         Returns:
             The path to the directory where the algorithm is saved.
