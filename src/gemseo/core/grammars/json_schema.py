@@ -152,7 +152,7 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
         del self._properties[key]
         try:
             self._root_node._active_strategies[0]._required.remove(key)
-        except IndexError:
+        except KeyError:
             pass
 
     # For backward compatibility
