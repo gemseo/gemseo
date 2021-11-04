@@ -495,7 +495,6 @@ def test_export_hdf(tmp_wd):
 
     def check_pb(imp_pb):
         assert file_path.exists()
-        imp_pb = OptimizationProblem.import_hdf(file_path)
         assert str(imp_pb) == str(problem)
         assert str(imp_pb.solution) == str(problem.solution)
         assert file_path.exists()

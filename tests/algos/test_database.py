@@ -23,8 +23,9 @@
 
 from __future__ import division, unicode_literals
 
+import h5py
 import pytest
-from numpy import arange, array, ones
+from numpy import arange, array, ones, string_
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
 from scipy.optimize import rosen, rosen_der
@@ -32,15 +33,15 @@ from scipy.optimize import rosen, rosen_der
 from gemseo.algos.database import Database, HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.py23_compat import PY2, OrderedDict, Path
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"
 
 
-def test_init():
-    """Tests Database initializer."""
-    Database()
+@pytest.fixture()
+def h5_file(tmp_path):
+    return h5py.File(tmp_path / "test.h5", "w")
 
 
 def rel_err(to_test, ref):
@@ -239,6 +240,189 @@ def test_append_export(tmp_wd):
     assert len(Database(file_path_db)) == n_calls + 1
 
 
+def test_append_export_after_store(tmp_path):
+    """Test that a database is correctly exported when it is appended after each storage
+    call."""
+
+    database = Database()
+    file_path_db = tmp_path / "test_db_append.hdf5"
+    val1 = {"f": arange(2)}
+    val2 = {"g": 10}
+    val3 = {"@f": array([[100], [200]])}
+    n_calls = 50
+    for i in range(n_calls):
+        idx = array([i, i + 1])
+        database.store(idx, values_dict=val1, add_iter=True)
+        database.export_hdf(file_path_db, append=True)
+        database.store(idx, values_dict=val2, add_iter=True)
+        database.export_hdf(file_path_db, append=True)
+        database.store(idx, values_dict=val3, add_iter=True)
+        database.export_hdf(file_path_db, append=True)
+
+    new_database = Database(file_path_db)
+
+    n_calls = len(database)
+
+    assert len(new_database) == n_calls
+
+    for i in range(n_calls):
+        idx = array([i, i + 1])
+        for key, value in database[idx].items():
+            assert value == pytest.approx(new_database[idx][key])
+
+
+def test_create_hdf_input_dataset(h5_file):
+    """Test that design variable values are correctly added to the hdf5 group of design
+    variables."""
+    database = Database()
+
+    design_vars_grp = h5_file.require_group("x")
+
+    input_val_1 = HashableNdarray(array([0, 1, 2]))
+    database._add_hdf_input_dataset(0, design_vars_grp, input_val_1)
+    assert array(design_vars_grp["0"]) == pytest.approx(input_val_1.unwrap())
+
+    database._add_hdf_input_dataset(1, design_vars_grp, input_val_1)
+    assert array(design_vars_grp["1"]) == pytest.approx(input_val_1.unwrap())
+
+    input_val_2 = HashableNdarray(array([3, 4, 5]))
+    with pytest.raises(ValueError):
+        database._add_hdf_input_dataset(0, design_vars_grp, input_val_2)
+
+
+def test_add_hdf_name_output(h5_file):
+    """Test that output names are correctly added to the hdf5 group of output names."""
+    database = Database()
+
+    keys_group = h5_file.require_group("k")
+
+    database._add_hdf_name_output(0, keys_group, ["f1"])
+    assert array(keys_group["0"]) == array(["f1"], dtype=string_)
+
+    database._add_hdf_name_output(0, keys_group, ["f2", "f3", "f4"])
+    assert (
+        array(keys_group["0"]) == array(["f1", "f2", "f3", "f4"], dtype=string_)
+    ).all()
+
+    database._add_hdf_name_output(1, keys_group, ["f2", "f3", "f4"])
+    assert (array(keys_group["1"]) == array(["f2", "f3", "f4"], dtype=string_)).all()
+
+
+def test_add_hdf_scalar_output(h5_file):
+    """Test that scalar values are correctly added to the group of output values."""
+    database = Database()
+
+    values_group = h5_file.require_group("v")
+
+    database._add_hdf_scalar_output(0, values_group, [10])
+    assert array(values_group["0"]) == pytest.approx(array([10]))
+
+    database._add_hdf_scalar_output(0, values_group, [20])
+    assert array(values_group["0"]) == pytest.approx(array([10, 20]))
+
+    database._add_hdf_scalar_output(0, values_group, [30, 40, 50, 60])
+    assert array(values_group["0"]) == pytest.approx(array([10, 20, 30, 40, 50, 60]))
+
+    database._add_hdf_scalar_output(1, values_group, [100, 200])
+    assert array(values_group["1"]) == pytest.approx(array([100, 200]))
+
+
+def test_add_hdf_vector_output(h5_file):
+    """Test that a vector (array and/or list) of outputs is correctly added to the group
+    of output values."""
+    database = Database()
+
+    values_group = h5_file.require_group("v")
+
+    database._add_hdf_vector_output(0, 0, values_group, [10, 20, 30])
+    assert array(values_group["arr_0"]["0"]) == pytest.approx(array([10, 20, 30]))
+
+    database._add_hdf_vector_output(0, 1, values_group, array([100, 200]))
+    assert array(values_group["arr_0"]["1"]) == pytest.approx(array([100, 200]))
+
+    database._add_hdf_vector_output(1, 2, values_group, array([[0.1, 0.2, 0.3, 0.4]]))
+    assert array(values_group["arr_1"]["2"]) == pytest.approx(
+        array([[0.1, 0.2, 0.3, 0.4]])
+    )
+
+    with pytest.raises(ValueError):
+        database._add_hdf_vector_output(1, 2, values_group, [1, 2])
+
+
+def test_add_hdf_output_dataset(h5_file):
+    """Test that output datasets are correctly added to the hdf groups of output."""
+    database = Database()
+
+    values_group = h5_file.require_group("v")
+    keys_group = h5_file.require_group("k")
+
+    values = OrderedDict()
+    values["f"] = 10
+    values["g"] = array([1, 2])
+    values["Iter"] = [3]
+    values["@f"] = array([[1, 2, 3]])
+    database._add_hdf_output_dataset(10, keys_group, values_group, values)
+    assert list(keys_group["10"]) == list(array(list(values.keys()), dtype=string_))
+    assert array(values_group["10"]) == pytest.approx(array([10]))
+    assert array(values_group["arr_10"]["1"]) == pytest.approx(array([1, 2]))
+    assert array(values_group["arr_10"]["2"]) == pytest.approx(array([3]))
+    assert array(values_group["arr_10"]["3"]) == pytest.approx(array([[1, 2, 3]]))
+
+    values = OrderedDict()
+    values["i"] = array([1, 2])
+    values["Iter"] = 1
+    values["@j"] = array([[1, 2, 3]])
+    values["k"] = 99
+    values["l"] = 100
+    database._add_hdf_output_dataset(100, keys_group, values_group, values)
+    assert list(keys_group["100"]) == list(array(list(values.keys()), dtype=string_))
+    assert array(values_group["100"]) == pytest.approx(array([1, 99, 100]))
+    assert array(values_group["arr_100"]["0"]) == pytest.approx(array([1, 2]))
+    assert array(values_group["arr_100"]["2"]) == pytest.approx(array([[1, 2, 3]]))
+
+
+def test_get_missing_hdf_output_dataset(h5_file):
+    """Test that missing values in the hdf  output datasets are correctly found."""
+    database = Database()
+
+    values_group = h5_file.require_group("v")
+    keys_group = h5_file.require_group("k")
+
+    values = OrderedDict({"f": 0.1})
+    values["g"] = array([1, 2])
+    database._add_hdf_output_dataset(10, keys_group, values_group, values)
+
+    with pytest.raises(ValueError):
+        database._get_missing_hdf_output_dataset(0, keys_group, values)
+
+    values = OrderedDict({"f": 0.1})
+    values["g"] = array([1, 2])
+    values["h"] = [10]
+    new_values, idx_mapping = database._get_missing_hdf_output_dataset(
+        10, keys_group, values
+    )
+    assert new_values == {"h": [10]}
+    assert idx_mapping == {"h": 2}
+
+    values = OrderedDict({"f": 0.1})
+    values["g"] = array([1, 2])
+    new_values, idx_mapping = database._get_missing_hdf_output_dataset(
+        10, keys_group, values
+    )
+    assert new_values == {}
+    assert idx_mapping is None
+
+    values = OrderedDict({"f": 0.1})
+    values["g"] = array([1, 2])
+    values["h"] = [2, 3]
+    values["i"] = 20
+    new_values, idx_mapping = database._get_missing_hdf_output_dataset(
+        10, keys_group, values
+    )
+    assert new_values == {"h": [2, 3], "i": 20}
+    assert idx_mapping == {"h": 2, "i": 3}
+
+
 def test_get_x_by_iter_except():
     """Tests exception in get_x_by_iter."""
     problem = Rosenbrock()
@@ -297,10 +481,11 @@ def test_hdf_grad_export(tmp_wd):
     f_database_ref, x_database_ref = database.get_complete_history()
     func_data = "rosen_grad_test.hdf5"
     database.export_hdf(func_data)
+
     database_read = Database(func_data)
     f_database, x_database = database_read.get_complete_history()
-    assert (norm(array(f_database) - array(f_database_ref)) < 1e-16).all()
-    assert (norm(array(x_database) - array(x_database_ref)) < 1e-16).all()
+    assert array(f_database) == pytest.approx(array(f_database_ref), rel=1e-16)
+    assert array(x_database) == pytest.approx(array(x_database_ref), rel=1e-16)
     assert len(database) == len(database_read)
 
 
@@ -404,8 +589,8 @@ def test__str__database():
 
     if PY2:
         ref = (
-            "OrderedDict([([1. 2.], {u'Rosenbrock': 100.0}), "
-            "([3.  4.5], {u'Rosenbrock': 2029.0})])"
+            "OrderedDict([([1. 2.], OrderedDict([(u'Rosenbrock', 100.0)])), "
+            "([3.  4.5], OrderedDict([(u'Rosenbrock', 2029.0)]))])"
         )
     else:
         ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
