@@ -70,6 +70,9 @@ LOGGER = logging.getLogger(__name__)
 
 # Type of the values associated to the keys (values of input variables) in the database
 DatabaseValueType = Mapping[str, Union[float, ndarray, List[int]]]
+ReturnedHdfMissingOutputType = Tuple[
+    Mapping[str, Union[float, ndarray, List[int]]], Union[None, Mapping[str, int]]
+]
 
 
 class Database(object):
@@ -129,7 +132,11 @@ class Database(object):
 
         self.__dict = OrderedDict()
         self.__max_iteration = 0
-        # Call functions when store is called
+
+        # This list enables to temporary save the last inputs that have been
+        # stored before any export_hdf is called.
+        # It is used to append the exported hdf file.
+        self.__hdf_export_buffer = []
 
         if input_hdf_file is not None:
             self.import_hdf(input_hdf_file)
@@ -157,9 +164,9 @@ class Database(object):
         if not isinstance(value, dict):
             raise TypeError("Optimization history values must be data dictionary.")
         if isinstance(key, HashableNdarray):
-            self.__dict[key] = value
+            self.__dict[key] = OrderedDict(value)
         else:
-            self.__dict[HashableNdarray(key, True)] = value
+            self.__dict[HashableNdarray(key, True)] = OrderedDict(value)
 
     @staticmethod
     def __get_hashed_key(
@@ -612,11 +619,13 @@ class Database(object):
             values_dict: The output values corresponding to input values.
             add_iter: True if iterations are added to the output values, False otherwise.
         """
+        self.__hdf_export_buffer.append(self.__get_hashed_key(x_vect))
+
         if self.contains_x(x_vect):
             curr_val = self.get_value(x_vect)
             # No new keys = already computed = new iteration
             # otherwise just calls to other functions
-            curr_val.update(values_dict)
+            curr_val.update(OrderedDict(values_dict))
         elif add_iter:
             self.__max_iteration += 1
             # include the iteration index
@@ -768,6 +777,273 @@ class Database(object):
         """
         return array(array(data, copy=False).real, dtype=float64)
 
+    def _add_hdf_input_dataset(
+        self,
+        index_dataset,  # type: int
+        design_vars_group,  # type: h5py.Group
+        design_vars_values,  # type: HashableNdarray
+    ):  # type: (...) -> None
+        """Add a new input to the hdf group of input values.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            design_vars_group: The hdf5 group of the design variable values.
+            design_vars_values: The values of the input.
+
+        Raises:
+            ValueError: If the dataset name ``index_dataset`` already exists
+                in the group of design variables.
+        """
+        if str(index_dataset) in design_vars_group:
+            raise ValueError(
+                "Dataset name '{}' already exists in the group "
+                "of design variables.".format(index_dataset)
+            )
+
+        design_vars_group.create_dataset(
+            str(index_dataset), data=design_vars_values.unwrap()
+        )
+
+    def _add_hdf_output_dataset(
+        self,
+        index_dataset,  # type: int
+        keys_group,  # type: h5py.Group
+        values_group,  # type: h5py.Group
+        output_values,  # type: Mapping[str, Union[float, ndarray, List]]
+        output_name_to_idx=None,  # type: Optional[Mapping[str, int]]
+    ):  # type: (...) -> None
+        """Add new outputs to the hdf group of output values.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            keys_group: The hdf5 group of the output names.
+            values_group: The hdf5 group of the output values.
+            output_values: The output values.
+            output_name_to_idx: The indices of the output names in ``output_values``.
+                If ``None``, these indices are automatically built using the
+                order of the names in ``output_values``.
+                These indices are used to build the dataset of output vectors.
+        """
+        self._add_hdf_name_output(index_dataset, keys_group, list(output_values.keys()))
+
+        if not output_name_to_idx:
+            output_name_to_idx = dict(zip(output_values, range(len(output_values))))
+
+        # We separate scalar data from vector data in the hdf file.
+        # Scalar data are first stored into a list (``values``),
+        # then added to the hdf file.
+        # Vector data are directly added to the hdf file.
+        values = []
+        for name, value in output_values.items():
+            idx_value = output_name_to_idx[name]
+            if isinstance(value, (ndarray, list)):
+                self._add_hdf_vector_output(
+                    index_dataset, idx_value, values_group, value
+                )
+            else:
+                values.append(value)
+
+        if values:
+            self._add_hdf_scalar_output(index_dataset, values_group, values)
+
+    def _get_missing_hdf_output_dataset(
+        self,
+        index_dataset,  # type: int
+        keys_group,  # type: h5py.Group
+        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
+    ):  # type: (...) -> ReturnedHdfMissingOutputType
+        """Return the missing values in the hdf group of the output names.
+
+        Compare the keys of ``output_values`` with the existing names
+        in the group of the output names ``keys_group`` in order to know which
+        outputs are missing.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            keys_group: The hdf5 group of the output names.
+            output_values: The output values to be compared with.
+
+        Returns:
+            The missing values.
+            The indices of the missing outputs.
+
+        Raises:
+            ValueError: If the index of the dataset does not correspond to
+                an existing dataset.
+        """
+        name = str(index_dataset)
+        if name not in keys_group:
+            raise ValueError("The dataset named '{}' does not exist.".format(name))
+
+        existing_output_names = set(out.decode() for out in keys_group[name])
+        all_output_names = set(output_values)
+        missing_names = all_output_names - existing_output_names
+
+        if not missing_names:
+            return {}, None
+
+        missing_names_values = {name: output_values[name] for name in missing_names}
+        all_output_idx_mapping = dict(zip(output_values, range(len(output_values))))
+        missing_names_idx_mapping = {
+            name: all_output_idx_mapping[name] for name in missing_names
+        }
+
+        return missing_names_values, missing_names_idx_mapping
+
+    def _add_hdf_name_output(
+        self,
+        index_dataset,  # type: int
+        keys_group,  # type: h5py.Group
+        keys,  # type: List[str]
+    ):
+        """Add new output names to the hdf5 group of output names.
+
+        Create a dataset in the group of output names
+        if the dataset index is not found in the group.
+        If the dataset already exists, the new names are appended
+        to the existing dataset.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            keys_group: The hdf5 group of the output names.
+            keys: The names that must be added.
+        """
+        name = str(index_dataset)
+        keys = array(keys, dtype=string_)
+        if name not in keys_group:
+            keys_group.create_dataset(name, data=keys, maxshape=(None,))
+        else:
+            offset = len(keys_group[name])
+            keys_group[name].resize((offset + len(keys),))
+            keys_group[name][offset:] = keys
+
+    def _add_hdf_scalar_output(
+        self,
+        index_dataset,  # type: int
+        values_group,  # type: h5py.Group
+        values,  # type: List[float]
+    ):  # type: (...) -> None
+        """Add new scalar values to the hdf5 group of output values.
+
+        Create a dataset in the group of output values
+        if the dataset index is not found in the group.
+        If the dataset already exists, the new values are appended to
+        the existing dataset.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            values_group: The hdf5 group of the output values.
+            values: The scalar values that must be added.
+        """
+        name = str(index_dataset)
+        if name not in values_group:
+            values_group.create_dataset(
+                name, data=self.__to_real(values), maxshape=(None,), dtype=float64
+            )
+        else:
+            offset = len(values_group[name])
+            values_group[name].resize((offset + len(values),))
+            values_group[name][offset:] = self.__to_real(values)
+
+    def _add_hdf_vector_output(
+        self,
+        index_dataset,  # type: int
+        idx_sub_group,  # type: int
+        values_group,  # type: h5py.Group
+        value,  # type: Union[ndarray, List[int]]
+    ):  # type: (...) -> None
+        """Add a new vector of values to the hdf5 group of output values.
+
+        Create a sub-group dedicated to vectors in the group of output
+        values.
+        Inside this sub-group, a new dataset is created for each vector.
+        If the sub-group already exists, it is just appended.
+        Otherwise, the sub-group is created.
+
+        Args:
+            index_dataset: The index of the hdf5 entry.
+            idx_sub_group: The index of the dataset in the sub-group of vectors.
+            values_group: The hdf5 group of the output values.
+            value: The vector which is added to the group.
+
+        Raises:
+            ValueError: If the index of the dataset in the sub-group of vectors
+                already exist.
+        """
+        sub_group_name = "arr_{}".format(index_dataset)
+
+        if sub_group_name not in values_group:
+            sub_group = values_group.require_group(sub_group_name)
+        else:
+            sub_group = values_group[sub_group_name]
+
+        if str(idx_sub_group) in sub_group:
+            raise ValueError(
+                "Dataset name '{}' already exists in the sub-group of "
+                "array output '{}'.".format(idx_sub_group, sub_group_name)
+            )
+
+        sub_group.create_dataset(
+            str(idx_sub_group), data=self.__to_real(value), dtype=float64
+        )
+
+    def _append_hdf_output(
+        self,
+        index_dataset,  # type: int
+        keys_group,  # type: h5py.Group
+        values_group,  # type: h5py.Group
+        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
+    ):  # type: (...) -> None
+        """Append the existing hdf5 datasets of the outputs with new values.
+
+        Find the values among ``output_values`` that do not
+        exist in the hdf5 datasets and append them to the datasets.
+
+        Args:
+            index_dataset: The index of the existing hdf5 entry.
+            keys_group: The hdf5 group of the output names.
+            values_group: The hdf5 group of the output values.
+            output_values: The output values. Only the values which
+                do not exist in the dataset will be appended.
+        """
+        added_values, mapping_to_idx = self._get_missing_hdf_output_dataset(
+            index_dataset, keys_group, output_values
+        )
+        if added_values:
+            self._add_hdf_output_dataset(
+                index_dataset,
+                keys_group,
+                values_group,
+                added_values,
+                output_name_to_idx=mapping_to_idx,
+            )
+
+    def _create_hdf_input_output(
+        self,
+        index_dataset,  # type: int
+        design_vars_group,  # type: h5py.Group
+        keys_group,  # type: h5py.Group
+        values_group,  # type: h5py.Group
+        input_values,  # type: HashableNdarray
+        output_values,  # type: Mapping[str, Union[float, ndarray, List[int]]]
+    ):
+        """Create the new hdf5 datasets for the given inputs and outputs.
+
+        Useful when exporting the database to an hdf5 file.
+
+        Args:
+            index_dataset: The index of the new hdf5 entry.
+            design_vars_group: The hdf5 group of the design variable values.
+            keys_group: The hdf5 group of the output names.
+            values_group: The hdf5 group of the output values.
+            input_values: The input values.
+            output_values: The output values.
+        """
+        self._add_hdf_input_dataset(index_dataset, design_vars_group, input_values)
+        self._add_hdf_output_dataset(
+            index_dataset, keys_group, values_group, output_values
+        )
+
     def export_hdf(
         self,
         file_path="optimization_history.h5",  # type: str
@@ -785,32 +1061,49 @@ class Database(object):
             design_vars_grp = h5file.require_group("x")
             keys_group = h5file.require_group("k")
             values_group = h5file.require_group("v")
-            iterated = self.items()
-            i = 0
+            index_dataset = 0
 
-            if append and design_vars_grp:
-                iterated = islice(iterated, len(design_vars_grp), len(self.__dict))
-                i = len(design_vars_grp)
+            # The append mode loops over the last stored entries in order to
+            # check whether some new outputs have been added.
+            # However, if the hdf file has been re-written by a previous function
+            # (such as OptimizationProblem.export_hdf),
+            # there is no existing database inside the hdf file.
+            # In such case, we have to check whether the design
+            # variables group exists because otherwise the function tries to
+            # append something empty.
+            if append and len(design_vars_grp) != 0:
+                input_values_to_idx = dict(zip(self.keys(), range(len(self.keys()))))
 
-            for key, val in iterated:
-                design_vars_grp.create_dataset(str(i), data=key.unwrap())
-                keys_data = array(list(val.keys()), dtype=string_)
-                locvalues_scalars = []
-                argrp = None
+                for input_values in self.__hdf_export_buffer:
+                    output_values = self[input_values]
+                    index_dataset = input_values_to_idx[input_values]
 
-                for ind, locval in enumerate(val.values()):
-                    if isinstance(locval, (ndarray, list)):
-                        if argrp is None:
-                            argrp = values_group.require_group("arr_" + str(i))
-                        argrp.create_dataset(str(ind), data=self.__to_real(locval))
+                    if str(index_dataset) in design_vars_grp:
+                        self._append_hdf_output(
+                            index_dataset, keys_group, values_group, output_values
+                        )
                     else:
-                        locvalues_scalars.append(locval)
+                        self._create_hdf_input_output(
+                            index_dataset,
+                            design_vars_grp,
+                            keys_group,
+                            values_group,
+                            input_values,
+                            output_values,
+                        )
+            else:
+                for input_values, output_values in self.items():
+                    self._create_hdf_input_output(
+                        index_dataset,
+                        design_vars_grp,
+                        keys_group,
+                        values_group,
+                        input_values,
+                        output_values,
+                    )
+                    index_dataset += 1
 
-                keys_group.create_dataset(str(i), data=keys_data)
-                values_group.create_dataset(
-                    str(i), data=self.__to_real(locvalues_scalars)
-                )
-                i += 1
+        self.__hdf_export_buffer = []
 
     def import_hdf(
         self, filename="optimization_history.h5"  # type: str
@@ -837,12 +1130,14 @@ class Database(object):
                 else:
                     vec_dict = {}
 
-                locvalues_scalars = get_hdf5_group(values_group, str_index)
                 scalar_keys = (k for k in keys if k not in vec_dict)
 
-                scalar_dict = dict(
-                    ((k, v) for k, v in zip(scalar_keys, locvalues_scalars))
-                )
+                if str_index in values_group:
+                    locvalues_scalars = get_hdf5_group(values_group, str_index)
+                    scalar_dict = dict(zip(scalar_keys, locvalues_scalars))
+                else:
+                    scalar_dict = {}
+
                 scalar_dict.update(vec_dict)
 
                 self.store(

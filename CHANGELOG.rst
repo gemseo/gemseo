@@ -105,6 +105,7 @@ Fixed
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
 - Issues when a python module prefixed with ``gemseo_`` is in the current working directory.
+- Fix the database export to hdf file when it is appended after each call of any function.
 
 Version 3.1.0 (July 2021)
 *************************
