@@ -121,31 +121,7 @@ See :ref:`Interfacing simulation software <software_connection>`.
 Extend |g| features
 -------------------
 
-The simplest way is to create a subclass
-associated to the feature you want to extend,
-respectively:
-
- - for optimizers,
-   inherit from :class:`.OptimizationLibrary`,
-   and put the Python file in the :file:`src/gemseo/algos/opt` package
- - for DOEs,
-   inherit from :class:`.DOELibrary`,
-   and put the Python file in the :file:`src/gemseo/algos/doe` package
- - for surrogate models,
-   inherit from :class:`.MLRegressionAlgo`,
-   and put the Python file in the :file:`src/gemseo/mlearning/regression` package
- - for MDAs, inherit from :class:`.MDA`,
-   and put the Python file in the :file:`src/gemseo/mda` package
- - for MDO formulations,
-   inherit from :class:`.MDOFormulation`,
-   and put the Python file in the :file:`src/gemseo/formulations` package
- - for disciplines,
-   inherit from :class:`.MDODiscipline`,
-   and put the Python file in the :file:`src/gemseo/problems/my_problem` package,
-   which you created
-
-See :ref:`extending-gemseo` to learn how to run
-|g| with external Python modules.
+See :ref:`extending-gemseo`.
 
 What are :term:`JSON` schemas?
 ------------------------------

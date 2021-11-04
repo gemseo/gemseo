@@ -46,20 +46,10 @@ with a platform or other software.
 To interface a simulation software with |g|,
 please refer to: :ref:`software_connection`.
 
-.. _extending-gemseo:
-
 Extending |g|
 -------------
 
-|g| features can be extended with external python modules. All kinds of
-additional features can be implemented: disciplines, algorithms, formulations,
-post-processings, surrogate models, ... There are 2 ways to extend |g| with a
-directory that contains the python modules:
-
-- by adding the directory to the :envvar:`PYTHONPATH` if the directory name
-  starts with :file:`gemseo_`,
-- by setting the environment variable :envvar:`GEMSEO_PATH` to the directory
-  path, multiple directories can be separated by :envvar:`:`.
+See :ref:`extending-gemseo`.
 
 Table of contents
 *****************

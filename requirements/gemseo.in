@@ -1,10 +1,11 @@
 backports.functools-lru-cache ; python_version<'3'
 custom_inherit ==2.4.0
-enum34 ; python_version < '3'
+enum34 ; python_version<'3'
 fastjsonschema <=2.15.1 ; python_version>='3'
 future
 genson ==1.2.2
 h5py >=2.3,<=3.2.1
+importlib_metadata ; python_version>'2' and python_version<'3.8'
 jinja2 <=3.0.1
 jsonschema ; python_version<'3'
 matplotlib >=2,<=3.4.3
@@ -17,7 +18,7 @@ requests
 scipy >=1.1,<=1.6.3
 six
 tqdm >=4,<=4.61.0
-typing ; python_version < '3'
+typing ; python_version<'3'
 xdsmjs >=1.0.0,<=1.0.1
 graphviz ==0.16
 nlopt >=2.4.2,<=2.7.0 ; python_version>='3'

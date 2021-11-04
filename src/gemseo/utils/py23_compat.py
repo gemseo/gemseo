@@ -63,6 +63,7 @@ if PY2:
     backports.unittest_mock.install()
     from unittest import mock
 
+
 else:
     string_dtype = "bytes"
     long = int
@@ -137,6 +138,11 @@ if sys.version_info < (3, 8):
             total = func(total, element)
             yield total
 
+    if PY3:
+        import importlib_metadata
+    else:
+        importlib_metadata = None
 
 else:
+    from importlib import metadata as importlib_metadata  # noqa: F401
     from itertools import accumulate  # noqa: F401
