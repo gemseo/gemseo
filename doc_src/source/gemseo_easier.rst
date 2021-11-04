@@ -24,3 +24,4 @@ Make |g| easy to use
    discipline_interface_easier.rst
    mdo_scenario_easier.rst
    cheat_sheet.rst
+   extending.rst

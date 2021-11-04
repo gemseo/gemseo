@@ -23,12 +23,15 @@
 from __future__ import division, unicode_literals
 
 import re
+import shutil
+import subprocess
+import sys
 
 import pytest
 
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2, Path, importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -109,27 +112,77 @@ def test_parse_docstrings(reset_factory):
 def test_ext_plugin_syspath(monkeypatch, reset_factory):
     """Verify that plugins are discovered from the python path."""
     monkeypatch.syspath_prepend(DATA)
-    factory = Factory(MDOFormulation)
-    factory.create("DummyBiLevel")
+    # Add a new dummy item in sys.path because the first item will be removed,
+    # and monkeypatch can only prepend.
+    monkeypatch.syspath_prepend("")
+    # There could be more classes available with the plugins
+    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+
+
+def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
+    """Verify that plugins are not discovered from the first path in sys.path."""
+    # This test requires to use subprocess such that python can
+    # be called from a temporary directory that will be automatically
+    # inserted first in sys.path.
+    if PY2:
+        tmp_path.rmdir()
+        shutil.copytree(str(DATA), str(tmp_path))
+    else:
+        shutil.copytree(DATA, tmp_path, dirs_exist_ok=True)
+
+    # Create a module that shall fail to load the plugin.
+    code = """
+from gemseo.core.factory import Factory
+from gemseo.core.formulation import MDOFormulation
+assert 'DummyBiLevel' in Factory(MDOFormulation).classes
+"""
+    module_path = tmp_path / "module.py"
+    module_path.write_text(code)
+
+    with pytest.raises(subprocess.CalledProcessError) as exc_info:
+        subprocess.check_output(
+            "{} {}".format(sys.executable, module_path),
+            shell=True,
+            stderr=subprocess.STDOUT,
+        )
+
+    assert "AssertionError" in str(exc_info.value.output)
 
 
 def test_ext_plugin_gems_path(monkeypatch, reset_factory):
     """Verify that plugins are discovered from the GEMS_PATH env variable."""
     monkeypatch.setenv("GEMS_PATH", DATA)
-    factory = Factory(MDOFormulation)
-    factory.create("DummyBiLevel")
+    # There could be more classes available with the plugins
+    assert "DummyBiLevel" in Factory(MDOFormulation).classes
 
 
 def test_ext_plugin_gemseo_path(monkeypatch, reset_factory):
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
-    factory = Factory(MDOFormulation)
-    factory.create("DummyBiLevel")
+    # There could be more classes available with the plugins
+    assert "DummyBiLevel" in Factory(MDOFormulation).classes
 
 
 def test_wanted_classes(monkeypatch, reset_factory):
     """Verify that the classes found are the expected ones."""
     monkeypatch.setenv("GEMSEO_PATH", DATA)
-    factory = Factory(MDOFormulation)
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in factory.classes
+    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+
+
+@pytest.mark.skipif(PY2, reason="plugin entry points are not supported for Python 2")
+def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
+    """Verify that the classes found are the expected ones."""
+
+    class DummyEntryPoint:
+        name = "dummy-name"
+        value = "dummy_formulations"
+
+    def entry_points():
+        return {Factory.PLUGIN_ENTRY_POINT: [DummyEntryPoint]}
+
+    monkeypatch.setattr(importlib_metadata, "entry_points", entry_points)
+    monkeypatch.syspath_prepend(DATA / "gemseo_dummy_plugins")
+
+    # There could be more classes available with the plugins
+    assert "DummyBiLevel" in Factory(MDOFormulation).classes
