@@ -41,6 +41,14 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.quad_approx.QuadApprox` post-processing
+# performs a quadratic approximation of a given function
+# from an optimization history
+# and plot the results as cuts of the approximation.
 
 ###############################################################################
 # Create disciplines
@@ -89,6 +97,43 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # plot which performs a quadratic approximation of a given function
 # from an optimization history and plot the results as cuts of the
 # approximation.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
+###############################################################################
+# The first plot shows an approximation of the Hessian matrix
+# :math:`\frac{\partial^2 f}{\partial x_i \partial x_j}` based on the
+# *Symmetric Rank 1* method (SR1) :cite:`Nocedal2006`. The
+# color map uses a symmetric logarithmic (symlog) scale.
+# This plots the cross influence of the design variables on the objective function
+# or constraints. For instance, on the last figure, the maximal second-order
+# sensitivity is :math:`\frac{\partial^2 -y_4}{\partial^2 x_0} = 2.10^5`,
+# which means that the :math:`x_0` is the most influential variable. Then,
+# the cross derivative
+# :math:`\frac{\partial^2 -y_4}{\partial x_0 \partial x_2} = 5.10^4`
+# is positive and relatively high compared to the previous one but the combined
+# effects of :math:`x_0` and  :math:`x_2` are non-negligible in comparison.
+
 scenario.post_process("QuadApprox", function="-y_4", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
+
+###############################################################################
+# The second plot represents the quadratic approximation of the objective around the
+# optimal solution : :math:`a_{i}(t)=0.5 (t-x^*_i)^2
+# \frac{\partial^2 f}{\partial x_i^2} + (t-x^*_i) \frac{\partial
+# f}{\partial x_i} + f(x^*)`, where :math:`x^*` is the optimal solution.
+# This approximation highlights the sensitivity of the :term:`objective function`
+# with respect to the :term:`design variables`: we notice that the design
+# variables :math:`x\_1, x\_5, x\_6` have little influence , whereas
+# :math:`x\_0, x\_2, x\_9` have a huge influence on the objective. This
+# trend is also noted in the diagonal terms of the :term:`Hessian` matrix
+# :math:`\frac{\partial^2 f}{\partial x_i^2}`.

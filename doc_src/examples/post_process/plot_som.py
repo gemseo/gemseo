@@ -41,11 +41,36 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.som.SOM` post-processing performs a Self Organizing Map
+# clustering on the optimization history.
+# A :class:`~gemseo.post.som.SOM` is a 2D representation of a design of experiments
+# which requires dimensionality reduction since it may be in a very high dimension.
+#
+# A :term:`SOM` is built by using an unsupervised artificial neural network
+# :cite:`Kohonen:2001`.
+# A map of size ``n_x.n_y`` is generated, where
+# ``n_x`` is the number of neurons in the :math:`x` direction and ``n_y``
+# is the number of neurons in the :math:`y` direction. The design space
+# (whatever the dimension) is reduced to a 2D representation based on
+# ``n_x.n_y`` neurons. Samples are clustered to a neuron when their design
+# variables are close in terms of their L2 norm. A neuron is always located at the
+# same place on a map. Each neuron is colored according to the average value for
+# a given criterion. This helps to qualitatively analyze whether parts of the design
+# space are good according to some criteria and not for others, and where
+# compromises should be made. A white neuron has no sample associated with
+# it: not enough evaluations were provided to train the SOM.
+#
+# SOM's provide a qualitative view of the :term:`objective function`, the
+# :term:`constraints`, and of their relative behaviors.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -88,6 +113,44 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 # Lastly, we post-process the scenario by means of the
 # :class:`~gemseo.post.som.SOM` plot which performs a self organizing map
 # clustering on optimization history.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process("SOM", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
+
+###############################################################################
+# Figure :ref:`fig-ssbj-mdf-som100` illustrates another :term:`SOM` on the Sobieski
+# use case. The optimization method is a (costly) derivative free algorithm
+# (``NLOPT_COBYLA``), indeed all the relevant information for the optimization
+# is obtained at the cost of numerous evaluations of the functions. For
+# more details, please read the paper by
+# :cite:`kumano2006multidisciplinary` on wing MDO post-processing
+# using SOM.
+#
+# .. _fig-ssbj-mdf-som100:
+#
+# .. figure:: /tutorials/ssbj/figs/MDOScenario_SOM_v100.png
+#     :scale: 10 %
+#
+#     SOM example on the Sobieski problem.
+#
+# A DOE may also be a good way to produce SOM maps.
+# Figure :ref:`fig-ssbj-mdf-som10000` shows an example with 10000 points on
+# the same test case. This produces more relevant SOM plots.
+#
+# .. _fig-ssbj-mdf-som10000:
+#
+# .. figure:: /tutorials/ssbj/figs/som_fine.png
+#     :scale: 55 %
+#
+#     SOM example on the Sobieski problem with a 10 000 samples DOE.

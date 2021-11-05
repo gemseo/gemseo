@@ -364,7 +364,7 @@ Glossary
     jacobian
         The matrix of first order partial derivatives of outputs with respect to inputs
 
-    hessian
+    Hessian
         The matrix of second order partial derivatives of one output with respect to inputs
 
     optimum

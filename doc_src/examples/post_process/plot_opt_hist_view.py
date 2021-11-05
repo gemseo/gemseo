@@ -40,12 +40,35 @@ from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
-
+###############################################################################
+# Description
+# -----------
+# The **OptHistoryView** post-processing
+# creates a series of plots:
+#
+# - The design variables history - This graph shows the normalized values of the
+#   design variables, the :math:`y` axis is the index of the inputs in the vector;
+#   and the :math:`x` axis represents the iterations.
+# - The objective function history - It shows the evolution of the objective
+#   value during the optimization.
+# - The distance to the best design variables - Plots the vector
+#   :math:`log( ||x-x^*|| )` in log scale.
+# - The history of the Hessian approximation of the objective - Plots an approximation
+#   of the second order derivatives of the objective function
+#   :math:`\frac{\partial^2 f(x)}{\partial x^2}`, which is a measure of
+#   the sensitivity of the function with respect to the design variables,
+#   and of the anisotropy of the problem (differences of curvatures in the
+#   design space).
+# - The inequality constraint history - Portrays the evolution of the values of the
+#   :term:`constraints`. The inequality constraints must be non-positive, that is why
+#   the plot must be green or white for satisfied constraints (white = active,
+#   red = violated). For an :ref:`IDF formulation <idf_formulation>`, an additional
+#   plot is created to track the equality constraint history.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -88,6 +111,16 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Lastly, we post-process the scenario by means of the :class:`.OptHistoryView`
 # plot which plots the history of optimization for both objective function,
 # constraints, design parameters and distance to the optimum.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
 scenario.post_process("OptHistoryView", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

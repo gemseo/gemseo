@@ -301,14 +301,15 @@ class AbstractGrammar(object):
     ):  # type: (...) -> None
         """Add or update elements from their names and types.
 
-        >> grammar.update_elements(a=str, b=int)
-        >> grammar.update_elements(a=str, b=int, python_typing=True)
-        >> grammar.update_elements(**names_to_types)
-
         Args:
             python_typing: If True, handle automatically the conversion from
                 Python type to grammar type.
             **elements: The names to types bindings of the elements to add or update.
+
+        Examples:
+            >>> grammar.update_elements(a=str, b=int)
+            >>> grammar.update_elements(a=str, b=int, python_typing=True)
+            >>> grammar.update_elements(**names_to_types)
         """
         raise NotImplementedError
 

@@ -41,11 +41,22 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The **VariableInfluence** post-processing performs first-order variable
+# influence analysis.
+#
+# The method computes :math:`\frac{d f}{d x_i} \cdot \left(x_{i_*} -
+# x_{i_0}\right)`,
+# where :math:`x_{i_0}` is the initial value of the variable
+# and :math:`x_{i_*}` is the optimal value of the variable.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -86,10 +97,18 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.BasicHistory`
-# plot which performs first order variable influence analysis by computing
-# df/dxi * (xi* - xi0) where xi0 is the initial value of the variable
-# and xi* is the optimal value of the variable plots any of the constraint or
-# objective functions w.r.t. optimization iterations or sampling snapshots.
+# plot.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process("VariableInfluence", save=False, show=False, fig_size=(15, 12))
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
