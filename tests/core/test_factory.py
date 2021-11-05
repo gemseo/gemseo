@@ -124,7 +124,8 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
     # This test requires to use subprocess such that python can
     # be called from a temporary directory that will be automatically
     # inserted first in sys.path.
-    if PY2:
+    if sys.version_info < (3, 8):
+        # dirs_exist_ok appeared in python 3.8
         tmp_path.rmdir()
         shutil.copytree(str(DATA), str(tmp_path))
     else:
