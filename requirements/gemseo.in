@@ -17,7 +17,7 @@ pyxdsm <=2.2.0 ; python_version>='3'
 requests
 scipy >=1.1,<=1.6.3
 six
-tqdm >=4,<=4.61.0
+tqdm >=4.41,<=4.61.0
 typing ; python_version<'3'
 xdsmjs >=1.0.0,<=1.0.1
 graphviz ==0.16
