@@ -64,7 +64,8 @@ class MatlabParser(object):
     def __init__(
         self, full_path=None  # type: Optional[str]
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             full_path: The path to the matlab file.
                 If ``None``, the user shall parse the file explicitly.

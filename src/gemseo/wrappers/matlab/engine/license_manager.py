@@ -73,7 +73,8 @@ class LicenseManager(object):
     def __init__(
         self, engine  # type: __MatlabEngine
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             engine: The MatlabEngine instance.
         """

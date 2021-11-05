@@ -61,7 +61,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         upper_bounds=None,  # type: Optional[ndarray]
         initial_point=None,  # type: Optional[ndarray]
     ):  # type: (...) -> None
-        """# noqa:D205,D212,D415
+        # noqa:D205,D212,D415
+        """
         Args:
             problem: The optimization problem to be adapted to pSeven.
             evaluation_cost_type: The evaluation cost type of each function of the

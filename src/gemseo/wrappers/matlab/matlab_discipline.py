@@ -116,7 +116,8 @@ class MatlabDiscipline(MDODiscipline):
         cache_file_path=None,  # type: Optional[str]
         is_jac_returned_by_func=False,  # type: bool
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.
             input_data_list: The list of input variables.
