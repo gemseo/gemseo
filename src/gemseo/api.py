@@ -988,6 +988,8 @@ def _get_schema(
         table.add_column("Type", types)
         table.sortby = "Name"
         table.min_width = 25
+        print(table)  # noqa: T001
+        LOGGER.info("%s", table)
     if output_json:
         return schema.to_json()
     return dict_schema

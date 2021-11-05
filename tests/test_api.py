@@ -817,6 +817,28 @@ def test_print_configuration(capfd):
         assert bool(re.search(expected, out))
 
 
+def test_get_schema_pretty_print(capfd):
+    """Test that the post-processing options schemas are printed correctly.
+
+    Args:
+        capfd: Fixture capture outputs sent to `stdout` and
+            `stderr`.
+    """
+    # A pattern for table headers.
+    expected = re.compile(
+        r"\+-+\+-+\+-+\+$\n\|\s+Name\s+\|\s+Description\s+\|\s+Type\s+\|$\n",
+        re.MULTILINE,
+    )
+
+    for post in get_available_post_processings():
+        get_post_processing_options_schema(post, pretty_print=True)
+
+        out, err = capfd.readouterr()
+        assert not err
+
+        assert bool(re.search(expected, out))
+
+
 @pytest.fixture(scope="module")
 def variables_space():
     """A mock design space."""

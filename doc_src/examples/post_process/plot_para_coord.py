@@ -42,11 +42,26 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.para_coord.ParallelCoordinates` post-processing
+# builds parallel coordinates plots among design
+# variables, outputs functions and constraints.
+#
+# The :class:`~gemseo.post.para_coord.ParallelCoordinates` portrays the design
+# variables history during the scenario execution. Each vertical coordinate is
+# dedicated to a design variable, normalized by its bounds.
+#
+# A polyline joins all components of a given design vector and is colored
+# by objective function values. This highlights the correlations between
+# the values of the design variables and the values of the objective function.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -89,6 +104,16 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Lastly, we post-process the scenario by means of the
 # :class:`~gemseo.post.para_coord.ParallelCoordinates` plot which parallel
 # coordinates plots among design variables, objective function and constraints.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
 scenario.post_process("ParallelCoordinates", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

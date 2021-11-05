@@ -41,11 +41,17 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+# The :class:`~gemseo.post.basic_history.BasicHistory` post-processing
+# plots any of the constraint or objective functions
+# w.r.t. the optimization iterations or sampling snapshots.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -88,10 +94,26 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Lastly, we post-process the scenario by means of the :class:`.BasicHistory`
 # plot which plots any of the constraint or objective functions
 # w.r.t. optimization iterations or sampling snapshots.
-# This method requires the list of variable names to plot.
-scenario.post_process("BasicHistory", data_list=["-y_4"], save=False, show=True)
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
 scenario.post_process(
     "BasicHistory", data_list=["g_1", "g_2", "g_3"], save=False, show=False
 )
+###############################################################################
+# .. warning::
+#
+#    In the :class:`~gemseo.algos.database.Database`, when the aim of the
+#    optimization problem is to maximize the objective function,
+#    the objective function name is preceded by a "-" and the stored values are
+#    the opposite of the objective function.
+scenario.post_process("BasicHistory", data_list=["-y_4"], save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

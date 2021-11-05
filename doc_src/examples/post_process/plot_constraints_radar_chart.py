@@ -42,11 +42,21 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.radar_chart.RadarChart` post-processing
+# plots on a radar style chart a list of constraint functions
+# at a given iteration.
+#
+# By default, the last iteration is used. This plot scales better with the number
+# of constraints than the constraint plot provided by the :ref:`opt_history_view`.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -87,11 +97,18 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the
-# :class:`~gemseo.post.radar_chart.RadarChart`
-# plot which plots on a radar style chart a list of constraint functions
-# at a given iteration. By default, the iteration is the last one.
-# This plot scales better with the number of constraints
-# than the constraint plot provided by the :class:`.OptHistoryView` plot.
+# :class:`~gemseo.post.radar_chart.RadarChart`.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process(
     "RadarChart",
     constraints_list=["g_1", "g_2", "g_3"],

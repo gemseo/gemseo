@@ -41,6 +41,26 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# A correlation coefficient indicates whether there is a linear
+# relationship between 2 quantities :math:`x` and :math:`y`, in which case
+# it equals 1 or -1. It is the normalized covariance between the two
+# quantities:
+#
+# .. math::
+#
+#    R_{xy}=\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{ns_{x}s_{y}}
+#    =\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{\sqrt {\sum
+#    \limits _{i=1}^n(x_i-{\bar{x}})^{2}\sum \limits _{i=1}^n(y_i-{\bar{y}})^{2}}}
+#
+# The **Correlations** post-processing builds scatter plots of correlated variables
+# among design variables, output functions, and constraints.
+#
+# The plot method considers all variable correlations greater than 95%. A different
+# threshold value and/or a sublist of variable names can be passed as options.
 
 ###############################################################################
 # Create disciplines
@@ -90,6 +110,17 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # variables, outputs functions and constraints any of the constraint or
 # objective functions w.r.t. optimization iterations or sampling snapshots.
 # This method requires the list of functions names to plot.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process("Correlations", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
