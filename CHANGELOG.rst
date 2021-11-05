@@ -38,6 +38,7 @@ Added
 - It is now possible to get the number of constraints not satisfied by a design in an OptimizationProblem.
 - The names of the scalar constraints in an OptimizationProblem can be retrieved as a list.
 - The dimensions of the outputs for functions in an OptimizationProblem are now available as a dictionary.
+- Scipy global algorithms SHGO and differential evolution now handle non linear constraints.
 - Plugins can be discovered via setuptools entry points.
 
 Changed
@@ -104,8 +105,6 @@ Fixed
 - DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
-- Issues when a python module prefixed with ``gemseo_`` is in the current working directory.
-- Fix the database export to hdf file when it is appended after each call of any function.
 
 Version 3.1.0 (July 2021)
 *************************

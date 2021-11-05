@@ -23,8 +23,7 @@
             "minimum": 1
         },
         "seed":{
-            "type":"integer",
-            "minimum": 1
+            "type":["null", "integer"]
         },
         "strategy":{
             "type": "string"
@@ -55,7 +54,18 @@
         },
         "workers":{
             "type":"integer"
-        }
+        },
+        "eq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "ineq_tolerance": {
+            "type": "number",
+            "minimum": 0.0
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		}
     },
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",

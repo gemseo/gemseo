@@ -43,9 +43,11 @@
             "maximum": 5.0
         },
         "seed":{
-            "type":"integer",
-            "minimum": 1
-        }
+            "type":["null", "integer"]
+        },
+        "normalize_design_space": {
+			"type": "boolean"
+		}
 
     },
     "$schema": "http://json-schema.org/draft-04/schema",

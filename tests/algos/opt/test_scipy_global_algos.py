@@ -44,12 +44,19 @@ class TestScipyGlobalOpt(TestCase):
 
 
 def get_options(algo_name):
-    return {
-        "max_iter": 10000,
-        "n": 3,
-        "iters": 5,
+    opts = {
+        "max_iter": 3000,
+        "n": 100,
         "sampling_method": "sobol",
+        "popsize": 5,
+        "tol": 0.1,
+        "seed": 1,
+        "iters": 1,
     }
+
+    if algo_name == "differential_evolution":
+        opts["normalize_design_space"] = False
+    return opts
 
 
 suite_tests = OptLibraryTestBase()
