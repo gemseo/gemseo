@@ -37,7 +37,7 @@ import logging
 from typing import Optional
 
 from gemseo.utils.py23_compat import Path
-from gemseo.wrappers.matlab.engine.engine import __MatlabEngine
+from gemseo.wrappers.matlab.engine import __MatlabEngine
 
 LOGGER = logging.getLogger(__name__)
 

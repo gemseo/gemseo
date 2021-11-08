@@ -22,12 +22,11 @@ import pytest
 matlab = pytest.importorskip("matlab")
 
 from gemseo.utils.py23_compat import Path  # noqa: E402
-from gemseo.wrappers.matlab.engine.engine import get_matlab_engine  # noqa: E402
+from gemseo.wrappers.matlab.engine import get_matlab_engine  # noqa: E402
+from tests.wrappers.matlab.matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
 
-from ..matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
 
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def matlab_engine():
     """Return a brand new matlab engine with clean cache."""
     get_matlab_engine.cache_clear()

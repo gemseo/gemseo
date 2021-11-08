@@ -46,8 +46,7 @@ import numpy as np
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.py23_compat import Path
-from gemseo.wrappers.matlab.engine.engine import get_matlab_engine
-from gemseo.wrappers.matlab.engine.matlab_parser import MatlabParser
+from gemseo.wrappers.matlab.engine import get_matlab_engine
 from gemseo.wrappers.matlab.matlab_data_processor import (
     MatlabDataProcessor,
     convert_array_from_matlab,
@@ -55,6 +54,7 @@ from gemseo.wrappers.matlab.matlab_data_processor import (
     load_matlab_file,
     save_matlab_file,
 )
+from gemseo.wrappers.matlab.matlab_parser import MatlabParser
 
 LOGGER = logging.getLogger(__name__)
 

@@ -21,9 +21,8 @@ import pytest
 # skip if matlab API is not found
 pytest.importorskip("matlab")
 
-from gemseo.wrappers.matlab.engine.matlab_parser import MatlabParser  # noqa: E402
-
-from ..matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
+from gemseo.wrappers.matlab.matlab_parser import MatlabParser  # noqa: E402
+from tests.wrappers.matlab.matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402
 
 # TODO: change message because scripts not allowed
 

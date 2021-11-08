@@ -19,8 +19,8 @@ import pytest
 # skip if matlab API is not found
 pytest.importorskip("matlab")
 
-from gemseo.wrappers.matlab.engine.engine import get_matlab_engine  # noqa: E402
-from gemseo.wrappers.matlab.engine.license_manager import LicenseManager  # noqa: E402
+from gemseo.wrappers.matlab.engine import get_matlab_engine  # noqa: E402
+from gemseo.wrappers.matlab.license_manager import LicenseManager  # noqa: E402
 
 
 @pytest.fixture
