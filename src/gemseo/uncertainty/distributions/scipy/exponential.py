@@ -48,9 +48,9 @@ class SPExponentialDistribution(SPDistribution):
         rate=1.0,  # type: float
         loc=0.0,  # type: float
         dimension=1,  # type: int
-    ):
-        # type: (...) -> None
-        """# noqa: D205,D212,D415
+    ):  # type: (...) -> None
+        # noqa: D205,D212,D415
+        """
         Args:
             variable: The name of the exponential random variable.
             rate: The rate of the exponential random variable.

@@ -127,7 +127,8 @@ class __MatlabEngine:
     def __init__(
         self, engine_name  # type: str
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             engine_name: The name identifying the engine.
         """

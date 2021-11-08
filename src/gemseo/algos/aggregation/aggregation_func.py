@@ -182,7 +182,7 @@ def aggregate_iks(
 ):  # type: (...) -> MDOFunction
     """Constraints aggregation method for inequality constraints.
 
-    See :cite:t:`kennedy2015improved`.
+    See :cite:`kennedy2015improved`.
 
     Args:
         constr_fct: The initial constraint function.
@@ -222,7 +222,7 @@ def aggregate_ks(
 ):  # type: (...) -> MDOFunction
     """Aggregate constraints for inequality constraints.
 
-    See :cite:t:`kennedy2015improved` and  :cite:t:`kreisselmeier1983application`.
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
 
     Args:
         constr_fct: The initial constraint function.
