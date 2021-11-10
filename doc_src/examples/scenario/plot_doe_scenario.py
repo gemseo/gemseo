@@ -60,7 +60,7 @@ configure_logger()
 # ---------------------
 # Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
 # we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
-# from a python function:
+# from a Python function:
 
 expressions_dict = {"y": "x1+x2"}
 discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions_dict)
