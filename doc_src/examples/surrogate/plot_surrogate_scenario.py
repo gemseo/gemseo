@@ -258,7 +258,7 @@ scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 # All surrogate models work the same way: the :class:`.MLRegressionAlgo` base
 # class shall be extended. See :ref:`extending-gemseo` to learn how to run
 # |g|
-# with external python modules. Then, the :class:`.RegressionModelFactory` can
+# with external Python modules. Then, the :class:`.RegressionModelFactory` can
 # build the new :class:`.MLRegressionAlgo` automatically from its regression
 # algorithm name and options. This factory is called by the constructor of
 # :class:`.SurrogateDiscipline`.
