@@ -71,7 +71,7 @@ class NormalToleranceInterval(ToleranceInterval):
             ToleranceIntervalSide.LOWER,
         ]:
             offset = ot.Normal().computeQuantile(coverage)[0] * size ** 0.5
-            student = ot.Student(size - 1, offset)
+            student = ot.Student(size - 1, offset, 1.0)
             student_quantile = student.computeQuantile(1 - alpha)[0]
             tolerance_factor = old_div(student_quantile, size ** 0.5)
 
