@@ -62,16 +62,20 @@ DISC_DESCR_16D = [
 ]
 
 
-def test_set_linear_solver_tolerance(sellar_disciplines):
-    """Test that the linear solver tolerance can be set at the object instantiation."""
+def test_set_tolerances(sellar_disciplines):
+    """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
         sellar_disciplines,
-        tolerance=1e-12,
+        tolerance=1e-3,
         linear_solver_tolerance=1e-6,
         max_mda_iter=20,
         chain_linearize=False,
     )
+    assert mda_chain.tolerance == 1e-3
     assert mda_chain.linear_solver_tolerance == 1e-6
+
+    assert mda_chain.mdo_chain.disciplines[0].tolerance == 1e-3
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver_tolerance == 1e-6
 
 
 def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines):

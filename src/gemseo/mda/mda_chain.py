@@ -187,6 +187,7 @@ class MDAChain(MDA):
                         sub_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
+                        linear_solver_tolerance=self.linear_solver_tolerance,
                         grammar_type=self.grammar_type,
                         coupling_structure=next(sub_coupling_structures_iterator),
                         **sub_mda_options
