@@ -6,25 +6,25 @@
 			"minimum": 1
 		},
 		"evaluation_cost_type": {
-			"type": "object"
+			"type": ["null", "object"]
 		},
 		"expensive_evaluations": {
-			"type": "object"
+			"type": ["null", "object"]
 		},
 		"sample_x": {
-			"type": "array"
+			"type": ["null", "array"]
 		},
 		"sample_f": {
-			"type": "array"
+			"type": ["null", "array"]
 		},
 		"sample_c": {
-			"type": "array"
+			"type": ["null", "array"]
 		},
 		"constraints_smoothness": {
 			"type": "string"
 		},
 		"global_phase_intensity": {
-			"type": "number",
+			"type": ["null", "number"],
 			"minimum": 0.0,
 			"maximum": 1.0
 		},
@@ -42,7 +42,7 @@
 			"type": "string"
 		},
 		"deterministic": {
-			"type": "boolean"
+			"type": ["null", "boolean"]
 		},
 		"log_level": {
 			"type": "string"
@@ -102,10 +102,10 @@
 			"type": "boolean"
 		},
 		"globalization_method": {
-			"type": "string"
+			"type": ["null", "string"]
 		},
 		"surrogate_based": {
-			"type": "boolean"
+			"type": ["null", "boolean"]
 		}
 	},
 	"$schema": "http://json-schema.org/draft-04/schema",
