@@ -251,7 +251,7 @@ class DOELibrary(DriverLib):
         :type doe_output_file: string
         """
         if self.samples is None:
-            raise RuntimeError("Samples are None, execute method before export")
+            raise RuntimeError("Samples are None, execute method before export.")
         savetxt(doe_output_file, self.samples, delimiter=",")
 
     def _worker(self, sample):

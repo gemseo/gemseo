@@ -46,7 +46,7 @@ def test_no_algo_fail():
     with pytest.raises(
         ValueError,
         match="Algorithm name must be either passed as "
-        "argument or set by the attribute self.algo_name",
+        "argument or set by the attribute 'algo_name'.",
     ):
         MyDriver().execute(None)
 

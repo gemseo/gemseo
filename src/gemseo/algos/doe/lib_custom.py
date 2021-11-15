@@ -179,7 +179,7 @@ class CustomDOE(DOELibrary):
         """
         error_message = (
             "The algorithm CustomDOE requires "
-            "either 'doe_file' or 'samples' as option"
+            "either 'doe_file' or 'samples' as option."
         )
         samples = options.get(self.SAMPLES)
         if samples is None:
@@ -199,7 +199,7 @@ class CustomDOE(DOELibrary):
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(
                 "Dimension mismatch between the problem ({}) and "
-                " the samples ({})".format(self.problem.dimension, samples.shape[1])
+                " the samples ({}).".format(self.problem.dimension, samples.shape[1])
             )
 
         samples = apply_along_axis(

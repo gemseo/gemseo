@@ -31,7 +31,7 @@ from pytest import approx
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_scalable import DiagonalDOE
 
-from .doe_lib_test_base import DOELibraryTestBase
+from .utils import check_problem_execution, execute_problem
 
 DOE_LIB_NAME = "DiagonalDOE"
 
@@ -51,16 +51,14 @@ def test_invalid_algo():
         match="Requested algorithm {} is not in list of available algorithms: "
         "{}.".format(algo_name, DOE_LIB_NAME),
     ):
-        DOELibraryTestBase.generate_one_test(
-            DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=100
-        )
+        execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=100)
 
 
 def test_diagonal_doe():
     """Check the computation of a diagonal DOE."""
     dim = 3
     n_samples = 10
-    doe_library = DOELibraryTestBase.generate_one_test(
+    doe_library = execute_problem(
         DOE_LIB_NAME, algo_name="DiagonalDOE", dim=dim, n_samples=n_samples
     )
     samples = doe_library.samples
@@ -72,7 +70,7 @@ def test_diagonal_doe():
 def test_diagonal_doe_on_rosenbrock(dimension):
     """Check the diagonal DOE on the Rosenbrock problem."""
     assert (
-        DOELibraryTestBase.run_and_test_problem(
+        check_problem_execution(
             dimension,
             DiagonalDOE(),
             DOE_LIB_NAME,

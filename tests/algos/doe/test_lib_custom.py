@@ -22,102 +22,112 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, join
+import re
+from typing import Any, Dict, Optional
 
+import pytest
 from numpy import array
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.utils.py23_compat import Path
 
-from .doe_lib_test_base import DOELibraryTestBase
+from .utils import execute_problem, generate_test_functions
+
+DOE_LIB_NAME = "CustomDOE"
+DOE_FILE_PATH = str(Path(__file__).parent / "dim_3_semicolon.csv")
 
 
-class TestCustomLib(unittest.TestCase):
-    """"""
+def test_library_from_factory():
+    """Check that the DOEFactory can create the CustomDOE library."""
+    factory = DOEFactory()
+    if factory.is_available(DOE_LIB_NAME):
+        factory.create(DOE_LIB_NAME)
 
-    DOE_LIB_NAME = "CustomDOE"
 
-    def test_init(self):
-        """"""
-        factory = DOEFactory()
-        if factory.is_available(self.DOE_LIB_NAME):
-            factory.create(self.DOE_LIB_NAME)
-
-    def test_missing_option_except(self):
-        """"""
-        dim = 3
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            dim=dim,
-            n_samples=20,
-        )
-
-    def test_delimiter_option(self):
-        """"""
-        dim = 3
-        doe_file = join(dirname(__file__), "dim_" + str(dim) + "_semicolon.csv")
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, dim=dim, delimiter=";", doe_file=doe_file
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (30, 3))
-
-    def test_check_dv_lenght(self):
-        """"""
-        dim = 4
-        doe_file = join(dirname(__file__), "dim_3_semicolon.csv")
-        self.assertRaises(
-            ValueError,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            dim=dim,
+def test_check_dimension_inconsistency():
+    """Check that an error is raised if the dimensions are inconsistent."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Dimension mismatch between the problem (4) and  the samples (3)."
+        ),
+    ):
+        execute_problem(
+            DOE_LIB_NAME,
+            dim=4,
             delimiter=";",
-            doe_file=doe_file,
-        )
-
-    def test_read_file_error(self):
-        """"""
-        dim = 4
-        doe_file = join(dirname(__file__), "dim_3_semicolon.csv")
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            dim=dim,
-            doe_file=doe_file,
-        )
-
-    def test_array(self):
-        """"""
-        dim = 3
-        samples = array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]])
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, dim=dim, samples=samples
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (2, 3))
-
-    def test_array_file_error(self):
-        """"""
-        self.assertRaises(
-            ValueError,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            dim=3,
-            doe_file="foo.txt",
-            samples=array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]]),
+            doe_file=DOE_FILE_PATH,
         )
 
 
-def get_expected_nsamples(algo, dim, n_samples=None):
-    """
+def test_read_file_error():
+    """Check that an error is raised when the separator is wrong."""
+    with pytest.raises(ValueError):
+        execute_problem(
+            DOE_LIB_NAME,
+            dim=4,
+            doe_file=DOE_FILE_PATH,
+        )
 
-    :param algo: param dim:
-    :param n_samples: Default value = None)
-    :param dim:
 
+@pytest.mark.parametrize(
+    "n_samples,options",
+    [
+        (2, {"samples": array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]])}),
+        (
+            30,
+            {
+                "delimiter": ";",
+                "doe_file": DOE_FILE_PATH,
+            },
+        ),
+    ],
+)
+def test_samples_shape(n_samples, options):
+    """Check that the samples shape is correct."""
+    doe_library = execute_problem(DOE_LIB_NAME, dim=3, **options)
+    assert doe_library.samples.shape == (n_samples, 3)
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {},
+        {
+            "doe_file": "foo.txt",
+            "samples": array([[1.0, 2, 3.0], [1.0, 2.0, 3.0]]),
+        },
+    ],
+)
+def test_wrong_arguments(options):
+    """Check that an error is raised when arguments are wrong."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The algorithm CustomDOE requires "
+            "either 'doe_file' or 'samples' as option."
+        ),
+    ):
+        execute_problem(DOE_LIB_NAME, dim=3, **options)
+
+
+def get_expected_nsamples(
+    algo,  # type: str
+    dim,  # type: int
+    n_samples=None,  # type:Optional[int]
+):  # type: (...) -> int
+    """Returns the expected number of samples.
+
+    This number depends on the dimension of the problem.
+
+    Args:
+       algo: The name of the DOE algorithm.
+       dim: The dimension of the variables space.
+       n_samples: The number of samples.
+           If None, deduce it from the dimension of the variables space.
+
+    Returns:
+        The expected number of samples.
     """
     if dim == 1:
         return 9
@@ -125,23 +135,29 @@ def get_expected_nsamples(algo, dim, n_samples=None):
         return 2
 
 
-def get_options(algo_name, dim):
-    """
+def get_options(
+    algo_name,  # type: str
+    dim,  # type: int
+):  # type: (...) -> Dict[str,Any]
+    """Returns the options of the algorithms.
 
-    :param algo_name: param dim:
-    :param dim:
+    Args:
+        algo_name: The name of the DOE algorithm.
+        dim: The dimension of the variables spaces.:param algo_name: param dim:
 
+    Returns:
+        The options of the DOE algorithm.
     """
     options = {"n_samples": 13}
-    dname = dirname(__file__)
-    options["doe_file"] = join(dname, "dim_" + str(dim) + ".csv")
+    options["doe_file"] = str(Path(__file__).parent / "dim_{}.csv".format(dim))
     options["dim"] = dim
     return options
 
 
-#
-suite_tests = DOELibraryTestBase()
-for test_method in suite_tests.generate_test(
-    TestCustomLib.DOE_LIB_NAME, get_expected_nsamples, get_options
-):
-    setattr(TestCustomLib, test_method.__name__, test_method)
+@pytest.mark.parametrize(
+    "test_method",
+    generate_test_functions("CustomDOE", get_expected_nsamples, get_options),
+)
+def test_methods(test_method):
+    """Apply the tests generated by the."""
+    test_method()

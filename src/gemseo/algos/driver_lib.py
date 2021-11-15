@@ -289,7 +289,7 @@ class DriverLib(AlgoLib):
         if self.algo_name is None:
             raise ValueError(
                 "Algorithm name must be either passed as "
-                "argument or set by the attribute self.algo_name"
+                "argument or set by the attribute 'algo_name'."
             )
         self._check_algorithm(self.algo_name, problem)
         self.init_options_grammar(self.algo_name)

@@ -23,291 +23,185 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+from typing import Any, Dict, Optional
 
 import pytest
-from numpy import loadtxt, ones
+from numpy import array_equal, loadtxt, ones
+from numpy.linalg import norm
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 
-from .doe_lib_test_base import DOELibraryTestBase
+from .utils import execute_problem, generate_test_functions
+
+DOE_LIB_NAME = "PyDOE"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestpyDOE(unittest.TestCase):
+def test_library_from_factory():
+    """Check that the DOEFactory can create the PyDOE library."""
+    factory = DOEFactory()
+    if factory.is_available(DOE_LIB_NAME):
+        factory.create(DOE_LIB_NAME)
+
+
+def test_export_samples():
+    """Check that samples can be correctly exported."""
+    algo_name = "lhs"
+    n_samples = 3
+    dim = 2
+    doe_library = execute_problem(
+        DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
+    )
+    doe_file_name = "test_{}.csv".format(algo_name)
+    doe_library.export_samples(doe_output_file=doe_file_name)
+    file_samples = loadtxt(doe_file_name, delimiter=",")
+    assert array_equal(doe_library.samples, file_samples)
+
+
+def test_invalid_algo():
+    """Check that an invalid algorithm name."""
+    with pytest.raises(
+        KeyError,
+        match=(
+            "Requested algorithm unknown_algo "
+            "is not in list of available algorithms: *."
+        ),
+    ):
+        execute_problem(
+            DOE_LIB_NAME,
+            algo_name="unknown_algo",
+            dim=2,
+            n_samples=3,
+        )
+
+
+def test_lhs_maximin():
+    """Check that an optimal LHS and LHS are different."""
+    dim = 3
+    algo_name = "lhs"
+    n_samples = 100
+    doe_library = execute_problem(
+        DOE_LIB_NAME,
+        algo_name=algo_name,
+        dim=dim,
+        n_samples=n_samples,
+        criterion="maximin",
+    )
+    samples_maximin = doe_library.samples
+    doe_library = execute_problem(
+        DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
+    )
+    samples = doe_library.samples
+    assert norm(samples - samples_maximin) / norm(samples_maximin) >= 1e-8
+
+
+@pytest.mark.parametrize(
+    "algo_name, options",
+    [
+        ("ccdesign", {"alpha": "unknown_value"}),
+        ("ccdesign", {"face": "unknown_value"}),
+        ("ccdesign", {"center_cc": 1}),
+        ("bbdesign", {"center_bb": (4, 4)}),
+        ("lhs", {"criterion": "corr", "iterations": "unknown_value", "n_samples": 2}),
+        ("lhs", {"criterion": "unknown_value", "n_samples": 2}),
+    ],
+)
+def test_algo_with_unknown_options(algo_name, options):
+    """Check that exceptions are raised when unknown options are passed to an algo."""
+    with pytest.raises(
+        ValueError, match="Invalid options for algorithm {}".format(algo_name)
+    ):
+        execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, **options)
+
+
+def test_missing_algo_name():
+    """Check that a DOELibrary cannot produce samples without an algorithm name."""
+    with pytest.raises(
+        Exception,
+        match=(
+            "Algorithm name must be either passed as argument "
+            "or set by the attribute 'algo_name'."
+        ),
+    ):
+        execute_problem(
+            DOE_LIB_NAME,
+            dim=2,
+            n_samples=3,
+        )
+
+
+def test_export_error():
+    """Check that a DOELibrary.export_samples raises an error if there is no samples."""
+    doe_library = DOEFactory().create(DOE_LIB_NAME)
+    with pytest.raises(
+        Exception, match="Samples are None, execute method before export."
+    ):
+        doe_library.export_samples("test.csv")
+
+
+def test_rescale_samples():
     """"""
-
-    DOE_LIB_NAME = "PyDOE"
-
-    def test_init(self):
-        """"""
-        factory = DOEFactory()
-        if factory.is_available(self.DOE_LIB_NAME):
-            factory.create(self.DOE_LIB_NAME)
-
-    def test_export_samples(self):
-        """"""
-        algo_name = "lhs"
-        n_samples = 30
-        dim = 3
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
-        )
-        samples = doe_library.samples
-        doe_file_name = "test_" + algo_name + ".csv"
-        doe_library.export_samples(doe_output_file=doe_file_name)
-        file_samples = loadtxt(doe_file_name, delimiter=",")
-        self.assertEqual(samples.shape, (n_samples, dim))
-        self.assertEqual(file_samples.shape, (n_samples, dim))
-
-    def test_invalid_algo(self):
-        """"""
-        algo_name = "bidon"
-        dim = 3
-        n_samples = 100
-        self.assertRaises(
-            KeyError,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-        )
-
-    def test_lhs_maximin(self):
-        """"""
-        dim = 3
-        algo_name = "lhs"
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="maximin",
-        )
-        samples_maximin = doe_library.samples
-        self.assertEqual(samples_maximin.shape, (n_samples, dim))
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-        self.assertGreater(
-            DOELibraryTestBase.relative_norm(samples, samples_maximin), 1e-8
-        )
-
-    def test_invalid_criterion(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="bidon",
-        )
-
-    def test_lhs_center(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="center",
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-
-    def test_lhs_centermaximin(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="centermaximin",
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-
-    def test_lhs_correlation(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="corr",
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-
-    def test_iteration_error(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        criterion = "corr"
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion=criterion,
-            iterations="a",
-        )
-
-    def test_center_error(self):
-        """"""
-        algo_name = "bbdesign"
-        dim = 3
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            center_bb=(4, 4),
-        )
-        algo_name = "ccdesign"
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            center_cc=1,
-        )
-
-    def test_alpha_error(self):
-        """"""
-        algo_name = "ccdesign"
-        dim = 3
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            alpha="ValueError",
-        )
-
-    def test_face_error(self):
-        """"""
-        algo_name = "ccdesign"
-        dim = 3
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            face="ValueError",
-        )
-
-    #
-
-    def test_missing_algo_name(self):
-        """"""
-        dim = 3
-        n_samples = 100
-        self.assertRaises(
-            Exception,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            dim=dim,
-            n_samples=n_samples,
-        )
-
-    def test_export_error(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="corr",
-        )
-        doe_library.samples = None
-        self.assertRaises(Exception, doe_library.export_samples, "test.csv")
-
-    def test_rescale_samples(self):
-        """"""
-        algo_name = "lhs"
-        dim = 3
-        n_samples = 100
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
-            criterion="corr",
-        )
-        samples = ones((10,))
-        samples[0] += 1e-15
-        doe_library._rescale_samples(samples)
-
-    def test_bbdesign_center(self):
-        """"""
-        algo_name = "bbdesign"
-        dim = 5
-        n_samples = 46
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, center=1
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-
-    def test_ccdesign_center(self):
-        """"""
-        algo_name = "ccdesign"
-        dim = 5
-        n_samples = 62
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, center_cc=[10, 10]
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-
-    def test_integer_lhs(self):
-        problem = Rosenbrock()
-        problem.design_space.add_variable(
-            "y", size=1, var_type="integer", l_b=10.0, u_b=15.0
-        )
-        DOEFactory().execute(problem, "lhs", n_samples=10)
-
-        for sample in problem.database.get_x_history():
-            assert int(sample[-1]) == sample[-1]
+    algo_name = "lhs"
+    dim = 3
+    n_samples = 100
+    doe_library = execute_problem(
+        DOE_LIB_NAME,
+        algo_name=algo_name,
+        dim=dim,
+        n_samples=n_samples,
+        criterion="corr",
+    )
+    samples = ones((10,))
+    samples[0] += 1e-15
+    doe_library._rescale_samples(samples)
 
 
-def get_expected_nsamples(algo, dim, n_samples=None):
-    """
+@pytest.mark.parametrize(
+    "algo_name,dim,n_samples,options",
+    [
+        ("ccdesign", 5, 62, {"center_cc": [10, 10]}),
+        ("bbdesign", 5, 46, {"center": 1}),
+        ("lhs", 2, 3, {"n_samples": 3, "criterion": "corr"}),
+        ("lhs", 2, 3, {"n_samples": 3, "criterion": "centermaximin"}),
+        ("lhs", 2, 3, {"n_samples": 3, "criterion": "center"}),
+        ("lhs", 2, 3, {"n_samples": 3, "criterion": "maximin"}),
+    ],
+)
+def test_algos(algo_name, dim, n_samples, options):
+    """Check that the PyDOE library returns samples correctly shaped."""
+    doe_library = execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=dim, **options)
+    assert doe_library.samples.shape == (n_samples, dim)
 
-    :param algo: param dim:
-    :param n_samples: Default value = None)
-    :param dim:
 
+def test_integer_lhs():
+    """Check that a DOE with integer variables stores integer values in the Database."""
+    problem = Rosenbrock()
+    problem.design_space.add_variable(
+        "y", size=1, var_type="integer", l_b=10.0, u_b=15.0
+    )
+    DOEFactory().execute(problem, "lhs", n_samples=10)
+
+    for sample in problem.database.get_x_history():
+        assert int(sample[-1]) == sample[-1]
+
+
+def get_expected_nsamples(
+    algo,  # type: str
+    dim,  # type: int
+    n_samples=None,  # type:Optional[int]
+):  # type: (...) -> int
+    """Returns the expected number of samples.
+
+    This number depends on the dimension of the problem.
+
+    Args:
+       algo: The name of the DOE algorithm.
+       dim: The dimension of the variables space.
+       n_samples: The number of samples.
+           If None, deduce it from the dimension of the variables space.
+
+    Returns:
+        The expected number of samples.
     """
     if algo == "ff2n":
         return 2 ** dim
@@ -327,21 +221,27 @@ def get_expected_nsamples(algo, dim, n_samples=None):
     return n_samples
 
 
-def get_options(algo_name, dim):
-    """
+def get_options(
+    algo_name,  # type: str
+    dim,  # type: int
+):  # type: (...) -> Dict[str,Any]
+    """Returns the options of the algorithms.
 
-    :param algo_name: param dim:
-    :param dim:
+    Args:
+        algo_name: The name of the DOE algorithm.
+        dim: The dimension of the variables spaces.:param algo_name: param dim:
 
+    Returns:
+        The options of the DOE algorithm.
     """
     options = {"n_samples": 13}
     return options
 
 
-#
-suite_tests = DOELibraryTestBase()
-
-for test_method in suite_tests.generate_test(
-    TestpyDOE.DOE_LIB_NAME, get_expected_nsamples, get_options
-):
-    setattr(TestpyDOE, test_method.__name__, test_method)
+@pytest.mark.parametrize(
+    "test_method",
+    generate_test_functions(DOE_LIB_NAME, get_expected_nsamples, get_options),
+)
+def test_methods(test_method):
+    """Apply the tests generated by the."""
+    test_method()
