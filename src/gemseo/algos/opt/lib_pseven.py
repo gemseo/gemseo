@@ -571,13 +571,17 @@ class PSevenOpt(OptimizationLibrary):
 
         if internal_algo_name in self.__LOCAL_METHODS:
             techniques_list.append(internal_algo_name)
-        if options.get("globalization_method") is not None:
-            techniques_list.append(options.pop("globalization_method"))
-        if options.get("surrogate_based") is not None and options["surrogate_based"]:
-            techniques_list.append(self.__SBO)
-            options.pop("surrogate_based")
 
-        options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
+        globalization_method = options.pop("globalization_method", None)
+        if globalization_method is not None:
+            techniques_list.append(globalization_method)
+
+        surrogate_based = options.pop("surrogate_based", None)
+        if surrogate_based is not None and surrogate_based:
+            techniques_list.append(self.__SBO)
+
+        if techniques_list:
+            options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
 
     def _run(
         self, **options  # type: Any
@@ -639,16 +643,20 @@ class PSevenOpt(OptimizationLibrary):
         expensive_evaluations = options.pop("expensive_evaluations", None)
 
         # Grab the initial sample from the options
-        sample_x = options.pop("sample_x", [])
-        if normalize_ds:
-            sample_x = [
-                problem.design_space.normalize_vect(point) for point in sample_x
-            ]
-        sample = {
-            "sample_x": sample_x,
-            "sample_f": options.pop("sample_f", []),
-            "sample_c": options.pop("sample_c", []),
-        }
+        sample = dict()
+        sample_x = options.pop("sample_x", None)
+        if sample_x is not None:
+            if normalize_ds:
+                sample["sample_x"] = [
+                    problem.design_space.normalize_vect(point) for point in sample_x
+                ]
+            else:
+                sample["sample_x"] = sample_x
+
+        for option in ["sample_f", "sample_c"]:
+            sample_option = options.pop(option, None)
+            if sample_option is not None:
+                sample[option] = sample_option
 
         pseven_problem = PSevenProblem(
             problem,

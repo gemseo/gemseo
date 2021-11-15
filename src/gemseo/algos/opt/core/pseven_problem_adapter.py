@@ -187,9 +187,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             TypeError: If the type of the design variable is not supported by pSeven.
         """
         var_type = self.__problem.design_space.get_type(variable_name)[index]
-        if var_type == DesignSpace.FLOAT:
+        if var_type == DesignSpace.FLOAT.value:
             return "Continuous"
-        if var_type == DesignSpace.INTEGER:
+        if var_type == DesignSpace.INTEGER.value:
             return "Integer"
         raise TypeError("Unsupported design variable type: {}".format(var_type))
         # TODO: For future reference, pSeven also supports discrete and categorical
