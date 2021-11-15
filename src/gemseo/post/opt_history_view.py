@@ -46,7 +46,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.compatibility.matplotlib_ import SymLogNorm
+from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 

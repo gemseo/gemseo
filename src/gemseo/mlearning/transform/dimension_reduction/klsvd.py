@@ -47,6 +47,7 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
+from gemseo.utils.compatibility.openturns import get_eigenvalues
 
 
 class KLSVD(DimensionReduction):
@@ -117,7 +118,7 @@ class KLSVD(DimensionReduction):
     @property
     def eigenvalues(self):  # type: (...) -> ndarray
         """The eigen values."""
-        return array(self.algo.getEigenValues())
+        return array(get_eigenvalues(self.algo))
 
     def _get_process_sample(
         self,
@@ -154,7 +155,7 @@ class KLSVD(DimensionReduction):
         # => https://github.com/openturns/openturns/issues/1470
 
         # Truncate eigenvalues
-        eigenvalues = result.getEigenValues()
+        eigenvalues = get_eigenvalues(result)
         full_n_modes = eigenvalues.getDimension()
         n_modes = min(self.n_components, full_n_modes)
         trunc_eigenvalues = eigenvalues[:n_modes]

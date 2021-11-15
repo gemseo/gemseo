@@ -66,15 +66,14 @@ full features set of |g|.
 All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
-   - openturns >=1.13,<=1.16: designs of experiments, machine learning, uncertainty quantification
-   - pandas >=0.16,<=1.2.4: scatterplot matrix
+   - openturns >=1.13,<=1.18: designs of experiments, machine learning, uncertainty quantification
+   - pandas >=0.16,<=1.3.4: scatterplot matrix
    - pdfo ==1.0.0: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments
-   - scikit-learn >=0.18,<=0.24.2: gaussian process surrogate model and SOM, kmeans
+   - scikit-learn >=0.18,<=1.0.1: gaussian process surrogate model and SOM, kmeans
    - sympy >=0.7,<=1.7: symbolic calculations for analytic disciplines
    - openpyxl <=3.0.7: excel reading with pandas
    - xlwings <=0.21.4: excel reading with pandas
    - graphviz <=0.16: coupling graph generation
    - nlopt >=2.4.2,<=2.7.0: optimization library
-   - pdfo ==1.0.0: optimization library
    - pyside2 <=5.15.2: grammar editor GUI
