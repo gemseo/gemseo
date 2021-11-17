@@ -610,10 +610,13 @@ class OptHistoryView(OptPostProcessor):
             _, diag, _, _ = approximator.build_approximation(
                 funcname=obj_name, save_diag=True
             )
+            if isnan(diag).any():
+                raise ValueError("The approximated Hessian diagonal contains NaN.")
+
             diag = [ones_like(diag[0])] + diag  # Add first iteration blank
             diag = array(diag).T
         except ValueError:
-            LOGGER.warning("Failed to create Hessian approximation", exc_info=True)
+            LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
             return
 
         # if max problem, plot -Hessian

@@ -105,6 +105,7 @@ Fixed
 - DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
+- OptHistoryView no longer raises an exception when the Hessian diagonal contains NaN and skips the Hessian plot.
 
 Version 3.1.0 (July 2021)
 *************************

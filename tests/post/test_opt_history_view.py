@@ -21,93 +21,84 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import dirname, exists, join
+from numpy import array
 
-import pytest
-
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import execute_post
+from gemseo.api import execute_algo, execute_post
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.utils.py23_compat import Path
 
-DIRNAME = dirname(__file__)
-POWER2 = join(DIRNAME, "power2_opt_pb.h5")
-POWER2_NAN = join(DIRNAME, "power2_opt_pb_nan.h5")
+DIR_PATH = Path(__file__).parent
+POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
+POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestPlotHistoryViews(unittest.TestCase):
-    """"""
+def test_files_creation(tmp_wd):
+    """Check the generation of the output files."""
+    problem = Rosenbrock()
+    OptimizersFactory().execute(problem, "L-BFGS-B")
+    view = OptHistoryView(problem)
+    file_path = tmp_wd / "rosen_1"
+    view.execute(show=False, save=True, file_path=file_path)
+    for full_path in view.output_files:
+        assert Path(full_path).exists()
 
-    def test_view(self):
-        """"""
-        problem = Rosenbrock()
-        OptimizersFactory().execute(problem, "L-BFGS-B")
-        view = OptHistoryView(problem)
-        path = "rosen_1"
-        view.execute(show=False, save=True, file_path=path)
-        for full_path in view.output_files:
-            assert exists(full_path)
 
-    def test_view_load_pb(self):
-        """"""
-        problem = OptimizationProblem.import_hdf(POWER2)
-        view = OptHistoryView(problem)
-        view.execute(show=False, save=True, file_path="power2view", obj_relative=True)
-        for full_path in view.output_files:
-            assert exists(full_path)
+def test_view_load_pb(tmp_wd):
+    """Check the generation of the output files from an HDF database."""
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    view = OptHistoryView(problem)
+    file_path = tmp_wd / "power2view"
+    view.execute(show=False, save=True, file_path=file_path, obj_relative=True)
+    for full_path in view.output_files:
+        assert Path(full_path).exists()
 
-    def test_view_constraints(self):
-        """"""
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        view = OptHistoryView(problem)
 
-        _, cstr = view._get_constraints(["toto", "ineq1"])
-        assert len(cstr) == 1
-        view.execute(
-            show=False,
-            save=True,
-            variables_names=["x"],
-            file_path="power2_2",
-            obj_min=0.0,
-            obj_max=5.0,
-        )
-        for full_path in view.output_files:
-            assert exists(full_path)
+def test_view_constraints(tmp_wd):
+    """Check the generation of the output files for a problem with constraints."""
+    problem = Power2()
+    OptimizersFactory().execute(problem, "SLSQP")
+    view = OptHistoryView(problem)
 
-    def test_nans(self):
+    _, cstr = view._get_constraints(["toto", "ineq1"])
+    assert len(cstr) == 1
+    view.execute(
+        show=False,
+        save=True,
+        variables_names=["x"],
+        file_path=tmp_wd / "power2_2",
+        obj_min=0.0,
+        obj_max=5.0,
+    )
+    for full_path in view.output_files:
+        assert Path(full_path).exists()
 
-        #         problem = Power2()
-        #         refun = problem.objective._func
-        #         refctr = problem.constraints[0]._func
-        #
-        #         def newpt(x):
-        #             out = refun(x)
-        #             if x[1] < 0.51:
-        #                 out = float("nan")
-        #             return out
-        #
-        #         def newptc(x):
-        #             out = refctr(x)
-        #             if x[1] < 0.51:
-        #                 out = float("nan")
-        #             return out
-        #
-        #         problem.objective._func = newpt
-        #         problem.objective.name = "Pow2 with nans"
-        #         problem.constraints[0]._func = newptc
-        #         problem.stop_if_nan = False
-        #
-        #         execute_algo(problem, "NLOPT_COBYLA", max_iter=10)
-        #
-        #         problem.export_hdf("power2_opt_pb_nan.h5")
 
-        problem = OptimizationProblem.import_hdf(POWER2_NAN)
-        view = execute_post(problem, "OptHistoryView", show=False, save=True)
+def test_nans():
+    """Check the generation of the output files for a database containing NaN."""
+    problem = OptimizationProblem.import_hdf(POWER2_NAN_PATH)
+    view = execute_post(problem, "OptHistoryView", show=False, save=True)
 
-        for full_path in view.output_files:
-            assert exists(full_path)
+    for full_path in view.output_files:
+        assert Path(full_path).exists()
+
+
+def test_diag_with_nan(caplog):
+    """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(
+        lambda x: 2 * x, "obj", jac=lambda x: array([[2.0]])
+    )
+    execute_algo(problem, "fullfact", n_samples=3, eval_jac=True, algo_type="doe")
+
+    execute_post(problem, "OptHistoryView", save=False, show=False)
+    log = caplog.text
+    assert "Failed to create Hessian approximation." in log
+    assert "ValueError: The approximated Hessian diagonal contains NaN." in log
