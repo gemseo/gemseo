@@ -41,6 +41,7 @@ from numpy import sort as np_sort
 from numpy import vstack, where
 from numpy.linalg import norm
 
+from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
@@ -595,7 +596,7 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_hessian_approx_plot(
         self,
-        history,  # type: ndarray
+        history,  # type: Database
         obj_name,  # type: str
     ):  # type: (...) -> None
         """Create the plot of the Hessian approximation.
