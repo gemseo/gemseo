@@ -44,7 +44,7 @@ def data():
 def dataset(data):
     variables = ["var_1", "var_2"]
     sizes = {"var_1": 1, "var_2": 2}
-    tmp = Dataset()
+    tmp = Dataset(name="my_dataset")
     tmp.set_from_array(data, variables, sizes)
     return tmp
 
@@ -443,6 +443,7 @@ def test_n_samples(io_dataset):
 
 def test_export_dataset_to_cache(dataset, tmp_path):
     cache = dataset.export_to_cache()
+    assert cache.name == "my_dataset"
     assert cache.get_length() == 10
     for name, value in cache.get_last_cached_inputs().items():
         assert (dataset[9][name] == value).all()
