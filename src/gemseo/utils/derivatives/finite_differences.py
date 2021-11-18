@@ -24,8 +24,9 @@ from __future__ import division, unicode_literals
 import logging
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
-from numpy import argmax, finfo, ndarray, ones, tile, zeros
+from numpy import argmax, finfo, ndarray, ones, tile, where, zeros
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 from gemseo.utils.py23_compat import xrange
@@ -49,10 +50,17 @@ class FirstOrderFD(GradientApproximator):
         f_pointer,  # type: Callable[[ndarray],ndarray]
         step=1e-6,  # type: Union[float,ndarray]
         parallel=False,  # type: bool
+        design_space=None,  # type: Optional[DesignSpace]
+        normalize=True,  # type: bool
         **parallel_args  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         super(FirstOrderFD, self).__init__(
-            f_pointer, step=step, parallel=parallel, **parallel_args
+            f_pointer,
+            step=step,
+            parallel=parallel,
+            design_space=design_space,
+            normalize=normalize,
+            **parallel_args
         )
 
     def f_gradient(
@@ -71,7 +79,7 @@ class FirstOrderFD(GradientApproximator):
         input_values,  # type: ndarray
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
-        step,  # type: float
+        step,  # type: Union[float,ndarray]
         **kwargs  # type: Any
     ):  # type: (...) -> ndarray
         if step is None:
@@ -118,7 +126,7 @@ class FirstOrderFD(GradientApproximator):
         input_values,  # type: ndarray
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
-        step,  # type: float
+        step,  # type: Union[float,ndarray]
         **kwargs  # type: Any
     ):  # type: (...) -> ndarray
         if step is None:
@@ -215,8 +223,8 @@ class FirstOrderFD(GradientApproximator):
             * The errors.
         """
         n_dim = len(x_vect)
-        x_p_arr = self.generate_perturbations(n_dim, x_vect)
-        x_m_arr = self.generate_perturbations(n_dim, x_vect, step=-self.step)
+        x_p_arr, _ = self.generate_perturbations(n_dim, x_vect)
+        x_m_arr, _ = self.generate_perturbations(n_dim, x_vect, step=-self.step)
         opt_steps = self.step * ones(n_dim)
         errors = zeros(n_dim)
         comp_step = self._get_opt_step
@@ -262,14 +270,31 @@ class FirstOrderFD(GradientApproximator):
         input_values,  # type: ndarray
         input_indices,  # type: List[int]
         step,  # type: float
-    ):  # type: (...) -> ndarray
+    ):  # type: (...) -> Tuple[ndarray,ndarray]
         input_dimension = len(input_values)
         n_indices = len(input_indices)
         input_perturbations = (
             tile(input_values, n_indices).reshape((n_indices, input_dimension)).T
         )
-        input_perturbations[input_indices, xrange(n_indices)] += step
-        return input_perturbations
+        if self._design_space is None:
+            input_perturbations[input_indices, xrange(n_indices)] += step
+            return input_perturbations, step
+        else:
+            if self._normalize:
+                upper_bounds = self._design_space.normalize_vect(
+                    self._design_space.get_upper_bounds()
+                )
+            else:
+                upper_bounds = self._design_space.get_upper_bounds()
+
+            steps = where(
+                input_perturbations[input_indices, xrange(n_indices)] == upper_bounds,
+                -step,
+                step,
+            )
+            input_perturbations[input_indices, xrange(n_indices)] += steps
+
+            return input_perturbations, steps
 
 
 def comp_best_step(

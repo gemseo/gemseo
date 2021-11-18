@@ -22,11 +22,12 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 from numpy import complex128, finfo, ndarray, where, zeros
 from numpy.linalg import norm
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 from gemseo.utils.py23_compat import xrange
@@ -60,10 +61,17 @@ class ComplexStep(GradientApproximator):
         f_pointer,  # type: Callable[[ndarray],ndarray]
         step=1e-20,  # type: complex
         parallel=False,  # type: bool
+        design_space=None,  # type: Optional[DesignSpace]
+        normalize=True,  # type: bool
         **parallel_args  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         super(ComplexStep, self).__init__(
-            f_pointer, step=step, parallel=parallel, **parallel_args
+            f_pointer,
+            step=step,
+            parallel=parallel,
+            design_space=design_space,
+            normalize=True,
+            **parallel_args
         )
 
     @GradientApproximator.step.setter
@@ -154,10 +162,10 @@ class ComplexStep(GradientApproximator):
         input_values,  # type: ndarray
         input_indices,  # type: List[int]
         step,  # type: float
-    ):  # type: (...) -> ndarray
+    ):  # type: (...) -> Tuple[ndarray,Union[float,ndarray]]
         input_dimension = len(input_values)
         n_indices = len(input_indices)
         input_perturbations = zeros((input_dimension, n_indices), dtype=complex128)
         x_nnz = where(input_values == 0.0, 1.0, input_values)[input_indices]
         input_perturbations[input_indices, range(n_indices)] = 1j * x_nnz * step
-        return input_perturbations
+        return input_perturbations, step
