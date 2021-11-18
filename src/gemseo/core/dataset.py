@@ -1180,10 +1180,11 @@ class Dataset(object):
                 cache_type,
                 hdf_file_path=cache_hdf_file,
                 hdf_node_path=cache_hdf_node_name,
+                name=self.name,
                 **options
             )
         else:
-            cache = create_cache(cache_type, **options)
+            cache = create_cache(cache_type, name=self.name, **options)
         for sample in range(len(self)):
             in_values = {name: self[(sample, name)][name] for name in inputs}
             out_values = {name: self[(sample, name)][name] for name in outputs}

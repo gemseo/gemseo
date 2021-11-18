@@ -106,8 +106,8 @@ class MDOScenario(Scenario):
             formulation,
             objective_name,
             design_space,
-            name,
-            grammar_type,
+            name=name,
+            grammar_type=grammar_type,
             **formulation_options
         )
         self.clear_history_before_run = False
@@ -199,6 +199,7 @@ class MDOScenarioAdapter(MDODiscipline):
         cache_type=MDODiscipline.SIMPLE_CACHE,  # type: str
         output_multipliers=False,  # type: bool
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        name=None,  # type: Optional[str]
     ):  # type: (...) -> None
         """
         Args:
@@ -215,6 +216,8 @@ class MDOScenarioAdapter(MDODiscipline):
             output_multipliers: If True,
                 the Lagrange multipliers of the scenario optimal solution are computed
                 and added to the outputs.
+            name: The name of the scenario adapter.
+                If None, use ``"{}_adapter"``.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -228,7 +231,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self._outputs_list = outputs_list
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
-        name = "{}_adapter".format(scenario.name)
+        name = name or "{}_adapter".format(scenario.name)
         super(MDOScenarioAdapter, self).__init__(
             name, cache_type=cache_type, grammar_type=grammar_type
         )

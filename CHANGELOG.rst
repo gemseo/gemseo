@@ -71,6 +71,8 @@ Changed
 - RadarChart uses the scientific notation as default format for the grid levels
   and allows to change the discretization of the grid.
 - DesignSpace can have a name.
+- The AbstractFullCache built from a Dataset has the same name as the dataset.
+- The name of an MDOScenarioAdapter can be defined at creation.
 
 Fixed
 -----
