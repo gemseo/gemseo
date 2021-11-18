@@ -1022,3 +1022,33 @@ def test_unnormalize_vect_logging(caplog):
     msg += " Lower bounds violated: {}.".format(array([-5.0]))
     msg += " Upper bounds violated: {}.".format(array([6.0]))
     assert ("gemseo.algos.design_space", logging.WARNING, msg) in caplog.record_tuples
+
+
+def test_iter():
+    """Check that a DesignSpace can be iterated."""
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2", size=2)
+    assert [name for name in design_space] == ["x1", "x2"]
+
+
+def test_delitem():
+    """Check that an item can be deleted with DesignSpace.__del__."""
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    assert design_space
+    del design_space["x1"]
+    assert not design_space
+
+
+def test_setitem():
+    """Check that an item can be added with with DesignSpace.__setitem__."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x1", size=2, var_type=design_space.INTEGER, l_b=-1, u_b=1, value=0
+    )
+
+    new_design_space = DesignSpace()
+    new_design_space["x1"] = design_space["x1"]
+
+    assert design_space == new_design_space

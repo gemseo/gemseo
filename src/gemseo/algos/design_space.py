@@ -42,6 +42,7 @@ an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 
 from __future__ import division, unicode_literals
 
+import collections
 import logging
 from copy import deepcopy
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -95,7 +96,7 @@ VarType = Union[
 ]
 
 
-class DesignSpace(object):
+class DesignSpace(collections.MutableMapping):
     """Description of a design space.
 
     It defines a set of variables from their names, sizes, types and bounds.
@@ -103,6 +104,12 @@ class DesignSpace(object):
     In addition,
     it provides the current values of these variables
     that can be used as the initial solution of an :class:`.OptimizationProblem`.
+
+    A :class:`.DesignSpace` has the same API as a dictionary,
+    e.g. ``variable = design_space["x"]``,
+    ``other_design_space["x"] = design_space["x"]``,
+    ``del design_space["x"]``,
+    ``for name, value in design_space["x"].items()``, ...
 
     Attributes:
         name (Optional[str]): The name of the space.
@@ -174,6 +181,17 @@ class DesignSpace(object):
         self._current_x = {}
         if hdf_file is not None:
             self.import_hdf(hdf_file)
+
+    def __delitem__(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> None
+        """Remove a variable from the design space.
+
+        Args:
+            name: The name of the variable to be removed.
+        """
+        self.remove_variable(name)
 
     def remove_variable(
         self,
@@ -1813,6 +1831,32 @@ class DesignSpace(object):
         """The length of the design space, corresponding to the number of variables."""
         return len(self.variables_names)
 
+    def __iter__(self):  # type: (...) -> Iterable[str]
+        return iter(self.variables_names)
+
+    def __setitem__(
+        self,
+        name,  # type: str
+        item,  # type: Mapping[str,Union[str,int,ndarray]]
+    ):  # type: (...) -> None
+        self.add_variable(
+            name,
+            size=item[self.SIZE_GROUP],
+            var_type=item[self.TYPE_GROUP],
+            l_b=item[self.LB_GROUP],
+            u_b=item[self.UB_GROUP],
+            value=item[self.VALUE_GROUP],
+        )
+
+    def __eq__(
+        self,
+        other,  # type: DesignSpace
+    ):  # type: (...) -> bool
+        if isinstance(other, self.__class__):
+            return self.__cast_mapping(self) == self.__cast_mapping(other)
+        else:
+            return False
+
     def __getitem__(
         self,
         variable,  # type: Union[int,str]
@@ -1870,3 +1914,38 @@ class DesignSpace(object):
             u_b = other.get_upper_bound(name)
             value = other.get_current_x_dict()[name]
             self.add_variable(name, size, var_type, l_b, u_b, value)
+
+    @staticmethod
+    def __cast_array_to_list(
+        value,  # type: Union[str,int,ndarray]
+    ):  # type: (...) -> Union[str,int,List[Union[str,int]]]
+        """Convert a value to a ``List`` if it is a NumPy array.
+
+        Args:
+            value: The value to be casted.
+
+        Returns:
+            Either the original value or the NumPy array converted to a ``List``.
+        """
+        return value if not isinstance(value, ndarray) else value.tolist()
+
+    @classmethod
+    def __cast_mapping(
+        cls,
+        mapping,  # type: Mapping[str,Union[str,int,ndarray]]
+    ):  # type: (...) -> Dict[str,Union[str,int,List[Union[str,int]]]]
+        """Convert the NumPy arrays of a mapping to ``List``.
+
+        Args:
+            mapping: The value to be casted.
+
+        Returns:
+            The original mapping with NumPy values converted to a ``List``.
+        """
+        return {
+            key: {
+                sub_key: cls.__cast_array_to_list(sub_val)
+                for sub_key, sub_val in val.items()
+            }
+            for key, val in mapping.items()
+        }
