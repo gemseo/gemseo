@@ -271,6 +271,10 @@ The following people are the contributors to |g|'s development and maintenance:
           Benoit<br/>Pauwels
     </div>
     <div class="avatar">
+          <img src='_static/authors/arthur_piat.jpg' class='avatar' /><br />
+          Arthur<br/>Piat
+    </div>
+    <div class="avatar">
           <img src='_static/authors/nicolas_roussouly.jpg' class='avatar' /><br />
           Nicolas<br/>Roussouly
     </div>
