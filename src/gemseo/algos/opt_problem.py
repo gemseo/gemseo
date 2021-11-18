@@ -255,6 +255,8 @@ class OptimizationProblem(object):
         self.pb_type = pb_type
         self.ineq_tolerance = 1e-4
         self.eq_tolerance = 1e-2
+        self.max_iter = None
+        self.current_iter = 0
         self.__functions_are_preprocessed = False
         if isinstance(input_database, Database):
             self.database = input_database
@@ -264,8 +266,6 @@ class OptimizationProblem(object):
         self.design_space = design_space
         self.__x0 = None
         self.stop_if_nan = True
-        self.__store_listeners = []
-        self.__newiter_listeners = []
         self.preprocess_options = {}
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
@@ -277,6 +277,16 @@ class OptimizationProblem(object):
                 "The parallel differentiation cannot be changed "
                 "because the functions have already been pre-processed."
             )
+
+    def is_max_iter_reached(self):  # type: (...) -> bool
+        """Check if the maximum amount of iterations has been reached.
+
+        Returns:
+            Whether the maximum amount of iterations has been reached.
+        """
+        if self.max_iter is None or self.current_iter is None:
+            return False
+        return self.current_iter >= self.max_iter
 
     @property
     def parallel_differentiation(self):  # type: (...) -> bool
@@ -674,27 +684,6 @@ class OptimizationProblem(object):
         """
         return len(self.constraints) > 0
 
-    def _notify_store_listeners(self):  # type: (...) -> None
-        """Notify the listeners that a new store has been made in the database."""
-        for func in self.__store_listeners:
-            func()
-
-    def _notify_newiter_listeners(
-        self,
-        xvect=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> None
-        """Notify the listeners that a new iteration is ongoing.
-
-        Args:
-            xvect: The values of the design variables.
-        """
-        for func in self.__newiter_listeners:
-            func()
-
-        if xvect is not None:
-            for obs in self.new_iter_observables:
-                obs(xvect)
-
     def has_constraints(self):
         """Check if the problem has equality or inequality constraints.
 
@@ -849,46 +838,13 @@ class OptimizationProblem(object):
                 then callback at every call to :class:`.Database.store`.
         """
         if each_store:
-            self.add_store_listener(callback_func)
+            self.database.add_store_listener(callback_func)
         if each_new_iter:
-            self.add_new_iter_listener(callback_func)
-
-    def add_store_listener(
-        self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
-        """Add a listener to be called when an item is stored to the database.
-
-        Args:
-            listener_func: The function to be called.
-
-        Raises:
-            TypeError: If the argument is not a callable
-        """
-        if not callable(listener_func):
-            raise TypeError("Listener function is not callable")
-        self.__store_listeners.append(listener_func)
-
-    def add_new_iter_listener(
-        self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
-        """Add a listener to be called when a new iteration is stored to the database.
-
-        Args:
-            listener_func: The function to be called.
-
-        Raises:
-            TypeError: If the argument is not a callable
-        """
-        if not callable(listener_func):
-            raise TypeError("Listener function is not callable")
-        self.__newiter_listeners.append(listener_func)
+            self.database.add_new_iter_listener(callback_func)
 
     def clear_listeners(self):  # type: (...) -> None
         """Clear all the listeners."""
-        self.__store_listeners = []
-        self.__newiter_listeners = []
+        self.database.clear_listeners()
 
     def evaluate_functions(
         self,
@@ -1034,6 +990,7 @@ class OptimizationProblem(object):
                 )
                 p_obs.special_repr = obs.special_repr
                 self.new_iter_observables[iobs] = p_obs
+
             # Preprocess the objective
             self.nonproc_objective = self.objective
             self.objective = self.__preprocess_func(
@@ -1046,6 +1003,26 @@ class OptimizationProblem(object):
             self.objective.f_type = MDOFunction.TYPE_OBJ
             self.__functions_are_preprocessed = True
             self.check()
+
+            self.database.add_new_iter_listener(self.execute_observables_callback)
+
+    def execute_observables_callback(
+        self, last_x  # type: ndarray
+    ):  # type: (...)-> None
+        """The callback function to be passed to the database.
+
+        Call all the observables with the last design variables values as argument.
+
+        Args:
+            last_x: The design variables values from the last evaluation.
+        """
+        if not self.new_iter_observables:
+            return
+
+        if self.preprocess_options["normalize"]:
+            last_x = self.design_space.normalize_vect(last_x)
+        for func in self.new_iter_observables:
+            func(last_x)
 
     def __preprocess_func(
         self,

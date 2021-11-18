@@ -23,11 +23,21 @@ from __future__ import division, unicode_literals
 
 import logging
 import multiprocessing as mp
+import os
 import queue
+import sys
 import threading as th
 import time
 import traceback
-from typing import Union
+from collections import Iterable
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
+
+from numpy import ndarray
+
+IS_WIN = os.name == "nt"
+ParallelExecutionWorkerType = Union[Sequence[Union[object, Callable]], object, Callable]
+
+SUBPROCESS_NAME = "subprocess"
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,13 +59,14 @@ def worker(
 
     for args in iter(queue_in.get, None):
         try:
-            function_output = par_exe._run_task_by_index(*args)
+            sys.stdout.flush()
+            task_indx, function_output = par_exe._run_task_by_index(args)
         except Exception as err:
             traceback.print_exc()
-            queue_out.put((args[0], err))
+            queue_out.put((args, err))
             queue_in.task_done()
             continue
-        queue_out.put(function_output)
+        queue_out.put((task_indx, function_output))
         queue_in.task_done()
 
 
@@ -69,23 +80,31 @@ class ParallelExecution(object):
 
     def __init__(
         self,
-        worker_list,
-        n_processes=N_CPUS,
-        use_threading=False,
-        wait_time_between_fork=0,
-    ):
-        """Constructor.
+        worker_list,  # type: ParallelExecutionWorkerType
+        n_processes=N_CPUS,  # type: int
+        use_threading=False,  # type: bool
+        wait_time_between_fork=0.0,  # type: float
+    ):  # type: (...) -> None
+        """
+        Args:
+            worker_list: The objects that perform the tasks.
+                Either pass one worker, and it will be forked in multiprocessing.
+                Or, when using multithreading or different workers, pass one worker
+                per input data.
+            n_processes: The maximum number of processes on which to run.
+            use_threading: If True, use Threads instead of processes
+                to parallelize the execution.
+                Multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note if you want to execute the same
+                discipline multiple times, in which case you shall use
+                multiprocessing.
+            wait_time_between_fork: The time to wait between two forks of the
+                process/Thread.
 
-        :param worker_list: list of objects that perform the tasks
-        :param n_processes: maximum number of processors on which to run
-        :param use_threading: if True, use Threads instead of processes
-            to parallelize the execution
-            multiprocessing will copy (serialize) all the disciplines,
-            while threading will share all the memory
-            This is important to note if you want to execute the same
-            discipline multiple times, you shall use multiprocessing
-        :param wait_time_between_fork: time waited between two forks of the
-            process /Thread
+        Raises:
+            ValueError: If there are duplicated workers in `worker_list` when
+                using multithreading.
         """
         self.worker_list = worker_list
         self.n_processes = n_processes
@@ -99,43 +118,62 @@ class ParallelExecution(object):
                     " shall be different objects !"
                 )
         self.wait_time_between_fork = wait_time_between_fork
+        self.input_data_list = None
 
-    def _run_task_by_index(self, worker_index, input_values):
-        """Run a task from an index of discipline.
+    def _run_task_by_index(
+        self, task_index  # type: int
+    ):  # type: (...) -> Tuple[int, Any]
+        """Run a task from an index of discipline and the input local data.
 
-        Method to run a task from an index of discipline and input local data,
-        the purpose is to be used by multiprocessing queues as a task.
+        The purpose is to be used by multiprocessing queues as a task.
 
-        :param worker_index: the index of the worker among self.worker_index
-        :param input_values: the input values list
+        Args:
+            task_index: The index of the task among `self.worker_list`.
+
+        Returns:
+            The task index and the output of its computation.
         """
-        input_loc = input_values[worker_index]
-        worker = self.worker_list[worker_index]
+        input_loc = self.input_data_list[task_index]
+        if ParallelExecution._is_worker(self.worker_list):
+            worker = self.worker_list
+        elif len(self.worker_list) > 1:
+            worker = self.worker_list[task_index]
+        else:
+            worker = self.worker_list[0]
+
         # return the worker index to order the outputs properly
         output = self._run_task(worker, input_loc)
-        return worker_index, output
+        return task_index, output
 
     def execute(
-        self, input_data_list, exec_callback=None, task_submitted_callback=None
-    ):
-        """Execute all processes.
+        self,
+        input_data_list,  # type: Union[Sequence[ndarray], ndarray]
+        exec_callback=None,  # type: Optional[Callable[[int, Any], Any]]
+        task_submitted_callback=None,  # type: Optional[Callable]
+    ):  # type: (...) -> Dict[int, Any]
+        """Execute all the processes.
 
-        :param input_data_list: the input values (list or values)
-        :param exec_callback: callback function called with the
-            pair (index, outputs) as arguments when an item is retrieved
-            from the processing, where index is the associated index
-            in input_data_list, of the input used to compute the outputs
-        :param task_submitted_callback: callback function called when all the
-            tasks are submitted, but not yet done
+        Args:
+            input_data_list: The input values.
+            exec_callback: A callback function called with the
+                pair (index, outputs) as arguments when an item is retrieved
+                from the processing. Index is the associated index
+                in input_data_list of the input used to compute the outputs.
+                If None, no function is called.
+            task_submitted_callback: A callback function called when all the
+                tasks are submitted, but not done yet. If None, no function
+                is called.
+
+        Returns:
+            The computed outputs.
+
+        Raises:
+            TypeError: If the `exec_callback` is not callable.
+                If the `task_submitted_callback` is not callable.
         """
-        n_workers = len(self.worker_list)
 
-        if len(input_data_list) != n_workers:
-            raise ValueError(
-                "Parallel execution shall be run "
-                + "with a list of "
-                + "inputs of same size as the list of disciplines"
-            )
+        n_tasks = len(input_data_list)
+        self.input_data_list = input_data_list
 
         if exec_callback is not None and not callable(exec_callback):
             raise TypeError("exec_callback function must be callable !")
@@ -144,6 +182,7 @@ class ParallelExecution(object):
             if not callable(task_submitted_callback):
                 raise TypeError("task_submitted_callback function must be callable !")
 
+        tasks_list = list(range(n_tasks))[::-1]
         # Queue for workers
         if self.use_threading:
             queue_in = queue.Queue()
@@ -152,60 +191,76 @@ class ParallelExecution(object):
             mananger = mp.Manager()
             queue_in = mananger.Queue()
             queue_out = mananger.Queue()
-
+            tasks_list = mananger.list(tasks_list)
         processes = []
+
         if self.use_threading:
             for _ in range(self.n_processes):
-                thread = th.Thread(target=worker, args=(self, queue_in, queue_out))
+                thread = th.Thread(
+                    target=worker,
+                    args=(self, queue_in, queue_out),
+                    name=SUBPROCESS_NAME,
+                )
                 thread.daemon = True
                 thread.start()
                 processes.append(thread)
+
         else:
             for _ in range(self.n_processes):
-                proc = mp.Process(target=worker, args=(self, queue_in, queue_out))
+                proc = mp.Process(
+                    target=worker,
+                    args=(self, queue_in, queue_out),
+                    name=SUBPROCESS_NAME,
+                )
                 proc.daemon = True
                 proc.start()
                 processes.append(proc)
 
-        # fill input queue
-        for worker_index in range(n_workers):
-            # delay the next processes execution after the first one
-            if self.wait_time_between_fork > 0 and worker_index > 0:
-                time.sleep(self.wait_time_between_fork)
-            queue_in.put((worker_index, input_data_list))
+        if mp.current_process().name != SUBPROCESS_NAME or self.use_threading:
+            # fill input queue
+            while tasks_list:
+                # if not self.use_threading:
+                #    lock.acquire()
+                task_indx = tasks_list[-1]
+                del tasks_list[-1]
+                # delay the next processes execution after the first one
+                if self.wait_time_between_fork > 0 and task_indx > 0:
+                    time.sleep(self.wait_time_between_fork)
+                queue_in.put(task_indx)
 
-        if task_submitted_callback is not None:
-            task_submitted_callback()
-        # sort the outputs with the same order as functions
-        ordered_outputs = [None] * n_workers
-        got_n_outs = 0
-        # Retrieve outputs on the fly to call the callbacks, typically
-        # iterates progress bar and stores the data in database or cache
-        while got_n_outs != n_workers:
-            index, output = queue_out.get()
-            if isinstance(output, Exception):
-                LOGGER.error("Failed to execute task indexed %s", str(index))
-                LOGGER.error(output)
-            else:
-                ordered_outputs[index] = output
-                # Call the callback function
-                if exec_callback is not None:
-                    exec_callback(index, output)
-            got_n_outs += 1
+            if task_submitted_callback is not None:
+                task_submitted_callback()
+                # print("Submitted all tasks in", time.time() - t1)
+            # sort the outputs with the same order as functions
+            ordered_outputs = [None] * n_tasks
+            got_n_outs = 0
+            # Retrieve outputs on the fly to call the callbacks, typically
+            # iterates progress bar and stores the data in database or cache
+            while got_n_outs != n_tasks:
+                index, output = queue_out.get()
+                if isinstance(output, Exception):
+                    LOGGER.error("Failed to execute task indexed %s", str(index))
+                    LOGGER.error(output)
+                else:
+                    ordered_outputs[index] = output
+                    # Call the callback function
+                    if exec_callback is not None:
+                        exec_callback(index, output)
+                got_n_outs += 1
 
-        # Tells threads and processes to terminate
-        for _ in processes:
-            queue_in.put(None)
+            # Tells threads and processes to terminate
+            for _ in processes:
+                queue_in.put(None)
 
-        # Join processes and threads
-        for proc in processes:
-            proc.join()
+            # Join processes and threads
+            for proc in processes:
+                proc.join()
 
-        # Update self.workers objects
-        self._update_local_objects(ordered_outputs)
+            # Update self.workers objects
+            self._update_local_objects(ordered_outputs)
 
-        # Filters outputs, eventually
-        return self._filter_ordered_outputs(ordered_outputs)
+            # Filters outputs, eventually
+            return self._filter_ordered_outputs(ordered_outputs)
 
     @staticmethod
     def _filter_ordered_outputs(ordered_outputs):
@@ -230,33 +285,70 @@ class ParallelExecution(object):
         """
 
     @staticmethod
-    def _run_task(worker, input_loc):
-        """Effectively performs the computation.
+    def _run_task(
+        worker,  # type: ParallelExecutionWorkerType
+        input_loc,  # type: Any
+    ):  # type: (...) -> Any
+        """Effectively perform the computation.
 
         To be overloaded by subclasses.
 
-        :param worker: the worker pointes
-        :param input_loc: input of the worker
+        Args:
+            worker: The worker pointer.
+            input_loc: The input of the worker.
+
+        Returns:
+            The computation of the task.
+
+        Raises:
+            TypeError: If the provided worker has the wrong type.
         """
+        if not ParallelExecution._is_worker(worker):
+            raise TypeError("Cannot handle worker: {}.".format(worker))
+
         if hasattr(worker, "execute"):
             return worker.execute(input_loc)
-        if callable(worker):
-            return worker(input_loc)
-        raise TypeError("cannot handle worker")
+
+        return worker(input_loc)
+
+    @staticmethod
+    def _is_worker(
+        worker,  # type: ParallelExecutionWorkerType
+    ):  # type: (...) -> bool
+        """Test if the worker is acceptable.
+
+        A `worker` has to be callable or have an "execute" method.
+
+        Args:
+            worker: The worker to test.
+
+        Returns:
+            Whether the worker is acceptable.
+        """
+        return hasattr(worker, "execute") or callable(worker)
 
 
 class DiscParallelExecution(ParallelExecution):
     """Execute disciplines in parallel."""
 
-    def _update_local_objects(self, ordered_outputs):
-        """Update the local objects from parallel results.
+    def _update_local_objects(
+        self, ordered_outputs  # type: Mapping[int, Any]
+    ):  # type: (...) -> None
+        """Update the local objects from the parallel results.
 
         The ordered_outputs contains the stacked outputs of the function
         _run_task()
 
-        :param ordered_outputs: the list of outputs, map of _run_task
-            over inputs_list
+        Args:
+            ordered_outputs: The outputs, map of _run_task
+                over inputs_list.
         """
+        if not isinstance(self.worker_list, Iterable) or not len(
+            self.worker_list
+        ) == len(self.input_data_list):
+            if IS_WIN and not self.use_threading:
+                self.worker_list.n_calls += len(self.input_data_list)
+            return
         for disc, output in zip(self.worker_list, ordered_outputs):
             # Update discipline local data
             disc.local_data = output
@@ -265,15 +357,28 @@ class DiscParallelExecution(ParallelExecution):
 class DiscParallelLinearization(ParallelExecution):
     """Linearize disciplines in parallel."""
 
-    def _update_local_objects(self, ordered_outputs):
-        """Update the local objects from parallel results.
+    def _update_local_objects(
+        self, ordered_outputs  # type: Mapping[int, Any]
+    ):  # type: (...) -> None
+        """Update the local objects from the parallel results.
 
         The ordered_outputs contains the stacked outputs of the function
         _run_task()
 
-        :param ordered_outputs: the list of outputs, map of _run_task
-            over inputs_list
+        Args:
+            ordered_outputs: The outputs, map of _run_task
+                over inputs_list.
         """
+        if not isinstance(self.worker_list, Iterable) or not len(
+            self.worker_list
+        ) == len(self.input_data_list):
+            if IS_WIN and not self.use_threading:
+                # Only increase the number of calls if the Jacobian was computed.
+                if ordered_outputs[0][0]:
+                    self.worker_list.n_calls += len(self.input_data_list)
+                    self.worker_list.n_calls_linearize += len(self.input_data_list)
+            return
+
         for disc, output in zip(self.worker_list, ordered_outputs):
             # Update discipline jacobian
             disc.jac = output[1]

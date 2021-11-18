@@ -31,7 +31,11 @@ from numpy import isnan as np_isnan
 from numpy import ndarray
 
 from gemseo.algos.database import Database
-from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
+from gemseo.algos.stop_criteria import (
+    DesvarIsNan,
+    FunctionIsNan,
+    MaxIterReachedException,
+)
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
@@ -90,6 +94,8 @@ class NormDBFunction(MDOFunction):
         Raises:
             DesvarIsNan: If the design variables contain a NaN value.
             FunctionIsNan: If a function returns a NaN value when evaluated.
+            MaxIterReachedException: If the maximum number of iterations has been
+                reached.
         """
         if np_any(np_isnan(x_vect)):
             raise DesvarIsNan("Design Variables contain a NaN value: {}".format(x_vect))
@@ -102,21 +108,15 @@ class NormDBFunction(MDOFunction):
             xn_vect = self.__optimization_problem.design_space.normalize_vect(xu_vect)
 
         # try to retrieve the evaluation
-        value = None
-        if (
-            not self.__optimization_problem.database.get(xu_vect, False)
-            and not self.__is_observable
-        ):
-            if self.__normalize:
-                self.__optimization_problem._notify_newiter_listeners(xn_vect)
-            else:
-                self.__optimization_problem._notify_newiter_listeners(xu_vect)
-        else:
-            value = self.__optimization_problem.database.get_f_of_x(
-                self.__orig_func.name, xu_vect
-            )
+        value = self.__optimization_problem.database.get_f_of_x(
+            self.__orig_func.name, xu_vect
+        )
 
         if value is None:
+            new_eval = self.__optimization_problem.database.is_new_eval(xu_vect)
+            if new_eval and self.__optimization_problem.is_max_iter_reached():
+                raise MaxIterReachedException()
+
             # if not evaluated yet, evaluate
             if self.__normalize:
                 value = self.__orig_func(xn_vect)
@@ -131,7 +131,6 @@ class NormDBFunction(MDOFunction):
             func_name_to_value = {self.__orig_func.name: value}
             # store (x, f(x)) in database
             self.__optimization_problem.database.store(xu_vect, func_name_to_value)
-            self.__optimization_problem._notify_store_listeners()
 
         return value
 
@@ -148,6 +147,7 @@ class NormDBFunction(MDOFunction):
 
         Raises:
             FunctionIsNan: If the design variables contain a NaN value.
+                If the evaluation of the jacobian results in a NaN value.
         """
         if np_any(np_isnan(x_vect)):
             raise FunctionIsNan(
@@ -159,18 +159,18 @@ class NormDBFunction(MDOFunction):
         else:
             xu_vect = x_vect
             xn_vect = self.__optimization_problem.design_space.normalize_vect(xu_vect)
-        # try to retrieve the evaluation
-        jac_u = None
-        if not self.__optimization_problem.database.get(xu_vect, False):
-            self.__optimization_problem._notify_newiter_listeners()
-        else:
-            jac_u = self.__optimization_problem.database.get_f_of_x(
-                Database.get_gradient_name(self.__orig_func.name), xu_vect
-            )
 
-        if jac_u is not None:
-            jac_n = self.__optimization_problem.design_space.normalize_grad(jac_u)
-        else:
+        # try to retrieve the evaluation
+        jac_u = self.__optimization_problem.database.get_f_of_x(
+            Database.get_gradient_name(self.__orig_func.name), xu_vect
+        )
+
+        if jac_u is None:
+
+            new_eval = self.__optimization_problem.database.is_new_eval(xu_vect)
+            if new_eval and self.__optimization_problem.is_max_iter_reached():
+                raise MaxIterReachedException()
+
             # if not evaluated yet, evaluate
             if self.__normalize:
                 jac_n = self.__orig_func.jac(xn_vect).real
@@ -189,7 +189,9 @@ class NormDBFunction(MDOFunction):
             }
             # store (x, j(x)) in database
             self.__optimization_problem.database.store(xu_vect, func_name_to_value)
-            self.__optimization_problem._notify_store_listeners()
+        else:
+            jac_n = self.__optimization_problem.design_space.normalize_grad(jac_u)
+
         if self.__normalize:
             return jac_n
 

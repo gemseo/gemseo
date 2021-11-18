@@ -95,6 +95,7 @@ def test_checks():
 
 
 def test_callback():
+    """Test the execution of a callback."""
     n = 3
     design_space = DesignSpace()
     design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
@@ -104,7 +105,6 @@ def test_callback():
     problem.check()
 
     call_me = mock.Mock()
-
     problem.add_callback(call_me)
     problem.preprocess_functions()
     problem.check()
@@ -560,14 +560,6 @@ def test_fail_import():
         OptimizationProblem.import_hdf(FAIL_HDF)
 
 
-def test_add_listeners():
-    problem = Power2()
-    with pytest.raises(TypeError):
-        problem.add_store_listener("toto")
-    with pytest.raises(TypeError):
-        problem.add_new_iter_listener("toto")
-
-
 def test_append_export(tmp_wd):
     """Test the export of an HDF5 file with append mode.
 
@@ -623,12 +615,18 @@ def test_2d_objective():
 
 
 def test_observable(pow2_problem):
+    """Test the handling of observables.
+
+    Args:
+        pow2_problem: The Power2 problem.
+    """
     problem = pow2_problem
-    observable = MDOFunction(norm, "design norm")
+    design_norm = "design norm"
+    observable = MDOFunction(norm, design_norm)
     problem.add_observable(observable)
 
     # Check that the observable can be found
-    assert problem.get_observable("design norm") is observable
+    assert problem.get_observable(design_norm) is observable
     with pytest.raises(ValueError):
         problem.get_observable("toto")
 
@@ -636,15 +634,15 @@ def test_observable(pow2_problem):
     OptimizersFactory().execute(problem, "SLSQP")
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database.keys()]
-    iter_obs = [value["design norm"] for value in database.values()]
+    iter_obs = [value[design_norm] for value in database.values()]
     assert iter_obs == iter_norms
 
     # Check that the observable is exported
     dataset = problem.export_to_dataset("dataset")
     func_data = dataset.get_data_by_group("functions", as_dict=True)
-    obs_data = func_data.get("design norm")
+    obs_data = func_data.get(design_norm)
     assert obs_data is not None
-    assert func_data["design norm"][:, 0].tolist() == iter_norms
+    assert func_data[design_norm][:, 0].tolist() == iter_norms
     assert dataset.GRADIENT_GROUP not in dataset.groups
     dataset = problem.export_to_dataset("dataset", export_gradients=True)
     assert dataset.GRADIENT_GROUP in dataset.groups
@@ -870,3 +868,21 @@ def test_get_scalar_constraints_names(constrained_problem):
         "h{}0".format(DesignSpace.SEP),
         "h{}1".format(DesignSpace.SEP),
     }
+
+
+def test_observables_callback():
+    """Test that the observables are called properly."""
+    problem = Power2()
+    obs1 = MDOFunction(norm, "design_norm")
+    problem.add_observable(obs1)
+    problem.database.store(
+        array([0.79499653, 0.20792012, 0.96630481]),
+        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
+    )
+
+    problem.preprocess_functions(normalize=False)
+    problem.execute_observables_callback(
+        last_x=array([0.79499653, 0.20792012, 0.96630481])
+    )
+
+    assert obs1.n_calls == 1

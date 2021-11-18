@@ -24,8 +24,12 @@
 from __future__ import division, unicode_literals
 
 import pytest
+from numpy import array
 
 from gemseo.algos.driver_lib import DriverLib
+from gemseo.api import configure_logger
+from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import PY2
 
 
 class MyDriver(DriverLib):
@@ -85,3 +89,26 @@ def test_require_grad():
         MyDriver().is_algo_requires_grad("toto")
 
     assert MyDriver().is_algo_requires_grad("SLSQP")
+
+
+def test_new_iteration_callback_xvect(caplog):
+    """Test the new iteration callback when no x_vect is given.
+
+    Args:
+        caplog: Fixture to access and control log capturing.
+    """
+    if PY2:
+        configure_logger("GEMSEO")
+    problem = Power2()
+    problem.database.store(
+        array([0.79499653, 0.20792012, 0.96630481]),
+        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
+    )
+
+    test_driver = DriverLib()
+    test_driver.problem = problem
+    test_driver._max_time = 0
+    test_driver.init_iter_observer(max_iter=2, message="Toto")
+    test_driver.new_iteration_callback()
+
+    assert "Toto" in caplog.text

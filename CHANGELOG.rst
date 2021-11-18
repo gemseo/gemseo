@@ -73,6 +73,10 @@ Changed
 - DesignSpace can have a name.
 - The AbstractFullCache built from a Dataset has the same name as the dataset.
 - The name of an MDOScenarioAdapter can be defined at creation.
+- It is now possible to execute DOEScenarios in parallel on Windows. For Python versions < 3.7 and
+  Numpy < 1.20.0, there is a known issue where one of the processes gets hung randomly, updating your
+  environment is strongly recommended.
+  This feature does not support the use of MemoryFullCache or HDF5Cache on Windows.
 
 Fixed
 -----

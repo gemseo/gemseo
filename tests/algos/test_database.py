@@ -59,7 +59,7 @@ def rel_err(to_test, ref):
 
 
 def test_correct_store_unstore():
-    """Tests the storage of objective function values and gradient values."""
+    """Test the storage of objective function values and gradient values."""
     problem = Rosenbrock()
     OptimizersFactory().execute(problem, "L-BFGS-B")
     database = problem.database
@@ -68,21 +68,26 @@ def test_correct_store_unstore():
         x_var = x_var.unwrap()
         func_value = database.get_f_of_x(fname, x_var)
         gname = database.get_gradient_name(fname)
-        grad_value = database.get_f_of_x(gname, x_var)
         func_rel_err = rel_err(func_value, rosen(x_var))
-        grad_rel_err = rel_err(grad_value, rosen_der(x_var))
         assert_almost_equal(func_rel_err, 0.0, decimal=14)
-        assert_almost_equal(grad_rel_err, 0.0, decimal=14)
+        grad_value = database.get_f_of_x(gname, x_var)
+        if grad_value is not None:
+            grad_rel_err = rel_err(grad_value, rosen_der(x_var))
+            assert_almost_equal(grad_rel_err, 0.0, decimal=14)
 
 
 def test_write_read(tmp_wd):
-    """Tests the writing of objective function values and gradient values."""
+    """Test the writing of objective function values and gradient values.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
     problem = Rosenbrock()
     OptimizersFactory().execute(problem, "L-BFGS-B")
     database = problem.database
-    outf = tmp_wd / "rosen.hdf"
+    outf = "rosen.hdf"
     database.export_hdf(outf)
-    assert outf.exists()
+    assert Path(outf).exists()
     fname = problem.objective.name
 
     loaded_db = Database(outf)
@@ -94,13 +99,16 @@ def test_write_read(tmp_wd):
         df_ref = database.get_f_of_x(gname, x_var)
 
         f_loaded = loaded_db.get_f_of_x(fname, x_var)
-        df_loaded = loaded_db.get_f_of_x(gname, x_var)
 
         f_rel_err = rel_err(f_ref, f_loaded)
-        df_rel_err = rel_err(df_ref, df_loaded)
-
         assert_almost_equal(f_rel_err, 0.0, decimal=14)
-        assert_almost_equal(df_rel_err, 0.0, decimal=14)
+
+        df_loaded = loaded_db.get_f_of_x(gname, x_var)
+        if df_ref is None:
+            assert df_loaded is None
+        else:
+            df_rel_err = rel_err(df_ref, df_loaded)
+            assert_almost_equal(df_rel_err, 0.0, decimal=14)
 
 
 def test_set_item():
@@ -160,7 +168,28 @@ def test_get_all_datanames():
 
 
 def test_get_f_hist():
-    """Tests objective history extraction."""
+    """Test the objective history extraction."""
+    problem = Rosenbrock()
+    database = problem.database
+    problem.preprocess_functions()
+    for x_vec in (array([0.0, 1.0]), array([1, 2.0])):
+        problem.objective(x_vec)
+        problem.objective.jac(x_vec)
+
+    hist_x = database.get_x_history()
+    fname = problem.objective.name
+    hist_f = database.get_func_history(fname)
+    gname = Database.get_gradient_name(fname)
+    hist_g = database.get_func_history(gname)
+    hist_g2 = database.get_func_grad_history(fname)
+    assert len(hist_f) == 2
+    assert len(hist_g) == 2
+    assert (hist_g == hist_g2).all()
+    assert len(hist_f) == len(hist_x)
+
+
+def test_get_f_hist_rosen():
+    """Test the objective history extraction."""
     problem = Rosenbrock()
     database = problem.database
     OptimizersFactory().execute(problem, "L-BFGS-B")
@@ -171,7 +200,6 @@ def test_get_f_hist():
     hist_g = database.get_func_history(gname)
     hist_g2 = database.get_func_grad_history(fname)
     assert len(hist_f) > 2
-    assert len(hist_f) == len(hist_g)
     assert (hist_g == hist_g2).all()
     assert len(hist_f) == len(hist_x)
 
@@ -238,6 +266,14 @@ def test_append_export(tmp_wd):
     # Export again with append mode and check that it is much faster
     database.export_hdf(file_path_db, append=True)
     assert len(Database(file_path_db)) == n_calls + 1
+
+
+def test_add_listeners():
+    database = Database()
+    with pytest.raises(TypeError, match="Listener function is not callable"):
+        database.add_store_listener("toto")
+    with pytest.raises(TypeError, match="Listener function is not callable"):
+        database.add_new_iter_listener("toto")
 
 
 def test_append_export_after_store(tmp_path):
@@ -686,3 +722,16 @@ def test_name():
 
     assert NewDatabase().name == "NewDatabase"
     assert Database(name="my_database").name == "my_database"
+
+
+def test_newiter_listeners_no_x():
+    """Test that new iter listeners are properly called when no x_vect is given."""
+    database = Database()
+    database.store(
+        array([0.79499653, 0.20792012, 0.96630481]),
+        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
+    )
+    database.add_new_iter_listener(lambda x: x)
+
+    # This call would fail without an x_vect
+    database.notify_newiter_listeners()

@@ -214,6 +214,7 @@ def test_backup_0(tmp_wd, mdf_scenario):
         filename, erase=True, pre_load=False, generate_opt_plot=True
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 2
 
     assert (tmp_wd / filename).exists()
 

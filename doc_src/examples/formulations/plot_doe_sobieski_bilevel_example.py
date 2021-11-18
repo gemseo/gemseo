@@ -26,14 +26,11 @@ BiLevel-based DOE on the Sobieski SSBJ test case
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
-from os import name as os_name
 
 from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
-
-IS_NT = os_name == "nt"
 
 configure_logger()
 
@@ -152,9 +149,24 @@ system_scenario.formulation.mda2.warm_start = False
 for sub_sc in sub_disciplines[0:3]:
     sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
 
+##############################################################################
+# Multiprocessing
+# ^^^^^^^^^^^^^^^
+# It is possible to run a DOE in parallel using multiprocessing, in order to do
+# this, we specify the number of processes to be used for the computation of
+# the samples.
+
+##############################################################################
+# .. warning::
+#    The multiprocessing option has some limitations on Windows.
+#    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
+#    randomly during execution. It is strongly recommended to update your
+#    environment to avoid this problem.
+#    The features :class:`.MemoryFullCache` and :class:`.HDF5Cache` are not
+#    available for multiprocessing on Windows.
+#    As an alternative, we recommend the method
+#    :meth:`.DOEScenario.set_optimization_history_backup`.
 n_processes = 4
-if IS_NT:  # Under windows, dont do multiprocessing
-    n_processes = 1
 
 run_inputs = {
     "n_samples": 30,
@@ -162,7 +174,12 @@ run_inputs = {
     "algo_options": {"n_processes": n_processes},
 }
 
-system_scenario.execute(run_inputs)
+##############################################################################
+# .. warning::
+#    When running a parallel DOE on Windows, the execution must be
+#    protected to avoid recursive calls:
+if __name__ == "__main__":
+    system_scenario.execute(run_inputs)
 
 system_scenario.print_execution_metrics()
 

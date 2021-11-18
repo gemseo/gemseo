@@ -55,6 +55,15 @@ class MDA(MDODiscipline):
         "tolerance",
         "max_mda_iter",
         "_log_convergence",
+        "lin_cache_tol_fact",
+        "assembly",
+        "coupling_structure",
+        "max_mda_iter",
+        "normed_residual",
+        "strong_couplings",
+        "matrix_type",
+        "use_lu_fact",
+        "linear_solver_tolerance",
     )
 
     def __init__(

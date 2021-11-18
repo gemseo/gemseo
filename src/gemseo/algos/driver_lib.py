@@ -45,10 +45,10 @@ import io
 import logging
 import string
 from time import time
-from typing import Callable, Union
+from typing import Callable, List, Optional, Union
 
 import tqdm
-from numpy import ones_like, where, zeros_like
+from numpy import ndarray, ones_like, where, zeros_like
 from tqdm.utils import _unicode, disp_len
 
 from gemseo.algos.algo_lib import AlgoLib
@@ -64,6 +64,7 @@ from gemseo.algos.stop_criteria import (
     XtolReached,
 )
 
+DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
 
 
@@ -196,18 +197,30 @@ class DriverLib(AlgoLib):
         self._max_time = None
         self.__message = None
 
-    def init_iter_observer(self, max_iter, message):
+    def deactivate_progress_bar(self):  # type: (...) -> None
+        """Deactivate the progress bar."""
+        self.__progress_bar = None
+
+    def init_iter_observer(
+        self,
+        max_iter,  # type: int
+        message,  # type: str
+    ):  # type: (...) -> None
         """Initialize the iteration observer.
 
         It will handle the stopping criterion and the logging of the progress bar.
 
-        :param max_iter: maximum number of calls
-        :param message: message to display at the beginning
+        Args:
+            max_iter: The maximum number of iterations.
+            message: The message to display at the beginning.
+
+        Raises:
+            ValueError: If the `max_iter` is not greater than or equal to one.
         """
         if max_iter < 1:
             raise ValueError("max_iter must be >=1, got {}".format(max_iter))
         self.__max_iter = max_iter
-        self.__iter = len(self.problem.database)
+        self.__iter = 0
         self.__message = message
         self.__progress_bar = ProgressBar(
             total=self.__max_iter,
@@ -215,47 +228,79 @@ class DriverLib(AlgoLib):
             ascii=False,
             file=TqdmToLogger(),
         )
+        self._start_time = time()
+        self.problem.max_iter = max_iter
 
-    def __set_progress_bar_objective_value(self):
-        value = self.problem.objective.last_eval
+    def __set_progress_bar_objective_value(
+        self, x_vect  # type: ndarray
+    ):  # type: (...) -> None
+        """Set the objective value in the progress bar.
+
+        Args:
+            x_vect: The design variables values.
+        """
+        value = self.problem.database.get_f_of_x(self.problem.objective.name, x_vect)
+
         if value is not None:
             # if maximization problem: take the opposite
             if not self.problem.minimize_objective:
                 value = -value
+
             self.__progress_bar.set_postfix(refresh=False, obj=value)
+            self.__progress_bar.update()
+        else:
+            self.__progress_bar.update()
 
-    def new_iteration_callback(self):
-        """Callback called at each new iteration, ie every time a design vector that is
-        not already in the database is proposed by the optimizer.
+    def new_iteration_callback(
+        self, x_vect=None  # type: Optional[ndarray]
+    ):  # type: (...) -> None
+        """Callback called at each new iteration, i.e. every time a design vector that
+        is not already in the database is proposed by the optimizer.
 
-        Iterates the progress bar, implements the stop criteria.
+        Iterate the progress bar, implement the stop criteria.
+
+        Args:
+            x_vect: The design variables values. If None, use the values of the
+                last iteration.
+
+        Raises:
+            MaxTimeReached: If the elapsed time is greater than the maximum
+                execution time.
         """
         # First check if the max_iter is reached and update the progress bar
         self.__iter += 1
-        if self.__iter > self.__max_iter:
-            raise MaxIterReachedException()
+        self.problem.current_iter = self.__iter
+
         if self._max_time > 0:
             delta_t = time() - self._start_time
             if delta_t > self._max_time:
                 raise MaxTimeReached()
 
-        self.__set_progress_bar_objective_value()
-        self.__progress_bar.update()
+        if self.__progress_bar is not None:
+            if x_vect is None:
+                x_vect = self.problem.database.get_x_by_iter(-1)
+            self.__set_progress_bar_objective_value(x_vect)
 
-    def finalize_iter_observer(self):
+    def finalize_iter_observer(self):  # type: (...) -> None
         """Finalize the iteration observer."""
-        self.__set_progress_bar_objective_value()
-        self.__progress_bar.close()
+        if self.__progress_bar is not None:
+            self.__progress_bar.close()
 
-    def _pre_run(self, problem, algo_name, **options):
-        """To be overridden by subclasses Specific method to be executed just before
+    def _pre_run(
+        self,
+        problem,  # type: OptimizationProblem
+        algo_name,  # type: str
+        **options  # type: DriverLibOptionType
+    ):  # type: (...) -> None
+        """To be overridden by subclasses. Specific method to be executed just before
         _run method call.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-        :param options: the options dict for the algorithm, see associated JSON file
+        Args:
+            problem: The optimization problem.
+            algo_name: The name of the algorithm.
+            **options: The options of the algorithm,
+                see the associated JSON file.
         """
-        self._start_time = time()
         self._max_time = options.get(self.MAX_TIME, 0.0)
 
     def _post_run(self, problem, algo_name, result, **options):  # pylint: disable=W0613

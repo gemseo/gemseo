@@ -23,15 +23,16 @@ from __future__ import division, unicode_literals
 
 import pytest
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.py23_compat import Path
 
 pytestmark = pytest.mark.skipif(
     not PostFactory().is_available("SOM"),
     reason="SOM plot is not available.",
 )
+
+POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 
 
 def test_som(tmp_wd):
@@ -40,8 +41,7 @@ def test_som(tmp_wd):
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
     factory = PostFactory()
     for val in problem.database.values():
         val.pop("pow2")
@@ -56,8 +56,7 @@ def test_som_annotate(tmp_wd):
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
     factory = PostFactory()
     for val in problem.database.values():
         val.pop("pow2")

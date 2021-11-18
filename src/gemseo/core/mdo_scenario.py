@@ -424,6 +424,9 @@ class MDOScenarioAdapter(MDODiscipline):
         # Default inputs have changed, therefore caches shall be cleared
         self.scenario.cache.clear()
         self.scenario.reset_statuses_for_run()
+
+        # Reset the iter counter for the opt problem.
+        opt_problem.current_iter = 0
         for func in opt_problem.get_all_functions():
             # Avoids max_iter reached
             func.n_calls = 0

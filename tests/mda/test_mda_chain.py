@@ -22,6 +22,8 @@
 
 from __future__ import division, unicode_literals
 
+import sys
+
 import numpy as np
 import pytest
 from numpy import array, isclose, ones
@@ -31,6 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -306,12 +309,17 @@ def test_log_convergence(sellar_disciplines):
         assert mda.log_convergence
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of MDAChain in parallel.
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`.
+            a parallel DOE scenario for a particular `main_mda_class`
+            and n_samples.
     """
-    obj = generate_parallel_doe_data("MDAChain")
+    obj = generate_parallel_doe_data("MDAChain", 7)
     assert isclose(array([obj]), array([608.175]), atol=1e-3)

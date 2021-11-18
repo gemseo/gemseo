@@ -24,6 +24,9 @@
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Optional
+
+from numpy import ndarray
 
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.stop_criteria import (
@@ -207,14 +210,18 @@ class OptimizationLibrary(DriverLib):
 
         return True
 
-    def new_iteration_callback(self):
-        """Callback called at each new iteration, ie every time a design vector that is
-        not already in the database is proposed by the optimizer.
-
-        Iterates the progress bar, implements the stop criteria
+    def new_iteration_callback(
+        self, x_vect=None  # type: Optional[ndarray]
+    ):  # type: (...) -> None
+        """
+        Raises:
+            FtolReached: If the defined relative or absolute function
+                tolerance is reached.
+            XtolReached: If the defined relative or absolute x tolerance
+                is reached.
         """
         # First check if the max_iter is reached and update the progress bar
-        super(OptimizationLibrary, self).new_iteration_callback()
+        super(OptimizationLibrary, self).new_iteration_callback(x_vect)
         if is_f_tol_reached(
             self.problem, self._ftol_rel, self._ftol_abs, self._stop_crit_n_x
         ):

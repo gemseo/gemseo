@@ -25,14 +25,10 @@ MDF-based DOE on the Sobieski SSBJ test case
 """
 from __future__ import division, unicode_literals
 
-from os import name as os_name
-
 from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.problems.sobieski.core import SobieskiProblem
-
-IS_NT = os_name == "nt"
 
 configure_logger()
 
@@ -75,6 +71,7 @@ scenario = create_scenario(
     maximize_objective=True,
     scenario_type="DOE",
 )
+
 ##############################################################################
 # Set the design constraints
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,9 +84,24 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # Use provided analytic derivatives
 scenario.set_differentiation_method("user")
 
+##############################################################################
+# Multiprocessing
+# ^^^^^^^^^^^^^^^
+# It is possible to run a DOE in parallel using multiprocessing, in order to do
+# this, we specify the number of processes to be used for the computation of
+# the samples.
+
+##############################################################################
+# .. warning::
+#    The multiprocessing option has some limitations on Windows.
+#    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
+#    randomly during execution. It is strongly recommended to update your
+#    environment to avoid this problem.
+#    The features :class:`.MemoryFullCache` and :class:`.HDF5Cache` are not
+#    available for multiprocessing on Windows.
+#    As an alternative, we recommend the method
+#    :meth:`.DOEScenario.set_optimization_history_backup`.
 n_processes = 4
-if IS_NT:  # Under windows, don't do multiprocessing
-    n_processes = 1
 
 ##############################################################################
 # We define the algorithm options. Here the criterion = center option of pyDOE
@@ -103,12 +115,27 @@ algo_options = {
     "n_processes": n_processes,
 }
 run_inputs = {"n_samples": 30, "algo": "lhs", "algo_options": algo_options}
-scenario.execute(run_inputs)
+
+##############################################################################
+# .. warning::
+#    When running a parallel DOE on Windows, the execution must be
+#    protected to avoid recursive calls:
+if __name__ == "__main__":
+    scenario.execute(run_inputs)
 
 ##############################################################################
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process("OptHistoryView", show=False, save=False)
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the attributes for any post-processing algo. Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
 
 ##############################################################################
 # Plot the scatter matrix
