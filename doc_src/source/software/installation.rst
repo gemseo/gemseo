@@ -23,58 +23,43 @@ Installation
 
 You may install the core or the full features set of |g|.
 See :ref:`dependencies` for more information.
-There are different ways to install |g| depending on you platform and Python version.
+There are different ways to install |g| depending on your platform and Python version.
 
 Requirements
 ************
 
 To install |g|,
-you need a python environment.
+you need a Python environment.
 We strongly recommend to use `Anaconda`_
 to create a dedicated environment for |g|.
 
 Anaconda
 --------
 
-`Anaconda`_ is a free multi-platform python distribution
+`Anaconda`_ is a free multi-platform Python distribution
 (for commercial use and redistribution)
-that facilitates the installation of python
-and non-python packages,
+that facilitates the installation of Python
+and non-Python packages,
 since it handles pre-compiled packages.
 Furthermore,
 it does not require any administrator privilege.
 You may install `Anaconda`_
 and `learn`_ how to use it.
 
-Linux or MacOS
-**************
+Python 3 installation
+*********************
 
-For Python 3 on Linux or MacOS,
+For Python 3,
 install the full feature set in an anaconda environment named *gemseo* for python 3.8 with
 
 .. code-block:: console
 
     conda create -c conda-forge -n gemseo python=3.8 gemseo
 
-You can change the python version to 3.6, 3.7 or 3.9.
+You can change the Python version to 3.6, 3.7 or 3.9.
 
-Windows or Python 2.7
-*********************
-
-For Python 3,
-download :download:`this file <../../../environment-py3.yml>`
-and create an anaconda environment for |g| with
-
-.. code-block:: console
-
-    conda env create -f environment-py3.yml
-
-This will install Python 3.8
-and minimum common set of |g| dependencies on any platform
-(Linux, Windows, MacOS) in an environment named *gemseo*.
-You may edit :file:`environment-py3.yml`
-to change the environment name or the Python version
-(3.6, 3.7, 3.8 or 3.9).
+Python 2.7 installation
+***********************
 
 For Python 2.7,
 use :download:`this file <../../../environment-py2.yml>`.
@@ -89,7 +74,7 @@ activate this environment with:
 and you can now proceed with the installation of |g|,
 see :ref:`pypi`.
 
-You may leave the anaconda environment with
+You may leave the Anaconda environment with:
 
 .. code-block:: console
 
@@ -101,13 +86,13 @@ Install from Pypi
 -----------------
 
 Create an :ref:`environment`,
-then install the core features of the latest version with
+then install the core features of the latest version with:
 
 .. code-block:: console
 
     pip install gemseo
 
-or the full features with
+or the full features with:
 
 .. code-block:: console
 
@@ -117,13 +102,13 @@ Install from an archive
 -----------------------
 
 Create an :ref:`environment`,
-then install the core features from an archive with
+then install the core features from an archive with:
 
 .. code-block:: console
 
     pip install gemseo-x.y.z.zip
 
-or the full features with
+or the full features with:
 
 .. code-block:: console
 
@@ -133,13 +118,13 @@ Install the development version
 -------------------------------
 
 Create an :ref:`environment`,
-then install the core features of the development version with
+then install the core features of the development version with:
 
 .. code-block:: console
 
     pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 
-or the full features with
+or the full features with:
 
 .. code-block:: console
 
@@ -160,7 +145,7 @@ try to import the module:
 
 .. warning::
 
-    If you obtain the error
+    If you obtain the error:
 
     .. code-block:: console
 
