@@ -1919,15 +1919,22 @@ class MDODiscipline(object):
         out_d = {}
         for keep_name in self.get_attributes_to_serialize():
             if keep_name not in self.__dict__:
-                if "_" + keep_name not in self.__dict__:
+                if "_" + keep_name not in self.__dict__ and not hasattr(
+                    self, keep_name
+                ):
                     msg = (
                         "Discipline {} defined attribute '{}' "
                         "as required for serialization, "
-                        "but it appears to be undefined."
+                        "but it appears to "
+                        "be undefined.".format(self.name, keep_name)
                     )
                     raise AttributeError(msg)
 
-                prop = self.__dict__["_" + keep_name]
+                prop = self.__dict__.get("_" + keep_name)
+                # May appear for properties that overload public attrs of super class
+                if hasattr(self, keep_name) and not isinstance(prop, Synchronized):
+                    continue
+
                 if not isinstance(prop, Synchronized):
                     raise TypeError(
                         "Cant handle attribute {} serialization "

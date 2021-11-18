@@ -23,11 +23,13 @@
 from __future__ import division, unicode_literals
 
 import re
+import sys
 
 import pytest
 from numpy import array, float64, isclose, linalg, ones
 
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.newton import MDANewtonRaphson, MDAQuasiNewton
 from gemseo.problems.sellar.sellar import (
     X_SHARED,
@@ -234,6 +236,10 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
 @pytest.mark.parametrize(
     "mda_class,expected_obj",
     [("MDAQuasiNewton", 591.35), ("MDANewtonRaphson", 608.175)],

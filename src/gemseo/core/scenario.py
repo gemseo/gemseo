@@ -119,6 +119,8 @@ class Scenario(MDODiscipline):
         self.disciplines = disciplines
         self.optimization_result = None
         self._algo_factory = None
+        self._opt_hist_backup_path = None
+        self._gen_opt_backup_plot = False
 
         self._check_disciplines()
         self._init_algo_factory()
@@ -372,31 +374,38 @@ class Scenario(MDODiscipline):
             ValueError: If both erase and pre_load are True.
         """
         opt_pb = self.formulation.opt_problem
+        self._opt_hist_backup_path = file_path
+        self._gen_opt_backup_plot = generate_opt_plot
 
-        if exists(file_path):
+        if exists(self._opt_hist_backup_path):
             if erase and pre_load:
                 raise ValueError(
                     "Conflicting options for history backup, "
                     "cannot pre load optimization history and erase it!"
                 )
             if erase:
-                LOGGER.warning("Erasing optimization history in %s", str(file_path))
-                remove(file_path)
-            elif pre_load:
-                opt_pb.database.import_hdf(file_path)
-
-        def backup_callback():  # type: (...) -> None
-            """A callback function to backup optimization history."""
-            self.save_optimization_history(file_path, append=True)
-            if generate_opt_plot and opt_pb.database:
-                basepath = basename(file_path).split(".")[0]
-                self.post_process(
-                    "OptHistoryView", save=True, show=False, file_path=basepath
+                LOGGER.warning(
+                    "Erasing optimization history in %s",
+                    str(self._opt_hist_backup_path),
                 )
+                remove(self._opt_hist_backup_path)
+            elif pre_load:
+                opt_pb.database.import_hdf(self._opt_hist_backup_path)
 
         opt_pb.add_callback(
-            backup_callback, each_new_iter=each_new_iter, each_store=each_store
+            self._execute_backup_callback,
+            each_new_iter=each_new_iter,
+            each_store=each_store,
         )
+
+    def _execute_backup_callback(self):  # type: (...) -> None
+        """A callback function to backup optimization history."""
+        self.save_optimization_history(self._opt_hist_backup_path, append=True)
+        if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
+            basepath = basename(self._opt_hist_backup_path).split(".")[0]
+            self.post_process(
+                "OptHistoryView", save=True, show=False, file_path=basepath
+            )
 
     @property
     def posts(self):  # type: (...) -> List[str]

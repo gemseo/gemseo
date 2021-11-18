@@ -177,7 +177,7 @@ install it with:
    sudo yum install libnsl
 
 Some |g| tests fail under Windows without any reason
------------------------------------------------------
+----------------------------------------------------
 
 The user may face some issues with the last version of Windows 10, build 2004,
 while running the tests. The errors are located deep in either numpy or scipy,
@@ -187,3 +187,16 @@ this issue is `well known
 and comes from an incompatibility with Windows 10, build 2004 and some versions
 of OpenBlas. |g| users shall not encounter any issue in production.  Otherwise,
 please contact us in order to get some mitigation instructions.
+
+Parallel execution limitations on Windows
+-----------------------------------------
+
+When running parallel execution tasks on Windows, the features :class:`.MemoryFullCache`
+and :class:`.HDF5Cache` do not work properly. This is due to the way subprocesses are forked
+in this architecture. The method :meth:`.DOEScenario.set_optimization_history_backup`
+is recommended as an alternative.
+
+The user may face issues when running parallel tasks with Python versions < 3.7 on Windows.
+A subprocess may randomly hang and prevent the execution of the rest of the code. The cause of
+this problem is most likely related to a bug in numpy that was solved on version 1.20.0, it
+is strongly recommended to update the Python environment to ensure the stability of the execution.

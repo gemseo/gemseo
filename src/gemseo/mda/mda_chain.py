@@ -55,6 +55,7 @@ class MDAChain(MDA):
         "linear_solver_tolerance",
         "matrix_type",
         "use_lu_fact",
+        "all_couplings",
     )
 
     def __init__(

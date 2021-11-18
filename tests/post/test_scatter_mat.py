@@ -113,7 +113,7 @@ def test_non_existent_var(tmp_wd):
 
 @pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
-    "variables_list, baseline_images",
+    "variables, baseline_images",
     [
         ([], ["empty_list"]),
         (["x_shared", "obj"], ["subset_2components"]),
@@ -122,13 +122,12 @@ def test_non_existent_var(tmp_wd):
     ],
 )
 @image_comparison(None, extensions=["png"])
-def test_scatter_plot(tmp_wd, baseline_images, variables_list, pyplot_close_all):
+def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     """Test images created by the post_process method against references.
 
     Args:
-        tmp_wd : Fixture to move into a temporary directory.
-        baseline_images (list): The reference images to be compared.
-        variables_list (list): The list of variables to be plotted
+        baseline_images: The reference images to be compared.
+        variables: The list of variables to be plotted
             in each test case.
         pyplot_close_all : Fixture that prevents figures aggregation
             with matplotlib pyplot.
@@ -154,7 +153,7 @@ def test_scatter_plot(tmp_wd, baseline_images, variables_list, pyplot_close_all)
         save=False,
         file_path="scatter_sellar",
         file_extension="png",
-        variables_list=variables_list,
+        variables_list=variables,
     )
     post.figures
 
@@ -205,13 +204,10 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
 @image_comparison(None, extensions=["png"])
-def test_filter_non_feasible(
-    tmp_wd, filter_non_feasible, baseline_images, pyplot_close_all
-):
+def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_all):
     """Test if the filter_non_feasible option works properly.
 
     Args:
-        tmp_wd: Fixture to move into a temporary directory.
         filter_non_feasible: If True, remove the non-feasible points from the data.
         baseline_images: The reference images to be compared.
         pyplot_close_all: Fixture that prevents figures aggregation

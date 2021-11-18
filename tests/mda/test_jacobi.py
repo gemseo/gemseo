@@ -22,9 +22,13 @@
 
 from __future__ import division, unicode_literals
 
+import sys
+
+import pytest
 from numpy import array, isclose
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.chains import SobieskiMDAJacobi
 
@@ -124,12 +128,17 @@ def test_log_convergence(sellar_disciplines):
     assert mda._log_convergence
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of Jacobi in parallel.
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`.
+            a parallel DOE scenario for a particular `main_mda_class`
+            and n_samples.
     """
-    obj = generate_parallel_doe_data("MDAJacobi")
+    obj = generate_parallel_doe_data("MDAJacobi", 7)
     assert isclose(array([obj]), array([608.175]), atol=1e-3)

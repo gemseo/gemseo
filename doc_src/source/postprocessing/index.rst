@@ -100,8 +100,8 @@ What are the post-processing features?
    <a href="../examples/post_process/plot_constraints_history.html"><img src="../_images/sphx_glr_plot_constraints_history_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="../examples/post_process/plot_obj_constr_hist.html">Objective and constraints history</a></h3>
    <a href="../examples/post_process/plot_obj_constr_hist.html"><img src="../_images/sphx_glr_plot_obj_constr_hist_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="../examples/post_process/plot_gradient_sensitivity">Gradient sensitivity</a></h3>
-   <a href="../examples/post_process/plot_gradient_sensitivity"><img src="../_images/sphx_glr_plot_gradient_sensitivity_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_gradient_sensitivity.html">Gradient sensitivity</a></h3>
+   <a href="../examples/post_process/plot_gradient_sensitivity.html"><img src="../_images/sphx_glr_plot_gradient_sensitivity_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="../examples/post_process/plot_opt_hist_view.html">Optimization history view</a></h3>
    <a href="../examples/post_process/plot_opt_hist_view.html"><img src="../_images/sphx_glr_plot_opt_hist_view_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
    <h3><a href="../examples/post_process/plot_para_coord.html">Parallel coordinates</a></h3>

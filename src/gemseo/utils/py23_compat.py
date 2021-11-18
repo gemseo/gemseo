@@ -61,7 +61,6 @@ if PY2:
     import backports.unittest_mock
 
     backports.unittest_mock.install()
-    from unittest import mock
 
 
 else:

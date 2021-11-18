@@ -35,6 +35,7 @@ from hashlib import sha1
 from itertools import chain, islice
 from typing import (
     Any,
+    Callable,
     ItemsView,
     Iterable,
     KeysView,
@@ -132,6 +133,8 @@ class Database(object):
 
         self.__dict = OrderedDict()
         self.__max_iteration = 0
+        self.__store_listeners = []
+        self.__newiter_listeners = []
 
         # This list enables to temporary save the last inputs that have been
         # stored before any export_hdf is called.
@@ -167,6 +170,25 @@ class Database(object):
             self.__dict[key] = OrderedDict(value)
         else:
             self.__dict[HashableNdarray(key, True)] = OrderedDict(value)
+
+    def is_new_eval(
+        self, x_vect  # type: ndarray
+    ):  # type: (...) -> bool
+        """Whether storing the given values would generate a new iteration.
+
+        Args:
+            x_vect: The design variables values.
+
+        Returns:
+            Whether a new iteration would occur after storing the values.
+        """
+        curr_val = self.get(x_vect)
+
+        if curr_val is None:
+            return True
+
+        n_cval = len(curr_val)
+        return (n_cval == 1 and self.ITER_TAG in curr_val) or n_cval == 0
 
     @staticmethod
     def __get_hashed_key(
@@ -348,6 +370,7 @@ class Database(object):
             KeyError: If the required key is not found.
         """
         hashed = HashableNdarray(x_vect)
+
         for i, key in enumerate(self.__dict.keys()):
             if key == hashed:
                 return i
@@ -359,7 +382,7 @@ class Database(object):
         """Return the values of the input design variables at a specified iteration.
 
         Args:
-            iteration: The iteration required.
+            iteration: The required iteration.
 
         Returns:
             The values of the input design variables.
@@ -372,7 +395,7 @@ class Database(object):
         """
         nkeys = len(self.__dict)
         if nkeys == 0:
-            raise ValueError("The database is empty!")
+            raise ValueError("The database is empty.")
         if iteration < 0:
             iteration = nkeys + iteration
         if iteration >= nkeys or (iteration < 0 and -iteration > nkeys):
@@ -381,9 +404,13 @@ class Database(object):
                 "than the maximum number of iterations = {} "
                 "got instead = {}".format(len(self) - 1, iteration)
             )
-        for i, key in enumerate(self.__dict.keys()):
-            if i == iteration:
-                return key.unwrap()
+
+        # The database dictionary uses the input design variables as keys for the
+        # function values. Here we convert it to an iterator that returns the
+        # key located at the required iteration using the islice method from
+        # itertools.
+        key = next(islice(iter(self.__dict), iteration, iteration + 1))
+        return key.unwrap()
 
     def clear(self):  # type: (...) -> None
         """Clear the database."""
@@ -616,27 +643,98 @@ class Database(object):
 
         Args:
             x_vect: The input values.
-            values_dict: The output values corresponding to input values.
+            values_dict: The output values corresponding to the input values.
             add_iter: True if iterations are added to the output values, False otherwise.
         """
         self.__hdf_export_buffer.append(self.__get_hashed_key(x_vect))
 
+        n_values = len(values_dict)
+        values_not_empty = n_values > 1 or (
+            n_values == 1 and self.ITER_TAG not in values_dict
+        )
         if self.contains_x(x_vect):
             curr_val = self.get_value(x_vect)
             # No new keys = already computed = new iteration
             # otherwise just calls to other functions
+            cval_ok = (len(curr_val) == 1 and self.ITER_TAG in curr_val) or not curr_val
             curr_val.update(OrderedDict(values_dict))
-        elif add_iter:
-            self.__max_iteration += 1
-            # include the iteration index
-            new_values_dict = dict(
-                values_dict, **{self.ITER_TAG: [self.__max_iteration]}
-            )
-            self.__setitem__(x_vect, new_values_dict)
+            self[x_vect] = curr_val
+            self.notify_store_listeners()
+            # Notify the new iteration after storing x_vect
+            # because callbacks may need an updated x_vect
+            if cval_ok and values_not_empty:
+                self.notify_newiter_listeners(x_vect)
         else:
             self.__max_iteration += 1
-            # do not include the iteration index but still update it
-            self.__setitem__(x_vect, values_dict)
+            if add_iter:
+                values_dict = dict(
+                    values_dict, **{self.ITER_TAG: [self.__max_iteration]}
+                )
+            self[x_vect] = values_dict
+            self.notify_store_listeners()
+            if values_not_empty:
+                self.notify_newiter_listeners(x_vect)
+
+    def add_store_listener(
+        self,
+        listener_func,  # type: Callable
+    ):  # type: (...) -> None
+        """Add a listener to be called when an item is stored to the database.
+
+        Args:
+            listener_func: The function to be called.
+
+        Raises:
+            TypeError: If the argument is not a callable
+        """
+        if not callable(listener_func):
+            raise TypeError("Listener function is not callable")
+        self.__store_listeners.append(listener_func)
+
+    def add_new_iter_listener(
+        self,
+        listener_func,  # type: Callable
+    ):  # type: (...) -> None
+        """Add a listener to be called when a new iteration is stored to the database.
+
+        Args:
+            listener_func: The function to be called.
+
+        Raises:
+            TypeError: If the argument is not a callable.
+        """
+        if not callable(listener_func):
+            raise TypeError("Listener function is not callable.")
+        self.__newiter_listeners.append(listener_func)
+
+    def clear_listeners(self):  # type: (...) -> None
+        """Clear all the listeners."""
+        self.__store_listeners = []
+        self.__newiter_listeners = []
+
+    def notify_store_listeners(self):  # type: (...) -> None
+        """Notify the listeners that a new entry was stored in the database."""
+        for func in self.__store_listeners:
+            func()
+
+    def notify_newiter_listeners(
+        self,
+        x_vect=None,  # type: Optional[ndarray]
+    ):  # type: (...) -> None
+        """Notify the listeners that a new iteration is ongoing.
+
+        Args:
+            x_vect: The values of the design variables. If None, use
+                the values of the last iteration.
+        """
+        if x_vect is None:
+            x_vect = self.get_x_by_iter(-1)
+
+        for func in self.__newiter_listeners:
+            try:
+                func(x_vect)
+            except TypeError:
+                func()
 
     def get_all_data_names(
         self,

@@ -27,12 +27,16 @@ from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.core import SobieskiProblem
 
 
-def generate_parallel_doe(main_mda_class):
+def generate_parallel_doe(
+    main_mda_class,  # type: str
+    n_samples=4,  # type: int
+):  # type: (...) -> float
     """Execute a parallel DOE with a custom `main_mda_class`.
 
     Args:
         main_mda_class: The main mda class to be used to execute the
             parallel DOE scenario.
+        n_samples: The number of samples for the DOE.
 
     Returns:
         The optimum solution of the parallel DOE scenario.
@@ -55,7 +59,11 @@ def generate_parallel_doe(main_mda_class):
         main_mda_class=main_mda_class,
     )
     scenario.execute(
-        {"algo": "DiagonalDOE", "n_samples": 4, "algo_options": {"n_processes": 2}}
+        {
+            "algo": "DiagonalDOE",
+            "n_samples": n_samples,
+            "algo_options": {"n_processes": 2},
+        }
     )
     return scenario.get_optimum().get_data_dict_repr()["f_opt"]
 

@@ -28,7 +28,8 @@ from __future__ import division, unicode_literals
 
 import logging
 import traceback
-from typing import Iterable, List, Optional, Union
+from multiprocessing import current_process
+from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -37,11 +38,13 @@ from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_lib import DriverLib
-from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.core.parallel_execution import SUBPROCESS_NAME, ParallelExecution
 
 LOGGER = logging.getLogger(__name__)
 
 DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
+DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
 
 
 @six.add_metaclass(
@@ -100,15 +103,12 @@ class DOELibrary(DriverLib):
         )
         return criterion
 
-    def _pre_run(self, problem, algo_name, **options):
-        """To be overriden by subclasses Specific method to be executed just before _run
-        method call.
-
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-        :param options: the options dict for the algorithm,
-            see associated JSON file
-        """
+    def _pre_run(
+        self,
+        problem,  # type: OptimizationProblem
+        algo_name,  # type: str
+        **options  # type: DOELibraryOptionType
+    ):  # type: (...) -> None
         super(DOELibrary, self)._pre_run(problem, algo_name, **options)
 
         problem.stop_if_nan = False
@@ -117,6 +117,16 @@ class DOELibrary(DriverLib):
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
         self.samples = self._generate_samples(**options)
+
+        # Initialize the order as it is not necessarily guaranteed
+        # when using parallel execution.
+        unnormalize_vect = self.problem.design_space.unnormalize_vect
+        round_vect = self.problem.design_space.round_vect
+        for sample in self.samples:
+            self.problem.database.store(
+                round_vect(unnormalize_vect(sample)), {}, add_iter=True
+            )
+
         self.init_iter_observer(len(self.samples), "DOE sampling")
         self.problem.add_callback(self.new_iteration_callback)
 
@@ -254,16 +264,35 @@ class DOELibrary(DriverLib):
             raise RuntimeError("Samples are None, execute method before export.")
         savetxt(doe_output_file, self.samples, delimiter=",")
 
-    def _worker(self, sample):
+    def _worker(
+        self, sample  # type: ndarray
+    ):  # type: (...) -> DOELibraryOutputType
+        """Wrap the evaluation of the functions for parallel execution.
+
+        Args:
+            sample: The values for the evaluation of the functions.
+
+        Returns:
+            The computed values.
+        """
+        if current_process().name == SUBPROCESS_NAME:
+            self.deactivate_progress_bar()
+            self.problem.database.clear_listeners()
         return self.problem.evaluate_functions(sample, self.eval_jac)
 
     def evaluate_samples(
-        self, eval_jac=False, n_processes=1, wait_time_between_samples=0
+        self,
+        eval_jac=False,  # type: bool
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
     ):
-        """Evaluates all functions of optimization problem at the samples.
+        """Evaluate all the functions of the optimization problem at the samples.
 
-        :param eval_jac: if True, the jacobian is also evaluated
-            (Default value = False)
+        Args:
+            eval_jac: Whether to evaluate the jacobian.
+            n_processes: The number of processes used to evaluate the samples.
+            wait_time_between_samples: The time to wait between each sample
+                evaluation, in seconds.
         """
         self.eval_jac = eval_jac
         unnormalize_vect = self.problem.design_space.unnormalize_vect
@@ -271,27 +300,22 @@ class DOELibrary(DriverLib):
         round_vect = self.problem.design_space.round_vect
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
-            n_samples = len(self.samples)
             # Create a list of tasks: execute functions
-            workers = [self._worker] * n_samples
-            parallel = ParallelExecution(workers, n_processes=n_processes)
+            parallel = ParallelExecution(self._worker, n_processes=n_processes)
             parallel.wait_time_between_fork = wait_time_between_samples
             # Define a callback function to store the samples on the fly
             # during the parallel execution
             database = self.problem.database
 
-            # Initialize the order as it is not necessarily guaranteed
-            # when using parallel execution
-            for sample in self.samples:
-                x_u = unnormalize_vect(sample)
-                x_r = round_vect(x_u)
-                database.store(x_r, {}, add_iter=True)
+            def store_callback(
+                index,  # type: int
+                outputs,  # type: DOELibraryOutputType
+            ):  # type: (...) -> None
+                """Store the outputs in the database.
 
-            def store_callback(index, outputs):
-                """Store outputs in the database.
-
-                :param index: sample index
-                :param outputs: outputs of the parallel execution
+                Args:
+                    index: The sample index.
+                    outputs: The outputs of the parallel execution.
                 """
                 out, jac = outputs
                 if jac:
