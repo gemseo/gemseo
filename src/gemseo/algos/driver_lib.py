@@ -331,23 +331,24 @@ class DriverLib(AlgoLib):
         self.problem = problem
         if algo_name is not None:
             self.algo_name = algo_name
+
         if self.algo_name is None:
             raise ValueError(
                 "Algorithm name must be either passed as "
                 "argument or set by the attribute 'algo_name'."
             )
+
         self._check_algorithm(self.algo_name, problem)
         self.init_options_grammar(self.algo_name)
-        use_database = options.get(self.USE_DATABASE_OPTION, True)
-        normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
-        round_ints = options.get(self.ROUND_INTS_OPTION, True)
-
         self._check_ignored_options(options)
         options = self._get_options(**options)
         self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+
         problem.check()
         problem.preprocess_functions(
-            normalize=normalize, use_database=use_database, round_ints=round_ints
+            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            use_database=options.get(self.USE_DATABASE_OPTION, True),
+            round_ints=options.get(self.ROUND_INTS_OPTION, True),
         )
 
         try:  # Term criteria such as max iter or max_time can be triggered in pre_run

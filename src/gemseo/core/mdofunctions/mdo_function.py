@@ -133,6 +133,15 @@ class MDOFunction(object):
 
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see :meth:`check_grad`).
+
+
+    Attributes:
+        last_eval (Optional[ndarray]): The value of the function output
+            at the last evaluation; None if it has not yet been evaluated.
+        force_real (bool): Whether to cast the results to real value.
+        special_repr (Optional[str]): The string representation of the function
+            overloading its default string ones.
+            If None, the default string representation is used.
     """
 
     TYPE_OBJ = "obj"  # type: str

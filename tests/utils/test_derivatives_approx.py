@@ -29,9 +29,13 @@ from numpy import array, complex128, float64, zeros
 from numpy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_discipline
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.derivatives_approx import (
@@ -279,3 +283,39 @@ def test_factory():
         factory.create("finite_differences", function, step=1e-3), FirstOrderFD
     )
     assert isinstance(factory.create("complex_step", function), ComplexStep)
+
+
+@pytest.mark.parametrize(
+    "normalize,lower_bound,upper_bound",
+    [
+        (False, -2, 2),
+        (True, -2, 2),
+        (False, -2, None),
+        (True, -2, None),
+        (False, None, 2),
+        (True, None, 2),
+    ],
+)
+def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_bound):
+    """Check that finite differences on the design boundaries use a backward step."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=lower_bound, u_b=upper_bound, value=2.0)
+
+    problem = OptimizationProblem(
+        design_space, differentiation_method="finite_differences"
+    )
+    problem.objective = MDOFunction(lambda x: x ** 2, "my_objective")
+
+    OptimizersFactory().execute(
+        problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize
+    )
+
+    grad = problem.database.get_func_grad_history("my_objective")[0, 0]
+    if upper_bound is None:
+        assert grad > 4.0
+    else:
+        assert grad < 4.0
+
+    assert grad == pytest.approx(4.0, abs=1e-6)
+
+    assert "All components of the normalized vector " not in caplog.text

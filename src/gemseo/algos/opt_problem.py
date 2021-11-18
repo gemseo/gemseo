@@ -936,7 +936,8 @@ class OptimizationProblem(object):
         and eventually the gradients by complex step or finite differences.
 
         Args:
-            normalize: If True, then the functions are normalized.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
             use_database: If True, then the functions are wrapped in the database.
             round_ints: If True, then round the integer variables.
         """
@@ -1039,7 +1040,8 @@ class OptimizationProblem(object):
 
         Args:
             function: The scaled and derived function to be pre-processed.
-            normalize: If True, then the function will be normalized.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
             use_database: If True, then the function is wrapped in the database.
             round_ints: If True, then round the integer variables.
             is_observable: If True, new_iter_listeners are not called
@@ -1060,7 +1062,7 @@ class OptimizationProblem(object):
             function = NormFunction(function, normalize, round_ints, self)
 
         if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
-            self.__add_fd_jac(function)
+            self.__add_fd_jac(function, normalize)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         function.force_real = True
@@ -1112,6 +1114,7 @@ class OptimizationProblem(object):
     def __add_fd_jac(
         self,
         function,  # type: MDOFunction
+        normalize,  # type: bool
     ):  # type: (...) -> None
         """Add a pointer to the approached Jacobian of the function.
 
@@ -1119,6 +1122,8 @@ class OptimizationProblem(object):
 
         Args:
             function: The function to be derivated.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
         """
         differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
             self.differentiation_method
@@ -1130,6 +1135,8 @@ class OptimizationProblem(object):
             function.evaluate,
             step=self.fd_step,
             parallel=self.__parallel_differentiation,
+            design_space=self.design_space,
+            normalize=normalize,
             **self.__parallel_differentiation_options
         )
         function.jac = differentiation_object.f_gradient

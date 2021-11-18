@@ -111,6 +111,8 @@ Fixed
 - DOE algorithms now have their own JSON grammar files which corrects the documentation of their options.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
+- OptimizationProblem no longer logs a warning when using the finite-difference method on the design boundary.
+- Issues when a python module prefixed with ``gemseo_`` is in the current working directory.
 - DesignSpace can now be iterated correctly.
 - OptHistoryView no longer raises an exception when the Hessian diagonal contains NaN and skips the Hessian plot.
 

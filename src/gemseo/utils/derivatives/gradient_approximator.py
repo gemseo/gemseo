@@ -18,12 +18,13 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
 from numpy import array, finfo, float64, ndarray
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.factory import Factory
 from gemseo.utils.py23_compat import xrange
 
@@ -52,6 +53,8 @@ class GradientApproximator(object):
         f_pointer,  # type: Callable[[ndarray],ndarray]
         step=1e-6,  # type: float
         parallel=False,  # type: bool
+        design_space=None,  # type: Optional[DesignSpace]
+        normalize=True,  # type: bool
         **parallel_args  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         """
@@ -59,6 +62,10 @@ class GradientApproximator(object):
             f_pointer: The pointer to the function to derive.
             step: The default differentiation step.
             parallel: Whether to differentiate the function in parallel.
+            design_space: The design space
+                containing the upper bounds of the input variables.
+                If None, consider that the input variables are unbounded.
+            normalize: If True, then the functions are normalized.
             **parallel_args: The parallel execution options,
                 see :mod:`gemseo.core.parallel_execution`.
         """
@@ -67,6 +74,8 @@ class GradientApproximator(object):
         self.__parallel = parallel
         self._step = None
         self.step = step
+        self._design_space = design_space
+        self._normalize = normalize
 
     @property
     def _parallel(self):  # type: (...) -> bool
@@ -95,7 +104,7 @@ class GradientApproximator(object):
         x_vect,  # type: ndarray
         step=None,  # type: Optional[float]
         x_indices=None,  # type: Optional[Sequence[int]]
-        **kwargs  # type: (...) -> Any
+        **kwargs  # type: Any
     ):  # type: (...) -> ndarray
         """Approximate the gradient of the function for a given input vector.
 
@@ -112,18 +121,18 @@ class GradientApproximator(object):
             The approximated gradient.
         """
         input_dimension = len(x_vect)
-        input_perturbations = self.generate_perturbations(
+        input_perturbations, steps = self.generate_perturbations(
             input_dimension, x_vect, x_indices=x_indices, step=step
         )
         n_perturbations = input_perturbations.shape[1]
 
         if self._parallel:
             grad = self._compute_parallel_grad(
-                x_vect, n_perturbations, input_perturbations, step, **kwargs
+                x_vect, n_perturbations, input_perturbations, steps, **kwargs
             )
         else:
             grad = self._compute_grad(
-                x_vect, n_perturbations, input_perturbations, step, **kwargs
+                x_vect, n_perturbations, input_perturbations, steps, **kwargs
             )
 
         return array(grad, dtype=float64).T
@@ -141,8 +150,8 @@ class GradientApproximator(object):
         Args:
             input_values: The input values.
             n_perturbations: The number of perturbations.
-            input_perturbations: The input perturbations.
-            step: The differentiation step.
+            step: The differentiation step,
+                either one global step or one step by input component.
             **kwargs: The optional arguments for the function.
 
         Returns:
@@ -155,7 +164,7 @@ class GradientApproximator(object):
         input_values,  # type: ndarray
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
-        step,  # type: float
+        step,  # type: Union[float,ndarray]
         **kwargs  # type: Any
     ):  # type: (...) -> ndarray
         """Approximate the gradient.
@@ -164,7 +173,8 @@ class GradientApproximator(object):
             input_values: The input values.
             n_perturbations: The number of perturbations.
             input_perturbations: The input perturbations.
-            step: The differentiation step.
+            step: The differentiation step,
+                either one global step or one step by input component.
             **kwargs: The optional arguments for the function.
 
         Returns:
@@ -178,7 +188,7 @@ class GradientApproximator(object):
         x_vect,  # type: ndarray
         x_indices=None,  # type: Optional[Sequence[int]]
         step=None,  # type: Optional[float]
-    ):  # type: (...) -> ndarray
+    ):  # type: (...) -> Tuple[ndarray,Union[float,ndarray]]
         """Generate the input perturbations from the differentiation step.
 
         These perturbations will be used to compute the output ones.
@@ -193,7 +203,9 @@ class GradientApproximator(object):
                 If None, use the default differentiation step.
 
         Returns:
-            The input perturbations.
+            * The input perturbations.
+            * The differentiation step,
+              either one global step or one step by input component.
         """
         if step is None:
             step = self.step
@@ -208,7 +220,7 @@ class GradientApproximator(object):
         input_values,  # type: ndarray
         input_indices,  # type: List[int]
         step,  # type: float
-    ):  # type: (...) -> ndarray
+    ):  # type: (...) -> Tuple[ndarray,Union[float,ndarray]]
         """Generate the input perturbations from the differentiation step.
 
         These perturbations will be used to compute the output ones.
@@ -220,7 +232,9 @@ class GradientApproximator(object):
             step: The differentiation step.
 
         Returns:
-            The input perturbations.
+            * The input perturbations.
+            * The differentiation step,
+              either one global step or one step by input component.
         """
         raise NotImplementedError
 
