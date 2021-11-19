@@ -200,3 +200,7 @@ The user may face issues when running parallel tasks with Python versions < 3.7 
 A subprocess may randomly hang and prevent the execution of the rest of the code. The cause of
 this problem is most likely related to a bug in numpy that was solved on version 1.20.0, it
 is strongly recommended to update the Python environment to ensure the stability of the execution.
+
+The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
+it may also print the conclusion of an iteration ahead of another one that was concluded first. This
+is a consequence of the pickling process and does not affect the computations of the scenario.
