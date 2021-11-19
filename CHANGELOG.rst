@@ -75,6 +75,9 @@ Software improvements
   Numpy < 1.20.0, there is a known issue where one of the processes gets hung randomly, updating your
   environment is strongly recommended.
   This feature does not support the use of MemoryFullCache or HDF5Cache on Windows.
+  The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
+  it may also print the conclusion of an iteration ahead of another one that was concluded first. This
+  is a consequence of the pickling process and does not affect the computations of the scenario.
 - A ParameterSpace can be casted into a DesignSpace.
 - Plugins can be discovered via setuptools entry points.
 - A dumped MDODiscipline can now be loaded with the API function import_discipline().
@@ -107,6 +110,7 @@ Algorithms and numerical computations
 - Make OpenTURNS- and pyDOE-based full factorial DOEs work whatever the dimension and number of samples.
 - The NLopt library wrapper now handles user functions that return ndarrays properly.
 - Fix bilevel formulation: the strong couplings were used instead of all the couplings when computing the inputs and outputs of the sub-scenarios adapters.
+  Please note that this bug had an impact on execution performance, but had no adverse effect on the bilevel calculations in previous builds.
 - Bug with the 'sample_x' parameter of the pSeven wrapper.
 - An OptimizationProblem can now normalize and unnormalize gradient with uncertain variables.
 - A SurrogateDiscipline can now be instantiated from an MLAlgo saved without its learning set.

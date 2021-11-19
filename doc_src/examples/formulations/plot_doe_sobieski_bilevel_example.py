@@ -184,6 +184,14 @@ if __name__ == "__main__":
 system_scenario.print_execution_metrics()
 
 ##############################################################################
+# .. warning::
+#    On Windows, the progress bar may show duplicated instances during the
+#    initialization of each subprocess. In some cases it may also print the
+#    conclusion of an iteration ahead of another one that was concluded first.
+#    This is a consequence of the pickling process and does not affect the
+#    computations of the scenario.
+
+##############################################################################
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process("OptHistoryView", show=False, save=False)
