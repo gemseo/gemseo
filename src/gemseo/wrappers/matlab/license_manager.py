@@ -34,7 +34,7 @@ of the Matlab installation.
 """
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.matlab.engine import __MatlabEngine
@@ -100,7 +100,7 @@ class LicenseManager(object):
 
     def check_licenses(
         self,
-        licenses=None,  # type: Optional[list[str]]
+        licenses=None,  # type: Optional[List[str]]
         pause_frac=60,  # type: float
         pause_const=20,  # type: float
     ):  # type: (...) -> None

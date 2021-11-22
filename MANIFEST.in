@@ -11,4 +11,4 @@ include src/gemseo/wrappers/icons/*.png
 include src/gemseo/utils/n2d3/js/*.js
 include src/gemseo/utils/n2d3/css/*.css
 include src/gemseo/utils/n2d3/n2_html.tmpl
-include src/gemseo/wrappers/matlab/engine/matlab_files/*.m
+include src/gemseo/wrappers/matlab/matlab_files/*.m
