@@ -81,6 +81,27 @@ def test_set_tolerances(sellar_disciplines):
     assert mda_chain.mdo_chain.disciplines[0].linear_solver_tolerance == 1e-6
 
 
+def test_set_solver(sellar_disciplines):
+    """Test that the MDA tolerances can be set at the object instantiation."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-3,
+        linear_solver_tolerance=1e-6,
+        max_mda_iter=20,
+        chain_linearize=False,
+        use_lu_fact=True,
+        linear_solver="LGMRES",
+        linear_solver_options={"restart": 5},
+    )
+    assert mda_chain.linear_solver == "LGMRES"
+    assert mda_chain.use_lu_fact
+    assert mda_chain.linear_solver_options == {"restart": 5}
+
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver == "LGMRES"
+    assert mda_chain.mdo_chain.disciplines[0].use_lu_fact
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver_options == {"restart": 5}
+
+
 def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines):
     """Test that the tolerance cannot be set from the linear_solver_options dictionary.
 

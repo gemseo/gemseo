@@ -121,12 +121,14 @@ class MDAChain(MDA):
             sub_coupling_structures=sub_coupling_structures,
             **sub_mda_options
         )
+
         self.log_convergence = log_convergence
 
         self._initialize_grammars()
         self._check_consistency()
         self._set_default_inputs()
         self._compute_input_couplings()
+
         # cascade the tolerance
         for sub_mda in self.sub_mda_list:
             sub_mda.tolerance = self.tolerance
@@ -190,6 +192,9 @@ class MDAChain(MDA):
                         tolerance=self.tolerance,
                         linear_solver_tolerance=self.linear_solver_tolerance,
                         grammar_type=self.grammar_type,
+                        use_lu_fact=self.use_lu_fact,
+                        linear_solver=self.linear_solver,
+                        linear_solver_options=self.linear_solver_options,
                         coupling_structure=next(sub_coupling_structures_iterator),
                         **sub_mda_options
                     )
