@@ -1009,7 +1009,9 @@ class Database(object):
         name = str(index_dataset)
         keys = array(keys, dtype=string_)
         if name not in keys_group:
-            keys_group.create_dataset(name, data=keys, maxshape=(None,))
+            keys_group.create_dataset(
+                name, data=keys, maxshape=(None,), dtype=h5py.string_dtype()
+            )
         else:
             offset = len(keys_group[name])
             keys_group[name].resize((offset + len(keys),))

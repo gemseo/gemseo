@@ -343,6 +343,11 @@ def test_add_hdf_name_output(h5_file):
     database._add_hdf_name_output(1, keys_group, ["f2", "f3", "f4"])
     assert (array(keys_group["1"]) == array(["f2", "f3", "f4"], dtype=string_)).all()
 
+    database._add_hdf_name_output(1, keys_group, ["@-y_1"])
+    assert (
+        array(keys_group["1"]) == array(["f2", "f3", "f4", "@-y_1"], dtype=string_)
+    ).all()
+
 
 def test_add_hdf_scalar_output(h5_file):
     """Test that scalar values are correctly added to the group of output values."""
