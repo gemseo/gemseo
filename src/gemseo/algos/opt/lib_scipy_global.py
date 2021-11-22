@@ -216,12 +216,20 @@ class ScipyGlobalOpt(OptimizationLibrary):
             **kwargs
         )
 
-    def iter_callback(self):  # type: (...) -> None
-        """Calls the objective function at last x."""
-        last_x = self.problem.database.get_last_n_x(1)[0]
+    def iter_callback(
+        self,
+        x_vect,  # type: ndarray
+    ):  # type: (...) -> None
+        """Call the objective and constraints functions.
+
+        Args:
+            x_vect: The input data with which to call the functions.
+        """
         if self.normalize_ds:
-            last_x = self.problem.design_space.normalize_vect(last_x)
-        self.problem.objective(last_x)
+            x_vect = self.problem.design_space.normalize_vect(x_vect)
+        self.problem.objective(x_vect)
+        for constraint in self.problem.constraints:
+            constraint(x_vect)
 
     def real_part_obj_fun(
         self,
@@ -256,7 +264,6 @@ class ScipyGlobalOpt(OptimizationLibrary):
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
-
         # This is required because some algorithms do not
         # call the objective very often when the problem
         # is very constrained (Power2) and OptProblem may fail
