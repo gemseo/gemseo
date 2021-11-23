@@ -1181,6 +1181,32 @@ class DesignSpace(collections.MutableMapping):
         r_xvec = self.round_vect(unnorm_vect)
         return r_xvec
 
+    def transform_vect(
+        self, vector  # type: ndarray
+    ):  # type:(...) -> ndarray
+        """Map a point of the design space to a vector with components in :math:`[0,1]`.
+
+        Args:
+            vector: A point of the design space.
+
+        Returns:
+            A vector with components in :math:`[0,1]`.
+        """
+        return self.normalize_vect(vector)
+
+    def untransform_vect(
+        self, vector  # type: ndarray
+    ):  # type:(...) -> ndarray
+        """Map a vector with components in :math:`[0,1]` to the design space.
+
+        Args:
+            vector: A vector with components in :math:`[0,1]`.
+
+        Returns:
+            A point of the variables space.
+        """
+        return self.unnormalize_vect(vector)
+
     def round_vect(
         self,
         x_vect,  # type: ndarray

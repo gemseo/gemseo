@@ -1052,3 +1052,14 @@ def test_setitem():
     new_design_space["x1"] = design_space["x1"]
 
     assert design_space == new_design_space
+
+
+def test_transform():
+    """Check that transformation and inverse transformation works correctly."""
+    parameter_space = DesignSpace()
+    parameter_space.add_variable("x", l_b=0.0, u_b=2.0)
+    vector = array([1.0])
+    transformed_vector = parameter_space.transform_vect(vector)
+    assert transformed_vector == array([0.5])
+    untransformed_vector = parameter_space.untransform_vect(transformed_vector)
+    assert vector == untransformed_vector

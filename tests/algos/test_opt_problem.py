@@ -33,6 +33,7 @@ from scipy.optimize import rosen, rosen_der
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_custom import CustomDOE
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -886,3 +887,15 @@ def test_observables_callback():
     )
 
     assert obs1.n_calls == 1
+
+
+def test_approximated_jacobian_wrt_uncertain_variables():
+    """Check that the approximated Jacobian wrt uncertain variables is correct."""
+    uspace = ParameterSpace()
+    uspace.add_random_variable("u", "OTNormalDistribution")
+    problem = OptimizationProblem(uspace)
+    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.objective = MDOFunction(lambda u: u, "func")
+    CustomDOE().execute(problem, "CustomDOE", samples=array([[0.0]]), eval_jac=True)
+    grad = problem.database.get_func_grad_history("func")
+    assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)

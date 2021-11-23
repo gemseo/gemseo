@@ -295,8 +295,8 @@ class DOELibrary(DriverLib):
                 evaluation, in seconds.
         """
         self.eval_jac = eval_jac
-        unnormalize_vect = self.problem.design_space.unnormalize_vect
-        unnormalize_grad = self.problem.design_space.normalize_vect
+        sample_to_design = self.problem.design_space.untransform_vect
+        unnormalize_grad = self.problem.design_space.unnormalize_grad
         round_vect = self.problem.design_space.round_vect
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
@@ -306,6 +306,13 @@ class DOELibrary(DriverLib):
             # Define a callback function to store the samples on the fly
             # during the parallel execution
             database = self.problem.database
+
+            # Initialize the order as it is not necessarily guaranteed
+            # when using parallel execution
+            for sample in self.samples:
+                x_u = sample_to_design(sample)
+                x_r = round_vect(x_u)
+                database.store(x_r, {}, add_iter=True)
 
             def store_callback(
                 index,  # type: int
@@ -320,9 +327,9 @@ class DOELibrary(DriverLib):
                 out, jac = outputs
                 if jac:
                     for key, val in jac.items():
-                        val = unnormalize_grad(val, minus_lb=False)
+                        val = unnormalize_grad(val)
                         out["@" + key] = val
-                x_u = unnormalize_vect(self.samples[index])
+                x_u = sample_to_design(self.samples[index])
                 x_r = round_vect(x_u)
                 database.store(x_r, out)
 

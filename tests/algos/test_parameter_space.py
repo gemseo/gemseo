@@ -227,7 +227,7 @@ def test_normalize():
     space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
     vector = array([0.5] * 6)
-    u_vector = space.normalize_vect(vector)
+    u_vector = space.normalize_vect(vector, use_dist=True)
     expectation = array([0.5] * 2 + [0.25] + [0.598706] * 3)
     assert allclose(u_vector, expectation, 1e-3)
 
@@ -240,7 +240,7 @@ def test_unnormalize():
     space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
     u_vector = array([0.5] * 2 + [0.25] + [0.598706] * 3)
-    vector = space.unnormalize_vect(u_vector)
+    vector = space.unnormalize_vect(u_vector, use_dist=True)
     expectation = array([0.5] * 6)
     assert allclose(vector, expectation, 1e-3)
 
@@ -280,8 +280,10 @@ def test_unnormalize_vect():
     space.add_random_variable(
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
-    assert allclose(space.unnormalize_vect(array([0.5])), array([2.0 - 1.5 ** 0.5]))
-    assert space.unnormalize_vect(array([0.5]), use_dist=False)[0] == 1.0
+    assert allclose(
+        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5 ** 0.5])
+    )
+    assert space.unnormalize_vect(array([0.5]))[0] == 1.0
 
 
 def test_normalize_vect():
@@ -290,8 +292,10 @@ def test_normalize_vect():
     space.add_random_variable(
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
-    assert allclose(space.normalize_vect(array([2.0 - 1.5 ** 0.5])), array([0.5]))
-    assert space.normalize_vect(array([1.0]), use_dist=False)[0] == 0.5
+    assert allclose(
+        space.normalize_vect(array([2.0 - 1.5 ** 0.5]), use_dist=True), array([0.5])
+    )
+    assert space.normalize_vect(array([1.0]))[0] == 0.5
 
 
 def test_evaluate_cdf_raising_errors():
@@ -418,3 +422,14 @@ def test_parameter_space_name():
     """Check the naming of a parameter space."""
     assert ParameterSpace().name is None
     assert ParameterSpace(name="my_name").name == "my_name"
+
+
+def test_transform():
+    """Check that transformation and inverse transformation works correctly."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", "SPNormalDistribution")
+    vector = array([0.0])
+    transformed_vector = parameter_space.transform_vect(vector)
+    assert transformed_vector == array([0.5])
+    untransformed_vector = parameter_space.untransform_vect(transformed_vector)
+    assert vector == untransformed_vector
