@@ -427,26 +427,12 @@ class ParameterSpace(DesignSpace):
         desc = str(table)
         return desc
 
-    def normalize_grad(
-        self,
-        g_vect,  # type:ndarray
-    ):  # type: (...) ->ndarray
-        return self.unnormalize_vect(
-            g_vect, minus_lb=False, no_check=True, use_dist=False
-        )
-
-    def unnormalize_grad(
-        self,
-        g_vect,  # type:ndarray
-    ):  # type: (...) ->ndarray
-        return self.normalize_vect(g_vect, minus_lb=False, use_dist=False)
-
     def unnormalize_vect(
         self,
         x_vect,  # type:ndarray
         minus_lb=True,  # type:bool
         no_check=False,  # type: bool
-        use_dist=True,  # type:bool
+        use_dist=False,  # type:bool
     ):  # type: (...) ->ndarray
         """Unnormalize a normalized vector of the parameter space.
 
@@ -486,11 +472,21 @@ class ParameterSpace(DesignSpace):
         x_u = DataConversion.dict_to_array(x_u, data_names)
         return x_u
 
+    def transform_vect(
+        self, vector  # type: ndarray
+    ):  # type:(...) -> ndarray
+        return self.normalize_vect(vector, use_dist=True)
+
+    def untransform_vect(
+        self, vector  # type: ndarray
+    ):  # type:(...) -> ndarray
+        return self.unnormalize_vect(vector, use_dist=True)
+
     def normalize_vect(
         self,
         x_vect,  # type:ndarray
         minus_lb=True,  # type: bool
-        use_dist=True,  # type: bool
+        use_dist=False,  # type: bool
     ):  # type: (...) ->ndarray
         """Normalize a vector of the parameter space.
 

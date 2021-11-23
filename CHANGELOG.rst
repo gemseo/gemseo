@@ -156,6 +156,7 @@ Software
 - DOEScenario no longer passes a default number of samples to a DOELibrary for which it is not an option.
 - Issues when a python module prefixed with ``gemseo_`` is in the current working directory.
 - DesignSpace can now be iterated correctly.
+- The Jacobian approximated by the finite-difference method is now correct when computed with respect to uncertain variables.
 
 Version 3.1.0 (July 2021)
 *************************
