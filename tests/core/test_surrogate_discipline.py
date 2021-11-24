@@ -21,13 +21,15 @@
 
 from __future__ import division, unicode_literals
 
+import sys
+
 import pytest
 from numpy import allclose, array, concatenate
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution import IS_WIN, DiscParallelExecution
 from gemseo.core.surrogate_disc import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegression
 
@@ -112,6 +114,10 @@ def test_linearize(dataset):
     assert allclose(out["y_2"]["x_2"][0], -3.0)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
 def test_parallel_execute(dataset):
     """Test the execution of the surrogate discipline in parallel."""
     surr_1 = SurrogateDiscipline("LinearRegression", dataset)
