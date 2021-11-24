@@ -23,7 +23,7 @@
 from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose, array, ndarray
+from numpy import allclose, array, array_equal, ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.analytic_discipline import AnalyticDiscipline
@@ -31,7 +31,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.gpr import GaussianProcessRegression
-from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.utils.data_conversion import DataConversion
 
 LEARNING_SIZE = 9
@@ -51,18 +50,10 @@ def dataset():  # type: (...) -> Dataset
     return discipline.cache.export_to_dataset("dataset_name")
 
 
-@pytest.fixture
-def model(dataset):  # type: (...) -> GaussianProcessRegression
+@pytest.fixture(params=[None, GaussianProcessRegression.DEFAULT_TRANSFORMER])
+def model(request, dataset):  # type: (...) -> GaussianProcessRegression
     """A trained GaussianProcessRegression."""
-    gpr = GaussianProcessRegression(dataset)
-    gpr.learn()
-    return gpr
-
-
-@pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> GaussianProcessRegression
-    """A trained GaussianProcessRegression with inputs scaling."""
-    gpr = GaussianProcessRegression(dataset, transformer={"inputs": Scaler()})
+    gpr = GaussianProcessRegression(dataset, transformer=request.param)
     gpr.learn()
     return gpr
 
@@ -94,26 +85,39 @@ def test_predict(model):
     assert allclose(prediction["y_1"], -prediction["y_2"], 1e-2)
 
 
-def test_predict_std(model):
-    """Test std prediction."""
+def test_predict_std_training_point(model):
+    """Test std prediction for a training point."""
     input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
     prediction_std = model.predict_std(input_value)
     assert allclose(prediction_std, 0, atol=1e-3)
+
+
+def test_predict_std_test_point(model):
+    """Test std prediction for a test point."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
     assert prediction_std > 0
+
+
+def test_predict_std_input_array(model):
+    """Test std prediction when the input data is an array."""
+    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+    prediction_std = model.predict_std(input_value)
     input_value = DataConversion.dict_to_array(input_value, model.input_names)
-    assert model.predict_std(input_value) == prediction_std
+    assert array_equal(model.predict_std(input_value), prediction_std)
 
 
-def test_predict_std_with_transform(model_with_transform):
-    """Test std prediction with data transformation."""
-    input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
-    prediction_std = model_with_transform.predict_std(input_value)
-    assert allclose(prediction_std, 0, atol=1e-3)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    prediction_std = model_with_transform.predict_std(input_value)
-    assert prediction_std > 0
+@pytest.mark.parametrize("x_1,x_2", [([1.0], [2.0]), ([[1.0], [1.0]], [[2.0], [2.0]])])
+def test_predict_std_shape(model, x_1, x_2):
+    """Test the shape and content of standard deviation."""
+    input_value = {"x_1": array(x_1), "x_2": array(x_2)}
+    prediction_std = model.predict_std(input_value)
+    if array(x_1).shape == (1,):
+        expected = (1,)
+    else:
+        expected = (2,)
+    assert prediction_std.shape == expected
+    assert prediction_std.var() == 0
 
 
 def test_save_and_load(model, tmp_path):

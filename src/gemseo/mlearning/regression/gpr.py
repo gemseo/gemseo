@@ -191,15 +191,33 @@ class GaussianProcessRegression(MLRegressionAlgo):
 
     def predict_std(
         self,
-        input_data,  # type:DataType
+        input_data,  # type: DataType
     ):  # type: (...) -> ndarray
         """Predict the standard deviation from input data.
 
+        The user can specify these input data either as a NumPy array,
+        e.g. :code:`array([1., 2., 3.])`
+        or as a dictionary,
+        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+
+        If the NumPy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the NumPy arrays are of dimension 1,
+        there is a single sample.
+
         Args:
-            input_data: The input data with shape (n_samples, n_inputs).
+            input_data: The input data.
 
         Returns:
-            output_data: The output data with shape (n_samples, n_outputs).
+            The standard deviation at the query points.
+
+        Warning:
+            The standard deviation at a query point is defined as a positive scalar,
+            whatever the output dimension.
+            By the way,
+            if the output variables are transformed before the training stage,
+            then the standard deviation is related to this transformed output space
+            unlike :meth:`.predict` which returns values in the original output space.
         """
         as_dict = isinstance(input_data, dict)
         if as_dict:
@@ -209,4 +227,4 @@ class GaussianProcessRegression(MLRegressionAlgo):
         if inputs in self.transformer:
             input_data = self.transformer[inputs].transform(input_data)
         _, output_std = self.algo.predict(input_data, True)
-        return sum(output_std) / len(output_std)
+        return output_std
