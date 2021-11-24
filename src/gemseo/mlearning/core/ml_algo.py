@@ -100,7 +100,7 @@ from __future__ import division, unicode_literals
 import logging
 import pickle
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Mapping, Optional, Sequence, Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -116,7 +116,7 @@ LOGGER = logging.getLogger(__name__)
 
 TransformerType = Dict[str, Transformer]
 SavedObjectType = Union[Dataset, TransformerType, str, bool]
-DataType = Union[ndarray, Dict[str, ndarray]]
+DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 
 

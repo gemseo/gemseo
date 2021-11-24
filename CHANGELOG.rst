@@ -157,6 +157,7 @@ Software
 - Issues when a python module prefixed with ``gemseo_`` is in the current working directory.
 - DesignSpace can now be iterated correctly.
 - The Jacobian approximated by the finite-difference method is now correct when computed with respect to uncertain variables.
+- The standard deviation predicted by GaussianProcessRegression is now correctly shaped.
 
 Version 3.1.0 (July 2021)
 *************************
