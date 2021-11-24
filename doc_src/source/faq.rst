@@ -146,6 +146,18 @@ Use :term:`HDF5 <HDF>` caches to persist the discipline output on the disk.
 
 .. seealso:: We invite you to read our documentation:  :ref:`caching`.
 
+Error when using a HDF5 cache
+-----------------------------
+
+In |g| 3.2.0,
+the storage of the data hashes in the HDF5 cache has been fixed
+and the previous cache files are no longer valid.
+If you get an error like
+:cmd:`The file cache.h5 cannot be used because it has no file format version:
+see HDFCache.update_file_format for converting it.`,
+please use :meth:`.HDFCache.update_file_format`
+to update the format of the file and fix the data hashes.
+
 Handling Python 2 and Python 3 compatibility
 --------------------------------------------
 

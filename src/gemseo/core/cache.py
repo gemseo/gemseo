@@ -895,26 +895,28 @@ def hash_data_dict(data, names_tokeep=None):
     >>> hash_data_dict(data,'x')
     756520441774735697349528776513537427923146459919L
     """
-    hash_val = 0
-    iterator = names_tokeep
+    names_with_hashed_values = []
+
     if names_tokeep is None:
-        iterator = iter(data.keys())
-    for name in iterator:
-        val = data.get(name)
-        if val is None:
+        names = iter(data.keys())
+    else:
+        names = names_tokeep
+
+    for name in sorted(names):
+        value = data.get(name)
+        if value is None:
             continue
-        # We sum all the hashes so that the hash does not
-        # depend on the order of the keys
+
         try:
-            hash_val += int(sha1(val.view(uint8)).hexdigest(), 16)
-        except (
-            ValueError,
-            AttributeError,
-        ):
+            value = value.view(uint8)
+        except (ValueError, AttributeError):
             # View may not support discontiguous arrays
-            sha1val = sha1(ascontiguousarray(val).view(uint8))
-            hash_val += int(sha1val.hexdigest(), 16)
-    return hash_val
+            value = ascontiguousarray(value).view(uint8)
+
+        hashed_value = int(sha1(value).hexdigest(), 16)
+        names_with_hashed_values.append((name, hashed_value))
+
+    return hash(tuple(names_with_hashed_values))
 
 
 def check_cache_approx(data_dict, cache_dict, cache_tol=0.0):

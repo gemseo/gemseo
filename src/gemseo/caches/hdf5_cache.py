@@ -27,6 +27,7 @@ from __future__ import division, unicode_literals
 
 import logging
 from os.path import exists
+from typing import Union
 
 import h5py
 from numpy import append, array, bytes_, unicode_
@@ -36,7 +37,7 @@ from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, 
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import PY2, long, string_array, string_dtype
+from gemseo.utils.py23_compat import PY2, Path, long, string_array, string_dtype
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 LOGGER = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class HDF5Cache(AbstractFullCache):
         Examples
         --------
         >>> from gemseo.caches.hdf5_cache import HDF5Cache
-        >>> cache = HDF5Cache('my_cache.hdf5', 'my_node')
+        >>> cache = HDF5Cache('my_cache.h5', 'my_node')
         """
         if not name:
             name = hdf_node_path
@@ -125,7 +126,7 @@ class HDF5Cache(AbstractFullCache):
         --------
         >>> from gemseo.caches.hdf5_cache import HDF5Cache
         >>> from numpy import array
-        >>> cache = HDF5Cache('my_cache.hdf5', 'my_node')
+        >>> cache = HDF5Cache('my_cache.h5', 'my_node')
         >>> for index in range(5):
         >>>     data = {'x': array([1.])*index, 'y': array([.2])*index}
         >>>     cache.cache_outputs(data, ['x'], data, ['y'])
@@ -196,6 +197,19 @@ class HDF5Cache(AbstractFullCache):
             for data in self._all_data(h5_open_file=h5file):
                 yield data
 
+    @staticmethod
+    def update_file_format(
+        hdf_file_path,  # type: Union[str, Path]
+    ):  # type: (...) -> None
+        """Update the format of a HDF5 file.
+
+        .. seealso:: :meth:`.HDF5FileSingleton.update_file_format`.
+
+        Args:
+            hdf_file_path: A HDF5 file path.
+        """
+        HDF5FileSingleton.update_file_format(hdf_file_path)
+
 
 class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     """Singleton to access a HDF file Used for multithreaded/multiprocessing access with
@@ -209,6 +223,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     INPUTS_GROUP = AbstractCache.INPUTS_GROUP
     OUTPUTS_GROUP = AbstractCache.OUTPUTS_GROUP
     JACOBIAN_GROUP = AbstractCache.JACOBIAN_GROUP
+    FILE_FORMAT_VERSION = 1
 
     def __init__(self, hdf_file_path):
         """Constructor.
@@ -216,8 +231,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         :param hdf_file_path: path to the HDF5 file
         """
         self.hdf_file_path = hdf_file_path
-        # Attach the lock to the file and NOT the Cache
-        # because it is a singletton
+        self.__check_file_format_version()
+        # Attach the lock to the file and NOT the Cache because it is a singleton.
         self.lock = RLock()
 
     def write_data(
@@ -234,11 +249,14 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
             multiprocess/treading
         """
         if h5_open_file is None:
-            h5file = h5py.File(self.hdf_file_path, "a")
+            h5_file = h5py.File(self.hdf_file_path, "a")
         else:
-            h5file = h5_open_file
+            h5_file = h5_open_file
 
-        node_group = h5file.require_group(hdf_node_path)
+        if not len(h5_file):
+            self.__set_file_format_version(h5_file)
+
+        node_group = h5_file.require_group(hdf_node_path)
         num_group = node_group.require_group(str(group_num))
         io_group = num_group.require_group(group_name)
 
@@ -260,7 +278,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
         # IOError and RuntimeError are for python 2.7
         except (RuntimeError, IOError, ValueError):
-            h5file.close()
+            h5_file.close()
             raise RuntimeError(
                 "Failed to cache dataset %s.%s.%s in file: %s",
                 hdf_node_path,
@@ -270,7 +288,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
             )
 
         if h5_open_file is None:
-            h5file.close()
+            h5_file.close()
 
     def read_data(self, group_number, group_name, hdf_node_path, h5_open_file=None):
         """Read a data dict in the hdf.
@@ -284,12 +302,13 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
             multiprocess/treading
         """
         if h5_open_file is None:
-            h5file = h5py.File(self.hdf_file_path, "r")
+            h5_file = h5py.File(self.hdf_file_path, "r")
         else:
-            h5file = h5_open_file
+            h5_file = h5_open_file
 
-        node = h5file[hdf_node_path]
-        if not self._has_group(group_number, group_name, hdf_node_path, h5file):
+        node = h5_file[hdf_node_path]
+
+        if not self._has_group(group_number, group_name, hdf_node_path, h5_file):
             return None, None
 
         number_dataset = node[str(group_number)]
@@ -302,7 +321,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
             data_hash = None
 
         if h5_open_file is None:
-            h5file.close()
+            h5_file.close()
         ##########################################
         # Python  key.encode("ascii")
         ##########################################
@@ -387,3 +406,79 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         """
         with h5py.File(self.hdf_file_path, "a") as h5file:
             del h5file[hdf_node_path]
+
+    def __check_file_format_version(self):  # type: (...) -> None
+        """Make sure the file can be handled.
+
+        Raises
+            ValueError: If the version of the file format is missing or
+            greater than the current one.
+        """
+        if not Path(self.hdf_file_path).exists():
+            return
+
+        h5_file = h5py.File(self.hdf_file_path, "r")
+
+        if not len(h5_file):
+            h5_file.close()
+            return
+
+        version = h5_file.attrs.get("version")
+        h5_file.close()
+
+        if version is None:
+            raise ValueError(
+                "The file {} cannot be used because it has no file format version: "
+                "see HDFCache.update_file_format to convert it.".format(
+                    self.hdf_file_path
+                )
+            )
+
+        if version > self.FILE_FORMAT_VERSION:
+            raise ValueError(
+                "The file {} cannot be used because its file format version is {} "
+                "while the expected version is {}: "
+                "see HDFCache.update_file_format to convert it.".format(
+                    self.hdf_file_path, version, self.FILE_FORMAT_VERSION
+                )
+            )
+
+    @classmethod
+    def __set_file_format_version(
+        cls,
+        h5_file,  # type: h5py.File
+    ):  # type: (...) -> None
+        """Change the version of an HDF5 file to :attr:`.FILE_FORMAT_VERSION`.
+
+        Args:
+            h5_file: A HDF5 file object.
+        """
+        h5_file.attrs["version"] = cls.FILE_FORMAT_VERSION
+
+    @classmethod
+    def update_file_format(
+        cls,
+        hdf_file_path,  # type: Union[str, Path]
+    ):  # type: (...) -> None
+        """Update the format of a HDF5 file.
+
+        |g| 3.2.0 added a :attr:`.HDF5FileSingleton.FILE_FORMAT_VERSION`
+        to the HDF5 files,
+        to allow handling its maintenance and evolutions.
+        In particular,
+        |g| 3.2.0 fixed the hashing of the data dictionaries.
+
+        Args:
+            hdf_file_path: A HDF5 file path.
+        """
+        with h5py.File(str(hdf_file_path), "a") as h5file:
+            cls.__set_file_format_version(h5file)
+            for value in h5file.values():
+                if not isinstance(value, h5py.Group):
+                    continue
+
+                for sample_value in value.values():
+                    data = sample_value[cls.INPUTS_GROUP]
+                    data = {key: array(val) for key, val in data.items()}
+                    data_hash = string_array([hash_data_dict(data)])
+                    sample_value[cls.HASH_TAG][0] = data_hash
