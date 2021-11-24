@@ -844,24 +844,24 @@ def variables_space():
     """A mock design space."""
     design_space = mock.Mock()
     design_space.dimension = 2
-    design_space.unnormalize_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
+    design_space.untransform_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
     return design_space
 
 
-def test_compute_doe_normalized(variables_space):
-    """Check the computation of a normalized DOE in a variables space."""
-    points = compute_doe(variables_space, 3, "lhs", normalize=True)
+def test_compute_doe_transformed(variables_space):
+    """Check the computation of a transformed DOE in a variables space."""
+    points = compute_doe(variables_space, size=3, algo_name="lhs", unit_sampling=True)
     assert points.shape == (3, 2)
     assert points.max() <= 1.0
     assert points.min() >= 0.0
-    variables_space.unnormalize_vect.assert_not_called()
+    variables_space.untransform_vect.assert_not_called()
 
 
-def test_compute_doe_nonnormalized(variables_space):
-    """Check the computation of a non-normalized DOE in a variables space."""
-    points = compute_doe(variables_space, 3, "lhs")
+def test_compute_doe_nontransformed(variables_space):
+    """Check the computation of a non-transformed DOE in a variables space."""
+    points = compute_doe(variables_space, size=3, algo_name="lhs")
     assert points.shape == (3, 2)
-    variables_space.unnormalize_vect.assert_called_once()
+    variables_space.untransform_vect.assert_called_once()
 
 
 def test_import_discipline(tmp_wd):

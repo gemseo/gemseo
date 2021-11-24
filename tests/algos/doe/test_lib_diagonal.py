@@ -93,28 +93,20 @@ def variables_space():
 
 def test_compute_doe(variables_space):
     """Check the computation of a DOE out of a variables space."""
-    doe = DiagonalDOE().compute_doe(variables_space, 3, normalize=True)
+    library = DOEFactory().create(DOE_LIB_NAME)
+    doe = library.compute_doe(variables_space, 3, unit_sampling=True)
     assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
 
 
 @pytest.mark.parametrize(
     ["reverse", "samples"],
     [
-        ("x", array([[1.0, 0.0], array([0.5, 0.5]), array([0.0, 1.0])])),
-        ("1", array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),
+        (["x"], array([[1.0, 0.0], array([0.5, 0.5]), array([0.0, 1.0])])),
+        (["1"], array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),
     ],
 )
 def test_reverse(variables_space, reverse, samples):
     """Check the sampling of variables in reverse order."""
-    doe = DiagonalDOE().compute_doe(variables_space, 3, normalize=True, reverse=reverse)
+    library = DOEFactory().create(DOE_LIB_NAME)
+    doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
-
-
-def test_one_sample(variables_space):
-    """Check the handling of a sample of size 1."""
-    with pytest.raises(
-        ValueError,
-        match="The number of samples must set to a value greater than or equal "
-        "to 2.",
-    ):
-        DiagonalDOE().compute_doe(variables_space, 1)

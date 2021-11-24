@@ -29,7 +29,7 @@ from __future__ import division, unicode_literals
 import logging
 import traceback
 from multiprocessing import current_process
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -147,8 +147,7 @@ class DOELibrary(DriverLib):
         :returns: samples.
         :rtype: ndarray
         """
-        options[self.DIMENSION] = dimension
-        options[self.N_SAMPLES] = n_samples
+        options = self.__get_algorithm_options(options, n_samples, dimension)
         return self._generate_samples(**options)
 
     def _run(self, **options):
@@ -386,8 +385,8 @@ class DOELibrary(DriverLib):
     def compute_doe(
         self,
         variables_space,  # type: DesignSpace
-        size,  # type: int
-        normalize=False,  # type: bool
+        size=None,  # type: Optional[int]
+        unit_sampling=False,  # type: bool
         **options  # type: DOELibraryOptionType
     ):  # type: (...) -> ndarray
         """Compute a design of experiments (DOE) in a variables space.
@@ -395,18 +394,41 @@ class DOELibrary(DriverLib):
         Args:
             variables_space: The variables space to be sampled.
             size: The size of the DOE.
-            normalize: Whether to normalize the points between 0 and 1.
+                If ``None``, the size is deduced from the ``options``.
+            unit_sampling: Whether to sample in the unit hypercube.
             **options: The options of the DOE algorithm.
 
         Returns:
             The design of experiments
             whose rows are the samples and columns the variables.
         """
+        options = self.__get_algorithm_options(options, size, variables_space.dimension)
         options[self._VARIABLES_NAMES] = variables_space.variables_names
         options[self._VARIABLES_SIZES] = variables_space.variables_sizes
-        doe = self._generate_samples(
-            n_samples=size, dimension=variables_space.dimension, **options
-        )
-        if normalize:
+        doe = self._generate_samples(**options)
+        if unit_sampling:
             return doe
-        return variables_space.unnormalize_vect(doe)
+
+        return variables_space.untransform_vect(doe)
+
+    def __get_algorithm_options(
+        self,
+        options,  # type: Mapping[str, DOELibraryOptionType]
+        size,  # type: Optional[int]
+        dimension,  # type: int
+    ):  # type: (...) -> Dict[str,DOELibraryOptionType]
+        """Return the algorithm options from initial ones.
+
+        Args:
+            options: The user algorithm options.
+            size: The number of samples.
+                If ``None``, the number is deduced from the options.
+            dimension: The dimension of the variables space.
+
+        Returns:
+            The algorithm options.
+        """
+        options[self.N_SAMPLES] = size
+        options = self._update_algorithm_options(**options)
+        options[self.DIMENSION] = dimension
+        return options

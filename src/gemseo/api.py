@@ -1876,9 +1876,9 @@ def load_dataset(
 
 def compute_doe(
     variables_space,  # type: DesignSpace
-    size,  # type: int
     algo_name,  # type: str
-    normalize=False,  # type: bool
+    size=None,  # type: Optional[int]
+    unit_sampling=False,  # type: bool
     **options  # type: DOELibraryOptionType
 ):  # type: (...) -> ndarray
     """Compute a design of experiments (DOE) in a variables space.
@@ -1886,8 +1886,9 @@ def compute_doe(
     Args:
         variables_space: The variables space to be sampled.
         size: The size of the DOE.
+            If ``None``, the size is deduced from the ``options``.
         algo_name: The DOE algorithm.
-        normalize: Whether to normalize the points between 0 and 1.
+        unit_sampling: Whether to sample in the unit hypercube.
         **options: The options of the DOE algorithm.
 
     Returns:
@@ -1899,7 +1900,7 @@ def compute_doe(
     >>> from gemseo.api import compute_doe, create_design_space
     >>> variables_space = create_design_space()
     >>> variables_space.add_variable("x", 2, l_b=-1.0, u_b=1.0)
-    >>> doe = compute_doe(variables_space, 5, "lhs")
+    >>> doe = compute_doe(variables_space, algo_name="lhs", size=5)
 
     See also
     --------
@@ -1908,4 +1909,6 @@ def compute_doe(
     execute_algo
     """
     library = DOEFactory().create(algo_name)
-    return library.compute_doe(variables_space, size, normalize, **options)
+    return library.compute_doe(
+        variables_space, size=size, unit_sampling=unit_sampling, **options
+    )
