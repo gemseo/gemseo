@@ -344,17 +344,17 @@ def test_init_from_dataset_default(io_dataset):
     parameter_space = ParameterSpace.init_from_dataset(io_dataset)
     for name in ["in_1", "in_2", "out_1"]:
         assert name in parameter_space
-        assert parameter_space[name][parameter_space.TYPE_GROUP] == "float"
+        assert (parameter_space[name].var_type == "float").all()
         assert name in parameter_space.deterministic_variables
-    assert parameter_space["in_1"][parameter_space.SIZE_GROUP] == 2
+    assert parameter_space["in_1"].size == 2
     ref = io_dataset["in_1"]["in_1"].min(0)
-    assert (parameter_space["in_1"][parameter_space.LB_GROUP] == ref).all()
+    assert (parameter_space["in_1"].l_b == ref).all()
     ref = io_dataset["in_1"]["in_1"].max(0)
-    assert (parameter_space["in_1"][parameter_space.UB_GROUP] == ref).all()
+    assert (parameter_space["in_1"].u_b == ref).all()
     ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
-    assert (parameter_space["in_1"][parameter_space.VALUE_GROUP] == ref).all()
-    assert parameter_space["in_2"][parameter_space.SIZE_GROUP] == 3
-    assert parameter_space["out_1"][parameter_space.SIZE_GROUP] == 2
+    assert (parameter_space["in_1"].value == ref).all()
+    assert parameter_space["in_2"].size == 3
+    assert parameter_space["out_1"].size == 2
 
 
 def test_init_from_dataset_uncertain(io_dataset):
@@ -422,6 +422,38 @@ def test_parameter_space_name():
     """Check the naming of a parameter space."""
     assert ParameterSpace().name is None
     assert ParameterSpace(name="my_name").name == "my_name"
+
+
+def test_getitem_keyerror():
+    """Check that getting an unknown item raises a KeyError."""
+    parameter_space = ParameterSpace()
+    with pytest.raises(KeyError, match="Variable 'x' is not known."):
+        parameter_space["x"]
+
+
+def test_getitem():
+    """Check that an item can be correctly get from a ParameterSpace."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("x", l_b=0, u_b=1)
+    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
+    assert parameter_space["x"].l_b[0] == 0.0
+    assert parameter_space["u"].parameters["mu"] == 1.0
+
+
+def test_setitem():
+    """Check that an item can be correctly passed to a ParameterSpace."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("x", l_b=0, u_b=1)
+    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
+
+    new_parameter_space = ParameterSpace()
+    new_parameter_space["x"] = parameter_space["x"]
+    new_parameter_space["u"] = parameter_space["u"]
+
+    assert new_parameter_space["x"].l_b[0] == 0.0
+    assert new_parameter_space["u"].parameters["mu"] == 1.0
+
+    assert new_parameter_space == parameter_space
 
 
 def test_transform():

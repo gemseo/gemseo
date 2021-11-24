@@ -69,7 +69,9 @@ The :class:`.ParameterSpace` also provides the following methods:
 """
 from __future__ import division, unicode_literals
 
+import collections
 import logging
+import sys
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -78,7 +80,7 @@ if TYPE_CHECKING:
 
 from numpy import array, ndarray
 
-from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.design_space import DesignSpace, DesignVariable
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 from gemseo.uncertainty.distributions.factory import (
     DistributionFactory,
@@ -86,6 +88,18 @@ from gemseo.uncertainty.distributions.factory import (
 )
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.py23_compat import Path
+
+if sys.version_info < (3, 7, 0):
+    RandomVariable = collections.namedtuple(
+        "RandomVariable", ["distribution", "size", "parameters"]
+    )
+    RandomVariable.__new__.__defaults__ = (1, {})
+else:
+    RandomVariable = collections.namedtuple(
+        "RandomVariable",
+        ["distribution", "size", "parameters"],
+        defaults=(1, {}),
+    )
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,6 +142,11 @@ class ParameterSpace(DesignSpace):
         if copula not in ComposedDistribution.AVAILABLE_COPULA_MODELS:
             raise ValueError("{} is not a copula name.".format(copula))
         self._copula = copula
+        self.__distributions_definitions = {}
+        # To be defined as:
+        # self.__distributions_definitions["u"] = ("SPNormalDistribution", {"mu": 1.})
+        # where the first component of the tuple is a distribution name
+        # and the second one a mapping of the distribution parameter.
 
     def is_uncertain(
         self,
@@ -198,16 +217,16 @@ class ParameterSpace(DesignSpace):
             size: The dimension of the random variable.
             **parameters: The parameters of the distribution.
         """
+        self.__distributions_definitions[name] = (distribution, parameters)
         factory = DistributionFactory()
         distribution = factory.create(
             distribution, variable=name, dimension=size, **parameters
         )
-        variable = distribution.variable_name
-        LOGGER.debug("Add the random variable: %s.", variable)
-        self.distributions[variable] = distribution
-        self.uncertain_variables.append(variable)
+        LOGGER.debug("Add the random variable: %s.", name)
+        self.distributions[name] = distribution
+        self.uncertain_variables.append(name)
         self._build_composed_distribution()
-        self.__update_parameter_space(variable)
+        self.__update_parameter_space(name)
 
     def _build_composed_distribution(self):  # type: (...) -> None
         """Build the composed distribution from the marginal ones."""
@@ -648,3 +667,49 @@ class ParameterSpace(DesignSpace):
                 value=self.get_current_x([name]),
             )
         return design_space
+
+    def __getitem__(
+        self,
+        name,  # type: str
+    ):  # type: (...) -> Union[DesignVariable, RandomVariable]
+        if name not in self.variables_names:
+            raise KeyError("Variable '{}' is not known.".format(name))
+
+        if self.is_uncertain(name):
+            return RandomVariable(
+                distribution=self.__distributions_definitions[name][0],
+                size=self.get_size(name),
+                parameters=self.__distributions_definitions[name][1],
+            )
+        else:
+            try:
+                value = self.get_current_x([name])
+            except KeyError:
+                value = None
+
+            return DesignVariable(
+                size=self.get_size(name),
+                var_type=self.get_type(name),
+                l_b=self.get_lower_bound(name),
+                u_b=self.get_upper_bound(name),
+                value=value,
+            )
+
+    def __setitem__(
+        self,
+        name,  # type: str
+        item,  # type: Union[DesignVariable, RandomVariable]
+    ):  # type: (...) -> None
+        if isinstance(item, RandomVariable):
+            self.add_random_variable(
+                name, item.distribution, size=item.size, **item.parameters
+            )
+        else:
+            self.add_variable(
+                name,
+                size=item.size,
+                var_type=item.var_type,
+                l_b=item.l_b,
+                u_b=item.u_b,
+                value=item.value,
+            )

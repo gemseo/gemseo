@@ -22,6 +22,7 @@
 """Conversion from a NumPy array to a dictionary of NumPy arrays and vice versa."""
 from __future__ import division, unicode_literals
 
+import collections
 from copy import deepcopy
 from typing import TYPE_CHECKING, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -580,3 +581,39 @@ class DataConversion(object):
                 )
             )
         )
+
+
+def flatten_mapping(
+    mapping,  # type: Mapping
+    parent_key="",  # type: str
+    sep="_",  # type: str
+):  # type: (...) -> Dict
+    """Flatten a nested mapping.
+
+    Args:
+        mapping: The mapping to be flattened.
+        parent_key: The key for which ``mapping`` is the value.
+        sep: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
+    """
+    return dict(_flatten_mapping(mapping, parent_key, sep))
+
+
+def _flatten_mapping(
+    mapping,  # type: Mapping
+    parent_key,  # type: str
+    sep,  # type: str
+):  # type: (...) -> Dict
+    """Flatten a nested mapping.
+
+    Args:
+        mapping: The mapping to be flattened.
+        parent_key: The key for which ``mapping`` is the value.
+        sep: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
+    """
+    for key, value in mapping.items():
+        new_key = parent_key + sep + key if parent_key else key
+        if isinstance(value, collections.Mapping):
+            for item in flatten_mapping(value, new_key, sep=sep).items():
+                yield item
+        else:
+            yield new_key, value
