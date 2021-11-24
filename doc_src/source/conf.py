@@ -207,6 +207,7 @@ copyright = "{}, IRT Saint Exupéry".format(datetime.datetime.now().year)
 #
 # The short X.Y version.
 version = gemseo.__version__
+version = "3.2.0"
 # The full version, including alpha/beta/rc tags.
 release = version
 
