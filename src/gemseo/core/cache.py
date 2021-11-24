@@ -907,7 +907,11 @@ def hash_data_dict(data, names_tokeep=None):
         # depend on the order of the keys
         try:
             hash_val += int(sha1(val.view(uint8)).hexdigest(), 16)
-        except ValueError:  # View may not support discontiguous arrays
+        except (
+            ValueError,
+            AttributeError,
+        ):
+            # View may not support discontiguous arrays
             sha1val = sha1(ascontiguousarray(val).view(uint8))
             hash_val += int(sha1val.hexdigest(), 16)
     return hash_val

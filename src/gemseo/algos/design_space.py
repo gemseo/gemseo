@@ -44,6 +44,7 @@ from __future__ import division, unicode_literals
 
 import collections
 import logging
+import sys
 from copy import deepcopy
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
@@ -73,8 +74,10 @@ from numpy import string_, vectorize, where, zeros_like
 from six import string_types
 
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.cache import hash_data_dict
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_enum import BaseEnum
+from gemseo.utils.data_conversion import flatten_mapping
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.py23_compat import Path, string_array, strings_to_unicode_list
 
@@ -94,6 +97,30 @@ VarType = Union[
     DesignVariableType,
     Sequence[DesignVariableType],
 ]
+
+if sys.version_info < (3, 7, 0):
+    DesignVariable = collections.namedtuple(
+        "DesignVariable", ["size", "var_type", "l_b", "u_b", "value"]
+    )
+    DesignVariable.__new__.__defaults__ = (
+        1,
+        DesignVariableType.FLOAT,
+        None,
+        None,
+        None,
+    )
+else:
+    DesignVariable = collections.namedtuple(
+        "DesignVariable",
+        ["size", "var_type", "l_b", "u_b", "value"],
+        defaults=(
+            1,
+            DesignVariableType.FLOAT,
+            None,
+            None,
+            None,
+        ),
+    )
 
 
 class DesignSpace(collections.MutableMapping):
@@ -140,7 +167,6 @@ class DesignSpace(collections.MutableMapping):
     NAMES_GROUP = "names"
     LB_GROUP = "l_b"
     UB_GROUP = "u_b"
-    TYPE_GROUP = "type"
     VAR_TYPE_GROUP = "var_type"
     VALUE_GROUP = "value"
     SIZE_GROUP = "size"
@@ -1863,66 +1889,70 @@ class DesignSpace(collections.MutableMapping):
     def __setitem__(
         self,
         name,  # type: str
-        item,  # type: Mapping[str,Union[str,int,ndarray]]
+        item,  # type: DesignVariable
     ):  # type: (...) -> None
         self.add_variable(
             name,
-            size=item[self.SIZE_GROUP],
-            var_type=item[self.TYPE_GROUP],
-            l_b=item[self.LB_GROUP],
-            u_b=item[self.UB_GROUP],
-            value=item[self.VALUE_GROUP],
+            size=item.size,
+            var_type=item.var_type,
+            l_b=item.l_b,
+            u_b=item.u_b,
+            value=item.value,
         )
 
     def __eq__(
         self,
         other,  # type: DesignSpace
     ):  # type: (...) -> bool
-        if isinstance(other, self.__class__):
-            return self.__cast_mapping(self) == self.__cast_mapping(other)
-        else:
+        if not isinstance(other, self.__class__):
             return False
+
+        if len(other) != len(self):
+            return False
+
+        for key, val in self.items():
+            if key not in other:
+                return False
+
+            hash1 = hash_data_dict(flatten_mapping(val._asdict()))
+            hash2 = hash_data_dict(flatten_mapping(other[key]._asdict()))
+            if hash1 != hash2:
+                return False
+
+        return True
 
     def __getitem__(
         self,
-        variable,  # type: Union[int,str]
-    ):  # type: (...) -> Dict[str,Union[str,int,ndarray]]
+        name,  # type: str
+    ):  # type: (...) -> DesignVariable
         """Return the data associated with a given variable.
 
-        These data are: name, type, size, lower bound, upper bound and current value.
+        These data are: type, size, lower bound, upper bound and current value.
 
         Args:
-            variable: The name or index of the variable.
+            name: The name of the variable.
 
         Returns:
             The data associated with the variable.
 
         Raises:
-            ValueError: If the variable name or index does not exist.
+            ValueError: If the variable name does not exist.
         """
-        if isinstance(variable, int):
-            try:
-                variable = self.variables_names[variable]
-            except IndexError:
-                raise ValueError(
-                    "The parameter indices are comprise between 0 and {}; "
-                    "got {}.".format(len(self) - 1, variable)
-                )
-        else:
-            if variable not in self.variables_names:
-                raise ValueError("Variable '{}' is not known.".format(variable))
+        if name not in self.variables_names:
+            raise KeyError("Variable '{}' is not known.".format(name))
+
         try:
-            value = self.get_current_x([variable])
+            value = self.get_current_x([name])
         except KeyError:
             value = None
-        return {
-            self.NAME_GROUP: variable,
-            self.TYPE_GROUP: self.get_type(variable)[0],
-            self.VALUE_GROUP: value,
-            self.SIZE_GROUP: self.get_size(variable),
-            self.LB_GROUP: self.get_lower_bound(variable),
-            self.UB_GROUP: self.get_upper_bound(variable),
-        }
+
+        return DesignVariable(
+            size=self.get_size(name),
+            var_type=self.get_type(name),
+            l_b=self.get_lower_bound(name),
+            u_b=self.get_upper_bound(name),
+            value=value,
+        )
 
     def extend(
         self,

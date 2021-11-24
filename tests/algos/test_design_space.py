@@ -30,7 +30,7 @@ import pytest
 from numpy import array, array_equal, inf, int32, ones
 from numpy.linalg import norm
 
-from gemseo.algos.design_space import DesignSpace, DesignVariableType
+from gemseo.algos.design_space import DesignSpace, DesignVariable, DesignVariableType
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.third_party.prettytable.prettytable import PY2
@@ -863,32 +863,21 @@ def test_len(design_space):
 
 
 def test_getitem(design_space):
-    assert design_space["x21"] == {
-        "name": "x21",
-        "type": DesignVariableType.FLOAT.value,
-        "value": array([0.5]),
-        "size": 1,
-        "l_b": array([-inf]),
-        "u_b": array([inf]),
-    }
-
-    assert design_space["x22"]["value"] is None
-
-
-def test_getitem_with_index_out_of_design_space(design_space):
-    """Check that getitem with an index >= the number of variables raises an error."""
-    n_variables = len(design_space)
-    expected = "The parameter indices are comprise between 0 and {}; got 2.".format(
-        n_variables - 1
+    assert design_space["x21"] == DesignVariable(
+        var_type=DesignVariableType.FLOAT.value,
+        value=array([0.5]),
+        size=1,
+        l_b=array([-inf]),
+        u_b=array([inf]),
     )
-    with pytest.raises(ValueError, match=expected):
-        design_space[n_variables]
+
+    assert design_space["x22"].value is None
 
 
 def test_getitem_with_name_out_of_design_space(design_space):
     """Check that getitem with an unknown variable name raises an error."""
     expected = "Variable 'foo' is not known."
-    with pytest.raises(ValueError, match=expected):
+    with pytest.raises(KeyError, match=expected):
         design_space["foo"]
 
 
@@ -1041,8 +1030,14 @@ def test_delitem():
     assert not design_space
 
 
+def test_ineq():
+    """Check that DesignSpace cannot be equal to any object other than a DesignSpace."""
+    design_space = DesignSpace()
+    assert design_space != 1
+
+
 def test_setitem():
-    """Check that an item can be added with with DesignSpace.__setitem__."""
+    """Check that DesignSpace.__setitem__ works."""
     design_space = DesignSpace()
     design_space.add_variable(
         "x1", size=2, var_type=design_space.INTEGER, l_b=-1, u_b=1, value=0
@@ -1050,8 +1045,19 @@ def test_setitem():
 
     new_design_space = DesignSpace()
     new_design_space["x1"] = design_space["x1"]
-
     assert design_space == new_design_space
+
+    new_design_space.set_lower_bound("x1", array([0, 0]))
+    assert design_space != new_design_space
+
+    design_space.set_lower_bound("x1", array([0, 0]))
+    assert design_space == new_design_space
+
+    design_space.add_variable("x2")
+    assert design_space != new_design_space
+
+    new_design_space.add_variable("x3")
+    assert design_space != new_design_space
 
 
 def test_transform():
@@ -1063,3 +1069,10 @@ def test_transform():
     assert transformed_vector == array([0.5])
     untransformed_vector = parameter_space.untransform_vect(transformed_vector)
     assert vector == untransformed_vector
+
+
+def test_setitem_from_dict():
+    """Check that DesignSpace.__setitem__ works from an user dictionary."""
+    design_space = DesignSpace()
+    design_space["x"] = DesignVariable(l_b=2.0)
+    assert design_space["x"].l_b == array([2.0])

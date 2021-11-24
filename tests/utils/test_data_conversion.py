@@ -25,7 +25,7 @@ import unittest
 
 from numpy import array, array_equal, hstack, zeros
 
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import DataConversion, flatten_mapping
 
 
 class TestDataConversion(unittest.TestCase):
@@ -132,3 +132,10 @@ class TestDataConversion(unittest.TestCase):
         )
         for k in inputs:
             assert (jac_dict["f"][k] == f_g_rec["f"][k]).all()
+
+
+def test_flatten_mapping():
+    """Check that a nested mapping is correctly flattened."""
+    mapping = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
+    expected = {"a": 1, "b_c": 2, "b_d_e": 3}
+    assert flatten_mapping(mapping) == expected
