@@ -339,9 +339,7 @@ class DriverLib(AlgoLib):
             )
 
         self._check_algorithm(self.algo_name, problem)
-        self.init_options_grammar(self.algo_name)
-        self._check_ignored_options(options)
-        options = self._get_options(**options)
+        options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
 
         problem.check()

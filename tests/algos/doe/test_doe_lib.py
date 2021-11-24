@@ -73,23 +73,23 @@ def variables_space():
     """A mock design space."""
     design_space = mock.Mock()
     design_space.dimension = 2
-    design_space.unnormalize_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
+    design_space.untransform_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
     return design_space
 
 
-def test_compute_doe_normalized(doe, variables_space):
-    """Check the computation of a normalized DOE in a variables space."""
+def test_compute_doe_transformed(doe, variables_space):
+    """Check the computation of a transformed DOE in a variables space."""
     doe.algo_name = "lhs"
-    points = doe.compute_doe(variables_space, 3, normalize=True)
+    points = doe.compute_doe(variables_space, size=3, unit_sampling=True)
     assert points.shape == (3, 2)
     assert points.max() <= 1.0
     assert points.min() >= 0.0
-    variables_space.unnormalize_vect.assert_not_called()
+    variables_space.untransform_vect.assert_not_called()
 
 
-def test_compute_doe_nonnormalized(doe, variables_space):
-    """Check the computation of a non-normalized DOE in a variables space."""
+def test_compute_doe_nontransformed(doe, variables_space):
+    """Check the computation of a non-transformed DOE in a variables space."""
     doe.algo_name = "lhs"
-    points = doe.compute_doe(variables_space, 3)
+    points = doe.compute_doe(variables_space, size=3)
     assert points.shape == (3, 2)
-    variables_space.unnormalize_vect.assert_called_once()
+    variables_space.untransform_vect.assert_called_once()

@@ -252,9 +252,7 @@ class AlgoLib(object):
             )
 
         self._check_algorithm(self.algo_name, problem)
-        self.init_options_grammar(self.algo_name)
-        self._check_ignored_options(options)
-        options = self._get_options(**options)
+        options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
         problem.check()
 
@@ -263,6 +261,25 @@ class AlgoLib(object):
         self._post_run(problem, algo_name, result, **options)
 
         return result
+
+    def _update_algorithm_options(
+        self, **options  # type: Any
+    ):  # type: (...) -> Dict[str, Any]
+        """Update the algorithm options.
+
+        1. Load the grammar of algorithm options.
+        2. Warn about the ignored initial algorithm options.
+        3. Complete the initial algorithm options with the default algorithm options.
+
+        Args:
+            **options: The initial algorithm options.
+
+        Returns:
+            The updated algorithm options.
+        """
+        self.init_options_grammar(self.algo_name)
+        self._check_ignored_options(options)
+        return self._get_options(**options)
 
     def _get_options(
         self, **options  # type: Any

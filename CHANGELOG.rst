@@ -122,6 +122,7 @@ Algorithms and numerical computations
 - Resampling-based MLQualityMeasure no longer re-train the original ML model, but a copy.
 - The computation of a diagonal DOE out of a design space does not crash anymore.
 - OptimizationProblem no longer logs a warning when using the finite-difference method on the design boundary.
+- OpenTURNS options are processed correctly when computing a DOE out of a design space.
 
 Post processing
 ~~~~~~~~~~~~~~~
