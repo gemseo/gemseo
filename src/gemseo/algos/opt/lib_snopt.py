@@ -44,11 +44,11 @@ INFINITY = 1e30
 
 OptionType = Optional[Union[str, int, float, bool, ndarray]]
 
-SNOPT_preprocess_type = Tuple[
+SnOptPreprocessType = Tuple[
     Callable[[int, int, int, int, ndarray, int], Any],
     ndarray,
     ndarray,
-    ndarray(dtype=np_str),
+    ndarray,
     int,
 ]
 
@@ -417,7 +417,7 @@ class SnOpt(OptimizationLibrary):
 
     def __preprocess_snopt_constraints(
         self, names  # type: ndarray(dtype=np_str)
-    ):  # type: (...) -> SNOPT_preprocess_type
+    ):  # type: (...) -> SnOptPreprocessType
         """Set the snopt parameters according to the constraints.
 
         Args:
