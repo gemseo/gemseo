@@ -21,6 +21,7 @@
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
 from __future__ import division, unicode_literals
 
+import logging
 from typing import Any, Dict, List, Sequence, Tuple
 
 from gemseo.algos.design_space import DesignSpace
@@ -29,6 +30,8 @@ from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.mda.mda_factory import MDAFactory
+
+LOGGER = logging.getLogger(__name__)
 
 
 class MDF(MDOFormulation):
@@ -51,6 +54,7 @@ class MDF(MDOFormulation):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         maximize_objective=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         main_mda_class="MDAChain",  # type: str
         sub_mda_class="MDAJacobi",  # type: str
         **mda_options  # type: Any
@@ -68,6 +72,7 @@ class MDF(MDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
+            grammar_type=grammar_type,
         )
         self.mda = None
         self._main_mda_class = main_mda_class
@@ -93,8 +98,12 @@ class MDF(MDOFormulation):
         """
         if main_mda_class == "MDAChain":
             mda_options["sub_mda_class"] = sub_mda_class
+
         self.mda = self._mda_factory.create(
-            main_mda_class, self.disciplines, **mda_options
+            main_mda_class,
+            self.disciplines,
+            grammar_type=self._grammar_type,
+            **mda_options
         )
 
     @classmethod
@@ -104,7 +113,7 @@ class MDF(MDOFormulation):
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required to deduce the sub options of MDF !"
+                "main_mda_class option required to deduce the sub options of MDF."
             )
         factory = MDAFactory().factory
         return factory.get_options_grammar(main_mda)
@@ -116,7 +125,7 @@ class MDF(MDOFormulation):
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required to deduce the sub options of MDF !"
+                "main_mda_class option required to deduce the sub options of MDF."
             )
         factory = MDAFactory().factory
         return factory.get_default_options_values(main_mda)
@@ -146,6 +155,6 @@ class MDF(MDOFormulation):
     def _remove_couplings_from_ds(self):  # type: (...) -> None
         """Remove the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
-        for coupling in self.mda.strong_couplings:
+        for coupling in self.mda.all_couplings:
             if coupling in design_space.variables_names:
                 design_space.remove_variable(coupling)

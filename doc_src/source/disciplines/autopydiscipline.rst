@@ -24,7 +24,7 @@ Let's consider a simple python function, e.g.:
         z = x + 2*y
         return z
 
-Then, we can consider the :class:`.AutoPyDiscipline` to convert it into a :class:`.MDODiscipline`.
+Then, we can consider the :class:`.AutoPyDiscipline` to convert it into an :class:`.MDODiscipline`.
 
 Create and instantiate the discipline
 *************************************

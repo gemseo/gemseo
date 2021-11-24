@@ -2,13 +2,8 @@
     "name": "ScatterPlotMatrix_options",
     "required": ["variables_list"],
     "properties": {
-        "figsize_x": {
-            "type": "number",
-            "minimum":4
-        },
-        "figsize_y": {
-            "type": "number",
-            "minimum":4
+        "filter_non_feasible":{
+            "type": "boolean"
         },
         "variables_list":{
         	"items": {

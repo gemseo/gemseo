@@ -94,7 +94,7 @@ synthetic_dataset.set_from_array(data, variables, sizes, groups)
 # Here, we illustrate the generation of the training data using a :class:`.DOEScenario`,
 # similarly to :ref:`sobieski_doe`, where more details are given.
 #
-# In this basic example, a :class:`.MDODiscipline` computing the mission
+# In this basic example, an :class:`.MDODiscipline` computing the mission
 # performance (range) in the :ref:`SSBJ test case <sobieski_problem>` is
 # sampled with a :class:`.DOEScenario`. Then, the generated database is used to
 # build a :class:`.SurrogateDiscipline`.
@@ -258,7 +258,7 @@ scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 # All surrogate models work the same way: the :class:`.MLRegressionAlgo` base
 # class shall be extended. See :ref:`extending-gemseo` to learn how to run
 # |g|
-# with external python modules. Then, the :class:`.RegressionModelFactory` can
+# with external Python modules. Then, the :class:`.RegressionModelFactory` can
 # build the new :class:`.MLRegressionAlgo` automatically from its regression
 # algorithm name and options. This factory is called by the constructor of
 # :class:`.SurrogateDiscipline`.

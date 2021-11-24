@@ -46,20 +46,10 @@ with a platform or other software.
 To interface a simulation software with |g|,
 please refer to: :ref:`software_connection`.
 
-.. _extending-gemseo:
-
 Extending |g|
 -------------
 
-|g| features can be extended with external python modules. All kinds of
-additional features can be implemented: disciplines, algorithms, formulations,
-post-processings, surrogate models, ... There are 2 ways to extend |g| with a
-directory that contains the python modules:
-
-- by adding the directory to the :envvar:`PYTHONPATH` if the directory name
-  starts with :file:`gemseo_`,
-- by setting the environment variable :envvar:`GEMSEO_PATH` to the directory
-  path, multiple directories can be separated by :envvar:`:`.
+See :ref:`extending-gemseo`.
 
 Table of contents
 *****************
@@ -103,6 +93,7 @@ Disciplines
 -----------
 
 - :meth:`~gemseo.api.create_discipline`
+- :meth:`~gemseo.api.import_discipline`
 - :meth:`~gemseo.api.get_available_disciplines`
 - :meth:`~gemseo.api.get_discipline_inputs_schema`
 - :meth:`~gemseo.api.get_discipline_outputs_schema`
@@ -146,7 +137,7 @@ Scenario
 - :meth:`~gemseo.api.get_available_scenario_types`
 - :meth:`~gemseo.api.get_scenario_options_schema`
 - :meth:`~gemseo.api.get_scenario_inputs_schema`
-- :meth:`~gemseo.api.get_scenario_differenciation_modes`
+- :meth:`~gemseo.api.get_scenario_differentiation_modes`
 
 Surrogates
 ----------
@@ -162,13 +153,48 @@ from __future__ import division, unicode_literals
 
 import logging
 import re
-from typing import List, Optional  # noqa F401
+from typing import (  # noqa F401
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
+from numpy import ndarray
 from six import string_types
+
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+
+if TYPE_CHECKING:
+    from logging import Logger
+    from matplotlib.figure import Figure
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.parameter_space import ParameterSpace  # noqa:F401
+    from gemseo.core.cache import AbstractCache
+    from gemseo.core.dataset import Dataset
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.scenario import Scenario
+    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F401
+    from gemseo.mda.mda import MDA
+    from gemseo.mlearning.core.ml_algo import TransformerType
+    from gemseo.problems.scalable.data_driven.discipline import (  # noqa:F401
+        ScalableDiscipline,
+    )
 
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
+from gemseo.utils.py23_compat import Path
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from the API.
@@ -181,33 +207,27 @@ LOGGER = logging.getLogger(__name__)
 
 
 def generate_n2_plot(
-    disciplines,
-    file_path="n2.pdf",
-    show_data_names=True,
-    save=True,
-    show=False,
-    figsize=(15, 10),
-    open_browser=False,
-):
-    """Generate a N2 plot for the disciplines list.
+    disciplines,  # type: Sequence[MDODiscipline]
+    file_path="n2.pdf",  # type: Union[str,Path]
+    show_data_names=True,  # type: bool
+    save=True,  # type: bool
+    show=False,  # type: bool
+    figsize=(15, 10),  # type: Tuple[int]
+    open_browser=False,  # type: bool
+):  # type: (...) -> None
+    """Generate a N2 plot from disciplines.
 
-    :param disciplines: List of disciplines to analyze.
-    :type disciplines: list(MDODiscipline)
-    :param file_path: File path of the figure.
-    :type file_path: str
-    :param show_data_names: If true, the names of the
-        coupling data is shown
-        otherwise, circles are drawn, which size depend on the
-        number of coupling names.
-    :type show_data_names: bool
-    :param save: If True, saved the figure to file_path.
-    :type save: bool
-    :param show: If True, shows the plot.
-    :type show: bool
-    :param figsize: Size of the figure.
-    :type figsize: tuple(float)
-    :param open_browser: If True, open the browser and display the N2.
-    :type open_browser: bool
+    Args:
+        disciplines: The disciplines from which the N2 chart is generated.
+        file_path: The path of the file to save the figure.
+        show_data_names: If ``True``, show the names of the coupling data ;
+            otherwise,
+            circles are drawn,
+            the size of which depends on the number of coupling names.
+        save: If True, save the figure to the file_path.
+        show: If True, show the plot.
+        figsize: The width and height of the figure.
+        open_browser: If True, open a browser and display an interactive N2 chart.
 
     Examples
     --------
@@ -229,16 +249,18 @@ def generate_n2_plot(
     )
 
 
-def generate_coupling_graph(disciplines, file_path="coupling_graph.pdf", full=True):
-    """Generate a graph of the couplings for the disciplines list.
+def generate_coupling_graph(
+    disciplines,  # type: Sequence[MDODiscipline]
+    file_path="coupling_graph.pdf",  # type: Union[str,Path]
+    full=True,  # type: bool
+):  # type: (...) -> None
+    """Generate a graph of the couplings between disciplines.
 
-    :param disciplines: List of disciplines to analyze.
-    :type disciplines: list(MDODiscipline)
-    :param file_path: File path of the figure.
-    :type file_path: str
-    :param full: If True, generate the full coupling graph.
-        Otherwise, generate the condensed one.
-    :type full: bool
+    Args:
+        disciplines: The disciplines from which the graph is generated.
+        file_path: The path of the file to save the figure.
+        full: If True, generate the full coupling graph.
+            Otherwise, generate the condensed one.
 
     Examples
     --------
@@ -261,11 +283,11 @@ def generate_coupling_graph(disciplines, file_path="coupling_graph.pdf", full=Tr
         coupling_structure.graph.export_reduced_graph(file_path)
 
 
-def get_available_formulations():
-    """List the available formulations in the current configuration.
+def get_available_formulations():  # type: (...) -> List[str]
+    """Return the names of the available formulations.
 
-    :return: list of available MDO formulations.
-    :rtype: list(str)
+    Returns:
+        The names of the available MDO formulations.
 
     Examples
     --------
@@ -285,11 +307,11 @@ def get_available_formulations():
     return MDOFormulationsFactory().formulations
 
 
-def get_available_opt_algorithms():
-    """List the available optimization algorithms names in the present configuration.
+def get_available_opt_algorithms():  # type: (...) -> List[str]
+    """Return the names of the available optimization algorithms.
 
-    :return: list of available optimization algorithms.
-    :rtype: list(str)
+    Returns:
+        The names of the available optimization algorithms.
 
     Examples
     --------
@@ -308,12 +330,11 @@ def get_available_opt_algorithms():
     return OptimizersFactory().algorithms
 
 
-def get_available_doe_algorithms():
-    """List the available Design of Experiments algorithms names in the present
-    configuration.
+def get_available_doe_algorithms():  # type: (...) -> List[str]
+    """Return the names of the available design of experiments (DOEs) algorithms.
 
-    :return: list of available DOE algorithms.
-    :rtype: list(str)
+    Returns:
+        The names of the available DOE algorithms.
 
     Examples
     --------
@@ -332,11 +353,11 @@ def get_available_doe_algorithms():
     return DOEFactory().algorithms
 
 
-def get_available_surrogates():
-    """List the available surrogate model names in the present configuration.
+def get_available_surrogates():  # type: (...) -> List[str]
+    """Return the names of the available surrogate disciplines.
 
-    :return: list of available surrogate disciplines.
-    :rtype: list(str)
+    Returns:
+        The names of the available surrogate disciplines.
 
     Examples
     --------
@@ -354,11 +375,11 @@ def get_available_surrogates():
     return get_regression_models()
 
 
-def get_available_disciplines():
-    """List the available disciplines names in the present configuration.
+def get_available_disciplines():  # type: (...) -> List[str]
+    """Return the names of the available disciplines.
 
-    :return: list of available disciplines.
-    :rtype: list(str)
+    Returns:
+        The names of the available disciplines.
 
     Examples
     --------
@@ -375,6 +396,7 @@ def get_available_disciplines():
     See also
     --------
     create_discipline
+    import_discipline
     get_available_disciplines
     get_discipline_inputs_schema
     get_discipline_outputs_schema
@@ -386,16 +408,20 @@ def get_available_disciplines():
     return DisciplinesFactory().disciplines
 
 
-def get_surrogate_options_schema(surrogate_name, output_json=False, pretty_print=False):
-    """Lists the available options for a surrogate discipline.
+def get_surrogate_options_schema(
+    surrogate_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the available options for a surrogate discipline.
 
-    :param surrogate_name: Name of the surrogate discipline
-    :type surrogate_name: str
-    :param output_json: Apply json format for the schema
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :returns: Option schema (string) of the surrogate discipline
+    Args:
+        surrogate_name: The name of the surrogate discipline.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the surrogate discipline.
 
     Examples
     --------
@@ -413,18 +439,23 @@ def get_surrogate_options_schema(surrogate_name, output_json=False, pretty_print
     return get_regression_options(surrogate_name, output_json, pretty_print)
 
 
-def get_algorithm_options_schema(algorithm_name, output_json=False, pretty_print=False):
-    """Get the options schema as a JSON Schema string or dictionary for a given
-    algorithm.
+def get_algorithm_options_schema(
+    algorithm_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the options of an algorithm.
 
-    :param algorithm_name: Name of the algorithm
-    :type algorithm_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: the option schema (string) of the algorithm
+    Args:
+        algorithm_name: The name of the algorithm.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the algorithm.
+
+    Raises:
+        ValueError: When the algorithm is not available.
 
     Examples
     --------
@@ -448,21 +479,23 @@ def get_algorithm_options_schema(algorithm_name, output_json=False, pretty_print
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             schema = _get_schema(opts_gram, output_json, pretty_print)
             return schema
-    raise ValueError("Algorithm named " + str(algorithm_name) + " is not available.")
+    raise ValueError("Algorithm named {} is not available.".format(algorithm_name))
 
 
-def get_discipline_inputs_schema(discipline, output_json=False, pretty_print=False):
-    """Get the inputs schema of a discipline.
+def get_discipline_inputs_schema(
+    discipline,  # type: MDODiscipline
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the inputs of a discipline.
 
-    :param discipline: MDODiscipline instance.
-    :type discipline: MDODiscipline
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: Option schema of the discipline inputs.
-    :rtype: string
+    Args:
+        discipline: The discipline.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the inputs of the discipline.
 
     Examples
     --------
@@ -473,6 +506,7 @@ def get_discipline_inputs_schema(discipline, output_json=False, pretty_print=Fal
     See also
     --------
     create_discipline
+    import_discipline
     get_available_disciplines
     get_discipline_outputs_schema
     get_discipline_options_schema
@@ -481,20 +515,20 @@ def get_discipline_inputs_schema(discipline, output_json=False, pretty_print=Fal
     return _get_schema(discipline.input_grammar, output_json, pretty_print)
 
 
-def get_discipline_outputs_schema(discipline, output_json=False, pretty_print=False):
-    """Get the outputs schema of a discipline.
+def get_discipline_outputs_schema(
+    discipline,  # type: MDODiscipline
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the outputs of a discipline.
 
-    :param discipline: MDODiscipline instance
-    :type discipline: MDODiscipline
-    :param output_json: If True, return a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: Schema of the discipline outputs
-    :rtype: string
+    Args:
+        discipline: The discipline.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the outputs of the discipline.
 
     Examples
     --------
@@ -505,6 +539,7 @@ def get_discipline_outputs_schema(discipline, output_json=False, pretty_print=Fa
     See also
     --------
     create_discipline
+    import_discipline
     get_available_disciplines
     get_discipline_inputs_schema
     get_discipline_options_schema
@@ -513,11 +548,11 @@ def get_discipline_outputs_schema(discipline, output_json=False, pretty_print=Fa
     return _get_schema(discipline.output_grammar, output_json, pretty_print)
 
 
-def get_available_post_processings():
-    """List the available optimization post-processings.
+def get_available_post_processings():  # type: (...) -> List[str]
+    """Return the names of the available optimization post-processings.
 
-    :return: List of available post-processings.
-    :rtype: list(str)
+    Returns:
+        The names of the available post-processings.
 
     Examples
     --------
@@ -539,18 +574,19 @@ def get_available_post_processings():
 
 
 def get_post_processing_options_schema(
-    post_proc_name, output_json=False, pretty_print=False
-):
-    """List the options schema of a post-processing.
+    post_proc_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the options of a post-processing.
 
-    :param post_proc_name: Post processing name.
-    :type post_proc_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :type output_json: bool
-    :return: Option schema of the post processing
+    Args:
+        post_proc_name: The name of the post-processing.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the post-processing.
 
     Examples
     --------
@@ -571,18 +607,19 @@ def get_post_processing_options_schema(
 
 
 def get_formulation_options_schema(
-    formulation_name, output_json=False, pretty_print=False
-):
-    """Get the options schema of a MDO formulation.
+    formulation_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the options of a formulation.
 
-    :param formulation_name: Name of the MDO formulation.
-    :type formulation_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :type output_json: bool
-    :return: Option schema (string) of the MDO formulation.
+    Args:
+        formulation_name: The name of the formulation.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the formulation.
 
     Examples
     --------
@@ -605,20 +642,22 @@ def get_formulation_options_schema(
 
 
 def get_formulation_sub_options_schema(
-    formulation_name, output_json=False, pretty_print=False, **formulation_options
-):
-    """Get the sub-options schema of a MDO formulation.
+    formulation_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+    **formulation_options  # type: Any
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the sub-options of a formulation.
 
-    :param formulation_name: Name of the MDO formulation
-    :type formulation_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :param formulation_options: Options to be passed to the formulation;
-        this is required to instantiate it.
-    :return: Sub-option schema of the MDO formulation
+    Args:
+        formulation_name: The name of the formulation.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+        **formulation_options: The options of the formulation
+            required for its instantiation.
+
+    Returns:
+        The schema of the sub-options of the formulation.
 
     Examples
     --------
@@ -642,14 +681,19 @@ def get_formulation_sub_options_schema(
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_formulations_sub_options_defaults(formulation_name, **formulation_options):
-    """Get the default values of the sub options of a formulation.
+def get_formulations_sub_options_defaults(
+    formulation_name,  # type: str
+    **formulation_options  # type: Any
+):  # type: (...) -> Dict[str,Any]
+    """Return the default values of the sub-options of a formulation.
 
-    :param formulation_name: Name of the discipline.
-    :type formulation_name: str
-    :param formulation_options: Options to be passed to the formulation;
-        this is required to instantiate it.
-    :return: Default values of the sub-options of the MDO formulation.
+    Args:
+        formulation_name: The name of the formulation.
+        **formulation_options: The options of the formulation
+            required for its instantiation.
+
+    Returns:
+        The default values of the sub-options of the formulation.
 
     Examples
     --------
@@ -673,12 +717,18 @@ def get_formulations_sub_options_defaults(formulation_name, **formulation_option
     )
 
 
-def get_formulations_options_defaults(formulation_name):
-    """Get the default values of the options of a formulation.
+def get_formulations_options_defaults(
+    formulation_name,  # type: str
+):  # type: (...) -> Dict[str,Any]
+    """Return the default values of the options of a formulation.
 
-    :param formulation_name: Name of the discipline.
-    :type formulation_name: str
-    :return: Default values of the options of the MDO formulation.
+    Args:
+        formulation_name: The name of the formulation.
+        **formulation_options: The options of the formulation
+            required for its instantiation.
+
+    Returns:
+        The default values of the options of the formulation.
 
     Examples
     --------
@@ -703,18 +753,19 @@ def get_formulations_options_defaults(formulation_name):
 
 
 def get_discipline_options_schema(
-    discipline_name, output_json=False, pretty_print=False
-):
-    """Get the options schema of a discipline.
+    discipline_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of a discipline.
 
-    :param discipline_name: Name of the discipline.
-    :type discipline_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: Options schema of the discipline
+    Args:
+        discipline_name: The name of the formulation.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the discipline.
 
     Examples
     --------
@@ -724,6 +775,7 @@ def get_discipline_options_schema(
     See also
     --------
     create_discipline
+    import_discipline
     get_available_disciplines
     get_discipline_inputs_schema
     get_discipline_outputs_schema
@@ -736,17 +788,20 @@ def get_discipline_options_schema(
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_scenario_options_schema(scenario_type, output_json=False, pretty_print=False):
-    """Get the options schema of a scenario.
+def get_scenario_options_schema(
+    scenario_type,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the options of a scenario.
 
-    :param scenario_type: Type of scenario (DOE, MDO...)
-    :type scenario_type: str
-    :param output_json: True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: Options schema of the scenario
+    Args:
+        scenario_type: The type of the scenario.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the scenario.
 
     Examples
     --------
@@ -760,25 +815,28 @@ def get_scenario_options_schema(scenario_type, output_json=False, pretty_print=F
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError("Unknown scenario type " + str(scenario_type))
+        raise ValueError("Unknown scenario type {}".format(scenario_type))
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
 
-def get_scenario_inputs_schema(scenario, output_json=False, pretty_print=False):
-    """Get the schema of the inputs of a scenario.
+def get_scenario_inputs_schema(
+    scenario,  # type: Scenario
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the inputs of a scenario.
 
-    :param scenario: Scenario instance
-    :type scenario: Scenario
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: Schema of the scenario inputs
+    Args:
+        scenario: The scenario.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the inputs of the scenario.
 
     Examples
     --------
@@ -797,17 +855,21 @@ def get_scenario_inputs_schema(scenario, output_json=False, pretty_print=False):
     monitor_scenario
     get_available_scenario_types
     get_scenario_options_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     return get_discipline_inputs_schema(scenario, output_json, pretty_print)
 
 
-def get_discipline_options_defaults(discipline_name):
-    """Get the default values of the options of a discipline.
+def get_discipline_options_defaults(
+    discipline_name,  # type: str
+):  # type: (...) -> Dict[str,Any]
+    """Return the default values of the options of a discipline.
 
-    :param discipline_name: Name of the discipline.
-    :type discipline_name: str
-    :return: Default option values of a discipline.
+    Args:
+        discipline_name: The name of the discipline.
+
+    Returns:
+        The default values of the options of the discipline.
 
     Examples
     --------
@@ -817,6 +879,7 @@ def get_discipline_options_defaults(discipline_name):
     See also
     --------
     create_discipline
+    import_discipline
     get_available_disciplines
     get_discipline_inputs_schema
     get_discipline_outputs_schema
@@ -828,16 +891,16 @@ def get_discipline_options_defaults(discipline_name):
     return factory.get_default_options_values(discipline_name)
 
 
-def get_scenario_differenciation_modes():
-    """List the available differenciation modes of a scenario.
+def get_scenario_differentiation_modes():
+    """Return the names of the available differentiation modes of a scenario.
 
-    :returns: List of differenciation modes.
-    :rtype: list(str)
+    Returns:
+        The names of the available differentiation modes of a scenario.
 
     Examples
     --------
-    >>> from gemseo.api import get_scenario_differenciation_modes
-    >>> get_scenario_differenciation_modes()
+    >>> from gemseo.api import get_scenario_differentiation_modes
+    >>> get_scenario_differentiation_modes()
 
     See also
     --------
@@ -852,11 +915,15 @@ def get_scenario_differenciation_modes():
     return OptimizationProblem.DIFFERENTIATION_METHODS
 
 
-def get_available_scenario_types():
-    """List the available scenario types.
+# TODO: to be deprecated
+get_scenario_differenciation_modes = get_scenario_differentiation_modes
 
-    :return: list of available scenario types.
-    :rtype: list(str)
+
+def get_available_scenario_types():  # type: (...) -> List[str]
+    """Return the names of the available scenario types.
+
+    Returns:
+        The names of the available scenario types.
 
     Examples
     --------
@@ -869,22 +936,25 @@ def get_available_scenario_types():
     monitor_scenario
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     return ["MDO", "DOE"]
 
 
-def _get_schema(json_grammar, output_json=False, pretty_print=False):
-    """Get the schema of a JSON grammar.
+def _get_schema(
+    json_grammar,  # type: Optional[JSONGrammar]
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Optional[Union[str,Dict[str,Any]]]
+    """Return the schema of a JSON grammar.
 
-    :param json_grammar: a JSONGrammar instance
-    :type json_grammar: JSONGrammar
-    :param output_json: if True, returns a JSON string,
-    :type output_json: bool
-    :param pretty_print: print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: a schema
-    :rtype: dict or str
+    Args:
+        json_grammar: The JSON grammar to be considered.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the JSON grammar if any.
     """
     if json_grammar is None:
         return None
@@ -918,16 +988,18 @@ def _get_schema(json_grammar, output_json=False, pretty_print=False):
         table.add_column("Type", types)
         table.sortby = "Name"
         table.min_width = 25
+        print(table)  # noqa: T001
+        LOGGER.info("%s", table)
     if output_json:
         return schema.to_json()
     return dict_schema
 
 
-def get_available_mdas():
-    """List the available MDAs.
+def get_available_mdas():  # type: (...) -> List[str]
+    """Return the names of the available multidisciplinary analyses (MDAs).
 
-    :return: list of available MDAs.
-    :rtype: list(str)
+    Returns:
+        The names of the available MDAs.
 
     Examples
     --------
@@ -944,18 +1016,20 @@ def get_available_mdas():
     return MDAFactory().mdas
 
 
-def get_mda_options_schema(mda_name, output_json=False, pretty_print=False):
-    """Get the options schema of a MDA.
+def get_mda_options_schema(
+    mda_name,  # type: str
+    output_json=False,  # type: bool
+    pretty_print=False,  # type: bool
+):  # type: (...) -> Union[str,Dict[str,Any]]
+    """Return the schema of the options of a multidisciplinary analysis (MDA).
 
-    :param mda_name: Name of the MDA.
-    :type mda_name: str
-    :param output_json: If True, returns a JSON string,
-        return a dict otherwise.
-    :type output_json: bool
-    :param pretty_print: Print the schema in a pretty table.
-    :type pretty_print: bool
-    :return: MDA options schema
-    :rtype: dict or str
+    Args:
+        mda_name: The name of the MDA.
+        output_json: Whether to apply the JSON format to the schema.
+        pretty_print: Whether to print the schema in a tabular way.
+
+    Returns:
+        The schema of the options of the MDA.
 
     Examples
     --------
@@ -974,18 +1048,20 @@ def get_mda_options_schema(mda_name, output_json=False, pretty_print=False):
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_all_inputs(disciplines, recursive=False):
-    """List all the inputs of the disciplines.
+def get_all_inputs(
+    disciplines,  # type: Iterable[MDODiscipline]
+    recursive=False,  # type: bool
+):  # type: (...) -> List[str]
+    """Return all the input names of the disciplines.
 
-    Merge the input data from the disciplines grammars.
+    Args:
+        disciplines: The disciplines.
+        recursive: If True,
+            search for the inputs of the sub-disciplines,
+            when some disciplines are scenarios.
 
-    :param disciplines: List of disciplines to search
-        for inputs.
-    :type disciplines: list(MDODiscipline)
-    :param recursive: If True, searches for the inputs of the
-        sub disciplines (when some disciplines are scenarios).
-    :type recursive: bool
-    :returns: List of input data.
+    Returns:
+        The names of the inputs.
 
     Examples
     --------
@@ -1005,18 +1081,20 @@ def get_all_inputs(disciplines, recursive=False):
     return DataConversion.get_all_inputs(disciplines, recursive)
 
 
-def get_all_outputs(disciplines, recursive=False):
-    """List all the outputs of the disciplines.
+def get_all_outputs(
+    disciplines,  # type: Iterable[MDODiscipline]
+    recursive=False,  # type: bool
+):  # type: (...) -> List[str]
+    """Return all the output names of the disciplines.
 
-    Merge the output data from the disicplines grammars.
+    Args:
+        disciplines: The disciplines.
+        recursive: If True,
+            search for the outputs of the sub-disciplines,
+            when some disciplines are scenarios.
 
-    :param disciplines: List of disciplines to search
-        for outputs.
-    :type disciplines: list(MDODiscipline)
-    :param recursive: If True, searches for the outputs of the
-        sub disciplines (when some disciplines are scenarios).
-    :type recursive: bool
-    :returns: List of input data
+    Returns:
+        The names of the outputs.
 
     Examples
     --------
@@ -1037,35 +1115,34 @@ def get_all_outputs(disciplines, recursive=False):
 
 
 def create_scenario(
-    disciplines,
-    formulation,
-    objective_name,
-    design_space,
-    name=None,
-    scenario_type="MDO",
-    maximize_objective=False,
-    **options
-):
-    """Create a scenario.
+    disciplines,  # type: Sequence[MDODiscipline]
+    formulation,  # type: str
+    objective_name,  # type: str
+    design_space,  # type: Union[DesignSpace,str,Path]
+    name=None,  # type: Optional[str]
+    scenario_type="MDO",  # type: str
+    grammar_type="JSONGrammar",  # type: str
+    maximize_objective=False,  # type: bool
+    **options  # type: Any
+):  # type: (...) -> Scenario
+    """Initialize a scenario.
 
-    :param disciplines: Disciplines of the scenario.
-    :type disciplines: list(MDODiscipline)
-    :param formulation: Formulation name.
-    :type formulation: str
-    :param objective_name: Objective function name.
-    :type objective_name: str
-    :param design_space: Design space object or a file that contains
-        the design space.
-    :type design_space: DesignSpace or str
-    :param name: scenario name
-    :type name: str
-    :param scenario_type: Type of scenario, e.g. "DOE" or "MDO".
-    :type scenario_type: str
-    :param maximize_objective: Maximize function objective.
-    :type maximize_objective: bool
-    :param options: Options passed to the MDO formulation.
-    :returns: Scenario.
-    :rtype: Scenario
+    Args:
+        disciplines: The disciplines
+            used to compute the objective, constraints and observables
+            from the design variables.
+        formulation: The name of the MDO formulation,
+            also the name of a class inheriting from :class:`.MDOFormulation`.
+        objective_name: The name of the objective.
+        design_space: The design space.
+        name: The name to be given to this scenario.
+            If None, use the name of the class.
+        scenario_type: The type of the scenario, e.g. "MDO" or "DOE".
+        grammar_type: The type of grammar to use for IO declaration,
+            e.g. "JSONGrammar" or "SimpleGrammar".
+        maximize_objective: Whether to maximize the objective.
+        **options: The options
+            to be passed to the :class:`.MDOFormulation`.
 
     Examples
     --------
@@ -1082,7 +1159,7 @@ def create_scenario(
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     from gemseo.core.doe_scenario import DOEScenario
     from gemseo.core.mdo_scenario import MDOScenario
@@ -1090,7 +1167,7 @@ def create_scenario(
     if not isinstance(disciplines, list):
         disciplines = [disciplines]
 
-    if isinstance(design_space, string_types):
+    if isinstance(design_space, (string_types, Path)):
         design_space = read_design_space(design_space)
 
     if scenario_type == "MDO":
@@ -1100,6 +1177,7 @@ def create_scenario(
             objective_name,
             design_space,
             name,
+            grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options
         )
@@ -1111,81 +1189,83 @@ def create_scenario(
             objective_name,
             design_space,
             name,
+            grammar_type=grammar_type,
             maximize_objective=maximize_objective,
             **options
         )
 
     raise ValueError(
-        "Unknown scenario type :"
-        + str(scenario_type)
-        + ", use one of : 'MDO' or 'DOE'."
+        "Unknown scenario type: {}, use one of : 'MDO' or 'DOE'.".format(scenario_type)
     )
 
 
 def configure_logger(
-    logger_name=None,
-    level=logging.INFO,
-    date_format="%H:%M:%S",
-    message_format="%(levelname)8s - %(asctime)s: %(message)s",
-    filename=None,
-    filemode="a",
-):
+    logger_name=None,  # type: Optional[str]
+    level=logging.INFO,  # type: str
+    date_format="%H:%M:%S",  # type: str
+    message_format="%(levelname)8s - %(asctime)s: %(message)s",  # type: str
+    filename=None,  # type: Optional[Union[str,Path]]
+    filemode="a",  # type: str
+):  # type: (...) -> Logger
     """Configure |g| logging.
 
-    :param logger_name: Name of the logger to configure, default: None, i.e.
-        the root logger.
-    :type logger_name: str
-    :param level: Logging level among 'DEBUG', 'INFO', 'WARNING' or
-        'CRITICAL's, default: 'INFO'.
-    :type level: str
-    :param date_format: Logging date format, default: %H:%M:%S.
-    :type date_format: str
-    :param message_format: logging message format, default: %(levelname)8s -
-        %(asctime)s: %(message)s.
-    :type message_format: str
-    :param filename: File path if outputs must be written in a file, default: None.
-    :type filename: str
-    :param filemode: Logging output file mode, 'w' (overwrite) or 'a' (append),
-        default: 'a'.
-    :type filemode: str
+    Args:
+        logger_name: The name of the logger to configure, i.e. the root logger.
+        level: The logging level, either 'DEBUG', 'INFO', 'WARNING' and 'CRITICAL'.
+        date_format: The logging date format.
+        message_format: The logging message format.
+        filename: The path to the log file, if outputs must be written in a file.
+        filemode: The logging output file mode,
+            either 'w' (overwrite) or 'a' (append).
 
     Examples
     --------
     >>> import logging
     >>> configure_logger(logging.WARNING)
     """
-    logger = logging.getLogger(logger_name)
+    if logger_name == "GEMSEO":
+        # TODO: deprecate this at some point.
+        # For backward compatibility, create the logger named after the modules
+        # and set an alias pointing to the same logger instance.
+        logger = logging.getLogger("gemseo")
+        logging.Logger.manager.loggerDict["GEMSEO"] = logger
+    else:
+        logger = logging.getLogger(logger_name)
+
     logger.setLevel(level)
     formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
+
     # remove all existing handlers
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
+
     stream_handler = MultiLineStreamHandler()
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
+
     if filename is not None:
         file_handler = MultiLineFileHandler(
             filename, mode=filemode, delay=True, encoding="utf-8"
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
     return logger
 
 
-def create_discipline(discipline_name, **options):
-    """Create disciplines that are known to |g|.
+def create_discipline(
+    discipline_name,  # type: Union[str,Iterable[str]]
+    **options  # type: Any
+):
+    """Instantiate one or more disciplines.
 
-    |g| knows the disciplines located in the following directories:
+    Args:
+        discipline_name: Either the name of a discipline
+            or the names of several disciplines.
+        **options: The options to be passed to the disciplines constructors.
 
-    - the directories listed in the environment variable *GEMSEO_PATH*,
-    - the directories located in the *problems* package,
-
-    :param discipline_name: Name of the discipline, or list of names.
-    :type discipline_name: MDODiscipline
-    :param options: Additional options to be passed to the discipline
-        constructor.
-    :returns: Disciplines.
-    :rtype: list(MDODiscipline)
+    Returns:
+        The disciplines.
 
     Examples
     --------
@@ -1199,6 +1279,7 @@ def create_discipline(discipline_name, **options):
 
     See also
     --------
+    import_discipline
     get_available_disciplines
     get_discipline_inputs_schema
     get_discipline_outputs_schema
@@ -1208,63 +1289,107 @@ def create_discipline(discipline_name, **options):
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
     factory = DisciplinesFactory()
-    if isinstance(discipline_name, list):
-        return [factory.create(d_name, **options) for d_name in discipline_name]
-    return factory.create(discipline_name, **options)
+    if isinstance(discipline_name, string_types):
+        return factory.create(discipline_name, **options)
+
+    return [factory.create(d_name, **options) for d_name in discipline_name]
 
 
-def create_scalable(name, data, sizes=None, **parameters):
-    """Create a scalable discipline.
+def import_discipline(
+    file_path,  # type: Union[str,Path]
+):  # type: (...) -> MDODiscipline
+    """Import a discipline from a pickle file.
 
-    :param str name: scalable model class name.
-    :param Dataset data: learning dataset.
-    :param dict sizes: sizes of input and output variables.
-    :param parameters: model parameters
+    Args:
+        file_path: The path to the file containing the discipline
+            saved with the method :meth:`.MDODiscipline.serialize`.
+
+    Returns:
+        The discipline.
+
+    See also
+    --------
+    create_discipline
+    get_available_disciplines
+    get_discipline_inputs_schema
+    get_discipline_outputs_schema
+    get_discipline_options_schema
+    get_discipline_options_defaults
     """
-    from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.core.discipline import MDODiscipline
+
+    return MDODiscipline.deserialize(file_path)
+
+
+def create_scalable(
+    name,  # type: str
+    data,  # type: Dataset
+    sizes=None,  # type: Mapping[str,int]
+    **parameters  # type: Any
+):  # type: (...) -> ScalableDiscipline
+    """Create a scalable discipline from a dataset.
+
+    Args:
+        name: The name of the class of the scalable model.
+        data: The learning dataset.
+        sizes: The sizes of the input and output variables.
+        **parameters: The parameters of the scalable model.
+
+    Returns:
+        The scalable discipline.
+    """
+    from gemseo.problems.scalable.data_driven.discipline import (  # noqa:F811
+        ScalableDiscipline,
+    )
 
     return ScalableDiscipline(name, data, sizes, **parameters)
 
 
 def create_surrogate(
-    surrogate,
-    data=None,
-    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,
-    disc_name=None,
-    default_inputs=None,
-    input_names=None,
-    output_names=None,
-    **parameters
-):
-    """Create a surrogate discipline.
+    surrogate,  # type: Union[str,MLRegressionAlgo]
+    data=None,  # type: Optional[Dataset]
+    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[TransformerType]
+    disc_name=None,  # type: Optional[str]
+    default_inputs=None,  # type: Optional[Dict[str,ndarray]]
+    input_names=None,  # type: Optional[Iterable[str]]
+    output_names=None,  # type: Optional[Iterable[str]]
+    **parameters  # type: Any
+):  # type: (...) -> SurrogateDiscipline
+    """Create a surrogate discipline, either from a dataset or a regression model.
 
-    :param surrogate: name of the surrogate model algorithm.
-    :type surrogate: str or MLRegressionAlgo
-    :param Dataset data: dataset to train the surrogate. If None,
-        assumes that the surrogate is trained. Default: None.
-    :param dict(Transformer) transformer: transformation strategy for data groups.
-        If None, do not scale data.
-        Default: MLRegressionAlgo.DEFAULT_SCALER,
-        which is a min/max scaler applied to the inputs
-        and a min/max scaler applied to the outputs.
-    :param str disc_name: Surrogate discipline name.
-    :param dict default_inputs: default inputs. If None, use the center of the
-        learning input space. Default: None.
-    :param list(str) input_names: list of input names. If None, use all inputs.
-        Default: None.
-    :param list(str) output_names: list of output names. If None, use all
-        outputs. Default: None.
-    :param parameters: Additional parameters to be passed to the surrogate
-        for its construction.
-    :returns: Surrogate discipline instance.
-    :rtype: SurrogateDiscipline
+    Args:
+        surrogate: Either the class name
+            or the instance of the :class:`.MLRegressionAlgo`.
+        data: The learning dataset to train the regression model.
+            If None, the regression model is supposed to be trained.
+        transformer: The strategies to transform the variables.
+            The values are instances of :class:`.Transformer`
+            while the keys are the names of
+            either the variables
+            or the groups of variables,
+            e.g. "inputs" or "outputs" in the case of the regression algorithms.
+            If a group is specified,
+            the :class:`.Transformer` will be applied
+            to all the variables of this group.
+            If None, do not transform the variables.
+            The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
+            the :class:`.MinMaxScaler` strategy for both input and output variables.
+        disc_name: The name to be given to the surrogate discipline.
+            If None, concatenate :attr:`.ABBR` and ``data.name``.
+        default_inputs: The default values of the inputs.
+            If None, use the center of the learning input space.
+        input_names: The names of the input variables.
+            If None, consider all input variables mentioned in the learning dataset.
+        output_names: The names of the output variables.
+            If None, consider all input variables mentioned in the learning dataset.
+        **parameters: The parameters of the machine learning algorithm.
 
     See also
     --------
     get_available_surrogates
     get_surrogate_options_schema
     """
-    from gemseo.core.surrogate_disc import SurrogateDiscipline
+    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F811
 
     return SurrogateDiscipline(
         surrogate,
@@ -1278,16 +1403,20 @@ def create_surrogate(
     )
 
 
-def create_mda(mda_name, disciplines, **options):
-    """Create an MDA.
+def create_mda(
+    mda_name,  # type: str
+    disciplines,  # type: Sequence[MDODiscipline]
+    **options  # type: Any
+):  # type: (...) -> MDA
+    """Create an multidisciplinary analysis (MDA).
 
-    :param mda_name: Name of the MDA (its classname).
-    :type mda_name: str
-    :param disciplines: List of the disciplines.
-    :type disciplines: list(MDODiscipline)
-    :param options: Additional options specific to the MDA.
-    :returns: MDA instance.
-    :rtype: MDA
+    Args:
+        mda_name: The name of the MDA.
+        disciplines: The disciplines.
+        **options: The options of the MDA.
+
+    Returns:
+        The MDA.
 
     Examples
     --------
@@ -1312,16 +1441,24 @@ def create_mda(mda_name, disciplines, **options):
     return factory.create(mda_name=mda_name, disciplines=disciplines, **options)
 
 
-def execute_post(to_post_proc, post_name, **options):
-    """Execute a post-processing method.
+def execute_post(
+    to_post_proc,  # type:Union[Scenario,OptimizationProblem,str,Path]
+    post_name,  # type: str
+    **options  # type: Any
+):  # type: (...) -> Dict[str,Figure]
+    """Post-process a result.
 
-    :param to_post_proc: MDO or DOE scenario, or an optimization problem,
-        or a path to a HDF file containing a saved OptimizationProblem.
-    :type to_post_proc: MDOScenario, DOEScenario, OptimizationProblem,
-        or str
-    :param post_name: Post processing name.
-    :type post_name: str
-    :param options: Post-processing options.
+    Args:
+        to_post_proc: The result to be post-processed,
+            either a DOE scenario,
+            a MDO scenario,
+            an optimization problem
+            or a path to an HDF file containing a saved optimization problem.
+        post_name: The name of the post-processing.
+        **options: The post-processing options.
+
+    Returns:
+        The figures, to be customized if not closed.
 
     Examples
     --------
@@ -1349,22 +1486,25 @@ def execute_post(to_post_proc, post_name, **options):
     elif isinstance(to_post_proc, string_types):
         opt_problem = OptimizationProblem.import_hdf(to_post_proc)
     else:
-        raise TypeError("Cannot post process type : " + str(type(to_post_proc)))
+        raise TypeError("Cannot post process type: {}".format(type(to_post_proc)))
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
-def execute_algo(opt_problem, algo_name, algo_type="opt", **options):
-    """Solve an optimization problem using either a DOE or an Optimization algorithm.
+def execute_algo(
+    opt_problem,  # type: OptimizationProblem
+    algo_name,  # type: str
+    algo_type="opt",  # type: str
+    **options  # type: Any
+):  # type: (...) -> OptimizationResult
+    """Solve an optimization problem.
 
-    :param opt_problem: the OptimizationProblem to be solved.
-    :type opt_problem: OptimizationProblem
-    :param algo_name: Name of the algorithm to be used to solve
-        the problem.
-    :type algo_name: str
-    :param algo_type: "opt" or "doe" to use an optimization or a
-        Design of Experiments algorithm
-    :type algo_type: str
-    :param options: algorithm options
+    Args:
+        opt_problem: The optimization problem to be solved.
+        algo_name: The name of the algorithm to be used to solve optimization problem.
+        algo_type: The type of algorithm,
+            either "opt" for optimization
+            or "doe" for design of experiments.
+        **options: The options of the algorithm.
 
     Examples
     --------
@@ -1395,20 +1535,25 @@ def execute_algo(opt_problem, algo_name, algo_type="opt", **options):
         factory = DOEFactory()
     else:
         raise ValueError(
-            "Unknown algo type: " + str(algo_type) + ", please use 'doe' or 'opt' !"
+            "Unknown algo type: {}, please use 'doe' or 'opt' !".format(algo_type)
         )
 
     return factory.execute(opt_problem, algo_name, **options)
 
 
-def monitor_scenario(scenario, observer):
-    """Adds an observer to a scenario The observer must have an "update(atom)" method
-    that handles the execution status change of atom update(atom) is called everytime an
-    atom execution changes.
+def monitor_scenario(
+    scenario,  # type: Scenario
+    observer,
+):  # type: (...) -> None
+    """Add an observer to a scenario.
 
-    :param scenario: Scenario to monitor
-    :type scenario: Scenario
-    :param observer: Observer that handles an update of status
+    The observer must have an :meth:`update` method
+    that handles the execution status change of an atom.
+    `update(atom)` is called everytime an atom execution changes.
+
+    Args:
+        scenario: The scenario to monitor.
+        observer: The observer that handles an update of status.
 
     See also
     --------
@@ -1416,7 +1561,7 @@ def monitor_scenario(scenario, observer):
     get_available_scenario_types
     get_scenario_options_schema
     get_scenario_inputs_schema
-    get_scenario_differenciation_modes
+    get_scenario_differentiation_modes
     """
     from gemseo.core.monitoring import Monitoring
 
@@ -1425,9 +1570,11 @@ def monitor_scenario(scenario, observer):
     monitor.add_observer(observer)
 
 
-def print_configuration():
-    """Print the configuration with successfully loaded modules and failed imports with
-    the reason.
+def print_configuration():  # type: (...) -> None
+    """Print the current configuration.
+
+    The log message contains the successfully loaded modules
+    and failed imports with the reason.
 
     Examples
     --------
@@ -1451,20 +1598,27 @@ def print_configuration():
         MDAFactory,
         PostFactory,
     ):
-        LOGGER.info("%s", factory().factory)
+        factory_repr = repr(factory().factory)
+        LOGGER.info("%s", factory_repr)
+        print(factory_repr)  # noqa: T001
 
 
-def read_design_space(file_path, header=None):
-    """Read a file containing a design space and return a DesignSpace object.
+def read_design_space(
+    file_path,  # type: Union[str,Path]
+    header=None,  # type: Optional[str]
+):  # type: (...) -> DesignSpace
+    """Read a design space from a file.
 
-    :param file_path: Path to the text file
-        shall contain a CSV with a row for each variable
-        and at least the bounds of the variable.
-    :type file_path: str
-    :param header: Fields list, or by default, read in the file
-    :type header: list(str)
-    :returns:  Design space
-    :rtype: DesignSpace
+    Args:
+        file_path: The path to the text file;
+            it shall contain comma-separated values
+            with a row for each variable
+            and at least the bounds of the variable.
+        header: The names of the fields saved in the file.
+            If None, read them in the file.
+
+    Returns:
+        The design space.
 
     Examples
     --------
@@ -1493,27 +1647,26 @@ def read_design_space(file_path, header=None):
 
 
 def export_design_space(
-    design_space,
-    output_file,
-    export_hdf=False,
-    fields=None,
-    header_char="",
-    **table_options
-):
-    """Export a design space to a text or HDF file.
+    design_space,  # type: DesignSpace
+    output_file,  # type: Union[str,Path],
+    export_hdf=False,  # type: bool
+    fields=None,  # type: Optional[Sequence[str]]
+    header_char="",  # type: str
+    **table_options  # type: Any
+):  # type: (...) -> None
+    """Save a design space to a text or HDF file.
 
-    :param design_space: Design space.
-    :type design_space: DesignSpace
-    :param export_hdf: Export to a HDF file (True, default)
-        or a txt file (False).
-    :type export_hdf: bool
-    :param output_file: Output file path.
-    :type output_file: str
-    :param fields: List of fields to export, by default all.
-    :type fields: list(str)
-    :param header_char: Header to use when exporting to a text file.
-        Default: "".
-    :type header_char: str
+    Args:
+        design_space: The design space to be saved.
+        output_file: The path to the file.
+        export_hdf: If True, save to an HDF file.
+            Otherwise, save to a text file.
+        fields: The fields to be exported.
+            If None, export all fields.
+        header_char: The header character.
+        **table_options: The names and values of additional attributes
+            for the :class:`.PrettyTable` view
+            generated by :meth:`get_pretty_table`.
 
     Examples
     --------
@@ -1533,11 +1686,11 @@ def export_design_space(
         design_space.export_to_txt(output_file, fields, header_char, **table_options)
 
 
-def create_design_space():
-    """Create an empty instance of a DesignSpace.
+def create_design_space():  # type: (...) -> DesignSpace
+    """Create an empty design space.
 
-    :returns: Empty design space
-    :rtype: DesignSpace
+    Returns:
+        An empty design space.
 
     Examples
     --------
@@ -1564,22 +1717,22 @@ def create_design_space():
     return DesignSpace()
 
 
-def create_parameter_space():
-    """Create an empty instance of a ParameterSpace.
+def create_parameter_space():  # type: (...) -> ParameterSpace
+    """Create an empty parameter space.
 
-    :returns: Empty parameter space
-    :rtype: ParameterSpace
+    Returns:
+        An empty parameter space.
     """
-    from gemseo.algos.parameter_space import ParameterSpace
+    from gemseo.algos.parameter_space import ParameterSpace  # noqa: F811
 
     return ParameterSpace()
 
 
-def get_available_caches():
-    """Return available caches.
+def get_available_caches():  # type: (...) -> List[str]
+    """Return the names of the available caches.
 
-    :return: list of available caches.
-    :rtype: list(str)
+    Returns:
+        The names of the available caches.
 
     Examples
     --------
@@ -1597,12 +1750,21 @@ def get_available_caches():
     return CacheFactory().caches
 
 
-def create_cache(cache_type, name=None, **options):
+def create_cache(
+    cache_type,  # type: str
+    name=None,  # type: Optional[str]
+    **options  # type: Any
+):  # type: (...) -> AbstractCache
     """Return a cache.
 
-    :param str cache_type: type of cache.
-    :param str name: name of the cache. If None, use cache_type.
-    :param options: options specific to cache_type
+    Args:
+        cache_type: The type of the cache.
+        name: The name to be given to the cache.
+            If None, use `cache_type`.
+        **options: The options of the cache.
+
+    Returns:
+        The cache.
 
     Examples
     --------
@@ -1632,30 +1794,48 @@ def create_cache(cache_type, name=None, **options):
 
 
 def create_dataset(
-    name,
-    data,
-    variables=None,
-    sizes=None,
-    groups=None,
-    by_group=True,
-    delimiter=",",
-    header=True,
-    default_name=None,
-):
-    """Create a dataset from a numpy array or a file.
+    name,  # type: str
+    data,  # type: Union[ndarray,str,Path]
+    variables=None,  # type: Optional[List[str]]
+    sizes=None,  # type: Optional[Dict[str,int]]
+    groups=None,  # type: Optional[Dict[str,str]]
+    by_group=True,  # type: bool
+    delimiter=",",  # type: str
+    header=True,  # type: bool
+    default_name=None,  # type: Optional[str]
+):  # type: (...) -> Dataset
+    """Create a dataset from a NumPy array or a data file.
 
-    :param str name: dataset name.
-    :param data: array dataset or file path.
-    :type data: array or str
-    :param list(str) variables: list of variables names.
-    :param dict(int) sizes: list of variables sizes.
-    :param dict(str) groups: list of variables groups.
-    :param bool by_group: if True, store the data by group. Otherwise,
-        store them by variables. Default: True.
-    :param str delimiter: field delimiter. Default: ','.
-    :param bool header: if True and data is a string, read the variables names
-        on the first line of the file. Default: True.
-    :param str default_name: default variable name.
+    Args:
+        name: The name to be given to the dataset.
+        data: The data to be stored in the dataset,
+            either a NumPy array or a file path.
+        variables: The names of the variables.
+            If None and `header` is True,
+            read the names from the first line of the file.
+            If None and `header` is False,
+            use default names
+            based on the patterns the :attr:`.Dataset.DEFAULT_NAMES`
+            associated with the different groups.
+        sizes: The sizes of the variables.
+            If None,
+            assume that all the variables have a size equal to 1.
+        groups: The groups of the variables.
+            If None,
+            use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
+        by_group: If True, store the data by group.
+            Otherwise, store them by variables.
+        delimiter: The field delimiter.
+        header: If True and `data` is a string,
+            read the variables names on the first line of the file.
+        default_name: The name of the variable to be used as a pattern
+            when variables is None.
+            If None,
+            use the :attr:`.Dataset.DEFAULT_NAMES` for this group if it exists.
+            Otherwise, use the group name.
+
+    Returns:
+        The dataset generated from the NumPy array or data file.
 
     See also
     --------
@@ -1664,18 +1844,26 @@ def create_dataset(
     from gemseo.core.dataset import Dataset
 
     dataset = Dataset(name, by_group)
-    if isinstance(data, str):
-        dataset.set_from_file(data, variables, sizes, groups, delimiter, header)
-    else:
+    if isinstance(data, ndarray):
         dataset.set_from_array(data, variables, sizes, groups, default_name)
+    else:
+        dataset.set_from_file(data, variables, sizes, groups, delimiter, header)
     return dataset
 
 
-def load_dataset(dataset, **options):
-    """Create a dataset from an existing subclass of Dataset. Typically, benchmark
-    datasets can be found in gemseo.problems.dataset.
+def load_dataset(
+    dataset,  # type: str
+    **options  # type: Any
+):  # type: (...) -> Dataset
+    """Instantiate a dataset.
 
-    :param str dataset: dataset name (its classname).
+    Typically, benchmark datasets can be found in :mod:`gemseo.problems.dataset`.
+
+    Args:
+        dataset: The name of the dataset (its class name).
+
+    Returns:
+        The dataset.
 
     See also
     --------
@@ -1684,3 +1872,43 @@ def load_dataset(dataset, **options):
     from gemseo.problems.dataset.factory import DatasetFactory
 
     return DatasetFactory().create(dataset, **options)
+
+
+def compute_doe(
+    variables_space,  # type: DesignSpace
+    algo_name,  # type: str
+    size=None,  # type: Optional[int]
+    unit_sampling=False,  # type: bool
+    **options  # type: DOELibraryOptionType
+):  # type: (...) -> ndarray
+    """Compute a design of experiments (DOE) in a variables space.
+
+    Args:
+        variables_space: The variables space to be sampled.
+        size: The size of the DOE.
+            If ``None``, the size is deduced from the ``options``.
+        algo_name: The DOE algorithm.
+        unit_sampling: Whether to sample in the unit hypercube.
+        **options: The options of the DOE algorithm.
+
+    Returns:
+          The design of experiments
+          whose rows are the samples and columns the variables.
+
+    Examples
+    --------
+    >>> from gemseo.api import compute_doe, create_design_space
+    >>> variables_space = create_design_space()
+    >>> variables_space.add_variable("x", 2, l_b=-1.0, u_b=1.0)
+    >>> doe = compute_doe(variables_space, algo_name="lhs", size=5)
+
+    See also
+    --------
+    get_available_doe_algorithms
+    get_algorithm_options_schema
+    execute_algo
+    """
+    library = DOEFactory().create(algo_name)
+    return library.compute_doe(
+        variables_space, size=size, unit_sampling=unit_sampling, **options
+    )

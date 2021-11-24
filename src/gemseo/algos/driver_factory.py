@@ -43,7 +43,7 @@ class DriverFactory(object):
         """Initializes the factory: scans the directories to search for subclasses of
         DriverLib.
 
-        Searches in "GEMSEO_PATH" and gemseo.mda
+        Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package
         """
         self.factory = Factory(driver_lib_class, (driver_package,))
         self.__algo_name_to_lib_name = {}
@@ -75,6 +75,10 @@ class DriverFactory(object):
         return list(self.__algo_name_to_lib_name.keys())
 
     @property
+    def algo_names_to_libraries(self):
+        return self.__algo_name_to_lib_name
+
+    @property
     def libraries(self):
         """Lists the available library names in the present configuration.
 
@@ -88,7 +92,7 @@ class DriverFactory(object):
 
         :param name: library or algorithm name
         :type name: string
-        :returns: library according to context (optimization or DOE)
+        :returns: library according to context (optimization or DOE for instance)
         """
         lib_name = self.__algo_name_to_lib_name.get(name)
         algo_name = None
@@ -99,11 +103,8 @@ class DriverFactory(object):
         else:
             algorithms = sorted(self.algorithms)
             raise ImportError(
-                "No algorithm or library of algorithms named "
-                + str(name)
-                + " is available among available "
-                + "ones : "
-                + str(algorithms)
+                "No algorithm or library of algorithms named '{}' is available; "
+                "available algorithms are {}.".format(name, ", ".join(algorithms))
             )
         lib_created = self.factory.create(lib_name)
         # Set the algo name if it was passed by the user as "name" arg

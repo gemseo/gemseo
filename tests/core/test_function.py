@@ -26,13 +26,14 @@ import math
 import unittest
 
 import numpy as np
+import pytest
 from numpy import allclose, array, eye, matmul, ones, zeros
 from numpy.linalg import norm
 from scipy import optimize
 
-from gemseo.core.function import (
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import (
     MDOFunction,
-    MDOFunctionGenerator,
     MDOLinearFunction,
     MDOQuadraticFunction,
 )
@@ -633,3 +634,41 @@ class TestMDOQuadraticFunction(unittest.TestCase):
             *(coeff_format.format(coeff) for coeff in (1, 2, 5, 7, 3, 4, 6))
         )
         assert quad_func.expr == expr
+
+
+@pytest.fixture
+def function():
+    return MDOFunction(lambda x: x, "n", expr="e")
+
+
+@pytest.mark.parametrize(
+    "neg,neg_after,value,expected_n,expected_e",
+    [
+        (False, True, 1.0, "n + 1.0", "e + 1.0"),
+        (True, True, 1.0, "-n - 1.0", "-e - 1.0"),
+        (False, True, -1.0, "n - 1.0", "e - 1.0"),
+        (True, True, -1.0, "-n + 1.0", "-e + 1.0"),
+        (False, False, 1.0, "n + 1.0", "e + 1.0"),
+        (True, False, 1.0, "-n + 1.0", "-e + 1.0"),
+        (False, False, -1.0, "n - 1.0", "e - 1.0"),
+        (True, False, -1.0, "-n - 1.0", "-e - 1.0"),
+        (False, False, array([1.0, 1.0]), "n + offset", "e + offset"),
+        (True, False, array([1.0, 1.0]), "-n + offset", "-e + offset"),
+        (True, True, array([1.0, 1.0]), "-n - offset", "-e - offset"),
+    ],
+)
+def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expected_e):
+    """Check the name and expression of a function after 1) __neg__ and 2) offset."""
+    if neg_after:
+        function = function.offset(value)
+
+        if neg:
+            function = -function
+    else:
+        if neg:
+            function = -function
+
+        function = function.offset(value)
+
+    assert function.name == expected_n
+    assert function.expr == expected_e

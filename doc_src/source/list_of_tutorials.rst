@@ -23,10 +23,8 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
-   tutorials_sg/mdo/index.rst
    Solve an optimization problem </tutorials/basics_of_optimization/simple_opt_example>
-   Solve a MDO problem </tutorials/sellar/nutshell>
+   Solve an MDO problem </tutorials/sellar/nutshell>
    Carry out a trade-off study </tutorials/ssbj/doe_scenarios_construction>
    Build a scalable model (Aerostructure) </tutorials/aerostruct/aerostruct_toy_example>
-   Application: Sobieski's SSBJ </tutorials/ssbj/sobieski_use_case>
    See the benchmark problems </tutorials/benchmark_problems>

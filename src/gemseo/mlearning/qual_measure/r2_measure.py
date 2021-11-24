@@ -41,9 +41,10 @@ where
 """
 from __future__ import division, unicode_literals
 
+from copy import deepcopy
 from typing import List, NoReturn, Optional, Union
 
-from numpy import array_split, atleast_2d
+from numpy import atleast_2d
 from numpy import delete as npdelete
 from numpy import mean, ndarray, repeat
 from sklearn.metrics import mean_squared_error, r2_score
@@ -81,10 +82,9 @@ class R2Measure(MLErrorMeasure):
         n_folds=5,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        inds = samples
-        folds = array_split(inds, n_folds)
+        folds, samples = self._compute_folds(samples, n_folds, randomize)
 
         in_grp = self.algo.learning_set.INPUT_GROUP
         out_grp = self.algo.learning_set.OUTPUT_GROUP
@@ -93,6 +93,8 @@ class R2Measure(MLErrorMeasure):
 
         multiout = "raw_values" if multioutput else "uniform_average"
 
+        algo = deepcopy(self.algo)
+
         num = 0
         ymean = mean(outputs, axis=0)
         ymean = atleast_2d(ymean)
@@ -100,10 +102,10 @@ class R2Measure(MLErrorMeasure):
         den = mean_squared_error(outputs, ymean, multioutput=multiout) * len(ymean)
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            train = npdelete(inds, fold)
-            self.algo.learn(samples=train)
+            train = npdelete(samples, fold)
+            algo.learn(samples=train)
             expected = outputs[fold]
-            predicted = self.algo.predict(inputs[fold])
+            predicted = algo.predict(inputs[fold])
             tmp = mean_squared_error(expected, predicted, multioutput=multiout)
             num += tmp * len(fold)
 

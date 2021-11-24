@@ -50,6 +50,8 @@ class MDOChain(MDODiscipline):
         JacobianAssembly.AUTO_MODE,
     ]
 
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("disciplines",)
+
     def __init__(
         self, disciplines, name=None, grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE
     ):

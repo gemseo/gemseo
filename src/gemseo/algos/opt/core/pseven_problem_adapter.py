@@ -31,7 +31,11 @@ from numpy import array, atleast_1d, concatenate, full, full_like, ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import TerminationCriterion
-from gemseo.core.function import MDOFunction, MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOFunction,
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
 
 
 class CostType(Enum):
@@ -57,7 +61,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         upper_bounds=None,  # type: Optional[ndarray]
         initial_point=None,  # type: Optional[ndarray]
     ):  # type: (...) -> None
-        """# noqa:D205,D212,D415
+        # noqa:D205,D212,D415
+        """
         Args:
             problem: The optimization problem to be adapted to pSeven.
             evaluation_cost_type: The evaluation cost type of each function of the
@@ -182,9 +187,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             TypeError: If the type of the design variable is not supported by pSeven.
         """
         var_type = self.__problem.design_space.get_type(variable_name)[index]
-        if var_type == DesignSpace.FLOAT:
+        if var_type == DesignSpace.FLOAT.value:
             return "Continuous"
-        if var_type == DesignSpace.INTEGER:
+        if var_type == DesignSpace.INTEGER.value:
             return "Integer"
         raise TypeError("Unsupported design variable type: {}".format(var_type))
         # TODO: For future reference, pSeven also supports discrete and categorical

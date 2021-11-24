@@ -23,12 +23,16 @@
 from __future__ import division
 
 import logging
+from typing import Any, Dict, Optional, Union
 
-from numpy import inf, isfinite, real
+from numpy import inf, isfinite, ndarray, real
 from pdfo import pdfo
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.utils.py23_compat import PY2
+
+OptionType = Optional[Union[str, int, float, bool, ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,83 +93,65 @@ class PDFOOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_rel=1e-12,
-        ftol_abs=1e-12,
-        xtol_rel=1e-12,
-        xtol_abs=1e-12,
-        max_time=0,
-        rhobeg=0.5,
-        rhoend=1e-6,
-        max_iter=500,
-        ftarget=-inf,
-        scale=False,
-        quiet=True,
-        classical=False,
-        debug=False,
-        chkfunval=False,
-        ensure_bounds=True,
-        normalize_design_space=True,
-        **kwargs
-    ):
-        r"""Sets the options default values
+        ftol_rel=1e-12,  # type: float
+        ftol_abs=1e-12,  # type: float
+        xtol_rel=1e-12,  # type: float
+        xtol_abs=1e-12,  # type: float
+        max_time=0,  # type: float
+        rhobeg=0.5,  # type: float
+        rhoend=1e-6,  # type: float
+        max_iter=500,  # type: int
+        ftarget=-inf,  # type: float
+        scale=False,  # type: bool
+        quiet=True,  # type: bool
+        classical=False,  # type: bool
+        debug=False,  # type: bool
+        chkfunval=False,  # type: bool
+        ensure_bounds=True,  # type: bool
+        normalize_design_space=True,  # type: bool
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, Any]
+        r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
         go to pdfo documentation on the `PDFO website <https://www.pdfo.net/>`_.
 
-        :param ftol_rel: stop criteria, relative tolerance on the
+        Args:
+            ftol_rel: A stop criteria, relative tolerance on the
                objective function,
-               if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_rel: float
-        :param ftol_abs: stop criteria, absolute tolerance on the objective
-               function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_abs: float
-        :param xtol_rel: stop criteria, relative tolerance on the
+               if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, absolute tolerance on the objective
+               function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, relative tolerance on the
                design variables,
-               if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop
-               (Default value = 1e-9)
-        :type xtol_rel: float
-        :param xtol_abs: stop criteria, absolute tolerance on the
+               if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, absolute tolerance on the
                design variables,
-               if norm(xk-xk+1)<= xtol_abs: stop
-               (Default value = 1e-9)
-        :type xtol_abs: float
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param rhobeg: Initial value of the trust region radius.
-        :type max_iter: float
-        :param rhoend:  Final value of the trust region radius.  Indicate
-        the accuracy required in the final values of the variables
-        :type rhoend: float
-        :param maxfev:  Upper bound of the number of calls of the objective
-        function `fun`.
-        :type maxfev: int
-        :param ftarget: Target value of the objective function. If a feasible
-        iterate achieves an objective function value lower or equal to
-        `options['ftarget']`, the algorithm stops immediately.
-        :type ftarget: float
-        :param scale: Flag indicating whether to scale the problem according to
-        the bound constraints.
-        :type scale: bool
-        :param quiet: Flag of quietness of the interface. If it is set to True,
-        the output message will not be printed.
-        :type quiet: bool
-        :param classical: Flag indicating whether to call the classical Powell
-        code or not.
-        :type classical: bool
-        :param debug: Debugging flag.
-        :type debug: bool
-        :param chkfunval: Flag used when debugging. If both `options['debug']`
-        and `options['chkfunval']` are True, an extra function/constraint
-        evaluation would be performed to check whether the returned values of
-        objective function and constraint match the returned x.
-        :type chkfunval: bool
-        :param ensure_bounds:
-        :type ensure_bounds: bool
-        :param normalize_design_space: If True, normalize the design space
-        :type normalize_design_space: bool
+               if norm(xk-xk+1)<= xtol_abs: stop.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            rhobeg: The initial value of the trust region radius.
+            max_iter: The maximum number of iterations.
+            rhoend: The final value of the trust region radius. Indicates
+                the accuracy required in the final values of the variables.
+            maxfev:  The upper bound of the number of calls of the objective function `fun`.
+            ftarget: The target value of the objective function. If a feasible
+                iterate achieves an objective function value lower or equal to
+                `options['ftarget']`, the algorithm stops immediately.
+            scale: The flag indicating whether to scale the problem according to
+                the bound constraints.
+            quiet: The flag of quietness of the interface. If True,
+                the output message will not be printed.
+            classical: The flag indicating whether to call the classical Powell code or not.
+            debug: The debugging flag.
+            chkfunval: A flag used when debugging. If both `options['debug']`
+                and `options['chkfunval']` are True, an extra function/constraint
+                evaluation would be performed to check whether the returned values of
+                the objective function and constraint match the returned x.
+            ensure_bounds: Whether to project the design vector
+                onto the design space before execution.
+            normalize_design_space: If True, normalize the design space.
+            **kwargs: The other algorithm's options.
         """
         nds = normalize_design_space
         popts = self._process_options(
@@ -189,10 +175,16 @@ class PDFOOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options of the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # remove normalization from options for algo
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
@@ -208,9 +200,18 @@ class PDFOOpt(OptimizationLibrary):
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
 
-        def real_part_fun(x_vect):
-            """Wraps the function and returns the real part."""
-            return real(self.problem.objective.func(x_vect))
+        def real_part_fun(
+            x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the objective function and keep the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the function.
+            """
+            return real(self.problem.objective.func(x))
 
         if ensure_bounds:
             fun = self.ensure_bounds(real_part_fun, normalize_ds)

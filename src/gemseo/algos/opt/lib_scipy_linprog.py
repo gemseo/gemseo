@@ -19,14 +19,16 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
+from typing import Any, Callable, Dict, Optional
+
 from numpy import isfinite
-from scipy.optimize import linprog
+from scipy.optimize import OptimizeResult, linprog
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.utils.py23_compat import PY2
 
 
@@ -90,41 +92,43 @@ class ScipyLinprog(OptimizationLibrary):
         for algo_dict in self.lib_dict.values():
             algo_dict.update(common_items)
 
-    def _get_options(  # pylint: disable=W0221
+    def _get_options(
         self,
-        max_iter=999,
-        autoscale=False,
-        presolve=True,
-        redundancy_removal=True,
-        callback=None,
-        verbose=False,
-        normalize_design_space=True,
-        **kwargs
-    ):
-        """Retrieve the options of the library. Defines default values for options using
-        keyword arguments.
+        max_iter=999,  # type: int
+        autoscale=False,  # type: bool
+        presolve=True,  # type: bool
+        redundancy_removal=True,  # type: bool
+        callback=None,  # type: Optional[Callable[[OptimizeResult], Any]]
+        verbose=False,  # type: bool
+        normalize_design_space=True,  # type: bool
+        disp=False,  # type: bool
+        **kwargs  # type: Any
+    ):  # type: (...) -> Dict[str, Any]
+        """Retrieve the options of the library.
 
-        :param max_iter: maximum number of iterations, i.e. unique calls to the
-            objective function
-        :type max_iter: int, optional
-        :param autoscale: if True then the linear problem is scaled
-            Refer to the SciPy documentation for more details.
-        :type autoscale: bool, optional
-        :param presolve: if True then attempt to detect infeasibility,
-            unboundedness or problem simplifications before solving
-            Refer to the SciPy documentation for more details.
-        :type presolve: bool, optional
-        :param redundancy_removal: if True then linearly dependent
-            equality-constraints are removed
-        :type redundancy_removal: bool, optional
-        :param verbose: if True then convergence messages are printed
-        :type verbose: bool, optional
-        :param callback: function to be called at least once per iteration
-            Takes a scipy.optimize.OptimizeResult as single argument.
-            Refer to the SciPy documentation for more details.
-        :type callback: callable, optional
-        :param kwargs: other algorithms options
-        :type kwargs: kwargs
+        Define the default values for the options using the keyword arguments.
+
+        Args:
+            max_iter: The maximum number of iterations, i.e. unique calls to the
+                objective function.
+            autoscale: If True, then the linear problem is scaled.
+                Refer to the SciPy documentation for more details.
+            presolve: If True, then attempt to detect infeasibility,
+                unboundedness or problem simplifications before solving.
+                Refer to the SciPy documentation for more details.
+            redundancy_removal: If True, then linearly dependent
+                equality-constraints are removed.
+            callback: A function to be called at least once per iteration.
+                Takes a scipy.optimize.OptimizeResult as single argument.
+                If None, no function is called.
+                Refer to the SciPy documentation for more details.
+            verbose: If True, then the convergence messages are printed.
+            normalize_design_space: If True, scales variables in [0, 1].
+            disp: Whether to print convergence messages.
+            **kwargs: The other algorithm's options.
+
+        Returns:
+            The processed options.
         """
         normalize_ds = normalize_design_space
         options = self._process_options(
@@ -139,13 +143,16 @@ class ScipyLinprog(OptimizationLibrary):
         )
         return options
 
-    def _run(self, **options):
+    def _run(
+        self, **options  # type: Any
+    ):  # type: (...) -> OptimizationResult
         """Run the algorithm.
 
-        :param options: options dictionary for the algorithm
-        :type options: dict
-        :returns: the optimization result
-        :rtype: OptimizationResult
+        Args:
+            **options: options dictionary for the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # Remove the normalization option from the algorithm options
         options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)

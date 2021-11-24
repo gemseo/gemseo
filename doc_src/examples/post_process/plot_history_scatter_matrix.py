@@ -41,11 +41,20 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The **ScatterPlotMatrix** post-processing builds the scatter plot matrix among
+# design variables and outputs functions.
+# Each non-diagonal block represents the samples
+# according to the x- and y- coordinates names while the diagonal ones approximate
+# the probability distributions of the variables, using a kernel-density estimator.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -88,11 +97,22 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 30})
 # Lastly, we post-process the scenario by means of the :class:`.ScatterPlotMatrix`
 # plot which builds scatter plot matrix among design variables, objective
 # function and constraints.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 design_variables = ["x_shared", "x_1", "x_2", "x_3"]
 scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
-    show=True,
+    show=False,
     variables_list=design_variables + ["-y_4"],
 )
 # Workaround for HTML rendering, instead of ``show=True``

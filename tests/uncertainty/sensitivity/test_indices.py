@@ -20,11 +20,14 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
-"""Tests for the class SensitivityIndices."""
+"""Tests for the class SensitivityAnalysis."""
 
 from __future__ import division, unicode_literals
 
+import sys
+
 import pytest
+from matplotlib.testing.decorators import image_comparison
 from numpy import array, linspace, pi, sin
 from numpy.testing import assert_array_equal
 
@@ -34,12 +37,15 @@ from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.dataset.bars import BarPlot
-from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.utils.py23_compat import PY2
+
+pytestmark = pytest.mark.skipif(
+    PY2, reason="image comparison does not work with python 2"
+)
 
 
 @pytest.fixture
@@ -95,10 +101,10 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
     def indices(self):
         return {
             "m1": {
-                "y1": [{"x1": array([1]), "x2": array([1, 1])}],
+                "y1": [{"x1": array([1.25]), "x2": array([1.5, 1.75])}],
                 "y2": [
-                    {"x1": array([2]), "x2": array([2, 2])},
-                    {"x1": array([3]), "x2": array([3, 3])},
+                    {"x1": array([2.25]), "x2": array([2.5, 2.75])},
+                    {"x1": array([3.25]), "x2": array([3.5, 3.75])},
                 ],
             },
             "m2": {
@@ -135,32 +141,54 @@ def second_mock_sensitivity_analysis():  # type: (...) -> SecondMockSensitivityA
     return SecondMockSensitivityAnalysis()
 
 
-def test_plot_bar(mock_sensitivity_analysis):
-    """Check that a Barplot is created with plot_bar.
+BARPLOT_TEST_PARAMETERS = {
+    "without_option": ({"outputs": "y2"}, ["bar_plot"]),
+    "standardize": ({"outputs": "y2", "standardize": True}, ["bar_plot_standardize"]),
+    "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["bar_plot_inputs"]),
+    "inputs_standardize": (
+        {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
+        ["bar_plot_inputs_standardize"],
+    ),
+    "outputs": ({"outputs": ["y1", "y2"]}, ["bar_plot_outputs"]),
+}
 
-    Args:
-        mock_sensitivity_analysis: The sensitivity indices.
-    """
-    plot = mock_sensitivity_analysis.plot_bar("y1", save=False, show=False)
-    assert plot.title is None
-    assert isinstance(plot, BarPlot)
-    plot = mock_sensitivity_analysis.plot_bar("y1", title="foo", save=False, show=False)
-    assert plot.title == "foo"
+
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    BARPLOT_TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=BARPLOT_TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all):
+    """Check that a Barplot is created with plot_bar."""
+    mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
 
 
-def test_plot_radar(mock_sensitivity_analysis):
-    """Check that a RadarChart is created with plot_radar.
+RADAR_TEST_PARAMETERS = {
+    "without_option": ({"outputs": "y2"}, ["radar_plot"]),
+    "standardize": ({"outputs": "y2", "standardize": True}, ["radar_plot_standardize"]),
+    "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["radar_plot_inputs"]),
+    "inputs_standardize": (
+        {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
+        ["radar_plot_inputs_standardize"],
+    ),
+    "outputs": ({"outputs": ["y1", "y2"]}, ["radar_plot_outputs"]),
+}
 
-    Args:
-        mock_sensitivity_analysis: The sensitivity indices.
-    """
-    plot = mock_sensitivity_analysis.plot_radar("y1", save=False, show=False)
-    assert plot.title is None
-    plot = mock_sensitivity_analysis.plot_radar(
-        "y1", title="foo", save=False, show=False
-    )
-    assert plot.title == "foo"
-    assert isinstance(plot, RadarChart)
+
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    RADAR_TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=RADAR_TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_plot_radar(
+    kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all
+):
+    """Check that a RadarChart is created with plot_radar."""
+    mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
 
 def test_plot_comparison(discipline, parameter_space):
@@ -188,7 +216,7 @@ def test_inputs_names(mock_sensitivity_analysis):
     """Check the value of the attribute input_names.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
     """
     assert mock_sensitivity_analysis.inputs_names == ["x1", "x2"]
 
@@ -198,7 +226,7 @@ def test_sort_parameters(mock_sensitivity_analysis, output):
     """Check if the parameters are well sorted.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
         output: The value used to sort the parameters.
     """
     parameters = mock_sensitivity_analysis.sort_parameters(output)
@@ -206,10 +234,10 @@ def test_sort_parameters(mock_sensitivity_analysis, output):
 
 
 def test_convert_to_dataset(mock_sensitivity_analysis):
-    """Check if the SensitivityIndices are well converted to Dataset.
+    """Check if the sensitivity indices are well converted to Dataset.
 
     Args:
-        mock_sensitivity_analysis: The sensitivity indices.
+        mock_sensitivity_analysis: The sensitivity analysis.
     """
     dataset = mock_sensitivity_analysis.export_to_dataset()
     assert isinstance(dataset, Dataset)
@@ -235,29 +263,84 @@ def ishigami():  # type: (...) -> SobolAnalysis
     return sobol_analysis
 
 
-def test_plot_1d_field(ishigami):
-    """Check if a 1D field is well plotted.
+ONE_D_FIELD_TEST_PARAMETERS = {
+    "without_option": ({}, ["1d_field"]),
+    "standardize": ({"standardize": True}, ["1d_field_standardize"]),
+    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"]),
+    "inputs_standardize": (
+        {"standardize": True, "inputs": ["x1", "x3"]},
+        ["1d_field_inputs_standardize"],
+    ),
+}
 
-    Args:
-        ishigami: The Sobol' analysis for the Ishigami function.
-    """
-    plot = ishigami.plot_field("y", save=False, show=False)
-    assert isinstance(plot, Curves)
+
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    ONE_D_FIELD_TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_plot_1d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
+    """Check if a 1D field is well plotted."""
+    ishigami.plot_field("y", save=False, show=False, **kwargs)
 
 
-def test_plot_2d_field(ishigami):
-    """Check if a 2D field is well plotted.
+TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
+    "without_option": ({}, ["2d_field_wo_mesh"]),
+}
 
-    Args:
-        ishigami: The Sobol' analysis for the Ishigami function.
-    """
-    plot = ishigami.plot_field("y", save=False, show=False)
-    assert isinstance(plot, Curves)
 
-    properties = {"linestyle": "-", "color": ["b", "k", "r"]}
+TWO_D_FIELD_TEST_PARAMETERS = {
+    "without_option": ({}, ["2d_field_{}".format(i) for i in range(3)]),
+    "standardize": (
+        {"standardize": True},
+        ["2d_field_standardize_{}".format(i) for i in range(3)],
+    ),
+    "inputs": (
+        {"inputs": ["x1", "x3"]},
+        ["2d_field_inputs_{}".format(i) for i in range(2)],
+    ),
+    "inputs_standardize": (
+        {"standardize": True, "inputs": ["x1", "x3"]},
+        ["2d_field_inputs_standardize_{}".format(i) for i in range(2)],
+    ),
+}
+
+
+@pytest.mark.skipif(
+    sys.version_info[:2] == (3, 6),
+    reason="Image comparison based on Surfaces does not work with Python 3.6",
+)
+@pytest.mark.parametrize(
+    "kwargs, baseline_images",
+    TWO_D_FIELD_TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
+)
+@image_comparison(None, extensions=["png"])
+def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
+    """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
-    plot = ishigami.plot_field(
-        "y", save=False, show=False, properties=properties, mesh=mesh
-    )
-    assert isinstance(plot, Surfaces)
+    ishigami.plot_field("y", save=False, show=False, mesh=mesh, **kwargs)
+
+
+def test_standardize_indices():
+    """Check that the method standardize_indices() works."""
+    indices = {
+        "y1": [{"x1": array([-2.0]), "x2": array([0.5]), "x3": array([1.0])}],
+        "y2": [
+            {"x1": array([2.0]), "x2": array([0.5]), "x3": array([-1.0])},
+            {"x1": array([0.0]), "x2": array([0.5]), "x3": array([2.0])},
+        ],
+    }
+    standardized_indices = SensitivityAnalysis.standardize_indices(indices)
+    expected_standardized_indices = {
+        "y1": [{"x1": array([1.0]), "x2": array([0.25]), "x3": array([0.5])}],
+        "y2": [
+            {"x1": array([1.0]), "x2": array([0.25]), "x3": array([0.5])},
+            {"x1": array([0.0]), "x2": array([0.25]), "x3": array([1.0])},
+        ],
+    }
+    assert standardized_indices == expected_standardized_indices

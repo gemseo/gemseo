@@ -22,46 +22,77 @@
 
 from __future__ import division, unicode_literals
 
-import os
-import unittest
-from os.path import exists
+import sys
 
 import numpy as np
 import pytest
 
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA, MDASequential
-from gemseo.problems.sellar.sellar import Y_1, Y_2, Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import Y_1, Y_2
+from gemseo.utils.py23_compat import Path
 
-DIRNAME = os.path.dirname(__file__)
+
+def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):
+
+    mda1 = MDAJacobi(sellar_disciplines, max_mda_iter=1)
+    mda2 = MDANewtonRaphson(sellar_disciplines)
+    mda_sequence = [mda1, mda2]
+
+    mda = MDASequential(sellar_disciplines, mda_sequence, max_mda_iter=20)
+    mda.reset_history_each_run = True
+    mda.execute()
+
+    y_ref = np.array([0.80004953, 1.79981434])
+    y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
+    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+
+    mda3 = GSNewtonMDA(sellar_disciplines, max_mda_iter=4)
+    mda3.execute()
+    filename = "GS_sellar.pdf"
+    mda3.plot_residual_history(show=False, save=True, filename=filename)
+
+    assert Path(filename).exists
+    y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
+    assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestSequential(unittest.TestCase):
-    """Test the sequential MDA."""
+def test_log_convergence(sellar_disciplines):
+    """Check that the boolean log_convergence is correctly set."""
+    mda = GSNewtonMDA(sellar_disciplines)
+    assert not mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert not sub_mda.log_convergence
 
-    @staticmethod
-    def test_sequential_mda_sellar():
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    mda = GSNewtonMDA(sellar_disciplines, log_convergence=True)
+    assert mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert sub_mda.log_convergence
 
-        mda1 = MDAJacobi(disciplines, max_mda_iter=1)
-        mda2 = MDANewtonRaphson(disciplines)
-        mda_sequence = [mda1, mda2]
+    mda = GSNewtonMDA(sellar_disciplines)
+    mda.log_convergence = True
+    assert mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert sub_mda.log_convergence
 
-        mda = MDASequential(disciplines, mda_sequence, max_mda_iter=20)
-        mda.reset_history_each_run = True
-        mda.execute()
+    mda.log_convergence = False
+    assert not mda.log_convergence
+    for sub_mda in mda.mda_sequence:
+        assert not sub_mda.log_convergence
 
-        y_ref = np.array([0.80004953, 1.79981434])
-        y_opt = np.array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
-        assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
 
-        mda3 = GSNewtonMDA(disciplines, max_mda_iter=4)
-        mda3.execute()
-        filename = "GS_sellar.pdf"
-        mda3.plot_residual_history(show=False, save=True, filename=filename)
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of GaussSeidel in parallel.
 
-        assert exists(filename)
-        y_opt = np.array([mda3.local_data[Y_1][0].real, mda3.local_data[Y_2][0].real])
-        assert np.linalg.norm(y_ref - y_opt) / np.linalg.norm(y_ref) < 1e-4
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`.
+    """
+    obj = generate_parallel_doe_data("GSNewtonMDA")
+    assert np.isclose(np.array([obj]), np.array([608.175]), atol=1e-3)

@@ -19,172 +19,73 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-OpenTUNRS DOE algorithms wrapper
-********************************
-"""
+"""OpenTURNS DOE algorithms."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any, Dict, Iterable, Mapping, Optional, Sequence, Union
 
 import openturns
-from matplotlib import pyplot as plt
-from numpy import array
+from numpy import array, full
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
-from openturns.viewer import View
+from packaging import version
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.utils.string_tools import MultiLineString
+
+OptionType = Optional[Union[str, int, float, bool, Sequence[int], ndarray]]
 
 LOGGER = logging.getLogger(__name__)
 
 
 class OpenTURNS(DOELibrary):
-    """OpenTURNS library of DOE algorithms wrapping."""
+    """Library of OpenTURNS DOE algorithms."""
 
-    OT_DOC = "http://openturns.github.io/openturns/master/user_manual/"
+    __OT_WEBPAGE = (
+        "http://openturns.github.io/openturns/latest/user_manual/"
+        "_generated/openturns.{}.html"
+    )
+
     # Available algorithm for DOE design
     OT_SOBOL = "OT_SOBOL"
-    OT_SOBOL_DESC = "Sobol sequence implemented in openTURNS library"
-    OT_SOBOL_WEB = OT_DOC + "_generated/openturns.SobolSequence.html"
     OT_RANDOM = "OT_RANDOM"
-    OT_RANDOM_DESC = "Random sampling implemented in openTURNS library"
-    OT_RANDOM_WEB = OT_DOC + "_generated/openturns.RandomGenerator.html"
     OT_HASEL = "OT_HASELGROVE"
-    OT_HASEL_DESC = "Haselgrove sequence implemented in openTURNS library"
-    OT_HASEL_WEB = OT_DOC + "_generated/openturns.HaselgroveSequence.html"
     OT_REVERSE_HALTON = "OT_REVERSE_HALTON"
-    OT_REVERSE_HALTON_DESC = (
-        "Reverse Halton sequence implemented" " in openTURNS library"
-    )
-    OT_REVERSE_HALTON_WEB = OT_DOC + "_generated/openturns.ReverseHaltonSequence.html"
     OT_HALTON = "OT_HALTON"
-    OT_HALTON_DESC = "Halton sequence implemented in openTURNS library"
-    OT_HALTON_WEB = OT_DOC + "_generated/openturns.HaltonSequence.html"
     OT_FAURE = "OT_FAURE"
-    OT_FAURE_DESC = "Faure sequence implemented in openTURNS library"
-    OT_FAURE_WEB = OT_DOC + "_generated/openturns.FaureSequence.html"
     OT_MC = "OT_MONTE_CARLO"
-    OT_MC_DESC = "Monte Carlo sequence implemented in openTURNS library"
-    OT_MC_WEB = OT_DOC + "_generated/openturns.RandomGenerator.html"
     OT_FACTORIAL = "OT_FACTORIAL"
-    OT_FACTORIAL_DESC = "Factorial design implemented in openTURNS library"
-    OT_FACTORIAL_WEB = OT_DOC + "_generated/openturns.Factorial.html"
     OT_COMPOSITE = "OT_COMPOSITE"
-    OT_COMPOSITE_DESC = "Composite design implemented in openTURNS library"
-    OT_COMPOSITE_WEB = OT_DOC + "_generated/openturns.Composite.html"
     OT_AXIAL = "OT_AXIAL"
-    OT_AXIAL_DESC = "Axial design implemented in openTURNS library"
-    OT_AXIAL_WEB = OT_DOC + "_generated/openturns.Axial.html"
     OT_LHSO = "OT_OPT_LHS"
-    OT_LHSO_DESC = "Optimal Latin Hypercube Sampling implemented in openTURNS library"
-    OT_LHSO_WEB = (
-        "https://openturns.github.io/openturns/master/examples/optimal_lhs.html"
-    )
     OT_LHS = "OT_LHS"
-    OT_LHS_DESC = "Latin Hypercube Sampling implemented in openTURNS library"
-    OT_LHS_WEB = OT_DOC + "_generated/openturns.LHS.html"
     OT_LHSC = "OT_LHSC"
-    OT_LHSC_DESC = (
-        "Centered Latin Hypercube Sampling implemented" " in openTURNS library"
-    )
-    OT_LHSC_WEB = OT_DOC + "_generated/openturns.LHS.html"
     OT_FULLFACT = "OT_FULLFACT"  # Box in openturns
-    OT_FULLFACT_DESC = "Full factorial design implemented" "in openTURNS library"
-    OT_FULLFACT_WEB = OT_DOC + "_generated/openturns.Box.html"
     OT_SOBOL_INDICES = "OT_SOBOL_INDICES"
-    OT_SOBOL_INDICES_DESC = "Sobol indices"
-    OT_SOBOL_INDICES_WEB = OT_DOC + "_generated/openturns.SobolIndicesAlgorithm.html"
-
-    ALGO_LIST = [
-        OT_SOBOL,
-        OT_HASEL,
-        OT_REVERSE_HALTON,
-        OT_HALTON,
-        OT_FAURE,
-        OT_AXIAL,
-        OT_FACTORIAL,
-        OT_MC,
-        OT_LHS,
-        OT_LHSC,
-        OT_LHSO,
-        OT_RANDOM,
-        OT_FULLFACT,
-        OT_COMPOSITE,
-        OT_SOBOL_INDICES,
-    ]
-    DESC_LIST = [
-        OT_SOBOL_DESC,
-        OT_HASEL_DESC,
-        OT_REVERSE_HALTON_DESC,
-        OT_HALTON_DESC,
-        OT_FAURE_DESC,
-        OT_AXIAL_DESC,
-        OT_FACTORIAL_DESC,
-        OT_MC_DESC,
-        OT_LHS_DESC,
-        OT_LHSC_DESC,
-        OT_LHSO_DESC,
-        OT_RANDOM_DESC,
-        OT_FULLFACT_DESC,
-        OT_COMPOSITE_DESC,
-        OT_SOBOL_INDICES_DESC,
-    ]
-    WEB_LIST = [
-        OT_SOBOL_WEB,
-        OT_HASEL_WEB,
-        OT_REVERSE_HALTON_WEB,
-        OT_HALTON_WEB,
-        OT_FAURE_WEB,
-        OT_AXIAL_WEB,
-        OT_FACTORIAL_WEB,
-        OT_MC_WEB,
-        OT_LHS_WEB,
-        OT_LHSC_WEB,
-        OT_LHSO_WEB,
-        OT_RANDOM_WEB,
-        OT_FULLFACT_WEB,
-        OT_COMPOSITE_WEB,
-        OT_SOBOL_INDICES_WEB,
-    ]
-
-    # Available distribution (only a part of what is available in openturns
-    OT_ARCSINE = "Arcsine"
-    OT_BETA = "Beta"
-    OT_DIRICHLET = "Dirichlet"
-    OT_NORMAL = "Normal"
-    OT_TRUNCNORMAL = "TruncatedNormal"
-    OT_TRIANGULAR = "Triangular"
-    OT_TRAPEZOIDAL = "Trapezoidal"
-    OT_UNIFORM = "Uniform"
-
-    DISTRIBUTION_LIST = [
-        OT_ARCSINE,
-        OT_BETA,
-        OT_DIRICHLET,
-        OT_NORMAL,
-        OT_TRUNCNORMAL,
-        OT_TRIANGULAR,
-        OT_TRAPEZOIDAL,
-        OT_UNIFORM,
-    ]
+    __OT_METADATA = {
+        OT_SOBOL: ("Sobol sequence", "SobolSequence"),
+        OT_RANDOM: ("Random sampling", "RandomGenerator"),
+        OT_HASEL: ("Haselgrove sequence", "HaselgroveSequence"),
+        OT_REVERSE_HALTON: ("Reverse Halton", "ReverseHaltonSequence"),
+        OT_HALTON: ("Halton sequence", "HaltonSequence"),
+        OT_FAURE: ("Faure sequence", "FaureSequence"),
+        OT_MC: ("Monte Carlo sequence", "RandomGenerator.html"),
+        OT_FACTORIAL: ("Factorial design", "Factorial"),
+        OT_COMPOSITE: ("Composite design", "Composite"),
+        OT_AXIAL: ("Axial design", "Axial"),
+        OT_LHSO: ("Optimal Latin Hypercube Sampling", "SimulatedAnnealingLHS"),
+        OT_LHS: ("Latin Hypercube Sampling", "LHS"),
+        OT_LHSC: ("Centered Latin Hypercube Sampling", "LHS"),
+        OT_FULLFACT: ("Full factorial design", "Box"),
+        OT_SOBOL_INDICES: ("DOE for Sobol 'indices", "SobolIndicesAlgorithm"),
+    }
 
     # Optional parameters
-    LEVEL_KEYWORD = "levels"
     CENTER_KEYWORD = "centers"
-    DISTRIBUTION_KEYWORD = "distribution_name"
-    MEAN_KEYWORD = "mu"
-    STD_KEYWORD = "sigma"
-    START_KEYWORD = "start"
-    END_KEYWORD = "end"
     DOE_SETTINGS_OPTIONS = [
-        LEVEL_KEYWORD,
-        DISTRIBUTION_KEYWORD,
-        MEAN_KEYWORD,
-        STD_KEYWORD,
-        START_KEYWORD,
-        END_KEYWORD,
+        DOELibrary.LEVEL_KEYWORD,
         CENTER_KEYWORD,
     ]
     CRITERION = "criterion"
@@ -201,107 +102,85 @@ class OpenTURNS(DOELibrary):
     N_REPLICATES = "n_replicates"
     ANNEALING = "annealing"
 
-    # Default parameters
-    DISTRIBUTION_DEFAULT = OT_UNIFORM
+    __DISCREPANCY_SEQUENCES = {
+        OT_FAURE: openturns.FaureSequence,
+        OT_HALTON: openturns.HaltonSequence,
+        OT_HASEL: openturns.HaselgroveSequence,
+        OT_SOBOL: openturns.SobolSequence,
+        OT_REVERSE_HALTON: openturns.ReverseHaltonSequence,
+    }
+
+    __STRATIFIED_DOES = {
+        OT_COMPOSITE: openturns.Composite,
+        OT_AXIAL: openturns.Axial,
+        OT_FACTORIAL: openturns.Factorial,
+    }
 
     def __init__(self):
-        """Constructor Unless mentioned, DOE are normalized between [0,1]"""
         super(OpenTURNS, self).__init__()
-        self.__distr_list = []
-        self.__comp_dist = None
         self.__sequence = None
-        for idx, algo in enumerate(self.ALGO_LIST):
-            self.lib_dict[algo] = {
+        for algo_name, algo_value in self.__OT_METADATA.items():
+            self.lib_dict[algo_name] = {
                 DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo,
-                DOELibrary.DESCRIPTION: self.DESC_LIST[idx],
-                DOELibrary.WEBSITE: self.WEB_LIST[idx],
+                DOELibrary.INTERNAL_NAME: algo_name,
+                DOELibrary.DESCRIPTION: algo_value[0],
+                DOELibrary.WEBSITE: self.__OT_WEBPAGE.format(algo_value[1]),
             }
 
     def _get_options(
         self,
-        distribution_name="Uniform",  # pylint: disable=W0221
-        levels=None,
-        centers=None,
-        eval_jac=False,
-        n_samples=1,
-        mu=0.5,
-        sigma=None,
-        start=0.25,
-        end=0.75,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        criterion="C2",
-        temperature="Geometric",
-        annealing=True,
-        n_replicates=1000,
-        seed=1,
-        max_time=0,
-        **kwargs
-    ):
-        """Sets the options.
+        levels=None,  # type: Optional[int,Sequence[int]]
+        centers=None,  # type: Optional[Sequence[int]]
+        eval_jac=False,  # type: bool
+        n_samples=None,  # type: Optional[int]
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        criterion="C2",  # type: str
+        temperature="Geometric",  # type: str
+        annealing=True,  # type: bool
+        n_replicates=1000,  # type: int
+        seed=1,  # type: int
+        max_time=0,  # type: float
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str,OptionType]
+        r"""Set the options.
 
-        :param distribution_name: distribution name
-        :type distribution_name: str
-        :param levels: levels for axial, factorial and composite designs
-        :type levels: array
-        :param centers: centers for axial, factorial and composite designs
-        :type centers: array
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param mu: mean of a random variable for beta, normal and
-            truncated normal distributions
-        :type mu: float
-        :param sigma: standard deviation for beta, normal and
-            truncated normal distributions
-        :type sigma: float
-        :param start: level start for trapezoidal distribution
-        :type start: float
-        :param end: level end for trapezoidal distribution
-        :type end: float
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param criterion: space-filling criterion, either "C2", "PhiP" or "MinDist".
-            Default: "C2".
-        :type criterion: str
-        :param temperature: temperature profil for simulated annealing,
-            either "Geometric" or "Linear". Default: "Geometric".
-        :param annealing: if True, use simulated annealing to optimize LHS. Otherwise,
-            use crude Monte Carlo. Default: True.
-        :type annealing: bool
-        :param n_replicates: number of Monte Carlo replicates to optimize LHS.
-            Default: 1000.
-        :type n_replicates: int
-        :param seed: seed value.
-        :type seed: int
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            levels: The levels for axial, full-factorial (box), factorial
+                and composite designs. If None, the number of samples is
+                used in order to deduce the levels.
+            centers: The centers for axial, factorial and composite designs.
+                If None, centers = 0.5.
+            eval_jac: Whether to evaluate the jacobian.
+            n_samples: The number of samples. If None, the algorithm uses
+                the number of levels per input dimension provided by the
+                argument ``levels``.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            criterion: The space-filling criterion, either "C2", "PhiP" or "MinDist".
+            temperature: The temperature profile for simulated annealing,
+                either "Geometric" or "Linear".
+            annealing: If True, use simulated annealing to optimize LHS. Otherwise,
+                use crude Monte Carlo.
+            n_replicates: The number of Monte Carlo replicates to optimize LHS.
+            seed: The seed value.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
+
+        Returns:
+            The processed options.
         """
-        if levels is None:
-            levels = [0.0, 0.25, 0.5]
         if centers is None:
             centers = [0.5]
-        if sigma is None:
-            sigma = 0.447214 * 0.5
-        wtbs = wait_time_between_samples
-        popts = self._process_options(
-            distribution_name=distribution_name,
+
+        options = self._process_options(
             levels=levels,
             centers=centers,
             eval_jac=eval_jac,
             n_samples=n_samples,
-            mu=mu,
-            sigma=sigma,
-            start=start,
-            end=end,
             n_processes=n_processes,
-            wait_time_between_samples=wtbs,
+            wait_time_between_samples=wait_time_between_samples,
             criterion=criterion,
             temperature=temperature,
             annealing=annealing,
@@ -311,431 +190,199 @@ class OpenTURNS(DOELibrary):
             **kwargs
         )
 
-        return popts
-
-    def __set_level_option(self, options):
-        """Check that level options is properly defined for stratified DOE.
-
-        :param options: the options dict for the DOE
-        """
-        option = options[self.LEVEL_KEYWORD]
-        if isinstance(option, (list, tuple)):
-            option = array(option)
-            if np_max(option) > 1.0:
-                raise ValueError(
-                    "Upper bound of levels must be <=1: %s given" % np_max(option)
-                )
-            if np_min(option) < 0.0:
-                raise ValueError(
-                    "Lower bound of levels must be >=1: %s given" % np_min(option)
-                )
-            options[self.LEVEL_KEYWORD] = option
-        else:
-            raise TypeError(
-                "Error for levels definition in DOE design:"
-                + "a tuple or a list is expected whereas ",
-                type(option),
-                " is provided",
-            )
         return options
 
-    def __set_center_option(self, dimension, options):
-        """Check that center level options is properly defined for stratified DOE.
+    def __check_and_cast_levels(
+        self,
+        options,  # type: Mapping[str,Any]
+    ):  # type: (...) -> None
+        """Check that the options ``levels`` is properly defined and cast it to array.
 
-        :param str dimension: parameter space dimension.
-        :param options: the options dict for the DOE
+        Args:
+            options: The DOE options.
+
+        Raises:
+            ValueError: When a level does not belong to [0, 1].
+            TypeError: When the levels are neither a list nor a tuple.
+        """
+        levels = options[self.LEVEL_KEYWORD]
+        if isinstance(levels, (list, tuple)):
+            levels = array(levels)
+            lower_bound = np_min(levels)
+            upper_bound = np_max(levels)
+            if lower_bound < 0.0 or upper_bound > 1.0:
+                raise ValueError(
+                    "Levels must belong to [0, 1]; "
+                    "got [{}, {}].".format(lower_bound, upper_bound)
+                )
+            options[self.LEVEL_KEYWORD] = levels
+        else:
+            raise TypeError(
+                "The argument 'levels' must be either a list or a tuple; "
+                "got a '{}'.".format(levels.__class__.__name__)
+            )
+
+    def __check_and_cast_centers(
+        self,
+        dimension,  # type: int
+        options,  # type: Mapping[str,Any]
+    ):  # type: (...) -> None
+        """Check that the options ``centers`` is properly defined and cast it to array.
+
+        Args:
+            dimension: The parameter space dimension.
+            options: The DOE options.
+
+        Raises:
+            ValueError: When the centers dimension has a wrong dimension.
+            TypeError: When the centers are neither a list nor a tuple.
         """
         center = options[self.CENTER_KEYWORD]
         if isinstance(center, (list, tuple)):
             if len(center) != dimension:
                 raise ValueError(
                     "Inconsistent length of 'centers' list argument "
-                    + "compared to design vector size: %s vs %s"
-                    % (dimension, len(center))
+                    "compared to design vector size: {} vs {}.".format(
+                        dimension, len(center)
+                    )
                 )
             options[self.CENTER_KEYWORD] = array(center)
         else:
             raise TypeError(
-                "Error for 'centers' definition in DOE design:"
-                + "a tuple or a list is expected whereas ",
-                type(center),
-                " is provided",
+                "Error for 'centers' definition in DOE design; "
+                "a tuple or a list is expected whereas {} is provided.".format(
+                    type(center)
+                )
             )
-        return options
 
-    def __get_distribution(self, options):
-        """If no distribution is provided (a name or a list of composed distributions)
-        then a default setting is done.
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples.
 
-        :param options: the options dict for the distribution
-        """
-        if self.DISTRIBUTION_KEYWORD in options:
-            distribution_name = options[self.DISTRIBUTION_KEYWORD]
-            del options[self.DISTRIBUTION_KEYWORD]
-        else:
-            distribution_name = self.DISTRIBUTION_DEFAULT
-        return distribution_name, options
+        Args:
+            **options: The options for the algorithm, see associated JSON file.
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
-
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Returns:
+            The samples for the DOE.
         """
         self.seed += 1
-        dimension = options[self.DIMENSION]
-        del options[self.DIMENSION]
-        n_samples = options[self.N_SAMPLES]
-        del options[self.N_SAMPLES]
+        openturns.RandomGenerator.SetSeed(options.get(self.SEED, self.seed))
+        dimension = options.pop(self.DIMENSION)
+        n_samples = options.pop(self.N_SAMPLES, None)
+
         LOGGER.info("Generation of %s DOE with OpenTurns", self.algo_name)
+
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
-            distribution_name, options = self.__get_distribution(options)
-            samples = self.__generate_lhs(
-                n_samples, dimension, distribution_name=distribution_name, **options
-            )
-        elif self.algo_name == self.OT_RANDOM:
-            samples = self.__generate_random(n_samples, dimension, **options)
-        elif self.algo_name == self.OT_MC:
-            distribution_name, options = self.__get_distribution(options)
-            samples = self.__generate_mc(
-                n_samples, dimension, distribution_name=distribution_name, **options
-            )
-        elif self.algo_name == self.OT_FULLFACT:
-            samples = self.__generate_fullfact(n_samples, dimension)
-        elif self.algo_name in (self.OT_COMPOSITE, self.OT_AXIAL, self.OT_FACTORIAL):
-            options = self.__check_stratified_options(dimension, options)
-            samples = self.__generate_stratified(options)
-        elif self.algo_name == self.OT_SOBOL_INDICES:
-            samples = self.__generate_sobol(n_samples, dimension, **options)
-        else:
-            samples = self.__generate_seq(n_samples, dimension)
-        return samples
+            return self.__generate_lhs(n_samples, dimension, **options)
 
-    @staticmethod
-    def __check_float(options, keyword, default=0, u_b=None, l_b=None):
-        """Base function to check if the keyword exist in dictionary and set a default
-        value.
+        if self.algo_name in [self.OT_MC, self.OT_RANDOM]:
+            return self.__generate_random(n_samples, dimension)
 
-        :param options: dictionary of optional parameters
-        :type  options: dictionary
-        :param keyword: name of the optional keyword
-        :type  keyword: string
-        :param default: default value
-        :type  default: float
-        :param u_b: upper bound
-        :type  u_b: float
-        :param l_b: lower bound
-        :type  l_b: float
-        """
-        if keyword in options:
-            opt = options[keyword]
-            if not isinstance(opt, float):
-                raise TypeError(
-                    keyword + " value must be a float : ", type(opt), " given"
-                )
-            if u_b is not None:
-                if opt > u_b:
-                    raise ValueError(
-                        keyword
-                        + " value must be < "
-                        + str(u_b)
-                        + " : "
-                        + str(opt)
-                        + " given"
-                    )
-            if l_b is not None:
-                if opt < l_b:
-                    raise ValueError(
-                        keyword
-                        + " value must be > "
-                        + str(l_b)
-                        + " : "
-                        + str(opt)
-                        + " given"
-                    )
-            options[keyword] = opt
-        else:
-            options[keyword] = default
-        return options
+        if self.algo_name == self.OT_FULLFACT:
+            levels = options.pop(self.LEVEL_KEYWORD, None)
+            return self._generate_fullfact(dimension, n_samples, levels)
 
-    def __check_stratified_options(self, dimension, options):
-        """Check that mandatory inputs for composite design are set.
+        if self.algo_name in self.__STRATIFIED_DOES:
+            return self.__generate_stratified(dimension, options)
 
-        :param int dimension: parameter space dimension.
-        :param options: the options
+        if self.algo_name == self.OT_SOBOL_INDICES:
+            return self.__generate_sobol(n_samples, dimension)
+
+        if self.algo_name in self.__DISCREPANCY_SEQUENCES:
+            algo = self.__DISCREPANCY_SEQUENCES[self.algo_name](dimension)
+            return array(algo.generate(n_samples))
+
+    def __check_stratified_options(
+        self,
+        dimension,  # type: int
+        options,  # type: Mapping[str,Any]
+    ):  # type: (...) -> None
+        """Check that the mandatory inputs for the composite design are set.
+
+        Args:
+            dimension: The parameter space dimension.
+            options: The options of the DOE.
+
+        Raises:
+            KeyError: If the key `levels` is not in `options`.
         """
         if self.LEVEL_KEYWORD not in options:
             raise KeyError(
-                "Missing  parameter 'levels', "
-                + "tuple of normalized levels  "
-                + "in [0,1] you need in your design"
+                "Missing parameter 'levels', "
+                "tuple of normalized levels in [0,1] you need in your design."
             )
-        options = self.__set_level_option(options)
-        if self.CENTER_KEYWORD not in options:
-            options[self.CENTER_KEYWORD] = [0.5 for _ in range(dimension)]
+        self.__check_and_cast_levels(options)
+        if self.CENTER_KEYWORD in options:
+            self.__check_and_cast_centers(dimension, options)
         else:
-            options = self.__set_center_option(dimension, options)
-        return options
+            options[self.CENTER_KEYWORD] = [0.5] * dimension
 
-    def __generate_stratified(self, options):
-        """Generate a DOE using composite algo of openturns.
+    def __generate_stratified(
+        self,
+        dimension,  # type: int
+        options,  # type: Mapping[str,Any]
+    ):  # type: (...) -> ndarray
+        """Generate a DOE using the composite DOE algorithm.
 
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            dimension: The dimension of the parameter space.
+            options: The DOE options.
+
+        Returns:
+            The samples.
         """
+        self.__check_stratified_options(dimension, options)
         levels = options[self.LEVEL_KEYWORD]
         centers = options[self.CENTER_KEYWORD]
-        LOGGER.info("Composite design:")
-        LOGGER.info("    - centers: %s", str(centers))
-        LOGGER.info("    - levels: %s", str(levels))
-        if self.algo_name == self.OT_COMPOSITE:
-            experiment = openturns.Composite(centers, levels)
-        elif self.algo_name == self.OT_AXIAL:
-            experiment = openturns.Axial(centers, levels)
-        elif self.algo_name == self.OT_FACTORIAL:
-            experiment = openturns.Factorial(centers, levels)
-
-        samples = array(experiment.generate())
-        samples = self._rescale_samples(samples)
+        msg = MultiLineString()
+        msg.add("Composite design:")
+        msg.indent()
+        msg.add("centers: {}", centers)
+        msg.add("levels: {}", levels)
+        LOGGER.debug("%s", msg)
+        algo = self.__STRATIFIED_DOES[self.algo_name](centers, levels)
+        samples = self._rescale_samples(array(algo.generate()))
         return samples
 
-    def __generate_seq(self, n_samples, dimension):
-        """Generate a DOE using LHS algo of openturns.
-
-        :param n_samples: number of samples in DOE
-        :type  n_samples: integer
-        :param int dimension: parameter space dimension.
-        :returns: samples
-        :rtype: numpy array
-        """
-        if self.algo_name == self.OT_FAURE:
-            self.__sequence = openturns.FaureSequence
-        elif self.algo_name == self.OT_HALTON:
-            self.__sequence = openturns.HaltonSequence
-        elif self.algo_name == self.OT_REVERSE_HALTON:
-            self.__sequence = openturns.ReverseHaltonSequence
-        elif self.algo_name == self.OT_HASEL:
-            self.__sequence = openturns.HaselgroveSequence
-        elif self.algo_name == self.OT_SOBOL:
-            self.__sequence = openturns.SobolSequence
-        seq = self.__sequence(dimension).generate(n_samples)
-        return array(seq)
-
-    def create_composed_distributions(self):
-        """Create a composed distribution from a list of distributions."""
-        self.__comp_dist = openturns.ComposedDistribution(self.__distr_list)
-
-    def get_composed_distributions(self):
-        """Returns the composed distributions.
-
-        :returns: composed distributions
-        :rtype: openturns.ComposedDistribution
-        """
-        return self.__comp_dist
-
-    def __check_composed_distribution(self, distribution_name, dimension):
-        """Checks the composed distribution.
-
-        :param str distribution_name: name of the distribution
-        :param int dimension: parameter space dimension.
-        """
-        if self.__comp_dist is None:
-            n_distrib = len(self.__distr_list)
-            if n_distrib == 0:
-                LOGGER.info(
-                    "Creating default composed distribution based on %s",
-                    distribution_name,
-                )
-                self.create_distribution(distribution_name)
-                self.__comp_dist = openturns.ComposedDistribution(
-                    [self.__distr_list[0] for _ in range(dimension)]
-                )
-            elif n_distrib == 1:
-                # Only one distribution was defined ==> duplicating it in all
-                # dimensions
-                self.__comp_dist = openturns.ComposedDistribution(
-                    [self.__distr_list[0] for _ in range(dimension)]
-                )
-            elif n_distrib != dimension:
-                raise ValueError(
-                    "Size mismatch between number"
-                    " of distribution and problem: "
-                    "{} vs. {}".format(dimension, n_distrib)
-                )
-        elif self.__comp_dist.getDimension() != dimension:
-            raise ValueError(
-                "Size mismatch between ComposedDistribution and "
-                "problem: {} vs. {}".format(dimension, self.__comp_dist.getDimension())
-            )
-        else:
-            LOGGER.info(
-                "Using composed distribution previously created: %s",
-                str(self.__comp_dist.getDistributionCollection()),
-            )
-
-    def check_distribution_name(self, distribution_name):
-        """Check that distribution is available.
-
-        :param distribution_name: name of the distribution
-        :type distribution_name: string
-        """
-        if distribution_name not in self.DISTRIBUTION_LIST:
-            raise ValueError(
-                "Distribution '"
-                + distribution_name
-                + "' is not available. "
-                + "Please switch to one of the followings: "
-                + str(self.DISTRIBUTION_LIST)
-            )
-
-    def create_distribution(self, distribution_name="Uniform", **options):
-        """Create a distribution for all design vectors and add it to the list of
-        distributions.
-
-        :param distribution_name: name of the distribution
-           (Default value = "Uniform")
-        :type distribution_name: str
-        :param options: optional parameters
-        :type options: dict
-        :param options: OT distributions options
-        """
-        self.check_distribution_name(distribution_name)
-        options = self.__check_float(options, self.MEAN_KEYWORD, 0.5, u_b=1, l_b=0)
-        options = self.__check_float(options, self.CENTER_KEYWORD, 0.5, u_b=1, l_b=0)
-        options = self.__check_float(options, self.START_KEYWORD, 0.25, u_b=1, l_b=0)
-        options = self.__check_float(options, self.END_KEYWORD, 0.75, u_b=1, l_b=0)
-
-        if distribution_name == self.OT_UNIFORM:
-            LOGGER.info("Creation of a uniform distribution")
-            self.__distr_list.append(openturns.Uniform(0, 1))
-        elif distribution_name == self.OT_TRIANGULAR:
-            dist_center = options[self.CENTER_KEYWORD]
-            LOGGER.info(
-                "Creation of a triangular distribution" " with center: %s",
-                str(dist_center),
-            )
-            self.__distr_list.append(openturns.Triangular(0.0, dist_center, 1.0))
-        elif distribution_name == self.OT_TRAPEZOIDAL:
-            lower_bound = options[self.START_KEYWORD]
-            upper_bound = options[self.END_KEYWORD]
-            LOGGER.info(
-                "Creation of a trapezoidal distribution "
-                "with lower/upper bounds: %s %s",
-                str(lower_bound),
-                str(upper_bound),
-            )
-            self.__distr_list.append(
-                openturns.Trapezoidal(0.0, lower_bound, upper_bound, 1.0)
-            )
-        elif distribution_name == self.OT_BETA:
-            mean = options[self.MEAN_KEYWORD]
-            options = self.__check_float(
-                options, self.STD_KEYWORD, 0.447214 * 0.5, u_b=1, l_b=0
-            )
-            std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution" ": mu (mean) %g and sigma (std) %g",
-                distribution_name,
-                mean,
-                std,
-            )
-            beta = openturns.Beta()
-            beta.setParameter(openturns.BetaMuSigma()([mean, std, 0.0, 1.0]))
-            self.__distr_list.append(beta)
-        elif distribution_name == self.OT_ARCSINE:
-            LOGGER.info("Creation of a %s", str(distribution_name))
-            arcs = openturns.Arcsine(0.0, 1.0)
-            self.__distr_list.append(arcs)
-        elif distribution_name == self.OT_TRUNCNORMAL:
-            mean = options[self.MEAN_KEYWORD]
-            options = self.__check_float(
-                options, self.STD_KEYWORD, 0.5 / 3.75, u_b=1, l_b=0
-            )
-            std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g",
-                distribution_name,
-                mean,
-                std,
-            )
-            nrmal = openturns.TruncatedNormal(mean, std, 0.0, 1.0)
-            self.__distr_list.append(nrmal)
-        elif distribution_name == self.OT_NORMAL:
-            mean = options[self.MEAN_KEYWORD]
-            options = self.__check_float(
-                options, self.STD_KEYWORD, 0.5 / 3.75, u_b=1, l_b=0
-            )
-            std = options[self.STD_KEYWORD]
-            LOGGER.info(
-                "Creation of a %s distribution: mu (mean) %g and" "sigma (std) %g",
-                distribution_name,
-                mean,
-                std,
-            )
-            self.__distr_list.append(openturns.Normal(mean, std))
-
-    def display_distributions_list(self):
-        """Display list of distributions use or that will be used for DOE design based
-        on LHS or Monte-Carlo methods."""
-        LOGGER.info("List of distributions:")
-        for distrib in self.__distr_list:
-            LOGGER.info(distrib)
-
-    def get_distributions_list(self):
-        """Accessor for distributions list.
-
-        :returns: distribution list
-        :rtype: list
-        """
-        return self.__distr_list
-
     def __generate_lhs(
-        self, n_samples, dimension, distribution_name="Uniform", **options
-    ):
-        """Generate a DOE using LHS algo of openturns.
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+        **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate a DOE using the LHS algorithm, possibly centered or optimized.
 
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension.
-        :param distribution_name: name of the distribution
-        :type  distribution_name: string
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
+        Args:
+            n_samples: The number of samples.
+            dimension: The parameter space dimension.
+            options: The DOE options.
+
+        Returns:
+            The samples.
         """
-        self.__check_composed_distribution(
-            distribution_name=distribution_name, dimension=dimension
-        )
 
-        seed = options.get(self.SEED, self.seed)
-        openturns.RandomGenerator.SetSeed(seed)
-        lhs = openturns.LHSExperiment(self.__comp_dist, n_samples)
+        lhs = openturns.LHSExperiment(
+            self.__get_uniform_distribution(dimension), n_samples
+        )
         if self.algo_name == self.OT_LHSO:
             lhs.setAlwaysShuffle(True)
-            criterion = options.get(self.CRITERION, "C2")
-            try:
-                criterion = self.CRITERIA[criterion]()
-            except KeyError:
-                raise ValueError(
-                    "{} is not an available criterion. Available ones are: {}".format(
-                        criterion, self.CRITERIA
+            if options[self.ANNEALING]:
+                if version.parse(openturns.__version__) < version.parse("1.17.0"):
+                    algo = openturns.SimulatedAnnealingLHS(
+                        lhs,
+                        self.TEMPERATURES[options[self.TEMPERATURE]](),
+                        self.CRITERIA[options[self.CRITERION]](),
                     )
-                )
-            annealing = options.get(self.ANNEALING, True)
-            if annealing:
-                temperature = options.get(self.TEMPERATURE, "Geometric")
-                try:
-                    temperature = self.TEMPERATURES[temperature]()
-                except KeyError:
-                    raise ValueError(
-                        "{} is not an available temperature profil."
-                        "Available ones are: {}".format(temperature, self.TEMPERATURES)
+                else:
+                    algo = openturns.SimulatedAnnealingLHS(
+                        lhs,
+                        self.CRITERIA[options[self.CRITERION]](),
+                        self.TEMPERATURES[options[self.TEMPERATURE]](),
                     )
-                algo = openturns.SimulatedAnnealingLHS(lhs, temperature, criterion)
                 design = algo.generate()
             else:
-                n_replicates = options.get(self.N_REPLICATES, 1000)
-                algo = openturns.MonteCarloLHS(lhs, n_replicates)
+                algo = openturns.MonteCarloLHS(lhs, options[self.N_REPLICATES])
                 design = algo.generate()
         else:
             design = lhs.generate()
@@ -748,7 +395,7 @@ class OpenTURNS(DOELibrary):
     @staticmethod
     def __compute_centered_lhs(
         samples,  # type:ndarray
-    ):  # type:(...) ->ndarray
+    ):  # type:(...) -> ndarray
         """Center the samples resulting from a Latin hypercube sampling.
 
         Args:
@@ -761,129 +408,77 @@ class OpenTURNS(DOELibrary):
         centered_samples = (samples // (1.0 / n_samples) + 0.5) / n_samples
         return centered_samples
 
-    def __generate_mc(
-        self, n_samples, dimension, distribution_name="Uniform", **options
-    ):
-        """Generate a DOE using Monte-Carlo algo of openturns.
-
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension
-        :param distribution_name: name of the distribution
-        :type  distribution_name: string
-        :param options: the options
-        :returns: samples
-        :rtype: numpy array
-        """
-        self.__check_composed_distribution(
-            distribution_name=distribution_name, dimension=dimension
-        )
-
-        seed = options.get(self.SEED, self.seed)
-        openturns.RandomGenerator.SetSeed(seed)
-        experiment = openturns.MonteCarloExperiment(self.__comp_dist, n_samples)
-        return array(experiment.generate())
-
-    def __generate_sobol(self, n_samples, dimension, **options):
-        """Generate a DOE using Sobol' sampling.
-
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension
-        :returns: samples
-        :rtype: numpy array
-        """
-        seed = options.get(self.SEED, self.seed)
-        openturns.RandomGenerator.SetSeed(seed)
-        self.__check_composed_distribution(
-            distribution_name="Uniform", dimension=dimension
-        )
-        n_samples = int(n_samples / (dimension + 2))
-        experiment = openturns.SobolIndicesExperiment(self.__comp_dist, n_samples)
-        data = array(experiment.generate())
-        return data
-
-    def __generate_fullfact(self, n_samples, dimension):
-        """Generate a DOE using Monte-Carlo algo of openturns.
-
-        :param int n_samples: number of samples in DOE
-        :param int dimension: parameter space dimension.
-        :returns: samples
-        :rtype: numpy array
-        """
-        self._display_fullfact_warning(n_samples)
-        level = int(n_samples ** (1.0 / dimension) - 2)
-        if level < 1:
-            level = 0
-        levels = [level] * dimension
-        experiment = openturns.Box(levels)
-        return array(experiment.generate())
-
-    def __generate_random(self, n_samples, dimension, **options):
-        """Generate a DOE using random algo of openturns.
-
-        :param n_samples: number of samples in DOE
-        :type  n_samples: integer
-        :param int dimension: parameter space dimension
-        :returns: samples
-        :rtype: numpy array
-        """
-        seed = options.get(self.SEED, self.seed)
-        openturns.RandomGenerator.SetSeed(seed)
-        samples_list = []
-        for _ in range(n_samples):
-            samples_list.append(openturns.RandomGenerator.Generate(dimension))
-        return array(samples_list)
-
     @staticmethod
-    def plot_distribution(distribution, show=False):
-        """Plot the density PDF & the CDF (cumulative) of a given distribution.
+    def __get_uniform_distribution(
+        dimension,  # type: int
+    ):  # type: (...) -> openturns.ComposedDistribution
+        return openturns.ComposedDistribution([openturns.Uniform(0.0, 1.0)] * dimension)
 
-        :param distribution: the distribution to plot
-        :type distribution: openturns.Distribution
-        :param show: show plot (Default value = False)
-        :type show: bool
+    def __generate_sobol(
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+    ):  # type: (...) -> ndarray
+        """Generate a DOE using a Sobol' sampling.
+
+        Args:
+            n_samples: The number of samples.
+            dimension: The parameter space dimension.
+
+        Returns:
+            The samples.
         """
-        distribution.setDescription(["x"])
-        pdf_graph = distribution.drawPDF()
-        cdf_graph = distribution.drawCDF()
-        fig = plt.figure(figsize=(12, 5))
-        plt.suptitle(str(distribution))
-        pdf_axis = fig.add_subplot(121)
-        cdf_axis = fig.add_subplot(122)
-        mean = array(distribution.getMean())[0]
-        std = array(distribution.getStandardDeviation())[0]
-        View(pdf_graph, figure=fig, axes=[pdf_axis], add_legend=False)
-        pdf_axis.axvline(x=mean, ymin=0.0, linewidth=1, linestyle="-.", color="k")
-        pdf_axis.axvline(
-            x=mean - std, linestyle="--", ymin=0.0, linewidth=0.5, color="k"
+        n_samples = int(n_samples / (dimension + 2))
+        algo = openturns.SobolIndicesExperiment(
+            self.__get_uniform_distribution(dimension), n_samples
         )
-        pdf_axis.axvline(
-            x=mean + std, linestyle="--", ymin=0.0, linewidth=0.5, color="k"
-        )
-        pdf_axis.annotate(
-            r"$\mu$",
-            xy=(0.5, 1.05),
-            xycoords="axes fraction",
-            horizontalalignment="center",
-            verticalalignment="center",
-            size=15,
-        )
-        pdf_axis.annotate(
-            r"$\mu+\sigma$",
-            xy=(mean + std, 1.05),
-            xycoords="axes fraction",
-            horizontalalignment="center",
-            verticalalignment="center",
-            size=15,
-        )
-        pdf_axis.annotate(
-            r"$\mu-\sigma$",
-            xy=(mean - std, 1.05),
-            xycoords="axes fraction",
-            horizontalalignment="center",
-            verticalalignment="center",
-            size=15,
-        )
-        View(cdf_graph, figure=fig, axes=[cdf_axis], add_legend=False)
-        if show:
-            plt.show()
-        plt.close()
+        return array(algo.generate())
+
+    def _generate_fullfact_from_levels(
+        self,
+        levels,  # type: Iterable[int]
+    ):  # type: (...) -> ndarray
+        # This method relies on openturns.Box.
+        # This latter assumes that the levels provided correspond to the intermediate
+        # levels between lower and upper bounds, while GEMSEO includes these bounds
+        # in the definition of the levels, so we substract 2 in order to get
+        # only intermediate levels.
+        levels = [level - 2 for level in levels]
+
+        # If any level is negative, we take them out, generate the DOE,
+        # then append the DOE with 0.5 for the missing levels.
+        ot_indices = []
+        ot_levels = []
+        for ot_index, ot_level in enumerate(levels):
+            if ot_level >= 0:
+                ot_levels.append(ot_level)
+                ot_indices.append(ot_index)
+
+        if not ot_levels:
+            return full([1, len(levels)], 0.5)
+
+        ot_doe = array(openturns.Box(ot_levels).generate())
+
+        if len(ot_levels) == len(levels):
+            return ot_doe
+
+        doe = full([ot_doe.shape[0], len(levels)], 0.5)
+        doe[:, ot_indices] = ot_doe
+        return doe
+
+    def __generate_random(
+        self,
+        n_samples,  # type: int
+        dimension,  # type: int
+    ):  # type: (...) -> ndarray
+        """Generate a DOE using the random generator.
+
+        Args:
+            n_samples: The number of samples.
+            dimension: The parameter space dimension.
+
+        Returns:
+            The samples.
+        """
+        samples = array(openturns.RandomGenerator.Generate(dimension * n_samples))
+        return samples.reshape((n_samples, dimension), order="F")

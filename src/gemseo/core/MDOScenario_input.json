@@ -7,10 +7,7 @@
         	"minimum":1
         },
         "algo": {
-            "type": "string",
-            "enum":["SLSQP","L-BFGS-B","P-L-BFGS-B","TNC","NLOPT_COBYLA",
-            		"NLOPT_MMA","NLOPT_SLSQP","NLOPT_BOBYQA","NLOPT_BFGS", "NLOPT_NEWUOA",
-            		"SNOPTB", "ODD"]
+            "type": "string"
         },
 		"algo_options": {
 			"type": "object"

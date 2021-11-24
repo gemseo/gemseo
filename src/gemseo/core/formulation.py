@@ -46,11 +46,13 @@ if TYPE_CHECKING:
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import array, copy, empty, in1d, ndarray, where, zeros
+from numpy import array, copy, in1d, ndarray, where, zeros
 from six import string_types
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction, MDOFunctionGenerator
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +91,8 @@ class MDOFormulation(object):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         maximize_objective=False,  # type: bool
-        **options
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
+        **options  # type: Any
     ):  # type: (...) -> None # pylint: disable=W0613
         """
         Args:
@@ -97,6 +100,9 @@ class MDOFormulation(object):
             objective_name: The name of the objective function.
             design_space: The design space.
             maximize_objective: If True, the objective function is maximized.
+            grammar_type: The type of the input and output grammars,
+                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             **options: The options of the formulation.
         """
         self.check_disciplines(disciplines)
@@ -104,6 +110,12 @@ class MDOFormulation(object):
         self._objective_name = objective_name
         self.opt_problem = OptimizationProblem(design_space)
         self._maximize_objective = maximize_objective
+        self.__grammar_type = grammar_type
+
+    @property
+    def _grammar_type(self):  # type: (...) -> str
+        """The type of the input and output grammars."""
+        return self.__grammar_type
 
     @property
     def design_space(self):  # type: (...) -> DesignSpace
@@ -178,7 +190,7 @@ class MDOFormulation(object):
         """
         outputs_list = self._check_add_cstr_input(output_name, constraint_type)
 
-        mapped_cstr = self._get_function_from(outputs_list, top_level_disc=True)
+        mapped_cstr = FunctionFromDiscipline(outputs_list, self, top_level_disc=True)
         mapped_cstr.f_type = constraint_type
 
         if constraint_name is not None:
@@ -203,8 +215,8 @@ class MDOFormulation(object):
         """
         if isinstance(output_names, string_types):
             output_names = [output_names]
-        obs_fun = self._get_function_from(
-            output_names, top_level_disc=True, discipline=discipline
+        obs_fun = FunctionFromDiscipline(
+            output_names, self, top_level_disc=True, discipline=discipline
         )
         if observable_name is not None:
             obs_fun.name = observable_name
@@ -557,112 +569,13 @@ class MDOFormulation(object):
         """
         if isinstance(objective_name, string_types):
             objective_name = [objective_name]
-        obj_mdo_fun = self._get_function_from(
-            objective_name, discipline, top_level_disc=top_level_disc
+        obj_mdo_fun = FunctionFromDiscipline(
+            objective_name, self, discipline, top_level_disc
         )
         obj_mdo_fun.f_type = MDOFunction.TYPE_OBJ
         self.opt_problem.objective = obj_mdo_fun
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()
-
-    def _get_function_from(
-        self,
-        output_names,  # type: Sequence[str]
-        discipline=None,  # type: Optional[MDODiscipline]
-        top_level_disc=True,  # type:bool
-        x_names=None,  # type: Optional[Sequence[str]]
-        all_data_names=None,  # type:Optional[Iterable[str]]
-        differentiable=True,  # type: bool
-    ):  # type: (...) -> MDOFunction
-        """Build a function able to compute various outputs.
-
-        Args:
-            output_names: The names of the outputs.
-            discipline: The discipline computing these outputs.
-                If None, the discipline is detected from the inner disciplines.
-            top_level_disc: If True, search the discipline among the top level ones.
-            x_names: The names of the design variables.
-                If None, use self.get_x_names_of_disc(discipline).
-            all_data_names: The reference data names for masking x.
-                If None, use self.get_optim_variables_names().
-            differentiable: If True, then inputs and outputs are added
-                to the list of variables to be differentiated.
-
-        Returns:
-            The function able to compute the values of the given outputs.
-        """
-        if discipline is None:
-            gen = self._get_generator_from(output_names, top_level_disc=top_level_disc)
-            discipline = gen.discipline
-        else:
-            gen = MDOFunctionGenerator(discipline)
-
-        if x_names is None:
-            x_names = self.get_x_names_of_disc(discipline)
-
-        out_x_func = gen.get_function(
-            x_names, output_names, differentiable=differentiable
-        )
-
-        def func(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Function to compute the outputs.
-
-            Args:
-                x_vect: The design variable vector.
-
-            Returns:
-                The value of the outputs.
-            """
-            x_of_disc = self.mask_x_swap_order(x_names, x_vect, all_data_names)
-            obj_allx_val = out_x_func(x_of_disc)
-            return obj_allx_val
-
-        masked_func = MDOFunction(
-            func,
-            out_x_func.name,
-            f_type=MDOFunction.TYPE_OBJ,
-            args=x_names,
-            expr=out_x_func.expr,
-            dim=out_x_func.dim,
-            outvars=out_x_func.outvars,
-        )
-        if out_x_func.has_jac():
-
-            def func_jac(
-                x_vect,  # type: ndarray
-            ):  # type: (...) -> ndarray
-                """Function to compute the gradient of the outputs.
-
-                Args:
-                    x_vect: The design variable vector.
-
-                Returns:
-                    The value of the gradient of the outputs.
-                """
-                x_of_disc = self.mask_x_swap_order(x_names, x_vect, all_data_names)
-
-                loc_jac = out_x_func.jac(x_of_disc)  # pylint: disable=E1102
-
-                if len(loc_jac.shape) == 1:
-                    # This is surprising but there is a duality between the
-                    # masking operation in the function inputs and the
-                    # unmasking of its outputs
-                    jac = self.unmask_x_swap_order(x_names, loc_jac, all_data_names)
-                else:
-                    n_outs = loc_jac.shape[0]
-                    jac = empty((n_outs, x_vect.size), dtype=x_vect.dtype)
-                    for func_ind in range(n_outs):
-                        gr_u = self.unmask_x_swap_order(
-                            x_names, loc_jac[func_ind, :], all_data_names
-                        )
-                        jac[func_ind, :] = gr_u
-                return jac
-
-            masked_func.jac = func_jac
-
-        return masked_func
 
     def get_optim_variables_names(self):  # type: (...) -> List[str]
         """Get the optimization unknown names to be provided to the optimizer.

@@ -27,14 +27,13 @@ from typing import Optional, Sequence, Tuple
 import matplotlib.gridspec as gridspec
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import ndarray
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +44,8 @@ class ObjConstrHist(OptPostProcessor):
     By default, all the constraints are considered. A sublist of constraints can be
     passed as options.
     """
+
+    DEFAULT_FIG_SIZE = (11.0, 6.0)
 
     def __init__(
         self,
@@ -79,7 +80,7 @@ class ObjConstrHist(OptPostProcessor):
             fmin = np.min(obj_history)
             fmax = np.max(obj_history)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
-        fig = plt.figure(figsize=(11, 6))
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         ax1 = fig.add_subplot(grid[0, 0])
         # objective function
         plt.xlabel("Iterations", fontsize=12)
@@ -119,13 +120,7 @@ class ObjConstrHist(OptPostProcessor):
         vmin = -vmax
         extent = -0.5, nb_iter - 0.5, fmin, fmax
 
-        # On python 2, base is not defined as a parameter in SymLogNorm()
-        if PY2:
-            norm = SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75)
-        else:
-            norm = SymLogNorm(
-                linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75, base=np.e
-            )
+        norm = SymLogNorm(linthresh=1.0, vmin=vmin * 0.75, vmax=vmax * 0.75)
 
         im1 = ax1.imshow(
             values,

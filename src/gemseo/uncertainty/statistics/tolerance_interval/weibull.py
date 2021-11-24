@@ -81,7 +81,7 @@ class WeibullToleranceInterval(ToleranceInterval):
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
         offset = -(size ** 0.5) * self.__lambda_function(coverage)
-        student = ot.Student(size - 1, offset)
+        student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(1 - alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location
 
@@ -94,7 +94,7 @@ class WeibullToleranceInterval(ToleranceInterval):
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
         offset = -(size ** 0.5) * self.__lambda_function(1 - coverage)
-        student = ot.Student(size - 1, offset)
+        student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location
 

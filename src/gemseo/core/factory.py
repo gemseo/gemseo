@@ -33,15 +33,15 @@ from typing import Any, Dict, Iterable, List, Optional, Type, Union
 
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.py23_compat import lru_cache
+from gemseo.utils.py23_compat import PY3, importlib_metadata, lru_cache
+from gemseo.utils.singleton import Multiton, _Multiton
 from gemseo.utils.source_parsing import get_default_options_values, get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=None)
-class Factory(object):
-    """Factory of class objects.
+class Factory(Multiton):
+    """Factory of class objects with cache.
 
     This factory can create an object from a base class
     or any of its sub-classes
@@ -50,7 +50,21 @@ class Factory(object):
 
     - fully qualified module names (such as gemseo.problems, ...),
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
-    - |g| plugins, i.e. packages whose name starts with ``gemseo_``.
+    - |g| plugins, i.e. packages which have declared a setuptools entry point.
+
+    A setuptools entry point is declared in a plugin :file:`setup.cfg` file,
+    with a section::
+
+        [options.entry_points]
+        gemseo_plugins =
+            a-name = plugin_package_name
+
+    Above ``a-name`` is not used
+    and can be any name
+    but we advise to use the plugin name.
+
+    The plugin entry point searched by the factory could be changed
+    with :class:`.Factory.PLUGIN_ENTRY_POINT`.
 
     If a class,
     despite being a sub-class of the base class,
@@ -58,6 +72,10 @@ class Factory(object):
     does not belong to the modules sources
     then it is not taken into account
     by the factory.
+
+    The created objects are cached:
+    more calls to the constructor with the same call signature will return
+    the object in cache instead of instantiating a new one.
     """
 
     # Names of the environment variable to search for classes
@@ -66,6 +84,9 @@ class Factory(object):
 
     # Allowed prefix for naming a plugin importable from sys.path
     __PLUGIN_PREFIX = "gemseo_"
+
+    # The name of the setuptools entry point for declaring plugins.
+    PLUGIN_ENTRY_POINT = "gemseo_plugins"
 
     def __init__(
         self,
@@ -98,13 +119,28 @@ class Factory(object):
         """
         module_names = list(self.__module_names)
 
-        # Import internal packages
+        # Import the fully qualified modules names.
         for module_name in module_names:
             self.__import_modules_from(module_name)
 
-        # Import plugins packages
-        for _, module_name, _ in pkgutil.iter_modules():
+        # Import the plugins packages.
+
+        # Do not search the current working directory.
+        # See https://docs.python.org/3.9/library/sys.html#sys.path
+        sys_path = list(sys.path)
+        sys_path.pop(0)
+
+        for _, module_name, _ in pkgutil.iter_modules(path=sys_path):
             if module_name.startswith(self.__PLUGIN_PREFIX):
+                self.__import_modules_from(module_name)
+                module_names += [module_name]
+
+        if PY3:
+            # Import from the setuptools entry points.
+            for entry_point in importlib_metadata.entry_points().get(
+                self.PLUGIN_ENTRY_POINT, []
+            ):
+                module_name = entry_point.value
                 self.__import_modules_from(module_name)
                 module_names += [module_name]
 
@@ -119,7 +155,7 @@ class Factory(object):
             )
             LOGGER.warning(msg)
 
-        # Import from environment variable paths
+        # Import from the environment variable paths.
         for env_variable in [self.__GEMSEO_PATH, self.__GEMS_PATH]:
             module_names += self.__import_modules_from_env_var(env_variable)
 
@@ -420,6 +456,10 @@ class Factory(object):
         """
         cls = self.get_class(name)
         return cls.get_default_sub_options_values(**options)
+
+    @staticmethod
+    def cache_clear():
+        _Multiton.cache_clear()
 
     def __str__(self):  # type: (...) -> str
         return "Factory({})".format(self.__base_class.__name__)

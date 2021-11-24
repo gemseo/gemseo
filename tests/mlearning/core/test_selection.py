@@ -48,7 +48,7 @@ def dataset():  # type: (...) -> Dataset
     return sample
 
 
-def test_constructor(dataset):
+def test_init(dataset):
     """Test construction."""
     selector = MLAlgoSelection(dataset, MSEMeasure)
     assert selector.dataset == dataset
@@ -56,7 +56,20 @@ def test_constructor(dataset):
     assert not selector.candidates
     assert not selector.measure_options["multioutput"]
 
-    with pytest.raises(ValueError):
+
+@pytest.mark.parametrize("measure", ["MSEMeasure", MSEMeasure])
+def test_init_with_measure(dataset, measure):
+    """Check that the measure can be passed either as a str or a MLQualityMeasure."""
+    selector = MLAlgoSelection(dataset, measure)
+    assert selector.measure == MSEMeasure
+
+
+def test_init_fails_if_multioutput_(dataset):
+    expected = (
+        "MLAlgoSelection does not support multioutput; "
+        "the measure shall return one value."
+    )
+    with pytest.raises(ValueError, match=expected):
         MLAlgoSelection(dataset, MSEMeasure, multioutput=True)
 
 
@@ -96,10 +109,11 @@ def test_add_candidate(dataset):
     assert cand[0].parameters["smooth"] <= 10
 
 
-def test_select(dataset):
+@pytest.mark.parametrize("eval_method", ["kfolds", "learn"])
+def test_select(dataset, eval_method):
     """Test select method."""
     measure = MSEMeasure
-    selector = MLAlgoSelection(dataset, measure)
+    selector = MLAlgoSelection(dataset, measure, eval_method=eval_method)
     selector.add_candidate("PolynomialRegression", degree=[1, 2])
     selector.add_candidate("LinearRegression")
     selector.add_candidate("RBFRegression", smooth=[0, 0.1, 1, 10])
@@ -116,3 +130,4 @@ def test_select(dataset):
 
     algo = selector.select()
     assert isinstance(algo, MLRegressionAlgo)
+    assert algo.is_trained

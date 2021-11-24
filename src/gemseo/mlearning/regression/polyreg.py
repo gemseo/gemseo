@@ -83,7 +83,6 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-from os.path import join
 from typing import Iterable, Optional, Union
 
 from numpy import concatenate, ndarray, where, zeros
@@ -92,6 +91,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType, TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ class PolynomialRegression(LinearRegression):
         """
         Args:
             degree: The polynomial degree.
-            fit_intercept: If True, fit intercept.
+            fit_intercept: Whether to fit the intercept.
             penalty_level: The penalty level greater or equal to 0.
                 If 0, there is no penalty.
             l2_penalty_ratio: The penalty ratio
@@ -254,19 +254,18 @@ class PolynomialRegression(LinearRegression):
 
     def _save_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Path
     ):  # type: (...) -> None
         super(PolynomialRegression, self)._save_algo(directory)
-        filename = join(directory, "poly.pkl")
-        with open(filename, "wb") as handle:
+        with (directory / "poly.pkl").open("wb") as handle:
             pickle.dump(self._poly, handle)
 
     def load_algo(
         self,
-        directory,  # type: str
+        directory,  # type: Union[str,Path]
     ):  # type: (...) -> None
+        directory = Path(directory)
         super(PolynomialRegression, self).load_algo(directory)
-        filename = join(directory, "poly.pkl")
-        with open(filename, "rb") as handle:
+        with (directory / "poly.pkl").open("rb") as handle:
             poly = pickle.load(handle)
         self._poly = poly

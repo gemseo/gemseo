@@ -1,0 +1,10 @@
+{
+    "name": "grammar_test1",
+    "properties": {
+        "X": {
+            "type": "number"
+        }
+    },
+    "additionalProperties": false,
+    "type": "object"
+}

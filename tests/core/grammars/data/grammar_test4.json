@@ -1,0 +1,15 @@
+{
+    "name": "grammar_test4",
+    "required": ["X"],
+    "properties": {
+		"X": {
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "additionalProperties": false
+}

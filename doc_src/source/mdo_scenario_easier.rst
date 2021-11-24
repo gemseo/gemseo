@@ -12,8 +12,8 @@
 
 :parenttoc: True
 
-Define a MDO problem
---------------------
+Define an MDO problem
+---------------------
 
 .. include:: includes/big_toc_css.rst
 .. include:: tune_toc.rst

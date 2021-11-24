@@ -21,75 +21,92 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+from unittest import mock
+
+import pytest
+from numpy import array
+from numpy.testing import assert_equal
+from pytest import approx
 
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_scalable import DiagonalDOE
 
-from .doe_lib_test_base import DOELibraryTestBase
+from .utils import check_problem_execution, execute_problem
+
+DOE_LIB_NAME = "DiagonalDOE"
 
 
-class TestDiagonalLib(unittest.TestCase):
-    """"""
+def test_init():
+    """Check the creation of the library."""
+    factory = DOEFactory()
+    if factory.is_available(DOE_LIB_NAME):
+        factory.create(DOE_LIB_NAME)
 
-    DOE_LIB_NAME = "DiagonalDOE"
 
-    def test_init(self):
-        """"""
-        factory = DOEFactory()
-        if factory.is_available(self.DOE_LIB_NAME):
-            factory.create(self.DOE_LIB_NAME)
+def test_invalid_algo():
+    """Check the request of an invalid algorithm."""
+    algo_name = "invalid_algo"
+    with pytest.raises(
+        KeyError,
+        match="Requested algorithm {} is not in list of available algorithms: "
+        "{}.".format(algo_name, DOE_LIB_NAME),
+    ):
+        execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, n_samples=100)
 
-    def test_invalid_algo(self):
-        """"""
-        algo_name = "unknown_algo"
-        dim = 3
-        n_samples = 100
-        self.assertRaises(
-            KeyError,
-            DOELibraryTestBase.generate_one_test,
-            self.DOE_LIB_NAME,
-            algo_name=algo_name,
-            dim=dim,
-            n_samples=n_samples,
+
+def test_diagonal_doe():
+    """Check the computation of a diagonal DOE."""
+    dim = 3
+    n_samples = 10
+    doe_library = execute_problem(
+        DOE_LIB_NAME, algo_name="DiagonalDOE", dim=dim, n_samples=n_samples
+    )
+    samples = doe_library.samples
+    assert samples.shape == (n_samples, dim)
+    assert samples[4, 0] == approx(0.4, rel=0.0, abs=0.1)
+
+
+@pytest.mark.parametrize("dimension", [1, 5])
+def test_diagonal_doe_on_rosenbrock(dimension):
+    """Check the diagonal DOE on the Rosenbrock problem."""
+    assert (
+        check_problem_execution(
+            dimension,
+            DiagonalDOE(),
+            DOE_LIB_NAME,
+            lambda algo, dim, n_samples: n_samples,
+            {"n_samples": 13},
         )
-
-    def test_diagonal_doe(self):
-        """"""
-        algo_name = "DiagonalDOE"
-        dim = 3
-        n_samples = 10
-        doe_library = DOELibraryTestBase.generate_one_test(
-            self.DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
-        )
-        samples = doe_library.samples
-        self.assertEqual(samples.shape, (n_samples, dim))
-        self.assertAlmostEqual(samples[4, 0], 0.4, places=1)
+        is None
+    )
 
 
-def get_expected_nsamples(algo, dim, n_samples=None):
-    """
-
-    :param algo: param dim:
-    :param n_samples: Default value = None)
-    :param dim:
-
-    """
-    return n_samples
-
-
-def get_options(algo_name, dim):
-    """
-
-    :param algo_name: param dim:
-    :param dim:
-
-    """
-    options = {"n_samples": 13}
-    return options
+@pytest.fixture(scope="module")
+def variables_space():
+    """A mock design space."""
+    design_space = mock.Mock()
+    design_space.dimension = 2
+    design_space.variables_names = ["x", "y"]
+    design_space.variables_sizes = {"x": 1, "y": 1}
+    return design_space
 
 
-suite_tests = DOELibraryTestBase()
-for test_method in suite_tests.generate_test(
-    TestDiagonalLib.DOE_LIB_NAME, get_expected_nsamples, get_options
-):
-    setattr(TestDiagonalLib, test_method.__name__, test_method)
+def test_compute_doe(variables_space):
+    """Check the computation of a DOE out of a variables space."""
+    library = DOEFactory().create(DOE_LIB_NAME)
+    doe = library.compute_doe(variables_space, 3, unit_sampling=True)
+    assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
+
+
+@pytest.mark.parametrize(
+    ["reverse", "samples"],
+    [
+        (["x"], array([[1.0, 0.0], array([0.5, 0.5]), array([0.0, 1.0])])),
+        (["1"], array([[0.0, 1.0], array([0.5, 0.5]), array([1.0, 0.0])])),
+    ],
+)
+def test_reverse(variables_space, reverse, samples):
+    """Check the sampling of variables in reverse order."""
+    library = DOEFactory().create(DOE_LIB_NAME)
+    doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
+    assert_equal(doe, samples)

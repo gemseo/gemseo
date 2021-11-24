@@ -22,24 +22,23 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+import pytest
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 
 
-class TestAlgorithmFactory(unittest.TestCase):
-    """"""
+def test_is_available_error():
+    assert not OptimizersFactory().is_available("None")
 
-    def test_is_available_error(self):
-        """"""
-        self.assertFalse(OptimizersFactory().is_available("None"))
 
-    def test_init_library_error(self):
-        """"""
-        OptimizersFactory().create("L-BFGS-B")
-        self.assertRaises(Exception, OptimizersFactory().create, "idontexist")
+def test_init_library_error():
+    OptimizersFactory().create("L-BFGS-B")
+    with pytest.raises(
+        ImportError, match="No algorithm or library of algorithms named "
+    ):
+        OptimizersFactory().create("idontexist")
 
-    def test_is_scipy_available(self):
-        """"""
-        assert OptimizersFactory().is_available("ScipyOpt")
-        assert "SLSQP" in OptimizersFactory().algorithms
+
+def test_is_scipy_available():
+    assert OptimizersFactory().is_available("ScipyOpt")
+    assert "SLSQP" in OptimizersFactory().algorithms

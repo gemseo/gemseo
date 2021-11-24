@@ -43,28 +43,27 @@ def test_variable_influence(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    if factory.is_available("VariableInfluence"):
-        problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
-        post = factory.execute(
-            problem, "VariableInfluence", file_path="var_infl", save=True
-        )
-        assert len(post.output_files) == 1
-        for outf in post.output_files:
-            assert Path(outf).exists()
-        database = problem.database
-        database.filter(["pow2", "@pow2"])
-        problem.constraints = []
-        for k in list(database.keys()):
-            v = database.pop(k)
-            v["@pow2"] = repeat(v["@pow2"], 60)
-            database[repeat(k.wrapped, 60)] = v
+    problem = OptimizationProblem.import_hdf(str(POWER_HDF5_PATH))
+    post = factory.execute(
+        problem, "VariableInfluence", file_path="var_infl", save=True
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
+    database = problem.database
+    database.filter(["pow2", "@pow2"])
+    problem.constraints = []
+    for k in list(database.keys()):
+        v = database.pop(k)
+        v["@pow2"] = repeat(v["@pow2"], 60)
+        database[repeat(k.wrapped, 60)] = v
 
-        post = factory.execute(
-            problem, "VariableInfluence", file_path="var_infl2", save=True
-        )
-        assert len(post.output_files) == 1
-        for outf in post.output_files:
-            assert Path(outf).exists()
+    post = factory.execute(
+        problem, "VariableInfluence", file_path="var_infl2", save=True
+    )
+    assert len(post.output_files) == 1
+    for outf in post.output_files:
+        assert Path(outf).exists()
 
 
 def test_variable_influence_doe(tmp_wd, pyplot_close_all):
@@ -104,19 +103,17 @@ def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
             with matplotlib pyplot.
     """
     factory = PostFactory()
-    if factory.is_available("VariableInfluence"):
-        problem = OptimizationProblem.import_hdf(str(SSBJ_HDF5_PATH))
-        post = factory.execute(
-            problem,
-            "VariableInfluence",
-            file_path="ssbj",
-            log_scale=True,
-            absolute_value=False,
-            quantile=0.98,
-            save=True,
-            figsize_y=12,
-            save_var_files=True,
-        )
-        assert len(post.output_files) == 14
-        for outf in post.output_files:
-            assert Path(outf).exists()
+    problem = OptimizationProblem.import_hdf(str(SSBJ_HDF5_PATH))
+    post = factory.execute(
+        problem,
+        "VariableInfluence",
+        file_path="ssbj",
+        log_scale=True,
+        absolute_value=False,
+        quantile=0.98,
+        save=True,
+        save_var_files=True,
+    )
+    assert len(post.output_files) == 14
+    for outf in post.output_files:
+        assert Path(outf).exists()

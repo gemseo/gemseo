@@ -34,7 +34,10 @@ from numpy import ndarray
 from gemseo.algos.opt.core.pseven_problem_adapter import CostType, PSevenProblem
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
 from gemseo.utils.base_enum import CamelCaseEnum
 
 
@@ -568,13 +571,17 @@ class PSevenOpt(OptimizationLibrary):
 
         if internal_algo_name in self.__LOCAL_METHODS:
             techniques_list.append(internal_algo_name)
-        if options.get("globalization_method") is not None:
-            techniques_list.append(options.pop("globalization_method"))
-        if options.get("surrogate_based") is not None and options["surrogate_based"]:
-            techniques_list.append(self.__SBO)
-            options.pop("surrogate_based")
 
-        options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
+        globalization_method = options.pop("globalization_method", None)
+        if globalization_method is not None:
+            techniques_list.append(globalization_method)
+
+        surrogate_based = options.pop("surrogate_based", None)
+        if surrogate_based is not None and surrogate_based:
+            techniques_list.append(self.__SBO)
+
+        if techniques_list:
+            options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
 
     def _run(
         self, **options  # type: Any
@@ -629,18 +636,27 @@ class PSevenOpt(OptimizationLibrary):
                         )
                     )
 
-        # Grab the initial sample from the options
-        sample = {
-            "sample_x": options.pop("sample_x", []),
-            "sample_f": options.pop("sample_f", []),
-            "sample_c": options.pop("sample_c", []),
-        }
-
         # Create the pSeven problem
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
         initial_x, lower_bnd, upper_bnd = self.get_x0_and_bounds_vects(normalize_ds)
         evaluation_cost_type = options.pop("evaluation_cost_type", None)
         expensive_evaluations = options.pop("expensive_evaluations", None)
+
+        # Grab the initial sample from the options
+        sample = dict()
+        sample_x = options.pop("sample_x", None)
+        if sample_x is not None:
+            if normalize_ds:
+                sample["sample_x"] = [
+                    problem.design_space.normalize_vect(point) for point in sample_x
+                ]
+            else:
+                sample["sample_x"] = sample_x
+
+        for option in ["sample_f", "sample_c"]:
+            sample_option = options.pop(option, None)
+            if sample_option is not None:
+                sample[option] = sample_option
 
         pseven_problem = PSevenProblem(
             problem,

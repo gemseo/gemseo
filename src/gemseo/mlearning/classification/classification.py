@@ -34,7 +34,7 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import division, unicode_literals
 
-from typing import Dict, Iterable, List, Optional, Sequence, Union
+from typing import Dict, Iterable, Optional, Sequence, Union
 
 from numpy import ndarray, unique, zeros
 
@@ -78,13 +78,13 @@ class MLClassificationAlgo(MLSupervisedAlgo):
         )
         self.n_classes = None
 
-    def learn(
+    def _learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        indices,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> None
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
         self.n_classes = unique(output_data).shape[0]
-        super(MLClassificationAlgo, self).learn(samples)
+        super(MLClassificationAlgo, self)._learn(indices)
 
     @MLSupervisedAlgo.DataFormatters.format_input_output
     def predict_proba(

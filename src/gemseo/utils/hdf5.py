@@ -24,7 +24,7 @@ import h5py
 def get_hdf5_group(
     h5py_data,  # type: Union[h5py.File, h5py.Group]
     name,  # type: str
-):  # type: (...) -> None
+):  # type: (...) -> h5py.Group
     """Return a group from a h5py data handle.
 
     This function shall be used to show a better error message to the end user.

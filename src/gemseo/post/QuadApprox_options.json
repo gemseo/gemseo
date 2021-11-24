@@ -2,18 +2,6 @@
     "name": "QuadApprox_options",
     "required": ["function"],
     "properties": {
-        "save": {
-            "type": "boolean"
-        },
-        "show": {
-            "type": "boolean"
-        },
-        "file_path": {
-            "type": "string"
-        },
-        "extension": {
-            "type": "string"
-        },
         "function":{
             "type": "string"
         },

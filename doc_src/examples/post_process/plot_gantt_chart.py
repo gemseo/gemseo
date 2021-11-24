@@ -20,8 +20,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Basic history
-=============
+Gantt Chart
+===========
 
 In this example, we illustrate the use of the Gantt chart plot
 on the Sobieski's SSBJ problem.
@@ -34,6 +34,8 @@ on the Sobieski's SSBJ problem.
 # The first step is to import some functions from the API
 # and a method to get the design space.
 from __future__ import division, unicode_literals
+
+from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.core.discipline import MDODiscipline
@@ -95,7 +97,9 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we plot the Gantt chart.
-create_gantt_chart(show=True, save=False)
+create_gantt_chart(show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()
 
 # Finally, we deactivate the time stamps for other executions
 MDODiscipline.deactivate_time_stamps()

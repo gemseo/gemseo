@@ -73,7 +73,6 @@ from typing import (
     Callable,
     Dict,
     Iterable,
-    List,
     Mapping,
     NoReturn,
     Optional,
@@ -167,7 +166,7 @@ class MLSupervisedAlgo(MLAlgo):
         def format_dict(
             cls,
             predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...)-> Callable[[DataType],DataType]
+        ):  # type: (...) -> Callable[[DataType],DataType]
             """Make an array-based function be called with a dictionary of NumPy arrays.
 
             Args:
@@ -229,7 +228,7 @@ class MLSupervisedAlgo(MLAlgo):
         def format_samples(
             cls,
             predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...)-> Callable[[ndarray],ndarray]
+        ):  # type: (...) -> Callable[[ndarray],ndarray]
             """Make a 2D NumPy array-based function work with 1D NumPy array.
 
             Args:
@@ -286,15 +285,13 @@ class MLSupervisedAlgo(MLAlgo):
         def format_transform(
             cls,
             transform_inputs=True,  # type: bool
-            transform_outputs=True,  # type:bool
-        ):  # type: (...)-> Callable[[ndarray],ndarray]
+            transform_outputs=True,  # type: bool
+        ):  # type: (...) -> Callable[[ndarray],ndarray]
             """Force a function to transform its input and/or output variables.
 
             Args:
-                transform_inputs: If True,
-                    apply the transformers to the input variables.
-                transform_outputs: If True,
-                    apply the transformers to the output variables.
+                transform_inputs: Whether to transform the input variables.
+                transform_outputs: Whether to transform the output variables.
 
             Returns:
                 A function evaluating a function of interest,
@@ -304,7 +301,7 @@ class MLSupervisedAlgo(MLAlgo):
 
             def format_transform_(
                 predict,  # type: Callable[[ndarray],ndarray]
-            ):  # type: (...)-> Callable[[ndarray],ndarray]
+            ):  # type: (...) -> Callable[[ndarray],ndarray]
                 """Apply transformation to inputs and inverse transformation to outputs.
 
                 Args:
@@ -361,7 +358,7 @@ class MLSupervisedAlgo(MLAlgo):
         def format_input_output(
             cls,
             predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...)-> Callable[[DataType],DataType]
+        ):  # type: (...) -> Callable[[DataType],DataType]
             """Make a function robust to type, array shape and data transformation.
 
             Args:
@@ -381,9 +378,9 @@ class MLSupervisedAlgo(MLAlgo):
 
             return wrapper
 
-    def learn(
+    def _learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        indices,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> None
         """
         Raises:
@@ -395,9 +392,9 @@ class MLSupervisedAlgo(MLAlgo):
         input_data = self.learning_set.get_data_by_names(self.input_names, False)
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
 
-        if samples is not None:
-            input_data = input_data[samples]
-            output_data = output_data[samples]
+        if indices is not None:
+            input_data = input_data[indices]
+            output_data = output_data[indices]
 
         self.input_space_center = DataConversion.array_to_dict(
             input_data.mean(0), self.input_names, self.learning_set.sizes
@@ -423,7 +420,6 @@ class MLSupervisedAlgo(MLAlgo):
                 output_data = transformer.fit_transform(output_data)
 
         self._fit(input_data, output_data)
-        self._trained = True
 
     def _fit(
         self,

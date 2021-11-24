@@ -33,6 +33,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -40,6 +41,7 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.problems.sobieski.wrappers_sg import SobieskiStructureSG
 
 
 def check_jac_equals(
@@ -111,8 +113,8 @@ def test_get_sub_disciplines():
 def test_instantiate_grammars():
     """Test the instantiation of the grammars."""
     chain = MDOChain([SobieskiAerodynamics()])
-    with pytest.raises(ValueError):
-        chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="None")
+    chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSONGrammar")
+    assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 
 
 def test_execute_status_error(sobieski_chain):
@@ -138,14 +140,26 @@ def test_check_input_data_exception_chain(sobieski_chain):
         chain.check_input_data(indata)
 
 
-def test_check_input_data_exception():
+@pytest.mark.parametrize(
+    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+)
+def test_check_input_data_exception(grammar_type):
     """Test the check input data exception."""
-    struct = SobieskiStructure()
+    if grammar_type == MDODiscipline.SIMPLE_GRAMMAR_TYPE:
+        struct = SobieskiStructureSG()
+    else:
+        struct = SobieskiStructure()
     struct_inputs = struct.input_grammar.get_data_names()
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
-    with pytest.raises(InvalidDataException):
+    with pytest.raises(InvalidDataException, match="Missing mandatory elements: x_1"):
         struct.check_input_data(indata)
+
+    struct.execute(indata)
+
+    del struct.default_inputs["x_1"]
+    with pytest.raises(InvalidDataException, match="Invalid input data in"):
+        struct.execute(indata)
 
 
 def test_outputs():

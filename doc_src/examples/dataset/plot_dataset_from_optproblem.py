@@ -67,6 +67,12 @@ print(dataset)
 # or by using an input-output naming rather than an optimization naming:
 dataset = opt_problem.export_to_dataset("sellar1_doe", opt_naming=False)
 print(dataset)
+##############################################################################
+# .. note::
+#     Only design variables and functions (objective function, constraints) are
+#     stored in the database. If you want to store state variables, you must add
+#     them as observables before the problem is executed. Use the
+#     :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
 
 ##############################################################################
 # Access properties

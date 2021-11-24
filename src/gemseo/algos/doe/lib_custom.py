@@ -84,33 +84,30 @@ class CustomDOE(DOELibrary):
         eval_jac=False,  # type: bool
         n_processes=1,  # type: int
         wait_time_between_samples=0.0,  # type: float
-        **kwargs
+        **kwargs  # type: OptionType
     ):  # type: (...) -> Dict[str,OptionType]
-        """Sets the options.
+        """Set the options.
 
-        :param doe_file: Either the file, the filename, or the generator to read.
-        :type doe_file: str
-        :param samples: The samples.
-        :type samples: array
-        :param delimiter: The string used to separate values.
-            If None, use whitespace.
-        :type delimiter: str
-        :param comments:  The characters or list of characters
-            used to indicate the start of a comment.
-            None implies no comments.
-        :type comments: str
-        :param skiprows: skip the first `skiprows` lines
-        :type skiprows: int
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            doe_file: Either a file path or the generator to read.
+                If None, the samples are used and must be provided.
+            samples: The samples. If None, the `doe_file` is used and must be
+                provided.
+            delimiter: The character used to separate values.
+                If None, use whitespace.
+            comments:  The characters or list of characters
+                used to indicate the start of a comment.
+                None implies no comments.
+            skiprows: The number of first lines to skip.
+            eval_jac: Whether to evaluate the jacobian.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            max_time: The maximum runtime in seconds,
+                disabled if 0.
+            **kwargs: The additional arguments.
+
+        Returns:
+            The processed options.
         """
         wtbs = wait_time_between_samples
         return self._process_options(
@@ -137,7 +134,7 @@ class CustomDOE(DOELibrary):
 
         Args:
             doe_file: Either the file, the filename, or the generator to read.
-            delimiter: The string used to separate values.
+            delimiter: The character used to separate values.
                 If None, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
@@ -171,12 +168,18 @@ class CustomDOE(DOELibrary):
         self, **options  # type: OptionType
     ):  # type: (...) -> ndarray
         """
+        Returns:
+            The samples.
+
         Raises:
-            ValueError: If the dimension is different from the problem one.
+            ValueError: If no `doe_file` and no `samples` are given.
+                If both `doe_file` and `samples` are given.
+                If the dimension of `samples` is different from the
+                one of the problem.
         """
         error_message = (
             "The algorithm CustomDOE requires "
-            "either 'doe_file' or 'samples' as option"
+            "either 'doe_file' or 'samples' as option."
         )
         samples = options.get(self.SAMPLES)
         if samples is None:
@@ -196,7 +199,7 @@ class CustomDOE(DOELibrary):
         if samples.shape[1] != self.problem.dimension:
             raise ValueError(
                 "Dimension mismatch between the problem ({}) and "
-                " the samples ({})".format(self.problem.dimension, samples.shape[1])
+                " the samples ({}).".format(self.problem.dimension, samples.shape[1])
             )
 
         samples = apply_along_axis(

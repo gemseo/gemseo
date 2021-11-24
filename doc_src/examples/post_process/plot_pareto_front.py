@@ -41,11 +41,20 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.pareto_front.ParetoFront` post-processing generates
+# a plot or a matrix of plots (if there are more than
+# 2 objectives). It indicates in red the locally nondominated points for the
+# current objectives, and in green the globally (all objectives) Pareto optimal
+# points.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -85,11 +94,18 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 ###############################################################################
 # Post-process scenario
 # ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.ParetoFront`
-# plot which generates a plot or a matrix of plots if there are more than
-# 2 objectives, plots in red the locally non dominated points for the current
-# two objectives, plots in green the globally (all objectives) Pareto optimal
-# points.
+# Lastly, we post-process the scenario by means of the :class:`.ParetoFront`.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process("ParetoFront", objectives=["g_3", "-y_4"], save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

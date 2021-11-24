@@ -2,14 +2,6 @@
     "name": "GradientSensitivity_options",
     "required": [],
     "properties": {
-        "figsize_x": {
-            "type": "number",
-            "minimum":4
-        },
-        "figsize_y": {
-            "type": "number",
-            "minimum":4
-        },
         "iteration":{
             "type": "integer",
             "minimum":0

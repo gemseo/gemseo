@@ -24,7 +24,7 @@
 Create a surrogate discipline
 =============================
 
-We want to build a :class:`.MDODiscipline`
+We want to build an :class:`.MDODiscipline`
 based on a regression model approximating the following discipline
 with two inputs and two outputs:
 

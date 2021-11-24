@@ -122,9 +122,9 @@ def create_disciplines_from_sizes(
     outputs_size=1,  # type: int
     grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
 ):  # type: (...) -> List[LinearDiscipline]
-    """Generate :class:`.LinearDiscipline`s according to a specification.
+    """Generate a :class:`.LinearDiscipline` according to a specification.
 
-    The names of the disciplines are generated from capital letters words.
+    The names of the disciplines will be automatic combinations of capital letters.
     The names of the inputs and outputs are generated from string representations of
     integers.
 
@@ -143,7 +143,7 @@ def create_disciplines_from_sizes(
         grammar_type: The type of grammars used by the discipline.
 
     Returns:
-        The :class:`.LinearDiscipline`s.
+        The :class:`.LinearDiscipline`.
 
     Raises:
         ValueError: If the number of disciplines is inconsistent with the
@@ -191,7 +191,7 @@ def create_disciplines_from_desc(
     outputs_size=1,  # type: int
     grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
 ):  # type: (...) -> List[LinearDiscipline]
-    """Generate :class:`.LinearDiscipline`s according to a specification.
+    """Generate :class:`.LinearDiscipline` classes according to a specification.
 
     The specification is as follows:
 
@@ -218,7 +218,7 @@ def create_disciplines_from_desc(
         grammar_type: The type of grammars used by the disciplines.
 
     Returns:
-        The :class:`.LinearDiscipline`s.
+        The :class:`.LinearDiscipline`.
     """
     return [
         LinearDiscipline(

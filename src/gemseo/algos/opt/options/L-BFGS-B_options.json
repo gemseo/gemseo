@@ -12,6 +12,9 @@
         "maxcor":{
             "type": "integer"
         },
+        "max_ls_step_nb":{
+            "type": "integer"
+        },
 		"xtol_rel": {
             "type": "number",
             "minimum": 0.0

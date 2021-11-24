@@ -23,7 +23,9 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union
+
+from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.factory import Factory
@@ -90,7 +92,7 @@ class PostFactory(object):
         file_name=None,  # type: Optional[str]
         file_extension=None,  # type: Optional[str]
         **options  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> OptPostProcessor
+    ):  # type: (...) -> Dict[str,Figure]
         """Post-process an optimization problem.
 
         Args:

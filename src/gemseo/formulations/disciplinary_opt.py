@@ -44,16 +44,18 @@ class DisciplinaryOpt(MDOFormulation):
         objective_name,  # type: str
         design_space,  # type: DesignSpace
         maximize_objective=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
     ):  # type: (...) -> None
-        self.chain = None
-        if len(disciplines) > 1:
-            self.chain = MDOChain(disciplines)
         super(DisciplinaryOpt, self).__init__(
             disciplines,
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
+            grammar_type=grammar_type,
         )
+        self.chain = None
+        if len(disciplines) > 1:
+            self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         self._filter_design_space()
         self._set_defaultinputs_from_ds()
         # Build the objective from its objective name

@@ -54,7 +54,7 @@ A key advantage of this approach is that the :term:`DOE` is based on a formalize
 
 Besides, from the implementation point of view, **all existing methods developed for optimization can be used for trade-off without any change**.
 
-Finally, this smoothes the transition between a :term:`DOE` study and a MDO study, and makes the :term:`DOE`
+Finally, this smoothes the transition between a :term:`DOE` study and an MDO study, and makes the :term:`DOE`
 an ideal preparatory step for MDO.
 
 Trade-offs based on a :ref:`MDF formulation <mdo_formulations>`

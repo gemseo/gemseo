@@ -30,8 +30,8 @@
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+# documentation root, use Path.resolve() to make it absolute, like shown here.
+# sys.path.insert(0, str(Path('.').resolve()))
 
 # -- General configuration ------------------------------------------------
 
@@ -42,13 +42,19 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
+import collections
 import datetime
 import os
+import re
 import sys
+from dataclasses import asdict
 from pathlib import Path
+from typing import Iterable, List, Mapping, Tuple, Union
 
+import requests
 import six
-from sphinx.ext.napoleon.docstring import GoogleDocstring
+import sphinx.ext.autodoc.typehints
+from sphinx.util import inspect, typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 import gemseo
@@ -57,21 +63,25 @@ import gemseo
 try:
     from optimize.snopt7 import SNOPT_solver  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/snopt"))
+    sys.path.append(str(Path("fake_packages/snopt").resolve()))
 
 try:
     import matlab  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/matlab"))
+    sys.path.append(str(Path("fake_packages/matlab").resolve()))
 
 try:
     import da  # noqa: F401
 except ImportError:
-    sys.path.append(os.path.abspath("fake_packages/pseven"))
+    sys.path.append(str(Path("fake_packages/pseven").resolve()))
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir((Path(__file__).resolve()).parent)
 
-sys.path.append(os.path.abspath("_ext"))
+sys.path.append(str(Path("_ext").resolve()))
+sys.path.append(str(Path("templates").resolve()))
+
+from gemseo_templator.blocks import features  # noqa E402
+from gemseo_templator.blocks import main_concepts  # noqa E402
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -91,16 +101,35 @@ extensions = [
     "autodocsumm",
     "add_toctree_functions",
     "gemseo_pre_processor",
+    "default_kwargs_values",
 ]
+
+################################################################################
+# Settings for autodoc.
 
 autodoc_default_options = {
     "inherited-members": True,
     "autosummary": True,
 }
 
+# Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
+
+# Both the class’ and the __init__ method’s docstring are concatenated and inserted.
 autoclass_content = "both"
-napoleon_use_ivar = True
+
+# Show arguments default values.
+autodoc_kwargs_defaults = True
+
+################################################################################
+# Settings for napoleon.
+
+# True to include special members (like __membername__) with docstrings in the documentation.
+# False to fall back to Sphinx’s default behavior.
+napoleon_include_special_with_doc = False
+
+################################################################################
+# Settings for apidoc.
 
 apidoc_module_dir = "../../src/gemseo"
 apidoc_excluded_paths = [
@@ -114,28 +143,20 @@ apidoc_output_dir = "_modules"
 apidoc_separate_modules = True
 apidoc_module_first = True
 
-examples_dir = "examples"
-examples_path = os.path.join("..", examples_dir)
+################################################################################
+# Settings for sphinx_gallery.
+
+examples_dir = Path("examples")
+examples_path = Path(".." / examples_dir)
 examples_subdirs = [
     subdir
-    for subdir in os.listdir(examples_path)
-    if os.path.isdir(os.path.join(examples_path, subdir))
-    and os.path.isfile(os.path.join(examples_path, subdir, "README.rst"))
+    for subdir in examples_path.iterdir()
+    if (examples_path / subdir).is_dir()
+    and (examples_path / subdir / "README.rst").is_file()
 ]
-tutorials_dir = "tutorials"
-tutorials_path = os.path.join("..", tutorials_dir)
-tutorials_subdirs = [
-    subdir
-    for subdir in os.listdir(tutorials_path)
-    if os.path.isdir(os.path.join(tutorials_path, subdir))
-    and os.path.isfile(os.path.join(tutorials_path, subdir, "README.rst"))
-]
-tmp1 = [os.path.join(examples_path, subdir) for subdir in examples_subdirs]
-tmp2 = [os.path.join(tutorials_path, subdir) for subdir in tutorials_subdirs]
-examples_dirs = tmp1 + tmp2
-tmp1 = [os.path.join(examples_dir, subdir) for subdir in examples_subdirs]
-tmp2 = [os.path.join(tutorials_dir + "_sg", subdir) for subdir in tutorials_subdirs]
-gallery_dirs = tmp1 + tmp2
+
+examples_dirs = [(examples_path / subdir) for subdir in examples_subdirs]
+gallery_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
 
 sphinx_gallery_conf = {
     # path to your example scripts
@@ -148,8 +169,8 @@ sphinx_gallery_conf = {
     "only_warn_on_example_error": True,
 }
 
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = False
+################################################################################
+# Settings for sphinx.
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["templates"]
@@ -186,9 +207,8 @@ copyright = "{}, IRT Saint Exupéry".format(datetime.datetime.now().year)
 #
 # The short X.Y version.
 version = gemseo.__version__
-version = "3.1.0"
+version = "3.2.0"
 # The full version, including alpha/beta/rc tags.
-
 release = version
 
 # The language for content autogenerated by Sphinx. Refer to documentation
@@ -449,38 +469,81 @@ rst_prolog = """
 .. |g| replace:: GEMSEO
 """
 
-# -- Extensions to the  Napoleon GoogleDocstring class ---------------------
+################################################################################
+# Settings for readthedocs.
+
+# Setup the multiversion display
+html_context = dict()
 
 
-# first, we define new methods for any new sections and add them to the class
-def parse_keys_section(self, section):
-    return self._format_fields("Keys", self._consume_fields())
+def __filter_versions(
+    rtd_versions,  # type: Iterable[Mapping[str,Union[str,Mapping[str,str]]]]
+):  # type: (...) -> List[Tuple[str,str]]
+    """Select the active versions with a version number.
+
+    A version number follows the semantic versioning: MAJOR.MINOR.PATCH.
+
+    Args:
+        rtd_versions: The versions returned by the ReadTheDocs API.
+
+    Returns:
+        The active versions with a version number,
+        of the form ``(version_name, version_url)``.
+    """
+    return [
+        (rtd_version["slug"], rtd_version["urls"]["documentation"])
+        for rtd_version in rtd_versions
+        if rtd_version["active"] and re.match(r"\d+\.\d+\.\d+", rtd_version["slug"])
+    ]
 
 
-GoogleDocstring._parse_keys_section = parse_keys_section
+if os.environ.get("READTHEDOCS") == "True":
+    versions = requests.get(
+        "https://readthedocs.org/api/v3/projects/gemseo/versions/",
+        headers={"Authorization": "token 53f714afc37ec42e882efa094e6e3827202f801d"},
+    ).json()["results"]
+    html_context["versions"] = __filter_versions(versions)
 
 
-def parse_attributes_section(self, section):
-    return self._format_fields("Attributes", self._consume_fields())
+################################################################################
+# Sphinx workaround for duplicated args when using typehints
+# TODO: remove when it is fixed upstream, see
+# https://github.com/sphinx-doc/sphinx/pull/9648
+
+__ANNOTATION_KIND_TO_PARAM_PREFIX = {
+    inspect.Parameter.VAR_POSITIONAL: "*",
+    inspect.Parameter.VAR_KEYWORD: "**",
+}
 
 
-GoogleDocstring._parse_attributes_section = parse_attributes_section
+def record_typehints(
+    app,
+    objtype,
+    name,
+    obj,
+    options,
+    args,
+    retann,
+):
+    """Record type hints to env object."""
+    try:
+        if callable(obj):
+            annotations = app.env.temp_data.setdefault("annotations", {})
+            annotation = annotations.setdefault(name, collections.OrderedDict())
+            sig = inspect.signature(obj, type_aliases=app.config.autodoc_type_aliases)
+            for param in sig.parameters.values():
+                if param.annotation is not param.empty:
+                    prefix = __ANNOTATION_KIND_TO_PARAM_PREFIX.get(param.kind, "")
+                    name = f"{prefix}{param.name}"
+                    annotation[name] = typing.stringify(param.annotation)
+            if sig.return_annotation is not sig.empty:
+                annotation["return"] = typing.stringify(sig.return_annotation)
+    except (TypeError, ValueError):
+        pass
 
 
-def parse_class_attributes_section(self, section):
-    return self._format_fields("Class Attributes", self._consume_fields())
+sphinx.ext.autodoc.typehints.record_typehints = record_typehints
 
 
-GoogleDocstring._parse_class_attributes_section = parse_class_attributes_section
-
-
-def patched_parse(self):
-    # we now patch the parse method to guarantee that the the above methods are
-    # assigned to the _section dict
-    self._sections["keys"] = self._parse_keys_section
-    self._sections["class attributes"] = self._parse_class_attributes_section
-    self._unpatched_parse()
-
-
-GoogleDocstring._unpatched_parse = GoogleDocstring._parse
-GoogleDocstring._parse = patched_parse
+html_context["features"] = [asdict(feature) for feature in features]
+html_context["main_concepts"] = [asdict(main_concept) for main_concept in main_concepts]

@@ -69,13 +69,22 @@ import numpy
 from numpy import abs as np_abs
 from numpy import all as np_all
 from numpy import any as np_any
-from numpy import argmin, array, array_equal, concatenate, inf, insert
-from numpy import isnan as np_isnan
-from numpy import issubdtype, multiply, nan, ndarray
+from numpy import (
+    argmin,
+    array,
+    array_equal,
+    concatenate,
+    inf,
+    insert,
+    issubdtype,
+    multiply,
+    nan,
+    ndarray,
+)
 from numpy import number as np_number
 from numpy import where
+from numpy.core import atleast_1d
 from numpy.linalg import norm
-from six import string_types
 
 from gemseo.algos.aggregation.aggregation_func import (
     aggregate_iks,
@@ -86,13 +95,18 @@ from gemseo.algos.aggregation.aggregation_func import (
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
 from gemseo.core.dataset import Dataset
-from gemseo.core.function import MDOFunction, MDOLinearFunction, MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import (
+    MDOFunction,
+    MDOLinearFunction,
+    MDOQuadraticFunction,
+)
+from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
+from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.utils.data_conversion import DataConversion
 from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import PY3, string_array
+from gemseo.utils.py23_compat import PY3, string_array, string_types
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -150,7 +164,6 @@ class OptimizationProblem(object):
             to be called at each new iterate.
         minimize_objective (bool): If True, maximize the objective.
         fd_step (float): The finite differences step.
-        differentiation_method (str): The type differentiation method.
         pb_type (str): The type of optimization problem.
         ineq_tolerance (float): The tolerance for the inequality constraints.
         eq_tolerance (float): The tolerance for the equality constraints.
@@ -169,6 +182,10 @@ class OptimizationProblem(object):
     USER_GRAD = "user"
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
+    __DIFFERENTIATION_CLASSES = {
+        COMPLEX_STEP: ComplexStep,
+        FINITE_DIFFERENCES: FirstOrderFD,
+    }
     NO_DERIVATIVES = "no_derivatives"
     DIFFERENTIATION_METHODS = [
         USER_GRAD,
@@ -205,6 +222,8 @@ class OptimizationProblem(object):
         input_database=None,  # type: Optional[Union[str,Database]]
         differentiation_method=USER_GRAD,  # type: str
         fd_step=1e-7,  # type: float
+        parallel_differentiation=False,  # type: bool
+        **parallel_differentiation_options  # type: Union[int,bool]
     ):  # type: (...) -> None
         # noqa: D205, D212, D415
         """
@@ -217,6 +236,9 @@ class OptimizationProblem(object):
             differentiation_method: The default differentiation method to be applied
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
+            parallel_differentiation: Whether to approximate the derivatives in parallel.
+            **parallel_differentiation_options: The options
+                to approximate the derivatives in parallel.
         """
         self._objective = None
         self.nonproc_objective = None
@@ -228,10 +250,13 @@ class OptimizationProblem(object):
         self.nonproc_new_iter_observables = []
         self.minimize_objective = True
         self.fd_step = fd_step
+        self.__differentiation_method = None
         self.differentiation_method = differentiation_method
         self.pb_type = pb_type
         self.ineq_tolerance = 1e-4
         self.eq_tolerance = 1e-2
+        self.max_iter = None
+        self.current_iter = 0
         self.__functions_are_preprocessed = False
         if isinstance(input_database, Database):
             self.database = input_database
@@ -241,9 +266,73 @@ class OptimizationProblem(object):
         self.design_space = design_space
         self.__x0 = None
         self.stop_if_nan = True
-        self.__store_listeners = []
-        self.__newiter_listeners = []
         self.preprocess_options = {}
+        self.__parallel_differentiation = parallel_differentiation
+        self.__parallel_differentiation_options = parallel_differentiation_options
+
+    def __raise_exception_if_functions_are_already_preprocessed(self):
+        """Raise an exception if the function have already been pre-processed."""
+        if self.__functions_are_preprocessed:
+            raise RuntimeError(
+                "The parallel differentiation cannot be changed "
+                "because the functions have already been pre-processed."
+            )
+
+    def is_max_iter_reached(self):  # type: (...) -> bool
+        """Check if the maximum amount of iterations has been reached.
+
+        Returns:
+            Whether the maximum amount of iterations has been reached.
+        """
+        if self.max_iter is None or self.current_iter is None:
+            return False
+        return self.current_iter >= self.max_iter
+
+    @property
+    def parallel_differentiation(self):  # type: (...) -> bool
+        """Whether to approximate the derivatives in parallel."""
+        return self.__parallel_differentiation
+
+    @parallel_differentiation.setter
+    def parallel_differentiation(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self.__raise_exception_if_functions_are_already_preprocessed()
+        self.__parallel_differentiation = value
+
+    @property
+    def parallel_differentiation_options(self):  # type: (...) -> bool
+        """The options to approximate the derivatives in parallel."""
+        return self.__parallel_differentiation_options
+
+    @parallel_differentiation_options.setter
+    def parallel_differentiation_options(
+        self,
+        value,  # type: bool
+    ):  # type: (...) -> None
+        self.__raise_exception_if_functions_are_already_preprocessed()
+        self.__parallel_differentiation_options = value
+
+    @property
+    def differentiation_method(self):  # type: (...) -> str
+        """The differentiation method."""
+        return self.__differentiation_method
+
+    @differentiation_method.setter
+    def differentiation_method(
+        self,
+        value,  # type: str
+    ):  # type: (...) -> None
+        if not isinstance(value, string_types):
+            value = value[0].decode()
+        if value not in self.DIFFERENTIATION_METHODS:
+            raise ValueError(
+                "'{}' is not a differentiation methods; available ones are: '{}'.".format(
+                    value, "', '".join(self.DIFFERENTIATION_METHODS)
+                )
+            )
+        self.__differentiation_method = value
 
     @property
     def objective(self):  # type: (...) -> MDOFunction
@@ -324,24 +413,35 @@ class OptimizationProblem(object):
             cstr_type: The type of the constraint.
                 Either equality or inequality.
             positive: If True, then the inequality constraint is positive.
+
+        Raises:
+            TypeError: When the constraint of a linear optimization problem
+                is not an :class:`MDOLinearFunction`.
+            ValueError: When the type of the constraint is missing.
         """
         self.check_format(cstr_func)
         if self.pb_type == OptimizationProblem.LINEAR_PB and not isinstance(
             cstr_func, MDOLinearFunction
         ):
-            raise TypeError("Constraint must be an MDOLinearFunction")
+            raise TypeError(
+                "The constraint of a linear optimization problem "
+                "must be an MDOLinearFunction."
+            )
         ctype = cstr_type or cstr_func.f_type
         cstr_repr = self.repr_constraint(cstr_func, ctype, value, positive)
         if value is not None:
             cstr_func = cstr_func.offset(-value)
         if positive:
-            cstr_func = -cstr_func  # Operator overloading in MDOFunction
+            cstr_func = -cstr_func
+
         if cstr_type is not None:
             cstr_func.f_type = cstr_type
         else:
             if not cstr_func.is_constraint():
-                msg = "Constraint type must be provided, either in the "
-                msg += "function attributes or to the add_constraint method"
+                msg = (
+                    "Constraint type must be provided, "
+                    "either in the function attributes or to the add_constraint method."
+                )
                 raise ValueError(msg)
         cstr_func.special_repr = cstr_repr
         self.constraints.append(cstr_func)
@@ -584,27 +684,6 @@ class OptimizationProblem(object):
         """
         return len(self.constraints) > 0
 
-    def __notify_store_listeners(self):  # type: (...) -> None
-        """Notify the listeners that a new store has been made in the database."""
-        for func in self.__store_listeners:
-            func()
-
-    def __notify_newiter_listeners(
-        self,
-        xvect=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> None
-        """Notify the listeners that a new iteration is ongoing.
-
-        Args:
-            xvect: The values of the design variables.
-        """
-        for func in self.__newiter_listeners:
-            func()
-
-        if xvect is not None:
-            for obs in self.new_iter_observables:
-                obs(xvect)
-
     def has_constraints(self):
         """Check if the problem has equality or inequality constraints.
 
@@ -744,171 +823,6 @@ class OptimizationProblem(object):
 
         return act_funcs
 
-    def __wrap_in_database(
-        self,
-        orig_func,  # type: MDOFunction
-        normalized=True,  # type: bool
-        is_observable=False,  # type: bool
-    ):  # type: (...) -> MDOFunction
-        """Wrap a function, test its presence in the database and store its evaluation.
-
-        Args:
-            orig_func: The function to be wrapped in the database.
-            normalized: If True, the input of the function are assumed normalized.
-            is_observable: If True, new_iter_listeners are not called
-                when function is called (avoid recursive call)
-
-        Returns:
-            The wrapped function.
-        """
-        fname = orig_func.name
-        normalize_vect = self.design_space.normalize_vect
-        unnormalize_vect = self.design_space.unnormalize_vect
-
-        def unnormalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Unnormalize the gradient value.
-
-            Args:
-                x_vect: The normalized value of the gradient.
-
-            Returns:
-                The unnormalized value of the gradient.
-            """
-            return normalize_vect(x_vect, minus_lb=False)
-
-        def normalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Normalize the gradient value.
-
-            Args:
-                x_vect: The unnormalized value of the gradient.
-
-            Returns:
-                The normalized value of the gradient.
-            """
-            return unnormalize_vect(x_vect, minus_lb=False, no_check=True)
-
-        def wrapped_function(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Wrapped provided function in order to give to optimizer.
-
-            Args:
-                x_vect: The value of the design variables.
-
-            Returns:
-                The evaluation of the function for this value of design variables.
-            """
-            if np_any(np_isnan(x_vect)):
-                raise DesvarIsNan(
-                    "Design Variables contain a NaN value ! {}".format(x_vect)
-                )
-            if normalized:
-                xn_vect = x_vect
-                xu_vect = unnormalize_vect(xn_vect)
-            else:
-                xu_vect = x_vect
-                xn_vect = normalize_vect(xu_vect)
-            # try to retrieve the evaluation
-            value = None
-            if not self.database.get(xu_vect, False) and not is_observable:
-                if normalized:
-                    self.__notify_newiter_listeners(xn_vect)
-                else:
-                    self.__notify_newiter_listeners(xu_vect)
-            else:
-                value = self.database.get_f_of_x(fname, xu_vect)
-            if value is None:
-                # if not evaluated yet, evaluate
-                if normalized:
-                    value = orig_func(xn_vect)
-                else:
-                    value = orig_func(xu_vect)
-                if self.stop_if_nan and np_any(np_isnan(value)):
-                    raise FunctionIsNan(
-                        "Function {} is NaN for x={}".format(fname, xu_vect)
-                    )
-                values_dict = {fname: value}
-                # store (x, f(x)) in database
-                self.database.store(xu_vect, values_dict)
-                self.__notify_store_listeners()
-
-            return value
-
-        db_func = MDOFunction(
-            wrapped_function,
-            name=fname,
-            f_type=orig_func.f_type,
-            expr=orig_func.expr,
-            args=orig_func.args,
-            dim=orig_func.dim,
-            outvars=orig_func.outvars,
-        )
-
-        if orig_func.has_jac():
-
-            def dwrapped_function(
-                x_vect,  # type: ndarray
-            ):  # type: (...) -> ndarray
-                """Wrapped provided gradient in order to give to optimizer.
-
-                Args:
-                    x_vect: The value of the design variables.
-
-                Returns:
-                    The evaluation of the gradient for this value of design variables.
-                """
-                if np_any(np_isnan(x_vect)):
-                    raise FunctionIsNan(
-                        "Design Variables contain a NaN value! {}".format(x_vect)
-                    )
-                if normalized:
-                    xn_vect = x_vect
-                    xu_vect = unnormalize_vect(xn_vect)
-                else:
-                    xu_vect = x_vect
-                    xn_vect = normalize_vect(xu_vect)
-                # try to retrieve the evaluation
-                jac_u = None
-                if not self.database.get(xu_vect, False):
-                    self.__notify_newiter_listeners()
-                else:
-                    jac_u = self.database.get_f_of_x(
-                        Database.get_gradient_name(fname), xu_vect
-                    )
-
-                if jac_u is not None:
-                    jac_n = normalize_gradient(jac_u)
-                else:
-                    # if not evaluated yet, evaluate
-                    if normalized:
-                        jac_n = orig_func.jac(xn_vect).real
-                        jac_u = unnormalize_gradient(jac_n)
-                    else:
-                        jac_u = orig_func.jac(xu_vect).real
-                        jac_n = normalize_gradient(jac_u)
-                    if np_any(np_isnan(jac_n)) and self.stop_if_nan:
-                        raise FunctionIsNan(
-                            "Function {}'s Jacobian is NaN "
-                            "for x={}".format(fname, xu_vect)
-                        )
-                    values_dict = {Database.get_gradient_name(fname): jac_u}
-                    # store (x, j(x)) in database
-                    self.database.store(xu_vect, values_dict)
-                    self.__notify_store_listeners()
-                if normalized:
-                    jac = jac_n
-                else:
-                    jac = jac_u
-                return jac
-
-            db_func.jac = dwrapped_function
-
-        return db_func
-
     def add_callback(
         self,
         callback_func,  # type: Callable
@@ -924,46 +838,13 @@ class OptimizationProblem(object):
                 then callback at every call to :class:`.Database.store`.
         """
         if each_store:
-            self.add_store_listener(callback_func)
+            self.database.add_store_listener(callback_func)
         if each_new_iter:
-            self.add_new_iter_listener(callback_func)
-
-    def add_store_listener(
-        self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
-        """Add a listener to be called when an item is stored to the database.
-
-        Args:
-            listener_func: The function to be called.
-
-        Raises:
-            TypeError: If the argument is not a callable
-        """
-        if not callable(listener_func):
-            raise TypeError("Listener function is not callable")
-        self.__store_listeners.append(listener_func)
-
-    def add_new_iter_listener(
-        self,
-        listener_func,  # type: Callable
-    ):  # type: (...) -> None
-        """Add a listener to be called when a new iteration is stored to the database.
-
-        Args:
-            listener_func: The function to be called.
-
-        Raises:
-            TypeError: If the argument is not a callable
-        """
-        if not callable(listener_func):
-            raise TypeError("Listener function is not callable")
-        self.__newiter_listeners.append(listener_func)
+            self.database.add_new_iter_listener(callback_func)
 
     def clear_listeners(self):  # type: (...) -> None
         """Clear all the listeners."""
-        self.__store_listeners = []
-        self.__newiter_listeners = []
+        self.database.clear_listeners()
 
     def evaluate_functions(
         self,
@@ -1049,13 +930,14 @@ class OptimizationProblem(object):
         use_database=True,  # type: bool
         round_ints=True,  # type: bool
     ):  # type: (...) -> None
-        """Pre-process all the functions and eventually the gradien.
+        """Pre-process all the functions and eventually the gradient.
 
         Required to wrap the objective function and constraints with the database
         and eventually the gradients by complex step or finite differences.
 
         Args:
-            normalize: If True, then the functions are normalized.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
             use_database: If True, then the functions are wrapped in the database.
             round_ints: If True, then round the integer variables.
         """
@@ -1109,6 +991,7 @@ class OptimizationProblem(object):
                 )
                 p_obs.special_repr = obs.special_repr
                 self.new_iter_observables[iobs] = p_obs
+
             # Preprocess the objective
             self.nonproc_objective = self.objective
             self.objective = self.__preprocess_func(
@@ -1121,6 +1004,26 @@ class OptimizationProblem(object):
             self.objective.f_type = MDOFunction.TYPE_OBJ
             self.__functions_are_preprocessed = True
             self.check()
+
+            self.database.add_new_iter_listener(self.execute_observables_callback)
+
+    def execute_observables_callback(
+        self, last_x  # type: ndarray
+    ):  # type: (...)-> None
+        """The callback function to be passed to the database.
+
+        Call all the observables with the last design variables values as argument.
+
+        Args:
+            last_x: The design variables values from the last evaluation.
+        """
+        if not self.new_iter_observables:
+            return
+
+        if self.preprocess_options["normalize"]:
+            last_x = self.design_space.normalize_vect(last_x)
+        for func in self.new_iter_observables:
+            func(last_x)
 
     def __preprocess_func(
         self,
@@ -1137,7 +1040,8 @@ class OptimizationProblem(object):
 
         Args:
             function: The scaled and derived function to be pre-processed.
-            normalize: If True, then the function is normalized.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
             use_database: If True, then the function is wrapped in the database.
             round_ints: If True, then round the integer variables.
             is_observable: If True, new_iter_listeners are not called
@@ -1155,109 +1059,16 @@ class OptimizationProblem(object):
         if isinstance(function, MDOLinearFunction) and not round_ints and normalize:
             function = self.__normalize_linear_function(function)
         else:
-            function = self.__normalize_and_round(function, normalize, round_ints)
-        self.__add_fd_jac(function)
+            function = NormFunction(function, normalize, round_ints, self)
+
+        if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
+            self.__add_fd_jac(function, normalize)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         function.force_real = True
         if use_database:
-            function = self.__wrap_in_database(function, normalize, is_observable)
+            function = NormDBFunction(function, normalize, is_observable, self)
         return function
-
-    def __normalize_and_round(
-        self,
-        orig_func,  # type: MDOFunction
-        normalize,  # type: bool
-        round_ints,  # type: bool
-    ):  # type: (...) -> MDOFunction
-        """Create a function using a scaled input vector.
-
-        Args:
-            orig_func: The original function.
-            normalize: If True, then the function is normalized.
-            round_ints: If True, then round the integer variables.
-
-        Returns:
-            A normalized and differentiated function.
-        """
-        if (not normalize) and (not round_ints):
-            return orig_func
-
-        unnormalize_vect = self.design_space.unnormalize_vect
-
-        def normalize_gradient(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Normalize a gradient.
-
-            Args:
-                x_vect: The gradient to be normalized.
-
-            Returns:
-                The normalized gradient.
-            """
-            return unnormalize_vect(x_vect, minus_lb=False, no_check=True)
-
-        round_int_vars = self.design_space.round_vect
-
-        def f_wrapped(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Evaluate the original function.
-
-            Args:
-                x_vect: An input vector.
-
-            Returns:
-                The value of the function at this input vector.
-            """
-            if normalize:
-                x_vect = unnormalize_vect(x_vect)
-            if round_ints:
-                x_vect = round_int_vars(x_vect)
-            return orig_func(x_vect)
-
-        normed_func = MDOFunction(
-            f_wrapped,
-            name=orig_func.name,
-            f_type=orig_func.f_type,
-            expr=orig_func.expr,
-            args=orig_func.args,
-            dim=orig_func.dim,
-            outvars=orig_func.outvars,
-        )
-
-        def df_wrapped(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Evaluate the gradient of the original function.
-
-            Args:
-                x_vect: An input vector.
-
-            Returns:
-                The value of the gradient of the original function at this input vector.
-
-            Raises:
-                ValueError: If the original function does not provide a Jacobian matrix.
-            """
-            if not orig_func.has_jac():
-                raise ValueError(
-                    "Selected user gradient but function {} "
-                    "has no Jacobian matrix !".format(orig_func)
-                )
-            if normalize:
-                x_vect = unnormalize_vect(x_vect)
-            if round_ints:
-                x_vect = round_int_vars(x_vect)
-            g_u = orig_func.jac(x_vect)
-            if normalize:
-                return normalize_gradient(g_u)
-            return g_u
-
-        normed_func.jac = df_wrapped
-
-        return normed_func
 
     def __normalize_linear_function(
         self,
@@ -1303,6 +1114,7 @@ class OptimizationProblem(object):
     def __add_fd_jac(
         self,
         function,  # type: MDOFunction
+        normalize,  # type: bool
     ):  # type: (...) -> None
         """Add a pointer to the approached Jacobian of the function.
 
@@ -1310,14 +1122,24 @@ class OptimizationProblem(object):
 
         Args:
             function: The function to be derivated.
+            normalize: Whether to unnormalize the input vector of the function
+                before evaluate it.
         """
-        if self.differentiation_method == self.COMPLEX_STEP:
-            c_s = ComplexStep(function.evaluate, self.fd_step)
-            function.jac = c_s.f_gradient
+        differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
+            self.differentiation_method
+        )
+        if differentiation_class is None:
+            return
 
-        if self.differentiation_method == self.FINITE_DIFFERENCES:
-            f_d = FirstOrderFD(function, self.fd_step)
-            function.jac = f_d.f_gradient
+        differentiation_object = differentiation_class(
+            function.evaluate,
+            step=self.fd_step,
+            parallel=self.__parallel_differentiation,
+            design_space=self.design_space,
+            normalize=normalize,
+            **self.__parallel_differentiation_options
+        )
+        function.jac = differentiation_object.f_gradient
 
     def check(self):  # type: (...) -> None
         """Check if the optimization problem is ready for run.
@@ -1858,7 +1680,7 @@ class OptimizationProblem(object):
 
     def export_to_dataset(
         self,
-        name,  # type: str
+        name=None,  # type: Optional[str]
         by_group=True,  # type: bool
         categorize=True,  # type: bool
         opt_naming=True,  # type: bool
@@ -1876,6 +1698,7 @@ class OptimizationProblem(object):
 
         Args:
             name: A name to be given to the dataset.
+                If None, use the name of the :attr:`database`.
             by_group: If True, then store the data by group.
                 Otherwise, store them by variables.
             categorize: If True, then distinguish
@@ -1888,6 +1711,9 @@ class OptimizationProblem(object):
         Returns:
             A dataset built from the database of the optimization problem.
         """
+        if name is None:
+            name = self.database.name
+
         dataset = Dataset(name, by_group)
 
         # Set the different groups
@@ -2047,3 +1873,92 @@ class OptimizationProblem(object):
             converted[key] = value
 
         return converted
+
+    def get_data_by_names(
+        self,
+        names,  # type: Union[str,Iterable[str]]
+        as_dict=True,  # type: bool
+        filter_non_feasible=False,  # type: bool
+    ):  # type: (...) -> Union[ndarray, Dict[str,ndarray]]
+        """Return the data for specific names of variables.
+
+        Args:
+            names: The names of the variables.
+            as_dict: If True, return values as dictionary.
+            filter_non_feasible: If True, remove the non-feasible points from
+                the data.
+
+        Returns:
+            The data related to the variables.
+        """
+        dataset = self.export_to_dataset("OptimizationProblem")
+        data = dataset.get_data_by_names(names, as_dict)
+
+        if filter_non_feasible:
+            x_feasible, _ = self.get_feasible_points()
+            feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
+            data = data[feasible_indexes, :]
+
+        return data
+
+    @property
+    def is_mono_objective(self):  # type: (...) -> bool
+        """Whether the optimization problem is mono-objective."""
+        return len(self.objective.outvars) == 1
+
+    def get_functions_dimensions(self):  # type: (...) -> Dict[str, int]
+        """Return the dimensions of the outputs of the problem functions.
+
+        Returns:
+            The dimensions of the outputs of the problem functions.
+            The dictionary keys are the functions names
+            and the values are the functions dimensions.
+        """
+        design_variables = self.design_space.get_current_x()
+        values, _ = self.evaluate_functions(design_variables, normalize=False)
+        return {name: atleast_1d(value).size for name, value in values.items()}
+
+    def get_number_of_unsatisfied_constraints(
+        self,
+        design_variables,  # type: ndarray
+    ):  # type: (...) -> int
+        """Return the number of scalar constraints not satisfied by design variables.
+
+        Args:
+            design_variables: The design variables.
+
+        Returns:
+            The number of unsatisfied scalar constraints.
+        """
+        n_unsatisfied = 0
+        values, _ = self.evaluate_functions(design_variables, normalize=False)
+        for constraint in self.constraints:
+            value = atleast_1d(values[constraint.name])
+            if constraint.f_type == MDOFunction.TYPE_EQ:
+                value = numpy.absolute(value)
+                tolerance = self.eq_tolerance
+            else:
+                tolerance = self.ineq_tolerance
+            n_unsatisfied += sum(value > tolerance)
+        return n_unsatisfied
+
+    def get_scalar_constraints_names(self):  # type: (...) -> List[str]
+        """Return the names of the scalar constraints.
+
+        Returns:
+            The names of the scalar constraints.
+        """
+        constraints_names = list()
+        dimensions = self.get_functions_dimensions()
+        for name in self.get_constraints_names():
+            dimension = dimensions[name]
+            if dimension == 1:
+                constraints_names.append(name)
+            else:
+                constraints_names.extend(
+                    [
+                        "{}{}{}".format(name, DesignSpace.SEP, index)
+                        for index in range(dimension)
+                    ]
+                )
+        return constraints_names

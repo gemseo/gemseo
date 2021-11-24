@@ -31,8 +31,8 @@ which may have been loaded from the disk.
 
 In practice,
 
-- a :class:`~gemseo.core.scenario.Scenario` instance has a :class:`~gemseo.core.formulation.MDOFormulation` attribute,
-- a :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
+- a :class:`~gemseo.core.scenario.Scenario` instance has an :class:`~gemseo.core.formulation.MDOFormulation` attribute,
+- an :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
 - an :class:`~gemseo.algos.opt_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.opt_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case
@@ -41,9 +41,9 @@ Illustration on the Sobieski use case
 The post-processing features are illustrated on MDO results obtained on the :ref:`SSBJ use case <sobieski_problem>`,
 using different types of :code:`formulation` (:ref:`MDF formulation <mdf_formulation>`, :ref:`IDF formulation <idf_formulation>`, ...)
 
-To setup the case, please see :ref:`sobieski_mdo`.
+The following code sets up and executes the problem. It is possible to try different types of MDO strategies by changing
+the :code:`formulation` value. For a detailed explanation on how to setup the case, please see :ref:`sobieski_mdo`.
 
-The code lines follow, modulo the :code:`formulation` value:
 
 .. code::
 
@@ -83,53 +83,62 @@ From this :code:`scenario`, we can apply any kind of post-processing dedicated t
     .. automethod:: gemseo.api.execute_post
        :noindex:
 
+.. note::
+
+    Only design variables and functions (objective function, constraints) are stored for post-processing.
+    If you want to be able to plot state variables, you must add them as observables before the problem is executed.
+    Use the :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+
 What are the post-processing features?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. raw:: html
 
-   <h3><a href="_postprocessing/basic_history.html">Basic history</a></h3>
-   <a href="_postprocessing/basic_history.html"><img src="../_images/mdf_basic_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/constraints_history.html">Constraints history</a></h3>
-   <a href="_postprocessing/constraints_history.html"><img src="../_images/mdf_constraints_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/objective_and_constraints_history.html">Objective and constraints history</a></h3>
-   <a href="_postprocessing/objective_and_constraints_history.html"><img src="../_images/mdf_objective_and_constraints_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/gradients_sensitivity.html">Gradient sensitivity</a></h3>
-   <a href="_postprocessing/gradients_sensitivity.html"><img src="../_images/mdf_gradient_sensitivity.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/opt_history_view.html">Optimization history view</a></h3>
-   <a href="_postprocessing/opt_history_view.html"><img src="../_images/mdf_variables_history.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/parallel_coordinates.html">Parallel coordinates</a></h3>
-   <a href="_postprocessing/parallel_coordinates.html"><img src="../_images/mdf_para_coord_des_vars.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/quadratic_approximation.html">Quadratic approximation</a></h3>
-   <a href="_postprocessing/quadratic_approximation.html"><img src="../_images/mdf_hessian_approx.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/radar_chart.html">Radar chart</a></h3>
-   <a href="_postprocessing/radar_chart.html"><img src="../_images/mdf_radar_chart.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/correlations.html">Correlations</a></h3>
-   <a href="_postprocessing/correlations.html"><img src="../_images/mdf_correlations.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/robustness.html">Robustness</a></h3>
-   <a href="_postprocessing/robustness.html"><img src="../_images/mdf_boxplot.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/som.html">Self-Organizing Maps</a></h3>
-   <a href="_postprocessing/som.html"><img src="../_images/som_fine.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/scatter_plot_matrix.html">Scatter plot matrix</a></h3>
-   <a href="_postprocessing/scatter_plot_matrix.html"><img src="../_images/mdf_scatter_plot_matrix.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
-   <h3><a href="_postprocessing/variable_influence.html">Variable influence</a></h3>
-   <a href="_postprocessing/variable_influence.html"><img src="../_images/mdf_variable_influence.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_basic_history.html">Basic history</a></h3>
+   <a href="../examples/post_process/plot_basic_history.html"><img src="../_images/sphx_glr_plot_basic_history_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_constraints_history.html">Constraints history</a></h3>
+   <a href="../examples/post_process/plot_constraints_history.html"><img src="../_images/sphx_glr_plot_constraints_history_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_obj_constr_hist.html">Objective and constraints history</a></h3>
+   <a href="../examples/post_process/plot_obj_constr_hist.html"><img src="../_images/sphx_glr_plot_obj_constr_hist_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_gradient_sensitivity.html">Gradient sensitivity</a></h3>
+   <a href="../examples/post_process/plot_gradient_sensitivity.html"><img src="../_images/sphx_glr_plot_gradient_sensitivity_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_opt_hist_view.html">Optimization history view</a></h3>
+   <a href="../examples/post_process/plot_opt_hist_view.html"><img src="../_images/sphx_glr_plot_opt_hist_view_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_para_coord.html">Parallel coordinates</a></h3>
+   <a href="../examples/post_process/plot_para_coord.html"><img src="../_images/sphx_glr_plot_para_coord_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_quad_approx.html">Quadratic approximation</a></h3>
+   <a href="../examples/post_process/plot_quad_approx.html"><img src="../_images/sphx_glr_plot_quad_approx_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_constraints_radar_chart.html">Radar chart</a></h3>
+   <a href="../examples/post_process/plot_constraints_radar_chart.html"><img src="../_images/sphx_glr_plot_constraints_radar_chart_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_correlations.html">Correlations</a></h3>
+   <a href="../examples/post_process/plot_correlations.html"><img src="../_images/sphx_glr_plot_correlation_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_robustness.html">Robustness</a></h3>
+   <a href="../examples/post_process/plot_robustness.html"><img src="../_images/sphx_glr_plot_robustness_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_som.html">Self-Organizing Maps</a></h3>
+   <a href="../examples/post_process/plot_som.html"><img src="../_images/som_fine.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_history_scatter_matrix.html">Scatter plot matrix</a></h3>
+   <a href="../examples/post_process/plot_history_scatter_matrix.html"><img src="../_images/sphx_glr_plot_history_scatter_matrix_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_variable_influence.html">Variable influence</a></h3>
+   <a href="../examples/post_process/plot_variable_influence.html"><img src="../_images/sphx_glr_plot_variable_influence_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
+   <h3><a href="../examples/post_process/plot_pareto_front.html">Pareto front</a></h3>
+   <a href="../examples/post_process/plot_pareto_front.html"><img src="../_images/sphx_glr_plot_pareto_front_001.png" style="height:75px; margin-right:5px;" align="center"/></a><br/>
 
 .. toctree::
    :caption: Post processing methods
    :maxdepth: 1
    :hidden:
 
-   _postprocessing/basic_history.rst
-   _postprocessing/gradients_sensitivity.rst
-   _postprocessing/quadratic_approximation.rst
-   _postprocessing/som.rst
-   _postprocessing/constraints_history.rst
-   _postprocessing/objective_and_constraints_history.rst
-   _postprocessing/opt_history_view.rst
-   _postprocessing/radar_chart.rst
-   _postprocessing/correlations.rst
-   _postprocessing/parallel_coordinates.rst
-   _postprocessing/robustness.rst
-   _postprocessing/scatter_plot_matrix.rst
-   _postprocessing/variable_influence.rst
+   /examples/post_process/plot_basic_history
+   /examples/post_process/plot_constraints_history
+   /examples/post_process/plot_obj_constr_hist
+   /examples/post_process/plot_gradient_sensitivity
+   /examples/post_process/plot_opt_hist_view
+   /examples/post_process/plot_para_coord
+   /examples/post_process/plot_quad_approx
+   /examples/post_process/plot_constraints_radar_chart
+   /examples/post_process/plot_correlations
+   /examples/post_process/plot_robustness
+   /examples/post_process/plot_som
+   /examples/post_process/plot_history_scatter_matrix
+   /examples/post_process/plot_variable_influence
+   /examples/post_process/plot_pareto_front

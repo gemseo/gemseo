@@ -121,6 +121,8 @@ class OptLibraryTestBase(object):
                 + " failed to find solution"
                 + " of problem "
                 + pb_name
+                + " after n calls = "
+                + str(len(problem.database))
             )
             return error_msg
         return None

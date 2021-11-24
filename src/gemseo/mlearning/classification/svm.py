@@ -64,7 +64,8 @@ class SVMClassifier(MLClassificationAlgo):
         probability=False,  # type: bool
         **parameters  # type: Optional[Union[int,float,bool,str]]
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             C: The inverse L2 regularization parameter.
                    Higher values give less regularization.

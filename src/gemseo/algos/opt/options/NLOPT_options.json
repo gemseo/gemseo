@@ -30,7 +30,7 @@
              "minimum": 0.0
         },
         "stopval":{
-            "type": "number"
+            "type": ["null", "number"]
         },
         "ctol_abs":{
             "type": "number",

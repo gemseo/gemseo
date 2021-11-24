@@ -150,9 +150,12 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
 
     def __delitem__(self, key):
         del self._properties[key]
+        required_properties = self._root_node._active_strategies[0]._required
+        if required_properties is None:
+            return
         try:
-            self._root_node._active_strategies[0]._required.remove(key)
-        except IndexError:
+            required_properties.remove(key)
+        except KeyError:
             pass
 
     # For backward compatibility

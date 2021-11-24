@@ -12,10 +12,10 @@
 
 .. _sellar_mdo:
 
-Tutorial: How to solve a MDO problem
-====================================
+Tutorial: How to solve an MDO problem
+=====================================
 
-This tutorial describes how to solve a MDO problem by means of |g|.
+This tutorial describes how to solve an MDO problem by means of |g|.
 For that, we consider the :ref:`Sellar problem <sellar_problem>`.
 
 Step 1 : Creation of disciplines
@@ -26,14 +26,14 @@ we need first to model this set of equations as a **multidisciplinary problem**.
 
 For that, the problem is decomposed into three :term:`disciplines <discipline>`.
 
-What defines a :class:`.MDODiscipline`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+What defines an :class:`.MDODiscipline`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A discipline is a set of calculations that produces a set of
 vector outputs from a set of vector inputs, using either equations or an external software,
 or a :term:`workflow engine`.
 
-Programmatically speaking, in |g|, a :class:`.MDODiscipline` is defined by three elements :
+Programmatically speaking, in |g|, an :class:`.MDODiscipline` is defined by three elements :
 
 - the **input grammar** : the set of rules that defines valid input data,
 - the **output grammar** : the set of rules that defines valid output data,

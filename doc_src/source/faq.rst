@@ -121,31 +121,7 @@ See :ref:`Interfacing simulation software <software_connection>`.
 Extend |g| features
 -------------------
 
-The simplest way is to create a subclass
-associated to the feature you want to extend,
-respectively:
-
- - for optimizers,
-   inherit from :class:`.OptimizationLibrary`,
-   and put the Python file in the :file:`src/gemseo/algos/opt` package
- - for DOEs,
-   inherit from :class:`.DOELibrary`,
-   and put the Python file in the :file:`src/gemseo/algos/doe` package
- - for surrogate models,
-   inherit from :class:`.MLRegressionAlgo`,
-   and put the Python file in the :file:`src/gemseo/mlearning/regression` package
- - for MDAs, inherit from :class:`.MDA`,
-   and put the Python file in the :file:`src/gemseo/mda` package
- - for MDO formulations,
-   inherit from :class:`.MDOFormulation`,
-   and put the Python file in the :file:`src/gemseo/formulations` package
- - for disciplines,
-   inherit from :class:`.MDODiscipline`,
-   and put the Python file in the :file:`src/gemseo/problems/my_problem` package,
-   which you created
-
-See :ref:`extending-gemseo` to learn how to run
-|g| with external Python modules.
+See :ref:`extending-gemseo`.
 
 What are :term:`JSON` schemas?
 ------------------------------
@@ -169,6 +145,18 @@ Store persistent data produced by disciplines
 Use :term:`HDF5 <HDF>` caches to persist the discipline output on the disk.
 
 .. seealso:: We invite you to read our documentation:  :ref:`caching`.
+
+Error when using a HDF5 cache
+-----------------------------
+
+In |g| 3.2.0,
+the storage of the data hashes in the HDF5 cache has been fixed
+and the previous cache files are no longer valid.
+If you get an error like
+:cmd:`The file cache.h5 cannot be used because it has no file format version:
+see HDFCache.update_file_format for converting it.`,
+please use :meth:`.HDFCache.update_file_format`
+to update the format of the file and fix the data hashes.
 
 Handling Python 2 and Python 3 compatibility
 --------------------------------------------
@@ -201,7 +189,7 @@ install it with:
    sudo yum install libnsl
 
 Some |g| tests fail under Windows without any reason
------------------------------------------------------
+----------------------------------------------------
 
 The user may face some issues with the last version of Windows 10, build 2004,
 while running the tests. The errors are located deep in either numpy or scipy,
@@ -211,3 +199,20 @@ this issue is `well known
 and comes from an incompatibility with Windows 10, build 2004 and some versions
 of OpenBlas. |g| users shall not encounter any issue in production.  Otherwise,
 please contact us in order to get some mitigation instructions.
+
+Parallel execution limitations on Windows
+-----------------------------------------
+
+When running parallel execution tasks on Windows, the features :class:`.MemoryFullCache`
+and :class:`.HDF5Cache` do not work properly. This is due to the way subprocesses are forked
+in this architecture. The method :meth:`.DOEScenario.set_optimization_history_backup`
+is recommended as an alternative.
+
+The user may face issues when running parallel tasks with Python versions < 3.7 on Windows.
+A subprocess may randomly hang and prevent the execution of the rest of the code. The cause of
+this problem is most likely related to a bug in numpy that was solved on version 1.20.0, it
+is strongly recommended to update the Python environment to ensure the stability of the execution.
+
+The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
+it may also print the conclusion of an iteration ahead of another one that was concluded first. This
+is a consequence of the pickling process and does not affect the computations of the scenario.

@@ -108,7 +108,7 @@ computed by the *i*-th discipline and passed to the *j*-th discipline.
 
 |g| offers the possibility to display the N2 chart
 either as a static visualization of the full graph,
-or as an interactive visualization of both full and condensed graphs.
+or as an interactive visualization of both full and condensed graphs:
 
 API
 ~~~
@@ -133,13 +133,18 @@ to create these visualizations and save them, from:
 
 Whatever the options,
 an HTML file is create based on the provided file path
-by using *.html* as file extension (by default, *n2.html*).
+by using *.html* as file extension (by default, *n2.html*):
+
+.. figure:: /_images/coupling/n2.gif
+   :scale: 75 %
+   :target: ../_static/n2.html
+
 This interactive N2 chart can be opened at any time in a browser
 
 .. seealso::
 
    `Click here <../_static/n2.html>`_ to see the example of an interactive N2 chart
-   with several groups of strongly coupled disciplines.
+   with several groups of strongly coupled disciplines
 
 With coupling names
 ~~~~~~~~~~~~~~~~~~~

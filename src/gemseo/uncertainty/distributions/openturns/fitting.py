@@ -182,9 +182,8 @@ class OTDistributionFitter(object):
         except KeyError:
             distributions = ", ".join(list(self._AVAILABLE_DISTRIBUTIONS.keys()))
             raise ValueError(
-                "{} is not a name of "
-                "distribution available for fitting. "
-                "Available ones are: {}.".format(distribution, distributions)
+                "{} is not a name of distribution available for fitting; "
+                "available ones are: {}.".format(distribution, distributions)
             )
         return distribution_factory
 
@@ -206,8 +205,8 @@ class OTDistributionFitter(object):
         except KeyError:
             tests = ", ".join(list(self._AVAILABLE_FITTING_TESTS.keys()))
             raise ValueError(
-                "%s is not a name of fitting test; "
-                "Available ones are: %s" % (criterion, tests)
+                "{} is not a name of fitting test; "
+                "available ones are: {}.".format(criterion, tests)
             )
         return fitting_test
 

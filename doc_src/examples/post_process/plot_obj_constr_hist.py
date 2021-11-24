@@ -41,11 +41,18 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# The :class:`~gemseo.post.obj_constr_hist.ObjConstrHist` post-processing
+# plots the objective history in a line chart
+# with constraint violation indication by color in the background.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -87,6 +94,16 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.ObjConstrHist`
 # plot which plots the constraint functions history in lines charts.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
 scenario.post_process("ObjConstrHist", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

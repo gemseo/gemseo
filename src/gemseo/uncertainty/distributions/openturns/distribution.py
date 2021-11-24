@@ -71,8 +71,10 @@ from gemseo.uncertainty.distributions.distribution import (
 from gemseo.uncertainty.distributions.openturns.composed import OTComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
 
-OT_WEBSITE = "http://openturns.github.io/openturns/latest/"
-OT_WEBSITE += "user_manual/probabilistic_modelling.html"
+OT_WEBSITE = (
+    "http://openturns.github.io/openturns/latest/user_manual/"
+    "probabilistic_modelling.html"
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -110,7 +112,7 @@ class OTDistribution(Distribution):
         """
         Args:
             variable: The name of the random variable.
-            distribution: The name of the probability distribution,
+            interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
                 such as 'Normal' for OpenTURNS or 'norm' for SciPy.
             parameters: The parameters of the probability distribution.
@@ -147,7 +149,7 @@ class OTDistribution(Distribution):
         msg.add("Mathematical support: {}", self.support)
         msg.add("Numerical range: {}", self.range)
         msg.add("Transformation: {}", self.transformation)
-        LOGGER.info("%s", msg)
+        LOGGER.debug("%s", msg)
 
     def compute_samples(
         self,
@@ -269,8 +271,8 @@ class OTDistribution(Distribution):
         except Exception:
             args = ", ".join([str(val) for val in parameters])
             raise ValueError(
-                "Arguments are wrong in {}({}). "
-                "More details on: {}.".format(distribution, args, OT_WEBSITE)
+                "Arguments are wrong in {}({}); "
+                "more details on: {}.".format(distribution, args, OT_WEBSITE)
             )
         self.__set_bounds(ot_dist)
         if transformation is not None:
@@ -365,7 +367,7 @@ class OTDistribution(Distribution):
             The truncated distributions.
         """
         if lower_bound is None:
-            LOGGER.info(
+            LOGGER.debug(
                 "Truncate distribution of component %s above %s.", index, upper_bound
             )
             upper = ots.TruncatedDistribution.UPPER
@@ -376,19 +378,19 @@ class OTDistribution(Distribution):
                 distributions, upper_bound, upper, threshold
             )
         elif upper_bound is None:
-            LOGGER.info(
-                "Truncate distribution of component %s" " below %s.", index, lower_bound
+            LOGGER.debug(
+                "Truncate distribution of component %s below %s.", index, lower_bound
             )
             lower = ots.TruncatedDistribution.LOWER
             current_l_b = self.math_lower_bound[index]
             if lower_bound < current_l_b:
-                raise ValueError("l_b is lower " "than the current lower bound.")
+                raise ValueError("l_b is lower than the current lower bound.")
             distributions = ots.TruncatedDistribution(
                 distributions, lower_bound, lower, threshold
             )
         else:
-            LOGGER.info(
-                "Truncate distribution of component %s" " below %s and above %s.",
+            LOGGER.debug(
+                "Truncate distribution of component %s below %s and above %s.",
                 index,
                 lower_bound,
                 upper_bound,
@@ -396,9 +398,9 @@ class OTDistribution(Distribution):
             current_l_b = self.math_lower_bound[index]
             current_u_b = self.math_upper_bound[index]
             if lower_bound < current_l_b:
-                raise ValueError("l_b is lower " "than the current lower bound.")
+                raise ValueError("l_b is lower than the current lower bound.")
             if upper_bound > current_u_b:
-                raise ValueError("u_b is greater " "than the current upper bound.")
+                raise ValueError("u_b is greater than the current upper bound.")
             distributions = ots.TruncatedDistribution(
                 distributions, lower_bound, upper_bound, threshold
             )

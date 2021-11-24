@@ -26,9 +26,10 @@ proposes different evaluation methods.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, NoReturn, Optional, Union
+from copy import deepcopy
+from typing import NoReturn, Optional, Sequence, Union
 
-from numpy import arange, array_split
+from numpy import arange
 from numpy import delete as npdelete
 from numpy import ndarray, unique
 from numpy.random import choice
@@ -53,7 +54,7 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
@@ -67,7 +68,7 @@ class MLErrorMeasure(MLQualityMeasure):
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
@@ -83,25 +84,26 @@ class MLErrorMeasure(MLQualityMeasure):
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        inds = samples
-        folds = array_split(inds, n_folds)
+        folds, samples = self._compute_folds(samples, n_folds, randomize)
 
         in_grp = self.algo.learning_set.INPUT_GROUP
         out_grp = self.algo.learning_set.OUTPUT_GROUP
         inputs = self.algo.learning_set.get_data_by_group(in_grp)
         outputs = self.algo.learning_set.get_data_by_group(out_grp)
 
+        algo = deepcopy(self.algo)
+
         qualities = []
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            train = npdelete(inds, fold)
-            self.algo.learn(samples=train)
+            train = npdelete(samples, fold)
+            algo.learn(samples=train)
             expected = outputs[fold]
-            predicted = self.algo.predict(inputs[fold])
+            predicted = algo.predict(inputs[fold])
             quality = self._compute_measure(expected, predicted, multioutput)
             qualities.append(quality)
 
@@ -112,14 +114,11 @@ class MLErrorMeasure(MLQualityMeasure):
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
-        if isinstance(samples, list):
-            n_samples = len(samples)
-        else:
-            n_samples = samples.size
+        n_samples = samples.size
         inds = arange(n_samples)
 
         in_grp = self.algo.learning_set.INPUT_GROUP
@@ -127,14 +126,16 @@ class MLErrorMeasure(MLQualityMeasure):
         inputs = self.algo.learning_set.get_data_by_group(in_grp)
         outputs = self.algo.learning_set.get_data_by_group(out_grp)
 
+        algo = deepcopy(self.algo)
+
         qualities = []
         for _ in range(n_replicates):
             train = unique(choice(n_samples, n_samples))
             test = npdelete(inds, train)
-            self.algo.learn([samples[index] for index in train])
+            algo.learn([samples[index] for index in train])
             test_samples = [samples[index] for index in test]
             expected = outputs[test_samples]
-            predicted = self.algo.predict(inputs[test_samples])
+            predicted = algo.predict(inputs[test_samples])
             quality = self._compute_measure(expected, predicted, multioutput)
             qualities.append(quality)
 
@@ -153,8 +154,8 @@ class MLErrorMeasure(MLQualityMeasure):
         Args:
             outputs: The reference data.
             predictions: The predicted labels.
-            multioutput: If True, return the quality measure for each
-                output component. Otherwise, average these measures.
+            multioutput: Whether to return the quality measure
+                for each output component. If not, average these measures.
 
         Returns:
             The value of the quality measure.

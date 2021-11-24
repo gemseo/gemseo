@@ -28,7 +28,7 @@ These technical challenges motivated the development of |g|.
 
 |g| relies on a disruptive approach based on MDO formulations.
 
-A MDO formulation, or architecture, is a simulation process template, or generic strategy.
+An MDO formulation, or architecture, is a simulation process template, or generic strategy.
 This enables to generate automatically the MDO process and facilitate its reconfiguration.
 
 History
@@ -269,6 +269,10 @@ The following people are the contributors to |g|'s development and maintenance:
     <div class="avatar">
           <img src='_static/authors/benoit_pauwels.jpg' class='avatar' /><br />
           Benoit<br/>Pauwels
+    </div>
+    <div class="avatar">
+          <img src='_static/authors/arthur_piat.jpg' class='avatar' /><br />
+          Arthur<br/>Piat
     </div>
     <div class="avatar">
           <img src='_static/authors/nicolas_roussouly.jpg' class='avatar' /><br />

@@ -18,34 +18,29 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
-"""
-Build a diagonal DOE for scalable model construction
-****************************************************
-"""
+"""Build a diagonal DOE for scalable model construction."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Container, Dict, Optional, Union
 
-from numpy import array
+from numpy import array, ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+
+OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
 LOGGER = logging.getLogger(__name__)
 
 
 class DiagonalDOE(DOELibrary):
+    """Class used to create a diagonal DOE."""
 
-    """Class used for creation of a diagonal DOE."""
+    __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
 
-    ALGO_LIST = ["DiagonalDOE"]
-    ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
-
-    def __init__(self):
-        """Constructor, initializes the DOE samples."""
+    def __init__(self):  # type: (...) -> None
         super(DiagonalDOE, self).__init__()
-
-        for algo in self.ALGO_LIST:
-            description = DiagonalDOE.ALGO_DESC[algo]
+        for algo, description in self.__ALGO_DESC.items():
             self.lib_dict[algo] = {
                 DOELibrary.LIB: self.__class__.__name__,
                 DOELibrary.INTERNAL_NAME: algo,
@@ -54,73 +49,80 @@ class DiagonalDOE(DOELibrary):
 
     def _get_options(
         self,
-        eval_jac=False,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        n_samples=1,
-        reverse=None,
-        max_time=0,
-        **kwargs
-    ):  # pylint: disable=W0221
-        """Sets the options.
+        eval_jac=False,  # type: bool
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        n_samples=2,  # type: int
+        reverse=None,  # type: Optional[Container[str]]
+        max_time=0,  # type: float
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
+        """Get the options.
 
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param reverse: list of dimensions or variables to sample from their
-            upper bounds to their lower bounds. Default: None.
-        :type reverse: list(str)
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            eval_jac: Whether to evaluate the Jacobian.
+            n_processes: The number of processes.
+            wait_time_between samples: The waiting time between two samples.
+            n_samples: The number of samples.
+                The number of samples must be greater than or equal to 2.
+            reverse: The dimensions or variables to sample from their upper bounds to
+                their lower bounds.
+                If None, every dimension will be sampled from its lower bound to its
+                upper bound.
+            max_time: The maximum runtime in seconds.
+                If 0, no maximum runtime is set.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The processed options.
         """
-        wtbs = wait_time_between_samples
         return self._process_options(
             eval_jac=eval_jac,
             n_processes=n_processes,
-            wait_time_between_samples=wtbs,
+            wait_time_between_samples=wait_time_between_samples,
             n_samples=n_samples,
             reverse=reverse,
             max_time=max_time,
             **kwargs
         )
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the DOE samples.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see the associated JSON file.
+
+        Returns:
+            The samples.
+
+        Raises:
+            ValueError: If the number of samples is not set, or is lower than 2.
         """
+        n_samples = options.get(self.N_SAMPLES)
+        if n_samples is None or n_samples < 2:
+            raise ValueError(
+                "The number of samples must set to a value greater than or equal to 2."
+            )
+
         reverse = options.get("reverse", [])
-        names = self.problem.design_space.variables_names
-        sizes = self.problem.design_space.variables_sizes
+        if reverse is None:
+            reverse = []
+
+        sizes = options[self._VARIABLES_SIZES]
         name_by_index = {}
         start = 0
-        for name in names:
+        for name in options[self._VARIABLES_NAMES]:
             for index in range(start, start + sizes[name]):
                 name_by_index[index] = name
             start += sizes[name]
         samples = []
-        for index in range(self.problem.dimension):
+        for index in range(options[self.DIMENSION]):
             if str(index) in reverse or name_by_index[index] in reverse:
-                samples.append(
-                    [
-                        point / (options[self.N_SAMPLES] - 1.0)
-                        for point in range(options[self.N_SAMPLES] - 1, -1, -1)
-                    ]
-                )
+                numerators = range(n_samples - 1, -1, -1)
             else:
-                samples.append(
-                    [
-                        point / (options[self.N_SAMPLES] - 1.0)
-                        for point in range(0, options[self.N_SAMPLES])
-                    ]
-                )
-        samples = array(samples).T
-        return samples
+                numerators = range(0, n_samples)
+            samples.append([numerator / (n_samples - 1.0) for numerator in numerators])
+        return array(samples).T

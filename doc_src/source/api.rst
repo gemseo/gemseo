@@ -54,7 +54,7 @@ About discipline
 
 .. tip::
 
-   In order to import easily and instantiate a :class:`.MDODiscipline`,
+   In order to import easily and instantiate an :class:`.MDODiscipline`,
    |g| provides a :class:`.Factory` mechanism to avoid manual imports.
 
 Get available disciplines
@@ -71,7 +71,7 @@ The :meth:`~gemseo.api.get_available_disciplines` API function can list the avai
 Create a discipline
 ~~~~~~~~~~~~~~~~~~~
 
-The :meth:`~gemseo.api.create_discipline` API function can create a :class:`.MDODiscipline`
+The :meth:`~gemseo.api.create_discipline` API function can create an :class:`.MDODiscipline`
 or a list of :class:`.MDODiscipline` by using its name alone;
 specific :code:`**options` can be provided in argument;
 e.g.:
@@ -314,11 +314,11 @@ Get scenario schema for inputs and options
 Get scenario differentiation modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The API function :meth:`~gemseo.api.get_scenario_differenciation_modes` can be used to get the available differentiation modes of a scenario:
+The API function :meth:`~gemseo.api.get_scenario_differentiation_modes` can be used to get the available differentiation modes of a scenario:
 
 .. code::
 
-   >>> get_scenario_differenciation_modes()
+   >>> get_scenario_differentiation_modes()
    ['user', 'complex_step', 'finite_differences', 'no_derivatives']
 
 Create a scenario
@@ -328,7 +328,7 @@ The API function :meth:`~gemseo.api.create_scenario` can be used to create a sce
 
 - The four first arguments are mandatory:
 
-  #. :code:`disciplines`: the list of :class:`.MDODiscipline` (or possibly, a :class:`.MDODiscipline`),
+  #. :code:`disciplines`: either a list of :class:`.MDODiscipline` or a single :class:`MDODiscipline`,
   #. :code:`formulation`: the formulation name (available formulations can be listed by using the API function :meth:`gemseo.api.get_available_formulations`),
   #. :code:`objective_name`: the name of the objective function (one of the discipline outputs, which can be listed by using the API function :meth:`gemseo.api.get_all_outputs`)
   #. :code:`design_space`: the :class:`.DesignSpace` or the file path of the design space

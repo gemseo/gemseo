@@ -19,13 +19,15 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Singletons implementation and variants
-**************************************
-"""
+
+"""Singletons implementation and variants."""
+
 from __future__ import division, unicode_literals
 
 from os.path import realpath
+from typing import Any
+
+from six import with_metaclass
 
 from gemseo.utils.py23_compat import string_types
 
@@ -59,28 +61,56 @@ class SingleInstancePerAttributeId(type):
         return inst
 
 
-class SingleInstancePerAttributeEq(type):
-    """A Singleton-like design pattern so that subclasses are only instantiated when the
-    discipline instance passed as input of the constructor is different from already
-    created instances.
+class _Multiton(type):
+    """A metaclass for implementing the Multiton design pattern.
 
-    The test if the instances are equal is made with the obj1 == obj2 operator
+    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`.
+
+    As opposed to the functools.lru_cache,
+    the objects built from this metaclass can be pickled.
+
+    .. warning:
+
+        Like the standard functools.lru_cache,
+        the kwargs order is not preserved:
+        it means that f(x=1, y=2) is treated as a
+        distinct call from f(y=2, x=1) which will be cached separately.
     """
 
-    instances = {}
+    _cache = {}  # type: Any
 
-    # Eclipse is not happy with "cls" as first
-    # argument but this is an eclipse bug.
-    # "function.MDOFunctionGenerator' should have self as first parameter"
-    def __call__(cls, *args, **kwargs):
-        if not args:
-            args = [None]
-        inst_key = (id(cls),) + tuple(args)
-        inst = cls.instances.get(inst_key)
-        if inst is None:
+    def __call__(
+        cls,
+        *args,  # type: Any
+        **kwargs  # type: Any
+    ):  # type (...) -> None
+        key = (cls,) + args + tuple(kwargs.items())
+        try:
+            return cls._cache[key]
+        except KeyError:
             inst = type.__call__(cls, *args, **kwargs)
-            cls.instances[inst_key] = inst
-        return inst
+            cls._cache[key] = inst
+            return inst
+
+    @classmethod
+    def cache_clear(cls):  # type (...) -> None
+        """Clear the cache."""
+        cls._cache = {}
+
+
+# Provide a naturally derivable class.
+Multiton = with_metaclass(_Multiton, object)
+
+
+class SingleInstancePerAttributeEq(_Multiton):
+    """Legacy multiton metaclass.
+
+    Provided for backward compatibility, please use the Multiton base class instead.
+    """
+
+    # TODO: deprecate at some point.
+
+    instances = _Multiton._cache
 
 
 class SingleInstancePerFileAttribute(type):

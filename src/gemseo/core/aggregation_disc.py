@@ -44,7 +44,7 @@ class ConstrAggegationDisc(MDODiscipline):
     so only one adjoint calculation can be performed for the aggregated
     constraint instead of one adjoint per original constraint dimension.
 
-    See :cite:t:`kennedy2015improved` and  :cite:t:`kreisselmeier1983application`.
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
     """
 
     def __init__(
@@ -53,8 +53,8 @@ class ConstrAggegationDisc(MDODiscipline):
         method_name,  # type: str
         name=None,  # type: Optional[str]
         **meth_options  # type: Any
-    ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+    ):  # type: (...) -> None # noqa: D205,D212,D415
+        """
         Args:
             constr_data_names: The names of the constraints to aggregate.
                 It shall be the output data of other disciplines.

@@ -19,7 +19,9 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import unicode_literals
 
+import sys
 import unittest
 from timeit import default_timer as timer
 
@@ -27,9 +29,10 @@ import pytest
 from numpy import array, complex128, equal, ones
 from scipy.optimize import rosen
 
-from gemseo.api import create_discipline
-from gemseo.core.function import MDOFunctionGenerator
+from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.parallel_execution import (
+    IS_WIN,
     DiscParallelExecution,
     DiscParallelLinearization,
     ParallelExecution,
@@ -41,6 +44,11 @@ from gemseo.problems.sellar.sellar import (
     Sellar2,
     SellarSystem,
     get_inputs,
+)
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
 )
 
 
@@ -60,18 +68,13 @@ def function_raising_exception(counter):
 class TestParallelExecution(unittest.TestCase):
     """Test the parallel execution."""
 
-    @pytest.mark.skip_under_windows
     def test_functional(self):
+        """Test the execution of functions in parallel."""
         n = 10
-        function_list = [rosen] * n
+        function_list = rosen
         parallel_execution = ParallelExecution(function_list)
         output_list = parallel_execution.execute([[0.5] * i for i in range(1, n + 1)])
         assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
-        self.assertRaises(
-            ValueError,
-            parallel_execution.execute,
-            [[0.5] * i for i in range(1, n + 10)],
-        )
 
         self.assertRaises(
             TypeError,
@@ -104,13 +107,32 @@ class TestParallelExecution(unittest.TestCase):
         parallel_execution = ParallelExecution(function_list, use_threading=True)
         parallel_execution.execute([1] * n)
 
-    @pytest.mark.skip_under_windows
+    def test_disc_parallel_doe_scenario(self):
+        s_1 = Sellar1()
+        design_space = create_design_space()
+        design_space.add_variable("x_local", l_b=0.0, value=1.0, u_b=10.0)
+        scenario = create_scenario(
+            s_1, "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
+        )
+        n_samples = 20
+        scenario.execute(
+            {
+                "algo": "lhs",
+                "n_samples": n_samples,
+                "algo_options": {"eval_jac": True, "n_processes": 2},
+            }
+        )
+        assert (
+            len(scenario.formulation.opt_problem.database.get_func_history("y_1"))
+            == n_samples
+        )
+
     def test_disc_parallel_doe(self):
+        """Test the execution of disciplines in parallel."""
         s_1 = Sellar1()
         n = 10
-        disciplines = [s_1] * n
         parallel_execution = DiscParallelExecution(
-            disciplines, n_processes=2, wait_time_between_fork=0.1
+            s_1, n_processes=2, wait_time_between_fork=0.1
         )
         input_list = []
         for i in range(n):
@@ -130,7 +152,7 @@ class TestParallelExecution(unittest.TestCase):
         func_gen = MDOFunctionGenerator(s_1)
         y_0_func = func_gen.get_function([X_SHARED], [Y_1])
 
-        parallel_execution = ParallelExecution([y_0_func] * n)
+        parallel_execution = ParallelExecution(y_0_func)
         input_list = [array([i, 0.0], dtype=complex128) for i in range(n)]
         output_list = parallel_execution.execute(input_list)
 
@@ -141,7 +163,6 @@ class TestParallelExecution(unittest.TestCase):
             assert s_1.local_data[Y_1] == outs[i][Y_1]
             assert s_1.local_data[Y_1] == output_list[i]
 
-    @pytest.mark.skip_under_windows
     def test_parallel_lin(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelLinearization(disciplines)
@@ -166,7 +187,6 @@ class TestParallelExecution(unittest.TestCase):
                     assert (dfdx == j_ref[f][x]).all()
                     assert (dfdx == outs[i][f][x]).all()
 
-    @pytest.mark.skip_under_windows
     def test_disc_parallel_threading_proc(self):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         parallel_execution = DiscParallelExecution(
@@ -193,7 +213,6 @@ class TestParallelExecution(unittest.TestCase):
             use_threading=True,
         )
 
-    @pytest.mark.skip_under_windows
     def test_async_call(self):
 
         disc = create_discipline("SobieskiMission")
@@ -208,3 +227,71 @@ class TestParallelExecution(unittest.TestCase):
         par.execute(
             [i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work
         )
+
+
+def test_not_worker(capfd):
+    """Test that an exception is shown when a worker is not acceptable.
+
+    The `TypeError` exception is caught by `worker`, but the execution continues.
+    However, an error message has to be shown to the user.
+
+    Args:
+        capfd: Fixture capture outputs sent to `stdout` and
+            `stderr`.
+    """
+    parallel_execution = ParallelExecution(["toto"])
+    parallel_execution.execute([[0.5]])
+    _, err = capfd.readouterr()
+    assert err
+
+
+def test_par_discipline_linearization():
+    """Test the parallel linearization for a single worker."""
+    sellar_par_lin = Sellar1()
+    in_names = ["x_local", "x_shared", "y_2"]
+    sellar_par_lin.add_differentiated_inputs(in_names)
+    out_names = ["y_1"]
+    sellar_par_lin.add_differentiated_outputs(out_names)
+
+    parallel_execution = DiscParallelLinearization(sellar_par_lin)
+
+    input_list = [
+        {
+            "x_local": array([0.0 + 0.0j]),
+            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([1.0 + 0.0j]),
+        },
+        {
+            "x_local": array([0.5 + 0.0j]),
+            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([0.5 + 0.0j]),
+        },
+    ]
+
+    parallel_execution.execute(input_list)
+
+    assert sellar_par_lin.n_calls_linearize == 2
+
+
+def test_par_discipline_lin_no_jac():
+    """Test the parallel linearization for a single worker with no defined outputs."""
+    sellar_par_lin = Sellar1()
+
+    parallel_execution = DiscParallelLinearization(sellar_par_lin)
+
+    input_list = [
+        {
+            "x_local": array([0.0 + 0.0j]),
+            "x_shared": array([1.0 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([1.0 + 0.0j]),
+        },
+        {
+            "x_local": array([0.5 + 0.0j]),
+            "x_shared": array([0.5 + 0.0j, 0.0 + 0.0j]),
+            "y_2": array([0.5 + 0.0j]),
+        },
+    ]
+
+    parallel_execution.execute(input_list)
+
+    assert sellar_par_lin.n_calls_linearize == 0

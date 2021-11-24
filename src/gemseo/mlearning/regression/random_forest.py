@@ -61,7 +61,7 @@ class RandomForestRegressor(MLRegressionAlgo):
     ):  # type: (...) -> None
         """
         Args:
-            n_estimators (int, optional): The number of trees in the forest.
+            n_estimators: The number of trees in the forest.
         """
         super(RandomForestRegressor, self).__init__(
             data,

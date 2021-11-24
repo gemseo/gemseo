@@ -31,7 +31,6 @@ from typing import Optional
 import numpy as np
 import pylab
 from matplotlib import pyplot
-from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatter
 from numpy import ndarray
@@ -41,7 +40,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +52,8 @@ class QuadApprox(OptPostProcessor):
 
     The function index can be passed as option.
     """
+
+    DEFAULT_FIG_SIZE = (9.0, 6.0)
 
     SR1_APPROX = "SR1"
 
@@ -111,8 +112,9 @@ class QuadApprox(OptPostProcessor):
         self.grad_opt = grad_opt
         return b_mat
 
-    @staticmethod
+    @classmethod
     def __plot_hessian(
+        cls,
         hessian,  # type: ndarray
         function,  # type: str
     ):  # type: (...) -> Figure
@@ -125,17 +127,13 @@ class QuadApprox(OptPostProcessor):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = pylab.figure()
+        fig = pylab.figure(figsize=cls.DEFAULT_FIG_SIZE)
         pylab.plt.xlabel(r"$x_i$", fontsize=16)
         pylab.plt.ylabel(r"$x_j$", fontsize=16)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
         linthresh = 10 ** (np.log10(vmax) - 5.0)
 
-        # On python 2, base is not defined as a parameter in SymLogNorm()
-        if PY2:
-            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
-        else:
-            norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=np.e)
+        norm = SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax)
 
         # SymLog is a symmetric log scale adapted to negative values
         pylab.imshow(
@@ -197,7 +195,7 @@ class QuadApprox(OptPostProcessor):
         xn_vars = np.arange(-1.0, 1.0, 0.01)
         lower_bounds = self.opt_problem.design_space.get_lower_bounds()
         upper_bounds = self.opt_problem.design_space.get_upper_bounds()
-        fig = plt.figure()
+        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
 
         for i in range(ndv):
             ax_i = plt.subplot(nrows, ncols, i + 1)

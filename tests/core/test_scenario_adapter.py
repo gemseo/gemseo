@@ -28,12 +28,13 @@ from numpy import all as np_all
 from numpy import allclose, array, matmul, ones, zeros, zeros_like
 
 from gemseo.core.chain import MDOChain
-from gemseo.core.function import MDOFunction, MDOFunctionGenerator
 from gemseo.core.mdo_scenario import (
     MDOObjScenarioAdapter,
     MDOScenario,
     MDOScenarioAdapter,
 )
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -49,8 +50,9 @@ def create_design_space():
     return SobieskiProblem().read_design_space()
 
 
-def get_sobieski_scenario():
-    """"""
+@pytest.fixture
+def scenario():
+    """An MDO scenario solving the Sobieski problem with MDF and L-BFGS-B."""
     disciplines = [
         SobieskiPropulsion(),
         SobieskiAerodynamics(),
@@ -59,23 +61,35 @@ def get_sobieski_scenario():
     ]
     design_space = create_design_space()
     design_space.filter(["x_1", "x_2", "x_3"])
-    scenario = MDOScenario(
+    mdo_scenario = MDOScenario(
         disciplines,
         formulation="MDF",
         objective_name="y_4",
         design_space=design_space,
         maximize_objective=True,
+        name="MyScenario",
     )
-    scenario.default_inputs = {"max_iter": 35, "algo": "L-BFGS-B"}
+    mdo_scenario.default_inputs = {"max_iter": 35, "algo": "L-BFGS-B"}
+    return mdo_scenario
 
-    return scenario
+
+def test_default_name(scenario):
+    """Check the default name of an MDOScenarioAdapter."""
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
+    assert adapter.name == "MyScenario_adapter"
 
 
-def test_adapter():
+def test_name(scenario):
+    """Check that the name of the MDOScenarioAdapter is correctly set."""
+    name = "MyAdapter"
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"], name=name)
+    assert adapter.name == name
+
+
+def test_adapter(scenario):
     """Test the MDOAdapter."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    scenario = get_sobieski_scenario()
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
     gen = MDOFunctionGenerator(adapter)
     func = gen.get_function(inputs, outputs)
@@ -89,11 +103,10 @@ def test_adapter():
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_x0_before_opt():
+def test_adapter_set_x0_before_opt(scenario):
     """Test the MDOScenarioAdapter with set_x0_before_opt."""
     inputs = ["x_1", "x_2", "x_3", "x_shared"]
     outputs = ["y_4"]
-    scenario = get_sobieski_scenario()
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_x0_before_opt=True)
     gen = MDOFunctionGenerator(adapter)
     x_shared = array([0.25, 1.0, 1.0, 0.5, 0.09, 60000, 1.4, 2.5, 70, 1500])
@@ -102,32 +115,29 @@ def test_adapter_set_x0_before_opt():
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_and_reset_x0():
+def test_adapter_set_and_reset_x0(scenario):
     """Test that set and reset x_0 cannot be done at MDOScenarioAdapter
     instantiation."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    scenario = get_sobieski_scenario()
-    msg = "Inconsistent options for ScenarioAdapter !"
+    msg = "Inconsistent options for MDOScenarioAdapter."
     with pytest.raises(ValueError, match=msg):
         MDOScenarioAdapter(
             scenario, inputs, outputs, set_x0_before_opt=True, reset_x0_before_opt=True
         )
 
 
-def test_adapter_miss_dvs():
+def test_adapter_miss_dvs(scenario):
     inputs = ["x_shared"]
     outputs = ["y_4", "missing_dv"]
-    scenario = get_sobieski_scenario()
     scenario.design_space.add_variable("missing_dv")
     MDOScenarioAdapter(scenario, inputs, outputs)
 
 
-def test_adapter_resetx0():
+def test_adapter_resetx0(scenario):
     """"""
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    scenario = get_sobieski_scenario()
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
     x0_dict = adapter.scenario.design_space.get_current_x_dict()
     x0_list = adapter.scenario.design_space.dict_to_array(x0_dict)
@@ -138,7 +148,6 @@ def test_adapter_resetx0():
     x_list = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
     assert np_all(x_list == x0_list)
 
-    scenario = get_sobieski_scenario()
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=False)
     adapter.execute()
     x1_dict = adapter.scenario.design_space.get_current_x_dict()
@@ -150,9 +159,7 @@ def test_adapter_resetx0():
     assert np_all(x_list == x1_list)
 
 
-def test_adapter_set_bounds():
-
-    scenario = get_sobieski_scenario()
+def test_adapter_set_bounds(scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_bounds_before_opt=True)
@@ -180,10 +187,8 @@ def test_adapter_set_bounds():
     assert np_all(ds.get_upper_bounds() == ones(4))
 
 
-def test_chain():
+def test_chain(scenario):
     """"""
-
-    scenario = get_sobieski_scenario()
     mda = scenario.formulation.mda
     inputs = list(mda.get_input_data_names()) + scenario.design_space.variables_names
     outputs = ["x_1", "x_2", "x_3"]
@@ -201,27 +206,60 @@ def test_chain():
     assert y_4 > 2908.0
 
 
-def test_jacobian_inputs():
+def test_compute_jacobian(scenario):
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
+    adapter.execute()
+    adapter._compute_jacobian()
+    expected_output_names = {"y_4", "mult_dot_constr_jac"}
 
-    scenario = get_sobieski_scenario()
+    assert set(adapter.jac.keys()) == expected_output_names
+
+    for output_name in expected_output_names:
+        assert set(adapter.jac[output_name].keys()) == {"x_shared"}
+
+
+def test_compute_jacobian_with_bound_inputs(scenario):
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], ["y_4"], set_bounds_before_opt=True
+    )
+    expected_input_names = ["x_shared", "x_1_lower_bnd"]
+    adapter.execute()
+    adapter._compute_jacobian(inputs=expected_input_names)
+    expected_output_names = {"y_4", "mult_dot_constr_jac"}
+
+    assert set(adapter.jac.keys()) == expected_output_names
+
+    for output_name in expected_output_names:
+        assert set(adapter.jac[output_name].keys()) == set(expected_input_names)
+
+
+def test_compute_jacobian_exceptions(scenario):
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
 
     # Pass invalid inputs
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(inputs=["toto"])
+    with pytest.raises(
+        ValueError, match="The following are not inputs of the adapter: bar, foo."
+    ):
+        adapter._compute_jacobian(inputs=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(outputs=["toto"])
+    with pytest.raises(
+        ValueError, match="The following are not outputs of the adapter: bar, foo."
+    ):
+        adapter._compute_jacobian(outputs=["y_4", "foo", "bar"])
 
+    # Pass invalid differentiated outputs
     scenario.add_constraint(["g_1"])
-    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1"])
-    with pytest.raises(ValueError):
-        adapter._compute_jacobian(outputs=["g_1"])
+    scenario.add_constraint(["g_2"])
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
+    with pytest.raises(
+        ValueError, match="Post-optimal Jacobians of g_1, g_2 cannot be computed."
+    ):
+        adapter._compute_jacobian(outputs=["y_4", "g_2", "g_1"])
 
-    # Pass a multi-named objective
+    # Pass a multi-valued objective
     scenario.formulation.opt_problem.objective.outvars = ["y_4"] * 2
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The objective must be single-valued."):
         adapter._compute_jacobian()
 
 

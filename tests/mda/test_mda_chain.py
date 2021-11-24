@@ -22,24 +22,26 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import exists
+import sys
 
 import numpy as np
 import pytest
-from numpy import ones
+from numpy import array, isclose, ones
 
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.utils.py23_compat import Path
 
 from .test_mda import analytic_disciplines_from_desc
 
@@ -63,12 +65,98 @@ DISC_DESCR_16D = [
 ]
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_sellar():
-    """"""
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+def test_set_tolerances(sellar_disciplines):
+    """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
-        disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
+        sellar_disciplines,
+        tolerance=1e-3,
+        linear_solver_tolerance=1e-6,
+        max_mda_iter=20,
+        chain_linearize=False,
+    )
+    assert mda_chain.tolerance == 1e-3
+    assert mda_chain.linear_solver_tolerance == 1e-6
+
+    assert mda_chain.mdo_chain.disciplines[0].tolerance == 1e-3
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver_tolerance == 1e-6
+
+
+def test_set_solver(sellar_disciplines):
+    """Test that the MDA tolerances can be set at the object instantiation."""
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-3,
+        linear_solver_tolerance=1e-6,
+        max_mda_iter=20,
+        chain_linearize=False,
+        use_lu_fact=True,
+        linear_solver="LGMRES",
+        linear_solver_options={"restart": 5},
+    )
+    assert mda_chain.linear_solver == "LGMRES"
+    assert mda_chain.use_lu_fact
+    assert mda_chain.linear_solver_options == {"restart": 5}
+
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver == "LGMRES"
+    assert mda_chain.mdo_chain.disciplines[0].use_lu_fact
+    assert mda_chain.mdo_chain.disciplines[0].linear_solver_options == {"restart": 5}
+
+
+def test_set_linear_solver_tolerance_from_options_constructor(sellar_disciplines):
+    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+
+    In this test, we check that an exception is raised at the MDA instantiation.
+    """
+    linear_solver_options = {"tol": 1e-6}
+    msg = (
+        "The linear solver tolerance shall be set"
+        " using the linear_solver_tolerance argument."
+    )
+    with pytest.raises(ValueError, match=msg):
+        MDAChain(
+            sellar_disciplines,
+            tolerance=1e-12,
+            max_mda_iter=20,
+            chain_linearize=False,
+            linear_solver_options=linear_solver_options,
+        )
+
+
+def test_set_linear_solver_tolerance_from_options_set_attribute(sellar_disciplines):
+    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+
+    In this test, we check that the exception is raised when linearizing the MDA.
+    """
+    linear_solver_options = {"tol": 1e-6}
+    mda_chain = MDAChain(
+        sellar_disciplines,
+        tolerance=1e-12,
+        max_mda_iter=20,
+        chain_linearize=False,
+    )
+    mda_chain.linear_solver_options = linear_solver_options
+    input_data = {
+        "x_local": np.array([0.7]),
+        "x_shared": np.array([1.97763897, 0.2]),
+        "y_0": np.array([1.0]),
+        "y_1": np.array([1.0]),
+    }
+    inputs = ["x_local", "x_shared"]
+    outputs = ["obj", "c_1", "c_2"]
+    mda_chain.add_differentiated_inputs(inputs)
+    mda_chain.add_differentiated_outputs(outputs)
+    msg = (
+        "The linear solver tolerance shall be set"
+        " using the linear_solver_tolerance argument."
+    )
+    with pytest.raises(ValueError, match=msg):
+        mda_chain.linearize(input_data)
+
+
+def test_sellar(tmp_wd, sellar_disciplines):
+    """"""
+    mda_chain = MDAChain(
+        sellar_disciplines, tolerance=1e-12, max_mda_iter=20, chain_linearize=False
     )
     input_data = {
         "x_local": np.array([0.7]),
@@ -87,15 +175,14 @@ def test_sellar():
     )
     mda_chain.plot_residual_history(filename="mda_chain_residuals")
     res_file = "MDAJacobi_mda_chain_residuals.png"
-    assert exists(res_file)
+    assert Path(res_file).exists()
 
 
-def test_sellar_chain_linearize():
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+def test_sellar_chain_linearize(sellar_disciplines):
     inputs = ["x_local", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain = MDAChain(
-        disciplines,
+        sellar_disciplines,
         tolerance=1e-13,
         max_mda_iter=30,
         chain_linearize=True,
@@ -160,10 +247,9 @@ def test_simple_grammar_type(in_gtype):
         assert type(smda.input_grammar) == SimpleGrammar
 
 
-def test_mix_sim_jsongrammar():
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+def test_mix_sim_jsongrammar(sellar_disciplines):
     mda_chain_s = MDAChain(
-        disciplines,
+        sellar_disciplines,
         grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
     )
     assert type(mda_chain_s.input_grammar) == SimpleGrammar
@@ -171,7 +257,7 @@ def test_mix_sim_jsongrammar():
     out_1 = mda_chain_s.execute()
 
     mda_chain = MDAChain(
-        disciplines,
+        sellar_disciplines,
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
     )
     assert type(mda_chain.input_grammar) == JSONGrammar
@@ -214,3 +300,47 @@ def test_no_coupling_jac():
     disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
     mda = MDAChain(disciplines)
     assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+
+
+def test_sub_coupling_structures(sellar_disciplines):
+    """Check that an MDA is correctly instantiated from a coupling structure."""
+    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    sub_coupling_structures = [MDOCouplingStructure(sellar_disciplines)]
+    mda_sellar = MDAChain(
+        sellar_disciplines,
+        coupling_structure=coupling_structure,
+        sub_coupling_structures=sub_coupling_structures,
+    )
+    assert mda_sellar.coupling_structure == coupling_structure
+    assert (
+        mda_sellar.mdo_chain.disciplines[0].coupling_structure
+        == sub_coupling_structures[0]
+    )
+
+
+def test_log_convergence(sellar_disciplines):
+    mda_chain = MDAChain(sellar_disciplines)
+    assert not mda_chain.log_convergence
+    for mda in mda_chain.sub_mda_list:
+        assert not mda.log_convergence
+
+    mda_chain.log_convergence = True
+    assert mda_chain.log_convergence
+    for mda in mda_chain.sub_mda_list:
+        assert mda.log_convergence
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 7) and IS_WIN,
+    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
+)
+def test_parallel_doe(generate_parallel_doe_data):
+    """Test the execution of MDAChain in parallel.
+
+    Args:
+        generate_parallel_doe_data: Fixture that returns the optimum solution to
+            a parallel DOE scenario for a particular `main_mda_class`
+            and n_samples.
+    """
+    obj = generate_parallel_doe_data("MDAChain", 7)
+    assert isclose(array([obj]), array([608.175]), atol=1e-3)

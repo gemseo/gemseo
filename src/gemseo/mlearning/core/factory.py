@@ -29,12 +29,12 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-from os.path import join
 from typing import List, Optional, Union
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,13 +85,13 @@ class MLAlgoFactory(object):
             ml_algo: The name of a machine learning algorithm (its class name).
 
         Returns:
-            The availability of the machine learning algorithm.
+            Whether the machine learning algorithm is available.
         """
         return self.factory.is_available(ml_algo)
 
     def load(
         self,
-        directory,  # type:str
+        directory,  # type:Union[str,Path]
     ):  # type: (...) -> MLAlgo
         """Load an instance of machine learning algorithm from the disk.
 
@@ -102,7 +102,8 @@ class MLAlgoFactory(object):
         Returns:
             The instance of the machine learning algorithm.
         """
-        with open(join(str(directory), MLAlgo.FILENAME), "rb") as handle:
+        directory = Path(directory)
+        with (directory / MLAlgo.FILENAME).open("rb") as handle:
             objects = pickle.load(handle)
         model = self.factory.create(
             objects.pop("algo_name"),

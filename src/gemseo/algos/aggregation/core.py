@@ -95,7 +95,7 @@ def ks_agg_jac_v(
     Jacobian vector product of the constraints aggregation method for inequality
     constraints.
 
-    See :cite:t:`kennedy2015improved` and  :cite:t:`kreisselmeier1983application`.
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
 
     Args:
         orig_val: The original constraint values.
@@ -131,7 +131,7 @@ def ks_agg_jac(
 
     Jacobian of the Constraints aggregation method for inequality constraints.
 
-    See :cite:t:`kennedy2015improved` and  :cite:t:`kreisselmeier1983application`.
+    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
 
     Args:
         orig_val: The original constraint values.
@@ -164,7 +164,7 @@ def iks_agg(
 ):  # type: (...) -> float
     """Aggregate IKS Constraints for inequality constraints.
 
-    See :cite:t:`kennedy2015improved`.
+    See :cite:`kennedy2015improved`.
 
     Args:
         orig_val: The original constraint values.
@@ -200,7 +200,7 @@ def iks_agg_jac_v(
     Jacobian vector product of the IKS Constraints aggregation method for inequality
     constraints.
 
-    See :cite:t:`kennedy2015improved`.
+    See :cite:`kennedy2015improved`.
 
     Args:
         orig_val: The original constraint values.

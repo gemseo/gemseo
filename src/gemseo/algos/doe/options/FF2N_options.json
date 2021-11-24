@@ -1,0 +1,25 @@
+{
+    "name": "ff2n_options",
+    "description": "2-Level Full-Factorial algorithm from the pyDOE library",
+    "id": "https://pythonhosted.org/pyDOE/factorial.html#level-full-factorial",
+    "properties": {
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

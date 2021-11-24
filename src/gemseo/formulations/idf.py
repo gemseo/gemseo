@@ -33,7 +33,9 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
+from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.mda.mda_chain import MDAChain
 
 LOGGER = logging.getLogger(__name__)
@@ -63,6 +65,7 @@ class IDF(MDOFormulation):
         parallel_exec=False,  # type: bool
         use_threading=True,  # type: bool
         start_at_equilibrium=False,  # type: bool
+        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
     ):  # type: (...) -> None
         """
         Args:
@@ -85,10 +88,11 @@ class IDF(MDOFormulation):
             objective_name,
             design_space,
             maximize_objective=maximize_objective,
+            grammar_type=grammar_type,
         )
         if parallel_exec:
             self._parallel_exec = MDOParallelChain(
-                self.disciplines, use_threading=use_threading
+                self.disciplines, use_threading=use_threading, grammar_type=grammar_type
             )
         else:
             self._parallel_exec = None
@@ -174,7 +178,7 @@ class IDF(MDOFormulation):
         Returns:
             A function computing the consistency constraints.
         """
-        coupl_func = self._get_function_from(output_couplings)
+        coupl_func = FunctionFromDiscipline(output_couplings, self)
         dv_names_of_disc = coupl_func.args
 
         if self.normalize_constraints:
@@ -274,7 +278,7 @@ class IDF(MDOFormulation):
                 discipline, strong=False
             )
             if couplings:
-                cstr = self._generate_consistency_cstr(couplings)
+                cstr = ConsistencyCstr(couplings, self)
                 self.opt_problem.add_eq_constraint(cstr)
 
     def get_expected_workflow(

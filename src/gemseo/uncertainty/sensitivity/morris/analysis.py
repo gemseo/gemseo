@@ -29,13 +29,15 @@ The purpose of the One-At-a-Time (OAT) methodology is to quantify the elementary
 
 .. math::
 
-   df_i = f(X_1+dX_1,\ldots,X_i+dX_i,\ldots,X_d)-f(X_1,\ldots,X_i,\ldots,X_d)
+   df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
+          -
+          f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
 
 associated with a small variation :math:`dX_i` of :math:`X_i` with
 
 .. math::
 
-   df_1 = f(X_1+dX_1,\ldots,X_i,\ldots,X_d)-f(X_1,\ldots,X_i,\ldots,X_d)
+   df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)
 
 The elementary effects :math:`df_1,\ldots,df_d` are computed sequentially
 from an initial point
@@ -72,13 +74,14 @@ This methodology relies on the :class:`.MorrisAnalysis` class.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import IndicesType, SensitivityAnalysis
@@ -140,6 +143,43 @@ class MorrisAnalysis(SensitivityAnalysis):
                     ]
                 }
 
+        relative_sigma (dict): The relative variability of the effects
+            with the following structure:
+
+            .. code-block:: python
+
+                {
+                    "output_name": [
+                        {
+                            "input_name": data_array,
+                        }
+                    ]
+                }
+
+        min (dict): The minimum effect with the following structure:
+
+            .. code-block:: python
+
+                {
+                    "output_name": [
+                        {
+                            "input_name": data_array,
+                        }
+                    ]
+                }
+
+        max (dict): The maximum effect with the following structure:
+
+            .. code-block:: python
+
+                {
+                    "output_name": [
+                        {
+                            "input_name": data_array,
+                        }
+                    ]
+                }
+
     Examples:
         >>> from numpy import pi
         >>> from gemseo.api import create_discipline, create_parameter_space
@@ -161,7 +201,9 @@ class MorrisAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = MorrisAnalysis(discipline, parameter_space, n_replicates=5)
+        >>> analysis = MorrisAnalysis(
+        ...     discipline, parameter_space, n_samples=None, n_replicates=5
+        ... )
         >>> indices = analysis.compute_indices()
     """
 
@@ -171,25 +213,28 @@ class MorrisAnalysis(SensitivityAnalysis):
         self,
         discipline,  # type: MDODiscipline
         parameter_space,  # type:DesignSpace
-        n_samples,  # type: int
+        n_samples,  # type: Optional[int]
         algo=None,  # type: Optional[str]
-        algo_options=None,  # type: Optional[Mapping]
+        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
         n_replicates=5,  # type: int
         step=0.05,  # type: float
     ):  # type: (...) -> None
         # noqa: D205,D212,D415
         r"""
         Args:
-            n_replicates (int, optional): The number of times
+            n_replicates: The number of times
                 the OAT method is repeated. Used only if :attr:`n_samples` is None.
                 Otherwise, this number is the greater integer :math:`r`
                 such that :math:`r(d+1)\leq` :attr:`n_samples`
                 and :math:`r(d+1)` is the number of samples actually carried out.
-            step (float, optional): The finite difference step of the OAT method.
+            step: The finite difference step of the OAT method.
         """
         self.mu_ = None
         self.mu_star = None
         self.sigma = None
+        self.relative_sigma = None
+        self.min = None
+        self.max = None
         self.__step = step
         if n_samples is None:
             self.__n_replicates = n_replicates
@@ -208,13 +253,26 @@ class MorrisAnalysis(SensitivityAnalysis):
         self.default_output = list(discipline.get_output_data_names())
 
     @property
+    def outputs_bounds(self):  # type: (...) -> Dict[str, List[float]]
+        """The empirical bounds of the outputs."""
+        return self.__diff_discipline.output_range
+
+    @property
     def n_replicates(self):  # type: (...) -> int
         """The number of OAT replicates."""
         return self.__n_replicates
 
     def compute_indices(
-        self, outputs=None  # type: Optional[Sequence[str]]
+        self,
+        outputs=None,  # type: Optional[Sequence[str]]
+        normalize=False,  # type: bool
     ):  # type: (...) -> Dict[str,IndicesType]
+        # noqa: D205 D212 D415
+        """
+        Args:
+            normalize: Whether to normalize the indices
+                with the empirical bounds of the outputs.
+        """
         # noqa: D102
         fd_data = self.dataset.get_data_by_group(self.dataset.OUTPUT_GROUP, True)
         output_names = outputs or self.default_output
@@ -223,39 +281,61 @@ class MorrisAnalysis(SensitivityAnalysis):
         self.mu_ = {name: {} for name in output_names}
         self.mu_star = {name: {} for name in output_names}
         self.sigma = {name: {} for name in output_names}
+        self.relative_sigma = {name: {} for name in output_names}
+        self.min = {name: {} for name in output_names}
+        self.max = {name: {} for name in output_names}
         for fd_name, value in fd_data.items():
             output_name, input_name = self.__diff_discipline.get_io_names(fd_name)
             if output_name in output_names:
+                lower = self.outputs_bounds[output_name][0]
+                upper = self.outputs_bounds[output_name][1]
+
                 self.mu_[output_name][input_name] = value.mean(0)
                 self.mu_star[output_name][input_name] = np_abs(value).mean(0)
                 self.sigma[output_name][input_name] = value.std(0)
+                self.min[output_name][input_name] = np_abs(value).min(0)
+                self.max[output_name][input_name] = np_abs(value).max(0)
+
+                if normalize:
+                    self.mu_[output_name][input_name] /= upper - lower
+                    self.mu_star[output_name][input_name] /= max(abs(upper), abs(lower))
+                    self.sigma[output_name][input_name] /= upper - lower
+                    self.min[output_name][input_name] /= upper - lower
+                    self.max[output_name][input_name] /= upper - lower
+
+                self.relative_sigma[output_name][input_name] = (
+                    self.sigma[output_name][input_name]
+                    / self.mu_star[output_name][input_name]
+                )
+
         for output_name in output_names:
             length = len(next(iter(self.sigma[output_name].values())))
-            self.mu_[output_name] = [
-                {name: array([val[idx]]) for name, val in self.mu_[output_name].items()}
-                for idx in range(length)
-            ]
-            self.mu_star[output_name] = [
-                {
-                    name: array([val[idx]])
-                    for name, val in self.mu_star[output_name].items()
-                }
-                for idx in range(length)
-            ]
-            self.sigma[output_name] = [
-                {
-                    name: array([val[idx]])
-                    for name, val in self.sigma[output_name].items()
-                }
-                for idx in range(length)
-            ]
+            for func in [
+                self.mu_,
+                self.mu_star,
+                self.sigma,
+                self.relative_sigma,
+                self.min,
+                self.max,
+            ]:
+                func[output_name] = [
+                    {name: array([val[idx]]) for name, val in func[output_name].items()}
+                    for idx in range(length)
+                ]
         return self.indices
 
     @property
     def indices(
         self,
-    ):  # type: (...) -> IndicesType # noqa: D102
-        return {"mu": self.mu_, "mu_star": self.mu_star, "sigma": self.sigma}
+    ):  # type: (...) -> Dict[str,IndicesType] # noqa: D102
+        return {
+            "mu": self.mu_,
+            "mu_star": self.mu_star,
+            "sigma": self.sigma,
+            "relative_sigma": self.relative_sigma,
+            "min": self.min,
+            "max": self.max,
+        }
 
     @property
     def main_indices(

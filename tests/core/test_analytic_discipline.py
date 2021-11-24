@@ -19,54 +19,67 @@
 #                   initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
+"""Tests for analytic MDODiscipline based on symbolic expressions."""
 from __future__ import division, unicode_literals
 
-import unittest
-
+import pytest
 import sympy
 from numpy import array
+from packaging import version
 
 from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 
 
-class TestAnalyticDiscipline(unittest.TestCase):
-    """Tests for analytic MDODiscipline based on symbolic expressions."""
+@pytest.fixture
+def expressions_dict():
+    # string expressions
+    expr_dict = {"y_1": "2*x**2", "y_2": "3*x**2+5+z**3"}
+    # SymPy expression
+    x, z = sympy.symbols(["x", "z"])
+    y_3 = sympy.Piecewise(
+        (sympy.exp(-1 / (1 - x ** 2 - z ** 2)), x ** 2 + z ** 2 < 1), (0, True)
+    )
+    expr_dict["y_3"] = y_3
+    # N.B. y_3 is infinitely differentiable with respect to x and z
+    return expr_dict
 
-    def test_basic(self):
-        """Test basic functionality."""
-        # string expressions
-        expr_dict = {"y_1": "2*x**2", "y_2": "3*x**2+5+z**3"}
-        # SymPy expression
-        x, z = sympy.symbols(["x", "z"])
-        y_3 = sympy.Piecewise(
-            (sympy.exp(-1 / (1 - x ** 2 - z ** 2)), x ** 2 + z ** 2 < 1), (0, True)
-        )
-        expr_dict["y_3"] = y_3
-        # N.B. y_3 is infinitely differentiable with respect to x and z
 
-        # Check fast numeric evaluation
-        disc = AnalyticDiscipline("analytic", expr_dict)
-        input_data = {"x": array([1.0]), "z": array([1.0])}
-        disc.check_jacobian(
-            input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-        )
+def test_fast_expression_evaluation(expressions_dict):
+    disc = AnalyticDiscipline("analytic", expressions_dict)
+    input_data = {"x": array([1.0]), "z": array([1.0])}
+    disc.check_jacobian(
+        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
+    )
 
-        # Check standard expression evaluation
-        disc = AnalyticDiscipline("analytic", expr_dict, fast_evaluation=False)
-        input_data = {"x": array([1.0]), "z": array([1.0])}
-        disc.check_jacobian(
-            input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
-        )
 
-    def test_fail(self):
-        """Test failures."""
-        expr_dict = {"y": MDOScenario}
-        self.assertRaises(TypeError, AnalyticDiscipline, "analytic", expr_dict)
-        self.assertRaises(ValueError, AnalyticDiscipline, "analytic", None)
+def test_standard_expression_evaluation(expressions_dict):
+    disc = AnalyticDiscipline("analytic", expressions_dict, fast_evaluation=False)
+    input_data = {"x": array([1.0]), "z": array([1.0])}
+    disc.check_jacobian(
+        input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
+    )
 
-        expr_dict = {"y": "log(x)"}
-        disc = AnalyticDiscipline("analytic", expr_dict, fast_evaluation=False)
-        input_data = {"x": array([0.0])}
-        self.assertRaises(TypeError, disc.execute, input_data)
+
+def test_failure_with_malformed_expressions_dict():
+    with pytest.raises(TypeError):
+        AnalyticDiscipline("analytic", {"y": MDOScenario})
+
+
+def test_failure_when_expressions_dict_is_not_a_dict():
+    with pytest.raises(ValueError):
+        AnalyticDiscipline("analytic", None)
+
+
+@pytest.mark.skipif(
+    version.parse(sympy.__version__) > version.parse("1.8.0"),
+    reason="requires sympy 1.7.0 or lower",
+)
+def test_failure_for_log_zero_without_fast_evaluation():
+    # For sympy 1.8.0 and higher,
+    # sympy.parsing.sympy_parser.parse_expr("log(x)").evalf(subs={"x":0.0})
+    # returns -oo which is converted into the float -inf."""
+    disc = AnalyticDiscipline("analytic", {"y": "log(x)"}, fast_evaluation=False)
+    input_data = {"x": array([0.0])}
+    with pytest.raises(TypeError):
+        disc.execute(input_data)

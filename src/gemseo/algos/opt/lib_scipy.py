@@ -24,11 +24,13 @@
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Any, Dict, Optional, Union
 
-from numpy import isfinite, real
+from numpy import isfinite, ndarray, real
 from scipy import optimize
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
+from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ class ScipyOpt(OptimizationLibrary):
 
     OPTIONS_MAP = {
         # Available only in the doc !
-        # OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
+        OptimizationLibrary.LS_STEP_NB_MAX: "maxls",
         OptimizationLibrary.LS_STEP_SIZE_MAX: "stepmx",
         OptimizationLibrary.MAX_FUN_EVAL: "maxfun",
         OptimizationLibrary.PG_TOL: "gtol",
@@ -93,108 +95,80 @@ class ScipyOpt(OptimizationLibrary):
             },
         }
 
-    def _get_options(  # pylint: disable=W0221
+    def _get_options(
         self,
-        max_iter=999,
-        ftol_rel=1e-9,
-        ftol_abs=1e-9,
-        xtol_rel=1e-9,
-        xtol_abs=1e-9,
-        max_ls_step_size=0.0,
-        max_ls_step_nb=20,
-        max_fun_eval=999,
-        max_time=0,
-        pg_tol=1e-5,
-        disp=0,
-        max_c_git=-1,
-        eta=-1.0,
-        factr=1e7,
-        maxcor=20,
-        normalize_design_space=True,
-        eq_tolerance=1e-2,
-        ineq_tolerance=1e-4,
-        stepmx=0.0,
-        minfev=0.0,
-        scale=None,
-        rescale=None,
-        offset=None,
-        **kwargs
-    ):
-        r"""Sets the options default values
+        max_iter=999,  # type: int
+        ftol_rel=1e-9,  # type: float
+        ftol_abs=1e-9,  # type: float
+        xtol_rel=1e-9,  # type: float
+        xtol_abs=1e-9,  # type: float
+        max_ls_step_size=0.0,  # type: float
+        max_ls_step_nb=20,  # type: int
+        max_fun_eval=999,  # type: int
+        max_time=0,  # type: float
+        pg_tol=1e-5,  # type: float
+        disp=0,  # type: int
+        maxCGit=-1,  # type: int # noqa: N803
+        eta=-1.0,  # type: float
+        factr=1e7,  # type: float
+        maxcor=20,  # type: int
+        normalize_design_space=True,  # type: int
+        eq_tolerance=1e-2,  # type: float
+        ineq_tolerance=1e-4,  # type: float
+        stepmx=0.0,  # type: float
+        minfev=0.0,  # type: float
+        scale=None,  # type: Optional[float]
+        rescale=-1,  # type: float
+        offset=None,  # type: Optional[float]
+        **kwargs  # type: Any
+    ):  # type: (...) -> Dict[str, Any]
+        r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
         go to scipy.optimize documentation:
         https://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
-        :param max_iter: maximum number of iterations, ie unique calls to f(x)
-        :type max_iter: int
-        :param ftol_rel: stop criteria, relative tolerance on the
-               objective function,
-               if abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_rel: float
-        :param ftol_abs: stop criteria, absolute tolerance on the objective
-               function, if abs(f(xk)-f(xk+1))<= ftol_rel: stop
-               (Default value = 1e-9)
-        :type ftol_abs: float
-        :param xtol_rel: stop criteria, relative tolerance on the
-               design variables,
-               if norm(xk-xk+1)/norm(xk)<= xtol_rel: stop
-               (Default value = 1e-9)
-        :type xtol_rel: float
-        :param xtol_abs: stop criteria, absolute tolerance on the
-               design variables,
-               if norm(xk-xk+1)<= xtol_abs: stop
-               (Default value = 1e-9)
-        :type xtol_abs: float
-        :param max_ls_step_size: Maximum step for the line search
-               (Default value = 0.)
-        :type max_ls_step_size: float
-        :param max_ls_step_nb: Maximum number of line search steps
-               per iteration. (Default value = 20)
-        :type max_ls_step_nb: int
-        :param max_fun_eval: internal stop criteria on the
-               number of algorithm outer iterations (Default value = 999)
-        :type max_ls_step_size: int
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param pg_tol: stop criteria on the projected gradient norm
-               (Default value = 1e-5)
-        :type pg_tol: float
-        :param disp: display information, (Default value = 0)
-        :type disp: int
-        :param max_c_git: Maximum Conjugate Gradient internal solver
-               iterations (Default value = -1)
-        :type max_c_git: int
-        :param eta: severity of the linesearch, specific to
-               TNC algorithm (Default value = -1.)
-        :type eta: int
-        :param factr: stop criteria on the projected gradient norm,
-               stop if max_i (grad_i)<eps_mach \* factr, where eps_mach is the
-               machine precision ( Default value = 1e7)
-        :type factr: float
-        :param maxcor: maximum BFGS updates (Default value = 20)
-        :type maxcor: int
-        :param normalize_design_space: If True, scales variables in [0, 1]
-        :type normalize_design_space: bool
-        :param eq_tolerance: equality tolerance
-        :type eq_tolerance: float
-        :param ineq_tolerance: inequality tolerance
-        :type ineq_tolerance: float
-        :param stepmx: Maximum step for the line search.
-        :type stepmx: float
-        :param minfev: Minimum function value estimate
-        :type minfev: float
-        :param scale: Scaling factors to apply to each variable
-        :type scale: array
-        :param rescale: Scaling factor (in log10) used to trigger f value
-            rescaling
-        :type rescale: float
-        :param offset: Value to subtract from each variable.
-        :type offset: float
-        :param kwargs: other algorithms options
-        :type kwargs: kwargs
+        Args:
+            max_iter: The maximum number of iterations, i.e. unique calls to f(x).
+            ftol_rel: A stop criteria, the relative tolerance on the
+               objective function.
+               If abs(f(xk)-f(xk+1))/abs(f(xk))<= ftol_rel: stop.
+            ftol_abs: A stop criteria, the absolute tolerance on the objective
+               function. If abs(f(xk)-f(xk+1))<= ftol_rel: stop.
+            xtol_rel: A stop criteria, the relative tolerance on the
+               design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
+            xtol_abs: A stop criteria, absolute tolerance on the
+               design variables.
+               If norm(xk-xk+1)<= xtol_abs: stop.
+            max_ls_step_size: The maximum step for the line search.
+            max_ls_step_nb: The maximum number of line search steps
+               per iteration.
+            max_fun_eval: The internal stop criteria on the
+               number of algorithm outer iterations.
+            max_time: The maximum runtime in seconds, disabled if 0.
+            pg_tol: A stop criteria on the projected gradient norm.
+            disp: The display information flag.
+            maxCGit: The maximum Conjugate Gradient internal solver
+                iterations.
+            eta: The severity of the line search, specific to the
+                TNC algorithm.
+            factr: A stop criteria on the projected gradient norm,
+                stop if max_i (grad_i)<eps_mach \* factr, where eps_mach is the
+                machine precision.
+            maxcor: The maximum BFGS updates.
+            normalize_design_space: If True, scales variables to [0, 1].
+            eq_tolerance: The equality tolerance.
+            ineq_tolerance: The inequality tolerance.
+            stepmx: The maximum step for the line search.
+            minfev: The minimum function value estimate.
+            scale: The scaling factor to apply to each variable.
+                If None, the factors are up-low for interval bounded variables
+                and 1+|x| for the others.
+            rescale: The scaling factor (in log10) used to trigger f value
+                rescaling.
+            offset: Value to subtract from each variable. If None, the offsets are
+                (up+low)/2 for interval bounded variables and x for the others.
+            **kwargs: The other algorithm options.
         """
         nds = normalize_design_space
         popts = self._process_options(
@@ -209,7 +183,7 @@ class ScipyOpt(OptimizationLibrary):
             max_fun_eval=max_fun_eval,
             pg_tol=pg_tol,
             disp=disp,
-            max_c_git=max_c_git,
+            maxCGit=maxCGit,  # noqa: N803
             eta=eta,
             factr=factr,
             maxcor=maxcor,
@@ -225,10 +199,16 @@ class ScipyOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+    def _run(
+        self, **options  # type: Any
+    ):  # type: (...) -> OptimizationResult
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options for the algorithm.
+
+        Returns:
+            The optimization result.
         """
         # remove normalization from options for algo
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
@@ -239,9 +219,18 @@ class ScipyOpt(OptimizationLibrary):
         u_b = [val if isfinite(val) else None for val in u_b]
         bounds = list(zip(l_b, u_b))
 
-        def real_part_fun(x_vect):
-            """Wraps the function and returns the real part."""
-            return real(self.problem.objective.func(x_vect))
+        def real_part_fun(
+            x,  # type: ndarray
+        ):  # type: (...) -> Union[int, float]
+            """Wrap the function and return the real part.
+
+            Args:
+                x: The values to be given to the function.
+
+            Returns:
+                The real part of the evaluation of the objective function.
+            """
+            return real(self.problem.objective.func(x))
 
         fun = real_part_fun
 
@@ -269,6 +258,7 @@ class ScipyOpt(OptimizationLibrary):
         options.pop(self.MAX_ITER)
         if self.algo_name != "TNC":
             options.pop("xtol")
+
         opt_result = optimize.minimize(
             fun=fun,
             x0=x_0,

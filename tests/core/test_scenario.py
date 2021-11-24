@@ -21,7 +21,6 @@
 
 from __future__ import division, unicode_literals
 
-from os.path import exists
 from typing import Sequence
 
 import pytest
@@ -30,8 +29,8 @@ from numpy.linalg import norm
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.function import MDOFunctionGenerator
 from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -39,29 +38,49 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.problems.sobieski.wrappers_sg import (
+    SobieskiAerodynamicsSG,
+    SobieskiMissionSG,
+    SobieskiPropulsionSG,
+    SobieskiStructureSG,
+)
 
 
-def build_mdo_scenario(formulation):
+def build_mdo_scenario(
+    formulation,  # type: str
+    grammar_type=MDOScenario.JSON_GRAMMAR_TYPE,  # type: str
+):  # type: (...) -> MDOScenario
     """Build the scenario for SSBJ.
 
     Args:
-        formulation (str): The name of the scenario formulation.
+        formulation: The name of the scenario formulation.
+        grammar_type: The grammar type.
 
     Returns:
-        MDOScenario: The scenario.
+        The MDOScenario.
     """
-    disciplines = [
-        SobieskiPropulsion(),
-        SobieskiAerodynamics(),
-        SobieskiMission(),
-        SobieskiStructure(),
-    ]
+    if grammar_type == MDOScenario.JSON_GRAMMAR_TYPE:
+        disciplines = [
+            SobieskiPropulsion(),
+            SobieskiAerodynamics(),
+            SobieskiMission(),
+            SobieskiStructure(),
+        ]
+    elif grammar_type == MDOScenario.SIMPLE_GRAMMAR_TYPE:
+        disciplines = [
+            SobieskiPropulsionSG(),
+            SobieskiAerodynamicsSG(),
+            SobieskiMissionSG(),
+            SobieskiStructureSG(),
+        ]
+
     design_space = SobieskiProblem().read_design_space()
     scenario = MDOScenario(
         disciplines,
         formulation=formulation,
         objective_name="y_4",
         design_space=design_space,
+        grammar_type=grammar_type,
         maximize_objective=True,
     )
     return scenario
@@ -69,13 +88,35 @@ def build_mdo_scenario(formulation):
 
 @pytest.fixture()
 def mdf_scenario():
-    """Return a MDOScenario with MDF formulation."""
+    """Return a MDOScenario with MDF formulation and JSONGrammar.
+
+    Returns:
+        The MDOScenario.
+    """
     return build_mdo_scenario("MDF")
 
 
 @pytest.fixture()
+def mdf_variable_grammar_scenario(request):
+    """Return a MDOScenario with MDF formulation and custom grammar.
+
+    Args:
+        request: An auxiliary variable to retrieve the grammar type with
+            pytest.mark.parametrize and the option `indirect=True`.
+
+    Returns:
+        The MDOScenario.
+    """
+    return build_mdo_scenario("MDF", request.param)
+
+
+@pytest.fixture()
 def idf_scenario():
-    """Return a MDOScenario with IDF formulation."""
+    """Return a MDOScenario with IDF formulation and JSONGrammar.
+
+    Return:
+        The MDOScenario.
+    """
     return build_mdo_scenario("IDF")
 
 
@@ -91,17 +132,34 @@ def test_scenario_state(mdf_scenario):
 
 def test_add_user_defined_constraint_error(mdf_scenario):
     # Set the design constraints
-    with pytest.raises(Exception):
-        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], "None")
-
-    with pytest.raises(Exception):
-        mdf_scenario.save_optimization_history("file_path", file_format="toto")
+    with pytest.raises(
+        ValueError,
+        match="Constraint type must be either 'eq' or 'ineq'; got 'foo' instead.",
+    ):
+        mdf_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="foo")
 
     mdf_scenario.set_differentiation_method(None)
 
     assert (
         mdf_scenario.formulation.opt_problem.differentiation_method == "no_derivatives"
     )
+
+
+def test_save_optimization_history_exception(mdf_scenario):
+    with pytest.raises(
+        ValueError, match="Cannot export optimization history to file format: foo."
+    ):
+        mdf_scenario.save_optimization_history("file_path", file_format="foo")
+
+
+@pytest.mark.parametrize(
+    "file_format", [OptimizationProblem.GGOBI_FORMAT, OptimizationProblem.HDF5_FORMAT]
+)
+def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd):
+    file_path = tmp_wd / "file_name"
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
+    assert file_path.exists()
 
 
 def test_init_mdf(mdf_scenario):
@@ -125,13 +183,17 @@ def test_basic_idf(tmp_wd, idf_scenario):
         outdir=str(tmp_wd), json_output=True, html_output=True, open_browser=False
     )
 
-    assert exists("xdsm.json")
-    assert exists("xdsm.html")
+    assert (tmp_wd / "xdsm.json").exists()
+    assert (tmp_wd / "xdsm.html").exists()
 
 
 def test_backup_error(tmp_wd, mdf_scenario):
     """"""
-    with pytest.raises(ValueError):
+    expected_message = (
+        "Conflicting options for history backup, "
+        "cannot pre load optimization history and erase it!"
+    )
+    with pytest.raises(ValueError, match=expected_message):
         mdf_scenario.set_optimization_history_backup(
             __file__, erase=True, pre_load=True
         )
@@ -152,32 +214,47 @@ def test_backup_0(tmp_wd, mdf_scenario):
         filename, erase=True, pre_load=False, generate_opt_plot=True
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 2
 
-    assert exists(filename)
+    assert (tmp_wd / filename).exists()
 
     opt_read = OptimizationProblem.import_hdf(filename)
 
     assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
 
+    mdf_scenario.set_optimization_history_backup(filename, erase=True, pre_load=False)
+    assert not (tmp_wd / filename).exists()
 
-def test_backup_1(tmp_wd, mdf_scenario):
+
+@pytest.mark.parametrize(
+    "mdf_variable_grammar_scenario",
+    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    indirect=True,
+)
+def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
     """Test the optimization backup with generation of plots during convergence.
 
     tests that when used, the backup does not call the original objective
     """
     filename = "opt_history.h5"
-    mdf_scenario.set_optimization_history_backup(
+    mdf_variable_grammar_scenario.set_optimization_history_backup(
         filename, erase=False, pre_load=True, generate_opt_plot=False
     )
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
+    mdf_variable_grammar_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     opt_read = OptimizationProblem.import_hdf(filename)
 
-    assert len(opt_read.database) == len(mdf_scenario.formulation.opt_problem.database)
+    assert len(opt_read.database) == len(
+        mdf_variable_grammar_scenario.formulation.opt_problem.database
+    )
 
     assert (
         norm(
-            array(mdf_scenario.formulation.opt_problem.database.get_x_history())
-            - array(mdf_scenario.formulation.opt_problem.database.get_x_history())
+            array(
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+            )
+            - array(
+                mdf_variable_grammar_scenario.formulation.opt_problem.database.get_x_history()
+            )
         )
         == 0.0
     )
@@ -187,11 +264,20 @@ def test_typeerror_formulation():
     disciplines = [SobieskiPropulsion()]
     design_space = SobieskiProblem().read_design_space()
 
-    with pytest.raises(TypeError):
+    expected_message = (
+        "Formulation must be specified by its name; "
+        "please use GEMSEO_PATH to specify custom formulations."
+    )
+    with pytest.raises(TypeError, match=expected_message):
         MDOScenario(disciplines, 1, "y_4", design_space)
 
 
-def test_get_optimization_results(mdf_scenario):
+@pytest.mark.parametrize(
+    "mdf_variable_grammar_scenario",
+    [MDOScenario.SIMPLE_GRAMMAR_TYPE, MDOScenario.JSON_GRAMMAR_TYPE],
+    indirect=True,
+)
+def test_get_optimization_results(mdf_variable_grammar_scenario):
     """Test the optimization results accessor.
 
     Test the case when the Optimization results are available.
@@ -210,9 +296,9 @@ def test_get_optimization_results(mdf_scenario):
         is_feasible=is_feasible,
     )
 
-    mdf_scenario.optimization_result = opt_results
+    mdf_variable_grammar_scenario.optimization_result = opt_results
 
-    optimum = mdf_scenario.get_optimum()
+    optimum = mdf_variable_grammar_scenario.get_optimum()
 
     assert optimum.x_opt == x_opt
     assert optimum.f_opt == f_opt
@@ -268,10 +354,14 @@ def test_adapter_error(idf_scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Can't compute inputs from scenarios: missing_input."
+    ):
         MDOScenarioAdapter(idf_scenario, inputs + ["missing_input"], outputs)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Can't compute outputs from scenarios: missing_output."
+    ):
         MDOScenarioAdapter(idf_scenario, inputs, outputs + ["missing_output"])
 
 
@@ -325,3 +415,8 @@ def test_add_observable_not_available(
     msg = "^No discipline known by formulation MDF has all outputs named .*"
     with pytest.raises(ValueError, match=msg):
         mdf_scenario.add_observable("toto")
+
+
+def test_database_name(mdf_scenario):
+    """Check the name of the database."""
+    assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"

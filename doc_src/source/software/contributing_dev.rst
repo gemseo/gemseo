@@ -26,7 +26,7 @@
 .. _conventional commits: https://www.conventionalcommits.org
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
-.. _editable mode: https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
+.. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
 .. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
 .. _mypy: http://mypy-lang.org
 .. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
@@ -34,6 +34,8 @@
 .. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _pyperf: https://pyperf.readthedocs.io
 .. _profiler: https://docs.python.org/3/library/profile.html
+.. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
+.. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
 
 .. _dev:
 
@@ -153,7 +155,13 @@ and installed since it is not done by default during the MATLAB installation.
 
 For testing with `tox`_,
 set the environment variable :envvar:`MATLAB_PYTHON_WRAPPER`
-to point to the path to a ``pip`` installable version of the MATLAB Python API.
+to point to the path to a ``pip`` installable version of the MATLAB Python API,
+with eventually a conditionnal dependency on the Python version:
+
+.. code-block:: console
+
+   export MATLAB_PYTHON_WRAPPER="<path or URL to MATLAB Python API package> ; python_version<'3.9'"
+
 
 pSeven requirements
 ~~~~~~~~~~~~~~~~~~~
@@ -339,7 +347,7 @@ Workflow
 We use the `gitflow`_ for managing git branches.
 For the daily work,
 this basically means that evolutions of |g|
-are done in feature branches created from the develop branch
+are done in feature branches created from the `develop branch`_
 and merged back into it when finished.
 
 Git hooks
@@ -578,6 +586,9 @@ See `pytest-cov`_ for more information.
 Documentation
 -------------
 
+The documentation of the `develop branch`_
+is available online: `develop documentation`_.
+
 Generating the doc
 ++++++++++++++++++
 
@@ -642,6 +653,18 @@ For ``*args`` and ``**kwargs`` arguments,
 use only the value types with no container.
 
 Return types shall match exactly the type of the returned object.
+
+Type hinting may cause circular imports,
+if so, use the special constant :attr:`TYPE_CHECKING`
+that's :code:`False` by default
+and :code:`True` when type checking:
+
+.. code::
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from gemseo.api import create_discipline
 
 Linefeeds
 ~~~~~~~~~

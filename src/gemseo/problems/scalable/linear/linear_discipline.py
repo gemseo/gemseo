@@ -42,7 +42,8 @@ class LinearDiscipline(MDODiscipline):
         outputs_size=1,  # type: int
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             name: The discipline name.
             input_names: The input data names

@@ -26,7 +26,7 @@ from gemseo.algos.opt.core.linear_constraints import (
     build_bounds_matrices,
     build_constraints_matrices,
 )
-from gemseo.core.function import MDOFunction, MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
 
 
 def test_upper_bounds_matrices():

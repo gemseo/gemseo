@@ -26,12 +26,11 @@ from typing import Sequence
 
 import numpy as np
 from matplotlib import pyplot
-from matplotlib.colors import SymLogNorm
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,6 +43,8 @@ class ConstraintsHistory(OptPostProcessor):
     The plot method requires the constraint names to plot.
     It is possible either to save the plot, to show the plot or both.
     """
+
+    DEFAULT_FIG_SIZE = (11.0, 11.0)
 
     def __init__(
         self,
@@ -61,6 +62,10 @@ class ConstraintsHistory(OptPostProcessor):
         """
         Args:
             constraints_list: The names of the constraints.
+
+        Raises:
+            ValueError: If a given element of `constraints_list` is not a
+                function.
         """
         # retrieve the constraints values
         add_dv = False
@@ -92,7 +97,11 @@ class ConstraintsHistory(OptPostProcessor):
             nrows += 1
 
         fig, axes = pyplot.subplots(
-            nrows=nrows, ncols=2, sharex=True, sharey=False, figsize=(11, 11)
+            nrows=nrows,
+            ncols=2,
+            sharex=True,
+            sharey=False,
+            figsize=self.DEFAULT_FIG_SIZE,
         )
 
         fig.suptitle("Evolution of the constraints " + "w.r.t. iterations", fontsize=14)
@@ -120,11 +129,7 @@ class ConstraintsHistory(OptPostProcessor):
             vmax = max(vmax, np.max(np.abs(cstr_matrix)))
             extent = -0.5, nb_iter - 0.5, np.min(cstr_matrix), np.max(cstr_matrix)
 
-            # On python 2, base is not defined as a parameter in SymLogNorm()
-            if PY2:
-                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax)
-            else:
-                norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=np.e)
+            norm = SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax)
 
             axe.imshow(
                 cstr_matrix,

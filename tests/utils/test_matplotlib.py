@@ -24,7 +24,8 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])
 @pytest.mark.parametrize("show", [True, False])
-def test_process(tmp_path, pyplot_close_all, file_path, show):
+@pytest.mark.parametrize("figsize", [[10, 10], None])
+def test_process(tmp_path, pyplot_close_all, file_path, show, figsize):
     """Verify that a Matplotlib figure is correctly saved."""
     fig, axes = plt.subplots()
 
@@ -32,7 +33,7 @@ def test_process(tmp_path, pyplot_close_all, file_path, show):
         file_path = tmp_path / file_path
 
     with patch("matplotlib.pyplot.savefig"), patch("matplotlib.pyplot.show"):
-        save_show_figure(fig, show, file_path)
+        save_show_figure(fig, show, file_path, figsize)
 
     if file_path is not None:
         assert file_path.exists()

@@ -1,0 +1,29 @@
+{
+    "name": "bbdesign_options",
+    "description": "Box-Behnken algorithm from the pyDOE library",
+    "id": "https://pythonhosted.org/pyDOE/rsm.html#box-behnken",
+    "properties": {
+        "center_bb": {
+            "type": ["null","integer"],
+            "minimum": 1
+        },
+        "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+		"max_time":{
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

@@ -18,7 +18,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
+"""Tests for the NLopt library wrapper."""
 from __future__ import division, unicode_literals
 
 from unittest import TestCase
@@ -30,7 +30,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
 
 from .opt_lib_test_base import OptLibraryTestBase
@@ -69,8 +69,7 @@ class TestNLOPT(TestCase):
         opt_library.execute(problem, algo_name="NLOPT_BFGS", max_iter=10)
 
     def test_normalization(self):
-        """Runs a problem with one variable to be normalized and three not to be
-        normalized."""
+        """Runs a problem with one variable to be normalized and three not to be."""
         design_space = DesignSpace()
         design_space.add_variable("x1", 1, DesignSpace.FLOAT, -1.0, 1.0, 0.0)
         design_space.add_variable("x2", 1, DesignSpace.FLOAT, -inf, 1.0, 0.0)
@@ -99,6 +98,19 @@ class TestNLOPT(TestCase):
             assert tol_name in res.message
             # Check that the criteria is activated as ap
             assert len(pb.database) == 3
+
+
+def test_cast_to_float():
+    """Test that the NLopt library handles functions that return an `ndarray`."""
+    space = DesignSpace()
+    space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(
+        lambda x: x, "my_function", jac=lambda x: array([[1.0]])
+    )
+    res = OptimizersFactory().execute(problem, "NLOPT_SLSQP", max_iter=100)
+    assert res.x_opt == array([0.0])
+    assert res.f_opt == 0.0
 
 
 def get_options(algo_name):

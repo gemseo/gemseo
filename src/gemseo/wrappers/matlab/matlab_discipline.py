@@ -46,8 +46,7 @@ import numpy as np
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.py23_compat import Path
-from gemseo.wrappers.matlab.engine.engine import get_matlab_engine
-from gemseo.wrappers.matlab.engine.matlab_parser import MatlabParser
+from gemseo.wrappers.matlab.engine import get_matlab_engine
 from gemseo.wrappers.matlab.matlab_data_processor import (
     MatlabDataProcessor,
     convert_array_from_matlab,
@@ -55,6 +54,7 @@ from gemseo.wrappers.matlab.matlab_data_processor import (
     load_matlab_file,
     save_matlab_file,
 )
+from gemseo.wrappers.matlab.matlab_parser import MatlabParser
 
 LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +116,8 @@ class MatlabDiscipline(MDODiscipline):
         cache_file_path=None,  # type: Optional[str]
         is_jac_returned_by_func=False,  # type: bool
     ):  # type: (...) -> None
-        """# noqa: D205,D212,D415
+        # noqa: D205,D212,D415
+        """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.
             input_data_list: The list of input variables.

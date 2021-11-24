@@ -1,0 +1,45 @@
+{
+    "name": "OT_COMPOSITE_options",
+    "description": "Composite DOE from the OpenTURNS library",
+    "id": "https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Composite.html",
+    "properties": {
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "centers": {
+            "type": ["number", "array"],
+            "items":	{
+                		"type": "number",
+                		"minItems": 1
+                		}
+        },
+         "eval_jac":{
+            "type": "boolean"
+        },
+        "n_processes": {
+        	"type" : "integer",
+        	"minimum":1
+        },
+        "wait_time_between_samples": {
+        	"type" : "number",
+        	"minimum":0
+        },
+        "seed": {
+                "type" : "integer",
+                "minimum":1
+        },
+		"max_time": {
+            "type": "number",
+             "minimum": 0.0
+        }
+    },
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "additionalProperties": false,
+    "type": "object"
+}

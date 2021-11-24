@@ -28,13 +28,10 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import matplotlib.gridspec as gridspec
 import pylab
-from matplotlib.colors import SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.ticker import LogFormatter, MaxNLocator
 from numpy import abs as np_abs
-from numpy import append, arange, argmin, array, atleast_2d, concatenate
-from numpy import e as npe
-from numpy import hstack, isnan
+from numpy import append, arange, argmin, array, atleast_2d, concatenate, hstack, isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
@@ -44,12 +41,13 @@ from numpy import sort as np_sort
 from numpy import vstack, where
 from numpy.linalg import norm
 
+from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.compatibility.matplotlib import SymLogNorm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -63,9 +61,11 @@ class OptHistoryView(OptPostProcessor):
     By default, all design variables are considered. A sublist of design variables can
     be passed as options. Minimum and maximum values for the plot can be passed as
     options. The objective function can also be represented in terms of difference
-    w.r.t. the initial value It is possible either to save the plot, to show the plot or
-    both.
+    w.r.t. the initial value. It is possible either to save the plot, to show the plot
+    or both.
     """
+
+    DEFAULT_FIG_SIZE = (11.0, 6.0)
 
     def __init__(
         self,
@@ -250,7 +250,7 @@ class OptHistoryView(OptPostProcessor):
         n_variables = x_history.shape[1]
         norm_x_history = self._normalize_x_hist(x_history, variables_names)
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
 
         # design variables
@@ -339,7 +339,7 @@ class OptHistoryView(OptPostProcessor):
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
         pylab.plt.xlabel("Iterations", fontsize=12)
         pylab.plt.ylabel("Objective value", fontsize=12)
@@ -378,7 +378,7 @@ class OptHistoryView(OptPostProcessor):
             x_history: The history of the design variables.
             n_iter: The number of iterations.
         """
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         # objective function
         pylab.plt.xlabel("Iterations", fontsize=12)
         pylab.plt.ylabel("||x-x*||", fontsize=12)
@@ -537,25 +537,16 @@ class OptHistoryView(OptPostProcessor):
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         ax1 = fig.add_subplot(grid[0, 0])
-        if PY2:
-            im1 = ax1.imshow(
-                cstr_matrix,
-                cmap=cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
-            )
-        else:
-            im1 = ax1.imshow(
-                cstr_matrix,
-                cmap=cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax, base=npe),
-            )
+        im1 = ax1.imshow(
+            cstr_matrix,
+            cmap=cmap,
+            interpolation="nearest",
+            aspect="auto",
+            norm=SymLogNorm(linthresh=1.0, vmin=-vmax, vmax=vmax),
+        )
         if hasnan > 0:
             x_absc_nan = where(idx_nan.any(axis=0))[0]
             for x_i in x_absc_nan:
@@ -605,7 +596,7 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_hessian_approx_plot(
         self,
-        history,  # type: ndarray
+        history,  # type: Database
         obj_name,  # type: str
     ):  # type: (...) -> None
         """Create the plot of the Hessian approximation.
@@ -619,17 +610,20 @@ class OptHistoryView(OptPostProcessor):
             _, diag, _, _ = approximator.build_approximation(
                 funcname=obj_name, save_diag=True
             )
+            if isnan(diag).any():
+                raise ValueError("The approximated Hessian diagonal contains NaN.")
+
             diag = [ones_like(diag[0])] + diag  # Add first iteration blank
             diag = array(diag).T
         except ValueError:
-            LOGGER.warning("Failed to create Hessian approximation", exc_info=True)
+            LOGGER.warning("Failed to create Hessian approximation.", exc_info=True)
             return
 
         # if max problem, plot -Hessian
         if not self.opt_problem.minimize_objective:
             diag = -diag
 
-        fig = pylab.plt.figure(figsize=(11, 6))
+        fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         grid = gridspec.GridSpec(1, 2, width_ratios=[15, 1], wspace=0.04, hspace=0.6)
         # matrix
         axe = fig.add_subplot(grid[0, 0])
@@ -640,22 +634,13 @@ class OptHistoryView(OptPostProcessor):
         axe.xaxis.set_major_locator(MaxNLocator(integer=True))
         vmax = max(abs(np_max(diag)), abs(np_min(diag)))
         linthresh = 10 ** (np_log10(vmax) - 5.0)
-        if PY2:
-            img = axe.imshow(
-                diag.real,
-                cmap=self.cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
-            )
-        else:
-            img = axe.imshow(
-                diag.real,
-                cmap=self.cmap,
-                interpolation="nearest",
-                aspect="auto",
-                norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax, base=npe),
-            )
+        img = axe.imshow(
+            diag.real,
+            cmap=self.cmap,
+            interpolation="nearest",
+            aspect="auto",
+            norm=SymLogNorm(linthresh=linthresh, vmin=-vmax, vmax=vmax),
+        )
         axe.invert_yaxis()
 
         # colorbar

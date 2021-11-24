@@ -19,18 +19,18 @@
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-PyDOE algorithms wrapper
-************************
-"""
+"""PyDOE algorithms wrapper."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
 
+from numpy import array, ndarray
 from numpy.random import RandomState
 from numpy.random import seed as set_seed
 
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.utils.py23_compat import PY3
 
 if PY3:
@@ -38,6 +38,9 @@ if PY3:
 else:
     import pyDOE
 
+OptionType = Optional[
+    Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
+]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -96,8 +99,7 @@ class PyDOE(DOELibrary):
     CENTER_BB_KEYWORD = "center_bb"
     CENTER_CC_KEYWORD = "center_cc"
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self):  # type: (...) -> None
         super(PyDOE, self).__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
             self.lib_dict[algo] = {
@@ -112,53 +114,50 @@ class PyDOE(DOELibrary):
 
     def _get_options(
         self,
-        alpha="orthogonal",
-        face="faced",
-        criterion=None,
-        iterations=5,
-        eval_jac=False,
-        center_bb=None,
-        center_cc=None,
-        n_samples=1,
-        levels=None,
-        n_processes=1,
-        wait_time_between_samples=0.0,
-        seed=1,
-        max_time=0,
-        **kwargs
-    ):  # pylint: disable=W0221
-        """Sets the options.
+        alpha="orthogonal",  # type: str
+        face="faced",  # type: str
+        criterion=None,  # type: Optional[str]
+        iterations=5,  # type: int
+        eval_jac=False,  # type: bool
+        center_bb=None,  # type: Optional[int]
+        center_cc=None,  # type: Optional[Tuple[int, int]]
+        n_samples=None,  # type: Optional[int]
+        levels=None,  # type: Optional[Sequence[int]]
+        n_processes=1,  # type: int
+        wait_time_between_samples=0.0,  # type: float
+        seed=1,  # type: int
+        max_time=0,  # type: float
+        **kwargs  # type: OptionType
+    ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
+        """Set the options.
 
-        :param alpha: effect the variance, either "orthogonal" or "rotatable"
-        :type alpha: str
-        :param face: The relation between the start points and the corner
-            (factorial) points, either "circumscribed", "inscribed" or "faced"
-        :type face: str
-        :param criterion: Default value = None)
-        :type criterion:
-        :param iterations: Default value = 5)
-        :type iterations:
-        :param eval_jac: evaluate jacobian
-        :type eval_jac: bool
-        :param center_bb: number of center points for Box-Behnken design
-        :type center_bb: int
-        :param center_cc: 2-tuple of center points for the central
-            composite design
-        :type center_cc: tuple
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param levels: levels for axial, factorial and composite designs
-        :type levels: array
-        :param n_processes: number of processes
-        :type n_processes: int
-        :param wait_time_between_samples: waiting time between two samples
-        :type wait_time_between_samples: float
-        :param seed: seed value.
-        :type seed: int
-        :param max_time: maximum runtime in seconds,
-            disabled if 0 (Default value = 0)
-        :type max_time: float
-        :param kwargs: additional arguments
+        Args:
+            alpha: A parameter to describe how the variance is distributed.
+                Either "orthogonal" or "rotatable".
+            face: The relation between the start points and the corner
+            (factorial) points. Either "circumscribed", "inscribed" or "faced".
+            criterion: The criterion to use when sampling the points. If None,
+                randomize the points within the intervals.
+            iterations: The number of iterations in the `correlation` and
+                `maximin` algorithms.
+            eval_jac: Whether to evaluate the jacobian.
+            center_bb: The number of center points for the Box-Behnken design.
+                If None, use a pre-determined number of points.
+            center_cc: The 2-tuple of center points for the central composite
+                design. If None, use (4, 4).
+            n_samples: The number of samples. If None, then use the number of
+                levels per input dimension provided by the argument `levels`.
+            levels: The level in each direction for the full-factorial design.
+                If `None`, then the number of samples provided by the argument
+                `n_samples` is used in order to deduce the levels.
+            n_processes: The number of processes.
+            wait_time_between_samples: The waiting time between two samples.
+            seed: The seed value.
+            max_time: The maximum runtime in seconds, disabled if 0.
+            **kwargs: The additional arguments.
+
+        Returns:
+            The options for the DOE.
         """
         if center_cc is None:
             center_cc = [4, 4]
@@ -183,80 +182,114 @@ class PyDOE(DOELibrary):
         return popts
 
     @staticmethod
-    def __translate(result):
-        """Translate DOE design variables in [0,1]
+    def __translate(
+        result,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Translate the DOE design variables to [0,1].
 
-        :param result: the samples
+        Args:
+            result: The design variables to be translated.
+
+        Returns:
+            The translated design variables.
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(
+        self, **options  # type: OptionType
+    ):  # type: (...) -> ndarray
+        """Generate the samples for the DOE.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options for the algorithm,
+                see the associated JSON file.
+
+        Returns:
+            The samples for the DOE.
         """
         self.seed += 1
-        dim = options[self.DIMENSION]
         if self.algo_name == self.PYDOE_LHS:
-            criterion = options.get(self.CRITERION_KEYWORD)
-            iterations = options.get(self.ITERATION_KEYWORD)
             seed = options.get(self.SEED, self.seed)
             lhs_kwargs = {
                 "samples": options["n_samples"],
-                "criterion": criterion,
-                "iterations": iterations,
+                "criterion": options.get(self.CRITERION_KEYWORD),
+                "iterations": options.get(self.ITERATION_KEYWORD),
             }
             if PY3:
-                random_state = RandomState(seed)
-                lhs_kwargs["random_state"] = random_state
+                lhs_kwargs["random_state"] = RandomState(seed)
             else:
                 set_seed(seed)
-            samples = pyDOE.lhs(dim, **lhs_kwargs)
+            return pyDOE.lhs(options[self.DIMENSION], **lhs_kwargs)
 
-        elif self.algo_name == self.PYDOE_CCDESIGN:
-            samples = pyDOE.ccdesign(
-                dim,
-                center=options[self.CENTER_CC_KEYWORD],
-                alpha=options[self.ALPHA_KEYWORD],
-                face=options[self.FACE_KEYWORD],
+        if self.algo_name == self.PYDOE_CCDESIGN:
+            return self.__translate(
+                pyDOE.ccdesign(
+                    options[self.DIMENSION],
+                    center=options[self.CENTER_CC_KEYWORD],
+                    alpha=options[self.ALPHA_KEYWORD],
+                    face=options[self.FACE_KEYWORD],
+                )
             )
-            # print options[self.CENTER_CC_KEYWORD], samples.shape
-        elif self.algo_name == self.PYDOE_BBDESIGN:
-            # Initialy designed for quadratic model fitting
+
+        if self.algo_name == self.PYDOE_BBDESIGN:
+            # Initially designed for quadratic model fitting
             # center point is can be run several times to allow for a more
             # uniform estimate of the prediction variance over the
             # entire design space. Default value of center depends on dv_size
-            samples = pyDOE.bbdesign(dim, center=options.get(self.CENTER_BB_KEYWORD))
-        elif self.algo_name == self.PYDOE_FULLFACT:
-            n_samples = options["n_samples"]
-            self._display_fullfact_warning(n_samples)
-            # Round before floor (int=floor)
-            dims_list = [int(round((n_samples ** (1.0 / dim))))] * dim
-
-            samples = pyDOE.fullfact(dims_list)
-
-        elif self.algo_name == self.PYDOE_2LEVELFACT:
-            samples = pyDOE.ff2n(dim)
-        elif self.algo_name == self.PYDOE_PBDESIGN:
-            samples = pyDOE.pbdesign(dim)
-
-        if self.algo_name != self.PYDOE_LHS:
-            samples = self.__translate(samples)
+            return self.__translate(
+                pyDOE.bbdesign(
+                    options[self.DIMENSION], center=options.get(self.CENTER_BB_KEYWORD)
+                )
+            )
 
         if self.algo_name == self.PYDOE_FULLFACT:
-            samples = self._rescale_samples(samples)
+            return self._generate_fullfact(
+                options[self.DIMENSION],
+                levels=options.get(self.LEVEL_KEYWORD),
+                n_samples=options.get(self.N_SAMPLES),
+            )
 
-        return samples
+        if self.algo_name == self.PYDOE_2LEVELFACT:
+            return self.__translate(pyDOE.ff2n(options[self.DIMENSION]))
+
+        if self.algo_name == self.PYDOE_PBDESIGN:
+            return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
+
+    def _generate_fullfact_from_levels(
+        self, levels  # type: Union[int, Sequence[int]]
+    ):  # type: (...) -> ndarray
+        doe = pyDOE.fullfact(levels)
+
+        # Because pyDOE return the DOE where the values of levels are integers from 0 to
+        # the maximum level number,
+        # we need to divide by levels - 1.
+        # To not divide by zero,
+        # we first find the null denominators,
+        # we replace them by one,
+        # then we change the final values of the DOE by 0.5.
+        divide_factor = array(levels) - 1
+        null_indices = divide_factor == 0
+        divide_factor[null_indices] = 1
+        doe /= divide_factor
+        doe[:, null_indices] = 0.5
+        return doe
 
     @staticmethod
-    def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem according to its algo dict.
+    def is_algorithm_suited(
+        algo_charact,  # type: Mapping[str, DOELibrary.DOELibraryOptionType]
+        problem,  # type: OptimizationProblem
+    ):  # type: (...) -> bool
+        """Check if the algorithm is suited to the problem according to its
+        characteristics.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algo_charact: The algorithm characteristics.
+            problem: The optimization problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
-        if DOELibrary.MIN_DIMS in algo_dict:
-            if problem.dimension < algo_dict[DOELibrary.MIN_DIMS]:
+        if DOELibrary.MIN_DIMS in algo_charact:
+            if problem.dimension < algo_charact[DOELibrary.MIN_DIMS]:
                 return False
         return True

@@ -14,12 +14,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import sys
+
 import pytest
 from numpy import array
 
 # skip if matlab API is not found
 matlab = pytest.importorskip("matlab")
 
+from gemseo.utils.py23_compat import PY2  # noqa: E402
 from gemseo.wrappers.matlab.matlab_data_processor import load_matlab_file  # noqa: E402
 from gemseo.wrappers.matlab.matlab_discipline import MatlabDiscipline  # noqa: E402
 
@@ -276,10 +279,15 @@ def test_run_user_multidim_jac_wrong_size():
     )
     with pytest.raises(ValueError) as excp:
         mat.execute({"x": array([1, 2]), "y": array([3])})
-    assert (
-        str(excp.value) == "Jacobian term 'jac_dz1_dx' has "
-        "the wrong size (1, 4) whereas "
-        "it should be (2, 2)."
+
+    if PY2 and sys.platform.startswith("win"):
+        type_ = "L"
+    else:
+        type_ = ""
+
+    assert str(excp.value) == (
+        "Jacobian term 'jac_dz1_dx' has the wrong size "
+        "(1{}, 4{}) whereas it should be (2, 2).".format(type_, type_)
     )
 
 

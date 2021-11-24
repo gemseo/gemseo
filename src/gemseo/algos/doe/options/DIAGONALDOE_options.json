@@ -15,14 +15,14 @@
         },
         "n_samples":{
             "type": "integer",
-             "minimum": 1
+             "minimum": 2
         },
 		"max_time":{
             "type": "number",
              "minimum": 0.0
         },
         "reverse":{
-            "type": "array",
+            "type": ["null", "array"],
             "items":	{
                 		"type": "string",
                 		"minItems": 1

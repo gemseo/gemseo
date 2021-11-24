@@ -41,7 +41,7 @@ where
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Optional, Union
+from typing import Optional, Sequence, Union
 
 from numpy import ndarray
 
@@ -65,37 +65,47 @@ class RMSEMeasure(MSEMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_learn(samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_learn(
+            samples=samples, multioutput=multioutput
+        )
         return mse ** 0.5
 
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_test(test_data, samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_test(
+            test_data, samples=samples, multioutput=multioutput
+        )
         return mse ** 0.5
 
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_kfolds(n_folds, samples, multioutput)
+        mse = super(RMSEMeasure, self).evaluate_kfolds(
+            n_folds=n_folds,
+            samples=samples,
+            multioutput=multioutput,
+            randomize=randomize,
+        )
         return mse ** 0.5
 
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_bootstrap(
-            n_replicates, samples, multioutput
+            n_replicates=n_replicates, samples=samples, multioutput=multioutput
         )
         return mse ** 0.5

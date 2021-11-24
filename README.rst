@@ -68,3 +68,4 @@ Contributors
 - Anne Gazaix
 - Nicolas Roussouly
 - Gilberto Ruiz Jimenez
+- Arthur Piat

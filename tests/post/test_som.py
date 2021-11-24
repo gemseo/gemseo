@@ -21,38 +21,47 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
-from os.path import exists
-
 import pytest
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.utils.py23_compat import Path
+
+pytestmark = pytest.mark.skipif(
+    not PostFactory().is_available("SOM"),
+    reason="SOM plot is not available.",
+)
+
+POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestSOM(unittest.TestCase):
-    """"""
+def test_som(tmp_wd):
+    """Test the SOM post processing with the Power2 problem.
 
-    def test_som(self):
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        factory = PostFactory()
-        for val in problem.database.values():
-            val.pop("pow2")
-        post = factory.execute(problem, "SOM", n_x=4, n_y=3, show=False, save=True)
-        assert len(post.output_files) == 1
-        assert exists(post.output_files[0])
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+    """
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    factory = PostFactory()
+    for val in problem.database.values():
+        val.pop("pow2")
+    post = factory.execute(problem, "SOM", n_x=4, n_y=3, show=False, save=True)
+    assert len(post.output_files) == 1
+    assert Path(post.output_files[0]).exists()
 
-    def test_som_annotate(self):
-        problem = Power2()
-        OptimizersFactory().execute(problem, "SLSQP")
-        factory = PostFactory()
-        for val in problem.database.values():
-            val.pop("pow2")
-        post = factory.execute(
-            problem, "SOM", n_x=4, n_y=3, show=False, save=True, annotate=True
-        )
-        assert len(post.output_files) == 1
-        assert exists(post.output_files[0])
+
+def test_som_annotate(tmp_wd):
+    """Test the annotate option of the post processor.
+
+    Args:
+        tmp_wd : Fixture to move into a temporary directory.
+    """
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    factory = PostFactory()
+    for val in problem.database.values():
+        val.pop("pow2")
+    post = factory.execute(
+        problem, "SOM", n_x=4, n_y=3, show=False, save=True, annotate=True
+    )
+    assert len(post.output_files) == 1
+    assert Path(post.output_files[0]).exists()

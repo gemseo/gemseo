@@ -41,11 +41,27 @@ from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
 
+###############################################################################
+# Description
+# -----------
+#
+# In the :class:`~gemseo.post.robustness.Robustness` post-processing,
+# the robustness of the optimum is represented by a box plot. Using the
+# quadratic approximations of all the output functions, we
+# propagate analytically a normal distribution with 1% standard deviation
+# on all the design variables, assuming no cross-correlations of inputs,
+# to obtain the mean and standard deviation of the resulting normal
+# distribution. A series of samples are randomly generated from the resulting
+# distribution, whose quartiles are plotted, relatively to the values of
+# the function at the optimum. For each function (in abscissa), the plot
+# shows the extreme values encountered in the samples (top and bottom
+# bars). Then, 95% of the values are within the blue boxes. The average is
+# given by the red bar.
 
 ###############################################################################
 # Create disciplines
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
+# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
 # Propulsion, Aerodynamics, Structure and Mission
 disciplines = create_discipline(
     [
@@ -86,13 +102,19 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.Robustness`
-# plot which performs a quadratic approximation from an optimization history,
-# and plot the results as cuts of the approximation computes the quadratic
-# approximations of all the output functions, propagate analytically a normal
-# distribution centered on the optimal design variable with a standard
-# deviation which is a percentage of the mean passed in option (default: 1%)
-# and plot the corresponding output boxplot. plots any of the constraint or
-# objective functions w.r.t. optimization iterations or sampling snapshots.
+# which plots any of the constraint or
+# objective functions w.r.t. the optimization iterations or sampling snapshots.
+
+###############################################################################
+# .. tip::
+#
+#    Each post-processing method requires different inputs and offers a variety
+#    of customization options. Use the API function
+#    :meth:`~gemseo.api.get_post_processing_options_schema` to print a table with
+#    the options for any post-processing algorithm.
+#    Or refer to our dedicated page:
+#    :ref:`gen_post_algos`.
+
 scenario.post_process("Robustness", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

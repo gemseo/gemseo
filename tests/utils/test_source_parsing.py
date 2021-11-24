@@ -76,13 +76,13 @@ def test_get_options_doc():
 DOCSTRINGS = (
     """
 Args:
-    arg1: A one-line description.
+    arg1: A one-line description: with colon.
     arg2: A multi-line
         description.
     *arg3: A description with a first paragraph.
 
         And a second one.
-        **arg4: An over-indented one-line description.
+    **arg4: A kwargs.
 
 Returns:
     The description of the returned object.
@@ -92,13 +92,13 @@ Raises:
 """,
     """
 Parameters:
-    arg1: A one-line description.
+    arg1: A one-line description: with colon.
     arg2: A multi-line
         description.
     arg3: A description with a first paragraph.
 
         And a second one.
-        arg4: An over-indented one-line description.
+    arg4: A kwargs.
 """,
 )
 
@@ -112,10 +112,10 @@ def test_google(docstring):
     """
     parsed_docstring = parse_google(docstring)
     assert parsed_docstring == {
-        "arg1": "A one-line description.",
+        "arg1": "A one-line description: with colon.",
         "arg2": "A multi-line description.",
         "arg3": "A description with a first paragraph. And a second one.",
-        "arg4": "An over-indented one-line description.",
+        "arg4": "A kwargs.",
     }
     assert parsed_docstring
 

@@ -21,7 +21,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Create a discipline from a python function
+Create a discipline from a Python function
 ==========================================
 """
 from __future__ import division, unicode_literals
@@ -37,13 +37,13 @@ configure_logger()
 
 
 ###############################################################################
-# Build a discipline from a simple python function
+# Build a discipline from a simple Python function
 # ------------------------------------------------
-# Let's consider a simple python function, e.g.:
+# Let's consider a simple Python function, e.g.:
 
 
 def f(x=0.0, y=0.0):
-    """A simple python function."""
+    """A simple Python function."""
     z = x + 2 * y
     return z
 
@@ -53,7 +53,7 @@ def f(x=0.0, y=0.0):
 # -------------------------------------
 # Then, we can consider the
 # :class:`.AutoPyDiscipline` class
-# to convert it into a :class:`.MDODiscipline`.
+# to convert it into an :class:`.MDODiscipline`.
 # For that, we can use the :meth:`~gemseo.api.create_discipline` API function
 # with :code:`'AutoPyDiscipline'` as first argument:
 disc = create_discipline("AutoPyDiscipline", py_func=f)

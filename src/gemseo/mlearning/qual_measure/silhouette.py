@@ -53,7 +53,7 @@ in the cluster :math:`k`, :math:`k=1,\\cdots,K`.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Optional, Union
+from typing import Optional, Sequence, Union
 
 from numpy import ndarray
 from sklearn.metrics import silhouette_score
@@ -81,7 +81,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     def evaluate_test(
         self,
         test_data,  # type:Dataset
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
@@ -89,15 +89,16 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     def evaluate_kfolds(
         self,
         n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        randomize=False,  # type:bool
     ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 
     def evaluate_bootstrap(
         self,
         n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
+        samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError

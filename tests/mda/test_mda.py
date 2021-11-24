@@ -22,27 +22,31 @@
 
 from __future__ import division, unicode_literals
 
+import logging
 import os
 
 import numpy as np
 import pytest
 
 from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
+from gemseo.problems.scalable.linear.disciplines_generator import (
+    create_disciplines_from_desc,
+)
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
 
 DIRNAME = os.path.dirname(__file__)
 
 
 @pytest.fixture
-def sellar_mda():
-    # initialize disciplines, MDA and input data
-    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    mda_sellar = MDAGaussSeidel(disciplines)
-    return mda_sellar
+def sellar_mda(sellar_disciplines):
+    return MDAGaussSeidel(sellar_disciplines)
 
 
 @pytest.fixture(scope="module")
@@ -150,3 +154,80 @@ def test_consistency_fail(desc):
         match="Too many coupling constraints|Outputs are defined multiple times",
     ):
         MDA(disciplines)
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
+@pytest.mark.parametrize(
+    "grammar_type", [MDODiscipline.JSON_GRAMMAR_TYPE, MDODiscipline.SIMPLE_GRAMMAR_TYPE]
+)
+def test_array_couplings(mda_class, grammar_type):
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        grammar_type=grammar_type,
+    )
+
+    a_disc = disciplines[0]
+    a_disc.input_grammar.remove_item("y1")
+    a_disc.default_inputs["y1"] = 2.0
+    a_disc.input_grammar.initialize_from_base_dict({"y1": 2.0})
+    assert not a_disc.input_grammar.is_type_array("y1")
+
+    with pytest.raises(InvalidDataException):
+        a_disc.execute({"x": 2.0})
+
+    with pytest.raises(ValueError, match="must be of type array"):
+        mda_class(disciplines, grammar_type=grammar_type)
+
+
+def test_convergence_warning(caplog):
+    mda = MDA([Sellar1()])
+    mda.tolerance = 1.0
+    mda.normed_residual = 2.0
+    mda.max_mda_iter = 1
+    caplog.clear()
+    residual_is_small, _ = mda._warn_convergence_criteria(10)
+    assert not residual_is_small
+    assert len(caplog.records) == 1
+    assert (
+        "MDA has reached its maximum number of iterations" in caplog.records[0].message
+    )
+
+    mda.normed_residual = 1e-14
+    residual_is_small, _ = mda._warn_convergence_criteria(1)
+    assert residual_is_small
+
+    mda.max_mda_iter = 2
+    _, max_iter_is_reached = mda._warn_convergence_criteria(2)
+    assert max_iter_is_reached
+    _, max_iter_is_reached = mda._warn_convergence_criteria(1)
+    assert not max_iter_is_reached
+
+
+def test_coupling_structure(sellar_disciplines):
+    """Check that an MDA is correctly instantiated from a coupling structure."""
+    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    mda_sellar = MDAGaussSeidel(
+        sellar_disciplines, coupling_structure=coupling_structure
+    )
+    assert mda_sellar.coupling_structure == coupling_structure
+
+
+def test_log_convergence(caplog):
+    """Check that the boolean log_convergence is correctly set."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+
+    mda = MDA(disciplines)
+    assert not mda.log_convergence
+
+    mda.log_convergence = True
+    assert mda.log_convergence
+
+    caplog.set_level(logging.INFO)
+
+    mda._compute_residual(np.array([1, 2]), np.array([2, 1]), 1)
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" not in caplog.text
+
+    mda._compute_residual(
+        np.array([1, 2]), np.array([2, 1]), 1, log_normed_residual=True
+    )
+    assert "MDA running... Normed residual = 1.00e+00 (iter. 1)" in caplog.text
