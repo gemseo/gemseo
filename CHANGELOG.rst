@@ -25,6 +25,14 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 3.2.1 (November 2021)
+*****************************
+
+Fixed
+-----
+
+- Missing package dependency declaration.
+
 Version 3.2.0 (November 2021)
 *****************************
 
