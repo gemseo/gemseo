@@ -79,8 +79,7 @@ class DependencyGraph(object):
             if not leaves:
                 break
 
-            # TODO: use a list?
-            parallel_tasks = set(
+            parallel_tasks = list(
                 tuple(condensed_graph.nodes[node_id]["members"]) for node_id in leaves
             )
             execution_sequence += [parallel_tasks]
