@@ -532,6 +532,10 @@ Validation of images
     use the :func:`image_comparison` decorator provided by the
     `matplotlib testing tools <https://matplotlib.org/stable/devel/testing.html#writing-an-image-comparison-test>`_.
     See :file:`tests/post/dataset/test_surfaces.py` for an example.
+    When image comparison fails,
+    set the environment variable :env:`GEMSEO_KEEP_IMAGE_COMPARISONS`
+    such that the :file:`result_images` directory with the comparisons
+    is available at the root of the repository.
 
 Executing tests
 +++++++++++++++

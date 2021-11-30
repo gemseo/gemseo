@@ -130,18 +130,18 @@ if PY2:
     decorators._image_directories = _new_image_directories
 original_image_directories = matplotlib.testing.decorators._image_directories
 
-# Context manager to change the current working directory to a temporary one.
-__ctx_tmp_wd = contextlib.contextmanager(__tmp_wd)
 
+if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
+    # Context manager to change the current working directory to a temporary one.
+    __ctx_tmp_wd = contextlib.contextmanager(__tmp_wd)
 
-def _image_directories(func):
-    """Create the result_images directory in a temporary parent directory."""
-    with __ctx_tmp_wd(tempfile.mkdtemp()):
-        baseline_dir, result_dir = original_image_directories(func)
-    return baseline_dir, result_dir
+    def _image_directories(func):
+        """Create the result_images directory in a temporary parent directory."""
+        with __ctx_tmp_wd(tempfile.mkdtemp()):
+            baseline_dir, result_dir = original_image_directories(func)
+        return baseline_dir, result_dir
 
-
-matplotlib.testing.decorators._image_directories = _image_directories
+    matplotlib.testing.decorators._image_directories = _image_directories
 
 
 if PY2:
