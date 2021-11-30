@@ -537,6 +537,11 @@ Validation of images
     such that the :file:`result_images` directory with the comparisons
     is available at the root of the repository.
 
+Generated files
+   Tests that create files shall use the ``tmp_wd`` fixture
+   such that the files are created in a temporary directory
+   instead of polluting the root directory.
+
 Executing tests
 +++++++++++++++
 

@@ -43,7 +43,7 @@ def test_files_creation(tmp_wd):
     problem = Rosenbrock()
     OptimizersFactory().execute(problem, "L-BFGS-B")
     view = OptHistoryView(problem)
-    file_path = tmp_wd / "rosen_1"
+    file_path = "rosen_1"
     view.execute(show=False, save=True, file_path=file_path)
     for full_path in view.output_files:
         assert Path(full_path).exists()
@@ -53,7 +53,7 @@ def test_view_load_pb(tmp_wd):
     """Check the generation of the output files from an HDF database."""
     problem = OptimizationProblem.import_hdf(POWER2_PATH)
     view = OptHistoryView(problem)
-    file_path = tmp_wd / "power2view"
+    file_path = "power2view"
     view.execute(show=False, save=True, file_path=file_path, obj_relative=True)
     for full_path in view.output_files:
         assert Path(full_path).exists()
@@ -71,7 +71,7 @@ def test_view_constraints(tmp_wd):
         show=False,
         save=True,
         variables_names=["x"],
-        file_path=tmp_wd / "power2_2",
+        file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,
     )
@@ -79,7 +79,7 @@ def test_view_constraints(tmp_wd):
         assert Path(full_path).exists()
 
 
-def test_nans():
+def test_nans(tmp_wd):
     """Check the generation of the output files for a database containing NaN."""
     problem = OptimizationProblem.import_hdf(POWER2_NAN_PATH)
     view = execute_post(problem, "OptHistoryView", show=False, save=True)
