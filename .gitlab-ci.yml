@@ -93,7 +93,7 @@ workflow:
     MATLAB_PYTHON_WRAPPER: $MATLAB_PYTHON_WRAPPER_WINDOWS
   before_script:
     - python -m venv .tox-venv
-    - .tox-venv\Scripts\activate.bat
+    - .tox-venv\Scripts\Activate.ps1
     - python -m pip install tox-conda==$TOX_CONDA_VERSION
 
 # Jobs for the check stage.
