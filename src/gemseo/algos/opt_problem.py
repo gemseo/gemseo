@@ -893,7 +893,7 @@ class OptimizationProblem(object):
                 # Checks proposed x wrt bounds
                 self.design_space.check_membership(x_vect)
 
-        if no_db_no_norm:
+        if self.__functions_are_preprocessed and no_db_no_norm:
             if eval_obj:
                 functions = self.nonproc_constraints + [self.nonproc_objective]
             else:

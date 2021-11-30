@@ -536,6 +536,18 @@ def test_evaluate_functions():
     problem.evaluate_functions(normalize=False, no_db_no_norm=True, eval_obj=False)
 
 
+def test_evaluate_functions_non_preprocessed(constrained_problem):
+    """Check the evaluation of non-preprocessed functions."""
+    values, jacobians = constrained_problem.evaluate_functions(
+        normalize=False, no_db_no_norm=True
+    )
+    assert set(values.keys()) == {"f", "g", "h"}
+    assert values["f"] == pytest.approx(2.0)
+    assert values["g"] == pytest.approx(array([1.0]))
+    assert values["h"] == pytest.approx(array([1.0, 1.0]))
+    assert jacobians == dict()
+
+
 def test_no_normalization():
     problem = Power2()
     OptimizersFactory().execute(problem, "SLSQP", normalize_design_space=False)
