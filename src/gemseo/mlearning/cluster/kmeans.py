@@ -73,7 +73,7 @@ generated/sklearn.cluster.KMeans.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 
 from numpy import finfo, ndarray
 from numpy.linalg import norm
@@ -96,7 +96,7 @@ class KMeans(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data,  # type:Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
         n_clusters=5,  # type: int
         random_state=0,  # type: Optional[int]

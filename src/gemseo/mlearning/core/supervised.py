@@ -114,7 +114,7 @@ class MLSupervisedAlgo(MLAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=DEFAULT_TRANSFORMER,  # type: TransformerType
+        transformer=DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType

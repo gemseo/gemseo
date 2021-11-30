@@ -93,7 +93,7 @@ generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 
 from numpy import ndarray, stack
 from sklearn.neighbors import KNeighborsClassifier
@@ -114,7 +114,7 @@ class KNNClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         n_neighbors=5,  # type: int

@@ -34,7 +34,7 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import division, unicode_literals
 
-from typing import Dict, Iterable, Optional, Sequence, Union
+from typing import Dict, Iterable, Mapping, Optional, Sequence, Union
 
 from numpy import ndarray, unique, zeros
 
@@ -64,7 +64,7 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type: TransformerType
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType

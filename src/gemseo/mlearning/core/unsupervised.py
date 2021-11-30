@@ -30,7 +30,7 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import division, unicode_literals
 
-from typing import Iterable, NoReturn, Optional, Sequence
+from typing import Iterable, Mapping, NoReturn, Optional, Sequence
 
 from numpy import hstack, ndarray
 
@@ -53,7 +53,7 @@ class MLUnsupervisedAlgo(MLAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None

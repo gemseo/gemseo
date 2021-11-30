@@ -22,6 +22,8 @@
 """Test machine learning algorithm module."""
 from __future__ import division, unicode_literals
 
+import re
+
 import pytest
 from numpy import arange, array_equal
 
@@ -29,7 +31,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.utils.py23_compat import Path, xrange
 
 
@@ -89,10 +91,27 @@ def test_str(dataset, samples, trained):
     assert str(ml_algo) == expected
 
 
-def test_scale(dataset):
-    """Test scaler in MLAlgo."""
-    ml_algo = MLAlgo(dataset, transformer={"parameters": MinMaxScaler()})
-    assert isinstance(ml_algo.transformer["parameters"], MinMaxScaler)
+@pytest.mark.parametrize(
+    "transformer", ["Scaler", ("Scaler", {"offset": 2.0}), Scaler()]
+)
+def test_transformer(dataset, transformer):
+    """Check if transformers are correctly passed."""
+    ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+    assert isinstance(ml_algo.transformer["parameters"], Scaler)
+    if isinstance(transformer, tuple):
+        assert ml_algo.transformer["parameters"].offset == 2.0
+
+
+def test_transformer_wrong_type(dataset):
+    """Check that using a wrong transformer type raises a ValueError."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Transformer type must be "
+            "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+        ),
+    ):
+        MLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):

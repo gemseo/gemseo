@@ -62,7 +62,7 @@ which inherits from the :class:`.MLRegressionAlgo` class.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Callable, Dict, Iterable, List, NoReturn, Optional, Union
+from typing import Callable, Dict, Iterable, List, Mapping, NoReturn, Optional, Union
 
 from numpy import ndarray, nonzero, unique, where, zeros
 
@@ -134,7 +134,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         hard=True,  # type: bool

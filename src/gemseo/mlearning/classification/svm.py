@@ -35,7 +35,7 @@ generated/sklearn.svm.SVC.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable, Mapping, Optional, Union
 
 from numpy import ndarray
 from sklearn.svm import SVC
@@ -56,7 +56,7 @@ class SVMClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         C=1.0,  # noqa: N803 # type: float

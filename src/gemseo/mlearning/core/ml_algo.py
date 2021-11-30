@@ -100,21 +100,21 @@ from __future__ import division, unicode_literals
 import logging
 import pickle
 from copy import deepcopy
-from typing import Any, Dict, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import Transformer, TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.py23_compat import Path, xrange
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
-TransformerType = Dict[str, Transformer]
+TransformerType = Union[str, Tuple[str, Mapping[str, Any]], Transformer]
 SavedObjectType = Union[Dataset, TransformerType, str, bool]
 DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
@@ -162,7 +162,7 @@ class MLAlgo(object):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
@@ -183,15 +183,36 @@ class MLAlgo(object):
         self.learning_set = data
         self.parameters = parameters
         self.transformer = {}
-        if transformer:
+        if transformer is not None:
             self.transformer = {
-                group: transf.duplicate() for group, transf in transformer.items()
+                key: self.__create_transformer(transf)
+                for key, transf in transformer.items()
             }
 
         self.algo = None
         self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
         self._learning_samples_indices = xrange(len(self.learning_set))
+
+    @staticmethod
+    def __create_transformer(
+        transformer,  # type: TransformerType
+    ):  # type: (...) -> Transformer
+        if isinstance(transformer, Transformer):
+            return transformer.duplicate()
+
+        if isinstance(transformer, tuple):
+            return TransformerFactory().create(transformer[0], **transformer[1])
+
+        if isinstance(transformer, six.string_types):
+            return TransformerFactory().create(transformer)
+
+        raise ValueError(
+            "Transformer type must be "
+            "either Transformer, "
+            "Tuple[str, Mapping[str, Any]] "
+            "or str."
+        )
 
     class DataFormatters(object):
         """Decorators for the internal MLAlgo methods."""

@@ -63,7 +63,7 @@ which inherits from the :class:`.MLSupervisedAlgo` class.
 """
 from __future__ import division, unicode_literals
 
-from typing import Callable, Iterable, NoReturn, Optional
+from typing import Callable, Iterable, Mapping, NoReturn, Optional
 
 from numpy import eye, matmul, ndarray
 
@@ -90,7 +90,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=DEFAULT_TRANSFORMER,  # type: TransformerType
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType

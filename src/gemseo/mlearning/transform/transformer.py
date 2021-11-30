@@ -39,6 +39,8 @@ import six
 from custom_inherit import DocInheritMeta
 from numpy import ndarray
 
+from gemseo.core.factory import Factory
+
 TransformerFitOptionType = Union[float, int, str]
 
 
@@ -165,3 +167,12 @@ class Transformer(object):
 
     def __str__(self):  # type: (...) -> str
         return self.__class__.__name__
+
+
+class TransformerFactory(Factory):
+    """A factory of :class:`.Transformer`."""
+
+    def __init__(self):  # type: (...) -> None
+        super(TransformerFactory, self).__init__(
+            Transformer, ("gemseo.mlearning.transform",)
+        )

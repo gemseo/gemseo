@@ -31,7 +31,7 @@ available models and options.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 from gemseo.api import _get_schema
 from gemseo.core.dataset import Dataset
@@ -124,7 +124,7 @@ def get_clustering_models():  # type:(...) -> List[str]
 def create_mlearning_model(
     name,  # type: str
     data,  # type: Dataset
-    transformer=None,  # type: Optional[TransformerType]
+    transformer=None,  # type: Optional[Mapping[str,TransformerType]]
     **parameters
 ):  # type:(...) -> MLAlgo
     """Create a machine learning algorithm from a learning dataset.
@@ -159,7 +159,7 @@ minmax_inputs = {Dataset.INPUT_GROUP: MinMaxScaler()}
 def create_regression_model(
     name,  # type: str
     data,  # type: Dataset
-    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
+    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]  # noqa: B950
     **parameters
 ):  # type: (...) -> MLRegressionAlgo
     """Create a regression model from a learning dataset.
@@ -201,7 +201,7 @@ def create_regression_model(
 def create_classification_model(
     name,  # type: str
     data,  # type: Dataset
-    transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type:Optional[TransformerType]
+    transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]  # noqa: B950
     **parameters
 ):  # type: (...) -> MLClassificationAlgo
     """Create a classification model from a learning dataset.
@@ -233,7 +233,7 @@ def create_classification_model(
 def create_clustering_model(
     name,  # type: str
     data,  # type: Dataset
-    transformer=None,  # type:Optional[TransformerType]
+    transformer=None,  # type: Optional[Mapping[str,TransformerType]]
     **parameters
 ):  # type: (...) -> MLClusteringAlgo
     """Create a clustering model from a learning dataset.

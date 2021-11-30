@@ -42,7 +42,7 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-from typing import Callable, Dict, Iterable, Optional, Union
+from typing import Callable, Dict, Iterable, Mapping, Optional, Union
 
 from numpy import array, average, exp, finfo, hstack, log, ndarray, sqrt
 from numpy.linalg import norm
@@ -98,7 +98,7 @@ class RBFRegression(MLRegressionAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         function=MULTIQUADRIC,  # type: Union[str, Callable[[float,float],float]]

@@ -37,7 +37,7 @@ which inherits from :class:`.MLClusteringAlgo`.
 """
 from __future__ import division, unicode_literals
 
-from typing import Dict, Iterable, NoReturn, Optional, Sequence, Union
+from typing import Dict, Iterable, Mapping, NoReturn, Optional, Sequence, Union
 
 from numpy import atleast_2d, ndarray, unique, zeros
 
@@ -65,7 +65,7 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def __init__(
         self,
         data,  # type:Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None
