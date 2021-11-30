@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 
 import json
+import shutil
 import webbrowser
 from typing import TYPE_CHECKING, Union
 
@@ -42,6 +43,11 @@ class N2HTML(object):
         """
         self.__file_path = Path(file_path)
         self.__open_browser = open_browser
+        img_path = "gemseo_logo.png"
+        shutil.copy(
+            str(Path(__file__).parent / img_path),
+            str(self.__file_path.parent / img_path),
+        )
 
     def __create_html_file(
         self,
