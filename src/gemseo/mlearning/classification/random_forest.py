@@ -33,7 +33,7 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 
 from numpy import ndarray, stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
@@ -54,7 +54,7 @@ class RandomForestClassifier(MLClassificationAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         n_estimators=100,  # type: int

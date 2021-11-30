@@ -54,7 +54,7 @@ while the output is the quality criterion.
 
 from __future__ import division, unicode_literals
 
-from typing import Dict, Iterable, Optional, Union
+from typing import Dict, Iterable, Mapping, Optional, Union
 
 from numpy import argmax, argmin, array, ndarray
 
@@ -103,7 +103,7 @@ class MLAlgoAssessor(MDODiscipline):
         parameters,  # type: Iterable[str]
         measure,  # type: MLQualityMeasure
         measure_options=None,  # type: Optional[MeasureOptionsType]
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         **algo_options  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
@@ -116,7 +116,7 @@ class MLAlgoAssessor(MDODiscipline):
                 If "multioutput" is missing,
                 it is added with False as value.
                 If None, do not use quality measure options.
-            transformer (Dict[str,Transformer]): The strategies
+            transformer: The strategies
                 to transform the variables.
                 The values are instances of :class:`.Transformer`
                 while the keys are the names of

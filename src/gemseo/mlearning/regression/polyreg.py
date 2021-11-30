@@ -83,7 +83,7 @@ from __future__ import division, unicode_literals
 
 import logging
 import pickle
-from typing import Iterable, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 
 from numpy import concatenate, ndarray, where, zeros
 from sklearn.preprocessing import PolynomialFeatures
@@ -106,7 +106,7 @@ class PolynomialRegression(LinearRegression):
         self,
         data,  # type: Dataset
         degree,  # type: int
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         fit_intercept=True,  # type: bool

@@ -129,7 +129,7 @@ class PCERegression(MLRegressionAlgo):
         data,  # type: Dataset
         probability_space,  # type: ParameterSpace
         discipline=None,  # type: Optional[MDODiscipline]
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         strategy=LS_STRATEGY,  # type: str

@@ -72,7 +72,7 @@ generated/sklearn.mixture.GaussianMixture.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, NoReturn, Optional, Union
+from typing import Iterable, Mapping, NoReturn, Optional, Union
 
 from numpy import ndarray
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
@@ -92,7 +92,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
     def __init__(
         self,
         data,  # type:Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
         n_components=5,  # type: int
         **parameters  # type: Optional[Union[int,float,str,bool]]

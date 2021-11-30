@@ -56,7 +56,7 @@ linear_model.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Dict, Iterable, Optional, Union
+from typing import Dict, Iterable, Mapping, Optional, Union
 
 from numpy import array, ndarray, repeat, zeros
 from sklearn.linear_model import ElasticNet, Lasso
@@ -83,7 +83,7 @@ class LinearRegression(MLRegressionAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         fit_intercept=True,  # type: bool

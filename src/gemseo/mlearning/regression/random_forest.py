@@ -32,7 +32,7 @@ generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 
 from numpy import ndarray
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
@@ -53,7 +53,7 @@ class RandomForestRegressor(MLRegressionAlgo):
     def __init__(
         self,
         data,  # type: Dataset
-        transformer=None,  # type: Optional[TransformerType]
+        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         n_estimators=100,  # type: int
