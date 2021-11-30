@@ -172,6 +172,16 @@ style:
     paths:
       # For the coverage stage.
       - $COVERAGE_FILE
+  rules:
+    # Only run a test job when the following files have changed.
+    - changes:
+        - src/**/*.*
+        - tests/**/*.*
+        - requirements/gemseo-conda-python?.txt
+        - requirements/test-python?.txt
+        - setup.cfg
+        - tox.ini
+        - .gitlab-ci.yml
 
 # Common settings for windows tests jobs.
 .tests-windows:
@@ -274,7 +284,9 @@ codecov:
     - .linux
   rules:
     # Only run this job for projects on gitlab.com.
-    - if: '$CI_SERVER_URL == "https://gitlab.com"'
+    - if: '$CI_SERVER_URL != "https://gitlab.com"'
+      when: never
+    - !reference [.tests, rules]
   script:
     # Install codecov uploader.
     - pip install install codecov==$CODECOV_VERSION
