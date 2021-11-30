@@ -44,7 +44,7 @@ def test_library_from_factory():
         factory.create(DOE_LIB_NAME)
 
 
-def test_export_samples():
+def test_export_samples(tmp_wd):
     """Check that samples can be correctly exported."""
     algo_name = "lhs"
     n_samples = 3
