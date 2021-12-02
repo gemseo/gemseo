@@ -29,9 +29,8 @@ import logging
 from typing import Dict, List, Sequence, Set, Tuple, Union
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
+from matplotlib.figure import Axes, Figure
 from matplotlib.text import Text
-from numpy import array
 from pylab import gca
 
 from gemseo.core.dependency_graph import DependencyGraph
@@ -276,7 +275,7 @@ class MDOCouplingStructure(object):
             show_data_names: If ``True``, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
-                which size depend on the number of coupling names.
+                whose size depends on the number of coupling names.
             save: If True, save the figure to file_path.
             show: If True, show the plot.
             figsize: The width and height of the figure.
@@ -326,27 +325,8 @@ class MDOCouplingStructure(object):
 
         couplings = self.graph.get_disciplines_couplings()
 
-        max_coupling_length = array([len(coupling[2]) for coupling in couplings]).max()
-
-        for source, destination, variables in couplings:
-            source_position = self.disciplines.index(source)
-            destination_position = self.disciplines.index(destination)
-            if show_data_names:
-                variables_names = plt.text(
-                    destination_position + 0.5,
-                    n_disciplines - source_position - 0.5,
-                    "\n".join(variables),
-                    verticalalignment="center",
-                    horizontalalignment="center",
-                )
-                self._check_size_text(variables_names, fig, n_disciplines)
-            else:
-                circle = plt.Circle(
-                    (0.5 + destination_position, n_disciplines - 0.5 - source_position),
-                    len(variables) / (3.0 * max_coupling_length),
-                    color="blue",
-                )
-                axe.add_artist(circle)
+        if couplings:
+            self.__add_couplings(couplings, show_data_names, n_disciplines, fig, axe)
 
         if save:
             plt.savefig(file_path)
@@ -378,3 +358,49 @@ class MDOCouplingStructure(object):
         if height > size_max_box[1]:
             length_l = round(height * n_disciplines / figure.dpi) + 1
             figure.set_size_inches(inches[0], length_l)
+
+    def __add_couplings(
+        self,
+        couplings,  # type: Sequence[Tuple[MDODiscipline, MDODiscipline, List[str]]]
+        show_data_names,  # type: bool
+        n_disciplines,  # type: int
+        fig,  # type: Figure
+        axe,  # type: Axes
+    ):  # type: (...) -> None
+        """Add the existing couplings to the N2 chart.
+
+        Args:
+            couplings: The discipline couplings.
+            show_data_names: If ``True``, show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+            n_disciplines: The number of disciplines being considered.
+            fig: The figure where the couplings will be added.
+            axe: The axes of the figure.
+        """
+
+        max_coupling_size = max([len(variables) for _, _, variables in couplings])
+
+        for source, destination, variables in couplings:
+            source_position = self.disciplines.index(source)
+            destination_position = self.disciplines.index(destination)
+            if show_data_names:
+                variables_names = plt.text(
+                    destination_position + 0.5,
+                    n_disciplines - source_position - 0.5,
+                    "\n".join(variables),
+                    verticalalignment="center",
+                    horizontalalignment="center",
+                )
+                self._check_size_text(variables_names, fig, n_disciplines)
+            else:
+                circle = plt.Circle(
+                    (
+                        0.5 + destination_position,
+                        n_disciplines - 0.5 - source_position,
+                    ),
+                    len(variables) / (3.0 * max_coupling_size),
+                    color="blue",
+                )
+                axe.add_artist(circle)

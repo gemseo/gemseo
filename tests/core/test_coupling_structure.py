@@ -26,6 +26,7 @@ from os.path import exists
 from random import shuffle
 
 import pytest
+from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
 from gemseo.core.analytic_discipline import AnalyticDiscipline
@@ -47,6 +48,7 @@ from gemseo.problems.sobieski.wrappers import (
     SobieskiPropulsion,
     SobieskiStructure,
 )
+from gemseo.utils.py23_compat import PY2
 
 from .test_dependency_graph import DISC_DESCRIPTIONS, create_disciplines_from_desc
 
@@ -187,3 +189,54 @@ def test_strong_couplings_self_coupled():
     )
 
     assert coupl == ["c1", "c2", "cs"]
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.parametrize(
+    "show_data_names,descriptions,baseline_images",
+    [
+        (
+            False,
+            ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}),
+            ["n_2_no_coupling"],
+        ),
+        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}), ["n_2_no_coupling"]),
+        (
+            False,
+            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
+            ["n_2_coupling_no_names"],
+        ),
+        (
+            True,
+            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
+            ["n_2_coupling_names"],
+        ),
+    ],
+)
+@image_comparison(None, extensions=["png"])
+def test_n2_no_coupling(
+    tmp_wd, baseline_images, show_data_names, descriptions, pyplot_close_all
+):
+    """Test that an N2 plot is generated correctly when there are no couplings.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+        baseline_images: The reference images to be compared.
+        show_data_names: If ``True``, show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+        descriptions: The inputs and outputs to create analytic disciplines.
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    disciplines = [
+        AnalyticDiscipline(
+            name="discipline_{}".format(next(iter(desc))), expressions_dict=desc
+        )
+        for desc in descriptions
+    ]
+
+    MDOCouplingStructure(disciplines).plot_n2_chart(
+        "{}.png".format(baseline_images[0]), show_data_names, save=True, show=False
+    )

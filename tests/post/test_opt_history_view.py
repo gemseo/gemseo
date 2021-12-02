@@ -21,71 +21,104 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import division, unicode_literals
 
+import pytest
+from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_algo, execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2, Path
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
 POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 
-def test_files_creation(tmp_wd):
-    """Check the generation of the output files."""
-    problem = Rosenbrock()
-    OptimizersFactory().execute(problem, "L-BFGS-B")
-    view = OptHistoryView(problem)
-    file_path = "rosen_1"
-    view.execute(show=False, save=True, file_path=file_path)
-    for full_path in view.output_files:
-        assert Path(full_path).exists()
-
-
-def test_view_load_pb(tmp_wd):
-    """Check the generation of the output files from an HDF database."""
+def test_get_constraints():
+    """Test that the constraints of the problem are retrieved correctly."""
     problem = OptimizationProblem.import_hdf(POWER2_PATH)
-    view = OptHistoryView(problem)
-    file_path = "power2view"
-    view.execute(show=False, save=True, file_path=file_path, obj_relative=True)
-    for full_path in view.output_files:
-        assert Path(full_path).exists()
-
-
-def test_view_constraints(tmp_wd):
-    """Check the generation of the output files for a problem with constraints."""
-    problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
     view = OptHistoryView(problem)
 
     _, cstr = view._get_constraints(["toto", "ineq1"])
     assert len(cstr) == 1
-    view.execute(
+
+
+@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@image_comparison(
+    baseline_images=[
+        "power2_2_variables",
+        "power2_2_objective",
+        "power2_2_x_xstar",
+        "power2_2_hessian_approximation",
+        "power2_2_ineq_constraints",
+        "power2_2_eq_constraints",
+    ],
+    extensions=["png"],
+)
+def test_opt_hist_const(pyplot_close_all):
+    """Test that a problem with constraints is properly rendered.
+
+    Args:
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    problem = OptimizationProblem.import_hdf(POWER2_PATH)
+    post = execute_post(
+        problem,
+        "OptHistoryView",
         show=False,
-        save=True,
+        save=False,
         variables_names=["x"],
         file_path="power2_2",
         obj_min=0.0,
         obj_max=5.0,
     )
-    for full_path in view.output_files:
-        assert Path(full_path).exists()
+    post.figures
 
 
-def test_nans(tmp_wd):
-    """Check the generation of the output files for a database containing NaN."""
-    problem = OptimizationProblem.import_hdf(POWER2_NAN_PATH)
-    view = execute_post(problem, "OptHistoryView", show=False, save=True)
+@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.parametrize(
+    "problem_path,baseline_images",
+    [
+        (
+            POWER2_NAN_PATH,
+            [
+                "opt_history_view_variables_nan",
+                "opt_history_view_objective_nan",
+                "opt_history_view_x_xstar_nan",
+                "opt_history_view_ineq_constraints_nan",
+                "opt_history_view_eq_constraints_nan",
+            ],
+        ),
+        (
+            POWER2_PATH,
+            [
+                "power2view_variables",
+                "power2view_objective",
+                "power2view_x_xstar",
+                "power2view_hessian_approximation",
+                "power2view_ineq_constraints",
+                "power2view_eq_constraints",
+            ],
+        ),
+    ],
+)
+@image_comparison(None, extensions=["png"])
+def test_opt_hist_from_database(baseline_images, problem_path, pyplot_close_all):
+    """Test the generation of the plots from databases.
 
-    for full_path in view.output_files:
-        assert Path(full_path).exists()
+    Args:
+        baseline_images: The reference images to be compared.
+        problem_path: The path to the hdf5 database of the problem to test.
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    problem = OptimizationProblem.import_hdf(problem_path)
+    post = execute_post(problem, "OptHistoryView", show=False, save=False)
+    post.figures
 
 
 def test_diag_with_nan(caplog):
