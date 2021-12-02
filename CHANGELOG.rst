@@ -40,6 +40,7 @@ Fixed
 -----
 
 - The broken link to the GEMSEO logo used in the D3.js-based N2 chart is now repaired.
+- The method ``plot_n2_chart`` in MDOCouplingStructure no longer crashes when the provided disciplines have no couplings.
 
 Version 3.2.1 (November 2021)
 *****************************
