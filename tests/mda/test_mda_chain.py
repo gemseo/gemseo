@@ -344,3 +344,20 @@ def test_parallel_doe(generate_parallel_doe_data):
     """
     obj = generate_parallel_doe_data("MDAChain", 7)
     assert isclose(array([obj]), array([608.175]), atol=1e-3)
+
+
+def test_mda_chain_self_coupling():
+    """Test that a nested MDAChain is not detected as a self-coupled discipline."""
+    disciplines = analytic_disciplines_from_desc(
+        (
+            {"y1": "x"},
+            {"c1": "y1+x+0.2*c2"},
+            {"c2": "y1+x+1.-0.3*c1"},
+            {"obj": "x+c1+c2"},
+        )
+    )
+    mdachain_lower = MDAChain(disciplines, name="mdachain_lower")
+    mdachain_root = MDAChain([mdachain_lower], name="mdachain_root")
+
+    assert mdachain_root.mdo_chain.disciplines[0] == mdachain_lower
+    assert len(mdachain_root.mdo_chain.disciplines) == 1

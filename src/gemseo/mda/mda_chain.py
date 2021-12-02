@@ -174,6 +174,7 @@ class MDAChain(MDA):
                 if len(coupled_disciplines) > 1 or (
                     len(coupled_disciplines) == 1
                     and self.coupling_structure.is_self_coupled(first_disc)
+                    and not isinstance(coupled_disciplines[0], MDA)
                 ):
                     # several disciplines coupled
 
