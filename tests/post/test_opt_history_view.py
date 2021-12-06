@@ -21,6 +21,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import division, unicode_literals
 
+import sys
+
 import pytest
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
@@ -30,7 +32,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_algo, execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.py23_compat import Path
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
@@ -46,7 +48,11 @@ def test_get_constraints():
     assert len(cstr) == 1
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.skipif(
+    sys.version_info <= (3, 7),
+    reason="Image comparison does not work with Python 2. "
+    "This test throws false negatives with Python 3.6",
+)
 @image_comparison(
     baseline_images=[
         "power2_2_variables",
@@ -79,7 +85,11 @@ def test_opt_hist_const(pyplot_close_all):
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
+@pytest.mark.skipif(
+    sys.version_info <= (3, 7),
+    reason="Image comparison does not work with Python 2. "
+    "This test throws false negatives with Python 3.6",
+)
 @pytest.mark.parametrize(
     "problem_path,baseline_images",
     [
