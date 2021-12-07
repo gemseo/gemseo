@@ -1,0 +1,1 @@
+Ensure that nested MDAChains are not detected as self-coupled disciplines.

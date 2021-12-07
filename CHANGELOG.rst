@@ -25,22 +25,7 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-Unreleased
-**********
-
-Added
------
-
-Changed
--------
-
-- The D3.js-based N2 chart can now display the GEMSEO logo offline.
-
-Fixed
------
-
-- The broken link to the GEMSEO logo used in the D3.js-based N2 chart is now repaired.
-- The method ``plot_n2_chart`` in MDOCouplingStructure no longer crashes when the provided disciplines have no couplings.
+.. towncrier release notes start
 
 Version 3.2.1 (November 2021)
 *****************************
