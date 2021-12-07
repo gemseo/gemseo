@@ -162,7 +162,6 @@ with eventually a conditionnal dependency on the Python version:
 
    export MATLAB_PYTHON_WRAPPER="<path or URL to MATLAB Python API package> ; python_version<'3.9'"
 
-
 pSeven requirements
 ~~~~~~~~~~~~~~~~~~~
 
@@ -349,6 +348,114 @@ For the daily work,
 this basically means that evolutions of |g|
 are done in feature branches created from the `develop branch`_
 and merged back into it when finished.
+
+Initial setup
+~~~~~~~~~~~~~
+
+* `Create your fork
+  <https://docs.gitlab.com/ee/user/project/repository/forking_workflow.html#creating-a-fork>`_
+  of the gemseo repository on gitlab.com.
+* Clone your fork to your local machine:
+  :command:`git clone <url of your fork>`
+* Go to the directory of your fork.
+* Add the reference upstream repository to you fork with:
+  :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
+* Get access to the IRT CI:
+
+  * from your account on gitlab.com,
+  * go to **Settings > CI/CD** and expand the **Runners** section,
+  * under **Specific runners**, copy the **registration token** and send it to a maintainer.
+* Activate the CI jobs coverage reports:
+
+  * from your account on gitlab.com,
+  * go to **Settings > CI/CD** and expand the **General pipelines** section,
+  * under **Test coverage parsing**, set the regex field to ``^TOTAL.+?(\d+\%)$``.
+
+Working on a new feature
+************************
+
+* Update your local copy of the upstream repository:
+  :command:`git fetch upstream`
+* Create a new feature branch on your local clone from the up to date upstream develop branch:
+  :command:`git checkout upstream/develop -b my_new_feature_branch`
+* Add commits to your feature branch.
+* On a regular basis (ideally everyday),
+  keep your feature branch up to date with the upstream evolution of the develop branch
+  so to make the future merge into develop easier:
+  :command:`git fetch upstream`
+  :command:`git rebase upstream/develop`
+* When rebasing turns to be to cumbersome,
+  you may use merge:
+  :command:`git rebase --abort`
+  :command:`git merge upstream/develop`
+* Push your current local feature branch to your fork at least once a day:
+  :command:`git push origin HEAD`
+* Once pushed, the gitlab CI will run the tests on your branch,
+  you will receive an email notification in case of failure.
+
+Finishing a feature
+*******************
+
+* When your feature branch is ready to be merged in the upstream develop branch,
+  your branch shall become a merge request (MR).
+* If applicable,
+  add a changelog fragment that will be later inserted into the changelog.
+  To do so,
+  create one or more files named after the issue number and kind of change,
+  for instance :file:`123.fixed.rst`,
+  in :file:`changelog/fragments`.
+* `MR basic information
+  <https://docs.gitlab.com/ee/user/project/merge_requests/getting_started.html>`_.
+* How to `create a MR
+  <https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html#new-merge-request-from-a-fork>`_.
+* Assign the MR to a maintainer (AntoineD by default)
+  which will handle the choice of the reviewers (discussed during the scrum meeting).
+* Set the milestone.
+* Set the `issue relating or closing the MR
+  <https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically>`_,
+  if any.
+* If for some reasons the branch of the MR requires more work,
+  the MR may be `set to Draft
+  <https://docs.gitlab.com/ee/user/project/merge_requests/drafts.html>`_.
+* If a review discussion goes beyond the scope of a branch,
+  `one
+  <https://docs.gitlab.com/ee/user/discussions/index.html#moving-a-single-thread-to-a-new-issue>`_
+  or
+  `more
+  <https://docs.gitlab.com/ee/user/discussions/index.html#move-all-unresolved-threads-in-a-merge-request-to-an-issue>`_
+  review threads of a MR may be turned into a new issue to be resolved in a future branch.
+* If a review thread has not been resolved by a new commit to the reviewed branch and shall not be dealt with in a new issue,
+  it shall be `marked as resolved by the reviewer
+  <https://docs.gitlab.com/ee/user/discussions/index.html#marking-a-comment-or-thread-as-resolved>`_.
+* If changes have been pushed to the branch of a MR,
+  `the reviewers shall be notified
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#requesting-a-new-review>`_.
+* When all the MR discussion threads are resolved:
+
+  * The reviewers shall approve the MR,
+  * The MR creator shall ask the branch to be merged.
+
+Reviewing a MR
+**************
+
+* You can choose how the changes of the MR branch are `displayed
+  <https://docs.gitlab.com/ee/user/project/merge_requests/changes.html>`_.
+* You may leave reviews or comments
+  on `one
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#review-a-merge-request>`_
+  or `more lines
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#comment-on-multiple-lines>`_.
+* You may make code
+  `suggestions
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/suggestions.html>`_
+  that could be committed as is the reviewed branch.
+* Once done,
+  you shall `submit your review
+  <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#submit-a-review>`_.
+* You shall check that your review comments have been addressed,
+  if so you shall mark them as resolved.
+* When all the reviews have been resolved,
+  you shall approve the MR.
 
 Git hooks
 +++++++++

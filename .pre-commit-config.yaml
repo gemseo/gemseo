@@ -88,6 +88,7 @@ repos:
     - id: insert-license
       name: insert CC BY-SA license
       files: (\.rst|\.rst\.txt)$
+      exclude: ^changelog/fragments
       args:
         - --license-filepath
         - LICENSES/headers/CC-BY-SA-4.0.txt

@@ -204,6 +204,22 @@ Run (append ``-win`` on windows)
 
    tox -e anaconda-env-file
 
+
+Updating the changelog
+----------------------
+
+To avoid rebase and merge conflicts,
+the changelog is not directly updated in a branch
+but updated once a release is ready from changelog fragments.
+Changelog fragment is a file that contains the part of the changelog of a branch,
+named with :file:`<issue number>.<change kind>.rst`
+and stored under :file:`changelog/fragments`.
+The update is done with `towncrier <https://github.com/twisted/towncrier>`_:
+
+.. code-block:: shell
+
+   towncrier build
+
 Making a new release
 --------------------
 
@@ -211,6 +227,7 @@ Making a new release
 #. Make sure the full test suite passes.
 #. Replace ``Unreleased`` by the new version in :file:`CHANGELOG.rst`.
 #. Hardcode the version number in :file:`conf.py`.
+#. Update the changelog.
 #. Push the branch.
 #. Build the docs for this branch on rtd, check the version and changelog.
 #. Merge to master.

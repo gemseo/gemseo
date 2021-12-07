@@ -1,0 +1,1 @@
+The D3.js-based N2 chart can now display the GEMSEO logo offline.

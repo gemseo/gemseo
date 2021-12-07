@@ -1,0 +1,17 @@
+{{ top_line }}
+{{ top_underline * ((top_line)|length)}}
+
+{% set section = sections[''] %}
+{% for category, val in definitions.items() if category in section %}
+{% set definition = definitions[category] %}
+{{ definition['name'] }}
+{{ underlines[0] * definition['name']|length }}
+
+{% if definition['showcontent'] %}
+{% for text, values in section[category].items() %}
+- {{ text }}
+  {{ values|join(',\n  ') }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
