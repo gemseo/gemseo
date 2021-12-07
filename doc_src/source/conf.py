@@ -282,14 +282,9 @@ html_static_path = ["_static"]
 
 
 def setup(app):
-    app.add_js_file("js/copybutton.js")
+    app.add_css_file("css/gemseo.css")
+    app.add_css_file("css/all.css")
 
-
-# def setup(app):
-#     if html_theme == 'sphinx_rtd_theme':
-#         app.add_stylesheet('custom.css')
-#     app.add_stylesheet('slideshow.css')
-#     app.add_javascript('slideshow.js')
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -546,3 +541,12 @@ sphinx.ext.autodoc.typehints.record_typehints = record_typehints
 
 html_context["features"] = [asdict(feature) for feature in features]
 html_context["main_concepts"] = [asdict(main_concept) for main_concept in main_concepts]
+html_context["meta_description"] = (
+    "GEMSEO: A Generic Engine for Multi-disciplinary Scenarios, "
+    "Exploration and Optimization"
+)
+html_context["meta_og_description"] = (
+    "Open source MDO in Python. "
+    "Connect your tools. Explore your design space. Find solutions."
+)
+html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
