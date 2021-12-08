@@ -22,7 +22,7 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
@@ -31,42 +31,43 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.utils.string_tools import MultiLineString
 
 
-class TestOptResult(unittest.TestCase):
-    def test_init_dict_repr(self):
-        dct = {
-            "x_0": [0],
-            "x_opt": [1],
-            "optimizer_name": "LBFGSB",
-            "message": "msg",
-            "f_opt": 1.1,
-            OptimizationResult.HDF_CSTR_KEY + "cname": [0.0],
-            "status": 1,
-            "n_obj_call": 10,
-            "n_grad_call": 10,
-            "n_constr_call": 10,
-            "is_feasible": True,
-        }
-        res = OptimizationResult.init_from_dict_repr(**dct)
+def test_init_dict_repr():
+    dct = {
+        "x_0": [0],
+        "x_opt": [1],
+        "optimizer_name": "LBFGSB",
+        "message": "msg",
+        "f_opt": 1.1,
+        OptimizationResult.HDF_CSTR_KEY + "cname": [0.0],
+        "status": 1,
+        "n_obj_call": 10,
+        "n_grad_call": 10,
+        "n_constr_call": 10,
+        "is_feasible": True,
+    }
+    res = OptimizationResult.init_from_dict_repr(**dct)
 
-        assert res.x_0 == dct["x_0"]
-        assert res.optimizer_name == dct["optimizer_name"]
-        assert res.message == dct["message"]
-        assert res.f_opt == dct["f_opt"]
-        assert (
-            res.constraints_values["cname"]
-            == dct[OptimizationResult.HDF_CSTR_KEY + "cname"]
-        )
-        assert res.status == dct["status"]
-        assert res.n_obj_call == dct["n_obj_call"]
-        assert res.n_grad_call == dct["n_grad_call"]
-        assert res.n_constr_call == dct["n_constr_call"]
-        assert res.is_feasible == dct["is_feasible"]
+    assert res.x_0 == dct["x_0"]
+    assert res.optimizer_name == dct["optimizer_name"]
+    assert res.message == dct["message"]
+    assert res.f_opt == dct["f_opt"]
+    assert (
+        res.constraints_values["cname"]
+        == dct[OptimizationResult.HDF_CSTR_KEY + "cname"]
+    )
+    assert res.status == dct["status"]
+    assert res.n_obj_call == dct["n_obj_call"]
+    assert res.n_grad_call == dct["n_grad_call"]
+    assert res.n_constr_call == dct["n_constr_call"]
+    assert res.is_feasible == dct["is_feasible"]
 
-        self.assertRaises(ValueError, OptimizationResult.init_from_dict_repr, toto=4)
+    with pytest.raises(ValueError, match="Unknown attribute: toto."):
+        OptimizationResult.init_from_dict_repr(toto=4)
 
 
-def test_str():
-    """Check the string representation of an optimization result."""
+@pytest.fixture(scope="module")
+def optimization_result():  # type: (...) -> OptimizationResult
+    """An optimization result."""
     space = DesignSpace()
     space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
     space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
@@ -91,8 +92,22 @@ def test_str():
     )
     scenario.add_constraint("ineq_n_2", constraint_type="ineq")
     scenario.execute({"algo": "fullfact", "n_samples": 1})
-    opt_result = scenario.optimization_result
+    return scenario.optimization_result
 
+
+def test_repr(optimization_result):
+    """Check the string representation of an optimization result."""
+    expected = MultiLineString()
+    expected.add("Optimization result:")
+    expected.indent()
+    expected.add("Design variables: [0.5]")
+    expected.add("Objective function: 0.5")
+    expected.add("Feasible solution: False")
+    assert repr(optimization_result) == str(expected)
+
+
+def test_str(optimization_result):
+    """Check the string representation of an optimization result."""
     expected = MultiLineString()
     expected.add("Optimization result:")
     expected.add("Objective value = 0.5")
@@ -108,4 +123,21 @@ def test_str():
     expected.add("eq_2 - 0.25 = 0.25")
     expected.add("ineq_n_1 - 0.25 = 0.25")
     expected.add("ineq_n_2 = 0.5")
-    assert str(opt_result) == str(expected)
+    assert str(optimization_result) == str(expected)
+
+
+def test_optimum_index(optimization_result):
+    """Check the value of the optimum index of an optimization result."""
+    assert optimization_result.optimum_index == 0
+
+
+def test_default_optimum_index(caplog):
+    """Check that the default value of the optimum index is None."""
+    result = OptimizationResult()
+    assert result.optimum_index is None
+
+
+def test_initialize_optimum_index():
+    """Check that the optimum index is correctly initialized."""
+    result = OptimizationResult(optimum_index=1)
+    assert result.optimum_index == 1

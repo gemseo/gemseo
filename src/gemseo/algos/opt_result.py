@@ -19,24 +19,21 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Optimization result."""
 from __future__ import division, unicode_literals
 
 import logging
+from typing import Dict, Mapping, Optional, Union
+
+from numpy import ndarray
 
 from gemseo.utils.string_tools import MultiLineString
-
-"""
-Optimization result
-*******************
-"""
-
 
 LOGGER = logging.getLogger(__name__)
 
 
 class OptimizationResult(object):
-
-    """Stores optimization results."""
+    """Store the result of an optimization."""
 
     DICT_REPR_ATTR = [
         "x_0",
@@ -49,6 +46,7 @@ class OptimizationResult(object):
         "n_grad_call",
         "n_constr_call",
         "is_feasible",
+        "optimum_index",
     ]
 
     HDF_CSTR_GRAD_KEY = "constr_grad:"
@@ -56,31 +54,38 @@ class OptimizationResult(object):
 
     def __init__(
         self,
-        x_0=None,
-        x_opt=None,
-        f_opt=None,
-        status=None,
-        constraints_values=None,
-        constraints_grad=None,
-        optimizer_name=None,
-        message=None,
-        n_obj_call=None,
-        n_grad_call=None,
-        n_constr_call=None,
-        is_feasible=False,
-    ):
-        """Initialize optimization results.
-
-        :param x_0: initial guess for design variables
-        :param x_opt: optimal design variables values
-        :param f_opt: the objective function values at optimum
-        :param status: the optimizer status
-        :param message: the optimizer message
-        :param n_obj_call: number of call to objective function by optimizer
-        :param n_grad_call: number of call to gradient function by optimizer
-        :param n_constr_call: number of call to constraints
-                function by optimizer
-        :param is_feasible: True if the solution is feasible, false else
+        x_0=None,  # type: Optional[ndarray]
+        x_opt=None,  # type: Optional[ndarray]
+        f_opt=None,  # type: Optional[ndarray]
+        status=None,  # type: Optional[int]
+        constraints_values=None,  # type: Optional[Mapping[str,ndarray]]
+        constraints_grad=None,  # type: Optional[Mapping[str,ndarray]]
+        optimizer_name=None,  # type: Optional[str]
+        message=None,  # type: Optional[str]
+        n_obj_call=None,  # type: Optional[int]
+        n_grad_call=None,  # type: Optional[int]
+        n_constr_call=None,  # type: Optional[int]
+        is_feasible=False,  # type: bool
+        optimum_index=None,  # type: Optional[int]
+    ):  # type: (...) -> None
+        # noqa: E262
+        """
+        Args:
+            x_0: The initial values of the design variables.
+            x_opt: The optimal values of the design variables, called the *optimum*.
+            f_opt: The value of the objective function at the optimum.
+            status: The status of the optimization.
+            constraints_values: The values of the constraints at the optimum.
+            constraints_grad: The values of the gradients of the constraints
+                at the optimum.
+            optimizer_name: The name of the optimizer.
+            message: The message returned by the optimizer.
+            n_obj_call: The number of calls to the objective function.
+            n_grad_call: The number of calls to the gradient function.
+            n_constr_call: The number of calls to the constraints function.
+            is_feasible: Whether the solution is feasible.
+            optimum_index: The position of the optimum in the optimization history,
+                0 being the first one.
         """
         self.x_0 = x_0
         self.optimizer_name = optimizer_name
@@ -94,8 +99,9 @@ class OptimizationResult(object):
         self.n_grad_call = n_grad_call
         self.n_constr_call = n_constr_call
         self.is_feasible = is_feasible
+        self.optimum_index = optimum_index
 
-    def __repr__(self):
+    def __repr__(self):  # type: (...) -> str
         msg = MultiLineString()
         msg.add("Optimization result:")
         msg.indent()
@@ -104,7 +110,7 @@ class OptimizationResult(object):
         msg.add("Feasible solution: {}", self.is_feasible)
         return str(msg)
 
-    def __str__(self):
+    def __str__(self):  # type: (...) -> str
         msg = MultiLineString()
         msg.add("Optimization result:")
         msg.add("Objective value = {}", self.f_opt)
@@ -112,6 +118,7 @@ class OptimizationResult(object):
             msg.add("The result is feasible.")
         else:
             msg.add("The result is not feasible.")
+
         msg.add("Status: {}", self.status)
         msg.add("Optimizer message: {}", self.message)
         if self.n_obj_call is not None:
@@ -119,60 +126,74 @@ class OptimizationResult(object):
                 "Number of calls to the objective function by the optimizer: {}",
                 self.n_obj_call,
             )
+
         if self.constraints_values and len(self.constraints_values) < 20:
             msg.add("Constraints values:")
             msg.indent()
-            for c_name in sorted(self.constraints_values.keys()):
-                msg.add("{} = {}", c_name, self.constraints_values[c_name])
+            for name, value in sorted(self.constraints_values.items()):
+                msg.add("{} = {}", name, value)
+
         return str(msg)
 
-    def get_data_dict_repr(self):
-        """Returns a dict representation of self for serialization functions are
-        removed.
+    def get_data_dict_repr(
+        self,
+    ):  # type: (...) -> Dict[str,Union[str,int,bool,ndarray]]
+        """Return a dictionary representation for serialization.
 
-        :returns: a dict with attributes names as keys
+        The functions are removed.
+
+        Returns:
+            A dictionary representation of the optimization result.
         """
-        repr_dict = {}
-        for attr_name in self.DICT_REPR_ATTR:
-            attr = getattr(self, attr_name)
-            if attr is not None:
-                repr_dict[attr_name] = attr
+        representation = {}
+        for attribute_name in self.DICT_REPR_ATTR:
+            attribute_value = getattr(self, attribute_name)
+            if attribute_value is not None:
+                representation[attribute_name] = attribute_value
 
-        cgrad_key = OptimizationResult.HDF_CSTR_GRAD_KEY
-        c_key = OptimizationResult.HDF_CSTR_KEY
-        for cstr, cval in self.constraints_values.items():
-            repr_dict[c_key + cstr] = cval
-        for cstr, cgrad in self.constraints_grad.items():
-            repr_dict[cgrad_key + cstr] = cgrad
+        for name, value in self.constraints_values.items():
+            representation[self.HDF_CSTR_KEY + name] = value
 
-        return repr_dict
+        for name, value in self.constraints_grad.items():
+            representation[self.HDF_CSTR_GRAD_KEY + name] = value
+
+        return representation
 
     @staticmethod
-    def init_from_dict_repr(**kwargs):
-        """Initializes a new opt result from a data dict typically used for
-        deserialization.
+    def init_from_dict_repr(**kwargs):  # type: (...) -> OptimizationResult
+        """Initialize a new optimization result from a data dictionary.
 
-        :param kwargs: key value pairs from DICT_REPR_ATTR
+        This is typically used for deserialization.
+
+        Args:
+            **kwargs: The data whose names are :attr:`.DICT_REPR_ATTR`.
+
+        Returns:
+            The optimization result defined by the passed data.
+
+        Raises:
+            ValueError: When a data name is unknown.
         """
-        allowed = OptimizationResult.DICT_REPR_ATTR
-        filt_args = {k: v for k, v in kwargs.items() if k in allowed}
-        non_allowed = {k: v for k, v in kwargs.items() if k not in filt_args}
+        allowed_kwargs = {
+            k: v for k, v in kwargs.items() if k in OptimizationResult.DICT_REPR_ATTR
+        }
+        non_allowed_kwargs = {
+            k: v for k, v in kwargs.items() if k not in allowed_kwargs
+        }
         constraints_values = {}
         constraints_grad = {}
         cgrad_key = OptimizationResult.HDF_CSTR_GRAD_KEY
         c_key = OptimizationResult.HDF_CSTR_KEY
-        for attr, val in non_allowed.items():
-            if attr.startswith(cgrad_key):
-                key_clean = attr.replace(cgrad_key, "")
-                constraints_grad[key_clean] = val
-            elif attr.startswith(c_key):
-                key_clean = attr.replace(c_key, "")
-                constraints_values[key_clean] = val
+        for kwarg_name, kwarg_value in non_allowed_kwargs.items():
+            if kwarg_name.startswith(cgrad_key):
+                constraints_grad[kwarg_name.replace(cgrad_key, "")] = kwarg_value
+            elif kwarg_name.startswith(c_key):
+                constraints_values[kwarg_name.replace(c_key, "")] = kwarg_value
             else:
-                raise ValueError("Unknown attribute : " + str(attr))
-        opt_res = OptimizationResult(
+                raise ValueError("Unknown attribute: {}.".format(kwarg_name))
+
+        return OptimizationResult(
             constraints_values=constraints_values,
             constraints_grad=constraints_grad,
-            **filt_args
+            **allowed_kwargs
         )
-        return opt_res

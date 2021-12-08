@@ -424,6 +424,12 @@ class DriverLib(AlgoLib):
         f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
         if f_opt is not None and not problem.minimize_objective:
             f_opt = -f_opt
+
+        if x_opt is None:
+            optimum_index = None
+        else:
+            optimum_index = problem.database.get_index_of(x_opt)
+
         return OptimizationResult(
             x_0=x_0,
             x_opt=x_opt,
@@ -435,6 +441,7 @@ class DriverLib(AlgoLib):
             is_feasible=is_feas,
             constraints_values=c_opt,
             constraints_grad=c_opt_grad,
+            optimum_index=optimum_index,
         )
 
     def _get_options(self, **options):

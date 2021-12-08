@@ -1,0 +1,1 @@
+OptimizationResult can store the optimum index.
