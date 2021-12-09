@@ -1,16 +1,21 @@
 {
     "name": "RadarChart_options",
-    "required": ["constraints_list"],
+    "required": [],
     "properties": {
         "iteration": {
-            "type": "integer"
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "string", "enum":  ["opt"]}
+            ]
         },
-        "constraints_list":{
-        	"items": {
-                "type": "string",
-                "minItems": 1
-            },
-            "type": "array"
+        "constraints_list": {
+            "anyOf": [
+                {"type": "null"},
+                {"items": {"type": "string", "minItems": 1}, "type": "array"}
+            ]
+        },
+        "show_names_radially": {
+            "type": "boolean"
         }
     },
     "additionalProperties": false,
