@@ -401,7 +401,8 @@ Finishing a feature
 * If applicable,
   add a changelog fragment that will be later inserted into the changelog.
   To do so,
-  create one or more files named after the issue number and kind of change,
+  create one or more files named after the issue number and kind of change
+  (*added*, *changed*, *deprecated*, *fixed*, *removed* or *security*),
   for instance :file:`123.fixed.rst`,
   in :file:`changelog/fragments`.
 * `MR basic information
