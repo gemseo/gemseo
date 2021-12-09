@@ -1,0 +1,1 @@
+The RadarChart post-processor uses all the constraints by default.
