@@ -527,12 +527,6 @@ def test_evaluate_functions():
         eval_obj=False,
         normalize=False,
     )
-    with pytest.raises(ValueError):
-        problem.evaluate_functions(
-            normalize=True,
-            no_db_no_norm=True,
-            eval_obj=False,
-        )
     problem.evaluate_functions(normalize=False, no_db_no_norm=True, eval_obj=False)
 
 
@@ -546,6 +540,29 @@ def test_evaluate_functions_non_preprocessed(constrained_problem):
     assert values["g"] == pytest.approx(array([1.0]))
     assert values["h"] == pytest.approx(array([1.0, 1.0]))
     assert jacobians == dict()
+
+
+@pytest.mark.parametrize(
+    ["pre_normalize", "eval_normalize", "x_vect"],
+    [
+        (False, False, array([0.1, 0.2, 0.3])),
+        (False, True, array([0.55, 0.6, 0.65])),
+        (True, False, array([0.1, 0.2, 0.3])),
+        (True, True, array([0.55, 0.6, 0.65])),
+    ],
+)
+def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
+    """Check the evaluation of preprocessed functions."""
+    constrained_problem = Power2()
+    constrained_problem.preprocess_functions(normalize=pre_normalize)
+    values, _ = constrained_problem.evaluate_functions(
+        x_vect=x_vect, normalize=eval_normalize
+    )
+    assert set(values.keys()) == {"pow2", "ineq1", "ineq2", "eq"}
+    assert values["pow2"] == pytest.approx(0.14)
+    assert values["ineq1"] == pytest.approx(array([0.499]))
+    assert values["ineq2"] == pytest.approx(array([0.492]))
+    assert values["eq"] == pytest.approx(array([0.873]))
 
 
 def test_no_normalization():

@@ -1172,6 +1172,11 @@ class MDOFunction(object):
         """
         return Concatenate(functions, name, f_type)
 
+    @property
+    def expects_normalized_inputs(self):  # type: (...) -> bool
+        """Whether the functions expect normalized inputs or not."""
+        return False
+
 
 class NotImplementedCallable(object):
     """A not implemented callable object."""
@@ -2429,3 +2434,7 @@ class SetPtFromDatabase(MDOFunction):
             The value of the Jacobian function read in the database.
         """
         return self.__read_in_db(x_n, "@{}".format(self.__name))
+
+    @property
+    def expects_normalized_inputs(self):  # type: (...) -> bool
+        return self.__normalize

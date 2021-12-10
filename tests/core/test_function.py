@@ -24,6 +24,7 @@ from __future__ import division, unicode_literals
 
 import math
 import unittest
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -36,7 +37,10 @@ from gemseo.core.mdofunctions.mdo_function import (
     MDOFunction,
     MDOLinearFunction,
     MDOQuadraticFunction,
+    SetPtFromDatabase,
 )
+from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
+from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.data_conversion import DataConversion
@@ -672,3 +676,49 @@ def test_offset_name_and_expr(function, neg, neg_after, value, expected_n, expec
 
     assert function.name == expected_n
     assert function.expr == expected_e
+
+
+def test_expects_normalized_inputs(function):
+    """Check the inputs normalization expectation."""
+    assert not function.expects_normalized_inputs
+
+
+@pytest.fixture(scope="module")
+def design_space():
+    """A design space."""
+    return mock.Mock()
+
+
+@pytest.fixture(scope="module")
+def problem():
+    """An optimization problem."""
+    return mock.Mock()
+
+
+@pytest.fixture(scope="module")
+def database():
+    """A database."""
+    return mock.Mock()
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_from_database(
+    function, design_space, database, normalize
+):
+    """Check the inputs normalization expectation."""
+    func = SetPtFromDatabase(database, design_space, function, normalize=normalize)
+    assert func.expects_normalized_inputs == normalize
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_normfunction(function, problem, normalize):
+    """Check the inputs normalization expectation."""
+    func = NormFunction(function, normalize, False, problem)
+    assert func.expects_normalized_inputs == normalize
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
+    """Check the inputs normalization expectation."""
+    func = NormDBFunction(function, normalize, False, problem)
+    assert func.expects_normalized_inputs == normalize
