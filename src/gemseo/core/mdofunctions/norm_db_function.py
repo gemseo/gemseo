@@ -197,3 +197,7 @@ class NormDBFunction(MDOFunction):
 
         else:
             return jac_u
+
+    @property
+    def expects_normalized_inputs(self):  # type: (...) -> bool
+        return self.__normalize

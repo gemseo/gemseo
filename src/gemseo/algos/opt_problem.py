@@ -873,12 +873,8 @@ class OptimizationProblem(object):
         Returns:
             The functions values and/or the Jacobian values
             according to the passed arguments.
-
-        Raises:
-            ValueError: If both no_db_no_norm and normalize are True.
         """
-        if no_db_no_norm and normalize:
-            raise ValueError("Can't use no_db_no_norm and normalize options together")
+        # Check the inputs
         if normalize:
             if x_vect is None:
                 x_vect = self.get_x0_normalized()
@@ -893,30 +889,46 @@ class OptimizationProblem(object):
                 # Checks proposed x wrt bounds
                 self.design_space.check_membership(x_vect)
 
+        # Get the functions to be evaluated
         if self.__functions_are_preprocessed and no_db_no_norm:
+            functions = list(self.nonproc_constraints)
             if eval_obj:
-                functions = self.nonproc_constraints + [self.nonproc_objective]
-            else:
-                functions = self.nonproc_constraints
+                functions += [self.nonproc_objective]
         else:
+            functions = list(self.constraints)
             if eval_obj:
-                functions = self.constraints + [self.objective]
-            else:
-                functions = self.constraints
+                functions += [self.objective]
 
+        if not functions:
+            return dict(), dict()
+
+        # Check whether the functions expect normalized inputs
+        # N.B. either all functions expect normalized inputs or none of them do.
+        normalization_expected = functions[0].expects_normalized_inputs
+
+        # Prepare the inputs
+        if normalization_expected and not normalize:
+            func_inputs = self.design_space.normalize_vect(x_vect)
+        elif not normalization_expected and normalize:
+            func_inputs = self.design_space.unnormalize_vect(x_vect)
+        else:
+            func_inputs = x_vect
+
+        # Evaluate the functions
         outputs = {}
         for func in functions:
             try:
-                outputs[func.name] = func(x_vect)
+                outputs[func.name] = func(func_inputs)
             except ValueError:
                 LOGGER.error("Failed to evaluate function %s", func.name)
                 raise
 
+        # Evaluate the Jacobians
         jacobians = {}
         if eval_jac:
             for func in functions:
                 try:
-                    jacobians[func.name] = func.jac(x_vect)
+                    jacobians[func.name] = func.jac(func_inputs)
                 except ValueError:
                     msg = "Failed to evaluate jacobian of {}".format(func.name)
                     LOGGER.error(msg)

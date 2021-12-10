@@ -120,3 +120,7 @@ class NormFunction(MDOFunction):
         if self.__normalize:
             return self.__optimization_problem.design_space.normalize_grad(g_u)
         return g_u
+
+    @property
+    def expects_normalized_inputs(self):  # type: (...) -> bool
+        return self.__normalize
