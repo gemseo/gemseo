@@ -366,11 +366,12 @@ class SensitivityAnalysis(object):
         Args:
             output: The output
                 for which to display sensitivity indices,
-                either a name or a tuple of the form (name, component).
+                either a name or a tuple of the form (name, component)
+                where (name, component) is used to sort the inputs.
                 If name, its first component is considered.
             mesh: The mesh on which the p-length output
-                is represented. Either a (1, p) array for a 1D functional output
-                or a (2, p) array for a 2D one. If None, assume a 1D functional output.
+                is represented. Either a (p,) array for a 1D functional output
+                or a (p, 2) array for a 2D one. If None, assume a 1D functional output.
             inputs: The inputs to display. If None, display all inputs.
             standardize: If True, standardize the indices between 0 and 1 for each output.
             title: The title of the plot. If None, no title is displayed.
@@ -394,19 +395,29 @@ class SensitivityAnalysis(object):
         Raises:
             NotImplementedError: If the dimension of the mesh is greater than 2.
         """
+        if isinstance(output, six.string_types):
+            output_name = output
+            output_component = 0
+        else:
+            output_name, output_component = output
+
         dataset = Dataset()
-        inputs_names = self._sort_and_filter_input_parameters((output, 0), inputs)
+        inputs_names = self._sort_and_filter_input_parameters(
+            (output_name, output_component), inputs
+        )
         if standardize:
             main_indices = self.standardize_indices(self.main_indices)
         else:
             main_indices = self.main_indices
 
         data = []
-        for name in inputs_names:
-            data.append([value[name] for value in main_indices[output[0]]])
+        for input_name in inputs_names:
+            data.append(
+                [main_index[input_name] for main_index in main_indices[output_name]]
+            )
 
         data = array(data)[:, :, 0]
-        dataset.set_from_array(data, [output], sizes={output: data.shape[1]})
+        dataset.set_from_array(data, [output_name], sizes={output_name: data.shape[1]})
         dataset.row_names = inputs_names
         mesh = linspace(0, 1, data.shape[1]) if mesh is None else mesh
         dataset.set_metadata("mesh", mesh)
@@ -427,7 +438,7 @@ class SensitivityAnalysis(object):
             file_format=file_format,
             directory_path=directory_path,
             mesh="mesh",
-            variable=output,
+            variable=output_name,
             properties=properties,
         )
         return plot

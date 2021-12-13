@@ -51,7 +51,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture
 def discipline():  # type: (...) -> AnalyticDiscipline
     """Return a discipline of interest."""
-    expressions = {"y": "x1+2*x2+3*x3"}
+    expressions = {"out": "x1+2*x2+3*x3"}
     return create_discipline("AnalyticDiscipline", expressions_dict=expressions)
 
 
@@ -70,13 +70,13 @@ class Ishigami1D(MDODiscipline):
     def __init__(self):
         super(Ishigami1D, self).__init__()
         self.input_grammar.initialize_from_data_names(["x1", "x2", "x3"])
-        self.output_grammar.initialize_from_data_names(["y"])
+        self.output_grammar.initialize_from_data_names(["out"])
 
     def _run(self):
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3 ** 4 * sin(x_1) * time
-        self.store_local_data(y=output)
+        self.store_local_data(out=output)
 
 
 class MockSensitivityAnalysis(SensitivityAnalysis):
@@ -203,11 +203,11 @@ def test_plot_comparison(discipline, parameter_space):
     pearson = CorrelationAnalysis(discipline, parameter_space, 10)
     pearson.main_method = pearson._PEARSON
     pearson.compute_indices()
-    plot = pearson.plot_comparison(spearman, "y", save=False, show=False, title="foo")
+    plot = pearson.plot_comparison(spearman, "out", save=False, show=False, title="foo")
     assert plot.title == "foo"
     assert isinstance(plot, BarPlot)
     plot = pearson.plot_comparison(
-        spearman, "y", save=False, show=False, use_bar_plot=False
+        spearman, "out", save=False, show=False, use_bar_plot=False
     )
     assert isinstance(plot, RadarChart)
 
@@ -264,26 +264,28 @@ def ishigami():  # type: (...) -> SobolAnalysis
 
 
 ONE_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["1d_field"]),
-    "standardize": ({"standardize": True}, ["1d_field_standardize"]),
-    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"]),
+    "without_option": ({}, ["1d_field"], "out"),
+    "without_option_with_tuple": ({}, ["1d_field"], ("out", 0)),
+    "standardize": ({"standardize": True}, ["1d_field_standardize"], "out"),
+    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1", "x3"]},
         ["1d_field_inputs_standardize"],
+        "out",
     ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, baseline_images, output",
     ONE_D_FIELD_TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
 )
 @image_comparison(None, extensions=["png"])
-def test_plot_1d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
+def test_plot_1d_field(kwargs, baseline_images, output, ishigami, pyplot_close_all):
     """Check if a 1D field is well plotted."""
-    ishigami.plot_field("y", save=False, show=False, **kwargs)
+    ishigami.plot_field(output, save=False, show=False, **kwargs)
 
 
 TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
@@ -323,7 +325,7 @@ def test_plot_2d_field(kwargs, baseline_images, ishigami, pyplot_close_all):
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
-    ishigami.plot_field("y", save=False, show=False, mesh=mesh, **kwargs)
+    ishigami.plot_field("out", save=False, show=False, mesh=mesh, **kwargs)
 
 
 def test_standardize_indices():
