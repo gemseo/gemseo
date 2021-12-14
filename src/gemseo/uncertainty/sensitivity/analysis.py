@@ -370,7 +370,7 @@ class SensitivityAnalysis(object):
                 where (name, component) is used to sort the inputs.
                 If name, its first component is considered.
             mesh: The mesh on which the p-length output
-                is represented. Either a (p,) array for a 1D functional output
+                is represented. Either a p-length array for a 1D functional output
                 or a (p, 2) array for a 2D one. If None, assume a 1D functional output.
             inputs: The inputs to display. If None, display all inputs.
             standardize: If True, standardize the indices between 0 and 1 for each output.
