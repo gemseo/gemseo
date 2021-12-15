@@ -119,13 +119,6 @@ class DOEScenario(Scenario):
 
         return self.optimization_result
 
-    def _run(self):  # type: (...) -> None
-        LOGGER.info(" ")
-        LOGGER.info("*** Start DOE Scenario execution ***")
-        LOGGER.info("%s", repr(self))
-        self._run_algorithm()
-        LOGGER.info("*** DOE Scenario run terminated ***")
-
     def _update_grammar_input(self):  # type: (...) -> None
         self.input_grammar.update_elements(
             algo=str, n_samples=int, algo_options=dict, python_typing=True

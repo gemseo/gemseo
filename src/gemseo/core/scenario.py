@@ -26,6 +26,8 @@ from __future__ import division, unicode_literals
 
 import inspect
 import logging
+import timeit
+from datetime import timedelta
 from os import remove
 from os.path import basename, exists
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
@@ -137,6 +139,7 @@ class Scenario(MDODiscipline):
         self.formulation.opt_problem.database.name = self.name
         self.post_factory = PostFactory()
         self._update_input_grammar()
+        self.clear_history_before_run = False
 
     @property
     def _formulation_factory(self):  # type:(...) -> MDOFormulationsFactory
@@ -428,6 +431,22 @@ class Scenario(MDODiscipline):
             self.formulation.opt_problem, post_name, **options
         )
         return post
+
+    def _run(self):  # type: (...) -> None
+        t_0 = timeit.default_timer()
+        LOGGER.info(" ")
+        LOGGER.info("*** Start %s execution ***", self.name)
+        LOGGER.info("%s", repr(self))
+        # Clear the database when multiple runs are performed, see MDOScenarioAdapter.
+        if self.clear_history_before_run:
+            self.formulation.opt_problem.database.clear()
+
+        self._run_algorithm()
+        LOGGER.info(
+            "*** End %s execution (time: %s) ***",
+            self.name,
+            timedelta(seconds=timeit.default_timer() - t_0),
+        )
 
     def _run_algorithm(self):  # type: (...) -> OptimizationResult
         """Run the driver algorithm."""
