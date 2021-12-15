@@ -1,0 +1,1 @@
+Fixed a typo in the ``monitoring`` section of the documentation referring to the method ``create_gannt_chart`` as ``create_gannt``.

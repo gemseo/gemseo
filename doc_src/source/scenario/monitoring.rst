@@ -17,9 +17,9 @@ Monitoring the execution of a scenario
 
 When a scenario is executed (see :ref:`sellar_mdo` for building a scenario), |g| logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
-Then, the current execution status of the :class:`~gemseo.core.discipline.MDODiscipline` is needed.
+In a situation like this, the current execution status of the :class:`~gemseo.core.discipline.MDODiscipline` is useful as well.
 
-In the following, the different monitoring modes of a |g| scenario are illustrated on the :ref:`Sobieski <sobieski_problem>` MDF test case.
+In this page, the different monitoring modes of a |g| scenario are illustrated on the :ref:`Sobieski <sobieski_problem>` MDF test case.
 
 For that, by means of the API function :meth:`~gemseo.api.create_discipline`, we build the :class:`~gemseo.core.discipline.MDODiscipline`:
 
@@ -52,8 +52,8 @@ Use :mod:`~gemseo.api.configure_logger` to configure the logger to log in a file
 
 The method :meth:`~gemseo.core.scenario.Scenario.xdsmize` of the :class:`~gemseo.core.scenario.Scenario`
 can be used to this aim (:code:`monitor=True`).
-If html_output (default True), will generate a self contained html file, that can be automatically open using the option open_browser=True.
-If json_output is True, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`,
+If the option ``html_output`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``open_browser=True``.
+If ``json_output`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`,
 and print the statuses in the logs (:code:`print_statuses=True`):
 
 .. code::
@@ -167,11 +167,11 @@ Monitoring using a Gantt chart
 ------------------------------
 
 A Gantt chart can be generated to visualize the process execution.
-All disciplines execution and linearization times are recorded and plotted.
+All discipline's execution and linearization times are recorded and plotted.
 
 To activate the execution times recording,
 which are required to plot the Gantt chart,
-please first activate the time stamps before executing the scenario.
+please enable the time stamps before executing the scenario.
 
 .. code::
 
@@ -183,9 +183,9 @@ the Gantt chart can be created easily.
 
 .. code::
 
-   from gemseo.post.core.gantt_chart import create_gantt
+   from gemseo.post.core.gantt_chart import create_gantt_chart
 
-   create_gantt(save=True, show=False)
+   create_gantt_chart(save=True, show=False)
 
 This generates the following plot,
 here on a Sobieski MDF scenario.
@@ -195,5 +195,6 @@ here on a Sobieski MDF scenario.
    :scale: 65 %
 
    The Gantt chart: disciplines are sorted by names,
-   each discipline has a dedicated rows,
-   and the blue rectangles correspond to execution while the red ones are for linearization.
+   each discipline has a dedicated row.
+   The blue rectangles correspond to the execution time while the red ones represent
+   linearization time.
