@@ -21,6 +21,7 @@
 
 from __future__ import division, unicode_literals
 
+import unittest
 from typing import Sequence
 
 import pytest
@@ -420,3 +421,34 @@ def test_add_observable_not_available(
 def test_database_name(mdf_scenario):
     """Check the name of the database."""
     assert mdf_scenario.formulation.opt_problem.database.name == "MDOScenario"
+
+
+@unittest.mock.patch("timeit.default_timer", new=lambda: 1)
+def test_run_log(mdf_scenario, caplog):
+    """Check the log message of Scenario._run."""
+    mdf_scenario._run_algorithm = lambda: None
+    mdf_scenario.name = "ABC Scenario"
+    mdf_scenario._run()
+    strings = [
+        "*** Start ABC Scenario execution ***",
+        "*** End ABC Scenario execution (time: 0:00:00) ***",
+    ]
+    for string in strings:
+        assert string in caplog.text
+
+
+def test_clear_history_before_run(mdf_scenario):
+    """Check that clear_history_before_run is correctly used in Scenario._run."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    def run_algorithm_mock():
+        pass
+
+    mdf_scenario._run_algorithm = run_algorithm_mock
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    mdf_scenario.clear_history_before_run = True
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 0

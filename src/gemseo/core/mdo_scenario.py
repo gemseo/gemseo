@@ -26,8 +26,6 @@ from __future__ import division, unicode_literals
 
 import logging
 from copy import copy, deepcopy
-from datetime import timedelta
-from timeit import default_timer as timer
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from numpy import atleast_1d, zeros
@@ -110,13 +108,9 @@ class MDOScenario(Scenario):
             grammar_type=grammar_type,
             **formulation_options
         )
-        self.clear_history_before_run = False
 
     def _run_algorithm(self):  # type: (...) -> OptimizationResult
         problem = self.formulation.opt_problem
-        # Clears the database when multiple runs are performed (bi level)
-        if self.clear_history_before_run:
-            problem.database.clear()
         algo_name = self.local_data[self.ALGO]
         max_iter = self.local_data[self.MAX_ITER]
         options = self.local_data.get(self.ALGO_OPTIONS)
@@ -134,20 +128,6 @@ class MDOScenario(Scenario):
             problem, algo_name=algo_name, max_iter=max_iter, **options
         )
         return self.optimization_result
-
-    def _run(self):
-        t_0 = timer()
-        LOGGER.info(" ")
-        LOGGER.info("*** Start MDO Scenario execution ***")
-        LOGGER.info("%s", repr(self))
-        self._run_algorithm()
-        # MDODiscipline.execute is not finished therefore self.exec_time is not
-        # computed yet, need to recompute it, besides exec_time is the total
-        # execution time, while this is for a single execution
-        delta_t = timer() - t_0
-        LOGGER.info(
-            "*** MDO Scenario run terminated in %s ***", timedelta(seconds=delta_t)
-        )
 
     def _init_algo_factory(self):
         self._algo_factory = OptimizersFactory()
