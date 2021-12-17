@@ -319,7 +319,7 @@ class Database(object):
         """Return the maximum number of iterations.
 
         Returns:
-            The max number of iterations.
+            The maximum number of iterations.
         """
         return self.__max_iteration
 
@@ -412,9 +412,15 @@ class Database(object):
         key = next(islice(iter(self.__dict), iteration, iteration + 1))
         return key.unwrap()
 
-    def clear(self):  # type: (...) -> None
-        """Clear the database."""
+    def clear(self, reset_iteration_counter=False):  # type: (...) -> None
+        """Clear the database.
+
+        Args:
+            reset_iteration_counter: Whether to reset the iteration counter.
+        """
         self.__dict.clear()
+        if reset_iteration_counter:
+            self.__max_iteration = 0
 
     def clean_from_iterate(
         self, iterate  # type: int

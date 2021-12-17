@@ -175,7 +175,6 @@ from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace  # noqa:F401
@@ -191,6 +190,7 @@ if TYPE_CHECKING:
         ScalableDiscipline,
     )
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
@@ -602,7 +602,7 @@ def get_post_processing_options_schema(
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.post.post_factory import PostFactory
 
-    post_proc = PostFactory().create(OptimizationProblem(None), post_proc_name)
+    post_proc = PostFactory().create(OptimizationProblem(DesignSpace()), post_proc_name)
     return _get_schema(post_proc.opt_grammar, output_json, pretty_print)
 
 

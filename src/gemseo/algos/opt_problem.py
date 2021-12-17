@@ -60,6 +60,7 @@ to a HDF file or to a :class:`.Dataset` for future post-processing.
 from __future__ import division, unicode_literals
 
 import logging
+from copy import deepcopy
 from functools import reduce
 from numbers import Number
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
@@ -264,6 +265,7 @@ class OptimizationProblem(object):
             self.database = Database(input_hdf_file=input_database)
         self.solution = None
         self.design_space = design_space
+        self.__initial_current_x = deepcopy(design_space.get_current_x_dict())
         self.__x0 = None
         self.stop_if_nan = True
         self.preprocess_options = {}
@@ -1039,7 +1041,7 @@ class OptimizationProblem(object):
 
     def __preprocess_func(
         self,
-        function,  # type: MDOFunction
+        func,  # type: MDOFunction
         normalize=True,  # type: bool
         use_database=True,  # type: bool
         round_ints=True,  # type: bool
@@ -1051,7 +1053,7 @@ class OptimizationProblem(object):
         not the eventual finite differences or complex step perturbed evaluations.
 
         Args:
-            function: The scaled and derived function to be pre-processed.
+            func: The scaled and derived function to be pre-processed.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
             use_database: If True, then the function is wrapped in the database.
@@ -1062,25 +1064,25 @@ class OptimizationProblem(object):
         Returns:
             The preprocessed function.
         """
-        self.check_format(function)
+        self.check_format(func)
         # First differentiate it so that the finite differences evaluations
         # are not stored in the database, which would be the case in the other
         # way round
         # Also, store non normalized values in the database for further
         # exploitation
-        if isinstance(function, MDOLinearFunction) and not round_ints and normalize:
-            function = self.__normalize_linear_function(function)
+        if isinstance(func, MDOLinearFunction) and not round_ints and normalize:
+            func = self.__normalize_linear_function(func)
         else:
-            function = NormFunction(function, normalize, round_ints, self)
+            func = NormFunction(func, normalize, round_ints, self)
 
         if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
-            self.__add_fd_jac(function, normalize)
+            self.__add_fd_jac(func, normalize)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
-        function.force_real = True
+        func.force_real = True
         if use_database:
-            function = NormDBFunction(function, normalize, is_observable, self)
-        return function
+            func = NormDBFunction(func, normalize, is_observable, self)
+        return func
 
     def __normalize_linear_function(
         self,
@@ -1125,7 +1127,7 @@ class OptimizationProblem(object):
 
     def __add_fd_jac(
         self,
-        function,  # type: MDOFunction
+        func,  # type: MDOFunction
         normalize,  # type: bool
     ):  # type: (...) -> None
         """Add a pointer to the approached Jacobian of the function.
@@ -1133,7 +1135,7 @@ class OptimizationProblem(object):
         This Jacobian matrix is generated either by COMPLEX_STEP or FINITE_DIFFERENCES.
 
         Args:
-            function: The function to be derivated.
+            func: The function to be derivated.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
         """
@@ -1144,14 +1146,14 @@ class OptimizationProblem(object):
             return
 
         differentiation_object = differentiation_class(
-            function.evaluate,
+            func.evaluate,
             step=self.fd_step,
             parallel=self.__parallel_differentiation,
             design_space=self.design_space,
             normalize=normalize,
             **self.__parallel_differentiation_options
         )
-        function.jac = differentiation_object.f_gradient
+        func.jac = differentiation_object.f_gradient
 
     def check(self):  # type: (...) -> None
         """Check if the optimization problem is ready for run.
@@ -1974,3 +1976,41 @@ class OptimizationProblem(object):
                     ]
                 )
         return constraints_names
+
+    def reset(
+        self,
+        database=True,  # type: bool
+        current_iter=True,  # type: bool
+        design_space=True,  # type: bool
+        function_calls=True,  # type: bool
+        preprocessing=True,  # type: bool
+    ):  # type: (...) -> None
+        """Partially or fully reset the optimization problem.
+
+        Args:
+            database: Whether to clear the database.
+            current_iter: Whether to reset the current iteration :attr:`.current_iter`.
+            design_space: Whether to reset the current point
+                of the :attr:`.design_space`.
+            function_calls: Whether to reset the number of calls of the functions.
+            preprocessing: Whether to turn the pre-processing of functions to False.
+        """
+        if current_iter:
+            self.current_iter = 0
+
+        if database:
+            self.database.clear(current_iter)
+
+        if design_space:
+            self.design_space.set_current_x(self.__initial_current_x)
+
+        if function_calls:
+            for func in self.get_all_functions():
+                func.n_calls = 0
+
+        if preprocessing and self.__functions_are_preprocessed:
+            self.objective = self.nonproc_objective
+            self.constraints = self.nonproc_constraints
+            self.observables = self.nonproc_observables
+            self.new_iter_observables = self.nonproc_new_iter_observables
+            self.__functions_are_preprocessed = False

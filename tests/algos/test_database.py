@@ -740,3 +740,21 @@ def test_newiter_listeners_no_x():
 
     # This call would fail without an x_vect
     database.notify_newiter_listeners()
+
+
+@pytest.fixture
+def simple_database():
+    """A database with a single element: ([0.], {'y': 1.})."""
+    database = Database()
+    database.store(array([0.0]), {"y": 1.0})
+    return database
+
+
+@pytest.mark.parametrize(
+    "reset_iteration_counter,max_iteration", [(False, 1), (True, 0)]
+)
+def test_clear(simple_database, reset_iteration_counter, max_iteration):
+    """Check the Database.clear method."""
+    simple_database.clear(reset_iteration_counter)
+    assert len(simple_database) == 0
+    assert simple_database.get_max_iteration() == max_iteration

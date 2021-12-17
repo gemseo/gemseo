@@ -22,6 +22,7 @@
 from __future__ import division, unicode_literals
 
 from functools import partial
+from typing import Dict, Tuple
 from unittest import mock
 
 import numpy as np
@@ -39,6 +40,7 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
+from gemseo.api import execute_algo
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
@@ -928,3 +930,90 @@ def test_approximated_jacobian_wrt_uncertain_variables():
     CustomDOE().execute(problem, "CustomDOE", samples=array([[0.0]]), eval_jac=True)
     grad = problem.database.get_func_grad_history("func")
     assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)
+
+
+@pytest.fixture
+def rosenbrock_lhs():  # type: (...) -> Tuple[Rosenbrock,Dict[str,ndarray]]
+    """The Rosenbrock problem after evaluation and its start point."""
+    problem = Rosenbrock()
+    start_point = problem.design_space.get_current_x_dict()
+    execute_algo(problem, "lhs", n_samples=3, algo_type="doe")
+    return problem, start_point
+
+
+def test_reset(rosenbrock_lhs):
+    """Check the default behavior of OptimizationProblem.reset."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset()
+    assert len(problem.database) == 0
+    assert problem.database.get_max_iteration() == 0
+    assert not problem._OptimizationProblem__functions_are_preprocessed
+    for key, val in problem.design_space.get_current_x_dict().items():
+        assert (start_point[key] == val).all()
+
+    functions = (
+        [problem.objective]
+        + problem.constraints
+        + problem.observables
+        + problem.new_iter_observables
+    )
+    nonproc_functions = (
+        [problem.nonproc_objective]
+        + problem.nonproc_constraints
+        + problem.nonproc_observables
+        + problem.nonproc_new_iter_observables
+    )
+    for func, nonproc_func in zip(functions, nonproc_functions):
+        assert id(func) == id(nonproc_func)
+
+
+def test_reset_database(rosenbrock_lhs):
+    """Check OptimizationProblem.reset without database reset."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset(database=False)
+    assert len(problem.database) == 3
+    assert problem.database.get_max_iteration() == 3
+
+
+def test_reset_current_iter(rosenbrock_lhs):
+    """Check OptimizationProblem.reset without current_iter reset."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset(current_iter=False)
+    assert len(problem.database) == 0
+    assert problem.database.get_max_iteration() == 3
+
+
+def test_reset_design_space(rosenbrock_lhs):
+    """Check OptimizationProblem.reset without design_space reset."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset(design_space=False)
+    for key, val in problem.design_space.get_current_x_dict().items():
+        assert (start_point[key] != val).any()
+
+
+def test_reset_functions(rosenbrock_lhs):
+    """Check OptimizationProblem.reset without reset the number of function calls."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset(function_calls=False)
+    assert problem.objective.n_calls == 3
+
+
+def test_reset_preprocess(rosenbrock_lhs):
+    """Check OptimizationProblem.reset without functions pre-processing reset."""
+    problem, start_point = rosenbrock_lhs
+    problem.reset(preprocessing=False)
+    assert problem._OptimizationProblem__functions_are_preprocessed
+    functions = (
+        [problem.objective]
+        + problem.constraints
+        + problem.observables
+        + problem.new_iter_observables
+    )
+    nonproc_functions = (
+        [problem.nonproc_objective]
+        + problem.nonproc_constraints
+        + problem.nonproc_observables
+        + problem.nonproc_new_iter_observables
+    )
+    for func, nonproc_func in zip(functions, nonproc_functions):
+        assert id(func) != id(nonproc_func)

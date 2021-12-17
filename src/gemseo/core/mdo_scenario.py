@@ -390,8 +390,7 @@ class MDOScenarioAdapter(MDODiscipline):
     def _pre_run(self):  # type: (...) -> None
         """Pre-run the scenario."""
         formulation = self.scenario.formulation
-        opt_problem = formulation.opt_problem
-        design_space = opt_problem.design_space
+        design_space = formulation.opt_problem.design_space
         top_leveld = formulation.get_top_level_disc()
 
         # Update the top level discipline default inputs with adapter inputs
@@ -405,14 +404,7 @@ class MDOScenarioAdapter(MDODiscipline):
         self.scenario.cache.clear()
         self.scenario.reset_statuses_for_run()
 
-        # Reset the iter counter for the opt problem.
-        opt_problem.current_iter = 0
-        for func in opt_problem.get_all_functions():
-            # Avoids max_iter reached
-            func.n_calls = 0
-
-        if self._reset_x0_before_opt:
-            design_space.set_current_x(self._x_dict_0)
+        self._reset_optimization_problem()
 
         # Set the starting point of the sub scenario with current dv names
         if self._set_x0_before_opt:
@@ -430,6 +422,12 @@ class MDOScenarioAdapter(MDODiscipline):
                 upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
                 upper_bound = self.local_data[name + upper_suffix]
                 design_space.set_upper_bound(name, upper_bound)
+
+    def _reset_optimization_problem(self):  # type: (...) -> None
+        """Reset the optimization problem."""
+        self.scenario.formulation.opt_problem.reset(
+            design_space=self._reset_x0_before_opt, database=False, preprocessing=False
+        )
 
     def _post_run(self):  # type: (...) -> None
         """Post-process the scenario."""
