@@ -81,9 +81,12 @@ class TestMDOFormulation(unittest.TestCase):
     #         self.assertRaises(Exception, f.get_discipline_run_inputs, None)
 
     def test_jac_sign(self):
-        """"""
+        """Check the evaluation and linearization of the sinus MDOFunction."""
+        # TODO: this test should be removed as it does not check MDOFormulation.
         sm = SobieskiMission()
-        f = MDOFormulation([sm], "y_4", ["x_shared"])
+        design_space = DesignSpace()
+        design_space.add_variable("x_shared")
+        f = MDOFormulation([sm], "y_4", design_space)
 
         g = MDOFunction(
             math.sin,
@@ -106,9 +109,11 @@ class TestMDOFormulation(unittest.TestCase):
         )
 
     def test_add_user_defined_constraint_error(self):
-        """"""
+        """Check that an error is raised when adding a constraint with wrong type."""
         sm = SobieskiMission()
-        f = MDOFormulation([sm], "y_4", ["x_shared"])
+        design_space = DesignSpace()
+        design_space.add_variable("x_shared")
+        f = MDOFormulation([sm], "y_4", design_space)
         self.assertRaises(Exception, f.add_constraint, "y_4", "None", "None")
 
     # =========================================================================

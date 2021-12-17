@@ -1,0 +1,2 @@
+An OptimizationProblem can be reset either fully or partially (database, current iteration, current design point, number of function calls or functions preprocessing).
+Database.clear() can reset the iteration counter.
