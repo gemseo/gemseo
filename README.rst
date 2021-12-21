@@ -6,6 +6,26 @@
     http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
     Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+.. image:: https://img.shields.io/pypi/l/gemseo
+   :target: https://www.gnu.org/licenses/lgpl-3.0.en.html
+   :alt: PyPI - License
+.. image:: https://img.shields.io/pypi/pyversions/gemseo
+   :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/v/gemseo
+   :target: https://pypi.org/project/gemseo/
+   :alt: PyPI
+.. image:: https://img.shields.io/conda/vn/conda-forge/gemseo
+   :target: https://anaconda.org/conda-forge/gemseo
+   :alt: Conda (channel only)
+.. image:: https://img.shields.io/badge/code%20style-black-000000
+   :target: https://black.readthedocs.io
+   :alt: Code Style
+.. image:: https://img.shields.io/codecov/c/gitlab/AntoineD/gemseo/develop
+   :target: https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop
+   :alt: Codecov branch
+.. image:: https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue
+   :target: https://arc.aiaa.org/doi/10.2514/6.2018-0657
+   :alt: Paper
 
 GEMSEO stands for
 "Generic Engine for Multi-disciplinary Scenarios, Exploration and Optimization",
