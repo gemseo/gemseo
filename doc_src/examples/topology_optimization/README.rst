@@ -23,14 +23,14 @@ Problem Formulation
 Given a 2D design space with loads and boundary conditions,
 let us take the example of an MBB structure:
 
-.. image:: /_images/topology_optimization/TO_design_space_MBB.PNG
+.. image:: /_images/topology_optimization/TO_design_space_MBB.png
 
 First, the solid design space is meshed with 2D bi-linear squared finite elements.
 All the examples proposed here consider rectangular domains.
 This means that one only needs to define the number of elements in horizontal (x) and vertical (y) direction.
 
 
-.. image:: /_images/topology_optimization/TO_mesh_MBB.PNG
+.. image:: /_images/topology_optimization/TO_mesh_MBB.png
 
 In the above figure it is possible to find the element and degree of freedoms numbering convention adopted for a
 4x3 finite element mesh. What gives a very large design freedom to topology optimization is that a design variable
