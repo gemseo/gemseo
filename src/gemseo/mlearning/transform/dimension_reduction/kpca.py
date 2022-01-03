@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Kernel Principal Component Analysis (KPCA) to reduce the dimension of a variable.
 
-The :class:`KPCA` class implements the KCPA wraps the KPCA from Scikit-learn.
+The :class:`.KPCA` class implements the KCPA wraps the KPCA from Scikit-learn.
 
 Dependence
 ----------

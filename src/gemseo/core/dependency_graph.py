@@ -123,7 +123,7 @@ class DependencyGraph(object):
         """Return the couplings between the disciplines.
 
         Returns:
-            list of tuples: The disciplines couplings, a coupling is
+            The disciplines couplings, a coupling is
             composed of a discipline, one of its successor and the sorted
             variables names.
         """

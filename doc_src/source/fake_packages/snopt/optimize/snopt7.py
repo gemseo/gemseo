@@ -1,1 +1,0 @@
-SNOPT_solver = None

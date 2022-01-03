@@ -30,9 +30,9 @@ where inputs vary proportionally from their lower bounds
 to their upper bounds, following the diagonal of the input space.
 
 So for every output, the dataset catches its evolution
-with respect to this proportion, which makes it a monodimensional behavior.
+with respect to this proportion, which makes it a mono dimensional behavior.
 Then, for a new user-defined problem dimension,
-the scalable model extrapolates this monodimensional behavior
+the scalable model extrapolates this mono dimensional behavior
 to the different input directions.
 
 The concept of scalable diagonal model is implemented through
@@ -192,7 +192,7 @@ class ScalableDiagonalModel(ScalableModel):
         return t_scaled, f_scaled
 
     def __get_variables_locations(self, names):
-        """Get the locations of first component of each variables.
+        """Get the locations of first component of each variable.
 
         :param names: list of variables names.
         :type names: list(str)
@@ -213,7 +213,7 @@ class ScalableDiagonalModel(ScalableModel):
         :param dependency: input-output dependency structure.
         :type dependency: dict
         :return: dependency matrix.
-        :rtype: array
+        :rtype: ndarray
         """
         matrix = None
         for output_name in self.outputs_names:
@@ -280,10 +280,9 @@ class ScalableDiagonalModel(ScalableModel):
     def plot_1d_interpolations(
         self, save=False, show=False, step=0.01, varnames=None, directory=".", png=False
     ):
-        r"""This methods plots the scaled 1D interpolations,
-        a.k.a. basis functions.
+        r"""Plot the scaled 1D interpolations, a.k.a. the basis functions.
 
-        A basis function is a monodimensional function
+        A basis function is a mono dimensional function
         interpolating the samples of a given output component
         over the input sampling line
         :math:`t\in[0,1]\mapsto \\underline{x}+t(\overline{x}-\\underline{x})`.
@@ -356,7 +355,7 @@ class ScalableDiagonalModel(ScalableModel):
         """Generates a random dependency structure for use in scalable discipline.
 
         :return: output component dependency and input-output dependency
-        :rtype: dict(int), dict(dict(array))
+        :rtype: dict(int), dict(dict(ndarray))
         """
         npseed(self.parameters["seed"])
         io_dependency = self.parameters["group_dep"] or {}
@@ -397,7 +396,7 @@ class ScalableDiagonalModel(ScalableModel):
             Default: None.
         :type io_dependency: dict(list(str))
         :return: random input-output dependencies
-        :rtype: dict(dict(array))
+        :rtype: dict(dict(ndarray))
         """
         error_msg = (
             "Fill factor must be a number, "
@@ -445,7 +444,7 @@ class ScalableDiagonalModel(ScalableModel):
         """Complete random dependency if row (input name) or column (function name) of
         the random dependency matrix is empty.
 
-        :param array r_io_dep: input-output dependency.
+        :param ndarray r_io_dep: input-output dependency.
         :param str dataname: name of the variable to check
             if component is empty.
         :param int index: component index of the variable.
@@ -513,8 +512,8 @@ class ScalableDiagonalApproximation(object):
         npseed(seed)
 
     def build_scalable_function(self, function_name, dataset, input_names, degree=3):
-        """Build interpolation interpolation from a 1D input and output function. Add
-        the model to the local dictionary.
+        """Build interpolation from a 1D input and output function. Add the model to the
+        local dictionary.
 
         :param str function_name: name of the output function
         :param Dataset dataset: the input-output dataset
@@ -564,9 +563,9 @@ class ScalableDiagonalApproximation(object):
         """Scale samples of array into [0, 1]
 
         :param samples: samples of multivariate array
-        :type samples: list(array)
+        :type samples: list(ndarray)
         :return: samples of multivariate array
-        :rtype: array
+        :rtype: ndarray
         """
         samples = array(samples)
         col_min = np_min(samples, 0)

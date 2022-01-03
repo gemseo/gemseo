@@ -38,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 class DOEScenario(Scenario):
     """A multidisciplinary scenario to be executed by a design of experiments (DOE).
 
-    A :class:`DOEScenario` is a particular :class:`.Scenario`
+    A :class:`.DOEScenario` is a particular :class:`.Scenario`
     whose driver is a DOE.
     This DOE must be implemented in a :class:`.DOELibrary`.
 

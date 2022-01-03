@@ -20,10 +20,7 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Abstract factory to create drivers
-**********************************
-"""
+"""Abstract factory to create drivers."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -43,15 +40,14 @@ class DriverFactory(object):
         """Initializes the factory: scans the directories to search for subclasses of
         DriverLib.
 
-        Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package
+        Searches subclasses of driver_lib_class in "GEMSEO_PATH" and driver_package.
         """
         self.factory = Factory(driver_lib_class, (driver_package,))
         self.__algo_name_to_lib_name = {}
         self.__update_libdict()
 
     def __update_libdict(self):
-        """Updates the self.__algo_name_to_lib_name dict with available libraries
-        list."""
+        """Updates the self.__algo_name_to_lib_name dict with available libraries."""
         for lib_name in self.libraries:
             lib = self.create(lib_name)
             for algo_name in lib.algorithms:
@@ -68,14 +64,12 @@ class DriverFactory(object):
 
     @property
     def algorithms(self):
-        """Lists the available algorithms names in the present configuration.
-
-        :returns: the list of algorithms as a string list
-        """
+        """The available algorithms names."""
         return list(self.__algo_name_to_lib_name.keys())
 
     @property
     def algo_names_to_libraries(self):
+        """The mapping from the algorithm names to the libraries."""
         return self.__algo_name_to_lib_name
 
     @property
@@ -91,7 +85,7 @@ class DriverFactory(object):
         library identifier.
 
         :param name: library or algorithm name
-        :type name: string
+        :type name: str
         :returns: library according to context (optimization or DOE for instance)
         """
         lib_name = self.__algo_name_to_lib_name.get(name)
@@ -116,7 +110,7 @@ class DriverFactory(object):
 
         :param problem: the problem on which to run the execution
         :param algo_name: the algorithm name
-        :param options: the options dict for the DOE,
+        :param options: the options' dict for the DOE,
             see associated JSON file
         """
         lib = self.create(algo_name)

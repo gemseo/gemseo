@@ -19,14 +19,14 @@ upgrading from version 2 to version 3
 requires to change all the import statements of your code
 from
 
-.. code:: python
+.. code-block:: python
 
   import gems
   from gems.x.y import z
 
 to
 
-.. code:: python
+.. code-block:: python
 
   import gemseo
   from gemseo.x.y import z
@@ -43,7 +43,7 @@ while they were previously encoded in ASCII.
 
 That kind of error:
 
-.. code:: shell
+.. code-block:: console
 
   ERROR - 17:11:09 : Invalid data in : MDOScenario_input
   ', error : data.algo must be string
@@ -63,7 +63,7 @@ To migrate your code,
 add the following import at the beginning
 of all your modules defining literal strings:
 
-.. code::
+.. code-block:: python
 
    from __future__ import unicode_literals
 
@@ -153,9 +153,9 @@ In |g| 3.2.0,
 the storage of the data hashes in the HDF5 cache has been fixed
 and the previous cache files are no longer valid.
 If you get an error like
-:cmd:`The file cache.h5 cannot be used because it has no file format version:
-see HDFCache.update_file_format for converting it.`,
-please use :meth:`.HDFCache.update_file_format`
+``The file cache.h5 cannot be used because it has no file format version:
+see HDF5Cache.update_file_format for converting it.``,
+please use :meth:`.HDF5Cache.update_file_format`
 to update the format of the file and fix the data hashes.
 
 Handling Python 2 and Python 3 compatibility
@@ -171,7 +171,7 @@ With python 2.7,
 :envvar:`DISPLAY` is not set (because of :mod:`matplotlib`).
 In you shell, run
 
-.. code-block:: shell
+.. code-block:: console
 
    export MPLBACKEND=AGG
 
@@ -184,7 +184,7 @@ default on recent linux OSes.
 Under *CentOS* for instance,
 install it with:
 
-.. code-block:: shell
+.. code-block:: console
 
    sudo yum install libnsl
 

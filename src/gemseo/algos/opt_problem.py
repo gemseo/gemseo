@@ -24,10 +24,10 @@ r"""Optimization problem.
 The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defining:
 
 - an initial guess :math:`x_0` for the design variables,
-- the bounds :math:`l_b \\leq x \\leq u_b` of the design variables.
+- the bounds :math:`l_b \leq x \leq u_b` of the design variables.
 
 A (possible vector) objective function with a :class:`.MDOFunction` type
-is set using the :code:`objective` attribute.
+is set using the ``objective`` attribute.
 If the optimization problem looks for the maximum of this objective function,
 the :meth:`.OptimizationProblem.change_objective_sign`
 changes the objective function sign
@@ -47,7 +47,7 @@ with inputs scaled between 0 and 1 for all the variables.
 The :class:`.OptimizationProblem`  has also a :class:`.Database`
 that stores the calls to all the functions
 so that no function is called twice with the same inputs.
-Concerning the derivatives computation,
+Concerning the derivatives' computation,
 the :class:`.OptimizationProblem` automates
 the generation of the finite differences or complex step wrappers on functions,
 when the analytical gradient is not available.
@@ -55,7 +55,7 @@ when the analytical gradient is not available.
 Lastly,
 various getters and setters are available,
 as well as methods to export the :class:`.Database`
-to a HDF file or to a :class:`.Dataset` for future post-processing.
+to an HDF file or to a :class:`.Dataset` for future post-processing.
 """
 from __future__ import division, unicode_literals
 
@@ -418,7 +418,7 @@ class OptimizationProblem(object):
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
-                is not an :class:`MDOLinearFunction`.
+                is not an :class:`.MDOLinearFunction`.
             ValueError: When the type of the constraint is missing.
         """
         self.check_format(cstr_func)
@@ -465,7 +465,7 @@ class OptimizationProblem(object):
     def add_ineq_constraint(
         self,
         cstr_func,  # type: MDOFunction
-        value=None,  # type: Optional[value]
+        value=None,  # type: Optional[float]
         positive=False,  # type: bool
     ):  # type: (...) -> None
         """Add an inequality constraint to the optimization problem.
@@ -486,10 +486,10 @@ class OptimizationProblem(object):
         :param constr_id: index of the constraint in self.constraints
         :type constr_id: int
         :param method: aggregation method, among ('max','KS', 'IKS')
-        :type method: str or callable, that takes a function and returns a function
+        :type method: str or Callable[[Callable], Callable]
         :param groups: if None, a single output constraint is produced
             otherwise, one output per group is produced.
-        :type groups: tuple of ndarray
+        :type groups: Tuple[ndarray]
         """
         if constr_id >= len(self.constraints):
             raise ValueError("constr_id must be lower than the number of constraints.")
@@ -837,7 +837,7 @@ class OptimizationProblem(object):
             callback_func: A function to be called after some event.
             each_new_iter: If True, then callback at every iteration.
             each_store: If True,
-                then callback at every call to :class:`.Database.store`.
+                then callback at every call to :meth:`.Database.store`.
         """
         if each_store:
             self.database.add_store_listener(callback_func)
@@ -964,7 +964,7 @@ class OptimizationProblem(object):
                 )
             )
         # Avoids multiple wrappings of functions when multiple executions
-        # are performed, in bi level scenarios for instance
+        # are performed, in bi-level scenarios for instance
         if not self.__functions_are_preprocessed:
             self.preprocess_options = {
                 "normalize": normalize,
@@ -1209,7 +1209,7 @@ class OptimizationProblem(object):
             ValueError: If either
                 the differentiation method is unknown,
                 the complex step is null or
-                the finite differences step is null.
+                the finite differences' step is null.
         """
         if self.differentiation_method not in self.DIFFERENTIATION_METHODS:
             raise ValueError(
@@ -1706,13 +1706,13 @@ class OptimizationProblem(object):
         separating the design variables and functions
         (objective function and constraints).
         This classification can use either an optimization naming,
-        with :attr:`.Database.DESIGN_GROUP` and :attr:`.Database.FUNCTION_GROUP`
+        with :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
         or an input-output naming,
-        with :attr:`.Database.INPUT_GROUP` and :attr:`.Database.OUTPUT_GROUP`
+        with :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`
 
         Args:
             name: A name to be given to the dataset.
-                If None, use the name of the :attr:`database`.
+                If None, use the name of the :attr:`.OptimizationProblem.database`.
             by_group: If True, then store the data by group.
                 Otherwise, store them by variables.
             categorize: If True, then distinguish
@@ -1989,9 +1989,10 @@ class OptimizationProblem(object):
 
         Args:
             database: Whether to clear the database.
-            current_iter: Whether to reset the current iteration :attr:`.current_iter`.
+            current_iter: Whether to reset the current iteration
+                :attr:`.OptimizationProblem.current_iter`.
             design_space: Whether to reset the current point
-                of the :attr:`.design_space`.
+                of the :attr:`.OptimizationProblem.design_space`.
             function_calls: Whether to reset the number of calls of the functions.
             preprocessing: Whether to turn the pre-processing of functions to False.
         """

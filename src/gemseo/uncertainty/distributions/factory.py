@@ -44,9 +44,9 @@ class DistributionFactory(object):
     At initialization, this factory scans the following modules
     to search for subclasses of this class:
 
-    - the modules located in "gemseo.uncertainty.distributions" and its sub-packages,
-    - the modules referenced in the "GEMSEO_PATH",
-    - the modules referenced in the "PYTHONPATH" and starting with "gemseo_".
+    - the modules located in ``gemseo.uncertainty.distributions`` and its sub-packages,
+    - the modules referenced in the ``GEMSEO_PATH,``
+    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
 
     Then, it can check if a class is present or return the list of available classes.
 

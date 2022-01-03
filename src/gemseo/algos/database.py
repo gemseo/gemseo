@@ -22,10 +22,7 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 
-"""
-A database of function calls and design variables
-*************************************************
-"""
+"""A database of function calls and design variables."""
 
 from __future__ import division, unicode_literals
 
@@ -83,13 +80,14 @@ class Database(object):
     useful when simulations are costly.
 
     It is also used to store inputs and retrieve them
-    for optimization graphical post processing and plots
+    for optimization graphical post-processing and plots
     generation.
 
-    Can be serialized to HDF5 for portability and cold post processing.
+    Can be serialized to HDF5 for portability and cold post-processing.
 
     The database is based on a two-levels dictionary-like mapping such as
-    ``{key_level_1: {key_level_2: value_level_2} }`` with:
+    ``{key_level_1: {key_level_2: value_level_2}}`` with:
+
         * ``key_level_1``: the values of the input design variables that have been used
           during the evaluations;
         * ``key_level_2``: the name of the output functions that have been returned,
@@ -157,6 +155,7 @@ class Database(object):
 
         Raises:
             TypeError:
+
                 * If the key is neither an array, nor a hashable array.
                 * If the value is not a dictionary.
         """
@@ -216,25 +215,12 @@ class Database(object):
     def __getitem__(
         self, x_vect  # type: ndarray
     ):  # type: (...) -> DatabaseValueType
-        """Get an item value from the database.
-
-        Args:
-            x_vect: The key of the item.
-
-        Returns:
-            The value of the item.
-        """
         hashed = self.__get_hashed_key(x_vect)
         return self.__dict[hashed]
 
     def __delitem__(
         self, x_vect  # type: ndarray
     ):  # type: (...) -> None
-        """Delete an item from the database.
-
-        Args:
-            x_vect: The key of the item that must be deleted.
-        """
         hashed = self.__get_hashed_key(x_vect)
         del self.__dict[hashed]
 
@@ -268,11 +254,6 @@ class Database(object):
         return self.__dict.setdefault(key, default)
 
     def __len__(self):  # type: (...) -> int
-        """Get the length of the database.
-
-        Returns:
-            The length.
-        """
         return len(self.__dict)
 
     def keys(self):  # type: (...) -> KeysView[ndarray]
@@ -551,7 +532,7 @@ class Database(object):
         fname,  # type: str
         x_vect,  # type: ndarray
         dist_tol=0.0,  # type: float
-    ):  # type: (...) -> Optional[float, ndarray, List[int]]
+    ):  # type: (...) -> Union[None, float, ndarray, List[int]]
         """Return the output function values of any input values in the database.
 
         Args:
@@ -1266,7 +1247,7 @@ class Database(object):
 
     def _format_design_variables_names(
         self,
-        design_variables_names,  # type: Optional[str, Iterable[str]]
+        design_variables_names,  # type: Union[None, str, Iterable[str]]
         dimension,  # type: int
     ):  # type: (...) -> Union[List[str], Tuple[str]]
         """Format the design variables names to be displayed in the history.
@@ -1454,11 +1435,6 @@ class Database(object):
         return "{}{}".format(cls.GRAD_TAG, name)
 
     def __str__(self):  # type: (...) -> str
-        """Return the string representation.
-
-        The string representation of the database is based on the underlying dictionary
-        string representation.
-        """
         return str(self.__dict)
 
 
@@ -1494,25 +1470,20 @@ class HashableNdarray(object):
         self.__hash = int(sha1(wrapped.view(uint8)).hexdigest(), 16)
 
     def __eq__(
-        self, other  # type: HashableNdarray
+        self, other  # type: Any
     ):  # type: (...) -> bool
-        """Check equality with another HashableNdarray.
-
-        Args:
-            other: The other hashable array.
-
-        Returns:
-            True if the two arrays are equal, False otherwise.
-        """
+        if not isinstance(other, HashableNdarray):
+            return False
         return all(self.wrapped == other.wrapped)
 
     def __hash__(self):  # type: (...) -> int
-        """Return the hash number of the current array.
-
-        Returns:
-            The hash number.
-        """
         return self.__hash
+
+    def __str__(self):  # type: (...) -> str
+        return str(array(self.wrapped))
+
+    def __repr__(self):  # type: (...) -> str
+        return str(self)
 
     def unwrap(self):  # type: (...) -> ndarray
         """Return the encapsulated ndarray.
@@ -1524,19 +1495,3 @@ class HashableNdarray(object):
             return array(self.wrapped)
 
         return self.wrapped
-
-    def __str__(self):  # type: (...) -> str
-        """Return the informal string representation of the array.
-
-        Returns:
-            The string representation.
-        """
-        return str(array(self.wrapped))
-
-    def __repr__(self):  # type: (...) -> str
-        """Return the official string representation.
-
-        Returns:
-            The string representation.
-        """
-        return str(self)

@@ -29,8 +29,9 @@ If you are a |g| user with Python 2, please read carefully the next warning to
 migrate your existing code to be compliant with the |g| 2.0.0 API.
 
 .. warning::
+
     If your current code is aimed to be run only with a Python 2 interpreter, you can
-    migrate your code by adding the :code:`from __future__ import unicode_literals`
+    migrate your code by adding the ``from __future__ import unicode_literals``
     as a first import on all the files defining strings which will be latter
     passed in |g| objects. All the strings created after this statement will
     be encoded in ``unicode``. Note that the migrated code will **not** be
@@ -57,8 +58,8 @@ incorrect encoding are passed as options for the execution of an MDO scenario:
 
 
 In this case, the "L-BFGS-B" string is not recognized as a correct input, as it
-is not encoded in unicode. The addition of :code:`from __future__ import
-unicode_literals` at the beginning of the script would correct the issue.
+is not encoded in unicode. The addition of ``from __future__ import
+unicode_literals`` at the beginning of the script would correct the issue.
 
 
 .. _py23_migration_py2_code:
@@ -68,7 +69,7 @@ Migration of Python 2 code using |g|
 
 Starting with |g| 2.0.0, and whatever the version of the Python interpreter
 used (2.7 or 3.x), all the strings must be encoded in ``unicode``. As
-mentionned in :ref:`py23_string_unicode`, in Python 3, strings are by default
+mentioned in :ref:`py23_string_unicode`, in Python 3, strings are by default
 encoded in ``unicode``, while they are encoded in ``str`` in Python 2.
 
 It implies that the code using |g| (i.e. all the code using the |g| API or
@@ -77,8 +78,8 @@ the |g| core objects) written for |g| 1.3.2 and lower running under a Python
 consequently be migrated, and three options may be considered:
 
     - If the code is aimed to be run only with a Python 2 interpreter, the user
-      can migrate its code by adding the :code:`from __future__ import
-      unicode_literals` as a first import on all the files defining strings
+      can migrate its code by adding the ``from __future__ import
+      unicode_literals`` as a first import on all the files defining strings
       which will be latter passed in |g| objects. All the strings created
       after this statement will be encoded in ``unicode``. Note that the
       migrated code will **not** be compatible with |g| 1.3.2 and lower.
@@ -160,14 +161,14 @@ dict.iteritems() has changed to dict.items().
 dict.iterkeys() has changed to dict.keys().
 
 dict.keys() were doing a copy of the keys, which is needed to iterate on a dict and delete some elements.
-To do this, use now :code:`list(iter(dict.keys()))`.
+To do this, use now ``list(iter(dict.keys()))``.
 
-Dictionary keys are now a specific :code:`dict_keys` objects.
+Dictionary keys are now a specific ``dict_keys`` objects.
 
 OrderedDict
 ~~~~~~~~~~~
 
-Since python 3.6, dict is ordered, as the former OrderedDict, but much faster. To automatically switch, use  :meth:`~gemseo.utils.py23_compat.OrderedDict`, which points to dict from python 3.6.
+Since python 3.6, dict is ordered, as the former OrderedDict, but much faster. To automatically switch, use :class:`~gemseo.utils.py23_compat.OrderedDict`, which points to dict from python 3.6.
 
 str
 ~~~
@@ -177,7 +178,7 @@ xrange
 ~~~~~~
 xrange was moved to range, which is now an iterator.
 To create a list, use list(range).
-To use xrange in Python 3 like in Python 2, use :meth:`~gemseo.utils.py23_compat.xrange`
+To use xrange in Python 3 like in Python 2, use :func:`~gemseo.utils.py23_compat.xrange`
 
 long
 ~~~~
@@ -186,7 +187,7 @@ In python 3, int are long. long do not exist any more.
 next
 ~~~~
 next is now a special method __next__ in Python 3, because it is not recommended to manually get the next item of an iterator, instead of performing a loop.
-For cross compatibility, you may use :meth:`~gemseo.utils.py23_compat.next`
+For cross compatibility, you may use :func:`~gemseo.utils.py23_compat.next`
 
 .. _py23_cross_compat:
 
@@ -205,7 +206,6 @@ Specific incompatibilities are handled in the :mod:`~gemseo.utils.py23_compat`  
 .. automodule:: gemseo.utils.py23_compat
    :noindex:
 
-
 Known issues
 ------------
 
@@ -215,7 +215,7 @@ H5py
 The h5py library handles ASCII characters, while strings are encoded in unicode in Python3.
 Therefore, specific lines are needed to encode or decode strings when using h5py.
 
-Also, when passing a string array to h5py, use the :meth:`~gemseo.utils.py23_compat.string_array` to handle string types appropriately.
+Also, when passing a string array to h5py, use the :func:`~gemseo.utils.py23_compat.string_array` to handle string types appropriately.
 
 
 Raw strings
@@ -224,5 +224,5 @@ Raw strings
 see `Escaping <http://python-future.org/automatic_conversion.html#known-limitations>`_
 
 Strings containing \\U produce a SyntaxError on Python 3.
-:code:`s = 'C:\Users'`.
-Python 2 expands this to :code:`s = 'C:\\Users'`, but Python 3 requires a raw prefix (r'...'). This also applies to multi-line strings (including multi-line docstrings).
+``s = 'C:\Users'``.
+Python 2 expands this to ``s = 'C:\\Users'``, but Python 3 requires a raw prefix (r'...'). This also applies to multi-line strings (including multi-line docstrings).

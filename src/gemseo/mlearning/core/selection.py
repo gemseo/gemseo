@@ -25,11 +25,7 @@
 Machine learning is used to find relations or underlying structures in data.
 There is however no algorithm that is universally better than the others
 for an arbitrary problem.
-As for optimization, there is *no free lunch* for machine learning [wolpert]_.
-
-.. [wolpert] Wolpert, David H.
-   "The lack of a priori distinctions between learning algorithms."
-   Neural computation 8.7 (1996): 1341-1390.
+As for optimization, there is *no free lunch* for machine learning :cite:`wolpert`.
 
 Provided a quality measure,
 one can thus compare the performances of different machine learning algorithms.
@@ -148,7 +144,7 @@ class MLAlgoSelection(object):
                 If None, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
-                e.g. {"algo": "fullfact", "n_samples": 10}).
+                e.g. {"algo": "fullfact", "n_samples": 10}.
                 If None, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.

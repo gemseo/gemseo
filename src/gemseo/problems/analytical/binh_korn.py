@@ -35,7 +35,6 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq x \leq 5.0\\
    & 0 \leq y \leq 3.0
    \end{aligned}
-
 """
 from __future__ import division, unicode_literals
 
@@ -54,12 +53,8 @@ LOGGER = logging.getLogger(__name__)
 class BinhKorn(OptimizationProblem):
     """Binh and Korn optimization problem.
 
-    The constructor initializes the BinhKorn :class:`.OptimizationProblem`
-    by defining the :class:`.DesignSpace`,
-    the objective function and the constraints.
-
-    Attributes:
-        objective (MDOFunction): The objective function.
+    The constructor initializes the BinhKorn :class:`.OptimizationProblem` by defining
+    the :class:`.DesignSpace`, the objective function and the constraints.
     """
 
     def __init__(
@@ -102,8 +97,8 @@ class BinhKorn(OptimizationProblem):
         )
         self.add_ineq_constraint(ineq2)
 
+    @staticmethod
     def __compute_binhkorn(
-        self,
         x_dv,  # type: ndarray
     ):  # type: (...) -> ndarray
         """Compute the objective of analytical function.
@@ -119,8 +114,9 @@ class BinhKorn(OptimizationProblem):
         obj[1] = (x_dv[0] - 5.0) ** 2 + (x_dv[1] - 5.0) ** 2
         return obj
 
+    @staticmethod
     def __compute_ineq_constraint1(
-        self, x_dv  # type: ndarray
+        x_dv,  # type: ndarray
     ):  # type: (...) -> ndarray
         """Compute the first constraint function.
 
@@ -132,8 +128,9 @@ class BinhKorn(OptimizationProblem):
         """
         return array([(x_dv[0] - 5.0) ** 2 + x_dv[1] - 25.0])
 
+    @staticmethod
     def __compute_ineq_constraint2(
-        self, x_dv  # type: ndarray
+        x_dv,  # type: ndarray
     ):  # type: (...) -> ndarray
         """Compute the first constraint function.
 

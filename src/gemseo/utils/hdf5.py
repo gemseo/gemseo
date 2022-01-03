@@ -37,7 +37,7 @@ def get_hdf5_group(
         The contents of the group.
 
     Raises:
-        KeyError if the group does not exist.
+        KeyError: if the group does not exist.
     """
     try:
         return h5py_data[name]

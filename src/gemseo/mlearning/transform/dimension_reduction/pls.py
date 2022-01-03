@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Partial Least Square (PLS) regression to reduce the dimension of a variable.
 
-The :class:`PLS` class wraps the PCA from Scikit-learn.
+The :class:`.PLS` class wraps the PCA from Scikit-learn.
 
 Dependence
 ----------

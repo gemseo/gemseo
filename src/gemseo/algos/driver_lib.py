@@ -187,7 +187,6 @@ class DriverLib(AlgoLib):
     MAX_DS_SIZE_PRINT = 40
 
     def __init__(self):
-        """Constructor."""
         # Library settings and check
         super(DriverLib, self).__init__()
         self.__progress_bar = None
@@ -361,7 +360,7 @@ class DriverLib(AlgoLib):
         return result
 
     def _process_specific_option(self, options, option_key):
-        """Process one option as a special treatment, at the begining of the general
+        """Process one option as a special treatment, at the beginning of the general
         treatment and checks of _process_options.
 
         Args:
@@ -406,11 +405,7 @@ class DriverLib(AlgoLib):
 
     def get_optimum_from_database(self, message=None, status=None):
         """Retrieves the optimum from the database and builds an optimization result
-        object from it.
-
-        :param message: Default value = None)
-        :param status: Default value = None)
-        """
+        object from it."""
         problem = self.problem
         if len(problem.database) == 0:
             return OptimizationResult(

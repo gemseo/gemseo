@@ -86,7 +86,7 @@ class FirstOrderFD(GradientApproximator):
             step = self.step
 
         if not isinstance(step, ndarray):
-            step = step * ones(n_perturbations)
+            step *= ones(n_perturbations)
 
         def func_noargs(
             f_input_values,  # type: ndarray
@@ -133,7 +133,7 @@ class FirstOrderFD(GradientApproximator):
             step = self.step
 
         if not isinstance(step, ndarray):
-            step = step * ones(n_perturbations)
+            step *= ones(n_perturbations)
 
         gradient = []
         initial_output = self.f_pointer(input_values, **kwargs)
@@ -172,8 +172,8 @@ class FirstOrderFD(GradientApproximator):
                 when the calculation of :math:`f` requires a numerical resolution.
 
         Returns:
-            * The errors.
-            * The optimal steps.
+            The errors.
+            The optimal steps.
         """
         n_out = f_p.size
         if n_out == 1:
@@ -219,8 +219,8 @@ class FirstOrderFD(GradientApproximator):
             **kwargs: The additional arguments passed to the function.
 
         Returns:
-            * The optimal steps.
-            * The errors.
+            The optimal steps.
+            The errors.
         """
         n_dim = len(x_vect)
         x_p_arr, _ = self.generate_perturbations(n_dim, x_vect)
@@ -315,10 +315,10 @@ def comp_best_step(
     and the numerical cancellation errors
     (round-off when doing :math:`f(x+step)-f(x))` are equal.
 
-    See:
-    - https://en.wikipedia.org/wiki/Numerical_differentiation
-    - *Numerical Algorithms and Digital Representation*,
-      Knut Morken, Chapter 11, "Numerical Differenciation"
+    See Also:
+        https://en.wikipedia.org/wiki/Numerical_differentiation
+        and *Numerical Algorithms and Digital Representation*,
+        Knut Morken, Chapter 11, "Numerical Differenciation"
 
     Args:
         f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
@@ -327,11 +327,11 @@ def comp_best_step(
         step: The differentiation step :math:`\\delta_x`.
 
     Returns:
-        * The estimation of the truncation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The estimation of the cancellation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The optimal step.
+        The estimation of the truncation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The estimation of the cancellation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The optimal step.
     """
     hess = approx_hess(f_p, f_x, f_m, step)
 

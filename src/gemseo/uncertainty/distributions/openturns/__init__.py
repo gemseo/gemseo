@@ -44,7 +44,7 @@ are documented in such a way that a newbie could easily apprehend them.
 Composed distribution
 ---------------------
 
-A :code:`OTDistribution` has a :attr:`.OTDistribution.COMPOSED_DISTRIBUTION`
+A :code:`OTDistribution` has a :attr:`.OTDistribution._COMPOSED_DISTRIBUTION`
 attribute referencing :class:`.OTComposedDistribution`
 which is a class to build a composed distribution
 related to given random variables from a list of :class:`.OTDistribution` objects

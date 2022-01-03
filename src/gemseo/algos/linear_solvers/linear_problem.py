@@ -34,23 +34,23 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LinearProblem(object):
-    """Represent the linear equations system ``lhs.x = rhs``.
+    """Represent the linear equations' system ``lhs.x = rhs``.
 
     It also contains the solution, and some properties of the system such as the symmetry
     or positive definiteness.
 
     Attributes:
-        rhs (ndarray): The right hand side of the equation.
-        lhs (ndarray, LinearOperator, sparse): The left hand side of the equation.
+        rhs (ndarray): The right-hand side of the equation.
+        lhs (ndarray, LinearOperator, spmatrix): The left-hand side of the equation.
             If None, the problem can't be solved and the user has to set it after init.
         solution (ndarray): The current solution of the problem.
         is_converged (bool): If the solution is_converged.
         convergence_info (int, str): The information provided by the solver if convergence
-            occured or not.
+            occurred or not.
         is_symmetric (bool): Whether the LHS is symmetric.
         is_positive_def (bool): Whether the LHS is positive definite.
-        is_lhs_linear_operator (bool): Whether the LHS is symmetric. XXX
-        solver_options (Dict[str, XXX]): The options passed to the solver.
+        is_lhs_linear_operator (bool): Whether the LHS is symmetric.
+        solver_options (Dict[str, Any]): The options passed to the solver.
         solver_name (str): The solver name.
         residuals_history (List[float]): The convergence history of residuals.
     """
@@ -66,10 +66,8 @@ class LinearProblem(object):
     ):  # type: (...) -> None
         """
         Args:
-            lhs: The left hand side (matrix or linear operator) of the problem.
-                If None, XXX.
-            rhs: The right hand side (vector) of the problem.
-                If None, XXX.
+            lhs: The left-hand side (matrix or linear operator) of the problem.
+            rhs: The right-hand side (vector) of the problem.
             solution: The current solution.
             is_symmetric: Whether to assume that the LHS is symmetric.
             is_positive_def: Whether to assume that the LHS is positive definite.
@@ -136,13 +134,13 @@ class LinearProblem(object):
         return res
 
     def plot_residuals(self):  # type: (...) -> Figure
-        """Plot the residuals convergence in log scale.
+        """Plot the residuals' convergence in log scale.
 
         Returns:
             The matplotlib figure.
 
         Raises:
-            ValueError: When the residuals history is empty.
+            ValueError: When the residuals' history is empty.
         """
         if self.residuals_history is None or len(self.residuals_history) == 0:
             raise ValueError(

@@ -385,7 +385,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         Raises:
             NotImplementedError: If an output transformer modifies
-                both the input and the output variables, e.g. :class:`PLS`.
+                both the input and the output variables, e.g. :class:`.PLS`.
         """
         input_grp = self.learning_set.INPUT_GROUP
         output_grp = self.learning_set.OUTPUT_GROUP

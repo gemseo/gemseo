@@ -44,7 +44,7 @@ class ConstrAggegationDisc(MDODiscipline):
     so only one adjoint calculation can be performed for the aggregated
     constraint instead of one adjoint per original constraint dimension.
 
-    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
     """
 
     def __init__(

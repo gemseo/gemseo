@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create instances of :class:`.DatasetPlot`.
 
-The module :mod:`~gemseo.post.dataset.factory` contains the :class:`DatasetPlotFactory`
+The module :mod:`~gemseo.post.dataset.factory` contains the :class:`.DatasetPlotFactory`
 class which is a factory to instantiate a :class:`.DatasetPlot` from its class name. The
 class can be internal to |g| or located in an external module whose path is provided to
 the constructor. It also provides a list of available cache types and allows you to test

@@ -22,7 +22,7 @@
 """A factory to create regression models.
 
 This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from its
-class name. It also provides the available regression models and allows to test if a
+class name. It also provides the available regression models and allows testing if a
 regression model type is available.
 """
 from __future__ import division, unicode_literals
@@ -39,12 +39,11 @@ LOGGER = logging.getLogger(__name__)
 class RegressionModelFactory(MLAlgoFactory):
     """This factory instantiates a :class:`.MLRegressionAlgo` from its class name.
 
-    The class can be either internal to |g| or external. In this second case, it can be
-    either implemented in a module referenced in the "GEMSEO_PATH" or in a module The
-    class can be either internal to |g| or external. In the second case, it can be
-    either implemented in a module referenced in the GEMSEO_PATH environment variable or
-    in a module starting with "gemseo_" and referenced in the PYTHONPATH environment
-    variable.
+    The class can be either internal or external. In this second case, it can be either
+    implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
+    can be either internal or external. In the second case, it can be either implemented
+    in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
+    starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
     def __init__(self):  # type: (...) ->  None

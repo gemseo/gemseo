@@ -25,6 +25,8 @@ You may install the core or the full features set of |g|.
 See :ref:`dependencies` for more information.
 There are different ways to install |g| depending on your platform and Python version.
 
+.. _environment:
+
 Requirements
 ************
 

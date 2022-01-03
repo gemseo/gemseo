@@ -19,10 +19,7 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Analytic MDODiscipline based on symbolic expressions
-****************************************************
-"""
+"""Analytic MDODiscipline based on symbolic expressions."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -45,23 +42,21 @@ class AnalyticDiscipline(MDODiscipline):
     Automatically differentiates the expressions to obtain
     the Jacobian matrices.
 
-    See also
-    --------
-    gemseo.core.discipline.MDODiscipline : abstract class defining
-        the key concept of discipline
+    See Also:
+        gemseo.core.discipline.MDODiscipline : abstract class defining
+            the key concept of discipline
     """
 
     def __init__(self, name=None, expressions_dict=None, fast_evaluation=True):
-        """Constructor.
-
+        """
         :param name: name of the discipline.
         :type name: str
         :param expressions_dict: dictionary of outputs and their expressions
-            for instance : { 'y_1':'2*x**2', 'y_2':'4*x**2+5+z**3'}
+            for instance : {'y_1':'2*x**2', 'y_2':'4*x**2+5+z**3'}
             will create a discipline with outputs y_1, y_2
             and inputs x, and z.
             Expressions may be passed as strings or SymPy expressions.
-        :type expressions_dict: dict(str or sympy.Expr)
+        :type expressions_dict: dict(str or Expr)
         :param fast_evaluation: if True then sympy.lambdify is applied to the
             expressions to accelerate their numerical evaluation (requires NumPy),
             otherwise the expressions are evaluated with sympy.Expr.evalf.
@@ -84,7 +79,7 @@ class AnalyticDiscipline(MDODiscipline):
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
     def _init_grammars(self):
-        """Initialize the |g| grammars from the expressions dictionary."""
+        """Initialize the grammars from the expressions dictionary."""
         zero = zeros(2)
         in_dict = {k: zero for k in self.input_names}
         self.input_grammar.initialize_from_base_dict(in_dict)
@@ -140,7 +135,6 @@ class AnalyticDiscipline(MDODiscipline):
         self.default_inputs = {k: zeros_array for k in self.input_names}
 
     def _run(self):
-        """Run the discipline."""
         outputs = {}
         # Do not pass useless tokens to the expr, this may
         # fail when tokens contains dots, or slow down the process

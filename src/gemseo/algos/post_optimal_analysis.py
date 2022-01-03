@@ -18,10 +18,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Post-optimal analysis
-*********************
-"""
+"""Post-optimal analysis."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -43,6 +40,7 @@ class PostOptimalAnalysis(object):
     a parameter :math:`p`.
 
     .. math::
+
         \begin{aligned}
             & \text{Minimize}    & & f(x,p) \\
             & \text{relative to} & & x \\
@@ -59,6 +57,7 @@ class PostOptimalAnalysis(object):
     derivative:
 
     .. math::
+
         \newcommand{\total}{\mathrm{d}}
         \frac{\total f(x^\ast(p),p)}{\total p}(p)
         =\frac{\partial f}{\partial p}(x^\ast(p),p)
@@ -70,6 +69,7 @@ class PostOptimalAnalysis(object):
     N.B. the equality above relies on the assumption that
 
     .. math::
+
         \newcommand{\total}{\mathrm{d}}
         \lambda_g^\top\frac{\total g(x^\ast(p),p)}{\total p}(p)=0
         \text{ and }
@@ -112,7 +112,7 @@ class PostOptimalAnalysis(object):
         :param parameters: names list of the optimization problem parameters
         :type parameters: list(str)
         :param threshold: tolerance on the validity assumption
-        :type threshold: number
+        :type threshold: float
         """
         # Check the Jacobians
         func_names = self.opt_problem.get_constraints_names()

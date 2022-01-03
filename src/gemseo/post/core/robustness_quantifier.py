@@ -175,7 +175,7 @@ class RobustnessQuantifier(object):
         :param n_samples: the number of samples for the distribution
             (Default value = 100000).
         :param func: if None, the compute_function_approximation function,
-                        otherwise a user function (Default value = None).
+            otherwise a user function (Default value = None).
         """
         n_dv = len(mean)
         if not cov.shape == (n_dv, n_dv):

@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class FunctionFromDiscipline(MDOFunction):
-    """An :class:`.MDOFunction` object from an :class:`.MDODiscipline."""
+    """An :class:`.MDOFunction` object from an :class:`.MDODiscipline`."""
 
     def __init__(
         self,
@@ -65,7 +65,6 @@ class FunctionFromDiscipline(MDOFunction):
                 If None, use self.get_optim_variables_names().
             differentiable: If True, then inputs and outputs are added
                 to the list of variables to be differentiated.
-
         """
         self.__output_names = output_names
         self.__mdo_formulation = mdo_formulation

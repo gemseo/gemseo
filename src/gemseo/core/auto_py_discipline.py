@@ -42,43 +42,40 @@ class AutoPyDiscipline(MDODiscipline):
     """A simplified and straightforward way of integrating a discipline from a python
     function.
 
-    Examples
-    --------
-    >>> from gemseo.core.auto_py_discipline import AutoPyDiscipline
-    >>> from numpy import array
-    >>> def my_function(x=0., y=0.):
-    >>>     z = x + 2*y
-    >>>     return z
-    >>> discipline = AutoPyDiscipline(py_func=my_function)
-    >>> discipline.execute()
-    {'x': array([0.]), 'y': array([0.]), u'z': array([0.])}
-    >>> discipline.execute({'x': array([1.]), 'y':array([-3.2])})
-    {'x': array([1.]), 'y': array([-3.2]), u'z': array([-5.4])}
-
     There are a few constraints:
 
-    - only one return statement,
-    - return must return a variable reference or a list of references,
-    - only floats or arrays as inputs and outputs.
+        - only one return statement,
+        - return must return a variable reference or a list of references,
+        - only floats or arrays as inputs and outputs.
 
-    See also
-    --------
-    gemseo.core.discipline.MDODiscipline : abstract class defining
-        the key concept of discipline
+    Examples:
+        >>> from gemseo.core.auto_py_discipline import AutoPyDiscipline
+        >>> from numpy import array
+        >>> def my_function(x=0., y=0.):
+        >>>     z = x + 2*y
+        >>>     return z
+        >>> discipline = AutoPyDiscipline(py_func=my_function)
+        >>> discipline.execute()
+        {'x': array([0.]), 'y': array([0.]), u'z': array([0.])}
+        >>> discipline.execute({'x': array([1.]), 'y':array([-3.2])})
+        {'x': array([1.]), 'y': array([-3.2]), u'z': array([-5.4])}
+
+    See Also:
+        gemseo.core.discipline.MDODiscipline: abstract class defining
+            the key concept of discipline
     """
 
     def __init__(self, py_func, py_jac=None, use_arrays=False, write_schema=False):
-        """Constructor.
-
+        """
         :param py_func: the python function to be used to generate the
             MDODiscipline.
-        :type py_func: function
+        :type py_func: Callable
         :param use_arrays: if True, the function is expected to take arrays
             as inputs and give outputs as arrays.
         :type use_arrays: bool
         :param py_jac: pointer to the function jacobian;
             the jacobian must be a 2D numpy array.
-        :type py_jac: function
+        :type py_jac: Callable
         :param write_schema: if True, write the json schema on the disk
         :type write_schema: bool
         """
@@ -127,7 +124,6 @@ class AutoPyDiscipline(MDODiscipline):
         return args_dict
 
     def _run(self):
-        """Run the discipline."""
         input_vals = self.get_input_data()
         out_vals = self.py_func(**input_vals)
         if len(self.out_names) == 1:
@@ -181,7 +177,7 @@ class AutoPyDiscipline(MDODiscipline):
 
         :param func: the python function to be used to generate
             the MDODiscipline
-        :type func: function
+        :type func: Callable
         :return: returned string output specifications or None
         :rtype: str or None
         """
@@ -208,8 +204,7 @@ class AutoDiscDataProcessor(DataProcessor):
     converts all discipline output data to numpy arrays."""
 
     def __init__(self, out_names):
-        """Constructor.
-
+        """
         :param out_names: names of the outputs
         :type out_names: list(str)
         """
@@ -218,7 +213,7 @@ class AutoDiscDataProcessor(DataProcessor):
         self.one_output = len(out_names) == 1
 
     def pre_process_data(self, data):
-        """Execute a pre processing of input data after they are checked by
+        """Execute a pre-processing of input data after they are checked by
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
@@ -234,8 +229,8 @@ class AutoDiscDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(self, data):
-        """Execute a post processing of discipline output data after the _run method of
-        the discipline, before they are checked by  MDODiscipline.check_output_data,
+        """Execute a post-processing of discipline output data after the _run method of
+        the discipline, before they are checked by MDODiscipline.check_output_data,
 
         :param data: the output data to process.
         :type data: dict

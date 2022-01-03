@@ -43,6 +43,7 @@ OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
     DocInheritMeta(
         abstract_base_class=True,
         style="google_with_merge",
+        include_special_methods=True,
     )
 )
 class MLQualityMeasure(object):
@@ -84,7 +85,7 @@ class MLQualityMeasure(object):
             samples: The indices of the learning samples.
                 If None, use the whole learning dataset.
             **options: The options of the estimation method (e.g. 'test_data' for
-            the 'test' method, 'n_replicates' for the bootstrap one, ...)
+                the 'test' method, 'n_replicates' for the bootstrap one, ...)
 
         Returns:
             The value of the quality measure.

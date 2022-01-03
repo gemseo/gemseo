@@ -23,7 +23,16 @@
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional, Sequence, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    Union,
+)
 
 import openturns
 from numpy import array, full
@@ -194,7 +203,7 @@ class OpenTURNS(DOELibrary):
 
     def __check_and_cast_levels(
         self,
-        options,  # type: Mapping[str,Any]
+        options,  # type: MutableMapping[str,Any]
     ):  # type: (...) -> None
         """Check that the options ``levels`` is properly defined and cast it to array.
 
@@ -225,7 +234,7 @@ class OpenTURNS(DOELibrary):
     def __check_and_cast_centers(
         self,
         dimension,  # type: int
-        options,  # type: Mapping[str,Any]
+        options,  # type: MutableMapping[str,Any]
     ):  # type: (...) -> None
         """Check that the options ``centers`` is properly defined and cast it to array.
 
@@ -296,7 +305,7 @@ class OpenTURNS(DOELibrary):
     def __check_stratified_options(
         self,
         dimension,  # type: int
-        options,  # type: Mapping[str,Any]
+        options,  # type: MutableMapping[str,Any]
     ):  # type: (...) -> None
         """Check that the mandatory inputs for the composite design are set.
 
@@ -466,8 +475,8 @@ class OpenTURNS(DOELibrary):
         doe[:, ot_indices] = ot_doe
         return doe
 
+    @staticmethod
     def __generate_random(
-        self,
         n_samples,  # type: int
         dimension,  # type: int
     ):  # type: (...) -> ndarray

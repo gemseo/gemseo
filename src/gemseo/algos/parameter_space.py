@@ -56,7 +56,7 @@ variables (a.k.a. random variables) from:
 
 The :class:`.ParameterSpace` also provides the following methods:
 
-- :meth:`.compute_samples`: returns several samples
+- :meth:`.ParameterSpace.compute_samples`: returns several samples
   of the uncertain variables,
 - :meth:`.evaluate_cdf`: evaluate the cumulative density function
   for the different variables and their different
@@ -126,7 +126,7 @@ class ParameterSpace(DesignSpace):
 
     def __init__(
         self,
-        hdf_file=None,  # type: Optional[Union[str,Path]]
+        hdf_file=None,  # type: Optional[Union[str, Path]]
         copula=ComposedDistribution._INDEPENDENT_COPULA,  # type: str
         name=None,  # type: Optional[str]
     ):  # type: (...) -> None
@@ -293,9 +293,9 @@ class ParameterSpace(DesignSpace):
 
         Returns:
             The realizations of the random variables,
-                either stored in an array or in a dictionary
-                whose values are the names of the random variables
-                and the values are the evaluations.
+            either stored in an array or in a dictionary
+            whose values are the names of the random variables
+            and the values are the evaluations.
         """
         sample = self.distribution.compute_samples(n_samples)
         if as_dict:
@@ -323,7 +323,7 @@ class ParameterSpace(DesignSpace):
 
         Returns:
             A dictionary where the keys are the names of the random variables
-                and the values are the evaluations.
+            and the values are the evaluations.
         """
         if inverse:
             self.__check_dict_of_array(value)

@@ -19,10 +19,7 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Factory to create |g| disciplines
-**************************************
-"""
+"""Factory to create disciplines."""
 from __future__ import division, unicode_literals
 
 from copy import deepcopy
@@ -35,8 +32,7 @@ from gemseo.core.json_grammar import JSONGrammar
 
 
 class DisciplinesFactory(object):
-    """The **DisciplinesFactory** is used to create :class:`.MDODiscipline` objects that
-    are known to |g|
+    """The **DisciplinesFactory** is used to create :class:`.MDODiscipline` objects.
 
     Three types of directories are scanned
     to import the :class:`.MDODiscipline` classes:
