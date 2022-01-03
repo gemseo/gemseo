@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Principal Component Analysis (PCA) to reduce the dimension of a variable.
 
-The :class:`PCA` class wraps the PCA from Scikit-learn.
+The :class:`.PCA` class wraps the PCA from Scikit-learn.
 
 Dependence
 ----------

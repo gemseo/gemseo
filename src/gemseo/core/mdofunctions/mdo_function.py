@@ -73,11 +73,11 @@ OperatorType = Callable[[OperandType, OperandType], OperandType]
 class MDOFunction(object):
     """The standard definition of an array-based function with algebraic operations.
 
-    :class:`MDOFunction` is the key class
+    :class:`.MDOFunction` is the key class
     to define the objective function, the constraints and the observables
     of an :class:`.OptimizationProblem`.
 
-    A :class:`MDOFunction` is initialized from an optional callable and a name,
+    A :class:`.MDOFunction` is initialized from an optional callable and a name,
     e.g. :code:`func = MDOFunction(lambda x: 2*x, "my_function")`.
 
     .. note::
@@ -85,13 +85,13 @@ class MDOFunction(object):
        The callable can be set to :code:`None`
        when the user does not want to use a callable
        but a database to browse for the output vector corresponding to an input vector
-       (see :meth:`set_pt_from_database`).
+       (see :meth:`.MDOFunction.set_pt_from_database`).
 
     The following information can also be provided at initialization:
 
     - the type of the function,
       e.g. :code:`f_type="obj"` if the function will be used as an objective
-      (see :attr:`AVAILABLE_TYPES` for the available types),
+      (see :attr:`.MDOFunction.AVAILABLE_TYPES` for the available types),
     - the function computing the Jacobian matrix,
       e.g. :code:`jac=lambda x: array([2.])`,
     - the literal expression to be used for the string representation of the object,
@@ -109,30 +109,30 @@ class MDOFunction(object):
 
     After the initialization,
     all of these arguments can be overloaded with setters,
-    e.g. :attr:`args`.
+    e.g. :attr:`.MDOFunction.args`.
 
     The original function and Jacobian function
-    can be accessed with the properties :attr:`func` and :attr:`jac`.
+    can be accessed with the properties :attr:`.MDOFunction.func` and :attr:`.MDOFunction.jac`.
 
-    A :class:`MDOFunction` is callable:
+    A :class:`.MDOFunction` is callable:
     :code:`output = func(array([3.])) # expected: array([6.])`.
 
-    Elementary operations can be performed with :class:`MDOFunction` instances:
+    Elementary operations can be performed with :class:`.MDOFunction` instances:
     addition (:code:`func = func1 + func2` or :code:`func = func1 + offset`),
     subtraction (:code:`func = func1 - func2` or :code:`func = func1 - offset`),
     multiplication (:code:`func = func1 * func2` or :code:`func = func1 * factor`)
     and opposite  (:code:`func = -func1`).
-    It is also possible to build a :class:`MDOFunction`
-    as a concatenation of :class:`MDOFunction` objects:
+    It is also possible to build a :class:`.MDOFunction`
+    as a concatenation of :class:`.MDOFunction` objects:
     :code:`func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"`).
 
-    Moreover, a :class:`MDOFunction` can be approximated
+    Moreover, a :class:`.MDOFunction` can be approximated
     with either a first-order or second-order Taylor polynomial at a given input vector,
-    using respectively :meth:`linear_approximation` and :meth:`quadratic_approx`;
-    such an approximation is also a :class:`MDOFunction`.
+    using respectively :meth:`.MDOFunction.linear_approximation` and :meth:`quadratic_approx`;
+    such an approximation is also a :class:`.MDOFunction`.
 
     Lastly, the user can check the Jacobian function by means of approximation methods
-    (see :meth:`check_grad`).
+    (see :meth:`.MDOFunction.check_grad`).
 
 
     Attributes:
@@ -203,7 +203,7 @@ class MDOFunction(object):
             func: The original function to be actually called.
                 If None, the function will not have an original function.
             name: The name of the function.
-            f_type: The type of the function among :attr:`AVAILABLE_TYPES`.
+            f_type: The type of the function among :attr:`.MDOFunction.AVAILABLE_TYPES`.
                 If None, the function will have no type.
             jac: The original Jacobian function to be actually called.
                 If None, the function will not have an original Jacobian function.
@@ -249,7 +249,7 @@ class MDOFunction(object):
         """The number of times the function has been evaluated.
 
         This count is both multiprocess- and multithread-safe, thanks to the locking
-        process used by :meth:`evaluate`.
+        process used by :meth:`.MDOFunction.evaluate`.
         """
         return self._n_calls.value
 
@@ -270,7 +270,7 @@ class MDOFunction(object):
         self,
         x_vect,  # type: ndarray
     ):  # type: (...) -> ndarray
-        """Evaluate the function and store the result in :attr:`last_eval`.
+        """Evaluate the function and store the result in :attr:`.MDOFunction.last_eval`.
 
         This evaluation is both multiprocess- and multithread-safe,
         thanks to a locking process.
@@ -302,7 +302,7 @@ class MDOFunction(object):
         """Evaluate the function.
 
         This method can cast the result to real value
-        according to the value of the attribute :attr:`force_real`.
+        according to the value of the attribute :attr:`.MDOFunction.force_real`.
 
         Args:
             x_vect: The value of the inputs of the function.
@@ -355,7 +355,7 @@ class MDOFunction(object):
 
     @property
     def f_type(self):  # type: (...) -> str
-        """The type of the function, among :attr:`AVAILABLE_TYPES`.
+        """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`.
 
         Raises:
             ValueError: If the type of function is not available.
@@ -1041,7 +1041,7 @@ class MDOFunction(object):
 
         Returns:
             Some attributes of the function indexed by their names.
-            See :attr:`DICT_REPR_ATTR`
+            See :attr:`.MDOFunction.DICT_REPR_ATTR`.
         """
         repr_dict = {}
         for attr_name in self.DICT_REPR_ATTR:
@@ -1057,13 +1057,14 @@ class MDOFunction(object):
         This is typically used for deserialization.
 
         Args:
-            **kwargs: The attributes from :attr:`DICT_REPR_ATTR`.
+            **kwargs: The attributes from :attr:`.MDOFunction.DICT_REPR_ATTR`.
 
         Returns:
             A function initialized from the provided data.
 
         Raises:
-            ValueError: If the name of an argument is not in :attr:`DICT_REPR_ATTR`.
+            ValueError: If the name of an argument is not in
+                :attr:`.MDOFunction.DICT_REPR_ATTR`.
         """
         allowed = MDOFunction.DICT_REPR_ATTR
         for key in kwargs:
@@ -1085,11 +1086,11 @@ class MDOFunction(object):
         """Set the original function and Jacobian function from a database.
 
         For a given input vector,
-        the method :meth:`func` will return
+        the method :meth:`.MDOFunction.func` will return
         either the output vector stored in the database
         if the input vector is present
         or `None`.
-        The same for the method :meth:`jac`.
+        The same for the method :meth:`.MDOFunction.jac`.
 
         Args:
             database: The database to read.
@@ -1415,7 +1416,7 @@ class MultiplyOperator(MDOFunction):
 
         Raises:
             TypeError: If the other operand is
-                neither a number nor a :class:`MDOFunction`.
+                neither a number nor a :class:`.MDOFunction`.
         """
         self.__other = other
         self.__mdo_function = mdo_function
@@ -1741,7 +1742,7 @@ class MDOLinearFunction(MDOFunction):
         Args:
             coefficients: The coefficients :math:`A` of the linear function.
             name: The name of the linear function.
-            f_type: The type of the linear function among :attr:`AVAILABLE_TYPES`.
+            f_type: The type of the linear function among :attr:`.MDOFunction.AVAILABLE_TYPES`.
                 If None, the linear function will have no type.
             args: The names of the inputs of the linear function.
                 If None, the inputs of the linear function will have no names.
@@ -2172,7 +2173,7 @@ class MDOQuadraticFunction(MDOFunction):
         Args:
             quad_coeffs: The second-order coefficients.
             name: The name of the function.
-            f_type: The type of the linear function among :attr:`AVAILABLE_TYPES`.
+            f_type: The type of the linear function among :attr:`.MDOFunction.AVAILABLE_TYPES`.
                 If None, the linear function will have no type.
             args: The names of the inputs of the linear function.
                 If None, the inputs of the linear function will have no names.
@@ -2271,7 +2272,7 @@ class MDOQuadraticFunction(MDOFunction):
 
         Raises:
             ValueError: If the number of first-order coefficients is not consistent
-            with the dimension of the input space.
+                with the dimension of the input space.
         """
         if self._linear_coeffs is None:
             return zeros(self._input_dim)

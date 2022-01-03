@@ -42,7 +42,7 @@ The :class:`.OptimizationProblem` class is composed of at least a
     design_space.add_variable("x", 1, l_b=-2., u_b=2.,
                               value=-0.5 * np.ones(1))
 
-and an objective function, of type :class:`~gemseo.core.function.MDOFunction`. The :class:`~gemseo.core.function.MDOFunction` is callable and requires at least
+and an objective function, of type :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction`. The :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` is callable and requires at least
 a function pointer to be instantiated. It supports expressions and the +, -, \ * operators:
 
 .. code::
@@ -67,11 +67,11 @@ must be set with the objective function pointer:
    problem.objective = f_1_sub_f_2
 
 Similarly the :attr:`!OptimizationProblem.constraints` attribute must be set with a list of inequality or equality constraints.
-The :class:`!MDOFunction.f_type` attribute of :class:`.MDOFunction` shall be set to :code:`"eq"` or :code:`"ineq"` to declare the type of constraint to equality or inequality.
+The :class:`!MDOFunction.f_type` attribute of :class:`.MDOFunction` shall be set to ``"eq"`` or ``"ineq"`` to declare the type of constraint to equality or inequality.
 
 .. warning::
 
-   **All inequality contraints must be negative by convention**, whatever the optimization algorithm used to solve the problem.
+   **All inequality constraints must be negative by convention**, whatever the optimization algorithm used to solve the problem.
 
 Solving the problem by optimization
 -----------------------------------

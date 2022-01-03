@@ -19,10 +19,7 @@
 #       :author: Pierre-Jean Barjhoux
 #       :author: Francois Gallard, integration and cleanup
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Implementation of the Lagrange multipliers
-******************************************
-"""
+"""Implementation of the Lagrange multipliers."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -39,8 +36,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LagrangeMultipliers(object):
-    r"""
-    Class that implements the computation of Lagrange Multipliers
+    r"""Class that implements the computation of Lagrange Multipliers.
 
     Denote :math:`x^\ast` an optimal solution of the optimization problem
     below.
@@ -74,7 +70,6 @@ class LagrangeMultipliers(object):
             &\lambda_{u,j}\ge0\text{ if }x^\ast_j=u_j,
             \text{ otherwise }\lambda_{u,j}=0.
         \end{aligned}\right.
-
     """
     LOWER_BOUNDS = "lower_bounds"
     UPPER_BOUNDS = "upper_bounds"
@@ -99,9 +94,7 @@ class LagrangeMultipliers(object):
 
     @staticmethod
     def _check_inputs(opt_problem):
-        """
-        Checks inputs : verify that opt_problem is an
-        instance of OptimizationProblem
+        """Verify that opt_problem is an instance of OptimizationProblem.
 
         :param opt_problem: optimization problem on which Lagrange multipliers
             shall be computed
@@ -118,7 +111,8 @@ class LagrangeMultipliers(object):
         """Computes and returns the Lagrange multipliers, as a post-processing of the
         optimal point.
 
-        This solves :
+        This solves:
+
         (d ActiveConstraints)'               d Objective
         (-------------------)  . Lambda = -  -----------
         (d X                )                d X

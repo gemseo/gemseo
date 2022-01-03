@@ -118,7 +118,7 @@ class SensitivityAnalysis(object):
             n_samples: A number of samples.
                 If None, the number of samples is computed by the algorithm.
             algo: The name of the DOE algorithm.
-                If None, use the :attr:`DEFAULT_DRIVER`.
+                If None, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
         """
         self._algo_name = algo or self.DEFAULT_DRIVER

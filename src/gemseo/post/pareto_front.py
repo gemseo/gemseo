@@ -36,7 +36,7 @@ LOGGER = logging.getLogger(__name__)
 class ParetoFront(OptPostProcessor):
     """Compute the Pareto front for a multi-objective problem.
 
-    The Pareto front of an optimization problem is the set of _non-dominated_ points of
+    The Pareto front of an optimization problem is the set of ``non-dominated`` points of
     the design space for which there is no other point that improves an objective
     without damaging another.
 
@@ -45,7 +45,7 @@ class ParetoFront(OptPostProcessor):
     For a given plot, the red markers are the non-dominated points according to the
     objectives of this plot and the green markers are the non-dominated points
     according to all the objectives.
-    The latter are also called _Pareto optimal points_.
+    The latter are also called ``Pareto optimal points``.
     """
 
     DEFAULT_FIG_SIZE = (10.0, 10.0)
@@ -66,7 +66,7 @@ class ParetoFront(OptPostProcessor):
 
         Raises:
             ValueError: If the numbers of objectives and objectives
-            labels are different.
+                labels are different.
         """
         if objectives is None:
             objectives = [self.opt_problem.objective.name]
@@ -210,7 +210,7 @@ class ParetoFront(OptPostProcessor):
             sample_values: The sample values.
 
         Returns:
-            An array of size ``n_samples``, True if the point is non feasible
+            An array of size ``n_samples``, True if the point is non feasible.
         """
         x_feasible, _ = self.opt_problem.get_feasible_points()
         feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]

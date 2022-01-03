@@ -102,8 +102,6 @@ class MDODiscipline(object):
     Attributes:
         input_grammar (AbstractGrammar): The input grammar.
         output_grammar (AbstractGrammar): The output grammar.
-        grammar_type (str): The type of grammar
-            to be used for inputs and outputs declaration.
         comp_dir (str): The path to the directory of the discipline module file if any.
         data_processor (DataProcessor): A tool to pre- and post-process discipline data.
         re_exec_policy (str): The policy to re-execute the same discipline.
@@ -217,11 +215,12 @@ class MDODiscipline(object):
                 search for these file names in the directory
                 containing the discipline source file.
             grammar_type: The type of grammar to use for inputs and outputs declaration,
-                e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
+                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.SIMPLE_CACHE` or :attr:`.HDF5_CACHE`.
+                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` or :attr:`.MDODiscipline.HDF5_CACHE`.
             cache_file_path: The HDF file path
-                when ``grammar_type`` is :attr:`.HDF5_CACHE`.
+                when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
         """
         self.input_grammar = None  # : input grammar
         self.output_grammar = None  # : output grammar
@@ -231,7 +230,7 @@ class MDODiscipline(object):
         # : data converters between execute and _run
         self.data_processor = None
         self._default_inputs = {}  # : default data to be set if not passed
-        # Allow to re execute the same discipline twice, only if did not fail
+        # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         # : list of outputs that shall be null, to be considered as residuals
@@ -266,7 +265,7 @@ class MDODiscipline(object):
         self._cache_file_path = cache_file_path
         self._cache_tolerance = 0.0
         self._cache_hdf_node_name = None
-        # By default, dont use approximate cache
+        # By default, don´t use approximate cache
         # It is up to the user to choose to optimize CPU time with this or not
         self.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_file_path)
         # linearize mode :auto, adjoint, direct
@@ -376,7 +375,7 @@ class MDODiscipline(object):
 
     @property
     def grammar_type(self):  # type: (...) -> AbstractGrammar
-        """The grammar type."""
+        """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
     def auto_get_grammar_file(
@@ -389,7 +388,7 @@ class MDODiscipline(object):
 
         This method searches in a directory for
         either an input grammar file named ``name + "_input.json"``
-        or an output grammar file named``name + "_output.json"``.
+        or an output grammar file named ``name + "_output.json"``.
 
         Args:
             is_input: If True,
@@ -398,9 +397,9 @@ class MDODiscipline(object):
                 autodetect the output grammar file.
             name: The name to be searched in the file names.
                 If None,
-                use the :attr:`.name` name of the discipline.
+                use the :attr:`.MDODiscipline.name` name of the discipline.
             comp_dir: The directory in which to search the grammar file.
-                If None, use :attr:`.comp_dir`.
+                If None, use :attr:`.MDODiscipline.comp_dir`.
 
         Returns:
             The grammar file path.
@@ -421,7 +420,7 @@ class MDODiscipline(object):
     ):  # type: (...) -> None
         """Add inputs against which to differentiate the outputs.
 
-        This method updates :attr:`._differentiated_inputs` with ``inputs``.
+        This method updates :attr:`.MDODiscipline._differentiated_inputs` with ``inputs``.
 
         Args:
             inputs: The input variables against which to differentiate the outputs.
@@ -450,7 +449,7 @@ class MDODiscipline(object):
     ):  # type: (...) -> None
         """Add outputs to be differentiated.
 
-        This method updates :attr:`._differentiated_outputs` with ``outputs``.
+        This method updates :attr:`.MDODiscipline._differentiated_outputs` with ``outputs``.
 
         Args:
             outputs: The output variables to be differentiated.
@@ -486,7 +485,7 @@ class MDODiscipline(object):
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a :class:`SimpleCache` recording the last execution
+        The cache can be either a :class:`.SimpleCache` recording the last execution
         or a cache storing all executions,
         e.g. :class:`.MemoryFullCache` and :class:`.HDF5Cache`.
         Caching data can be either in-memory,
@@ -502,10 +501,11 @@ class MDODiscipline(object):
                 of the difference between two input arrays
                 to consider that two input arrays are equal.
             cache_hdf_file: The path to the HDF file to store the data;
-                this argument is mandatory when the :attr:`.HDF5Cache` policy is used.
+                this argument is mandatory when the
+                :attr:`.MDODiscipline.HDF5_CACHE` policy is used.
             cache_hdf_node_name: The name of the HDF file node
                 to store the discipline data.
-                If None, :attr:`.name` is used.
+                If None, :attr:`.MDODiscipline.name` is used.
             is_memory_shared: Whether to store the data with a shared memory dictionary,
                 which makes the cache compatible with multiprocessing.
 
@@ -624,7 +624,8 @@ class MDODiscipline(object):
             output_grammar_file: The output grammar file path.
                 If None, do not initialize the output grammar from a schema file.
             grammar_type: The type of grammar,
-                e.g. :attr:`.JSONGrammar` or :attr:`.SimpleGrammar`.
+                e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         """
         factory = GrammarFactory()
         grammar_type = self.__DEPRECATED_GRAMMAR_TYPES.get(grammar_type, grammar_type)
@@ -693,24 +694,27 @@ class MDODiscipline(object):
         }
 
     def _check_status_before_run(self):  # type: (...) -> None
-        """Check the status of the discipline before calling :meth:`._run`.
+        """Check the status of the discipline.
 
-        Check the status of the discipline depending on :attr:`.re_execute_policy`.
+        Check the status of the discipline depending on
+        :attr:`.MDODiscipline.re_execute_policy`.
 
         If ``re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
-        the status shall be either :attr:`.PENDING` or :attr:`.VIRTUAL`.
+        the status shall be either :attr:`.MDODiscipline.STATUS_PENDING`
+        or :attr:`.MDODiscipline.VIRTUAL`.
 
         If ``self.re_exec_policy == RE_EXECUTE_NEVER_POLICY``,
 
-        - if status is :attr:`.DONE`,
-          :meth:`.reset_statuses_for_run` is called prior :meth:`._run`,
-        - otherwise status must be :attr:`.VIRTUAL` or :attr:`.PENDING`.
+        - if status is :attr:`.MDODiscipline.STATUS_DONE`,
+          :meth:`.MDODiscipline.reset_statuses_for_run`.
+        - otherwise status must be :attr:`.MDODiscipline.VIRTUAL`
+          or :attr:`.MDODiscipline.STATUS_PENDING`.
 
         Raises:
             ValueError:
-                * When the re-execution policy is unknown.
-                * When the discipline status and the re-execution policy
-                  are no consistent.
+                When the re-execution policy is unknown.
+                When the discipline status and the re-execution policy
+                are no consistent.
         """
         status_ok = True
         if self.status == self.STATUS_RUNNING:
@@ -769,25 +773,26 @@ class MDODiscipline(object):
 
         * Adds the default inputs to the ``input_data``
           if some inputs are not defined in input_data
-          but exist in :attr:`._default_inputs`.
+          but exist in :attr:`.MDODiscipline.default_inputs`.
         * Checks whether the last execution of the discipline was called
-          with identical inputs, ie. cached in :attr:`.cache`;
+          with identical inputs, i.e. cached in :attr:`.MDODiscipline.cache`;
           if so, directly returns ``self.cache.get_output_cache(inputs)``.
         * Caches the inputs.
-        * Checks the input data against :attr:`.input_grammar`.
-        * If :attr:`.data_processor` is not None, runs the preprocessor.
-        * Updates the status to :attr:`.RUNNING`.
-        * Calls the :meth:`._run` method, that shall be defined.
-        * If :attr:`.data_processor` is not None, runs the postprocessor.
+        * Checks the input data against :attr:`.MDODiscipline.input_grammar`.
+        * If :attr:`.MDODiscipline.data_processor` is not None, runs the preprocessor.
+        * Updates the status to :attr:`.MDODiscipline.STATUS_RUNNING`.
+        * Calls the :meth:`.MDODiscipline._run` method, that shall be defined.
+        * If :attr:`.MDODiscipline.data_processor` is not None, runs the postprocessor.
         * Checks the output data.
         * Caches the outputs.
-        * Updates the status to :attr:`.DONE` or :attr:`.FAILED`.
+        * Updates the status to :attr:`.MDODiscipline.STATUS_DONE`
+          or :attr:`.MDODiscipline.STATUS_FAILED`.
         * Updates summed execution time.
 
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
 
         Returns:
             The discipline local data after execution.
@@ -932,8 +937,8 @@ class MDODiscipline(object):
             force_all: If True,
                 consider all the inputs and outputs of the discipline;
                 otherwise,
-                consider :attr:`_differentiated_inputs`
-                and :attr:`_differentiated_outputs`.
+                consider :attr:`.MDODiscipline._differentiated_inputs`
+                and :attr:`.MDODiscipline._differentiated_outputs`.
         """
         if force_all:
             inputs = self.get_input_data_names()
@@ -979,13 +984,14 @@ class MDODiscipline(object):
         Args:
             input_data: The input data needed to linearize the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
             force_all: If False,
-                :attr:`._differentiated_inputs` and :attr:`.differentiated_output`
+                :attr:`.MDODiscipline._differentiated_inputs` and
+                :attr:`.MDODiscipline._differentiated_outputs`
                 are used to filter the differentiated variables.
                 otherwise, all outputs are differentiated wrt all inputs.
             force_no_exec: If True,
-                the discipline is not re executed, cache is loaded anyway.
+                the discipline is not re-executed, cache is loaded anyway.
 
         Returns:
             The Jacobian of the discipline.
@@ -999,7 +1005,7 @@ class MDODiscipline(object):
         # Save inputs dict for caching
         input_data = self._filter_inputs(input_data)
 
-        # if force_no_exec, we do not re execute the discipline
+        # if force_no_exec, we do not re-execute the discipline
         # otherwise, we ensure that the discipline was executed
         # with the right input_data.
         # This may trigger caching (see self.execute()
@@ -1061,7 +1067,7 @@ class MDODiscipline(object):
 
         Sets the linearization mode to approx_method,
         sets the parameters of the approximation for further use
-        when calling :meth:`.linearize`.
+        when calling :meth:`.MDODiscipline.linearize`.
 
         Args:
             jac_approx_type: The approximation method,
@@ -1106,8 +1112,8 @@ class MDODiscipline(object):
         The optimal step is reached when the truncation error
         (cut in the Taylor development),
         and the numerical cancellation errors
-        (roundoff when doing f(x+step)-f(x))
-         are approximately equal.
+        (round-off when doing f(x+step)-f(x))
+        are approximately equal.
 
         .. warning::
 
@@ -1118,13 +1124,13 @@ class MDODiscipline(object):
            https://en.wikipedia.org/wiki/Numerical_differentiation
            and
            "Numerical Algorithms and Digital Representation", Knut Morken ,
-           Chapter 11, "Numerical Differenciation"
+           Chapter 11, "Numerical Differentiation"
 
         Args:
             inputs: The inputs wrt which the outputs are linearized.
-                If None, use the :attr:`_differentiated_inputs`.
+                If None, use the :attr:`.MDODiscipline._differentiated_inputs`.
             outputs: The outputs to be linearized.
-                If None, use the :attr:`_differentiated_outputs`.
+                If None, use the :attr:`.MDODiscipline._differentiated_outputs`.
             force_all: Whether to consider all the inputs and outputs of the discipline;
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
@@ -1176,11 +1182,11 @@ class MDODiscipline(object):
 
         Raises:
             ValueError:
-            * When the discipline was not linearized.
-            * When the Jacobian is not of the right shape.
+                When the discipline was not linearized.
+                When the Jacobian is not of the right shape.
             KeyError:
-            * When outputs are missing in the Jacobian of the discipline.
-            * When inputs are missing for an output in the Jacobian of the discipline.
+                When outputs are missing in the Jacobian of the discipline.
+                When inputs are missing for an output in the Jacobian of the discipline.
         """
         if self.jac is None:
             raise ValueError("The discipline {} was not linearized.".format(self.name))
@@ -1212,7 +1218,7 @@ class MDODiscipline(object):
 
                 if -1 in expected_shape:
                     # At least one of the dimensions is unknown
-                    # Dont check shape
+                    # Don't check shape
                     continue
 
                 if j_mat.shape != expected_shape:
@@ -1372,7 +1378,7 @@ class MDODiscipline(object):
 
     @property
     def linearization_mode(self):  # type: (...) -> str
-        """The linearization mode among :attr:`.LINEARIZE_MODE_LIST`.
+        """The linearization mode among :attr:`.MDODiscipline.AVAILABLE_MODES`.
 
         Raises:
             ValueError: When the linearization mode is unknown.
@@ -1434,7 +1440,7 @@ class MDODiscipline(object):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If None, use the :attr:`.default_inputs`.
+                If None, use the :attr:`.MDODiscipline.default_inputs`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -1631,7 +1637,7 @@ class MDODiscipline(object):
         return status not in [self.STATUS_RUNNING]
 
     def reset_statuses_for_run(self):  # type: (...) -> None
-        """Set all the statuses to :attr:`.PENDING`.
+        """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.
 
         Raises:
             ValueError: When the discipline cannot be run because of its status.
@@ -1691,7 +1697,7 @@ class MDODiscipline(object):
         """Store discipline data in local data.
 
         Args:
-            kwargs: The data to be stored in :attr:`.local_data`.
+            kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
         """
         self.local_data.update(kwargs)
 
@@ -1705,6 +1711,7 @@ class MDODiscipline(object):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
+            raise_exception: Whether to raise on error.
         """
         try:
             self.input_grammar.load_data(input_data, raise_exception)
@@ -1736,7 +1743,7 @@ class MDODiscipline(object):
     def get_outputs_asarray(self):  # type: (...) -> ndarray
         """Return the local input data as a large NumPy array.
 
-        The order is the one of :meth:`.get_all_inputs`.
+        The order is the one of :meth:`.MDODiscipline.get_all_inputs`.
 
         Returns:
             The local input data.
@@ -1746,7 +1753,7 @@ class MDODiscipline(object):
     def get_inputs_asarray(self):  # type: (...) -> ndarray
         """Return the local output data as a large NumPy array.
 
-        The order is the one of :meth:`.get_all_outputs`.
+        The order is the one of :meth:`.MDODiscipline.get_all_outputs`.
 
         Returns:
             The local output data.
@@ -1826,7 +1833,7 @@ class MDODiscipline(object):
     def get_all_inputs(self):  # type: (...) -> List[Any]
         """Return the local input data as a list.
 
-        The order is given by :meth:`.get_input_data_names`.
+        The order is given by :meth:`.MDODiscipline.get_input_data_names`.
 
         Returns:
             The local input data.
@@ -1836,7 +1843,7 @@ class MDODiscipline(object):
     def get_all_outputs(self):  # type: (...) -> List[Any]
         """Return the local output data as a list.
 
-        The order is given by :meth:`.get_output_data_names`.
+        The order is given by :meth:`.MDODiscipline.get_output_data_names`.
 
         Returns:
             The local output data.
@@ -1902,7 +1909,7 @@ class MDODiscipline(object):
         Returns:
             The names of the attributes to be serialized.
         """
-        # pylint warning ==> method could be a function but when overriden,
+        # pylint warning ==> method could be a function but when overridden,
         # it is a function==> self is required
         return list(self._ATTR_TO_SERIALIZE)
 
@@ -1940,7 +1947,7 @@ class MDODiscipline(object):
                         "Cant handle attribute {} serialization "
                         "of undefined type.".format(keep_name)
                     )
-                # Dont serialize shared memory object,
+                # Don´t serialize shared memory object,
                 # this is meaningless, save the value instead
                 out_d[keep_name] = prop.value
             else:
@@ -1985,7 +1992,7 @@ class MDODiscipline(object):
             The local data associated with the variables names.
 
         Raises:
-            ValueError: When a name is not not a discipline input name.
+            ValueError: When a name is not a discipline input name.
         """
         try:
             return self.get_data_list_from_dict(data_names, self.local_data)

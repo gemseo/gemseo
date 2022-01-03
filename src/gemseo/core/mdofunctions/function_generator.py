@@ -42,9 +42,9 @@ OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
 class MDOFunctionGenerator(object):
-    """Generator of :class:`MDOFunction` objects from a :class:`.MDODiscipline`.
+    """Generator of :class:`.MDOFunction` objects from a :class:`.MDODiscipline`.
 
-    It creates a :class:`MDOFunction`
+    It creates a :class:`.MDOFunction`
     evaluating some of the outputs of the discipline
     from some of its
 

@@ -168,7 +168,8 @@ class OptPostProcessor(object):
             file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
-                If None, use the :attr:`DEFAULT_FIG_SIZE` of the post-processor.
+                If None, use the :attr:`.OptPostProcessor.DEFAULT_FIG_SIZE`
+                of the post-processor.
             **options: The options of the post-processor.
 
         Returns:
@@ -268,7 +269,8 @@ class OptPostProcessor(object):
             file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
-                If None, use the :attr:`DEFAULT_FIG_SIZE` of the post-processor.
+                If None, use the :attr:`.OptPostProcessor.DEFAULT_FIG_SIZE`
+                of the post-processor.
             **options: The options of the post-processor.
 
         Returns:

@@ -41,9 +41,9 @@ class SensitivityAnalysisFactory(object):
     At initialization, this factory scans the following modules
     to search for subclasses of this class:
 
-    - the modules located in "gemseo.uncertainty.sensitivity" and its sub-packages,
-    - the modules referenced in the "GEMSEO_PATH",
-    - the modules referenced in the "PYTHONPATH" and starting with "gemseo_".
+    - the modules located in ``gemseo.uncertainty.sensitivity`` and its sub-packages,
+    - the modules referenced in the ``GEMSEO_PATH,``
+    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
 
     Then, it can check if a class is present or return the list of available classes.
 
@@ -123,8 +123,6 @@ class SensitivityAnalysisFactory(object):
             sensitivity_analysis: The name of the sensitivity analysis.
 
         Returns:
-            Availability of a sensitivity analysis.
-
-            True if the type of sensitivity analysis is available.
+            Whether the type of sensitivity analysis is available.
         """
         return self.factory.is_available(sensitivity_analysis)

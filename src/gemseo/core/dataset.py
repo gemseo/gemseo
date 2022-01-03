@@ -1202,13 +1202,13 @@ class Dataset(object):
         save=False,  # type:bool
         **options
     ):  # type: (...) -> None
-        """Plot the dataset from a :class:`DatasetPlot`.
+        """Plot the dataset from a :class:`.DatasetPlot`.
 
         See :meth:`.Dataset.get_available_plots`
 
         Args:
             name: The name of the post-processing,
-                which is the name of a class inheriting from :class:`DatasetPlot`.
+                which is the name of a class inheriting from :class:`.DatasetPlot`.
             show: If True, display the figure.
             save: If True, save the figure.
             options: The options for the post-processing.

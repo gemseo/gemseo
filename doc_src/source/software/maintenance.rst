@@ -76,7 +76,7 @@ the dependencies of the environments and the environment name.
 The dependencies are stored in the file
 :file:`requirements/gemseo.in` which is created automatically by a custom
 **pre-commit** hook defined in
-:py:`tools/extract_req_in_from_setup_cfg.py`.
+``tools/extract_req_in_from_setup_cfg.py``.
 
 Development dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~

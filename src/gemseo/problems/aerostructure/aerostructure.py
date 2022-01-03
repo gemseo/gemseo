@@ -30,10 +30,10 @@ included in the Aerostructure problem:
 
    \text{OVERALL AIRCRAFT DESIGN} = \left\{
    \begin{aligned}
-   &\text{minimize }\text{range}(\text{thick\_airfoils},
-   \text{thick\_panels}, \text{sweep}) = 8
+   &\text{minimize }\text{range}(\text{thick\\_airfoils},
+   \text{thick\\_panels}, \text{sweep}) = 8
    \times10^{11}\times\text{lift}\times\text{mass}/\text{drag} \\
-   &\text{with respect to }\text{thick\_airfoils},\,\text{thick\_panels},
+   &\text{with respect to }\text{thick\\_airfoils},\,\text{thick\\_panels},
    \,\text{sweep} \\
    &\text{subject to }\\
    & \text{rf}-0.5 = 0\\
@@ -47,11 +47,11 @@ where
        \text{AERODYNAMICS} = \left\{
            \begin{aligned}
         &\text{drag}=0.1\times((\text{sweep}/360)^2 + 200 +
-        \text{thick\_airfoils}^2 - \text{thick\_airfoils} -
+        \text{thick\\_airfoils}^2 - \text{thick\\_airfoils} -
          4\times\text{displ})\\
         &\text{forces}=10\times\text{sweep} +
-        0.2\times\text{thick\_airfoils}-0.2\times\text{displ}\\
-        &\text{lift}=(\text{sweep} + 0.2\times\text{thick\_airfoils}-
+        0.2\times\text{thick\\_airfoils}-0.2\times\text{displ}\\
+        &\text{lift}=(\text{sweep} + 0.2\times\text{thick\\_airfoils}-
         2\times\text{displ})/3000
            \end{aligned}
            \right.
@@ -63,16 +63,13 @@ and
        \text{STRUCTURE} = \left\{
            \begin{aligned}
         &\text{mass}=4000\times(\text{sweep}/360)^3 + 200000 +
-        100\times\text{thick\_panels} + 200\times\text{forces}\\
-        &\text{rf}=3\times\text{sweep} - 6\times\text{thick\_panels} +
+        100\times\text{thick\\_panels} + 200\times\text{forces}\\
+        &\text{rf}=3\times\text{sweep} - 6\times\text{thick\\_panels} +
         0.1\times\text{forces} + 55\\
-        &\text{displ}=2\times\text{sweep} + 3\times\text{thick\_panels} -
+        &\text{displ}=2\times\text{sweep} + 3\times\text{thick\\_panels} -
         2\times\text{forces}
            \end{aligned}
            \right.
-
-
-
 """
 from __future__ import division, unicode_literals
 
@@ -216,9 +213,9 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_drag(sweep, thick_airfoils, displ):
-        """Compute the coupling
-        :math:`drag=0.1*((sweep/360)^2 + 200 + thick_airfoils^2
-        - thick_airfoils - 4*displ)`
+        r"""Compute the coupling
+        :math:`drag=0.1*((sweep/360)^2 + 200 + thick\\_airfoils^2
+        - thick\\_airfoils - 4*displ)`
 
         :param sweep: sweep
         :type sweep: ndarray
@@ -239,8 +236,8 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_forces(sweep, thick_airfoils, displ):
-        """Compute the coupling
-        :math:`forces=10*sweep + 0.2*thick_airfoils-0.2*displ`
+        r"""Compute the coupling
+        :math:`forces=10*sweep + 0.2*thick\\_airfoils-0.2*displ`
 
         :param sweep: sweep
         :type sweep: ndarray
@@ -255,8 +252,8 @@ class Aerodynamics(MDODiscipline):
 
     @staticmethod
     def compute_lift(sweep, thick_airfoils, displ):
-        """Compute the coupling
-        :math:`lift=(sweep + 0.2*thick_airfoils-2.*displ)/3000.`
+        r"""Compute the coupling
+        :math:`lift=(sweep + 0.2*thick\\_airfoils-2.*displ)/3000.`
 
         :param sweep: sweep
         :type sweep: ndarray
@@ -298,9 +295,10 @@ class Aerodynamics(MDODiscipline):
 
 
 class Structure(MDODiscipline):
-    """**Structure** is the :class:`.MDODiscipline`
-    implementing the computation of the Structure' equations:
-    [mass, rf, displ] = f(sweep, thick_panels, forces)"""
+    """Computation of the Structure' equations:
+
+    ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
+    """
 
     def __init__(self):
         super(Structure, self).__init__(auto_detect_grammar_files=True)
@@ -322,8 +320,8 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_mass(sweep, thick_panels, forces):
-        """Compute the coupling
-        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick_panels
+        r"""Compute the coupling
+        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\\_panels
         + 200.0*forces`
 
         :param sweep: sweep
@@ -344,9 +342,9 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_rf(sweep, thick_panels, forces):
-        """Compute the coupling.
+        r"""Compute the coupling.
 
-        :math:`rf=-3*sweep - 6*thick_panels + 0.1*forces + 55`
+        :math:`rf=-3*sweep - 6*thick\\_panels + 0.1*forces + 55`
 
         :param sweep: sweep
         :type sweep: ndarray
@@ -361,9 +359,9 @@ class Structure(MDODiscipline):
 
     @staticmethod
     def compute_displ(sweep, thick_panels, forces):
-        """Compute the coupling.
+        r"""Compute the coupling.
 
-        :math:`displ=2*sweep + 3*thick_panels - 2.*forces`
+        :math:`displ=2*sweep + 3*thick\\_panels - 2.*forces`
 
         :param sweep: sweep
         :type sweep: ndarray

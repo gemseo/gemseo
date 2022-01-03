@@ -26,7 +26,7 @@ Scalable discipline
 The :mod:`~gemseo.problems.scalable.data_driven.discipline`
 implements the concept of scalable discipline.
 This is a particular discipline
-built from a input-output learning dataset associated with a function
+built from an input-output learning dataset associated with a function
 and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
@@ -39,7 +39,6 @@ The :class:`.ScalableDiscipline` class implements this concept.
 It inherits from the :class:`.MDODiscipline` class
 in such a way that it can easily be used in a :class:`.Scenario`.
 It is composed of a :class:`.ScalableModel`.
-
 
 The user only needs to provide:
 

@@ -53,7 +53,7 @@ LOGGER = logging.getLogger(__name__)
 class MDOScenario(Scenario):
     """A multidisciplinary scenario to be executed by an optimizer.
 
-    A :class:`MDOScenario` is a particular :class:`.Scenario`
+    A :class:`.MDOScenario` is a particular :class:`.Scenario`
     whose driver is an optimization algorithm.
     This algorithm must be implemented in an :class:`.OptimizationLibrary`.
 

@@ -163,10 +163,10 @@ class DisciplineJacApprox(object):
         and the numerical cancellation errors
         (round-off when doing :math:`f(x+step)-f(x))` are equal.
 
-        See:
-        - https://en.wikipedia.org/wiki/Numerical_differentiation
-        - *Numerical Algorithms and Digital Representation*,
-          Knut Morken, Chapter 11, "Numerical Differenciation"
+        See Also:
+            https://en.wikipedia.org/wiki/Numerical_differentiation
+            and *Numerical Algorithms and Digital Representation*,
+            Knut Morken, Chapter 11, "Numerical Differenciation"
 
         Args:
             inputs: The names of the inputs used to differentiate the outputs.
@@ -205,7 +205,7 @@ class DisciplineJacApprox(object):
         inputs,  # type: Iterable[str]
         data=None,  # type: Optional[Dict[str,ndarray]]
     ):  # type: (...) -> ndarray
-        """Convert a input data mapping into an input array.
+        """Convert an input data mapping into an input array.
 
         Args:
             inputs: The names of the inputs to be used for the differentiation.
@@ -322,7 +322,7 @@ class DisciplineJacApprox(object):
         Returns:
             Whether the analytical Jacobian is correct.
         """
-        inputs_indices = input_indices = outputs_indices = output_indices = None
+        inputs_indices = input_indices = outputs_indices = None
         if indices is not None:
             input_indices, inputs_indices = self._compute_variables_indices(
                 indices,
@@ -486,7 +486,7 @@ class DisciplineJacApprox(object):
 
         Args:
             computed_jac: The reference computed Jacobian dictionary of dictionaries.
-            approx_jac: The dictionary of of gradients.
+            approx_jac: The dictionary of gradients.
 
         Returns:
             grad dict, approx dict, and design var names
@@ -625,10 +625,10 @@ def comp_best_step(
     and the numerical cancellation errors
     (round-off when doing :math:`f(x+step)-f(x))` are equal.
 
-    See:
-    - https://en.wikipedia.org/wiki/Numerical_differentiation
-    - *Numerical Algorithms and Digital Representation*,
-      Knut Morken, Chapter 11, "Numerical Differenciation"
+    See Also:
+        https://en.wikipedia.org/wiki/Numerical_differentiation
+        and *Numerical Algorithms and Digital Representation*,
+        Knut Morken, Chapter 11, "Numerical Differenciation"
 
     Args:
         f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
@@ -637,11 +637,11 @@ def comp_best_step(
         step: The differentiation step :math:`\\delta_x`.
 
     Returns:
-        * The estimation of the truncation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The estimation of the cancellation error.
-          None if the Hessian approximation is too small to compute the optimal step.
-        * The optimal step.
+        The estimation of the truncation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The estimation of the cancellation error.
+        None if the Hessian approximation is too small to compute the optimal step.
+        The optimal step.
     """
     hess = approx_hess(f_p, f_x, f_m, step)
 

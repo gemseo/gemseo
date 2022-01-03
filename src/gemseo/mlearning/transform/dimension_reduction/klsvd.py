@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Karhunen-Loève SVD algorithm to reduce the dimension of a variable.
 
-The :class:`KLSVD` class wraps the KarhunenLoeveSVDAlgorithm
+The :class:`.KLSVD` class wraps the KarhunenLoeveSVDAlgorithm
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """

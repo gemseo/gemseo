@@ -102,9 +102,10 @@ class SnOpt(OptimizationLibrary):
 
         Generate the library dict, contains the list
         of algorithms with their characteristics:
-         * does it require gradient
-         * does it handle equality constraints
-         * does it handle inequality constraints
+
+            * does it require gradient,
+            * does it handle equality constraints,
+            * does it handle inequality constraints.
         """
         super(SnOpt, self).__init__()
         self.__n_ineq_constraints = 0
@@ -142,7 +143,7 @@ class SnOpt(OptimizationLibrary):
             xtol_rel: A stop criteria, the relative tolerance on the
                design variables. If norm(xk-xk+1)/norm(xk)<= xtol_rel: stop.
             xtol_abs: A stop criteria, the absolute tolerance on the
-                   design variables. If norm(xk-xk+1)<= xtol_abs: stop.
+               design variables. If norm(xk-xk+1)<= xtol_abs: stop.
             max_time: max_time: The maximum runtime in seconds,
                 disabled if 0.
             max_iter: The maximum number of iterations,
@@ -217,13 +218,13 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             The solution status, the evaluation of the objective function and its
-                gradient.
+            gradient.
 
         """
         obj_func = self.problem.objective
@@ -255,7 +256,7 @@ class SnOpt(OptimizationLibrary):
 
         Returns:
             The evaluation of the constraints at `xn_vect` and the status of
-                the evaluation.
+            the evaluation.
         """
         cstr = array([])
         for constraint in self.problem.get_eq_constraints():
@@ -281,7 +282,7 @@ class SnOpt(OptimizationLibrary):
 
         Returns:
             The evaluation of the constraints gradient at xn_vect and the status
-                of the computation.
+            of the computation.
         """
         dcstr = array([])
         # First equality constraints then inequality
@@ -341,13 +342,13 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             The solution status, the evaluation of the constraint function and
-                its gradient.
+            its gradient.
         """
         if mode == 0:
             cstr, status = self.__snoptb_create_c(xn_vect)
@@ -406,9 +407,9 @@ class SnOpt(OptimizationLibrary):
                 n_state = 1: first call to driver.cb_opt_objective_snoptb.
                 n_state > 1, snOptB is calling subroutine for the last time and:
                 n_state = 2       and the current x is optimal
-                n_state  = 3, the problem appears to be infeasible
-                n_state  = 4, the problem appears to be unbounded;
-                n_state  = 5,  an iterations limit was reached.
+                n_state = 3, the problem appears to be infeasible
+                n_state = 4, the problem appears to be unbounded;
+                n_state = 5,  an iterations limit was reached.
 
         Returns:
             A dummy output.

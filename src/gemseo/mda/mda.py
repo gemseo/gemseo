@@ -88,7 +88,8 @@ class MDA(MDODiscipline):
             name: The name to be given to the MDA.
                 If None, use the name of the class.
             grammar_type: The type of the input and output grammars,
-                either :attr:`JSON_GRAMMAR_TYPE` or :attr:`SIMPLE_GRAMMAR_TYPE`.
+                either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
+                or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             tolerance: The tolerance of the iterative direct coupling solver;
                 the norm of the current residuals divided by initial residuals norm
                 shall be lower than the tolerance to stop iterating.
@@ -258,8 +259,8 @@ class MDA(MDODiscipline):
         Args:
             force_all: Whether to differentiate all outputs with respect to all inputs.
                 If `False`,
-                differentiate the :attr:`_differentiated_outputs`
-                with respect to the :attr:`_differentiated_inputs`.
+                differentiate the :attr:`.MDODiscipline._differentiated_outputs`
+                with respect to the :attr:`.MDODiscipline._differentiated_inputs`.
 
         Returns:
             The inputs according to which to differentiate,

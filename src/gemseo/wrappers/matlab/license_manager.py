@@ -53,7 +53,6 @@ class LicenseManager(object):
 
     Attributes:
         engine: The MatlabEngine instance.
-        licenses: The list of license toolbox that must be used.
 
     Examples:
         >>> # Build a new matlab engine
@@ -91,7 +90,7 @@ class LicenseManager(object):
 
     @property
     def licenses(self):
-        """Get and set all licences."""
+        """The licences."""
         return self.__licenses
 
     @licenses.setter

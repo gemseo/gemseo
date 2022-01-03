@@ -103,7 +103,7 @@ class OptimizationLibrary(DriverLib):
 
         :param algo_name: the name of the algorithm
         :returns: True if constraints must be positive
-        :rtype: logical
+        :rtype: bool
         """
         loc_dict = self.lib_dict[algo_name]
         if self.POSITIVE_CONSTRAINTS in loc_dict:
@@ -178,7 +178,7 @@ class OptimizationLibrary(DriverLib):
         problem.add_callback(self.new_iteration_callback)
         eval_jac = self.is_algo_requires_grad(algo_name)
         normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
-        # First, evaluate all functions at x_0. Some algorithms dont do this
+        # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.evaluate_functions(
             eval_jac=eval_jac, eval_obj=True, normalize=normalize
         )

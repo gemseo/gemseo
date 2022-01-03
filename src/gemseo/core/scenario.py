@@ -54,24 +54,24 @@ ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, flo
 class Scenario(MDODiscipline):
     """Base class for the scenarios.
 
-    The instantiation of a :class:`Scenario`
+    The instantiation of a :class:`.Scenario`
     creates an :class:`.OptimizationProblem`,
     by linking :class:`.MDODiscipline` objects with an :class:`.MDOFormulation`
     and defining both the objective to minimize or maximize
     and the :class:`.DesignSpace` on which to solve the problem.
     Constraints can also be added to the :class:`.OptimizationProblem`
-    with the :meth:`add_constraint` method,
-    as well as observables with the :meth:`add_observable` method.
+    with the :meth:`.Scenario.add_constraint` method,
+    as well as observables with the :meth:`.Scenario.add_observable` method.
 
     Then,
-    the :meth:`execute` method takes
+    the :meth:`.Scenario.execute` method takes
     a driver (see :class:`.DriverLib`) with options as input data
     and uses it to solve the optimization problem.
     This driver is in charge of executing the multidisciplinary process.
 
     To view the results,
-    use the :meth:`post_process` method after execution
-    with one of the available post-processors that can be listed by :attr:`posts`.
+    use the :meth:`.Scenario.post_process` method after execution
+    with one of the available post-processors that can be listed by :attr:`.Scenario.posts`.
 
     Attributes:
         disciplines (List(MDODiscipline)): The disciplines.

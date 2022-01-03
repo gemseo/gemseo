@@ -309,8 +309,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             querymask: The evaluation request mask.
 
         Returns:
-            The evaluation result. (2D-array-like with one row per point.),
-            The evaluation masks. (Idem.)
+            The evaluation result (2D-array-like with one row per point.),
+            the evaluation masks (Idem.)
 
         Raises:
             p7core.UserTerminated: If a termination criterion is reached.

@@ -22,8 +22,8 @@
 """The factory to create the machine learning algorithms.
 
 This module contains a factory to instantiate a :class:`.MLAlgo` from its class name.
-This factory also provides a list of available machine learning algorithms and allows to
-test if a machine learning algorithm is available.
+This factory also provides a list of available machine learning algorithms and allows
+testing if a machine learning algorithm is available.
 """
 from __future__ import division, unicode_literals
 
@@ -42,12 +42,11 @@ LOGGER = logging.getLogger(__name__)
 class MLAlgoFactory(object):
     """This factory instantiates a :class:`.MLAlgo` from its class name.
 
-    The class can be either internal to |g| or external. In this second case, it can be
-    either implemented in a module referenced in the "GEMSEO_PATH" or in a module The
-    class can be either internal to |g| or external. In the second case, it can be
-    either implemented in a module referenced in the GEMSEO_PATH environment variable or
-    in a module starting with "gemseo_" and referenced in the PYTHONPATH environment
-    variable.
+    The class can be either internal or external. In this second case, it can be either
+    implemented in a module referenced in the ``GEMSEO_PATH`` or in a module The class
+    can be either internal or external. In the second case, it can be either implemented
+    in a module referenced in the ``GEMSEO_PATH`` environment variable or in a module
+    starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
     def __init__(self):  # type: (...) -> None

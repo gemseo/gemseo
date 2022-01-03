@@ -80,6 +80,9 @@ class MDOFormulationsFactory(object):
         """Check the availability of a formulation.
 
         Args:
-            True if the formulation is available.
+            formulation_name: The formulation name to check.
+
+        Returns:
+            Whether the formulation is available.
         """
         return self.factory.is_available(formulation_name)

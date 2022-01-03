@@ -215,7 +215,10 @@ class MLAlgo(object):
         )
 
     class DataFormatters(object):
-        """Decorators for the internal MLAlgo methods."""
+        """Decorators for the internal MLAlgo methods.
+
+        :noindex:
+        """
 
     @property
     def is_trained(self):  # type: (...) -> bool

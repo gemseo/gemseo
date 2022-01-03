@@ -19,7 +19,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The mixture of experts for regression.
+r"""The mixture of experts for regression.
 
 The mixture of experts (MoE) regression model expresses the output
 as a weighted sum of local surrogate models,
@@ -37,22 +37,22 @@ and the rest equal to zero:
 
 .. math::
 
-    y = \\sum_{k=1}^K i_{C_k}(x) f_k(x),
+    y = \sum_{k=1}^K i_{C_k}(x) f_k(x),
 
 or soft,
 in which case the weights express the probabilities of belonging to each class:
 
 .. math::
 
-    y = \\sum_{k=1}^K \\mathbb{P}(x\\in C_k) f_k(x),
+    y = \sum_{k=1}^K \mathbb{P}(x \in C_k) f_k(x),
 
 where
 :math:`x` is the input,
 :math:`y` is the output,
 :math:`K` is the number of classes,
-:math:`(C_k)_{k=1,\\cdots,K}` are the input spaces associated to the classes,
+:math:`(C_k)_{k=1,\cdots,K}` are the input spaces associated to the classes,
 :math:`i_{C_k}(x)` is the indicator of class :math:`k`,
-:math:`\\mathbb{P}(x\\in C_k)` is the probability of class :math:`k`
+:math:`\mathbb{P}(x \in C_k)` is the probability of class :math:`k`
 given :math:`x` and
 :math:`f_k(x)` is the local surrogate model on class :math:`k`.
 
@@ -342,7 +342,7 @@ class MixtureOfExperts(MLRegressionAlgo):
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
                 If None, do not perform calibration.
-            *** option_lists: Parameters for the clustering algorithm candidate.
+            **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
                 parameter, or only one.
@@ -372,7 +372,7 @@ class MixtureOfExperts(MLRegressionAlgo):
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
                 If None, do not perform calibration.
-            *** option_lists: Parameters for the clustering algorithm candidate.
+            **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
                 parameter, or only one.
@@ -402,7 +402,7 @@ class MixtureOfExperts(MLRegressionAlgo):
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
                 If None, do not perform calibration.
-            *** option_lists: Parameters for the clustering algorithm candidate.
+            **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
                 parameter, or only one.

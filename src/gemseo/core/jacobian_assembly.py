@@ -49,7 +49,7 @@ def default_dict_factory():
 class JacobianAssembly(object):
     """Assembly of Jacobians.
 
-    Typically, assemble disciplines's Jacobians into a system Jacobian.
+    Typically, assemble discipline's Jacobians into a system Jacobian.
     """
 
     DIRECT_MODE = "direct"
@@ -67,7 +67,7 @@ class JacobianAssembly(object):
         """
         Args:
             coupling_structure: The CouplingStructure associated disciplines that form
-            the coupled system.
+                the coupled system.
         """
         self.coupling_structure = coupling_structure
         self.sizes = {}
@@ -520,7 +520,7 @@ class JacobianAssembly(object):
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
                 If None, no tolerance is set (equivalent to tol=0.0).
-            force_no_exec: Whether the discipline is not re executed,
+            force_no_exec: Whether the discipline is not re-executed,
                 the cache is loaded anyway.
             linear_solver_options: The options passed to the linear solver factory.
 
@@ -636,7 +636,7 @@ class JacobianAssembly(object):
             if outputs and not inputs:
                 base_msg = (
                     "Discipline '{}' has the outputs '{}' that must be "
-                    "differenciated, but no coupling or design "
+                    "differentiated, but no coupling or design "
                     "variables as inputs"
                 )
                 raise ValueError(base_msg.format(discipline.name, outputs))
@@ -723,9 +723,7 @@ class JacobianAssembly(object):
         """Form the matrix of residuals wrt coupling variables.
 
         Given disciplinary explicit calculations Yi(Y0_t,...Yn_t),
-        fill the residual matrix:
-
-        ::
+        fill the residual matrix::
 
             [Y0(Y0_t,...Yn_t) - Y0_t]
             [                       ]
@@ -770,8 +768,8 @@ class JacobianAssembly(object):
             show: WHether the plot is displayed.
             save: WHether the plot is saved in a PDF file.
             filepath: The file name to save to.
-                If None,  "coupled_jacobian.pdf" is used, otherwise
-                "coupled_jacobian_" + filepath + ".pdf".
+                If None, ``coupled_jacobian.pdf`` is used, otherwise
+                ``coupled_jacobian_ + filepath + .pdf``.
 
         Returns:
             The file name.
@@ -859,7 +857,7 @@ class CoupledSystem(object):
         use_lu_fact=False,
         **linear_solver_options
     ):
-        """Computate the total derivative Jacobian in direct mode.
+        """Compute the total derivative Jacobian in direct mode.
 
         Args:
             functions: The functions to differentiate.
@@ -911,12 +909,11 @@ class CoupledSystem(object):
         Args:
             functions: The functions to differentiate.
             dres_dx: The Jacobian of the residuals wrt the design variables.
-            dres_dy: The Jacobian of the residuals wrt the coupling variables.
+            dres_dy_t: The Jacobian of the residuals wrt the coupling variables.
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy_t once.
-            dres_dy_t: The param kwargs.
             linear_solver_options: The optional parameters.
 
         Returns:

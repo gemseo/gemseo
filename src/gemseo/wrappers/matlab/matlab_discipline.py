@@ -90,7 +90,7 @@ class MatlabDiscipline(MDODiscipline):
         by the matlab function itself. In such case, function outputs must contain
         standard output as well as new outputs for jacobian terms. These new
         outputs must follow naming convention described in function
-        :meth:`MatlabDiscipline._get_jac_name`. They can be returned
+        :meth:`.MatlabDiscipline._get_jac_name`. They can be returned
         in any order.
     """
 
@@ -396,14 +396,14 @@ class MatlabDiscipline(MDODiscipline):
         This function is used when _is_jac_returned_by_func is True.
 
         The function is called after calling jacobian filtering
-        :meth:`MatlabDiscipline._filter_jacobian_in_outputs`. It enables to:
+        :meth:`.MatlabDiscipline._filter_jacobian_in_outputs`. It enables to:
         * check that all outputs have a jacobian matrix with respect to all inputs;
         * reorder the list of jacobian names (and indices) following the order
           from iterating over outputs then inputs lists;
 
         In order to check that all jacobian components exist, the function
         uses the conventional naming described in
-        :meth:`MatlabDiscipline._get_jac_name`.
+        :meth:`.MatlabDiscipline._get_jac_name`.
 
         Raises:
             ValueError:
@@ -443,7 +443,7 @@ class MatlabDiscipline(MDODiscipline):
     def __get_conventional_jac_names(self):  # type: (...) -> List[str]
         """Return the list of jacobian names following the conventional naming.
 
-        The conventional naming is described in :meth:`MatlabDiscipline._get_jac_name`.
+        The conventional naming is described in :meth:`.MatlabDiscipline._get_jac_name`.
         """
         return [
             self.__get_jac_name(out_var, in_var)
@@ -503,7 +503,7 @@ class MatlabDiscipline(MDODiscipline):
         """Run the Matlab discipline.
 
         If jacobian values are returned by the matlab function, they are filtered and
-        used in order to fill :attr:`MatlabDiscipline.jac`.
+        used in order to fill :attr:`.MatlabDiscipline.jac`.
 
         Raises:
             ValueError:

@@ -34,9 +34,9 @@ by least squares minimization.
 
 Dependence
 ----------
-The RBF model relies on the Rbf class
-of the `scipy library <https://docs.scipy.org/doc/scipy/reference/generated/
-scipy.interpolate.Rbf.html>`_.
+The RBF model relies on the Rbf class of the
+`scipy library
+<https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 """
 from __future__ import division, unicode_literals
 
@@ -63,8 +63,7 @@ SavedObjectType = Union[SavedObjectType, float, Callable]
 class RBFRegression(MLRegressionAlgo):
     r"""Regression based on radial basis functions (RBFs).
 
-    This model relies on `the SciPy class :class:`scipy.interpolate.Rbf`.
-    <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
+    This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
 
     Attributes:
         der_function (Callable[[ndarray],ndarray]): The derivative
@@ -111,8 +110,7 @@ class RBFRegression(MLRegressionAlgo):
         Args:
             function: The radial basis function taking a radius ``r`` as input,
                 representing a distance between two points.
-
-                If string,
+                If it is a string,
                 then it must be one of the following:
 
                 .. code::
@@ -125,13 +123,12 @@ class RBFRegression(MLRegressionAlgo):
                     'quintic': r**5
                     'thin_plate': r**2 * log(r)
 
-                If callable,
+                If it is a callable,
                 then it must take two arguments ``(self, r)``,
                 e.g. ``lambda self, r: return sqrt((r/self.epsilon)**2 + 1)``
                 for the multiquadric function.
                 The epsilon parameter will be available as ``self.epsilon``.
                 Other keyword arguments passed in will be available as well.
-
             der_function: The derivative of the radial basis function,
                 only to be provided if ``function`` is a callable
                 and if the use of the model with its derivative is required.
@@ -142,7 +139,7 @@ class RBFRegression(MLRegressionAlgo):
                 and will raise an error if it is missing.
                 The ``der_function`` shall take three arguments
                 (``input_data``, ``norm_input_data``, ``eps``).
-                For a RBF of the form function(:math:`r`),
+                For an RBF of the form function(:math:`r`),
                 der_function(:math:`x`, :math:`|x|`, :math:`\epsilon`) shall
                 return :math:`\epsilon^{-1} x/|x| f'(|x|/\epsilon)`.
             epsilon: An adjustable constant for Gaussian or multiquadric functions.
@@ -173,7 +170,7 @@ class RBFRegression(MLRegressionAlgo):
     class RBFDerivatives(object):
         r"""Derivatives of functions used in :class:`.RBFRegression`.
 
-        For a RBF of the form :math:`f(r)`, :math:`r` scalar,
+        For an RBF of the form :math:`f(r)`, :math:`r` scalar,
         the derivative functions are defined by :math:`d(f(r))/dx`,
         with :math:`r=|x|/\epsilon`. The functions are thus defined
         by :math:`df/dx = \epsilon^{-1} x/|x| f'(|x|/\epsilon)`.

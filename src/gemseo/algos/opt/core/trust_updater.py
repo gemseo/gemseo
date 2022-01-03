@@ -20,10 +20,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoît Pauwels - refactoring
-"""
-Updates a trust parameter according to a decreases ratio
-********************************************************
-"""
+"""Updates a trust parameter according to a decreases' ratio."""
 
 from __future__ import division, unicode_literals
 
@@ -40,7 +37,7 @@ class TrustUpdater(object):
     def __init__(self, thresholds=None, multipliers=None, bound=None):
         """Initializer.
 
-        :param thresholds: thresholds for the decreases ratio
+        :param thresholds: thresholds for the decreases' ratio
         :type thresholds: tuple
         :param multipliers: multipliers for the trust parameter
         :type multipliers: tuple
@@ -66,7 +63,7 @@ class TrustUpdater(object):
 
     def update(self, ratio, parameter):
         """Updates the trust parameter relative to the decreases ratio value. Method to
-        be overidden by subclasses.
+        be overridden by subclasses.
 
         :param ratio: decreases ratio
         :param parameter: trust parameter (radius or penalty)
@@ -82,7 +79,7 @@ class PenaltyUpdater(TrustUpdater):
     def __init__(self, thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1e-6):
         """Initializer.
 
-        :param thresholds: thresholds for the decreases ratio
+        :param thresholds: thresholds for the decreases' ratio
         :type thresholds: tuple
         :param multipliers: multipliers for the penalty parameter
         :type multipliers: tuple
@@ -163,7 +160,7 @@ class RadiusUpdater(TrustUpdater):
     def __init__(self, thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1000.0):
         """Initializer.
 
-        :param thresholds: thresholds for the decreases ratio
+        :param thresholds: thresholds for the decreases' ratio
         :type thresholds: tuple
         :param multipliers: multipliers for the region radius
         :type multipliers: tuple

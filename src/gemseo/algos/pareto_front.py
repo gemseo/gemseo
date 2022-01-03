@@ -19,10 +19,7 @@
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Compute and display a Pareto Front
-**********************************
-"""
+"""Compute and display a Pareto Front."""
 from __future__ import division, unicode_literals
 
 from itertools import combinations
@@ -205,7 +202,7 @@ def generate_pareto_plots(
     Args:
         obj_values: The objective function array of size (n_samples, n_objs).
         obj_names: The names of the objectives.
-        figsize: The matplotlib figure sizes in x an y directions, in inches.
+        figsize: The matplotlib figure sizes in x and y directions, in inches.
         non_feasible_samples: The array of bool of size n_samples,
             True if the current sample is non-feasible.
             If None, all the samples are considered feasible.

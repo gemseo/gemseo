@@ -63,7 +63,7 @@ def build_constraints_matrices(constraints, constraint_type):
 
 
 def build_bounds_matrices(bounds, upper):
-    """Return the constraint matrices corresponding to bounds.
+    """Return the constraint matrices corresponding to bound.
 
     :param bounds: value of the bounds
     :type bounds: ndarray

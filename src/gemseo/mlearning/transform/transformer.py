@@ -48,6 +48,7 @@ TransformerFitOptionType = Union[float, int, str]
     DocInheritMeta(
         abstract_base_class=True,
         style="google_with_merge",
+        include_special_methods=True,
     )
 )
 class Transformer(object):

@@ -212,7 +212,7 @@ class MorrisAnalysis(SensitivityAnalysis):
     def __init__(
         self,
         discipline,  # type: MDODiscipline
-        parameter_space,  # type:DesignSpace
+        parameter_space,  # type: DesignSpace
         n_samples,  # type: Optional[int]
         algo=None,  # type: Optional[str]
         algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
@@ -223,9 +223,9 @@ class MorrisAnalysis(SensitivityAnalysis):
         r"""
         Args:
             n_replicates: The number of times
-                the OAT method is repeated. Used only if :attr:`n_samples` is None.
+                the OAT method is repeated. Used only if ``n_samples`` is None.
                 Otherwise, this number is the greater integer :math:`r`
-                such that :math:`r(d+1)\leq` :attr:`n_samples`
+                such that :math:`r(d+1)\leq` ``n_samples``
                 and :math:`r(d+1)` is the number of samples actually carried out.
             step: The finite difference step of the OAT method.
         """

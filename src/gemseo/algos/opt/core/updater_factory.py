@@ -19,10 +19,7 @@
 #                           documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Factory for the trust updater
-*****************************
-"""
+"""Factory for the trust updater."""
 from __future__ import division, unicode_literals
 
 import logging
@@ -50,8 +47,8 @@ class UpdaterFactory(object):
         """Factory method to create a TrustUpdater subclass from an update name.
 
         :param name: update name
-        :type name: string
-        :param thresholds: thresholds for the decreases ratio
+        :type name: str
+        :param thresholds: thresholds for the decreases' ratio
         :type thresholds: tuple
         :param multipliers: multipliers for the trust parameter
         :type multipliers: tuple

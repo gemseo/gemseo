@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a scatter plot from a :class:`.Dataset`.
 
-A :class:`Scatter` plot represents a set of points
+A :class:`.Scatter` plot represents a set of points
 :math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
 where the color of points can be heterogeneous.
 """

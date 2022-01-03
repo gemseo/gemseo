@@ -328,7 +328,7 @@ class MDAQuasiNewton(MDARoot):
         """
         Args:
             method: The name of the method in scipy root finding,
-                among :attr:`QUASI_NEWTON_METHODS`.
+                among :attr:`.QUASI_NEWTON_METHODS`.
             use_gradient: Whether to use the analytic gradient of the discipline.
 
         Raises:

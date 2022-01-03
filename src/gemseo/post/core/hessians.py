@@ -352,7 +352,7 @@ class HessianApproximation(object):
             func_index: The output index of the function
                 to be provided if the function output is a vector.
             save_matrix: Whether to store the approximations of the Hessian
-                in :attr:`b_mat_history`.
+                in :attr:`.HessianApproximation.b_mat_history`.
             scaling: do scaling step
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
@@ -518,7 +518,7 @@ class HessianApproximation(object):
             func_index: The output index of the function
                 to be provided if the function output is a vector.
             save_matrix: Whether to store the approximations of the inverse Hessian
-                in :attr:`h_mat_history`.
+                in :attr:`.HessianApproximation.h_mat_history`.
             factorize: Whether to factorize the approximations of the Hessian matrix
                 and its inverse, as :math:`A=A_{1/2}A_{1/2}^T` for a matrix :math:`A`.
             scaling: do scaling step
