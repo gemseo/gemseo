@@ -162,11 +162,13 @@ class JSONGrammar(AbstractGrammar):
 
         if PY2:
             # Use jsonschema instead of fastjsonschema when a property has anyOf.
+            # By default, jsonschema assumes that an array can only be a list and not
+            # a tuple, we override this.
             for value in self.schema_dict.get("properties", {}).values():
                 if "anyOf" in value:
                     self._validator = jsonschema.validators.validator_for(
                         self.schema_dict
-                    )(self.schema_dict).validate
+                    )(self.schema_dict, types={"array": (list, tuple)}).validate
                     return
 
         self._validator = compile_schema(self.schema_dict)

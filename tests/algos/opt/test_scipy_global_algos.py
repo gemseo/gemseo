@@ -73,6 +73,7 @@ def get_options(algo_name):
         "tol": 0.1,
         "seed": 1,
         "iters": 1,
+        "mutation": (0.6, 1),
     }
 
     if algo_name == "differential_evolution":
