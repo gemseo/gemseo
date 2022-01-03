@@ -116,13 +116,10 @@ class LinearRegression(MLRegressionAlgo):
             del parameters["degree"]
 
         if penalty_level == 0.0:
-            self.algo = LinReg(
-                normalize=False, copy_X=False, fit_intercept=fit_intercept, **parameters
-            )
+            self.algo = LinReg(copy_X=False, fit_intercept=fit_intercept, **parameters)
         else:
             if l2_penalty_ratio == 1.0:
                 self.algo = Ridge(
-                    normalize=False,
                     copy_X=False,
                     fit_intercept=fit_intercept,
                     alpha=penalty_level,
@@ -130,7 +127,6 @@ class LinearRegression(MLRegressionAlgo):
                 )
             elif l2_penalty_ratio == 0.0:
                 self.algo = Lasso(
-                    normalize=False,
                     copy_X=False,
                     fit_intercept=fit_intercept,
                     alpha=penalty_level,
@@ -138,7 +134,6 @@ class LinearRegression(MLRegressionAlgo):
                 )
             else:
                 self.algo = ElasticNet(
-                    normalize=False,
                     copy_X=False,
                     fit_intercept=fit_intercept,
                     alpha=penalty_level,
