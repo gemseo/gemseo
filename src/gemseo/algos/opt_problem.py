@@ -1884,6 +1884,12 @@ class OptimizationProblem(object):
             if isinstance(value, bytes):
                 value = value.decode()
 
+            if isinstance(value, list):
+                value = [
+                    sub_value.decode() if isinstance(sub_value, bytes) else sub_value
+                    for sub_value in value
+                ]
+
             converted[key] = value
 
         return converted

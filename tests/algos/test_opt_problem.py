@@ -1017,3 +1017,25 @@ def test_reset_preprocess(rosenbrock_lhs):
     )
     for func, nonproc_func in zip(functions, nonproc_functions):
         assert id(func) != id(nonproc_func)
+
+
+def test_function_string_representation_from_hdf():
+    """Check the string representation of a function when importing a HDF5 file.
+
+    The commented code is the one used for creating the HDF5 file.
+    """
+    # design_space = DesignSpace()
+    # design_space.add_variable("x0", l_b=0.0, u_b=1.0, value=0.5)
+    # design_space.add_variable("x1", l_b=0.0, u_b=1.0, value=0.5)
+    # problem = OptimizationProblem(design_space)
+    # problem.objective = MDOFunction(lambda x: x[0] + x[1], "f", args=["x0", "x1"])
+    # problem.constraints.append(
+    #     MDOFunction(lambda x: x[0] + x[1], "g", args=["x0", "x1"])
+    # )
+    # problem.export_hdf("opt_problem_to_check_string_representation.hdf5")
+
+    new_problem = OptimizationProblem.import_hdf(
+        DIRNAME / "opt_problem_to_check_string_representation.hdf5"
+    )
+    assert str(new_problem.objective) == "f(x0, x1)"
+    assert str(new_problem.constraints[0]) == "g(x0, x1)"
