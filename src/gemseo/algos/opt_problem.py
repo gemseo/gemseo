@@ -856,7 +856,9 @@ class OptimizationProblem(object):
         normalize=True,  # type:bool
         no_db_no_norm=False,  # type:bool
     ):  # type: (...) -> Tuple[Dict[str,Union[float,ndarray]],Dict[str,ndarray]]
-        """Compute the objective and the constraints.
+        """Compute the functions of interest, and possibly their derivatives.
+
+        These functions of interest are the constraints, and possibly the objective.
 
         Some optimization libraries require the number of constraints
         as an input parameter which is unknown by the formulation or the scenario.
@@ -865,16 +867,18 @@ class OptimizationProblem(object):
 
         Args:
             x_vect: The input vector at which the functions must be evaluated;
-                if None, x_0 is used.
-            eval_jac: If True, then the Jacobian is evaluated
-            eval_obj: If True, then the objective function is evaluated
-            normalize: If True, then input vector is considered normalized
+                if None, the initial point x_0 is used.
+            eval_jac: Whether to compute the Jacobian matrices
+                of the functions of interest.
+            eval_obj: Whether to consider the objective function
+                as a function of interest.
+            normalize: Whether to consider the input vector ``x_vect`` normalized.
             no_db_no_norm: If True, then do not use the pre-processed functions,
                 so we have no database, nor normalization.
 
         Returns:
-            The functions values and/or the Jacobian values
-            according to the passed arguments.
+            The output values of the functions of interest,
+            as well as their Jacobian matrices if ``eval_jac`` is ``True``.
         """
         # Check the inputs
         if normalize:
@@ -2017,7 +2021,11 @@ class OptimizationProblem(object):
 
         if preprocessing and self.__functions_are_preprocessed:
             self.objective = self.nonproc_objective
+            self.nonproc_objective = None
             self.constraints = self.nonproc_constraints
+            self.nonproc_constraints = []
             self.observables = self.nonproc_observables
+            self.nonproc_observables = []
             self.new_iter_observables = self.nonproc_new_iter_observables
+            self.nonproc_new_iter_observables = []
             self.__functions_are_preprocessed = False

@@ -936,6 +936,8 @@ def test_approximated_jacobian_wrt_uncertain_variables():
 def rosenbrock_lhs():  # type: (...) -> Tuple[Rosenbrock,Dict[str,ndarray]]
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
+    problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))
+    problem.add_constraint(MDOFunction(lambda x: sum(x), "cstr"), cstr_type="ineq")
     start_point = problem.design_space.get_current_x_dict()
     execute_algo(problem, "lhs", n_samples=3, algo_type="doe")
     return problem, start_point
@@ -944,6 +946,12 @@ def rosenbrock_lhs():  # type: (...) -> Tuple[Rosenbrock,Dict[str,ndarray]]
 def test_reset(rosenbrock_lhs):
     """Check the default behavior of OptimizationProblem.reset."""
     problem, start_point = rosenbrock_lhs
+    nonproc_functions = (
+        [problem.nonproc_objective]
+        + problem.nonproc_constraints
+        + problem.nonproc_observables
+        + problem.nonproc_new_iter_observables
+    )
     problem.reset()
     assert len(problem.database) == 0
     assert problem.database.get_max_iteration() == 0
@@ -957,14 +965,13 @@ def test_reset(rosenbrock_lhs):
         + problem.observables
         + problem.new_iter_observables
     )
-    nonproc_functions = (
-        [problem.nonproc_objective]
-        + problem.nonproc_constraints
-        + problem.nonproc_observables
-        + problem.nonproc_new_iter_observables
-    )
     for func, nonproc_func in zip(functions, nonproc_functions):
         assert id(func) == id(nonproc_func)
+
+    assert problem.nonproc_objective is None
+    assert problem.nonproc_constraints == []
+    assert problem.nonproc_observables == []
+    assert problem.nonproc_new_iter_observables == []
 
 
 def test_reset_database(rosenbrock_lhs):
@@ -1017,6 +1024,13 @@ def test_reset_preprocess(rosenbrock_lhs):
     )
     for func, nonproc_func in zip(functions, nonproc_functions):
         assert id(func) != id(nonproc_func)
+
+    assert problem.nonproc_objective is not None
+    assert len(problem.nonproc_constraints) == len(problem.constraints)
+    assert len(problem.nonproc_observables) == len(problem.observables)
+    assert len(problem.nonproc_new_iter_observables) == len(
+        problem.new_iter_observables
+    )
 
 
 def test_function_string_representation_from_hdf():

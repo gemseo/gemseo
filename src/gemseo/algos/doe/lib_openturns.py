@@ -265,22 +265,29 @@ class OpenTURNS(DOELibrary):
             )
 
     def _generate_samples(
-        self, **options  # type: OptionType
+        self,
+        dimension,  # type: int
+        n_samples=None,  # type: Optional[int]
+        seed=None,  # type:  Optional[int]
+        **options  # type: OptionType
     ):  # type: (...) -> ndarray
         """Generate the samples.
 
         Args:
-            **options: The options for the algorithm, see associated JSON file.
+            dimension: The dimension of the variables space.
+            n_samples: The number of samples.
+                If None, set from the options.
+            seed: The seed to be used.
+                If None, use :attr:`.seed`.
+            **options: The options for the DOE algorithm, see associated JSON file.
 
         Returns:
             The samples for the DOE.
         """
         self.seed += 1
-        openturns.RandomGenerator.SetSeed(options.get(self.SEED, self.seed))
-        dimension = options.pop(self.DIMENSION)
-        n_samples = options.pop(self.N_SAMPLES, None)
+        openturns.RandomGenerator.SetSeed(seed or self.seed)
 
-        LOGGER.info("Generation of %s DOE with OpenTurns", self.algo_name)
+        LOGGER.info("Generation of %s DOE with OpenTURNS", self.algo_name)
 
         if self.algo_name in (self.OT_LHS, self.OT_LHSC, self.OT_LHSO):
             return self.__generate_lhs(n_samples, dimension, **options)

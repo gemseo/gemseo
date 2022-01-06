@@ -33,7 +33,7 @@ from typing import Dict, Iterable, List, MutableMapping, Optional, Tuple, Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import ndarray, savetxt
+from numpy import ndarray, savetxt, vstack
 from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
@@ -120,11 +120,9 @@ class DOELibrary(DriverLib):
 
         # Initialize the order as it is not necessarily guaranteed
         # when using parallel execution.
-        unnormalize_vect = self.problem.design_space.unnormalize_vect
-        round_vect = self.problem.design_space.round_vect
         for sample in self.samples:
             self.problem.database.store(
-                round_vect(unnormalize_vect(sample)), {}, add_iter=True
+                self.__compute_input_vector(sample), {}, add_iter=True
             )
 
         self.init_iter_observer(len(self.samples), "DOE sampling")
@@ -269,7 +267,7 @@ class DOELibrary(DriverLib):
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
-            sample: The values for the evaluation of the functions.
+            sample: A point from the unit hypercube.
 
         Returns:
             The computed values.
@@ -277,7 +275,56 @@ class DOELibrary(DriverLib):
         if current_process().name == SUBPROCESS_NAME:
             self.deactivate_progress_bar()
             self.problem.database.clear_listeners()
-        return self.problem.evaluate_functions(sample, self.eval_jac)
+
+        return self.__evaluate_functions(sample)
+
+    def __evaluate_functions(
+        self,
+        sample,  # type: ndarray
+    ):  # type: (...) -> Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
+        """Compute the constraints and objective, and possibly their derivatives.
+
+        Args:
+            sample: A point from the unit hypercube.
+
+        Returns:
+            The output values of the constraints and objective functions,
+            as well as their Jacobian matrices if :attr:`.eval_jac` is ``True``.
+        """
+        # `sample` belongs to the unit hypercube
+        # and must be converted into a point of the input variables space
+        # before evaluating the functions.
+        # evaluate_functions can do that
+        # with normalize=True but using DesignSpace.unnormalize_vect
+        # which is an affine transformation.
+        # Affine transformation cannot be applied
+        # to the special case of random variables
+        # which need the inverse transformation technique
+        # implemented in ParameterSpace.untransform_vect.
+        # So,
+        # one uses __compute_input_vector to untransform and round `sample`
+        # and passes the result to evaluate_functions with normalize=False.
+        return self.problem.evaluate_functions(
+            x_vect=self.__compute_input_vector(sample),
+            eval_jac=self.eval_jac,
+            normalize=False,
+        )
+
+    def __compute_input_vector(
+        self,
+        sample,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Convert a point from the unit hypercube to the input variables space.
+
+        Args:
+            sample: A point from the unit hypercube.
+
+        Returns:
+            A point in the input variables space.
+        """
+        untransform_vect = self.problem.design_space.untransform_vect
+        round_vect = self.problem.design_space.round_vect
+        return round_vect(untransform_vect(sample))
 
     def evaluate_samples(
         self,
@@ -288,15 +335,13 @@ class DOELibrary(DriverLib):
         """Evaluate all the functions of the optimization problem at the samples.
 
         Args:
-            eval_jac: Whether to evaluate the jacobian.
+            eval_jac: Whether to evaluate the Jacobian.
             n_processes: The number of processes used to evaluate the samples.
             wait_time_between_samples: The time to wait between each sample
                 evaluation, in seconds.
         """
         self.eval_jac = eval_jac
-        sample_to_design = self.problem.design_space.untransform_vect
         unnormalize_grad = self.problem.design_space.unnormalize_grad
-        round_vect = self.problem.design_space.round_vect
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
             # Create a list of tasks: execute functions
@@ -309,9 +354,7 @@ class DOELibrary(DriverLib):
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution
             for sample in self.samples:
-                x_u = sample_to_design(sample)
-                x_r = round_vect(x_u)
-                database.store(x_r, {}, add_iter=True)
+                database.store(self.__compute_input_vector(sample), {}, add_iter=True)
 
             def store_callback(
                 index,  # type: int
@@ -328,9 +371,8 @@ class DOELibrary(DriverLib):
                     for key, val in jac.items():
                         val = unnormalize_grad(val)
                         out["@" + key] = val
-                x_u = sample_to_design(self.samples[index])
-                x_r = round_vect(x_u)
-                database.store(x_r, out)
+
+                database.store(self.__compute_input_vector(self.samples[index]), out)
 
             # The list of inputs of the tasks is the list of samples
             parallel.execute(self.samples, exec_callback=store_callback)
@@ -344,15 +386,15 @@ class DOELibrary(DriverLib):
                 LOGGER.warning(
                     "Wait time between samples option is ignored" " in sequential run."
                 )
-            for x_norm in self.samples:
+            for sample in self.samples:
                 try:
-                    self.problem.evaluate_functions(x_norm, eval_jac)
+                    self.__evaluate_functions(sample)
                 except ValueError:
                     LOGGER.error(
                         "Problem with evaluation of sample :"
                         "%s result is not taken into account "
                         "in DOE.",
-                        str(x_norm),
+                        str(sample),
                     )
                     LOGGER.error(traceback.format_exc())
 
@@ -409,7 +451,7 @@ class DOELibrary(DriverLib):
         if unit_sampling:
             return doe
 
-        return variables_space.untransform_vect(doe)
+        return vstack([variables_space.untransform_vect(sample) for sample in doe])
 
     def __get_algorithm_options(
         self,
