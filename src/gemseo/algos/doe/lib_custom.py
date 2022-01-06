@@ -203,7 +203,7 @@ class CustomDOE(DOELibrary):
             )
 
         samples = apply_along_axis(
-            self.problem.design_space.normalize_vect, axis=1, arr=samples
+            self.problem.design_space.transform_vect, axis=1, arr=samples
         )
 
         return samples

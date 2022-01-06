@@ -27,7 +27,7 @@ from copy import deepcopy
 from unittest import mock
 
 import pytest
-from numpy import arange, array, cos, linspace
+from numpy import array, cos, linspace
 from numpy import pi as np_pi
 from numpy import sin
 from six import string_types
@@ -844,7 +844,7 @@ def variables_space():
     """A mock design space."""
     design_space = mock.Mock()
     design_space.dimension = 2
-    design_space.untransform_vect = mock.Mock(return_value=arange(6).reshape((3, 2)))
+    design_space.untransform_vect = mock.Mock(return_value=array([1, 2]))
     return design_space
 
 
@@ -861,7 +861,7 @@ def test_compute_doe_nontransformed(variables_space):
     """Check the computation of a non-transformed DOE in a variables space."""
     points = compute_doe(variables_space, size=3, algo_name="lhs")
     assert points.shape == (3, 2)
-    variables_space.untransform_vect.assert_called_once()
+    assert variables_space.untransform_vect.call_count == 3
 
 
 def test_import_discipline(tmp_wd):
