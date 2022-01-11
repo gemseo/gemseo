@@ -254,48 +254,38 @@ class MDOCouplingStructure(object):
         """
         if not isinstance(output, string_types):
             raise TypeError("Output shall be a string")
+
         for discipline in self.disciplines:
             if discipline.is_output_existing(output):
                 return discipline
+
         raise ValueError("{} is not the output of a discipline".format(output))
 
-    def plot_n2_chart(
+    def __draw_n2_chart(
         self,
-        file_path="n2.pdf",  # type: str
-        show_data_names=True,  # type:bool
-        save=True,  # type:bool
-        show=False,  # type: bool
-        figsize=(15, 10),  # type: Tuple[int]
-        open_browser=False,  # type:bool
+        file_path,  # type: Union[str,Path]
+        show_data_names,  # type: True
+        save,  # type:bool
+        show,  # type: bool
+        figsize,  # type: Tuple[int]
     ):  # type: (...) -> None
-        """Generate a N2 plot for the disciplines.
+        """Draw the N2 chart for the disciplines.
 
         Args:
             file_path: The name of the file path of the figure.
-            show_data_names: If ``True``, show the names of the coupling data ;
+            show_data_names: Whether to show the names of the coupling data;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.
-            save: If True, save the figure to file_path.
-            show: If True, show the plot.
-            figsize: The width and height of the figure.
-            open_browser: If True, open a browser and display an interactive N2 chart.
-
-        Raises:
-            ValueError: If there is only 1 discipline.
+            save: Whether to save the figure to file_path.
+            show: Whether to display the static N2 chart on screen.
+            figsize: The width and height of the figure in inches.
         """
-        output_directory_path = Path(file_path).parent
-        html_file_name = "n2.html"
-        html_file_path = output_directory_path / html_file_name
-        N2HTML(html_file_path, open_browser).from_graph(self.graph)
-
         fig = plt.figure(figsize=figsize)
         plt.grid(True)
         axe = gca()
         axe.grid(True, linestyle="-", color="black", lw=1)
         n_disciplines = len(self.disciplines)
-        if n_disciplines == 1:
-            raise ValueError("N2 Diagrams can be generated for at least 2 disciplines.")
         ax_ticks = list(range(n_disciplines + 1))
         axe.xaxis.set_ticks(ax_ticks)
         axe.yaxis.set_ticks(ax_ticks)
@@ -329,9 +319,54 @@ class MDOCouplingStructure(object):
             self.__add_couplings(couplings, show_data_names, n_disciplines, fig, axe)
 
         if save:
-            plt.savefig(file_path)
+            plt.savefig(str(file_path))
+
         if show:
             plt.show()
+
+    def plot_n2_chart(
+        self,
+        file_path="n2.pdf",  # type: Union[str,Path]
+        show_data_names=True,  # type:bool
+        save=True,  # type:bool
+        show=False,  # type: bool
+        figsize=(15, 10),  # type: Tuple[int]
+        open_browser=False,  # type:bool
+    ):  # type: (...) -> None
+        """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
+
+        A static N2 chart is a figure generated with the matplotlib library
+        that can be saved to ``file_path``, displayed on screen or both;
+        the extension of ``file_path`` must be recognized by matplotlib.
+
+        A dynamic N2 chart is a HTML file with interactive features such as
+        reordering the disciplines,
+        expanding or collapsing the groups of strongly coupled disciplines
+        and
+        displaying information on disciplines or couplings.
+
+        Args:
+            file_path: The file path to save the static N2 chart.
+            show_data_names: Whether to show the names of the coupling data ;
+                otherwise,
+                circles are drawn,
+                whose size depends on the number of coupling names.
+            save: Whether to save the static N2 chart.
+            show: Whether to display the static N2 chart on screen.
+            figsize: The width and height of the static N2 chart in inches.
+            open_browser: Whether to display the interactive N2 chart in a browser.
+
+        Raises:
+            ValueError: When there is less than two disciplines.
+        """
+        if len(self.disciplines) < 2:
+            raise ValueError("N2 diagrams need at least two disciplines.")
+
+        html_file_path = Path(file_path).parent / "n2.html"
+        N2HTML(html_file_path, open_browser).from_graph(self.graph)
+
+        if save or show:
+            self.__draw_n2_chart(file_path, show_data_names, save, show, figsize)
 
     @staticmethod
     def _check_size_text(

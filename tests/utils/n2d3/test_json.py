@@ -177,10 +177,7 @@ def test_generate_coupling_html(n2_json):
     """
     html = n2_json._create_coupling_html("A", "B", ["a", "b"], {"a": 1, "b": 2})
     expected_html = (
-        "<h2 style='text-align: center;'>"
-        "<span style='color: gray;'>Coupling</span></br>"
-        "<span style='color: gray;'>from</span> A<br/>"
-        "<span style='color: gray;'>to</span> B</h2>"
+        "The coupling variables from <b>A</b> to <b>B</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -206,8 +203,7 @@ def test_generate_discipline_html(n2_json):
         next(n2_json._graph.disciplines), {"y12": 1, "y21": 2}
     )
     expected_html = (
-        "<h2 style='text-align: center;'>D1</h2>"
-        "<h3 style='text-align: center;'>Inputs</h3>"
+        "The inputs of <b>D1</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -215,7 +211,7 @@ def test_generate_discipline_html(n2_json):
         "        </tr>"
         "    </table>"
         "</div>"
-        "<h3 style='text-align: center;'>Outputs</h3>"
+        "The outputs of <b>D1</b>:"
         "<div align='center'>"
         "    <table>"
         "        <tr>"
@@ -245,7 +241,7 @@ def test_generate_group_html(n2_json, group):
     )
     if group == 1:
         expected_html = (
-            "<h2 style='text-align: center;'>Group 1</h2>"
+            "The disciplines of <b>Group 1</b>:"
             "<div align='center'>"
             "    <table>"
             "        <tr>"
@@ -259,7 +255,7 @@ def test_generate_group_html(n2_json, group):
         )
     else:
         expected_html = (
-            "<h2 style='text-align: center;'>Group 0</h2>"
+            "The disciplines of <b>Group 0</b>:"
             "<div align='center'>"
             "    <table>"
             "        <tr>"
@@ -284,29 +280,47 @@ def test_generate_groups_menu_html(n2_json):
     )
 
     expected_html = (
-        "<h2>Group the disciplines</h2>"
-        "<div style='overflow:scroll; height:39em;'>"
-        "    <ul id='myUL'>"
+        "    <ul class='collapsible'>"
         "        <li>"
-        "            <div class='caret'>"
-        "                <span id='group_name_0' contenteditable='true' class='group' onblur='change_group_name(this,0);'>Group 0</span>"  # noqa: B950
+        "           <div class='switch'>"
+        "              <label>"
+        "              <input type='checkbox' "
+        "onclick='expand_collapse_all(json.groups.length,svg);' "
+        "id='check_all'/>"
+        "              <span class='lever'></span>"
+        "              </label>All groups"
+        "           </div>"
+        "       </li>"
+        "        <li>"
+        "            <div class='collapsible-header'>"
+        "               <span id='group_name_0' "
+        "contenteditable='true' class='group' "
+        "onblur='change_group_name(this,0);'>Group 0"
+        "               </span>"
         "            </div>"
-        "            <ul class='nested'>"
-        "                <li>D1</li>"
-        "            </ul>"
+        "            <div class='collapsible-body'>"
+        "               D1"
+        "            </div>"
         "        </li>"
         "        <li>"
-        "            <div class='caret'>"
-        "                <span id='group_name_1' contenteditable='true' class='group' onblur='change_group_name(this,1);'>Group 1</span>"  # noqa: B950
-        "                <input type='checkbox' onclick='expand_collapse_group(1,svg)'/>"  # noqa: B950
+        "            <div class='collapsible-header'>"
+        "               <div class='switch'>"
+        "                   <label>"
+        "                   <input type='checkbox' "
+        "id='check_1' onclick='expand_collapse_group(1,svg)'/>"
+        "                   <span class='lever'></span>"
+        "                   </label>"
+        "               </div>"
+        "               <span id='group_name_1' contenteditable='true' "
+        "class='group' onblur='change_group_name(this,1);'>Group 1"
+        "               </span>"
         "            </div>"
-        "            <ul class='nested'>"
-        "                <li>D2</li>"
-        "                <li>D3</li>"
-        "            </ul>"
+        "            <div class='collapsible-body'>"
+        "               D2,"
+        "               D3"
+        "            </div>"
         "        </li>"
         "    </ul>"
-        "</div>"
     )
 
     assert html == expected_html
