@@ -152,10 +152,9 @@ class N2JSON(object):
         """
         return Template(
             (
-                "<h2 style='text-align: center;'>"
-                "<span style='color: gray;'>Coupling</span></br>"
-                "<span style='color: gray;'>from</span> {{ source }}<br/>"
-                "<span style='color: gray;'>to</span> {{ destination }}</h2>"
+                "The coupling variables "
+                "from <b>{{ source }}</b> "
+                "to <b>{{ destination }}</b>:"
                 "{{ coupling_variables }}"
             )
         ).render(
@@ -189,10 +188,9 @@ class N2JSON(object):
         )
         return Template(
             (
-                "<h2 style='text-align: center;'>{{ discipline }}</h2>"
-                "<h3 style='text-align: center;'>Inputs</h3>"
+                "The inputs of <b>{{ discipline }}</b>:"
                 "{{ inputs }}"
-                "<h3 style='text-align: center;'>Outputs</h3>"
+                "The outputs of <b>{{ discipline }}</b>:"
                 "{{ outputs }}"
             )
         ).render(
@@ -221,9 +219,7 @@ class N2JSON(object):
             The HTML block describing the group of disciplines.
         """
         disciplines = [disciplines[child - n_groups] for child in children[group]]
-        return Template(
-            "<h2 style='text-align: center;'>{{ group }}</h2>{{ disciplines }}"
-        ).render(
+        return Template("The disciplines of <b>{{group}}</b>:{{ disciplines }}").render(
             group=cls._DEFAULT_GROUP_TEMPLATE.format(group),
             disciplines=cls._create_variables_html(disciplines),
         )
@@ -259,26 +255,45 @@ class N2JSON(object):
                 }
             )
         return Template(
-            "<h2>Group the disciplines</h2>"
-            "<div style='overflow:scroll; height:39em;'>"
-            "    <ul id='myUL'>"
+            "    <ul class='collapsible'>"
+            "        <li>"
+            "           <div class='switch'>"
+            "              <label>"
+            "              <input "
+            "type='checkbox' "
+            "onclick='expand_collapse_all(json.groups.length,svg);' id='check_all'/>"
+            "              <span class='lever'></span>"
+            "              </label>All groups"
+            "           </div>"
+            "       </li>"
             "        {%- for datum in data %}"
             "        <li>"
-            "            <div class='caret'>"
-            "                <span id='group_name_{{ datum.group_index }}' contenteditable='true' class='group' onblur='change_group_name(this,{{ datum.group_index }});'>{{ datum.group_name }}</span>"  # noqa: B950
-            "                {%- if datum.group_index != 0 %}"
-            "                <input type='checkbox' onclick='expand_collapse_group({{ datum.group_index }},svg)'/>"  # noqa: B950
-            "                {%- endif %}"
+            "            <div class='collapsible-header'>"
+            "               {%- if datum.group_index != 0 %}"
+            "               <div class='switch'>"
+            "                   <label>"
+            "                   <input "
+            "type='checkbox' id='check_{{ datum.group_index }}' "
+            "onclick='expand_collapse_group({{ datum.group_index }},svg)'/>"
+            "                   <span class='lever'></span>"
+            "                   </label>"
+            "               </div>"
+            "               {%- endif %}"
+            "               <span id='group_name_{{ datum.group_index }}' "
+            "contenteditable='true' "
+            "class='group' "
+            "onblur='change_group_name(this,{{ datum.group_index }});'>"
+            "{{ datum.group_name }}"
+            "               </span>"
             "            </div>"
-            "            <ul class='nested'>"
+            "            <div class='collapsible-body'>"
             "               {%- for discipline in datum.disciplines %}"
-            "                <li>{{ discipline }}</li>"
-            "                {%- endfor %}"
-            "            </ul>"
+            "               {{ discipline }}{% if not loop.last %},{% endif %}"
+            "               {%- endfor %}"
+            "            </div>"
             "        </li>"
             "        {%- endfor %}"
             "    </ul>"
-            "</div>"
         ).render(data=data)
 
     def _create_links(

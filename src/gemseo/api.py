@@ -219,15 +219,15 @@ def generate_n2_plot(
 
     Args:
         disciplines: The disciplines from which the N2 chart is generated.
-        file_path: The path of the file to save the figure.
-        show_data_names: If ``True``, show the names of the coupling data ;
+        file_path: The file path to save the static N2 chart.
+        show_data_names: Whether to show the names of the coupling data ;
             otherwise,
             circles are drawn,
-            the size of which depends on the number of coupling names.
-        save: If True, save the figure to the file_path.
-        show: If True, show the plot.
-        figsize: The width and height of the figure.
-        open_browser: If True, open a browser and display an interactive N2 chart.
+            whose size depends on the number of coupling names.
+        save: Whether to save the static N2 chart.
+        show: Whether to show the static N2 chart.
+        figsize: The width and height of the static N2 chart.
+        open_browser: Whether to display the interactive N2 chart in a browser.
 
     Examples
     --------

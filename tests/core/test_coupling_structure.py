@@ -109,7 +109,9 @@ class TestCouplingStructure(unittest.TestCase):
         assert exists(fname)
 
         coupling_structure = MDOCouplingStructure([disciplines[0]])
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="N2 diagrams need at least two disciplines."
+        ):
             coupling_structure.plot_n2_chart("n2_3.png", False, show=False, save=True)
 
     def test_n2_many_io(self):

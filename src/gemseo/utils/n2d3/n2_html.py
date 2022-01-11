@@ -17,7 +17,6 @@
 from __future__ import unicode_literals
 
 import json
-import shutil
 import webbrowser
 from typing import TYPE_CHECKING, Union
 
@@ -43,11 +42,6 @@ class N2HTML(object):
         """
         self.__file_path = Path(file_path)
         self.__open_browser = open_browser
-        img_path = "gemseo_logo.png"
-        shutil.copy(
-            str(Path(__file__).parent / img_path),
-            str(self.__file_path.parent / img_path),
-        )
 
     def __create_html_file(
         self,
@@ -60,6 +54,7 @@ class N2HTML(object):
         """
         with Path(self.__file_path).open("w", encoding="utf-8", newline="") as stream:
             stream.write(self.__create_html_contents(json_structure))
+
         if self.__open_browser:
             webbrowser.open_new_tab(str(self.__file_path))
 
@@ -99,7 +94,7 @@ class N2HTML(object):
             The HTML content.
         """
 
-        css_files = ["style.css", "modal.css", "button.css"]
+        css_files = ["style.css", "modal.css", "button.css", "materialize.min.css"]
         js_files = [
             "d3.v3.js",
             "d3.parcoords.js",
@@ -113,12 +108,14 @@ class N2HTML(object):
             "FileSave.js",
             "save_json.js",
             "save_png.js",
+            "materialize.min.js",
         ]
         template = (Path(__file__).parent / "n2_html.tmpl").read_text()
         data = [
             self.__get_file_contents(Path("css") / css_file) for css_file in css_files
         ]
         data += [self.__get_file_contents(Path("js") / js_file) for js_file in js_files]
+        data += [self.__get_file_contents("gemseo_logo.svg")]
         data += [json_data]
         return template.format(*data)
 
