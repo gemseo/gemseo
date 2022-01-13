@@ -713,3 +713,18 @@ class ParameterSpace(DesignSpace):
                 u_b=item.u_b,
                 value=item.value,
             )
+
+    def rename_variable(
+        self,
+        current_name,  # type: str
+        new_name,  # type: str
+    ):  # type: (...) -> None
+        super(ParameterSpace, self).rename_variable(current_name, new_name)
+
+        if current_name in self.uncertain_variables:
+            self.uncertain_variables[
+                self.uncertain_variables.index(current_name)
+            ] = new_name
+            self.__distributions_definitions[
+                new_name
+            ] = self.__distributions_definitions.pop(current_name)
