@@ -25,8 +25,8 @@ from __future__ import division, unicode_literals
 import pytest
 from numpy import allclose, arange, array, array_equal, concatenate, ndarray
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.algos.design_space import DesignSpace, DesignVariable
+from gemseo.algos.parameter_space import ParameterSpace, RandomVariable
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
 
@@ -465,3 +465,23 @@ def test_transform():
     assert transformed_vector == array([0.5])
     untransformed_vector = parameter_space.untransform_vect(transformed_vector)
     assert vector == untransformed_vector
+
+
+def test_rename_variable():
+    """Check the renaming of a variable."""
+    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    random_variable = RandomVariable(
+        "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
+    )
+
+    parameter_space = ParameterSpace()
+    parameter_space["x"] = design_variable
+    parameter_space["u"] = random_variable
+    parameter_space.rename_variable("x", "y")
+    parameter_space.rename_variable("u", "v")
+
+    other_parameter_space = ParameterSpace()
+    other_parameter_space["y"] = design_variable
+    other_parameter_space["v"] = random_variable
+
+    assert parameter_space == other_parameter_space

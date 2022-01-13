@@ -1076,3 +1076,24 @@ def test_setitem_from_dict():
     design_space = DesignSpace()
     design_space["x"] = DesignVariable(l_b=2.0)
     assert design_space["x"].l_b == array([2.0])
+
+
+def test_rename_variable():
+    """Check the renaming of a variable."""
+    design_variable = DesignVariable(2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+
+    design_space = DesignSpace()
+    design_space["x"] = design_variable
+    design_space.rename_variable("x", "y")
+
+    other_design_space = DesignSpace()
+    other_design_space["y"] = design_variable
+
+    assert design_space == other_design_space
+
+
+def test_rename_unknown_variable():
+    """Check that a value error is raised when renaming of an unknown variable."""
+    design_space = DesignSpace()
+    with pytest.raises(ValueError, match="The variable x is not in the design space."):
+        design_space.rename_variable("x", "y")

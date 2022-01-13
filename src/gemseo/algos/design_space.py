@@ -1999,3 +1999,30 @@ class DesignSpace(collections.MutableMapping):
             }
             for key, val in mapping.items()
         }
+
+    def rename_variable(
+        self,
+        current_name,  # type: str
+        new_name,  # type: str
+    ):  # type: (...) -> None
+        """Rename a variable.
+
+        Args:
+            current_name: The name of the variable to rename.
+            new_name: The new name of the variable.
+        """
+        if current_name not in self.variables_names:
+            raise ValueError(
+                "The variable {} is not in the design space.".format(current_name)
+            )
+
+        self.variables_names[self.variables_names.index(current_name)] = new_name
+        for dictionary in [
+            self.variables_sizes,
+            self.variables_types,
+            self.normalize,
+            self._lower_bounds,
+            self._upper_bounds,
+            self._current_x,
+        ]:
+            dictionary[new_name] = dictionary.pop(current_name)
