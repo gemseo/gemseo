@@ -91,7 +91,7 @@ print(get_scenario_options_schema("MDO"))
 # - This function returns an instance of :class:`.MDOScenario` or
 #   :class:`.DOEScenario`.
 
-discipline = create_discipline("AnalyticDiscipline", expressions_dict={"y": "x1+x2"})
+discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
 design_space = create_design_space()
 design_space.add_variable("x1", 1, "float", 0.0, 1.0)
 design_space.add_variable("x2", 1, "float", 0.0, 1.0)

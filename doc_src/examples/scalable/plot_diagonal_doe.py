@@ -52,7 +52,7 @@ configure_logger()
 # and set its cache policy to :code:`"MemoryFullCache"`.
 
 discipline = create_discipline(
-    "AnalyticDiscipline", expressions_dict={"z": "2*x-3*sin(2*pi*y)"}
+    "AnalyticDiscipline", expressions={"z": "2*x-3*sin(2*pi*y)"}
 )
 discipline.set_cache_policy("MemoryFullCache")
 

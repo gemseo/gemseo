@@ -56,10 +56,10 @@ configure_logger()
 # Create the discipline to learn
 # ------------------------------
 # We can implement this analytic discipline by means of the
-# :class:`~gemseo.core.analytic_discipline.AnalyticDiscipline` class.
-expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
+# :class:`~gemseo.disciplines.analytic.AnalyticDiscipline` class.
+expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
 discipline = create_discipline(
-    "AnalyticDiscipline", name="func", expressions_dict=expressions_dict
+    "AnalyticDiscipline", name="func", expressions=expressions
 )
 
 ###############################################################################

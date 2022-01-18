@@ -33,8 +33,6 @@ from gemseo.api import (
     create_discipline,
     generate_coupling_graph,
     generate_n2_plot,
-    get_all_inputs,
-    get_all_outputs,
     get_available_disciplines,
     get_discipline_inputs_schema,
     get_discipline_options_defaults,
@@ -42,6 +40,7 @@ from gemseo.api import (
     get_discipline_outputs_schema,
 )
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
 
 configure_logger()
 
@@ -83,20 +82,20 @@ print(isinstance(disciplines[0], MDODiscipline))
 # This function can also be used to create a particular :class:`.MDODiscipline`
 # from scratch, such as :class:`.AnalyticDiscipline`
 # or :class:`.AutoPyDiscipline`. E.g.
-addition = create_discipline("AnalyticDiscipline", expressions_dict={"y": "x1+x2"})
+addition = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
 print(addition.execute({"x1": array([1.0]), "x2": array([2.0])}))
 
 ##########################################################################
 # Get all inputs/outputs
 # ----------------------
-# The :meth:`~gemseo.api.get_all_inputs` function can list all the inputs
+# The :func:`~gemseo.disciplines.utils.get_all_inputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
 # argument :code:`recursive` (default: :code:`False`) is :code:`True`,
 # merging the input data from the discipline grammars. E.g.
 print(get_all_inputs(disciplines))
 
 ##########################################################################
-# The :meth:`~gemseo.api.get_all_outputs` function can list all the inputs
+# The :func:`~gemseo.disciplines.utils.get_all_outputs` function can list all the inputs
 # of a list of disciplines, including the sub-disciplines if the
 # argument :code:`recursive` (default: :code:`False`) is :code:`True`,
 # merging the input data from the discipline grammars. E.g.

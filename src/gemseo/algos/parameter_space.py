@@ -86,7 +86,10 @@ from gemseo.uncertainty.distributions.factory import (
     DistributionFactory,
     DistributionParametersType,
 )
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 from gemseo.utils.py23_compat import Path
 
 if sys.version_info < (3, 7, 0):
@@ -300,8 +303,8 @@ class ParameterSpace(DesignSpace):
         sample = self.distribution.compute_samples(n_samples)
         if as_dict:
             sample = [
-                DataConversion.array_to_dict(
-                    data_array, self.uncertain_variables, self.variables_sizes
+                split_array_to_dict_of_arrays(
+                    data_array, self.variables_sizes, self.uncertain_variables
                 )
                 for data_array in sample
             ]
@@ -481,14 +484,14 @@ class ParameterSpace(DesignSpace):
 
         data_names = self.variables_names
         data_sizes = self.variables_sizes
-        dict_sample = DataConversion.array_to_dict(x_vect, data_names, data_sizes)
+        dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_u_geom = super(ParameterSpace, self).unnormalize_vect(x_vect)
         x_u = self.evaluate_cdf(dict_sample, inverse=True)
-        x_u_geom = DataConversion.array_to_dict(x_u_geom, data_names, data_sizes)
+        x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
         missing_names = list(set(data_names) - set(x_u.keys()))
         for name in missing_names:
             x_u[name] = x_u_geom[name]
-        x_u = DataConversion.dict_to_array(x_u, data_names)
+        x_u = concatenate_dict_of_arrays_to_array(x_u, data_names)
         return x_u
 
     def transform_vect(
@@ -534,14 +537,14 @@ class ParameterSpace(DesignSpace):
 
         data_names = self.variables_names
         data_sizes = self.variables_sizes
-        dict_sample = DataConversion.array_to_dict(x_vect, data_names, data_sizes)
+        dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_u_geom = super(ParameterSpace, self).normalize_vect(x_vect)
         x_u = self.evaluate_cdf(dict_sample, inverse=False)
-        x_u_geom = DataConversion.array_to_dict(x_u_geom, data_names, data_sizes)
+        x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
         missing_names = list(set(data_names) - set(x_u.keys()))
         for name in missing_names:
             x_u[name] = x_u_geom[name]
-        x_u = DataConversion.dict_to_array(x_u, data_names)
+        x_u = concatenate_dict_of_arrays_to_array(x_u, data_names)
         return x_u
 
     @property

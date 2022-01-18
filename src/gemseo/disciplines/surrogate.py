@@ -59,6 +59,7 @@ class SurrogateDiscipline(MDODiscipline):
         output_names=None,  # type: Optional[Iterable[str]]
         **parameters  # type: MLAlgoParameterType
     ):  # type: (...) -> None
+        # noqa: D205 D212 D415
         """
         Args:
             surrogate: Either the class name

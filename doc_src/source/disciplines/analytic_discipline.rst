@@ -26,7 +26,7 @@ First of all, we have to define the output expressions in a dictionary where key
 
 .. code::
 
-    expressions_dict = {'y_1': '2*x**2',
+    expressions = {'y_1': '2*x**2',
                         'y_2': '5+3*x**2+z**3'}
 
 Create and instantiate the discipline
@@ -37,7 +37,7 @@ by means of the API function :meth:`~gemseo.api.create_discipline` with:
 
 - :code:`discipline_name="AnalyticDiscipline"`,
 - :code:`name="analytic"`,
-- :code:`expressions_dict=expr_dict`.
+- :code:`expressions=expr_dict`.
 
 In practice, we write:
 
@@ -46,11 +46,11 @@ In practice, we write:
     from gemseo.api import create_discipline
 
     disc = create_discipline("AnalyticDiscipline", "analytic",
-                             expressions_dict=expressions_dict)
+                             expressions=expressions)
 
 .. note::
 
-   |g| takes care of the grammars and :meth:`!MDODiscipline._run` method generation from the :code:`expressions_dict` argument.
+   |g| takes care of the grammars and :meth:`!MDODiscipline._run` method generation from the :code:`expressions` argument.
    In the background, |g| considers that :code:`x` is a monodimensional float input parameter and :code:`y_1` and :code:`y_2` are monodimensional float output parameters.
 
 Execute the discipline

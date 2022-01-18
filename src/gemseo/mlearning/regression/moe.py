@@ -80,7 +80,7 @@ from gemseo.mlearning.qual_measure.quality_measure import OptionType as EvalOpti
 from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
@@ -226,7 +226,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                 """
                 as_dict = isinstance(input_data, dict)
                 if as_dict:
-                    input_data = DataConversion.dict_to_array(
+                    input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
                     )
                 output_data = predict(self, input_data, *args, **kwargs)

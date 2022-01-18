@@ -33,7 +33,8 @@ from gemseo.core.execution_sequence import (
     LoopExecSequence,
     SerialExecSequence,
 )
-from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,

@@ -23,7 +23,6 @@ from __future__ import division, unicode_literals
 
 import json
 import re
-from copy import deepcopy
 from unittest import mock
 
 import pytest
@@ -48,8 +47,6 @@ from gemseo.api import (
     generate_coupling_graph,
     generate_n2_plot,
     get_algorithm_options_schema,
-    get_all_inputs,
-    get_all_outputs,
     get_available_caches,
     get_available_disciplines,
     get_available_doe_algorithms,
@@ -252,20 +249,6 @@ def test_create_doe_scenario(tmp_wd):
     )
 
 
-def test_get_all_inputs(tmp_wd):
-    """Check that all the inputs from the Sobieski problem are recovered.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    inputs = get_all_inputs(
-        create_discipline(["SobieskiMission", "SobieskiAerodynamics"])
-    )
-    assert sorted(inputs) == sorted(
-        ["y_12", "x_shared", "y_14", "x_2", "y_24", "y_32", "y_34"]
-    )
-
-
 def test_get_formulation_sub_options_schema(tmp_wd):
     """Check that the sub options schema is recovered for different formulations.
 
@@ -287,43 +270,6 @@ def test_get_formulation_sub_options_schema(tmp_wd):
             opts = {}
         get_formulation_sub_options_schema(formulation, **opts)
         get_formulation_sub_options_schema(formulation, pretty_print=True, **opts)
-
-
-def test_get_all_in_out_puts_recursive(tmp_wd):
-    """Test the recursive option when retrieving all inputs/outputs.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    miss, aero, struct = create_discipline(
-        ["SobieskiMission", "SobieskiAerodynamics", "SobieskiStructure"]
-    )
-    design_space = SobieskiProblem().read_design_space()
-    sc_aero = create_scenario(
-        aero, "DisciplinaryOpt", "y_24", deepcopy(design_space).filter("x_2")
-    )
-
-    sc_struct = create_scenario(
-        struct, "DisciplinaryOpt", "y_14", deepcopy(design_space).filter("x_1")
-    )
-
-    inputs = get_all_inputs([sc_aero, sc_struct, miss], recursive=True)
-    assert sorted(inputs) == sorted(
-        [
-            "x_1",
-            "x_2",
-            "x_shared",
-            "y_12",
-            "y_14",
-            "y_21",
-            "y_24",
-            "y_31",
-            "y_32",
-            "y_34",
-        ]
-    )
-
-    get_all_outputs([sc_aero, sc_struct, miss], recursive=True)
 
 
 def test_get_scenario_inputs_schema(tmp_wd):
@@ -390,18 +336,6 @@ def test_get_mda_options_schema(tmp_wd):
     assert "name" in schema["properties"]
 
     get_mda_options_schema("MDAJacobi", pretty_print=True)
-
-
-def test_get_all_outputs(tmp_wd):
-    """Test that all discipline outputs are retrieved correctly.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    outs = get_all_outputs(
-        create_discipline(["SobieskiMission", "SobieskiAerodynamics"])
-    )
-    assert sorted(outs) == sorted(["y_23", "y_24", "y_4", "y_2", "g_2", "y_21"])
 
 
 def test_get_available_opt_algorithms(tmp_wd):
@@ -868,7 +802,7 @@ def test_import_discipline(tmp_wd):
     """Check that a discipline performs correctly after import."""
     file_path = tmp_wd / "saved_discipline.pkl"
 
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict={"y": "2*x"})
+    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
     discipline.execute()
     discipline.serialize(file_path)
 

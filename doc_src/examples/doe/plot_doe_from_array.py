@@ -31,7 +31,7 @@ from gemseo.api import create_design_space, create_discipline, create_scenario
 
 #######################################################################################
 # Let us consider a discipline implementing the function :math:`y=a+b`
-discipline = create_discipline("AnalyticDiscipline", expressions_dict={"y": "a*b"})
+discipline = create_discipline("AnalyticDiscipline", expressions={"y": "a*b"})
 
 #######################################################################################
 # where :math:`a,b\in\{1,2,\ldots,10\}`:

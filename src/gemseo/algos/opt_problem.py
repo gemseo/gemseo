@@ -104,7 +104,7 @@ from gemseo.core.mdofunctions.mdo_function import (
 )
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.py23_compat import PY3, string_array, string_types
@@ -1753,8 +1753,8 @@ class OptimizationProblem(object):
         sizes = self.design_space.variables_sizes
         inputs_history = array(self.database.get_x_history())
         n_samples = inputs_history.shape[0]
-        inputs_history = DataConversion.array_to_dict(
-            inputs_history, inputs_names, sizes
+        inputs_history = split_array_to_dict_of_arrays(
+            inputs_history, sizes, inputs_names
         )
         for input_name, input_value in inputs_history.items():
             dataset.add_variable(input_name, input_value, input_group)
@@ -1805,8 +1805,8 @@ class OptimizationProblem(object):
             sizes.update({function_name: functions_history[-1].shape[1]})
 
         functions_history = concatenate(functions_history, axis=1)
-        functions_history = DataConversion.array_to_dict(
-            functions_history, outputs_names, sizes
+        functions_history = split_array_to_dict_of_arrays(
+            functions_history, sizes, outputs_names
         )
         for output_name, output_value in functions_history.items():
             dataset.add_variable(
@@ -1838,8 +1838,8 @@ class OptimizationProblem(object):
 
             if gradients_history:
                 gradients_history = concatenate(gradients_history, axis=1)
-                gradients_history = DataConversion.array_to_dict(
-                    gradients_history, gradients_names, sizes
+                gradients_history = split_array_to_dict_of_arrays(
+                    gradients_history, sizes, gradients_names
                 )
                 for gradient_name, gradient_value in gradients_history.items():
                     dataset.add_variable(

@@ -41,7 +41,10 @@ from scipy.optimize import root
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    update_dict_of_arrays_from_array,
+)
 
 # from gemseo.core.parallel_execution import DisciplinesParallelExecution
 LOGGER = logging.getLogger(__name__)
@@ -413,7 +416,7 @@ class MDAQuasiNewton(MDARoot):
             """
             self.current_iter += 1
             # transform input vector into a dict
-            input_values = DataConversion.update_dict_from_array(
+            input_values = update_dict_of_arrays_from_array(
                 self.local_data, couplings, x_vect
             )
             # compute all residuals
@@ -446,7 +449,7 @@ class MDAQuasiNewton(MDARoot):
                     x_vect: The value of the design variables.
                 """
                 # transform input vector into a dict
-                input_values = DataConversion.update_dict_from_array(
+                input_values = update_dict_of_arrays_from_array(
                     self.local_data, couplings, x_vect
                 )
                 # linearize all residuals
@@ -468,7 +471,7 @@ class MDAQuasiNewton(MDARoot):
             jac = jacobian
 
         # initial solution
-        y_0 = DataConversion.dict_to_array(self.local_data, couplings).real
+        y_0 = concatenate_dict_of_arrays_to_array(self.local_data, couplings).real
         # callback function to retrieve the residual at iteration k
         norm_0 = norm(y_0.real)
         if self.reset_history_each_run:
@@ -502,7 +505,7 @@ class MDAQuasiNewton(MDARoot):
         self._warn_convergence_criteria(self.current_iter)
 
         # transform optimal vector into a dict
-        self.local_data = DataConversion.update_dict_from_array(
+        self.local_data = update_dict_of_arrays_from_array(
             self.local_data, couplings, y_opt.x
         )
         return self.local_data

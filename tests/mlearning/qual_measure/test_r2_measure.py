@@ -25,15 +25,15 @@ from __future__ import division, unicode_literals
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
-MODEL = AnalyticDiscipline(expressions_dict={"y": "1+x+x**2"})
+MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
 
 TOL_DEG_1 = 0.1

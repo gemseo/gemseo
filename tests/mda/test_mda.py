@@ -28,11 +28,11 @@ import os
 import numpy as np
 import pytest
 
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
@@ -131,7 +131,7 @@ def test_weak_strong_coupling_mda_jac():
 
 
 def analytic_disciplines_from_desc(descriptions):
-    return [AnalyticDiscipline(expressions_dict=desc) for desc in descriptions]
+    return [AnalyticDiscipline(desc) for desc in descriptions]
 
 
 @pytest.mark.parametrize(

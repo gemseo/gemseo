@@ -27,10 +27,10 @@ import pytest
 from numpy import allclose, array, concatenate
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.parallel_execution import IS_WIN, DiscParallelExecution
-from gemseo.core.surrogate_disc import SurrogateDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegression
 
 LEARNING_SIZE = 9
@@ -39,8 +39,9 @@ LEARNING_SIZE = 9
 @pytest.fixture
 def dataset():
     """Dataset from a R^2 -> R^2 function sampled over [0,1]^2."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline(
+        {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}, name="func"
+    )
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)

@@ -30,9 +30,9 @@ from numpy import arange, array, atleast_2d, hstack, ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_dataset
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import (
     create_classification_model,
     create_clustering_model,
@@ -69,8 +69,7 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 @pytest.fixture
 def dataset():  # type: (...) -> Dataset
     """The dataset used to train the machine learning algorithms."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)

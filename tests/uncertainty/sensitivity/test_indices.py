@@ -33,9 +33,9 @@ from numpy.testing import assert_array_equal
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
@@ -51,8 +51,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture
 def discipline():  # type: (...) -> AnalyticDiscipline
     """Return a discipline of interest."""
-    expressions = {"out": "x1+2*x2+3*x3"}
-    return create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
 @pytest.fixture

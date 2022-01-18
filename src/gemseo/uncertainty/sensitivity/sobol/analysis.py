@@ -121,7 +121,7 @@ from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.uncertainty.sensitivity.analysis import IndicesType, SensitivityAnalysis
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
@@ -137,7 +137,7 @@ class SobolAnalysis(SensitivityAnalysis):
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
@@ -248,13 +248,14 @@ class SobolAnalysis(SensitivityAnalysis):
             method = "getFirstOrderIndices"
         else:
             method = "getTotalOrderIndices"
-        array_to_dict = DataConversion.array_to_dict
         inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
         sizes = self.dataset.sizes
         indices = {}
         for name in self.__sobol:
             indices[name] = [
-                array_to_dict(array(getattr(sobol, method)()), inputs_names, sizes)
+                split_array_to_dict_of_arrays(
+                    array(getattr(sobol, method)()), sizes, inputs_names
+                )
                 for sobol in self.__sobol[name]
             ]
         return indices
@@ -321,7 +322,6 @@ class SobolAnalysis(SensitivityAnalysis):
                     ]
                 }
         """
-        array_to_dict = DataConversion.array_to_dict
         inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
         sizes = self.dataset.sizes
         intervals = {}
@@ -334,8 +334,12 @@ class SobolAnalysis(SensitivityAnalysis):
                     interval = sobol.getTotalOrderIndicesInterval()
                 lower_bound = array(interval.getLowerBound())
                 upper_bound = array(interval.getUpperBound())
-                lower_bound = array_to_dict(lower_bound, inputs_names, sizes)
-                upper_bound = array_to_dict(upper_bound, inputs_names, sizes)
+                lower_bound = split_array_to_dict_of_arrays(
+                    lower_bound, sizes, inputs_names
+                )
+                upper_bound = split_array_to_dict_of_arrays(
+                    upper_bound, sizes, inputs_names
+                )
                 intervals[output_name].append(
                     {
                         name: array([lower_bound[name][0], upper_bound[name][0]])

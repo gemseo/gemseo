@@ -27,12 +27,12 @@ import sympy
 from numpy import array
 from packaging import version
 
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 
 
 @pytest.fixture
-def expressions_dict():
+def expressions():
     # string expressions
     expr_dict = {"y_1": "2*x**2", "y_2": "3*x**2+5+z**3"}
     # SymPy expression
@@ -45,30 +45,27 @@ def expressions_dict():
     return expr_dict
 
 
-def test_fast_expression_evaluation(expressions_dict):
-    disc = AnalyticDiscipline("analytic", expressions_dict)
+def test_fast_expression_evaluation(expressions):
+    disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
     disc.check_jacobian(
         input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
     )
 
 
-def test_standard_expression_evaluation(expressions_dict):
-    disc = AnalyticDiscipline("analytic", expressions_dict, fast_evaluation=False)
+def test_standard_expression_evaluation(expressions):
+    disc = AnalyticDiscipline(expressions, fast_evaluation=False)
     input_data = {"x": array([1.0]), "z": array([1.0])}
     disc.check_jacobian(
         input_data, derr_approx=disc.FINITE_DIFFERENCES, step=1e-5, threshold=1e-3
     )
 
 
-def test_failure_with_malformed_expressions_dict():
-    with pytest.raises(TypeError):
-        AnalyticDiscipline("analytic", {"y": MDOScenario})
-
-
-def test_failure_when_expressions_dict_is_not_a_dict():
-    with pytest.raises(ValueError):
-        AnalyticDiscipline("analytic", None)
+def test_failure_with_malformed_expressions():
+    with pytest.raises(
+        TypeError, match="Expression must be a SymPy expression or a string."
+    ):
+        AnalyticDiscipline({"y": MDOScenario})
 
 
 @pytest.mark.skipif(
@@ -79,7 +76,7 @@ def test_failure_for_log_zero_without_fast_evaluation():
     # For sympy 1.8.0 and higher,
     # sympy.parsing.sympy_parser.parse_expr("log(x)").evalf(subs={"x":0.0})
     # returns -oo which is converted into the float -inf."""
-    disc = AnalyticDiscipline("analytic", {"y": "log(x)"}, fast_evaluation=False)
+    disc = AnalyticDiscipline({"y": "log(x)"}, fast_evaluation=False)
     input_data = {"x": array([0.0])}
     with pytest.raises(TypeError):
         disc.execute(input_data)

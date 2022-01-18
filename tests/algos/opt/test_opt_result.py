@@ -26,8 +26,8 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.string_tools import MultiLineString
 
 
@@ -72,7 +72,7 @@ def optimization_result():  # type: (...) -> OptimizationResult
     space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
     space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
     disc = AnalyticDiscipline(
-        expressions_dict={
+        {
             "y": "x",
             "eq_1": "x",
             "eq_2": "x",

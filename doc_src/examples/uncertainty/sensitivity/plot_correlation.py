@@ -48,7 +48,7 @@ expressions = {
     "y2": "sin(x2)+7*sin(x1)**2+0.1*x3**4*sin(x2)",
 }
 discipline = create_discipline(
-    "AnalyticDiscipline", expressions_dict=expressions, name="Ishigami2"
+    "AnalyticDiscipline", expressions=expressions, name="Ishigami2"
 )
 
 #######################################################################################

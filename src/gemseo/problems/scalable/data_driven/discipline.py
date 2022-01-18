@@ -58,7 +58,7 @@ import logging
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -112,8 +112,8 @@ class ScalableDiscipline(MDODiscipline):
         jac = self.scalable_model.scalable_derivatives(self.local_data)
         inputs_names = self.scalable_model.inputs_names
         jac = {
-            fname: DataConversion.array_to_dict(
-                jac[fname], inputs_names, self.scalable_model.sizes
+            fname: split_array_to_dict_of_arrays(
+                jac[fname], self.scalable_model.sizes, inputs_names
             )
             for fname in self.get_output_data_names()
         }

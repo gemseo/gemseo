@@ -64,7 +64,7 @@ aero_formulas = {
     "lift": "(sweep + 0.2*thick_airfoils-2.*displ)/3000.",
 }
 aerodynamics = create_discipline(
-    "AnalyticDiscipline", name="Aerodynamics", expressions_dict=aero_formulas
+    "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
 )
 struc_formulas = {
     "mass": "4000*(sweep/360)**3 + 200000 + " + "100*thick_panels +200.0*forces",
@@ -72,11 +72,11 @@ struc_formulas = {
     "displ": "2*sweep + 3*thick_panels-2.*forces",
 }
 structure = create_discipline(
-    "AnalyticDiscipline", name="Structure", expressions_dict=struc_formulas
+    "AnalyticDiscipline", name="Structure", expressions=struc_formulas
 )
 mission_formulas = {"range": "8e11*lift/(mass*drag)"}
 mission = create_discipline(
-    "AnalyticDiscipline", name="Mission", expressions_dict=mission_formulas
+    "AnalyticDiscipline", name="Mission", expressions=mission_formulas
 )
 
 disciplines = [aerodynamics, structure, mission]

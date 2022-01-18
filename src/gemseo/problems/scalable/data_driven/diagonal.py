@@ -58,7 +58,7 @@ from past.utils import old_div
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.scalable.data_driven.model import ScalableModel
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.py23_compat import Path
 
@@ -146,9 +146,10 @@ class ScalableDiagonalModel(ScalableModel):
         :return: evaluation of the scalable functions.
         :rtype: dict
         """
-        dict_to_array = DataConversion.dict_to_array
         input_value = input_value or self.default_inputs
-        input_value = dict_to_array(input_value, self.inputs_names)
+        input_value = concatenate_dict_of_arrays_to_array(
+            input_value, self.inputs_names
+        )
         scal_func = self.model.get_scalable_function
         return {fname: scal_func(fname)(input_value) for fname in self.outputs_names}
 
@@ -160,9 +161,10 @@ class ScalableDiagonalModel(ScalableModel):
         :return: evaluation of the scalable derivatives.
         :rtype: dict
         """
-        dict_to_array = DataConversion.dict_to_array
         input_value = input_value or self.default_inputs
-        input_value = dict_to_array(input_value, self.inputs_names)
+        input_value = concatenate_dict_of_arrays_to_array(
+            input_value, self.inputs_names
+        )
         scal_der = self.model.get_scalable_derivative
         return {fname: scal_der(fname)(input_value) for fname in self.outputs_names}
 
@@ -627,7 +629,7 @@ class ScalableDiagonalApproximation(object):
             input_name: dep_mat[0:output_size, 0 : self.sizes[input_name]]
             for (input_name, dep_mat) in self.io_dependency[function_name].items()
         }
-        io_dependency = DataConversion.dict_to_array(io_dependency, input_names)
+        io_dependency = concatenate_dict_of_arrays_to_array(io_dependency, input_names)
 
         # Convert the input-output dependency matrix to a list
         # where the i-th element is a list whose j-th element corresponds to

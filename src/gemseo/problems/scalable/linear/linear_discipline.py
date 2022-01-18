@@ -22,7 +22,10 @@ from numpy import ones
 from numpy.random import rand
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 
 
 class LinearDiscipline(MDODiscipline):
@@ -74,12 +77,12 @@ class LinearDiscipline(MDODiscipline):
         self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
 
     def _run(self):  # type: (...) -> None
-        in_array = DataConversion.dict_to_array(self.local_data, self.input_names)
+        in_array = concatenate_dict_of_arrays_to_array(
+            self.local_data, self.input_names
+        )
         out_array = self.mat.dot(in_array)
-        out_dict = DataConversion.array_to_dict(
-            out_array,
-            self.output_names,
-            self.__sizes_d,
+        out_dict = split_array_to_dict_of_arrays(
+            out_array, self.__sizes_d, self.output_names
         )
         self.local_data.update(out_dict)
 
@@ -88,6 +91,6 @@ class LinearDiscipline(MDODiscipline):
         inputs=None,  # type: Optional[Sequence[str]]
         outputs=None,  # type: Optional[Sequence[str]]
     ):  # type: (...) -> None
-        self.jac = DataConversion.jac_2dmat_to_dict(
-            self.mat, self.output_names, self.input_names, self.__sizes_d
+        self.jac = split_array_to_dict_of_arrays(
+            self.mat, self.__sizes_d, self.output_names, self.input_names
         )

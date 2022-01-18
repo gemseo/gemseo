@@ -35,10 +35,10 @@ from numpy import arange, array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.surrogate_disc import SurrogateDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.rbf import RBFRegression
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
@@ -57,7 +57,7 @@ def dataset_factory(dataset_name, expressions, design_space_variables, objective
             variables names to bounds to be passed to DesignSpace.add_variable.
         objective_name (str): The name of the objective variable.
     """
-    discipline = AnalyticDiscipline("func", expressions)
+    discipline = AnalyticDiscipline(expressions)
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)

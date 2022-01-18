@@ -91,7 +91,10 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
 
@@ -211,7 +214,7 @@ class MLSupervisedAlgo(MLAlgo):
                 """
                 as_dict = isinstance(input_data, dict)
                 if as_dict:
-                    input_data = DataConversion.dict_to_array(
+                    input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
                     )
                 output_data = predict(self, input_data, *args, **kwargs)
@@ -396,8 +399,8 @@ class MLSupervisedAlgo(MLAlgo):
             input_data = input_data[indices]
             output_data = output_data[indices]
 
-        self.input_space_center = DataConversion.array_to_dict(
-            input_data.mean(0), self.input_names, self.learning_set.sizes
+        self.input_space_center = split_array_to_dict_of_arrays(
+            input_data.mean(0), self.learning_set.sizes, self.input_names
         )
 
         if input_grp in self.transformer:

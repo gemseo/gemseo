@@ -41,9 +41,9 @@ The following example is used to illustrate these features:
 
     from gemseo.api import create_discipline
 
-    disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions_dict={'y0':'x0+y1+y2'})
-    disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions_dict={'y1':'x0+x1+y2'})
-    disc2 = create_discipline('AnalyticDiscipline', name='D2', expressions_dict={'y2':'x0+x2+y1'})
+    disc0 = create_discipline('AnalyticDiscipline', name='D0', expressions={'y0':'x0+y1+y2'})
+    disc1 = create_discipline('AnalyticDiscipline', name='D1', expressions={'y1':'x0+x1+y2'})
+    disc2 = create_discipline('AnalyticDiscipline', name='D2', expressions={'y2':'x0+x2+y1'})
     disciplines = [disc0, disc1, disc2]
 
 where the disciplines D1 and D2 are strongly coupled

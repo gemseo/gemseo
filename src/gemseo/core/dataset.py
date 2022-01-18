@@ -81,7 +81,10 @@ from six import string_types
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractFullCache
 from gemseo.post.dataset.factory import DatasetPlotFactory
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 from gemseo.utils.py23_compat import long
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
@@ -529,8 +532,7 @@ class Dataset(object):
         if self._group:
             self.data[group] = data
         else:
-            array_to_dict = DataConversion.array_to_dict
-            self.data.update(array_to_dict(data, variables, sizes))
+            self.data.update(split_array_to_dict_of_arrays(data, sizes, variables))
 
     def __set_variable_data(
         self,
@@ -1006,13 +1008,13 @@ class Dataset(object):
         if group in self.data:
             data = self.data[group]
             if as_dict:
-                data = DataConversion.array_to_dict(
-                    self.data[group], self._names[group], self.sizes
+                data = split_array_to_dict_of_arrays(
+                    self.data[group], self.sizes, self._names[group]
                 )
         else:
             data = {name: self.data[name] for name in self._names[group]}
             if not as_dict:
-                data = DataConversion.dict_to_array(data, self._names[group])
+                data = concatenate_dict_of_arrays_to_array(data, self._names[group])
         return data
 
     def get_data_by_names(
@@ -1031,7 +1033,6 @@ class Dataset(object):
         """
         if isinstance(names, string_types):
             names = [names]
-        dict_to_array = DataConversion.dict_to_array
         if not self._group:
             data = {name: self.data.get(name) for name in names}
         else:
@@ -1043,7 +1044,7 @@ class Dataset(object):
                 )
                 data[name] = self.data[self._groups[name]][:, indices]
         if not as_dict:
-            data = dict_to_array(data, names)
+            data = concatenate_dict_of_arrays_to_array(data, names)
         return data
 
     def get_all_data(self, by_group=True, as_dict=False):  # type: (...) -> AllDataType

@@ -64,8 +64,8 @@ configure_logger()
 # we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
-expressions_dict = {"y": "sin(x)-exp(x)"}
-discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions_dict)
+expressions = {"y": "sin(x)-exp(x)"}
+discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
 #############################################################################
 # Now, we can to minimize this :class:`.MDODiscipline` over a design space,

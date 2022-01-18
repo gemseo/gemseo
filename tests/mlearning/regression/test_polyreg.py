@@ -27,9 +27,9 @@ from numpy import allclose, array, hstack, linspace, meshgrid, sqrt, zeros
 from scipy.special import comb
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 
@@ -85,12 +85,13 @@ def dataset():
 @pytest.fixture
 def dataset_from_cache():  # type: (...) -> Dataset
     """The dataset used to train the regression algorithms."""
-    expressions_dict = {
-        "y_1": "1 + x_1 + x_2**2",
-        "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
-        "y_3": "10*x_1*x_2**2 + 7*x_2**5",
-    }
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline(
+        {
+            "y_1": "1 + x_1 + x_2**2",
+            "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
+            "y_3": "10*x_1*x_2**2 + 7*x_2**5",
+        }
+    )
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_2", l_b=-1, u_b=2)

@@ -31,7 +31,7 @@ from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnaly
 def test_correlation(tmp_path):
     expressions = {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     varnames = ["x1", "x2"]
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     for name in varnames:
         space.add_random_variable(name, "OTNormalDistribution")
@@ -61,7 +61,7 @@ def test_correlation(tmp_path):
 def test_correlation_outputs(tmp_path):
     expressions = {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     varnames = ["x1", "x2"]
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     for variable in varnames:
         space.add_random_variable(variable, "OTUniformDistribution")

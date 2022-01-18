@@ -51,7 +51,7 @@ def morris():
     """Morris analysis for the Ishigami function."""
     discipline = create_discipline(
         "AnalyticDiscipline",
-        expressions_dict=FUNCTION["expression"],
+        expressions=FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
@@ -159,7 +159,7 @@ def test_morris_sort_parameters(morris, output, expected):
 def test_morris_with_bad_input_dimension():
     """Check that a ValueError is raised if an input dimension is not equal to 1."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable(
         "x1", "OTUniformDistribution", minimum=-pi, maximum=pi, size=2
@@ -172,7 +172,7 @@ def test_morris_with_bad_input_dimension():
 def test_morris_with_nsamples():
     """Check the number of replicates when the number of samples is specified."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
     space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
@@ -189,7 +189,7 @@ def test_morris_outputs_bounds(morris, output):
 def oat():
     """A OAT discipline."""
     expressions = {"y1": "x1+x2", "y2": "x1-x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_variable("x1", l_b=-1.0, u_b=1.0)
     space.add_variable("x2", l_b=-1.0, u_b=1.0)
@@ -235,7 +235,7 @@ def test_oat_bounds(oat):
 def test_oat_with_wrong_step(step):
     """Check that a ValueError is raised when the step is not in ]0,0.5[."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions_dict=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
     space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
     space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
@@ -252,7 +252,7 @@ def test_oat_with_wrong_step(step):
 def test_normalize(morris):
     discipline = create_discipline(
         "AnalyticDiscipline",
-        expressions_dict=FUNCTION["expression"],
+        expressions=FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 

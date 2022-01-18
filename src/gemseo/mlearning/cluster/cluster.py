@@ -46,7 +46,7 @@ from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSavedObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.unsupervised import MLUnsupervisedAlgo
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 
@@ -128,7 +128,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """
         as_dict = isinstance(data, dict)
         if as_dict:
-            data = DataConversion.dict_to_array(data, self.var_names)
+            data = concatenate_dict_of_arrays_to_array(data, self.var_names)
         single_sample = len(data.shape) == 1
         data = atleast_2d(data)
         parameters = self.learning_set.DEFAULT_GROUP
@@ -183,7 +183,7 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
         """
         as_dict = isinstance(data, dict)
         if as_dict:
-            data = DataConversion.dict_to_array(data, self.var_names)
+            data = concatenate_dict_of_arrays_to_array(data, self.var_names)
         single_sample = len(data.shape) == 1
         data = atleast_2d(data)
         probas = self._predict_proba(atleast_2d(data), hard)

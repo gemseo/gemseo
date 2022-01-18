@@ -110,7 +110,7 @@ from sklearn.gaussian_process.kernels import Matern
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType, TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 LOGGER = logging.getLogger(__name__)
 
@@ -221,7 +221,9 @@ class GaussianProcessRegression(MLRegressionAlgo):
         """
         as_dict = isinstance(input_data, dict)
         if as_dict:
-            input_data = DataConversion.dict_to_array(input_data, self.input_names)
+            input_data = concatenate_dict_of_arrays_to_array(
+                input_data, self.input_names
+            )
         input_data = atleast_2d(input_data)
         inputs = self.learning_set.INPUT_GROUP
         if inputs in self.transformer:

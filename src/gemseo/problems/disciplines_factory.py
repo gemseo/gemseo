@@ -50,7 +50,12 @@ class DisciplinesFactory(object):
         Searches in "GEMSEO_PATH" and :doc:`gemseo.problems`.
         """
         # Defines the benchmark problems to be imported
-        internal_modules_paths = ("gemseo.problems", "gemseo.core", "gemseo.wrappers")
+        internal_modules_paths = (
+            "gemseo.problems",
+            "gemseo.core",
+            "gemseo.disciplines",
+            "gemseo.wrappers",
+        )
         self.factory = Factory(MDODiscipline, internal_modules_paths)
 
         base_gram_path = join(

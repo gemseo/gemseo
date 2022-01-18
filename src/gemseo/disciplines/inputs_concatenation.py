@@ -18,30 +18,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Concatenation of several input variables into a single one.
+"""The concatenation of several input variables into a single one."""
 
-The :class:`.ConcatenationDiscipline` enables to concatenate inputs variables into a
-single output variable.
-
-Example:
-
-    This example demonstrates the use of the :class:`.ConcatenationDiscipline`
-    instances.
-    The contraints variables :math:`c_1` and :math:`c_2` are concatenated into a
-    single variable :math:`c`.
-
-        >>> from gemseo.api import create_discipline
-        >>> sellar_system_disc = create_discipline('SellarSystem')
-        >>> input_vars = ['c1', 'c2']
-        >>> output_var = ['c']
-        >>> concatenation_disc = create_discipline('ConcatenationDiscipline',
-        ...                                         input_vars,
-        ...                                         output_var)
-        >>> disciplines = [sellar_system_disc, concatenation_disc]
-        >>> chain = create_discipline('MDOChain', disciplines=disciplines)
-        >>> print(chain.execute())
-        >>> print(chain.linearize(force_all=True))
-"""
 from typing import Optional, Sequence
 
 from numpy import diag, ones, zeros
@@ -51,13 +29,28 @@ from gemseo.utils.py23_compat import accumulate
 
 
 class ConcatenationDiscipline(MDODiscipline):
-    """Concatenate input variables into a single output variable."""
+    """Concatenate input variables into a single output variable.
+
+    Example:
+        >>> from gemseo.api import create_discipline
+        >>> sellar_system_disc = create_discipline('SellarSystem')
+        >>> constraints_names = ['c1', 'c2']
+        >>> output_name = ['c']
+        >>> concatenation_disc = create_discipline(
+        ...     'ConcatenationDiscipline', constraints_names, output_name
+        ... )
+        >>> disciplines = [sellar_system_disc, concatenation_disc]
+        >>> chain = create_discipline('MDOChain', disciplines=disciplines)
+        >>> print(chain.execute())
+        >>> print(chain.linearize(force_all=True))
+    """
 
     def __init__(
         self,
         input_variables,  # type: Sequence[str]
         output_variable,  # type: str
     ):  # type: (...) -> None
+        # noqa: D205 D212 D415
         """
         Args:
             input_variables: The input variables to concatenate.

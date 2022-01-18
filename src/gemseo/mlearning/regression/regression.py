@@ -71,7 +71,10 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):
@@ -151,7 +154,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 """
                 as_dict = isinstance(input_data, dict)
                 if as_dict:
-                    input_data = DataConversion.dict_to_array(
+                    input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
                     )
                 single_sample = len(input_data.shape) == 1
@@ -159,12 +162,12 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 if as_dict:
                     varsizes = self.learning_set.sizes
                     if single_sample:
-                        jacobians = DataConversion.jac_2dmat_to_dict(
-                            jacobians, self.output_names, self.input_names, varsizes
+                        jacobians = split_array_to_dict_of_arrays(
+                            jacobians, varsizes, self.output_names, self.input_names
                         )
                     else:
-                        jacobians = DataConversion.jac_3dmat_to_dict(
-                            jacobians, self.output_names, self.input_names, varsizes
+                        jacobians = split_array_to_dict_of_arrays(
+                            jacobians, varsizes, self.output_names, self.input_names
                         )
                 return jacobians
 
