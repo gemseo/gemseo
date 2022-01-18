@@ -33,7 +33,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 N_CPUS = cpu_count()
@@ -269,7 +269,7 @@ class MDAJacobi(MDA):
         if len(self._dx_n) > 3:  # Forget too old stuff
             self._dx_n = self._dx_n[-3:]
             self._g_x_n = self._g_x_n[-3:]
-        new_c = DataConversion.array_to_dict(x_np1, coupl_names, self.sizes)
+        new_c = split_array_to_dict_of_arrays(x_np1, self.sizes, coupl_names)
         self.local_data.update(new_c)
         return x_np1
 

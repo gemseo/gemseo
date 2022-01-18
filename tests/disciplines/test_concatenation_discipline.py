@@ -26,7 +26,7 @@ from numpy import array, concatenate, diag, ndarray, ones, zeros
 from numpy.testing import assert_array_equal
 
 from gemseo.api import create_discipline
-from gemseo.core.concatenation_discipline import ConcatenationDiscipline
+from gemseo.disciplines.inputs_concatenation import ConcatenationDiscipline
 
 
 @pytest.fixture()

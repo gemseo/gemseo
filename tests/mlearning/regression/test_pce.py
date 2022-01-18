@@ -27,9 +27,9 @@ from numpy import allclose, array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.pce import PCERegression
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 
@@ -39,8 +39,7 @@ LEARNING_SIZE = 9
 @pytest.fixture
 def discipline():  # type: (...) -> AnalyticDiscipline
     """Discipline from R^2 to R^2."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    return AnalyticDiscipline("func", expressions_dict)
+    return AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
 
 
 @pytest.fixture

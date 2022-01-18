@@ -26,8 +26,8 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline, create_scenario
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -168,7 +168,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario):
 
 def test_warning_when_missing_option(caplog):
     """Check that a warning is correctly logged when an option is unknown."""
-    discipline = AnalyticDiscipline(name="func", expressions_dict={"y": "2*x"})
+    discipline = AnalyticDiscipline({"y": "2*x"}, name="func")
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)

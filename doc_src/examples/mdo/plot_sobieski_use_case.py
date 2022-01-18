@@ -68,11 +68,10 @@ from gemseo.api import (
     configure_logger,
     create_discipline,
     create_scenario,
-    get_all_inputs,
-    get_all_outputs,
     get_available_formulations,
 )
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
 from gemseo.problems.sobieski.core import SobieskiProblem
 
 configure_logger()
@@ -160,7 +159,7 @@ get_available_formulations()
 # - :math:`y\_4` corresponds to the :code:`objective_name`. This name must be one
 #   of the disciplines outputs, here the "SobieskiMission" discipline. The list of
 #   all outputs of the disciplines can be obtained by using
-#   :meth:`~gemseo.api.get_all_outputs`:
+#   :meth:`~gemseo.disciplines.utils.get_all_outputs`:
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 ##############################################################################
@@ -211,7 +210,7 @@ scenario.set_differentiation_method("user")
 #
 # Similarly to the objective function, the constraints names are a subset
 # of the disciplines' outputs. They can be obtained by using
-# :meth:`~gemseo.api.get_all_outputs`.
+# :meth:`~gemseo.disciplines.utils.get_all_outputs`.
 #
 # The formulation has a powerful feature to automatically dispatch the constraints
 # (:math:`g\_1, g\_2, g\_3`) and plug them to the optimizers depending on

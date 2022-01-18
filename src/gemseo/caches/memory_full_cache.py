@@ -28,7 +28,7 @@ from __future__ import division, unicode_literals
 import logging
 
 from gemseo.core.cache import AbstractFullCache
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
 
@@ -137,7 +137,7 @@ class MemoryFullCache(AbstractFullCache):
         """
         result = self._data[group_number].get(group_name)
         if group_name == self.JACOBIAN_GROUP and result is not None:
-            result = DataConversion.dict_to_jac_dict(result)
+            result = nest_flat_bilevel_dict(result, separator=self._JACOBIAN_SEPARATOR)
         return result
 
     def _write_data(self, values, names, var_group, sample_id):

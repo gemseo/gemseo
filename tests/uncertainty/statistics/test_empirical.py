@@ -25,16 +25,14 @@ import pytest
 from numpy import allclose, array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 
 
 @pytest.fixture(scope="module")
 def dataset():
-    discipline = AnalyticDiscipline(
-        expressions_dict={"obj": "x_1+x_2", "cstr": "x_1-x_2"}
-    )
+    discipline = AnalyticDiscipline({"obj": "x_1+x_2", "cstr": "x_1-x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", 1, "float", 1.0, 10.0, 5.0)

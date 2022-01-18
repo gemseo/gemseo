@@ -27,7 +27,10 @@ from numpy import atleast_1d
 
 from gemseo.algos.aggregation.core import iks_agg, iks_agg_jac, ks_agg, ks_agg_jac
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 
 METHODS_MAP = {"KS": ks_agg, "IKS": iks_agg}
 METHODS_JAC_MAP = {"KS": ks_agg_jac, "IKS": iks_agg_jac}
@@ -84,12 +87,14 @@ class ConstrAggegationDisc(MDODiscipline):
         self.output_grammar.initialize_from_data_names(self.__output_names)
 
     def _run(self):  # type: (...) -> None
-        c_data = DataConversion.dict_to_array(self.local_data, self.__input_names)
+        c_data = concatenate_dict_of_arrays_to_array(
+            self.local_data, self.__input_names
+        )
         method = METHODS_MAP[self.__method_name]
         c_agg = atleast_1d(method(c_data, **self.__meth_options))
 
-        out_data = DataConversion.array_to_dict(
-            c_agg, self.__output_names, self.__out_sizes
+        out_data = split_array_to_dict_of_arrays(
+            c_agg, self.__out_sizes, self.__output_names
         )
         self.store_local_data(**out_data)
 
@@ -98,12 +103,14 @@ class ConstrAggegationDisc(MDODiscipline):
         inputs=None,  # type: Optional[Sequence[str]]
         outputs=None,  # type: Optional[Sequence[str]]
     ):  # type: (...) -> None
-        c_data = DataConversion.dict_to_array(self.local_data, self.__input_names)
+        c_data = concatenate_dict_of_arrays_to_array(
+            self.local_data, self.__input_names
+        )
         method_jac = METHODS_JAC_MAP[self.__method_name]
         c_agg_jac = method_jac(c_data, **self.__meth_options)
 
         data_sizes = {k: s.size for k, s in self.local_data.items()}
         data_sizes.update(self.__out_sizes)
-        self.jac = DataConversion.jac_2dmat_to_dict(
-            c_agg_jac, self.__output_names, self.__input_names, data_sizes
+        self.jac = split_array_to_dict_of_arrays(
+            c_agg_jac, data_sizes, self.__output_names, self.__input_names
         )

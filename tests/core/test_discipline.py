@@ -28,12 +28,12 @@ import pytest
 from numpy import array, complex128, ndarray
 
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.core.auto_py_discipline import AutoPyDiscipline
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,

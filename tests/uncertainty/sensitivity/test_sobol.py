@@ -40,7 +40,7 @@ def test_sobol(tmp_path):
     expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
     varnames = ["x1", "x2", "x3"]
     discipline = create_discipline(
-        "AnalyticDiscipline", expressions_dict=expressions, name="Ishigami"
+        "AnalyticDiscipline", expressions=expressions, name="Ishigami"
     )
     space = ParameterSpace()
     for name in varnames:
@@ -108,7 +108,7 @@ def test_sobol_outputs(tmp_path):
     }
     varnames = ["x1", "x2", "x3"]
     discipline = create_discipline(
-        "AnalyticDiscipline", expressions_dict=expressions, name="Ishigami2"
+        "AnalyticDiscipline", expressions=expressions, name="Ishigami2"
     )
     space = ParameterSpace()
     for variable in varnames:

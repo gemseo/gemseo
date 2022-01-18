@@ -43,7 +43,10 @@ from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    update_dict_of_arrays_from_array,
+)
 
 
 class TestMdofunction(unittest.TestCase):
@@ -340,21 +343,21 @@ class TestMdofunctiongenerator(unittest.TestCase):
         """"""
         x = np.zeros(2)
         d = {"x": x}
-        out_d = DataConversion.update_dict_from_array(d, data_names=[], values_array=x)
+        out_d = update_dict_of_arrays_from_array(d, [], x)
         assert (out_d["x"] == x).all()
 
         args = [d, ["x"], np.ones(4)]
-        self.assertRaises(Exception, DataConversion.update_dict_from_array, *args)
+        self.assertRaises(Exception, update_dict_of_arrays_from_array, *args)
         args = [d, ["x"], np.ones(1)]
-        self.assertRaises(Exception, DataConversion.update_dict_from_array, *args)
+        self.assertRaises(Exception, update_dict_of_arrays_from_array, *args)
 
     def test_get_values_array_from_dict(self):
         """"""
         x = np.zeros(2)
         data_dict = {"x": x}
-        out_x = DataConversion.dict_to_array(data_dict, data_names=["x"])
+        out_x = concatenate_dict_of_arrays_to_array(data_dict, ["x"])
         assert (out_x == x).all()
-        out_x = DataConversion.dict_to_array(data_dict, data_names=[])
+        out_x = concatenate_dict_of_arrays_to_array(data_dict, [])
         assert out_x.size == 0
 
     def test_get_function(self):

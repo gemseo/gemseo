@@ -26,12 +26,12 @@ import pytest
 from numpy import allclose, array, array_equal, ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.gpr import GaussianProcessRegression
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 LEARNING_SIZE = 9
 
@@ -39,8 +39,7 @@ LEARNING_SIZE = 9
 @pytest.fixture
 def dataset():  # type: (...) -> Dataset
     """The dataset used to train the regression algorithms."""
-    expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-    discipline = AnalyticDiscipline("func", expressions_dict)
+    discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
     design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
@@ -103,7 +102,7 @@ def test_predict_std_input_array(model):
     """Test std prediction when the input data is an array."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
-    input_value = DataConversion.dict_to_array(input_value, model.input_names)
+    input_value = concatenate_dict_of_arrays_to_array(input_value, model.input_names)
     assert array_equal(model.predict_std(input_value), prediction_std)
 
 

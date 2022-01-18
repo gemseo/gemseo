@@ -21,14 +21,17 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import division, unicode_literals
 
+import re
+
 import pytest
 from numpy import array, ones, zeros
 from scipy.optimize import rosen, rosen_der
+from six import PY2
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_design_space, create_mda, create_scenario, execute_algo
-from gemseo.core.auto_py_discipline import AutoPyDiscipline, to_arrays_dict
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.disciplines.auto_py import AutoPyDiscipline, to_arrays_dict
 from gemseo.utils.py23_compat import Path
 
 
@@ -106,14 +109,23 @@ def test_mda():
 def test_fail_wrongly_formatted_function():
     """Test that a wrongly formatted function cannot be used."""
     AutoPyDiscipline(f3)
-    with pytest.raises(ValueError):
+    if PY2:
+        msg = "(u'y', u'x') != (u'y',)."
+    else:
+        msg = "('y', 'x') != ('y',)."
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Inconsistent definition of return statements in function: " + msg
+        ),
+    ):
         AutoPyDiscipline(f4)
 
 
 def test_fail_not_a_python_function():
     """Test the failure if a Python function is not provided."""
     not_a_function = 2
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="py_func must be callable."):
         AutoPyDiscipline(not_a_function)
 
 
@@ -138,7 +150,7 @@ def test_jac_pb():
     assert fopt_ref == scn_opt
 
     auto_rosen = AutoPyDiscipline(rosen)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
         auto_rosen._compute_jacobian()
 
 

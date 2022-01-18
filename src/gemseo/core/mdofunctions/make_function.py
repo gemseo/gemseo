@@ -29,7 +29,10 @@ from typing import TYPE_CHECKING, Callable, Mapping, Sequence, Union
 from numpy import hstack, ndarray, reshape, vstack
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    update_dict_of_arrays_from_array,
+)
 
 if TYPE_CHECKING:
     from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
@@ -96,12 +99,10 @@ class MakeFunction(MDOFunction):
         defaults = self.__mdo_function.discipline.default_inputs
         if self.__default_inputs is not None:
             defaults.update(self.__default_inputs)
-        data = DataConversion.update_dict_from_array(
-            defaults, self.__input_names, x_vect
-        )
+        data = update_dict_of_arrays_from_array(defaults, self.__input_names, x_vect)
         self.__mdo_function.discipline.reset_statuses_for_run()
         computed_values = self.__mdo_function.discipline.execute(data)
-        values_array = DataConversion.dict_to_array(
+        values_array = concatenate_dict_of_arrays_to_array(
             computed_values, self.__output_names
         )
         if values_array.size == 1:  # Then the function is scalar
@@ -121,15 +122,13 @@ class MakeFunction(MDOFunction):
         """
         defaults = self.__mdo_function.discipline.default_inputs
         n_dv = len(x_vect)
-        data = DataConversion.update_dict_from_array(
-            defaults, self.__input_names, x_vect
-        )
+        data = update_dict_of_arrays_from_array(defaults, self.__input_names, x_vect)
         self.__mdo_function.discipline.linearize(data)
 
         grad_array = []
         for out_name in self.__output_names:
             jac_loc = self.__mdo_function.discipline.jac[out_name]
-            grad_loc = DataConversion.dict_to_array(jac_loc, self.__input_names)
+            grad_loc = concatenate_dict_of_arrays_to_array(jac_loc, self.__input_names)
             grad_output = hstack(grad_loc)
             if len(grad_output) > n_dv:
                 grad_output = reshape(grad_output, (grad_output.size // n_dv, n_dv))

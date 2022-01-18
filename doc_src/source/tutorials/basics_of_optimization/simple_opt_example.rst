@@ -40,7 +40,7 @@ In this subsection, we will see how to use **|g|** to solve this problem :math:`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
-we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.core.auto_py_discipline.AutoPyDiscipline` type
+we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.disciplines.autopy.AutoPyDiscipline` type
 from a python function:
 
 .. code::
@@ -204,7 +204,7 @@ from `scipy <https://www.scipy.org/>`_ called through the optimization interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :meth:`~gemseo.api.create_discipline` API function,
-we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.core.auto_py_discipline.AutoPyDiscipline` type
+we create a :class:`~gemseo.core.discipline.MDODiscipline` of :class:`~gemseo.disciplines.autopy.AutoPyDiscipline` type
 from a python function:
 
 .. code-block:: python

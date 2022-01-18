@@ -28,7 +28,7 @@ from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.disciplines.utils import get_all_inputs
 
 
 class DisciplinaryOpt(MDOFormulation):
@@ -82,6 +82,6 @@ class DisciplinaryOpt(MDOFormulation):
 
     def _filter_design_space(self):  # type: (...) -> None
         """Filter the design space to keep only available variables."""
-        all_inpts = DataConversion.get_all_inputs(self.get_top_level_disc())
+        all_inpts = get_all_inputs(self.get_top_level_disc())
         kept = set(self.design_space.variables_names) & set(all_inpts)
         self.design_space.filter(kept)

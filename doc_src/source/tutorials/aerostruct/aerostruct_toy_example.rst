@@ -20,7 +20,7 @@ This tutorial describes how to build and run a scalable problem by means of |g| 
 Creation of the disciplines
 ***************************
 
-In this tutorial, we are creating the disciplines from their analytic formulation using the :class:`~gemseo.core.analytic_discipline.AnalyticDiscipline` discipline class:
+In this tutorial, we are creating the disciplines from their analytic formulation using the :class:`~gemseo.disciplines.analytic.AnalyticDiscipline` discipline class:
 
 .. code::
 
@@ -37,16 +37,16 @@ In this tutorial, we are creating the disciplines from their analytic formulatio
                          "forces": "10*sweep + 0.2*thick_airfoils-0.2*displ",
                          "lift": "(sweep + 0.2*thick_airfoils-2.*displ)/3000."}
         aerodynamics = create_discipline("AnalyticDiscipline", name="Aerodynamics",
-                                         expressions_dict=aero_formulas)
+                                         expressions=aero_formulas)
         struc_formulas = {"mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels +200.0*forces",
                           "RF": "-3*sweep + -6*thick_panels+0.1*forces+55"
                           ,
                           "displ": "2*sweep + 3*thick_panels-2.*forces"}
         structure = create_discipline("AnalyticDiscipline", name="structure",
-                                      expressions_dict=struc_formulas)
+                                      expressions=struc_formulas)
         oad_formulas = {"range": "8e11*lift/(mass*drag)"}
         oad = create_discipline("AnalyticDiscipline", name="OAD",
-                                expressions_dict=oad_formulas)
+                                expressions=oad_formulas)
         return [aerodynamics, structure, oad]
 
     disciplines = create_disciplines()

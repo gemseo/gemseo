@@ -69,7 +69,7 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -234,8 +234,8 @@ class LinearRegression(MLRegressionAlgo):
                     "dimensions of the output variables."
                 )
             varsizes = self.learning_set.sizes
-            intercept = DataConversion.array_to_dict(
-                intercept, self.output_names, varsizes
+            intercept = split_array_to_dict_of_arrays(
+                intercept, varsizes, self.output_names
             )
             intercept = {key: list(val) for key, val in intercept.items()}
         return intercept
@@ -254,10 +254,10 @@ class LinearRegression(MLRegressionAlgo):
         """
         varsizes = self.learning_set.sizes
         data = [
-            DataConversion.array_to_dict(row, self.input_names, varsizes)
+            split_array_to_dict_of_arrays(row, varsizes, self.input_names)
             for row in data
         ]
         data = [{key: list(val) for key, val in element.items()} for element in data]
-        data = DataConversion.array_to_dict(array(data), self.output_names, varsizes)
+        data = split_array_to_dict_of_arrays(array(data), varsizes, self.output_names)
         data = {key: list(val) for key, val in data.items()}
         return data

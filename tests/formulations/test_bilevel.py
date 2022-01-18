@@ -27,8 +27,8 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_design_space, create_discipline, create_scenario
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
@@ -147,7 +147,7 @@ def test_bilevel_aerostructure():
         "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
     }
     aerodynamics = create_discipline(
-        "AnalyticDiscipline", name="Aerodynamics", expressions_dict=aero_formulas
+        "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
     )
     struc_formulas = {
         "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels + 200.0*forces",
@@ -155,11 +155,11 @@ def test_bilevel_aerostructure():
         "displ": "2*sweep + 3*thick_panels - 2.*forces",
     }
     structure = create_discipline(
-        "AnalyticDiscipline", name="Structure", expressions_dict=struc_formulas
+        "AnalyticDiscipline", name="Structure", expressions=struc_formulas
     )
     mission_formulas = {"range": "8e11*lift/(mass*drag)"}
     mission = create_discipline(
-        "AnalyticDiscipline", name="Mission", expressions_dict=mission_formulas
+        "AnalyticDiscipline", name="Mission", expressions=mission_formulas
     )
     sub_scenario_options = {
         "max_iter": 2,
@@ -207,9 +207,7 @@ def test_bilevel_aerostructure():
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(
-        expressions_dict={"y1": "z+x1+y2", "y2": "z+x2+2*y1"}
-    )
+    discipline = AnalyticDiscipline({"y1": "z+x1+y2", "y2": "z+x2+2*y1"})
     design_space = DesignSpace()
     design_space.add_variable("x1")
     design_space.add_variable("x2")

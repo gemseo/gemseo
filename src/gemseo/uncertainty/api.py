@@ -133,7 +133,7 @@ def create_statistics(
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
         >>>
@@ -202,7 +202,7 @@ def create_sensitivity_analysis(
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()

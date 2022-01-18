@@ -25,7 +25,7 @@ from __future__ import division, unicode_literals
 from numpy import pi
 
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
 
@@ -46,8 +46,9 @@ def test_is_available():
 
 
 def test_create():
-    expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-    discipline = AnalyticDiscipline(expressions_dict=expressions, name="Ishigami")
+    discipline = AnalyticDiscipline(
+        {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}, name="Ishigami"
+    )
 
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:

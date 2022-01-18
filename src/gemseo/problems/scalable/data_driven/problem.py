@@ -60,9 +60,9 @@ from gemseo.api import (
     create_scenario,
     generate_coupling_graph,
     generate_n2_plot,
-    get_all_inputs,
 )
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.utils.string_tools import MultiLineString

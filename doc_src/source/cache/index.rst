@@ -34,7 +34,7 @@ In |g|, each :class:`.MDODiscipline` has a cache.
 .. code::
 
    >>> from gemseo.api import create_discipline
-   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions_dict={'y':'2*x'})
+   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions={'y':'2*x'})
    >>> print(discipline.cache)
    my_discipline
    | Type: SimpleCache
@@ -59,7 +59,7 @@ The cache policy can be defined by means of the :meth:`.MDODiscipline.set_cache_
 .. code::
 
    >>> from gemseo.api import create_discipline
-   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions_dict={'y':'2*x'})
+   >>> discipline = create_discipline('AnalyticDiscipline', name='my_discipline', expressions={'y':'2*x'})
    >>> print(discipline.cache)
    my_discipline
    | Type: SimpleCache

@@ -24,7 +24,7 @@ from __future__ import division, unicode_literals
 import unittest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.sobieski.wrappers import (
     SobieskiMission,
@@ -55,7 +55,7 @@ class TestDisciplinaryOpt(unittest.TestCase):
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     grammar_type = discipline.SIMPLE_GRAMMAR_TYPE

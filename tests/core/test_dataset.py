@@ -29,9 +29,9 @@ import pytest
 from numpy import allclose, arange, array, concatenate, nan, ones, savetxt, zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.string_tools import MultiLineString
 
 
@@ -537,7 +537,7 @@ def test_plot(dataset, tmp_path):
 
 
 def test_export_to_dataset():
-    disc = AnalyticDiscipline(expressions_dict={"obj": "x1+x2", "cstr": "x1-x2"})
+    disc = AnalyticDiscipline({"obj": "x1+x2", "cstr": "x1-x2"})
     disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
     d_s = DesignSpace()
     d_s.add_variable("x1", 1, "float", 0, 1, 0.5)

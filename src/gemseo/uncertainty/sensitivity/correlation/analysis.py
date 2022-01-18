@@ -49,7 +49,7 @@ from gemseo.uncertainty.sensitivity.analysis import (
     OutputsType,
     SensitivityAnalysis,
 )
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions_dict=expressions
+        ...     "AnalyticDiscipline", expressions=expressions
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
@@ -143,7 +143,6 @@ class CorrelationAnalysis(SensitivityAnalysis):
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
         outputs = self.dataset.get_data_by_names(output_names, True)
         self.__correlation = {}
-        array_to_dict = DataConversion.array_to_dict
         for algo_name, algo_value in self._ALGORITHMS.items():
             inputs_names = self.dataset.get_names(self.dataset.INPUT_GROUP)
             sizes = self.dataset.sizes
@@ -153,7 +152,9 @@ class CorrelationAnalysis(SensitivityAnalysis):
                 for index in range(value.shape[1]):
                     sub_outputs = Sample(value[:, index][:, None])
                     coefficient = array(algo_value(inputs, sub_outputs))
-                    coefficient = array_to_dict(coefficient, inputs_names, sizes)
+                    coefficient = split_array_to_dict_of_arrays(
+                        coefficient, sizes, inputs_names
+                    )
                     self.__correlation[algo_name][output_name].append(coefficient)
         return self.indices
 

@@ -57,7 +57,10 @@ from numpy import (
     ndarray,
 )
 
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    split_array_to_dict_of_arrays,
+)
 from gemseo.utils.py23_compat import Path, xrange
 
 EPSILON = finfo(float).eps
@@ -197,7 +200,7 @@ class DisciplineJacApprox(object):
         self.discipline.cache_tol = old_cache_tol
         data = self.discipline.local_data
         data_sizes = {key: val.size for key, val in data.items()}
-        self.auto_steps = DataConversion.array_to_dict(steps_opt, inputs, data_sizes)
+        self.auto_steps = split_array_to_dict_of_arrays(steps_opt, data_sizes, inputs)
         return errors, self.auto_steps
 
     def _prepare_xvect(
@@ -217,7 +220,7 @@ class DisciplineJacApprox(object):
         """
         if data is None:
             data = self.discipline.local_data
-        x_vect = DataConversion.dict_to_array(data, inputs)
+        x_vect = concatenate_dict_of_arrays_to_array(data, inputs)
         return x_vect
 
     def compute_approx_jac(
@@ -260,7 +263,7 @@ class DisciplineJacApprox(object):
         flat_jac = atleast_2d(flat_jac)
         data_sizes = {key: len(local_data[key]) for key in chain(inputs, outputs)}
         self.discipline.cache_tol = old_cache_tol
-        return DataConversion.jac_2dmat_to_dict(flat_jac, outputs, inputs, data_sizes)
+        return split_array_to_dict_of_arrays(flat_jac, data_sizes, outputs, inputs)
 
     def check_jacobian(
         self,

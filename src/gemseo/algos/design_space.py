@@ -77,7 +77,7 @@ from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.cache import hash_data_dict
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.data_conversion import flatten_mapping
+from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.py23_compat import Path, string_array, strings_to_unicode_list
 
@@ -1908,8 +1908,8 @@ class DesignSpace(collections.MutableMapping):
             if key not in other:
                 return False
 
-            hash1 = hash_data_dict(flatten_mapping(val._asdict()))
-            hash2 = hash_data_dict(flatten_mapping(other[key]._asdict()))
+            hash1 = hash_data_dict(flatten_nested_dict(val._asdict()))
+            hash2 = hash_data_dict(flatten_nested_dict(other[key]._asdict()))
             if hash1 != hash2:
                 return False
 

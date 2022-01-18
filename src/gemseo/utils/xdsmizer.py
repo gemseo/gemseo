@@ -52,9 +52,10 @@ from gemseo.core.execution_sequence import (
     ParallelExecSequence,
     SerialExecSequence,
 )
-from gemseo.core.mdo_scenario import MDOScenario, MDOScenarioAdapter
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.utils.locks import synchronized
 from gemseo.utils.py23_compat import Path

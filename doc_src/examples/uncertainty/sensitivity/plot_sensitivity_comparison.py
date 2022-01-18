@@ -43,7 +43,7 @@ from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 # which is well-known in the uncertainty domain:
 expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
 discipline = create_discipline(
-    "AnalyticDiscipline", expressions_dict=expressions, name="Ishigami"
+    "AnalyticDiscipline", expressions=expressions, name="Ishigami"
 )
 #######################################################################################
 # The different uncertain variables :math:`X_1` , :math:`X_2` and :math:`X_3`

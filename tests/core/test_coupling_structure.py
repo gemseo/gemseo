@@ -29,9 +29,9 @@ import pytest
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar import (
     C_1,
     C_2,
@@ -158,9 +158,7 @@ def get_strong_couplings(analytic_expressions):
     Returns:
         The strong couplings.
     """
-    disciplines = [
-        AnalyticDiscipline(expressions_dict=desc) for desc in analytic_expressions
-    ]
+    disciplines = [AnalyticDiscipline(desc) for desc in analytic_expressions]
     return MDOCouplingStructure(disciplines).strong_couplings()
 
 
@@ -233,9 +231,7 @@ def test_n2_no_coupling(
             with matplotlib pyplot.
     """
     disciplines = [
-        AnalyticDiscipline(
-            name="discipline_{}".format(next(iter(desc))), expressions_dict=desc
-        )
+        AnalyticDiscipline(desc, name="discipline_{}".format(next(iter(desc))))
         for desc in descriptions
     ]
 

@@ -43,9 +43,9 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.core.mdo_scenario import MDOScenarioAdapter
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.mda import MDA
 from gemseo.mda.mda_factory import MDAFactory
 

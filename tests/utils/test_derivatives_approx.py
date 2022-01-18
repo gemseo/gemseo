@@ -33,9 +33,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_discipline
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.wrappers import SobieskiMission
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.derivatives_approx import (
@@ -109,7 +109,7 @@ def test_approx_complex_step_diff_steps_e30():
 
 
 def test_abs_der():
-    discipline = AnalyticDiscipline("name", {"y": "x", "z": "x"})
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
     apprx = DisciplineJacApprox(discipline)
     apprx.compute_approx_jac(["z"], ["x"])
@@ -194,7 +194,7 @@ def test_compute_io_indices(indices, expected_sequence, expected_variables_indic
 
 def test_load_and_dump(tmp_wd):
     """Check the loading and dumping of a reference Jacobian."""
-    discipline = AnalyticDiscipline("name", {"y": "x", "z": "x"})
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     discipline.execute()
     apprx = DisciplineJacApprox(discipline)
     apprx.compute_approx_jac(["z"], ["x"])

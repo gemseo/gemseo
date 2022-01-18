@@ -79,7 +79,7 @@ print(sample)
 # we instantiate an :class:`.AnalyticDiscipline` from a dictionary of
 # expressions and update the cache policy # so as to cache all data in memory.
 
-discipline = create_discipline("AnalyticDiscipline", expressions_dict={"z": "x+y"})
+discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 
 ###############################################################################

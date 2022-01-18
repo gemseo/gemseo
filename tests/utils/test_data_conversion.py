@@ -21,121 +21,298 @@
 
 from __future__ import division, unicode_literals
 
-import unittest
+import re
+from typing import Dict, List, Union
 
-from numpy import array, array_equal, hstack, zeros
+import pytest
+from numpy import array, array_equal, ndarray
 
-from gemseo.utils.data_conversion import DataConversion, flatten_mapping
+from gemseo.utils.data_conversion import (
+    compare_dict_of_arrays,
+    concatenate_dict_of_arrays_to_array,
+    deepcopy_dict_of_arrays,
+    flatten_nested_bilevel_dict,
+    flatten_nested_dict,
+    nest_flat_bilevel_dict,
+    nest_flat_dict,
+    split_array_to_dict_of_arrays,
+    update_dict_of_arrays_from_array,
+)
 
 
-class TestDataConversion(unittest.TestCase):
-    """Test the conversion between data dict and numpy arrays."""
+@pytest.fixture
+def dict_to_be_updated():  # type: (...) -> Dict[str, ndarray]
+    """A dictionary to be updated."""
+    return {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}
 
-    def test_dict_to_array(self):
-        """"""
-        data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
-        data_names = ["z", "x"]
-        zx_array = DataConversion.dict_to_array(data_dict, data_names)
-        assert array_equal(zx_array, array([3.0, 4.0, 0.0, 1.0]))
 
-        data_names = []
-        empty_array = DataConversion.dict_to_array(data_dict, data_names)
-        assert array_equal(empty_array, array([]))
+def test_update_dict_of_arrays_from_array(dict_to_be_updated):
+    """Check the update of a data mapping from a data array and variables names."""
+    data_names = ["y", "z"]
+    values_array = array([0.5, 1.0, 2.0])
+    new_data_dict = update_dict_of_arrays_from_array(
+        dict_to_be_updated, data_names, values_array
+    )
+    expected = array([0.5])
+    assert array_equal(new_data_dict["y"], expected)
+    assert new_data_dict["y"].dtype == expected.dtype
+    expected = array([1, 2])
+    assert array_equal(new_data_dict["z"], expected)
+    assert new_data_dict["z"].dtype == expected.dtype
 
-        data_sizes = {k: v.size for k, v in data_dict.items()}
-        data_names = ["z", "x"]
-        dict_m = DataConversion.array_to_dict(zx_array, data_names, data_sizes)
-        for k in data_names:
-            assert (dict_m[k] == data_dict[k]).all()
 
-        self.assertRaises(
-            ValueError,
-            DataConversion.array_to_dict,
-            zeros((2, 2, 2)),
-            data_names,
-            data_sizes,
+def test_update_dict_of_arrays_from_array_without_variables(dict_to_be_updated):
+    """Check that a dictionary cannot be update without variables names."""
+    new_data_dict = update_dict_of_arrays_from_array(
+        dict_to_be_updated, [], array([0.5, 1.0, 2.0])
+    )
+    assert compare_dict_of_arrays(new_data_dict, dict_to_be_updated)
+
+
+def test_update_dict_of_arrays_from_array_wrong_data_type(dict_to_be_updated):
+    """Check that a dictionary cannot be updated from wrongly typed data."""
+    expected = r"The array must be a NumPy one, got instead: <.+ 'float'>\."
+
+    with pytest.raises(TypeError, match=expected):
+        update_dict_of_arrays_from_array(
+            dict_to_be_updated,
+            ["y"],
+            1.0,
         )
 
-    def test_update_dict_from_array(self):
-        """Check the update of a data mapping from data array and names."""
-        data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}
-        data_names = ["y", "z"]
-        values_array = array([0.5, 1.0, 2.0])
-        new_data_dict = DataConversion.update_dict_from_array(
-            data_dict, data_names, values_array
-        )
-        expected = array([0.5])
-        assert array_equal(new_data_dict["y"], expected)
-        assert new_data_dict["y"].dtype == expected.dtype
-        expected = array([1, 2])
-        assert array_equal(new_data_dict["z"], expected)
-        assert new_data_dict["z"].dtype == expected.dtype
 
-        data_names = []
-        new_data_dict = DataConversion.update_dict_from_array(
-            data_dict, data_names, values_array
-        )
-        for k, v in data_dict.items():
-
-            assert array_equal(new_data_dict[k], v)
-
-        data_names = ["y"]
-        values_array = 1.0
-        self.assertRaises(
-            TypeError,
-            DataConversion.update_dict_from_array,
-            data_dict,
-            data_names,
-            values_array,
+@pytest.mark.parametrize("source_dict", [{"y": None}, {"z": array([1.0])}])
+def test_update_dict_of_arrays_from_array_wrong_name(source_dict):
+    with pytest.raises(ValueError, match="There is no reference data for y."):
+        update_dict_of_arrays_from_array(
+            source_dict,
+            ["y"],
+            array([0.5]),
         )
 
-        values_array = array([0.5])
-        data_dict["y"] = None
-        self.assertRaises(
-            ValueError,
-            DataConversion.update_dict_from_array,
-            data_dict,
-            data_names,
-            values_array,
+
+def test_update_dict_of_arrays_from_array_too_long(dict_to_be_updated):
+    """Check that updating a dictionary with an array that is too long raises an
+    error."""
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Inconsistent data shapes: "
+            r"could not use the whole data array of shape \(2L?,\) "
+            r"\(only reached max index = 1\), "
+            r"while updating data dictionary names y of shapes: \[\(u?'y', \(1L?,\)\)\]\."
+        ),
+    ):
+        update_dict_of_arrays_from_array(dict_to_be_updated, "y", array([0.5, 1.5]))
+
+
+def test_update_dict_of_arrays_from_array_too_short(dict_to_be_updated):
+    """Check that updating a dictionary with an array that is too short raises an
+    error."""
+    with pytest.raises(
+        Exception,
+        match=(
+            r"Inconsistent input array size of values array \[0.5\] "
+            r"with reference data shape \(2L?,\) for data named: z\."
+        ),
+    ):
+        update_dict_of_arrays_from_array(dict_to_be_updated, "z", array([0.5]))
+
+
+def test_nest_flat_bilevel_dict_dict():
+    """Check that a flattened bi-level mapping is correctly nested."""
+    expected = {"a": {"b": 1}, "c": {"b": 2}}
+    mapping = {"a_b": 1, "c_b": 2}
+    assert nest_flat_bilevel_dict(mapping, separator="_") == expected
+
+
+@pytest.fixture(scope="module")
+def xy_sizes():
+    """The sizes of x and y."""
+    return {"x": 1, "y": 2}
+
+
+@pytest.fixture(scope="module")
+def xy_dict():  # type: (...) -> Dict[str,ndarray]
+    """The values of x and y."""
+    return {"x": array([1.0]), "y": array([2.0, 3.0])}
+
+
+@pytest.fixture(params=[False, True])
+def possibly_nested_xy_dict(
+    request,
+):  # type: (...) -> Dict[str,Union[ndarray,Dict[str,ndarray]]]
+    """A NumPy array with values for x and y."""
+    if request.param:
+        return {"x": {"x_1": array([1.0])}, "y": array([2.0, 3.0])}
+    else:
+        return {"x": array([1.0]), "y": array([2.0, 3.0])}
+
+
+@pytest.fixture(scope="module")
+def xy_array():  # type: (...) -> ndarray
+    """The values of x and y."""
+    return array([1.0, 2.0, 3.0])
+
+
+@pytest.mark.parametrize(
+    "names,expected",
+    [
+        ("x", array([1.0])),
+        ("y", array([2.0, 3.0])),
+        (["x", "y"], array([1.0, 2.0, 3.0])),
+        (["y", "x"], array([2.0, 3.0, 1.0])),
+        ([], array([])),
+    ],
+)
+def test_concatenate_dict_of_arrays_to_array(xy_dict, names, expected):
+    """Check concatenate_dict_of_arrays_to_array."""
+    assert array_equal(concatenate_dict_of_arrays_to_array(xy_dict, names), expected)
+
+
+@pytest.mark.parametrize(
+    "names,expected",
+    [
+        (["x", "y"], {"x": array([1.0]), "y": array([2.0, 3.0])}),
+        (["y", "x"], {"x": array([3.0]), "y": array([1.0, 2.0])}),
+    ],
+)
+def test_split_array_to_dict_of_arrays(xy_array, xy_sizes, names, expected):
+    """Check split_array_to_dict_of_arrays."""
+    dict_1 = flatten_nested_dict(
+        split_array_to_dict_of_arrays(xy_array, xy_sizes, names)
+    )
+    dict_2 = flatten_nested_dict(expected)
+    assert compare_dict_of_arrays(dict_1, dict_2)
+
+
+@pytest.mark.parametrize("y_size", [1, 3])
+def test_split_array_to_dict_of_arrays_with_inconsistency_check(xy_array, y_size):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The total size of the elements ({}) "
+            "and the size of the last dimension of the array ({}) "
+            "are different.".format(1 + y_size, xy_array.shape[-1])
+        ),
+    ):
+        split_array_to_dict_of_arrays(
+            xy_array, {"x": 1, "y": y_size}, ["x", "y"], check_consistency=True
         )
 
-    def test_update_too_long(self):
-        """"""
-        data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
-        data_names = ["y"]
-        values_array = array([0.5, 1.5])
-        with self.assertRaises(Exception):
-            DataConversion.update_dict_from_array(data_dict, data_names, values_array)
 
-    def test_update_too_short(self):
-        """"""
-        data_dict = {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3.0, 4.0])}
-        data_names = ["z"]
-        values_array = array([0.5])
-        with self.assertRaises(Exception):
-            DataConversion.update_dict_from_array(data_dict, data_names, values_array)
-
-    def test_dict_jac_to_2dmat(self):
-        f_g = {"x": array([[0.0, 1.0]]), "y": array([[2.0]]), "z": array([[3.0, 4.0]])}
-        jac_dict = {"f": f_g}
-        data_sizes = {"f": 1, "y": 1, "x": 2, "z": 2}
-        outputs = ["f"]
-        inputs = ["x", "y", "z"]
-
-        flat_jac = DataConversion.dict_jac_to_2dmat(
-            jac_dict, outputs, inputs, data_sizes
-        )
-        assert (flat_jac == hstack([f_g[inpt] for inpt in inputs])).all()
-
-        f_g_rec = DataConversion.jac_2dmat_to_dict(
-            flat_jac, outputs, inputs, data_sizes
-        )
-        for k in inputs:
-            assert (jac_dict["f"][k] == f_g_rec["f"][k]).all()
+@pytest.mark.parametrize("y_size", [1, 3])
+def test_split_array_to_dict_of_arrays_without_inconsistency_check(xy_array, y_size):
+    split_array_to_dict_of_arrays(xy_array, {"x": 1, "y": y_size}, ["x", "y"])
 
 
-def test_flatten_mapping():
-    """Check that a nested mapping is correctly flattened."""
-    mapping = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
-    expected = {"a": 1, "b_c": 2, "b_d_e": 3}
-    assert flatten_mapping(mapping) == expected
+@pytest.fixture(scope="module")
+def list_grouped_xy_dict(xy_dict):  # type: (...) -> List[Dict[str,Dict[str,ndarray]]]
+    """A list of grouped data dictionaries."""
+    return [
+        {"g1": {"x": xy_dict["x"]}, "g2": {"y": xy_dict["y"]}},
+        {"g1": {"x": xy_dict["x"] * 2}, "g2": {"y": xy_dict["y"] * 2}},
+    ]
+
+
+@pytest.fixture(scope="module")
+def list_xy_dict(xy_dict):  # type: (...) -> List[Dict[str,ndarray]]
+    """A list of data dictionaries."""
+    return [
+        {"x": xy_dict["x"], "y": xy_dict["y"]},
+        {"x": xy_dict["x"] * 2, "y": xy_dict["y"] * 2},
+    ]
+
+
+def test_split_array_to_dict_of_arrays_nested():
+    """Check split_array_to_dict_of_arrays with a bi-level nested dictionary.
+
+    The array has 2 dimensions.
+    """
+    jac_array = array([[1.0, 2.0, 2.0], [2.0, 4.0, 4.0], [2.0, 4.0, 4.0]])
+    sizes = {"y1": 1, "y2": 2, "x2": 2, "x1": 1}
+    jac_3d_dict = split_array_to_dict_of_arrays(
+        jac_array, sizes, ["y1", "y2"], ["x1", "x2"]
+    )
+    expected = {
+        "y1": {"x1": array([[1.0]]), "x2": array([[2.0, 2.0]])},
+        "y2": {"x1": array([[2.0], [2.0]]), "x2": array([[4.0, 4.0], [4.0, 4.0]])},
+    }
+    assert compare_dict_of_arrays(jac_3d_dict, expected)
+
+
+def test_split_array_to_dict_of_arrays_nested_3d():
+    """Check split_array_to_dict_of_arrays with a bi-level nested dictionary.
+
+    The array has 3 dimensions.
+    """
+    jac_array = array([[[1.0, 2.0, 2.0], [2.0, 4.0, 4.0], [2.0, 4.0, 4.0]]])
+    sizes = {"y1": 1, "y2": 2, "x2": 2, "x1": 1}
+    jac_3d_dict = split_array_to_dict_of_arrays(
+        jac_array, sizes, ["y1", "y2"], ["x1", "x2"]
+    )
+    expected = {
+        "y1": {"x1": array([[[1.0]]]), "x2": array([[[2.0, 2.0]]])},
+        "y2": {"x1": array([[[2.0], [2.0]]]), "x2": array([[[4.0, 4.0], [4.0, 4.0]]])},
+    }
+    assert compare_dict_of_arrays(jac_3d_dict, expected)
+
+
+def test_flatten_nested_dict():
+    """Check flatten_nested_dict."""
+    nested_jac_dict = {"y": {"x": array([[1.0], [2.0]])}}
+    flatten_jac_dict = flatten_nested_dict(nested_jac_dict)
+    assert compare_dict_of_arrays(flatten_jac_dict, {"y#&#x": array([[1.0], [2.0]])})
+
+
+def test_flatten_nested_bilevel_dict():
+    """Check flatten_nested_bilevel_dict."""
+    nested_jac_dict = {"y": {"x": array([[1.0], [2.0]])}}
+    flatten_jac_dict = flatten_nested_bilevel_dict(nested_jac_dict)
+    assert compare_dict_of_arrays(flatten_jac_dict, {"y#&#x": array([[1.0], [2.0]])})
+
+
+def test_nest_flat_dict():
+    """Check nest_flat_dict."""
+    flatten_jac_dict = {"y#&#x": array([[1.0], [2.0]])}
+    nested_jac_dict = nest_flat_dict(flatten_jac_dict)
+    assert compare_dict_of_arrays(nested_jac_dict, {"y": {"x": array([[1.0], [2.0]])}})
+
+
+@pytest.mark.parametrize("names", ["x", "y", ["x", "y"], ["y", "x"], None])
+def test_deepcopy_dict_of_arrays(possibly_nested_xy_dict, names):
+    """Check deepcopy_dict_of_arrays."""
+    original_dict = possibly_nested_xy_dict
+    dict_copy = deepcopy_dict_of_arrays(original_dict)
+    assert len(dict_copy) == len(original_dict or names)
+    for key in dict_copy:
+        if isinstance(original_dict[key], dict):
+            assert array_equal(original_dict[key]["x_1"], dict_copy[key]["x_1"])
+            assert id(original_dict[key]["x_1"]) != dict_copy[key]["x_1"]
+        else:
+            assert array_equal(original_dict[key], dict_copy[key])
+            assert id(original_dict[key]) != id(dict_copy[key])
+
+
+@pytest.mark.parametrize(
+    "d_1,d_2,d_3,d_4",
+    [
+        (
+            {"x": array([1.0]), "y": array([1, 2])},
+            {"x": array([1.0]), "y": array([1, 2])},
+            {"x": array([1.0]), "y": array([1, 3])},
+            {"xx": array([1.0]), "y": array([1, 3])},
+        ),
+        (
+            {"x": array([1.0]), "y": {"z": array([1, 2])}},
+            {"x": array([1.0]), "y": {"z": array([1, 2])}},
+            {"x": array([1.0]), "y": {"z": array([1, 3])}},
+            {"xx": array([1.0]), "y": {"z": array([1, 3])}},
+        ),
+    ],
+)
+def test_compare_dict_of_arrays(d_1, d_2, d_3, d_4):
+    """Check the comparison of dictionaries of NumPy arrays."""
+    assert compare_dict_of_arrays(d_1, d_2)
+    assert not compare_dict_of_arrays(d_1, d_3)
+    assert not compare_dict_of_arrays(d_1, d_4)

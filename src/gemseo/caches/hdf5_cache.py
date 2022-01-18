@@ -34,7 +34,7 @@ from numpy import append, array, bytes_, unicode_
 from six import with_metaclass
 
 from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, to_real
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
 from gemseo.utils.py23_compat import PY2, Path, long, string_array, string_dtype
@@ -153,7 +153,7 @@ class HDF5Cache(AbstractFullCache):
             group_number, group_name, self.__hdf_node_path, h5_open_file=h5_open_file
         )[0]
         if group_name == self.JACOBIAN_GROUP and result is not None:
-            result = DataConversion.dict_to_jac_dict(result)
+            result = nest_flat_bilevel_dict(result, separator=self._JACOBIAN_SEPARATOR)
         return result
 
     def _write_data(self, values, names, var_group, sample_id):

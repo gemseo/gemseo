@@ -79,8 +79,6 @@ Coupling
 
 - :meth:`~gemseo.api.generate_n2_plot`
 - :meth:`~gemseo.api.generate_coupling_graph`
-- :meth:`~gemseo.api.get_all_inputs`
-- :meth:`~gemseo.api.get_all_outputs`
 
 Design space
 ------------
@@ -238,8 +236,6 @@ def generate_n2_plot(
     See also
     --------
     generate_coupling_graph
-    get_all_inputs
-    get_all_outputs
     """
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
@@ -271,8 +267,6 @@ def generate_coupling_graph(
     See also
     --------
     generate_n2_plot
-    get_all_inputs
-    get_all_outputs
     """
     from gemseo.core.coupling_structure import MDOCouplingStructure
 
@@ -599,6 +593,7 @@ def get_post_processing_options_schema(
     execute_post
     get_available_post_processings
     """
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.post.post_factory import PostFactory
 
@@ -1048,72 +1043,6 @@ def get_mda_options_schema(
     return _get_schema(grammar, output_json, pretty_print)
 
 
-def get_all_inputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    recursive=False,  # type: bool
-):  # type: (...) -> List[str]
-    """Return all the input names of the disciplines.
-
-    Args:
-        disciplines: The disciplines.
-        recursive: If True,
-            search for the inputs of the sub-disciplines,
-            when some disciplines are scenarios.
-
-    Returns:
-        The names of the inputs.
-
-    Examples
-    --------
-    >>> from gemseo.api import create_discipline, get_all_inputs
-    >>> disciplines = create_discipline(['Sellar1', 'Sellar2'])
-    >>> get_all_inputs(disciplines)
-    ['y_0', 'x_shared', 'y_1', 'x_local']
-
-    See also
-    --------
-    generate_n2_plot
-    generate_coupling_graph
-    get_all_outputs
-    """
-    from gemseo.utils.data_conversion import DataConversion
-
-    return DataConversion.get_all_inputs(disciplines, recursive)
-
-
-def get_all_outputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    recursive=False,  # type: bool
-):  # type: (...) -> List[str]
-    """Return all the output names of the disciplines.
-
-    Args:
-        disciplines: The disciplines.
-        recursive: If True,
-            search for the outputs of the sub-disciplines,
-            when some disciplines are scenarios.
-
-    Returns:
-        The names of the outputs.
-
-    Examples
-    --------
-    >>> from gemseo.api import create_discipline, get_all_outputs
-    >>> disciplines = create_discipline(['Sellar1', 'Sellar2'])
-    >>> get_all_outputs(disciplines)
-    ['y_1', 'y_0']
-
-    See also
-    --------
-    generate_n2_plot
-    generate_coupling_graph
-    get_all_inputs
-    """
-    from gemseo.utils.data_conversion import DataConversion
-
-    return DataConversion.get_all_outputs(disciplines, recursive)
-
-
 def create_scenario(
     disciplines,  # type: Sequence[MDODiscipline]
     formulation,  # type: str
@@ -1388,7 +1317,7 @@ def create_surrogate(
     get_available_surrogates
     get_surrogate_options_schema
     """
-    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F811
+    from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
     return SurrogateDiscipline(
         surrogate,

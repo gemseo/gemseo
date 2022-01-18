@@ -43,7 +43,11 @@ from numpy import (
 )
 from numpy.linalg import norm
 
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import (
+    concatenate_dict_of_arrays_to_array,
+    flatten_nested_bilevel_dict,
+    split_array_to_dict_of_arrays,
+)
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized, synchronized_hashes
 from gemseo.utils.multi_processing import Manager, RLock, Value
@@ -294,6 +298,8 @@ class AbstractFullCache(AbstractCache):
     :class:`.HDF5Cache`: store all data in an HDF5 file
     """
 
+    _JACOBIAN_SEPARATOR = "!d$_$d!"
+
     def __init__(self, tolerance=0.0, name=None):
         """Initialize cache tolerance. By default, don't use approximate cache. It is up
         to the user to choose to optimize CPU time with this or not.
@@ -468,7 +474,9 @@ class AbstractFullCache(AbstractCache):
         if data_exists:
             return
 
-        flat_jac = DataConversion.dict_jac_to_dict(jacobian)
+        flat_jac = flatten_nested_bilevel_dict(
+            jacobian, separator=self._JACOBIAN_SEPARATOR
+        )
 
         self._write_data(
             flat_jac,
@@ -838,8 +846,6 @@ class AbstractFullCache(AbstractCache):
 
         dataset = Dataset(name or self.name, by_group)
 
-        to_array = DataConversion.list_of_dict_to_array
-
         inputs_names = inputs_names or self.inputs_names
         outputs_names = outputs_names or self.outputs_names
 
@@ -852,14 +858,26 @@ class AbstractFullCache(AbstractCache):
             cache_output_as_input = False
 
         # Add cache inputs and outputs
-        data = list(self.get_all_data(True))
-        inputs = to_array(data, inputs_names, self.INPUTS_GROUP)
-        data = DataConversion.array_to_dict(inputs, inputs_names, self.varsizes)
+        inputs = vstack(
+            [
+                concatenate_dict_of_arrays_to_array(
+                    data[self.INPUTS_GROUP], inputs_names
+                )
+                for data in self.get_all_data(True)
+            ]
+        )
+        data = split_array_to_dict_of_arrays(inputs, self.varsizes, inputs_names)
         for input_name, value in data.items():
             dataset.add_variable(input_name, value, in_grp)
-        data = list(self.get_all_data(True))
-        outputs = to_array(data, outputs_names, self.OUTPUTS_GROUP)
-        data = DataConversion.array_to_dict(outputs, outputs_names, self.varsizes)
+        outputs = vstack(
+            [
+                concatenate_dict_of_arrays_to_array(
+                    data[self.OUTPUTS_GROUP], outputs_names
+                )
+                for data in self.get_all_data(True)
+            ]
+        )
+        data = split_array_to_dict_of_arrays(outputs, self.varsizes, outputs_names)
         for output_name, value in data.items():
             dataset.add_variable(
                 output_name, value, out_grp, cache_as_input=cache_output_as_input

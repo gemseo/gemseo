@@ -27,13 +27,13 @@ import unittest
 import numpy as np
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import SobieskiMission
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 
 class TestMDOFormulation(unittest.TestCase):
@@ -130,7 +130,7 @@ class TestMDOFormulation(unittest.TestCase):
 
     def test_get_values_array_from_dict(self):
         """"""
-        a = DataConversion.dict_to_array({}, [])
+        a = concatenate_dict_of_arrays_to_array({}, [])
         self.assertIsInstance(a, type(np.array([])))
 
     def test_get_mask_from_datanames(self):
@@ -239,7 +239,7 @@ class TestMDOFormulation(unittest.TestCase):
 
 def test_grammar_type():
     """Check that the grammar type is correctly stored."""
-    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     formulation = MDOFormulation(

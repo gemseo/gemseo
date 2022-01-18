@@ -77,7 +77,7 @@ print(sample)
 # We can also sample a discipline over the parameter space.
 # For simplicity,
 # we instantiate an :class:`.AnalyticDiscipline` from a dictionary of expressions:
-discipline = create_discipline("AnalyticDiscipline", expressions_dict={"z": "x+y"})
+discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 
 ###############################################################################
 # From these parameter space and discipline,

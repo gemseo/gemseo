@@ -46,7 +46,7 @@ from gemseo.api import (
     create_discipline,
     create_scenario,
 )
-from gemseo.core.mdo_scenario import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 
 configure_logger()
 
@@ -78,10 +78,10 @@ expr_cstr_obj1_target = {"cstr3": "obj1 - obj1_target"}
 # Here, we create the disciplines from their expressions.
 
 discipline_binh_korn = create_discipline(
-    "AnalyticDiscipline", expressions_dict=expr_binh_korn
+    "AnalyticDiscipline", expressions=expr_binh_korn
 )
 discipline_cstr_obj1 = create_discipline(
-    "AnalyticDiscipline", expressions_dict=expr_cstr_obj1_target
+    "AnalyticDiscipline", expressions=expr_cstr_obj1_target
 )
 
 ###############################################################################

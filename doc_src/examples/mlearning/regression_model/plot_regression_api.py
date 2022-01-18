@@ -57,9 +57,9 @@ print(get_regression_options("GaussianProcessRegression"))
 ###############################################################################
 # Create regression model
 # -----------------------
-expressions_dict = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
+expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
 discipline = create_discipline(
-    "AnalyticDiscipline", name="func", expressions_dict=expressions_dict
+    "AnalyticDiscipline", name="func", expressions=expressions
 )
 
 design_space = create_design_space()

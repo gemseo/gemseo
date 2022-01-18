@@ -25,9 +25,9 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
@@ -282,7 +282,7 @@ class TestIDF(FormulationsBaseTest):
 
 def test_grammar_type():
     """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline(expressions_dict={"y": "x"})
+    discipline = AnalyticDiscipline({"y": "x"})
     design_space = DesignSpace()
     design_space.add_variable("x")
     grammar_type = discipline.SIMPLE_GRAMMAR_TYPE

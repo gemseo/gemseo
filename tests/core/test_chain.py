@@ -27,9 +27,9 @@ from itertools import permutations
 import pytest
 from numpy import allclose, ones
 
-from gemseo.core.analytic_discipline import AnalyticDiscipline
 from gemseo.core.chain import MDOAdditiveChain, MDOChain, MDOParallelChain
 from gemseo.core.execution_sequence import ParallelExecSequence
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
     SobieskiMission,
@@ -115,8 +115,8 @@ class Testmdochain(unittest.TestCase):
     def test_common_in_out(self):
         # Check that the linearization works with a discipline
         # that has inputs and outputs of the same name
-        a = AnalyticDiscipline("a", {"x": "x"})
-        o = AnalyticDiscipline("o", {"o": "x+y"})
+        a = AnalyticDiscipline({"x": "x"}, name="a")
+        o = AnalyticDiscipline({"o": "x+y"}, name="o")
         chain = MDOChain([a, o])
         assert chain.check_jacobian(
             {"x": ones(1), "y": ones(1)},

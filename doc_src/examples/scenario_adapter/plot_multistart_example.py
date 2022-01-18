@@ -38,7 +38,7 @@ from gemseo.api import (
     create_discipline,
     create_scenario,
 )
-from gemseo.core.mdo_scenario import MDOScenarioAdapter
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 
 configure_logger()
 
@@ -46,11 +46,9 @@ configure_logger()
 ##############################################################################
 # Create the disciplines
 # ----------------------
-objective = create_discipline(
-    "AnalyticDiscipline", expressions_dict={"obj": "x**3-x+1"}
-)
+objective = create_discipline("AnalyticDiscipline", expressions={"obj": "x**3-x+1"})
 constraint = create_discipline(
-    "AnalyticDiscipline", expressions_dict={"cstr": "x**2+obj**2-1.5"}
+    "AnalyticDiscipline", expressions={"cstr": "x**2+obj**2-1.5"}
 )
 
 ##############################################################################

@@ -82,30 +82,6 @@ e.g.:
    >>> disciplines = create_discipline(["SobieskiPropulsion", "SobieskiAerodynamics",
    ...                                  "SobieskiMission", "SobieskiStructure"])
 
-Get all inputs/outputs
-~~~~~~~~~~~~~~~~~~~~~~
-
-The :meth:`~gemseo.api.get_all_inputs` API function can list all the inputs of the :code:`disciplines` (list),
-including the sub-disciplines if the argument :code:`recursive` (default: :code:`False`) is :code:`True`,
-merging the input data from the discipline grammars; e.g.:
-
-.. code::
-
-   >>> get_all_inputs(disciplines)
-   ['x_1', 'y_23', 'y_12', 'x_shared', 'x_3', 'y_14', 'y_31', 'x_2', 'y_24', 'y_32', 'y_34', 'y_21']
-
-The :meth:`~gemseo.api.get_all_outputs` API function can list all the outputs of the :code:`disciplines` (list),
-including the sub-disciplines if the argument :code:`recursive` (default: :code:`False`) is :code:`True`,
-merging the input data from the discipline grammars; e.g.:
-
-.. code::
-
-   >>> from gemseo.api import create_discipline
-   >>> disciplines = create_discipline(["SobieskiPropulsion", "SobieskiAerodynamics",
-   ...                                  "SobieskiMission", "SobieskiStructure"])
-   >>> get_all_outputsputs(disciplines)
-   ['g_1', 'y_4', 'y_3', 'y_2', 'g_3', 'g_2', 'y_12', 'y_11', 'y_23', 'y_1', 'y_14', 'y_31', 'y_24', 'y_32', 'y_34', 'y_21']
-
 Get discipline schemas for inputs, outputs and options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -330,9 +306,9 @@ The API function :meth:`~gemseo.api.create_scenario` can be used to create a sce
 
   #. :code:`disciplines`: either a list of :class:`.MDODiscipline` or a single :class:`MDODiscipline`,
   #. :code:`formulation`: the formulation name (available formulations can be listed by using the API function :meth:`gemseo.api.get_available_formulations`),
-  #. :code:`objective_name`: the name of the objective function (one of the discipline outputs, which can be listed by using the API function :meth:`gemseo.api.get_all_outputs`)
+  #. :code:`objective_name`: the name of the objective function (one of the discipline outputs, which can be listed by using the function :meth:`gemseo.disciplines.utils.get_all_outputs`)
   #. :code:`design_space`: the :class:`.DesignSpace` or the file path of the design space
-     the design variables are a subset of all the discipline inputs, which can be obtained by using :meth:`~gemseo.api.get_all_inputs` .
+     the design variables are a subset of all the discipline inputs, which can be obtained by using :meth:`~gemseo.disciplines.utils.get_all_inputs` .
 
 - The other arguments are optional:
 

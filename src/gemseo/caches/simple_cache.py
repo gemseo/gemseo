@@ -29,7 +29,7 @@ import logging
 from copy import deepcopy
 
 from gemseo.core.cache import AbstractCache, check_cache_approx, check_cache_equal
-from gemseo.utils.data_conversion import DataConversion
+from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
@@ -213,7 +213,7 @@ class SimpleCache(AbstractCache):
         :param output_names: list of output data names
         """
         if output_names is None:
-            cache_dict = DataConversion.deepcopy_datadict(input_data, input_names)
+            cache_dict = deepcopy_dict_of_arrays(input_data, input_names)
         else:
             cache_dict = {k: v for k, v in input_data.items() if k in input_names}
             # If also an output, keeps a copy of the original input value
@@ -251,9 +251,7 @@ class SimpleCache(AbstractCache):
         self.__input_cache = self._create_input_cache(
             input_data, input_names, output_names
         )
-        self.__output_cache = DataConversion.deepcopy_datadict(
-            output_data, output_names
-        )
+        self.__output_cache = deepcopy_dict_of_arrays(output_data, output_names)
 
     def get_outputs(self, input_data, input_names=None):
         """Check if the discipline has already been evaluated for the given input data
