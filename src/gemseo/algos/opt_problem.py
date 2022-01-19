@@ -1706,23 +1706,35 @@ class OptimizationProblem(object):
     ):  # type: (...) -> Dataset
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
-        The variables can be classified into groups,
-        separating the design variables and functions
-        (objective function and constraints).
-        This classification can use either an optimization naming,
-        with :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
-        or an input-output naming,
-        with :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`
+        The variables can be classified into groups:
+        :attr:`.Dataset.DESIGN_GROUP` or :attr:`.Dataset.INPUT_GROUP`
+        for the design variables
+        and :attr:`.Dataset.FUNCTION_GROUP` or :attr:`.Dataset.OUTPUT_GROUP`
+        for the functions
+        (objective, constraints and observables).
 
         Args:
-            name: A name to be given to the dataset.
-                If None, use the name of the :attr:`.OptimizationProblem.database`.
-            by_group: If True, then store the data by group.
-                Otherwise, store them by variables.
-            categorize: If True, then distinguish
+            name: The name to be given to the dataset.
+                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
+            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
+                in the sense of one unique NumPy array per group.
+                If ``categorize`` is ``False``,
+                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
+                If ``categorize`` is ``True``,
+                the groups can be either
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                if ``opt_naming`` is ``True``,
+                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+                If ``by_group`` is ``False``, store the data by variable names.
+            categorize: Whether to distinguish
                 between the different groups of variables.
-            opt_naming: If True, then use an optimization naming.
-            export_gradients: If True, then export also the gradients of the functions
+                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+            opt_naming: Whether to use
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                as groups.
+                Otherwise,
+                use :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+            export_gradients: Whether to export the gradients of the functions
                 (objective function, constraints and observables)
                 if the latter are available in the database of the optimization problem.
 
