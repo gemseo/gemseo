@@ -22,7 +22,7 @@
 from __future__ import division, unicode_literals
 
 import unittest
-from typing import Sequence
+from typing import Optional, Sequence
 
 import pytest
 from numpy import array
@@ -30,6 +30,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.dataset import Dataset
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
@@ -453,3 +454,30 @@ def test_clear_history_before_run(mdf_scenario):
     mdf_scenario.clear_history_before_run = True
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
     assert len(mdf_scenario.formulation.opt_problem.database) == 0
+
+
+def mocked_export_to_dataset(
+    name=None,  # type: Optional[str]
+    by_group=True,  # type: bool
+    categorize=True,  # type: bool
+    opt_naming=True,  # type: bool
+    export_gradients=False,  # type: bool
+):  # type: (...) -> Dataset
+    """A mock for OptimizationProblem.export_to_dataset."""
+    return (
+        name,
+        by_group,
+        categorize,
+        opt_naming,
+        export_gradients,
+    )
+
+
+def test_export_to_dataset(mdf_scenario):
+    """Check that export_to_dataset calls OptimizationProblem.export_to_dataset."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.formulation.opt_problem.export_to_dataset = mocked_export_to_dataset
+    dataset = mdf_scenario.export_to_dataset(
+        name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
+    )
+    assert dataset == (1, 2, 3, 4, 5)

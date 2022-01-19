@@ -37,6 +37,7 @@ from six import string_types
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -574,3 +575,56 @@ class Scenario(MDODiscipline):
             True if the current object is a :class:`.Scenario`.
         """
         return True
+
+    def export_to_dataset(
+        self,
+        name=None,  # type: Optional[str]
+        by_group=True,  # type: bool
+        categorize=True,  # type: bool
+        opt_naming=True,  # type: bool
+        export_gradients=False,  # type: bool
+    ):  # type: (...) -> Dataset
+        """Export the database of the optimization problem to a :class:`.Dataset`.
+
+        The variables can be classified into groups:
+        :attr:`.Dataset.DESIGN_GROUP` or :attr:`.Dataset.INPUT_GROUP`
+        for the design variables
+        and :attr:`.Dataset.FUNCTION_GROUP` or :attr:`.Dataset.OUTPUT_GROUP`
+        for the functions
+        (objective, constraints and observables).
+
+        Args:
+            name: The name to be given to the dataset.
+                If ``None``, use the name of the :attr:`.OptimizationProblem.database`.
+            by_group: Whether to store the data by group in :attr:`.Dataset.data`,
+                in the sense of one unique NumPy array per group.
+                If ``categorize`` is ``False``,
+                there is a unique group: :attr:`.Dataset.PARAMETER_GROUP``.
+                If ``categorize`` is ``True``,
+                the groups can be either
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                if ``opt_naming`` is ``True``,
+                or :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+                If ``by_group`` is ``False``, store the data by variable names.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+            opt_naming: Whether to use
+                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                as groups.
+                Otherwise,
+                use :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+            export_gradients: Whether to export the gradients of the functions
+                (objective function, constraints and observables)
+                if the latter are available in the database of the optimization problem.
+
+        Returns:
+            A dataset built from the database of the optimization problem.
+        """
+        return self.formulation.opt_problem.export_to_dataset(
+            name=name,
+            by_group=by_group,
+            categorize=categorize,
+            opt_naming=opt_naming,
+            export_gradients=export_gradients,
+        )
