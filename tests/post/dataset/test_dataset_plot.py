@@ -50,28 +50,51 @@ def test_get_label():
     label, varname = post._get_label(["parameters", "x", 0])
     assert label == "x(0)"
     assert varname == ("parameters", "x", "0")
-    with pytest.raises(TypeError):
-        label, varname = post._get_label(123)
+    error_message = (
+        "'variable' must be either a string or a tuple"
+        " whose first component is a string and second"
+        " one is an integer"
+    )
+    with pytest.raises(TypeError, match=error_message):
+        post._get_label(123)
 
 
-def test_custom():
+@pytest.fixture
+def plot():
+    """A simple dataset plot from a dataset with a single value: x=[1]."""
     dataset = Dataset()
-    dataset.set_from_array(array([[1, 2]]), variables=["x"], sizes={"x": 2})
-    plot = DatasetPlot(dataset)
-    assert plot.font_size == 10
-    assert plot.title is None
-    assert plot.xlabel is None
-    assert plot.ylabel is None
-    assert plot.zlabel is None
-    plot.title = "title"
-    assert plot.title == "title"
-    plot.xlabel = "xlabel"
-    assert plot.xlabel == "xlabel"
-    plot.ylabel = "ylabel"
-    assert plot.ylabel == "ylabel"
-    plot.zlabel = "zlabel"
-    assert plot.zlabel == "zlabel"
-    plot.font_size = 2
-    assert plot.font_size == 2
-    plot.font_size *= 2
-    assert plot.font_size == 4
+    dataset.set_from_array(array([[1]]), variables=["x"], sizes={"x": 1})
+    return DatasetPlot(dataset)
+
+
+@pytest.mark.parametrize(
+    "attribute,default_value",
+    [
+        ("xlabel", None),
+        ("ylabel", None),
+        ("zlabel", None),
+        ("title", None),
+        ("font_size", 10),
+        ("labels", {}),
+    ],
+)
+def test_property_default_values(plot, attribute, default_value):
+    """Check the default values of properties."""
+    assert getattr(plot, attribute) == default_value
+
+
+@pytest.mark.parametrize(
+    "attribute,value",
+    [
+        ("xlabel", "dummy_xlabel"),
+        ("ylabel", "dummy_ylabel"),
+        ("zlabel", "dummy_zlabel"),
+        ("title", "dummy_title"),
+        ("font_size", 2),
+        ("labels", {"x": "dummy_label"}),
+    ],
+)
+def test_setters(plot, attribute, value):
+    """Check the attribute setters."""
+    setattr(plot, attribute, value)
+    assert getattr(plot, attribute) == value
