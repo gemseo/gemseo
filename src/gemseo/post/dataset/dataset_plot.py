@@ -118,6 +118,7 @@ class DatasetPlot(object):
             FileType.FIGURE, default_name=default_name
         )
         self.__output_files = []
+        self.__names_to_labels = {}
 
     @property
     def output_files(self):  # type: (...) -> List[str]
@@ -496,3 +497,14 @@ class DatasetPlot(object):
         )
         if isinstance(self.linestyle, string_types):
             self.linestyle = [self.linestyle] * n_items
+
+    @property
+    def labels(self):  # type: (...) -> Mapping[str,str]
+        """The labels of the variables."""
+        return self.__names_to_labels
+
+    @labels.setter
+    def labels(
+        self, names_to_labels  # type: Mapping[str,str]
+    ):  # type: (...) -> None
+        self.__names_to_labels = names_to_labels
