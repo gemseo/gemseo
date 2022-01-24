@@ -606,7 +606,12 @@ Logic
     by writing more test functions.
     Use the
     `pytest fixtures <https://docs.pytest.org/en/stable/fixture.html>`_
-    features.
+    or import the |g| ones in a _conftest.py_ file:
+
+    .. code-block:: python
+
+        from gemseo.utils.pytest_conftest import skip_under_windows
+
     Tests shall be independent,
     any test function shall be executable alone.
 
