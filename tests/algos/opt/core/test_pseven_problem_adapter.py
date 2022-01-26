@@ -29,10 +29,7 @@ p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")
 from numpy import array  # noqa: E402
 
 from gemseo.algos.design_space import DesignSpace  # noqa: E402
-from gemseo.algos.opt.core.pseven_problem_adapter import (  # noqa: E402
-    CostType,
-    PSevenProblem,
-)
+from gemseo.algos.opt.core.pseven_problem_adapter import PSevenProblem  # noqa: E402
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
 from gemseo.core.mdofunctions.mdo_function import (  # noqa: E402
     MDOFunction,
@@ -177,7 +174,7 @@ def test_constraints_names(p7_problem, names):
     assert p7_problem.constraints_names() == names
 
 
-def test_constraints_bounds(p7_rosenbrock, p7_power2):
+def test_constraints_bounds(p7_rosenbrock, p7_power2, power2):
     """Check the constraints bounds."""
     # Unconstrained problem
     lower_bounds, upper_bounds = p7_rosenbrock.constraints_bounds()
@@ -186,8 +183,9 @@ def test_constraints_bounds(p7_rosenbrock, p7_power2):
 
     # Constrained problem
     lower_bounds, upper_bounds = p7_power2.constraints_bounds()
-    assert lower_bounds[2:] == [0.0]
-    assert upper_bounds == [0.0, 0.0, 0.0]
+    assert lower_bounds[2:] == [-power2.eq_tolerance]
+    assert upper_bounds[2:] == [power2.eq_tolerance]
+    assert upper_bounds[:2] == [power2.ineq_tolerance] * 2
 
 
 @pytest.mark.parametrize(
@@ -228,6 +226,9 @@ def test_size_full(p7_problem, size):
         ("Power2", 5, "@GTOpt/LinearityType", "Generic"),
         ("Power2", 5, "@GTOpt/EvaluationCostType", None),
         ("Power2", 5, "@GTOpt/ExpensiveEvaluations", None),
+        ("Power2", 6, "@GTOpt/LinearityType", "Generic"),
+        ("Power2", 6, "@GTOpt/EvaluationCostType", None),
+        ("Power2", 6, "@GTOpt/ExpensiveEvaluations", None),
     ],
     indirect=["p7_problem"],
 )
@@ -341,7 +342,7 @@ def test_function_without_dimension():
     with pytest.raises(
         p7core.exceptions.BBPrepareException,
         match="Problem definition error: RuntimeError in black box prepare:"
-        " The function dimension is not available.",
+        " The output dimension of function f is not available.",
     ):
         PSevenProblem(problem)
 
@@ -360,19 +361,75 @@ def test_variables_types(gemseo_type, pseven_type):
 
 
 @pytest.mark.parametrize(
-    ["gemseo_type", "pseven_type"],
-    [(CostType.CHEAP, "Cheap"), (CostType.EXPENSIVE, "Expensive")],
+    ["evaluation_cost_type", "objective_type"],
+    [
+        ({"rosen": "Cheap"}, "Cheap"),
+        ("Cheap", "Cheap"),
+        ({"rosen": "Expensive"}, "Expensive"),
+        ("Expensive", "Expensive"),
+        ({"f": "Expensive"}, None),
+    ],
 )
-def test_evaluation_cost_type(rosenbrock, gemseo_type, pseven_type):
-    """Check the pSeven evaluation cost types."""
-    problem = PSevenProblem(rosenbrock, evaluation_cost_type={"rosen": gemseo_type})
-    assert problem.elements_hint(2, "@GTOpt/EvaluationCostType") == pseven_type
+def test_evaluation_cost_type_rosenbrock(
+    rosenbrock, evaluation_cost_type, objective_type
+):
+    """Check the setting of an evaluation cost type on the Rosenbrock function."""
+    problem = PSevenProblem(rosenbrock, evaluation_cost_type=evaluation_cost_type)
+    assert problem.elements_hint(2, "@GTOpt/EvaluationCostType") == objective_type
 
 
-def test_expensive_evaluations(rosenbrock):
+@pytest.mark.parametrize(
+    ["evaluation_cost_type"],
+    [
+        ({"pow2": "Cheap", "ineq1": "Cheap", "ineq2": "Expensive", "eq": "Expensive"},),
+        ({"pow2": "Expensive", "ineq1": "Expensive", "ineq2": "Cheap", "eq": "Cheap"},),
+        ({"pow2": "Cheap", "ineq1": "Expensive", "ineq2": "Cheap", "eq": "Expensive"},),
+        ({"pow2": "Expensive", "ineq1": "Cheap", "ineq2": "Expensive", "eq": "Cheap"},),
+    ],
+)
+def test_evaluation_cost_type_power2_individual(power2, evaluation_cost_type):
+    """Check the setting of individual evaluation cost types on the Power2 functions."""
+    problem = PSevenProblem(power2, evaluation_cost_type=evaluation_cost_type)
+    assert (
+        problem.elements_hint(3, "@GTOpt/EvaluationCostType")
+        == evaluation_cost_type["pow2"]
+    )
+    assert (
+        problem.elements_hint(4, "@GTOpt/EvaluationCostType")
+        == evaluation_cost_type["ineq1"]
+    )
+    assert (
+        problem.elements_hint(5, "@GTOpt/EvaluationCostType")
+        == evaluation_cost_type["ineq2"]
+    )
+    assert (
+        problem.elements_hint(6, "@GTOpt/EvaluationCostType")
+        == evaluation_cost_type["eq"]
+    )
+
+
+@pytest.mark.parametrize(
+    ["evaluation_cost_type"],
+    [
+        ("Cheap",),
+        ("Expensive",),
+    ],
+)
+def test_evaluation_cost_type_power2_common(power2, evaluation_cost_type):
+    """Check the setting of a common evaluation cost type on the Power2 functions."""
+    problem = PSevenProblem(power2, evaluation_cost_type=evaluation_cost_type)
+    assert problem.elements_hint(3, "@GTOpt/EvaluationCostType") == evaluation_cost_type
+    assert problem.elements_hint(4, "@GTOpt/EvaluationCostType") == evaluation_cost_type
+    assert problem.elements_hint(5, "@GTOpt/EvaluationCostType") == evaluation_cost_type
+
+
+@pytest.mark.parametrize(
+    ["expensive_evaluations", "value"], [({"rosen": 7}, 7), ({"f": 7}, None)]
+)
+def test_expensive_evaluations(rosenbrock, expensive_evaluations, value):
     """Check the pSeven numbers of expensive evaluations."""
-    problem = PSevenProblem(rosenbrock, expensive_evaluations={"rosen": 7})
-    assert problem.elements_hint(2, "@GTOpt/ExpensiveEvaluations") == 7
+    problem = PSevenProblem(rosenbrock, expensive_evaluations=expensive_evaluations)
+    assert problem.elements_hint(2, "@GTOpt/ExpensiveEvaluations") == value
 
 
 @pytest.mark.parametrize(

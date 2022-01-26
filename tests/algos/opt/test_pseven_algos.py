@@ -25,11 +25,12 @@
 from __future__ import unicode_literals
 
 from typing import Union
-from unittest import mock
 
 import pytest
 
+from gemseo.algos.database import Database
 from gemseo.api import execute_algo
+from gemseo.utils.py23_compat import Path
 
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")
 
@@ -37,8 +38,6 @@ from numpy import array, ones  # noqa: E402
 from numpy.testing import assert_allclose  # noqa: E402
 
 from gemseo.algos.design_space import DesignSpace  # noqa: E402
-from gemseo.algos.opt.core.pseven_problem_adapter import CostType  # noqa: E402
-from gemseo.algos.opt.lib_pseven import GlobalMethod  # noqa: E402
 from gemseo.algos.opt.opt_factory import OptimizersFactory  # noqa: E402
 from gemseo.algos.opt_problem import OptimizationProblem  # noqa: E402
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction  # noqa: E402
@@ -50,24 +49,29 @@ def check_on_problem(
     problem,  # type: Union[Rosenbrock, Power2]
     algo_name,  # type: str
     **options
-):  # type: (...) -> None
+):  # type: (...) -> OptimizationProblem
     """Check that a pSeven optimizer solves a given problem.
 
     Args:
         problem: The optimization problem.
         algo_name: The name of the pSeven algorithm.
         options: The options of the algorithm.
+
+    Returns:
+        The solved optimization problem.
     """
     x_opt, f_opt = problem.get_solution()
     result = OptimizersFactory().execute(problem, algo_name, **options)
-    assert result.f_opt == pytest.approx(f_opt, abs=1e-6)
+    assert result.f_opt == pytest.approx(f_opt, abs=1e-3)
     assert_allclose(result.x_opt, x_opt, rtol=1e-3)
+    return problem
 
 
 @pytest.mark.parametrize(
     "algo_name,algo_options",
     [
-        ("PSEVEN", {}),
+        ("PSEVEN", {"normalize_design_space": False}),
+        ("PSEVEN", {"normalize_design_space": True}),
         ("PSEVEN_FD", {}),
         ("PSEVEN_NCG", {}),
         ("PSEVEN_NLS", {}),
@@ -79,9 +83,15 @@ def test_pseven_rosenbrock(algo_name, algo_options):
     check_on_problem(Rosenbrock(), algo_name, **algo_options)
 
 
-def test_pseven_power2():
+@pytest.mark.parametrize("normalize_design_space", [False, True])
+def test_pseven_power2(normalize_design_space):
     """Check that pSeven's default optimizer solves the Power2 problem."""
-    check_on_problem(Power2(), "PSEVEN")
+    check_on_problem(
+        Power2(),
+        "PSEVEN",
+        normalize_design_space=normalize_design_space,
+        eq_tolerance=1e-4,
+    )
 
 
 @pytest.mark.parametrize(
@@ -96,43 +106,27 @@ def test_pseven_unconstrained(algo_name):
 
 
 @pytest.mark.parametrize(
-    ["name", "cost_type", "message"],
-    [
-        ("f", CostType.EXPENSIVE, "Unknown function name: f"),
-        ("rosen", "Affordable", "Unknown cost type for function 'rosen': Affordable"),
-    ],
+    ["evaluation_cost_type"], [({"rosen": "Affordable"},), ("Affordable",)]
 )
-def test_evaluation_cost_type(name, cost_type, message):
-    """Check the passing of evaluation cost types."""
-    with pytest.raises(ValueError, match=message):
+def test_evaluation_cost_type_invalid(evaluation_cost_type):
+    """Check the passing of invalid evaluation cost types."""
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(
-            Rosenbrock(), "PSEVEN", evaluation_cost_type={name: cost_type}
+            Rosenbrock(), "PSEVEN", evaluation_cost_type=evaluation_cost_type
         )
 
 
-@pytest.mark.parametrize(
-    ["name", "number", "error", "message"],
-    [
-        ("f", 10, ValueError, "Unknown function name: f"),
-        (
-            "rosen",
-            0.1,
-            TypeError,
-            "Non-integer evaluations number for function 'rosen': 0.1",
-        ),
-    ],
-)
-def test_expensive_evaluations(name, number, error, message):
+def test_expensive_evaluations():
     """Check the passing of numbers of expensive evaluations."""
-    with pytest.raises(error, match=message):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(
-            Rosenbrock(), "PSEVEN", expensive_evaluations={name: number}
+            Rosenbrock(), "PSEVEN", expensive_evaluations={"rosen": 0.1}
         )
 
 
 def test_objectives_smoothness():
     """Check the passing of an objectives smoothness hint."""
-    with pytest.raises(ValueError, match="Unknown objectives smoothness: tata"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(
             Rosenbrock(), "PSEVEN", objectives_smoothness="tata"
         )
@@ -140,7 +134,7 @@ def test_objectives_smoothness():
 
 def test_constraints_smoothness():
     """Check the passing of a constraints smoothness hint."""
-    with pytest.raises(ValueError, match="Unknown constraints smoothness: toto"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(
             Rosenbrock(), "PSEVEN", constraints_smoothness="toto"
         )
@@ -148,25 +142,25 @@ def test_constraints_smoothness():
 
 def test_log_level():
     """Check the passing of a log level."""
-    with pytest.raises(ValueError, match="Unknown log level: High"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(Rosenbrock(), "PSEVEN", log_level="High")
 
 
 def test_diff_scheme():
     """Check the passing of a differentiation scheme order."""
-    with pytest.raises(ValueError, match="Unknown differentiation scheme: ThirdOrder"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(Rosenbrock(), "PSEVEN", diff_scheme="ThirdOrder")
 
 
 def test_diff_type():
     """Check the passing of a differentiation scheme type."""
-    with pytest.raises(ValueError, match="Unknown differentiation type: Complex"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(Rosenbrock(), "PSEVEN", diff_type="Complex")
 
 
 def test_globalization_method():
     """Check the passing of a globalization method."""
-    with pytest.raises(ValueError, match="Unknown globalization method: TR"):
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
         OptimizersFactory().execute(Rosenbrock(), "PSEVEN", globalization_method="TR")
 
 
@@ -196,59 +190,35 @@ def test_qp_nonlinear_constraint():
         OptimizersFactory().execute(problem, "PSEVEN_QP")
 
 
-@pytest.mark.parametrize(
-    ["option_value", "pseven_value"], [(True, "Forced"), (False, "Disabled")]
-)
-def test_local_search_option(option_value, pseven_value):
-    """Check the passing of the local search option."""
-    lib = OptimizersFactory().create("PSEVEN")
-    lib.init_options_grammar("PSEVEN")
-    lib.problem = Rosenbrock()
-    options = lib._get_options(local_search=option_value)
-    assert options["GTOpt/LocalSearch"] == pseven_value
-
-
-@pytest.mark.parametrize(
-    ["has_eq", "has_ineq", "tolerance"],
-    [
-        (True, True, 5e-7),
-        (True, False, 5e-4),
-        (False, True, 5e-7),
-        (False, False, None),
-    ],
-)
-def test_constraints_tolerance(has_eq, has_ineq, tolerance):
-    """Check the setting of the pSeven tolerance on the constraints."""
-    lib = OptimizersFactory().create("PSEVEN")
-    lib.init_options_grammar("PSEVEN")
-    design_space = DesignSpace()
-    design_space.add_variable("x", 3, value=0)
-    problem = OptimizationProblem(design_space)
-    problem.constraints = [lambda x: x, lambda x: x[0] ** 2]
-    problem.eq_tolerance = 1e-3
-    problem.ineq_tolerance = 1e-6
-    problem.has_eq_constraints = mock.MagicMock(return_value=has_eq)
-    problem.has_ineq_constraints = mock.MagicMock(return_value=has_ineq)
-    lib.problem = problem
-    assert lib._get_options()["GTOpt/ConstraintsTolerance"] == tolerance
-
-
 def test_pseven_techniques():
     """Check the passing of pSeven techniques."""
     lib = OptimizersFactory().create("PSEVEN_FD")
     lib.init_options_grammar("PSEVEN_FD")
     lib.problem = Rosenbrock()
-    options = lib._get_options(
-        globalization_method=GlobalMethod.RL, surrogate_based=True
-    )
+    options = lib._get_options(globalization_method="RL", surrogate_based=True)
     assert options["GTOpt/Techniques"] == "[FD, RL, SBO]"
 
 
-def test_gemseo_stops_before_pseven():
-    """Check the termination of the optimization by Gemseo rather than pSeven."""
-    result = OptimizersFactory().execute(Rosenbrock(), "PSEVEN", max_iter=1)
-    assert result.status == 7
-    assert result.message == "User terminated"
+@pytest.mark.parametrize(
+    ["options", "message"],
+    [
+        ({"max_iter": 1}, "Maximum number of iterations reached."),
+        (
+            {"xtol_abs": 1e6},
+            "Successive iterates of the design variables are closer than xtol_rel"
+            " or xtol_abs.",
+        ),
+        (
+            {"ftol_abs": 1e6},
+            "Successive iterates of the objective function are closer than ftol_rel"
+            " or ftol_abs.",
+        ),
+    ],
+)
+def test_gemseo_stopping(options, message):
+    """Check the termination of the optimization by GEMSEO."""
+    result = OptimizersFactory().execute(Rosenbrock(), "PSEVEN", **options)
+    assert result.message == message + " GEMSEO Stopped the driver"
 
 
 def test_pseven_stop_before_gemseo():
@@ -256,7 +226,7 @@ def test_pseven_stop_before_gemseo():
     result = OptimizersFactory().execute(
         Rosenbrock(),
         "PSEVEN",
-        evaluation_cost_type={"rosen": CostType.EXPENSIVE},
+        evaluation_cost_type={"rosen": "Expensive"},
         expensive_evaluations={"rosen": 2},
     )
     assert result.status == 0
@@ -273,3 +243,54 @@ def test_pseven_sample_x():
     assert database.contains_x(current_x)
     assert database.contains_x(sample_x[0])
     assert database.contains_x(sample_x[1])
+
+
+@pytest.mark.parametrize("global_phase_intensity", ["toto", -1, 1.1])
+def test_global_phase_intensity(global_phase_intensity):
+    """Check the "global phase intensity" option."""
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
+        OptimizersFactory().execute(
+            Rosenbrock(), "PSEVEN", global_phase_intensity=global_phase_intensity
+        )
+
+
+@pytest.mark.parametrize("deterministic", ["Yes", 0])
+def test_deterministic(deterministic):
+    """Check the "deterministic" option."""
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
+        OptimizersFactory().execute(Rosenbrock(), "PSEVEN", deterministic=deterministic)
+
+
+def test_local_search():
+    """Check the "local search" option."""
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
+        OptimizersFactory().execute(Rosenbrock(), "PSEVEN", local_search="Yes")
+
+
+def test_responses_scalability():
+    """Check the "responses scalability" option."""
+    with pytest.raises(ValueError, match="Invalid options for algorithm PSEVEN"):
+        OptimizersFactory().execute(Rosenbrock(), "PSEVEN", responses_scalability=0)
+
+
+@pytest.mark.parametrize("use_gradient", [False, True])
+def test_disable_derivatives(use_gradient):
+    """Check the disabling of the derivatives."""
+    problem = check_on_problem(Rosenbrock(), "PSEVEN", use_gradient=use_gradient)
+    gradient_name = "{}{}".format(Database.GRAD_TAG, problem.objective.name)
+    assert (
+        any(gradient_name in values for values in problem.database.values())
+        == use_gradient
+    )
+
+
+def test_log_file(tmpdir):
+    """Check the log file."""
+    path = Path(tmpdir / "log.txt")
+    assert not path.is_file()
+    OptimizersFactory().execute(
+        Rosenbrock(), "PSEVEN", log_level="Info", log_path=str(path)
+    )
+    assert path.is_file()
+    # Check that the file is not empty
+    assert path.stat().st_size > 0

@@ -1942,17 +1942,63 @@ class OptimizationProblem(object):
         """Whether the optimization problem is mono-objective."""
         return len(self.objective.outvars) == 1
 
-    def get_functions_dimensions(self):  # type: (...) -> Dict[str, int]
+    def get_functions_dimensions(
+        self, names=None  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> Dict[str, int]
         """Return the dimensions of the outputs of the problem functions.
+
+        Args:
+            names: The names of the functions.
+                If None, then the objective and all the constraints are considered.
 
         Returns:
             The dimensions of the outputs of the problem functions.
             The dictionary keys are the functions names
             and the values are the functions dimensions.
         """
-        design_variables = self.design_space.get_current_x()
-        values, _ = self.evaluate_functions(design_variables, normalize=False)
-        return {name: atleast_1d(value).size for name, value in values.items()}
+        if names is None:
+            names = [self.objective.name] + self.get_constraints_names()
+
+        return {name: self.get_function_dimension(name) for name in names}
+
+    def get_function_dimension(
+        self, name  # type: str
+    ):  # type: (...) -> int
+        """Return the dimension of a function of the problem (e.g. a constraint).
+
+        Args:
+            name: The name of the function.
+
+        Returns:
+            The dimension of the function.
+
+        Raises:
+            ValueError: If the function name is unknown to the problem.
+            RuntimeError: If the function dimension is not unavailable.
+        """
+        # Check that the required function belongs to the problem and get it
+        for func in self.get_all_functions():
+            if func.name == name:
+                function = func
+                break
+        else:
+            raise ValueError("The problem has no function named {}.".format(name))
+
+        # Get the dimension of the function output
+        if function.has_dim():
+            return function.dim
+
+        if self.design_space.has_current_x():
+            if function.expects_normalized_inputs:
+                current_variables = self.get_x0_normalized()
+            else:
+                current_variables = self.design_space.get_current_x()
+
+            return atleast_1d(function(current_variables)).size
+
+        raise RuntimeError(
+            "The output dimension of function {} is not available.".format(name)
+        )
 
     def get_number_of_unsatisfied_constraints(
         self,
@@ -1967,7 +2013,9 @@ class OptimizationProblem(object):
             The number of unsatisfied scalar constraints.
         """
         n_unsatisfied = 0
-        values, _ = self.evaluate_functions(design_variables, normalize=False)
+        values, _ = self.evaluate_functions(
+            design_variables, eval_obj=False, normalize=False
+        )
         for constraint in self.constraints:
             value = atleast_1d(values[constraint.name])
             if constraint.f_type == MDOFunction.TYPE_EQ:
@@ -1985,17 +2033,13 @@ class OptimizationProblem(object):
             The names of the scalar constraints.
         """
         constraints_names = list()
-        dimensions = self.get_functions_dimensions()
-        for name in self.get_constraints_names():
-            dimension = dimensions[name]
+        for constraint in self.constraints:
+            dimension = self.get_function_dimension(constraint.name)
             if dimension == 1:
-                constraints_names.append(name)
+                constraints_names.append(constraint.name)
             else:
                 constraints_names.extend(
-                    [
-                        "{}{}{}".format(name, DesignSpace.SEP, index)
-                        for index in range(dimension)
-                    ]
+                    [constraint.get_indexed_name(index) for index in range(dimension)]
                 )
         return constraints_names
 

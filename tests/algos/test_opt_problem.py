@@ -867,10 +867,13 @@ def constrained_problem():  # type: (...) -> OptimizationProblem
     return problem
 
 
-def test_get_functions_dimensions(constrained_problem):
+@pytest.mark.parametrize(
+    ["names", "dimensions"],
+    [(None, {"f": 1, "g": 1, "h": 2}), (["g", "h"], {"g": 1, "h": 2})],
+)
+def test_get_functions_dimensions(constrained_problem, names, dimensions):
     """Check the computation of the functions dimensions."""
-    dimensions = constrained_problem.get_functions_dimensions()
-    assert dimensions == {"f": 1, "g": 1, "h": 2}
+    assert constrained_problem.get_functions_dimensions(names) == dimensions
 
 
 @pytest.mark.parametrize(
@@ -1053,3 +1056,64 @@ def test_function_string_representation_from_hdf():
     )
     assert str(new_problem.objective) == "f(x0, x1)"
     assert str(new_problem.constraints[0]) == "g(x0, x1)"
+
+
+@pytest.mark.parametrize(["name", "dimension"], [("f", 1), ("g", 1), ("h", 2)])
+def test_get_function_dimension(constrained_problem, name, dimension):
+    """Check the output dimension of a problem function."""
+    assert constrained_problem.get_function_dimension(name) == dimension
+
+
+def test_get_function_dimension_unknown(constrained_problem):
+    """Check the output dimension of an unknown problem function."""
+    with pytest.raises(ValueError, match="The problem has no function named unknown."):
+        constrained_problem.get_function_dimension("unknown")
+
+
+@pytest.fixture()
+def design_space():  # type: (...) -> mock.Mock
+    """A design space."""
+    design_space = mock.Mock()
+    design_space.get_current_x = mock.Mock()
+    return design_space
+
+
+@pytest.fixture()
+def function():  # type: (...) -> mock.Mock
+    """A function."""
+    function = mock.MagicMock(return_value=1.0)
+    function.name = "f"
+    return function
+
+
+@pytest.mark.parametrize(["expects_normalized"], [(True,), (False,)])
+def test_get_function_dimension_no_dim(function, design_space, expects_normalized):
+    """Check the implicitly defined output dimension of a problem function."""
+    function.has_dim = mock.Mock(return_value=False)
+    function.expects_normalized_inputs = expects_normalized
+    design_space.has_current_x = mock.Mock(return_value=True)
+    problem = OptimizationProblem(design_space)
+    problem.objective = function
+    problem.get_x0_normalized = mock.Mock()
+    assert problem.get_function_dimension(function.name) == 1
+    if expects_normalized:
+        problem.get_x0_normalized.assert_called_once()
+        design_space.get_current_x.assert_not_called()
+    else:
+        problem.get_x0_normalized.assert_not_called()
+        design_space.get_current_x.assert_called_once()
+
+
+def test_get_function_dimension_unavailable(function, design_space):
+    """Check the unavailable output dimension of a problem function."""
+    function.has_dim = mock.Mock(return_value=False)
+    design_space.has_current_x = mock.Mock(return_value=False)
+    problem = OptimizationProblem(design_space)
+    problem.objective = function
+    with pytest.raises(
+        RuntimeError,
+        match="The output dimension of function {} is not available.".format(
+            function.name
+        ),
+    ):
+        problem.get_function_dimension(function.name)

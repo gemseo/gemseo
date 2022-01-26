@@ -1,15 +1,64 @@
 {
 	"name": "PSEVEN_options",
 	"properties": {
+		"xtol_rel": {
+			"type": "number",
+			"minimum": 0.0
+		},
+		"normalize_design_space": {
+			"type": "boolean"
+		},
+		"xtol_abs": {
+			"type": "number",
+			"minimum": 0.0
+		},
+		"ftol_rel": {
+			"type": "number",
+			"minimum": 0.0
+		},
+		"ftol_abs": {
+			"type": "number",
+			"minimum": 0.0
+		},
+		"stop_crit_n_x": {
+			"type": "integer",
+			"minimum": 2
+		},
+		"eq_tolerance": {
+			"type": "number",
+			"minimum": 0.0
+		},
+		"ineq_tolerance": {
+			"type": "number",
+			"minimum": 0.0
+		},
 		"max_iter": {
 			"type": "integer",
 			"minimum": 1
 		},
 		"evaluation_cost_type": {
-			"type": ["null", "object"]
+			"anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "string",
+					"enum": ["Cheap", "Expensive"]
+				},
+				{
+					"type": "object",
+					"additionalProperties": {
+						"type": "string",
+						"enum": ["Cheap", "Expensive"]
+					}
+				}
+			]
 		},
 		"expensive_evaluations": {
-			"type": ["null", "object"]
+			"type": ["null", "object"],
+			"additionalProperties": {
+				"type": "integer"
+			}
 		},
 		"sample_x": {
 			"type": ["null", "array"]
@@ -21,10 +70,12 @@
 			"type": ["null", "array"]
 		},
 		"constraints_smoothness": {
-			"type": "string"
+			"type": "string",
+			"enum": ["Smooth", "Noisy", "Auto"]
 		},
 		"global_phase_intensity": {
-			"type": ["null", "number"],
+			"type": ["string", "number"],
+			"enum": ["Auto"],
 			"minimum": 0.0,
 			"maximum": 1.0
 		},
@@ -39,13 +90,16 @@
 			"maximum": 4294967294
 		},
 		"objectives_smoothness": {
-			"type": "string"
+			"type": "string",
+			"enum": ["Smooth", "Noisy", "Auto"]
 		},
 		"deterministic": {
-			"type": ["null", "boolean"]
+			"type": ["string", "boolean"],
+			"enum": ["Auto"]
 		},
 		"log_level": {
-			"type": "string"
+			"type": "string",
+			"enum": ["Debug", "Info", "Warn", "Error", "Fatal"]
 		},
 		"verbose_log" : {
 			"type": "boolean"
@@ -65,14 +119,6 @@
 			"minimum": 0,
 			"maximum": 4294967294
 		},
-		"grad_tol": {
-			"type": "number",
-			"minimum": 0.0,
-			"maximum": 1.0
-		},
-		"grad_tol_is_abs": {
-			"type": "boolean"
-		},
 		"max_batch_size": {
 			"type": "integer",
 			"minimum": 0,
@@ -82,10 +128,12 @@
 			"type": "boolean"
 		},
 		"diff_scheme": {
-			"type": "string"
+			"type": "string",
+			"enum": ["FirstOrder", "SecondOrder", "Adaptive", "Auto"]
 		},
 		"diff_type": {
-			"type": "string"
+			"type": "string",
+			"enum": ["Numerical", "Framed", "Auto"]
 		},
 		"diff_step" : {
 			"type": "number",
@@ -96,16 +144,30 @@
 			"type": "boolean"
 		},
 		"local_search": {
-			"type": "boolean"
+			"type": "string",
+			"enum": ["Disabled", "Forced"]
 		},
 		"restore_analytic_func": {
-			"type": "boolean"
+			"type": ["string", "boolean"],
+			"enum": ["Auto"]
+		},
+		"responses_scalability": {
+			"type": "integer",
+			"minimum": 1,
+			"maximum": 512
 		},
 		"globalization_method": {
-			"type": ["null", "string"]
+			"type": ["null", "string"],
+			"enum": [null, "RL", "PM", "MS"]
 		},
 		"surrogate_based": {
 			"type": ["null", "boolean"]
+		},
+		"use_gradient": {
+			"type": "boolean"
+		},
+		"log_path": {
+			"type": ["null", "string"]
 		}
 	},
 	"$schema": "http://json-schema.org/draft-04/schema",
