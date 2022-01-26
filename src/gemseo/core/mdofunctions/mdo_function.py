@@ -1178,6 +1178,19 @@ class MDOFunction(object):
         """Whether the functions expect normalized inputs or not."""
         return False
 
+    def get_indexed_name(
+        self, index  # type: int
+    ):  # type: (...) -> str
+        """Return the name of function component.
+
+        Args:
+            index: The index of the function component.
+
+        Returns:
+            The name of the function component.
+        """
+        return "{}{}{}".format(self.name, DesignSpace.SEP, index)
+
 
 class NotImplementedCallable(object):
     """A not implemented callable object."""

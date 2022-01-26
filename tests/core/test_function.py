@@ -725,3 +725,8 @@ def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
     """Check the inputs normalization expectation."""
     func = NormDBFunction(function, normalize, False, problem)
     assert func.expects_normalized_inputs == normalize
+
+
+def test_get_indexed_name(function):
+    """Check the indexed function name."""
+    assert function.get_indexed_name(3) == "n!3"
