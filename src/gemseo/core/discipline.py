@@ -24,7 +24,6 @@
 
 from __future__ import division, unicode_literals
 
-import inspect
 import logging
 import os
 import sys
@@ -102,7 +101,6 @@ class MDODiscipline(object):
     Attributes:
         input_grammar (AbstractGrammar): The input grammar.
         output_grammar (AbstractGrammar): The output grammar.
-        comp_dir (str): The path to the directory of the discipline module file if any.
         data_processor (DataProcessor): A tool to pre- and post-process discipline data.
         re_exec_policy (str): The policy to re-execute the same discipline.
         residual_variables (List[str]): The output variables
@@ -167,14 +165,9 @@ class MDODiscipline(object):
         "_default_inputs",
         "re_exec_policy",
         "exec_time",
-        "_cache_type",
-        "_cache_file_path",
-        "_cache_tolerance",
-        "_cache_hdf_node_name",
         "_linearize_on_last_state",
         "_cache_was_loaded",
         "_grammar_type",
-        "comp_dir",
         "exec_for_lin",
         "_in_data_hash_dict",
         "_jac_approx",
@@ -218,14 +211,11 @@ class MDODiscipline(object):
                 e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` or :attr:`.MDODiscipline.HDF5_CACHE`.
+                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE`
+                or :attr:`.MDODiscipline.HDF5_CACHE`.
             cache_file_path: The HDF file path
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
         """
-        self.input_grammar = None  # : input grammar
-        self.output_grammar = None  # : output grammar
-        self._grammar_type = grammar_type
-        self.comp_dir = None
 
         # : data converters between execute and _run
         self.data_processor = None
@@ -260,26 +250,24 @@ class MDODiscipline(object):
         else:
             self.name = name
 
-        self.cache = None
-        self._cache_type = cache_type
-        self._cache_file_path = cache_file_path
-        self._cache_tolerance = 0.0
-        self._cache_hdf_node_name = None
-        # By default, don´t use approximate cache
-        # It is up to the user to choose to optimize CPU time with this or not
-        self.set_cache_policy(cache_type=cache_type, cache_hdf_file=cache_file_path)
+        self.cache = self.__create_new_cache(
+            cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
+        )
+        self._cache_was_loaded = False
+
         # linearize mode :auto, adjoint, direct
         self._linearization_mode = JacobianAssembly.AUTO_MODE
 
-        self_module = sys.modules.get(self.__class__.__module__)
-        has_file = hasattr(self_module, "__file__")
-        if has_file:
-            self.comp_dir = str(Path(inspect.getfile(self.__class__)).parent.absolute())
+        self.input_grammar = None
+        self.output_grammar = None
+        self._grammar_type = grammar_type
 
-        if input_grammar_file is None and auto_detect_grammar_files:
-            input_grammar_file = self.auto_get_grammar_file(True)
-        if output_grammar_file is None and auto_detect_grammar_files:
-            output_grammar_file = self.auto_get_grammar_file(False)
+        if auto_detect_grammar_files:
+            if input_grammar_file is None:
+                input_grammar_file = self.auto_get_grammar_file(True)
+
+            if output_grammar_file is None:
+                output_grammar_file = self.auto_get_grammar_file(False)
 
         self._instantiate_grammars(
             input_grammar_file, output_grammar_file, self._grammar_type
@@ -288,7 +276,6 @@ class MDODiscipline(object):
         self.local_data = {}  # : the inputs and outputs data
         # : The current status of execution
         self._status = self.STATUS_PENDING
-        self._cache_was_loaded = False
         self._init_shared_attrs()
         self._status_observers = []
 
@@ -310,17 +297,6 @@ class MDODiscipline(object):
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
-
-    def __init_cache_attr(self):  # type: (...) -> None
-        """Initialize the cache attributes."""
-        if self._cache_type == self.HDF5_CACHE:
-            self.cache = None
-            self.set_cache_policy(
-                self.HDF5_CACHE,
-                self._cache_tolerance,
-                self._cache_file_path,
-                self._cache_hdf_node_name,
-            )
 
     @property
     def n_calls(self):  # type: (...) -> int
@@ -383,36 +359,32 @@ class MDODiscipline(object):
         is_input=True,  # type: bool
         name=None,  # type: Optional[str]
         comp_dir=None,  # type: Optional[Union[str, Path]]
-    ):  # type: (...) -> Path
+    ):  # type: (...) -> str
         """Use a naming convention to associate a grammar file to a discipline.
 
-        This method searches in a directory for
+        Searches in a directory for
         either an input grammar file named ``name + "_input.json"``
         or an output grammar file named ``name + "_output.json"``.
 
         Args:
-            is_input: If True,
-                autodetect the input grammar file;
-                otherwise,
-                autodetect the output grammar file.
+            is_input: Whether to search for an input or output grammar file.
             name: The name to be searched in the file names.
-                If None,
-                use the :attr:`.MDODiscipline.name` name of the discipline.
+                If None, use :attr:`.MDODiscipline.name`.
             comp_dir: The directory in which to search the grammar file.
-                If None, use :attr:`.MDODiscipline.comp_dir`.
+                If None, use the directory that contains the discipline class.
 
         Returns:
             The grammar file path.
         """
         if comp_dir is None:
-            comp_dir = self.comp_dir
-        if name is None:
-            name = self.name
-        if is_input:
-            suffix = "input"
+            class_module = sys.modules[self.__class__.__module__]
+            comp_dir = Path(class_module.__file__).parent.absolute()
         else:
-            suffix = "output"
-        return Path(comp_dir) / "{}_{}.json".format(name, suffix)
+            comp_dir = Path(comp_dir)
+
+        name = name or self.name
+        inout = "in" if is_input else "out"
+        return str(comp_dir / "{}_{}put.json".format(name, inout))
 
     def add_differentiated_inputs(
         self,
@@ -471,6 +443,32 @@ class MDODiscipline(object):
             outputs = self.get_output_data_names()
         self._differentiated_outputs = list(set(out_diff) | set(outputs))
 
+    def __create_new_cache(
+        self,
+        class_name,  # type: str
+        **kwargs  # type: Union[bool, float, str]
+    ):  # type (...) -> AbstractCache
+        """Create a cache object.
+
+        Args:
+            class_name: The name of the cache class.
+            **kwargs: The arguments to instantiate a cache object.
+
+        Returns:
+            The cache object.
+        """
+        if class_name != self.HDF5_CACHE:
+            for key in ("hdf_file_path", "hdf_node_path"):
+                if key in kwargs:
+                    del kwargs[key]
+
+        if class_name != self.MEMORY_FULL_CACHE:
+            key = "is_memory_shared"
+            if key in kwargs:
+                del kwargs[key]
+
+        return CacheFactory().create(class_name, name=self.name, **kwargs)
+
     def set_cache_policy(
         self,
         cache_type=SIMPLE_CACHE,  # type: str
@@ -517,50 +515,24 @@ class MDODiscipline(object):
                    there may be duplicate computations
                    because the cache will not be shared among the processes.
         """
-
-        create_cache = CacheFactory().create
-
-        if cache_type == self.HDF5_CACHE:
-            not_same_file = cache_hdf_file != self._cache_file_path
-            not_same_node = cache_hdf_node_name != self._cache_hdf_node_name
-            cache_none = self.cache is None
-            already_hdf = self._cache_type == self.HDF5_CACHE
-            not_already_hdf = self._cache_type != self.HDF5_CACHE
-            if cache_none or (
-                (already_hdf and (not_same_file or not_same_node)) or not_already_hdf
-            ):
-                node_path = cache_hdf_node_name or self.name
-                self.cache = create_cache(
-                    self.HDF5_CACHE,
-                    hdf_file_path=cache_hdf_file,
-                    hdf_node_path=node_path,
-                    tolerance=cache_tolerance,
-                    name=self.name,
-                )
-                self._cache_hdf_node_name = cache_hdf_node_name
-                self._cache_file_path = cache_hdf_file
-
-        elif cache_type != self._cache_type or self.cache is None:
-            if cache_type == self.MEMORY_FULL_CACHE:
-                self.cache = create_cache(
-                    cache_type,
-                    tolerance=cache_tolerance,
-                    name=self.name,
-                    is_memory_shared=is_memory_shared,
-                )
-            else:
-                self.cache = create_cache(
-                    cache_type, tolerance=cache_tolerance, name=self.name
-                )
+        if self.cache.__class__.__name__ != cache_type or not (
+            cache_type == self.HDF5_CACHE
+            and cache_hdf_file == self.cache._hdf_file.hdf_file_path
+            and cache_hdf_node_name == self.cache.node_path
+        ):
+            self.cache = self.__create_new_cache(
+                cache_type,
+                tolerance=cache_tolerance,
+                hdf_file_path=cache_hdf_file,
+                hdf_node_path=cache_hdf_node_name or self.name,
+                is_memory_shared=is_memory_shared,
+            )
         else:
             LOGGER.warning(
-                "Cache policy is already set to %s. To clear the"
-                " discipline cache, use its clear() method.",
+                "Cache policy is set to %s: call clear() to clear a "
+                "discipline cache",
                 cache_type,
             )
-
-        self._cache_type = cache_type
-        self._cache_tolerance = cache_tolerance
 
     def get_sub_disciplines(
         self,
@@ -1896,10 +1868,10 @@ class MDODiscipline(object):
         Returns:
             The discipline instance.
         """
-        in_file = Path(in_file)
-        with in_file.open("rb") as in_fobj:
-            pickler = pickle.Unpickler(in_fobj)
-            return pickler.load()
+        with Path(in_file).open("rb") as file_:
+            pickler = pickle.Unpickler(file_)
+            obj = pickler.load()
+        return obj
 
     def get_attributes_to_serialize(self):  # pylint: disable=R0201
         """Define the names of the attributes to be serialized.
@@ -1923,61 +1895,51 @@ class MDODiscipline(object):
             AttributeError: When an attribute to be serialized is undefined.
             TypeError: When an attribute has an undefined type.
         """
-        out_d = {}
-        for keep_name in self.get_attributes_to_serialize():
-            if keep_name not in self.__dict__:
-                if "_" + keep_name not in self.__dict__ and not hasattr(
-                    self, keep_name
+        state = {}
+        for attribute_name in self.get_attributes_to_serialize():
+            if attribute_name not in self.__dict__:
+                if "_" + attribute_name not in self.__dict__ and not hasattr(
+                    self, attribute_name
                 ):
                     msg = (
-                        "Discipline {} defined attribute '{}' "
-                        "as required for serialization, "
-                        "but it appears to "
-                        "be undefined.".format(self.name, keep_name)
-                    )
+                        "The discipline {} cannot be serialized "
+                        "because its attribute {} does not exist."
+                    ).format(self.name, attribute_name)
                     raise AttributeError(msg)
 
-                prop = self.__dict__.get("_" + keep_name)
+                prop = self.__dict__.get("_" + attribute_name)
                 # May appear for properties that overload public attrs of super class
-                if hasattr(self, keep_name) and not isinstance(prop, Synchronized):
+                if hasattr(self, attribute_name) and not isinstance(prop, Synchronized):
                     continue
 
                 if not isinstance(prop, Synchronized):
                     raise TypeError(
-                        "Cant handle attribute {} serialization "
-                        "of undefined type.".format(keep_name)
+                        "The discipline {} cannot be serialized "
+                        "because its attribute {} has an undefined type.".format(
+                            self.name, attribute_name
+                        )
                     )
                 # Don´t serialize shared memory object,
                 # this is meaningless, save the value instead
-                out_d[keep_name] = prop.value
+                state[attribute_name] = prop.value
             else:
-                out_d[keep_name] = self.__dict__[keep_name]
+                state[attribute_name] = self.__dict__[attribute_name]
 
-        if self._cache_type == self.HDF5_CACHE:
-            out_d.pop("cache")
-        return out_d
+        return state
 
     def __setstate__(
         self,
-        state_dict,  # type: Dict[str, Any]
+        state,  # type: Dict[str, Any]
     ):  # type: (...) -> None
-        """Used by pickle to define what to deserialize.
-
-        Args:
-            state_dict: Update ``self.__dict__`` from ``state_dict``
-                to deserialize the discipline.
-        """
         self._init_shared_attrs()
         self._status_observers = []
-        out_d = self.__dict__
-        shared_attrs = list(out_d.keys())
-        for key, val in state_dict.items():
-            if "_" + key not in shared_attrs:
-                out_d[key] = val
+        __dict__ = self.__dict__
+        for key, val in state.items():
+            _key = "_{}".format(key)
+            if _key not in __dict__.keys():
+                __dict__[key] = val
             else:
-                out_d["_" + key].value = val
-
-        self.__init_cache_attr()
+                __dict__[_key].value = val
 
     def get_local_data_by_name(
         self,

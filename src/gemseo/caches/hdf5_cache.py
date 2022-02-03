@@ -73,23 +73,37 @@ class HDF5Cache(AbstractFullCache):
         >>> from gemseo.caches.hdf5_cache import HDF5Cache
         >>> cache = HDF5Cache('my_cache.h5', 'my_node')
         """
-        if not name:
-            name = hdf_node_path
-        self.__file_path = hdf_file_path
-        self._hdf_file = HDF5FileSingleton(hdf_file_path)
         self.__hdf_node_path = hdf_node_path
+        self._hdf_file = HDF5FileSingleton(hdf_file_path)
+        if name is None:
+            name = hdf_node_path
         super(HDF5Cache, self).__init__(tolerance, name)
         self._read_hashes()
 
     def __str__(self):
         msg = super(HDF5Cache, self).__str__()
-        msg += "\n" + "HDF file path " + str(self.__file_path) + "\n"
+        msg += "\n" + "HDF file path " + str(self._hdf_file.hdf_file_path) + "\n"
         msg += "HDF node path " + str(self.__hdf_node_path)
         return msg
 
+    def __getstate__(self):
+        # Pickle __init__ arguments so to call it when unpickling.
+        return dict(
+            tolerance=self.tolerance,
+            hdf_file_path=self._hdf_file.hdf_file_path,
+            hdf_node_path=self.__hdf_node_path,
+            name=self.name,
+        )
+
+    def __setstate__(self, state):
+        self.__init__(**state)
+
     def _duplicate_from_scratch(self):
-        return HDF5Cache(
-            "inc_" + self.__file_path, self.__hdf_node_path, self.tolerance, self.name
+        return self.__class__(
+            "inc_" + self._hdf_file.hdf_file_path,
+            self.__hdf_node_path,
+            self.tolerance,
+            self.name,
         )
 
     def _set_lock(self):
@@ -106,7 +120,7 @@ class HDF5Cache(AbstractFullCache):
         n_hash = len(self._hashes)
         if n_hash > 0:
             msg = "Found %s entries in the cache file : %s node : %s"
-            LOGGER.info(msg, n_hash, self.__file_path, self.__hdf_node_path)
+            LOGGER.info(msg, n_hash, self._hdf_file.hdf_file_path, self.__hdf_node_path)
 
     def _has_group(self, sample_id, var_group):
         """Check if the dataset has the particular variables group filled in.
