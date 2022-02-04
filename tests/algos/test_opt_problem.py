@@ -1117,3 +1117,75 @@ def test_get_function_dimension_unavailable(function, design_space):
         ),
     ):
         problem.get_function_dimension(function.name)
+
+
+@pytest.mark.parametrize("categorize", [True, False])
+@pytest.mark.parametrize("export_gradients", [True, False])
+def test_dataset_missing_values(categorize, export_gradients):
+    """Test the export of a database with missing values to a dataset.
+
+    Args:
+        categorize: If True, remove the non-feasible points from
+                the data.
+        export_gradients: If True, export the gradient to the dataset.
+    """
+    problem = Power2()
+    # Add a complete evaluation.
+    problem.database.store(
+        np.array([1.0, 1.0, 1.0]),
+        {
+            "pow2": 3.0,
+            "Iter": [1],
+            "design norm": 1.7320508075688772,
+            "@pow2": array([2.0, 2.0, 2.0]),
+        },
+    )
+    # Add a point with missing values.
+    problem.database.store(np.array([-1.0, -1.0, -1.0]), {"Iter": [2]})
+    # Add a complete evaluation.
+    problem.database.store(
+        np.array([-1.77635684e-15, 1.33226763e-15, 4.44089210e-16]),
+        {
+            "pow2": 5.127595883936577e-30,
+            "Iter": [3],
+            "design norm": 2.2644195468014703e-15,
+            "@pow2": array([-3.55271368e-15, 2.66453526e-15, 8.88178420e-16]),
+        },
+    )
+    # Add one evaluation with complete function data but missing gradient.
+    problem.database.store(
+        np.array([0.0, 0.0, 0.0]), {"pow2": 0.0, "Iter": [4], "design norm": 0.0}
+    )
+    # Another point with missing values.
+    problem.database.store(
+        np.array([0.5, 0.5, 0.5]),
+        {"Iter": [5]},
+    )
+    # Export to a dataset.
+    dataset = problem.export_to_dataset(
+        categorize=categorize, export_gradients=export_gradients
+    )
+    # Check that the missing values are exported as NaN.
+    if categorize:
+        if export_gradients:
+            assert dataset.data["functions"][3].all() == np.array([0.0, 0.0]).all()
+            assert (
+                dataset.data["gradients"][3].all()
+                == np.array([np.nan, np.nan, np.nan]).all()
+            )
+        else:
+            assert (
+                dataset.data["functions"][1].all() == np.array([np.nan, np.nan]).all()
+            )
+
+    else:
+        if export_gradients:
+            assert (
+                dataset.data["parameters"][3].all()
+                == np.array([0.0, 0.0, 0.0, 0.0, 0.0, np.nan, np.nan, np.nan]).all()
+            )
+        else:
+            assert (
+                dataset.data["parameters"][4].all()
+                == np.array([0.5, 0.5, 0.5, np.nan, np.nan]).all()
+            )
