@@ -356,15 +356,21 @@ Initial setup
   <https://docs.gitlab.com/ee/user/project/repository/forking_workflow.html#creating-a-fork>`_
   of the gemseo repository on gitlab.com.
 * Clone your fork to your local machine:
-  :command:`git clone <url of your fork>`
+
+  * :command:`git clone <url of your fork>`
+
 * Go to the directory of your fork.
 * Add the reference upstream repository to you fork with:
-  :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
+
+  * :command:`git remote add upstream`
+  * :command:`git@gitlab.com:gemseo/dev/gemseo.git`
+
 * Get access to the IRT CI:
 
   * from your account on gitlab.com,
   * go to **Settings > CI/CD** and expand the **Runners** section,
   * under **Specific runners**, copy the **registration token** and send it to a maintainer.
+
 * Activate the CI jobs coverage reports:
 
   * from your account on gitlab.com,
@@ -375,21 +381,31 @@ Working on a new feature
 ************************
 
 * Update your local copy of the upstream repository:
-  :command:`git fetch upstream`
+
+  * :command:`git fetch upstream`
+
 * Create a new feature branch on your local clone from the up to date upstream develop branch:
-  :command:`git checkout upstream/develop -b my_new_feature_branch`
+
+  * :command:`git checkout upstream/develop -b my_new_feature_branch`
+
 * Add commits to your feature branch.
 * On a regular basis (ideally everyday),
   keep your feature branch up to date with the upstream evolution of the develop branch
   so to make the future merge into develop easier:
-  :command:`git fetch upstream`
-  :command:`git rebase upstream/develop`
+
+  * :command:`git fetch upstream`
+  * :command:`git rebase upstream/develop`
+
 * When rebasing turns to be to cumbersome,
   you may use merge:
-  :command:`git rebase --abort`
-  :command:`git merge upstream/develop`
+
+  * :command:`git rebase --abort`
+  * :command:`git merge upstream/develop`
+
 * Push your current local feature branch to your fork at least once a day:
-  :command:`git push origin HEAD`
+
+  * :command:`git push origin HEAD`
+
 * Once pushed, the gitlab CI will run the tests on your branch,
   you will receive an email notification in case of failure.
 

@@ -30,7 +30,7 @@ A from scratch example on the Sellar problem
 # ------------
 # In this example,
 # we will create an MDO scenario based on the Sellar's problem from scratch.
-# Contrary to the :ref:`|g| in ten minutes tutorial <gemseo_10min>`,
+# Contrary to the :ref:`GEMSEO in ten minutes tutorial <gemseo_10min>`,
 # all the disciplines will be implemented from scratch
 # by sub-classing the :class:`.MDODiscipline` class
 # for each discipline of the Sellar problem.
