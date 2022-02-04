@@ -74,7 +74,6 @@ from numpy import (
     argmin,
     array,
     array_equal,
-    concatenate,
     inf,
     insert,
     issubdtype,
@@ -1761,107 +1760,148 @@ class OptimizationProblem(object):
             cache_output_as_input = False
 
         # Add database inputs
-        inputs_names = self.design_space.variables_names
-        sizes = self.design_space.variables_sizes
-        inputs_history = array(self.database.get_x_history())
-        n_samples = inputs_history.shape[0]
-        inputs_history = split_array_to_dict_of_arrays(
-            inputs_history, sizes, inputs_names
+        input_names = self.design_space.variables_names
+        names_to_sizes = self.design_space.variables_sizes
+        input_history = array(self.database.get_x_history())
+        n_samples = len(input_history)
+        input_history = split_array_to_dict_of_arrays(
+            input_history, names_to_sizes, input_names
         )
-        for input_name, input_value in inputs_history.items():
+        for input_name, input_value in sorted(input_history.items()):
             dataset.add_variable(input_name, input_value, input_group)
 
-        def replace_missing_values(
-            output_data,  # type: ndarray
-            input_data,  # type: ndarray
-        ):  # type: (...) -> ndarray
-            """Replace the missing output values with NaN.
-
-            Args:
-                output_data: The output data with possibly missing values.
-                input_data: The input data.
-
-            Returns:
-                The output data where missing values have been replaced with NaN.
-            """
-            if len(inputs_history) != n_samples:
-                # There are fewer output values than input values
-                n_values = len(input_data)
-                output_dimension = output_data.size // n_values
-                output_data = output_data.reshape((n_values, output_dimension))
-                # Add NaN values at the missing inputs
-                # N.B. the inputs are assumed to be in the same order.
-                index = 0
-                for sub_input_data in input_data:
-                    while not array_equal(sub_input_data, inputs_history[index]):
-                        output_data = insert(output_data, index, nan, 0)
-                        index += 1
-                    index += 1
-                return insert(output_data, [index] * (n_samples - index), nan, 0)
-            else:
-                return output_data
-
         # Add database outputs
-        all_data_names = self.database.get_all_data_names()
-        outputs_names = list(
-            set(all_data_names) - set(inputs_names) - {self.database.ITER_TAG}
-        )
-        functions_history = []
-        for function_name in outputs_names:
-            function_history, inputs_history = self.database.get_func_history(
-                function_name, x_hist=True
-            )
-            function_history = replace_missing_values(function_history, inputs_history)
-            reshaped_function_history = function_history.reshape((n_samples, -1))
-            functions_history.append(reshaped_function_history)
-            sizes.update({function_name: functions_history[-1].shape[1]})
+        variable_names = self.database.get_all_data_names(skip_iter=True)
+        output_names = [name for name in variable_names if name not in input_names]
 
-        functions_history = concatenate(functions_history, axis=1)
-        functions_history = split_array_to_dict_of_arrays(
-            functions_history, sizes, outputs_names
+        self.__add_database_outputs(
+            dataset,
+            output_names,
+            n_samples,
+            output_group,
+            cache_output_as_input,
         )
-        for output_name, output_value in functions_history.items():
+
+        # Add database output gradients
+        if export_gradients:
+            self.__add_database_output_gradients(
+                dataset,
+                output_names,
+                n_samples,
+                gradient_group,
+                cache_output_as_input,
+            )
+
+        return dataset
+
+    def __add_database_outputs(
+        self,
+        dataset,  # type: Dataset
+        output_names,  # type: Iterable[str]
+        n_samples,  # type: int
+        output_group,  # type: str
+        cache_output_as_input,  # type: bool
+    ):  # type: (...) -> None
+        """Add the database outputs to the dataset.
+
+        Args:
+            dataset: The dataset where the outputs will be added.
+            output_names: The names of the outputs in the database.
+            n_samples: The total number of samples, including possible
+                points where the evaluation failed.
+            output_group: The dataset group where the variables will
+                be added.
+            cache_output_as_input: If True, cache these data as inputs
+                when the cache is exported to a cache.
+        """
+        for output_name in output_names:
+            output_history, input_history = self.database.get_func_history(
+                output_name, x_hist=True
+            )
+            output_history = self.__replace_missing_values(
+                output_history, input_history, array(self.database.get_x_history())
+            )
+
             dataset.add_variable(
                 output_name,
-                output_value,
+                output_history.reshape((n_samples, -1)),
                 output_group,
                 cache_as_input=cache_output_as_input,
             )
 
-        # Add database output gradients
-        if export_gradients:
-            gradients_history = []
-            gradients_names = []
+    def __add_database_output_gradients(
+        self,
+        dataset,  # type: Dataset
+        output_names,  # type: Iterable[str]
+        n_samples,  # type: int
+        gradient_group,  # type: str
+        cache_output_as_input,  # type: bool
+    ):  # type: (...) -> None
+        """Add the database output gradients to the dataset.
 
-            for function_name in outputs_names:
-                if self.database.is_func_grad_history_empty(function_name):
-                    continue
+        Args:
+            dataset: The dataset where the outputs will be added.
+            output_names: The names of the outputs in the database.
+            n_samples: The total number of samples, including possible
+                points where the evaluation failed.
+            gradient_group: The dataset group where the variables will
+                be added.
+            cache_output_as_input: If True, cache these data as inputs
+                when the cache is exported to a cache.
+        """
+        for output_name in output_names:
+            if self.database.is_func_grad_history_empty(output_name):
+                continue
 
-                gradient_history, inputs_history = self.database.get_func_grad_history(
-                    function_name, x_hist=True
-                )
-                gradient_history = replace_missing_values(
-                    gradient_history, inputs_history
-                )
-                gradients_history.append(gradient_history.reshape(n_samples, -1))
-                gradient_name = Database.get_gradient_name(function_name)
-                sizes.update({gradient_name: gradients_history[-1].shape[1]})
-                gradients_names.append(Database.get_gradient_name(function_name))
+            gradient_history, input_history = self.database.get_func_grad_history(
+                output_name, x_hist=True
+            )
+            gradient_history = self.__replace_missing_values(
+                gradient_history,
+                input_history,
+                array(self.database.get_x_history()),
+            )
 
-            if gradients_history:
-                gradients_history = concatenate(gradients_history, axis=1)
-                gradients_history = split_array_to_dict_of_arrays(
-                    gradients_history, sizes, gradients_names
-                )
-                for gradient_name, gradient_value in gradients_history.items():
-                    dataset.add_variable(
-                        gradient_name,
-                        gradient_value,
-                        gradient_group,
-                        cache_as_input=cache_output_as_input,
-                    )
+            dataset.add_variable(
+                Database.get_gradient_name(output_name),
+                gradient_history.reshape(n_samples, -1),
+                gradient_group,
+                cache_as_input=cache_output_as_input,
+            )
 
-        return dataset
+    @staticmethod
+    def __replace_missing_values(
+        output_history,  # type: ndarray
+        input_history,  # type: ndarray
+        full_input_history,  # type: ndarray
+    ):  # type: (...) -> ndarray
+        """Replace the missing output values with NaN.
+
+        Args:
+            output_history: The output data history with possibly missing values.
+            input_history: The input data history with possibly missing values.
+            full_input_history: The complete input data history, with no missing values.
+
+        Returns:
+            The output data history where missing values have been replaced with NaN.
+        """
+        database_size = full_input_history.shape[0]
+
+        if len(input_history) != database_size:
+            # There are fewer entries than in the full input history.
+            # Add NaN values at the missing input data.
+            # N.B. the input data are assumed to be in the same order.
+            index = 0
+            for input_data in input_history:
+                while not array_equal(input_data, full_input_history[index]):
+                    output_history = insert(output_history, index, nan, 0)
+                    index += 1
+
+                index += 1
+
+            return insert(output_history, [index] * (database_size - index), nan, 0)
+        else:
+            return output_history
 
     @staticmethod
     def __h5_group_to_dict(
