@@ -26,6 +26,7 @@ from typing import Any, Mapping, Optional
 from uuid import uuid4
 
 from numpy import ndarray
+from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import LinearOperator, spilu
 
 from gemseo.algos.algo_lib import AlgoLib
@@ -86,7 +87,7 @@ class LinearSolverLib(AlgoLib):
         Returns:
             The preconditioner operator.
         """
-        ilu = spilu(lhs)
+        ilu = spilu(csc_matrix(lhs))
         return LinearOperator(lhs.shape, ilu.solve, dtype=dtype)
 
     @property
