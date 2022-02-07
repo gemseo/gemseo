@@ -46,9 +46,9 @@
 
 	abstract class MLSupervisedAlgo {
 	 +input_names
-	 +input_shape
+	 +input_dimension
 	 +output_names
-	 +output_shape
+	 +output_dimension
 	 +DataFormatters
 	 +learn()
 	 +predict()

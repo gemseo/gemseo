@@ -100,7 +100,7 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 from __future__ import division, unicode_literals
 
 import logging
-from typing import Callable, Iterable, Mapping, Optional, Union
+from typing import Callable, Iterable, List, Mapping, Optional, Tuple, Union
 
 import openturns
 from numpy import atleast_2d, ndarray
@@ -114,12 +114,15 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 LOGGER = logging.getLogger(__name__)
 
+__Bounds = Tuple[float, float]
+
 
 class GaussianProcessRegression(MLRegressionAlgo):
     """Gaussian process regression."""
 
     LIBRARY = "scikit-learn"
     ABBR = "GPR"
+    __DEFAULT_BOUNDS = (0.01, 100.0)
 
     def __init__(
         self,
@@ -128,6 +131,7 @@ class GaussianProcessRegression(MLRegressionAlgo):
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         kernel=None,  # type: Optional[openturns.CovarianceModel]
+        bounds=None,  # type: Optional[Union[__Bounds, Mapping[str, __Bounds]]]
         alpha=1e-10,  # type: Union[float,ndarray]
         optimizer="fmin_l_bfgs_b",  # type: Union[str,Callable]
         n_restarts_optimizer=10,  # type: int
@@ -136,8 +140,14 @@ class GaussianProcessRegression(MLRegressionAlgo):
         """
         Args:
             kernel: The kernel function. If None, use a ``Matern(2.5)``.
+            bounds: The lower and upper bounds of the parameter length scales
+                when ``kernel`` is ``None``.
+                Either a unique lower-upper pair common to all the inputs
+                or lower-upper pairs for some of them.
+                When ``bounds`` is ``None`` or when an input has no pair,
+                the lower bound is 0.01 and the upper bound is 100.
             alpha: The nugget effect to regularize the model.
-            optimizer: The optimization algorithm to find the hyperparameters.
+            optimizer: The optimization algorithm to find the parameter length scales.
             n_restarts_optimizer: The number of restarts of the optimizer.
             random_state: The seed used to initialize the centers.
                 If None, the random number generator is the RandomState instance
@@ -156,24 +166,57 @@ class GaussianProcessRegression(MLRegressionAlgo):
         )
 
         if kernel is None:
-            raw_input_shape, _ = self._get_raw_shapes()
-            self.kernel = Matern(
-                (1.0,) * raw_input_shape, [(0.01, 100)] * raw_input_shape, nu=2.5
-            )
-        else:
-            self.kernel = kernel
+            bounds = self.__compute_parameter_length_scale_bounds(bounds)
+            kernel = Matern((1.0,) * self._reduced_dimensions[0], bounds, nu=2.5)
 
-        nro = n_restarts_optimizer
         self.algo = GaussianProcessRegressor(
             normalize_y=False,
-            kernel=self.kernel,
+            kernel=kernel,
             copy_X_train=True,
             alpha=alpha,
             optimizer=optimizer,
-            n_restarts_optimizer=nro,
+            n_restarts_optimizer=n_restarts_optimizer,
             random_state=random_state,
         )
-        self.parameters["kernel"] = self.kernel.__class__.__name__
+        self.parameters["kernel"] = kernel.__class__.__name__
+
+    @property
+    def kernel(self):  # (...) -> Kernel
+        """The kernel used for prediction."""
+        if self.is_trained:
+            return self.algo.kernel_
+        else:
+            return self.algo.kernel
+
+    def __compute_parameter_length_scale_bounds(
+        self,
+        bounds,  # type: Optional[Union[__Bounds, Mapping[str, __Bounds]]]
+    ):  # type: (...) -> List[Tuple[float, float]]
+        """Return the lower and upper bounds for the parameter length scales.
+
+        Args:
+            bounds: The lower and upper bounds of the parameter length scales.
+                Either a unique lower-upper pair common to all the inputs
+                or lower-upper pairs for some of them.
+                When an input has no pair,
+                the lower bound is 0.01 and the upper bound is 100.
+
+        Returns:
+            The lower and upper bounds of the parameter length scales.
+        """
+        dimension = self._reduced_dimensions[0]
+        if bounds is None:
+            return [self.__DEFAULT_BOUNDS] * dimension
+
+        if isinstance(bounds, tuple):
+            return [bounds] * dimension
+
+        bounds_ = []
+        for name in self.input_names:
+            name_bounds = bounds.get(name, self.__DEFAULT_BOUNDS)
+            bounds_.extend([name_bounds] * self.sizes[name])
+
+        return bounds_
 
     def _fit(
         self,
@@ -196,9 +239,9 @@ class GaussianProcessRegression(MLRegressionAlgo):
         """Predict the standard deviation from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. :code:`array([1., 2., 3.])`
-        or as a dictionary,
-        e.g.  :code:`{'a': array([1.]), 'b': array([2., 3.])}`.
+        e.g. ``array([1., 2., 3.])``
+        or as a dictionary of NumPy arrays,
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -219,14 +262,14 @@ class GaussianProcessRegression(MLRegressionAlgo):
             then the standard deviation is related to this transformed output space
             unlike :meth:`.predict` which returns values in the original output space.
         """
-        as_dict = isinstance(input_data, dict)
-        if as_dict:
+        if isinstance(input_data, Mapping):
             input_data = concatenate_dict_of_arrays_to_array(
                 input_data, self.input_names
             )
+
         input_data = atleast_2d(input_data)
-        inputs = self.learning_set.INPUT_GROUP
-        if inputs in self.transformer:
-            input_data = self.transformer[inputs].transform(input_data)
-        _, output_std = self.algo.predict(input_data, True)
-        return output_std
+        transformer = self.transformer.get(self.learning_set.INPUT_GROUP)
+        if transformer:
+            input_data = transformer.transform(input_data)
+
+        return self.algo.predict(input_data, True)[1]

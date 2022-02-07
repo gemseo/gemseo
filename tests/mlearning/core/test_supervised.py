@@ -65,7 +65,7 @@ def test_get_raw_shapes(io_dataset, in_transformer, n_in, out_transformer, n_out
     transformer.update(in_transformer)
     transformer.update(out_transformer)
     algo = MLSupervisedAlgo(io_dataset, transformer=transformer)
-    assert algo._get_raw_shapes() == (n_in, n_out)
+    assert algo._reduced_dimensions == (n_in, n_out)
 
 
 def test_notimplementederror(io_dataset):
@@ -107,8 +107,8 @@ def test_learn(io_dataset):
 def test_io_shape(io_dataset):
     """Test input output shapes."""
     model = LinearRegression(io_dataset)
-    assert model.input_shape == 3
-    assert model.output_shape == 3
+    assert model.input_dimension == 3
+    assert model.output_dimension == 3
 
 
 DICT_1D = {"x_1": array([1.0]), "x_2": array([2.0, 3.0])}
