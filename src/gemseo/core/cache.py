@@ -867,7 +867,7 @@ class AbstractFullCache(AbstractCache):
             ]
         )
         data = split_array_to_dict_of_arrays(inputs, self.varsizes, inputs_names)
-        for input_name, value in data.items():
+        for input_name, value in sorted(data.items()):
             dataset.add_variable(input_name, value, in_grp)
         outputs = vstack(
             [
@@ -878,7 +878,7 @@ class AbstractFullCache(AbstractCache):
             ]
         )
         data = split_array_to_dict_of_arrays(outputs, self.varsizes, outputs_names)
-        for output_name, value in data.items():
+        for output_name, value in sorted(data.items()):
             dataset.add_variable(
                 output_name, value, out_grp, cache_as_input=cache_output_as_input
             )

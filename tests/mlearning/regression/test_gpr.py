@@ -128,3 +128,25 @@ def test_save_and_load(model, tmp_path):
     out2 = imported_model.predict(input_value)
     for name, value in out1.items():
         assert allclose(value, out2[name], 1e-3)
+
+
+@pytest.mark.parametrize(
+    "bounds,expected",
+    [
+        (None, [(0.01, 100.0), (0.01, 100.0)]),
+        ((0.1, 10), [(0.1, 10), (0.1, 10)]),
+        ({"x_2": (0.1, 10)}, [(0.01, 100), (0.1, 10)]),
+    ],
+)
+def test_bounds(dataset, bounds, expected):
+    """Verify that bounds are correctly passed to the default kernel."""
+    model = GaussianProcessRegression(dataset, bounds=bounds)
+    assert model.algo.kernel.length_scale_bounds == expected
+
+
+def test_kernel(dataset):
+    """Verify that the property 'kernel' corresponds to the kernel for prediction."""
+    model = GaussianProcessRegression(dataset)
+    assert id(model.kernel) == id(model.algo.kernel)
+    model.learn()
+    assert id(model.kernel) == id(model.algo.kernel_)

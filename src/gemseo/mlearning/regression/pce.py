@@ -499,9 +499,10 @@ class PCERegression(MLRegressionAlgo):
         self,
         input_data,  # type: ndarray
     ):  # type: (...) -> ndarray
-        input_shape, output_shape = self._get_raw_shapes()
         gradient = self.algo.getMetaModel().gradient
-        jac = zeros((input_data.shape[0], int(output_shape), int(input_shape)))
+        input_size, output_size = self._reduced_dimensions
+        jac = zeros((input_data.shape[0], output_size, input_size))
         for index, data in enumerate(input_data):
             jac[index] = array(gradient(Point(data))).T
+
         return jac

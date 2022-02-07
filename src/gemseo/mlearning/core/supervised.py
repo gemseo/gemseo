@@ -81,7 +81,7 @@ from typing import (
     Union,
 )
 
-from numpy import atleast_2d, ndarray
+from numpy import array, atleast_2d, ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType, MLAlgo, MLAlgoParameterType
@@ -107,8 +107,8 @@ class MLSupervisedAlgo(MLAlgo):
 
     Attributes:
         input_names (List[str]): The names of the input variables.
+        input_space_center (Dict[str, ndarray]): The center of the input space.
         output_names (List[str]): The names of the output variables.
-        input_space_center (Dict[str,ndarray]): The center of the input space.
     """
 
     ABBR = "MLSupervisedAlgo"
@@ -133,37 +133,42 @@ class MLSupervisedAlgo(MLAlgo):
             data, transformer=transformer, **parameters
         )
         self.input_names = input_names or data.get_names(data.INPUT_GROUP)
+        self.input_space_center = array([])
+        self.__input_dimension = 0
         self.output_names = output_names or data.get_names(data.OUTPUT_GROUP)
-        self.input_space_center = None
+        self.__output_dimension = 0
+        self.__reduced_dimensions = (0, 0)
+
+    @property
+    def _reduced_dimensions(self):  # type: (...) -> Tuple[int, int]
+        """The input and output reduced dimensions."""
+        if self.__reduced_dimensions == (0, 0):
+            self.__reduced_dimensions = self.__compute_reduced_dimensions()
+
+        return self.__reduced_dimensions
+
+    @property
+    def input_dimension(self):  # type: (...) -> int
+        """The input space dimension."""
+        if not self.__input_dimension and self.learning_set is not None:
+            self.__input_dimension = sum(
+                [self.learning_set.sizes[name] for name in self.input_names]
+            )
+
+        return self.__input_dimension
+
+    @property
+    def output_dimension(self):  # type: (...) -> int
+        """The output space dimension."""
+        if not self.__output_dimension and self.learning_set is not None:
+            self.__output_dimension = sum(
+                [self.learning_set.sizes[name] for name in self.output_names]
+            )
+
+        return self.__output_dimension
 
     class DataFormatters(MLAlgo.DataFormatters):
         """Decorators for supervised algorithms."""
-
-        @staticmethod
-        def _array_to_dict(
-            data_array,  # type: ndarray
-            data_names,  # type: Sequence[str],
-            data_sizes,  # type: Mapping[str,int]
-        ):  # type: (...) -> Dict[str,ndarray]
-            """Convert a NumPy data array into a data dictionary.
-
-            Args:
-                data_array: The data to be converted.
-                data_names: The names of the variables.
-                data_sizes: The sizes of the variables.
-
-            Returns:
-                The keys are the names of the variables
-                and the values are their values.
-            """
-            current_position = 0
-            array_dict = {}
-            for name in data_names:
-                array_dict[name] = data_array[
-                    ..., current_position : current_position + data_sizes[name]
-                ]
-                current_position += data_sizes[name]
-            return array_dict
 
         @classmethod
         def format_dict(
@@ -217,12 +222,15 @@ class MLSupervisedAlgo(MLAlgo):
                     input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names
                     )
+
                 output_data = predict(self, input_data, *args, **kwargs)
                 if as_dict:
-                    varsizes = self.learning_set.sizes
-                    output_data = cls._array_to_dict(
-                        output_data, self.output_names, varsizes
+                    return split_array_to_dict_of_arrays(
+                        output_data,
+                        self.learning_set.sizes,
+                        self.output_names,
                     )
+
                 return output_data
 
             return wrapper
@@ -276,10 +284,10 @@ class MLSupervisedAlgo(MLAlgo):
                     The output data with the same dimension as the input one.
                 """
                 single_sample = input_data.ndim == 1
-                input_data = atleast_2d(input_data)
-                output_data = predict(self, input_data, *args, **kwargs)
+                output_data = predict(self, atleast_2d(input_data), *args, **kwargs)
                 if single_sample:
                     output_data = output_data[0]
+
                 return output_data
 
             return wrapper
@@ -345,12 +353,12 @@ class MLSupervisedAlgo(MLAlgo):
                     inputs = self.learning_set.INPUT_GROUP
                     if transform_inputs and inputs in self.transformer:
                         input_data = self.transformer[inputs].transform(input_data)
+
                     output_data = predict(self, input_data, *args, **kwargs)
                     outputs = self.learning_set.OUTPUT_GROUP
                     if transform_outputs and outputs in self.transformer:
-                        output_data = self.transformer[outputs].inverse_transform(
-                            output_data
-                        )
+                        return self.transformer[outputs].inverse_transform(output_data)
+
                     return output_data
 
                 return wrapper
@@ -390,8 +398,8 @@ class MLSupervisedAlgo(MLAlgo):
             NotImplementedError: If an output transformer modifies
                 both the input and the output variables, e.g. :class:`.PLS`.
         """
-        input_grp = self.learning_set.INPUT_GROUP
-        output_grp = self.learning_set.OUTPUT_GROUP
+        input_group = self.learning_set.INPUT_GROUP
+        output_group = self.learning_set.OUTPUT_GROUP
         input_data = self.learning_set.get_data_by_names(self.input_names, False)
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
 
@@ -403,20 +411,20 @@ class MLSupervisedAlgo(MLAlgo):
             input_data.mean(0), self.learning_set.sizes, self.input_names
         )
 
-        if input_grp in self.transformer:
-            transformer = self.transformer[input_grp]
+        if input_group in self.transformer:
+            transformer = self.transformer[input_group]
             if transformer.CROSSED:
                 input_data = transformer.fit_transform(input_data, output_data)
             else:
                 input_data = transformer.fit_transform(input_data)
 
-        if output_grp in self.transformer:
-            transformer = self.transformer[output_grp]
-            if self.transformer[output_grp].CROSSED:
+        if output_group in self.transformer:
+            transformer = self.transformer[output_group]
+            if self.transformer[output_group].CROSSED:
                 raise NotImplementedError(
                     "The transformer of type {} cannot be applied to the outputs "
                     "to build a supervised machine learning algorithm".format(
-                        self.transformer[output_grp].__class__.__name__
+                        self.transformer[output_group].__class__.__name__
                     )
                 )
             else:
@@ -480,58 +488,35 @@ class MLSupervisedAlgo(MLAlgo):
         """
         raise NotImplementedError
 
-    def _get_raw_shapes(self):  # type: (...) -> Tuple[int,int]
-        """Get the raw input and output shapes.
-
-        The raw shapes are the shapes of the input and output variables
-        after applying the transformers.
+    def __compute_reduced_dimensions(self):  # type: (...) -> Tuple[int,int]
+        """Return the reduced input and output dimensions after transformations.
 
         Returns:
-            The raw input and output shapes.
+            The reduced input and output dimensions.
         """
-        reduce_inputs = Dataset.INPUT_GROUP in self.transformer and isinstance(
-            self.transformer[Dataset.INPUT_GROUP], DimensionReduction
-        )
-        if reduce_inputs:
-            input_shape = self.transformer[Dataset.INPUT_GROUP].n_components
+        transformer = self.transformer.get(Dataset.INPUT_GROUP)
+        if isinstance(transformer, DimensionReduction):
+            input_dimension = transformer.n_components
         else:
-            input_shape = self.input_shape
+            input_dimension = self.input_dimension
 
-        reduce_outputs = Dataset.OUTPUT_GROUP in self.transformer and isinstance(
-            self.transformer[Dataset.OUTPUT_GROUP], DimensionReduction
-        )
-        if reduce_outputs:
-            output_shape = self.transformer[Dataset.OUTPUT_GROUP].n_components
+        transformer = self.transformer.get(Dataset.OUTPUT_GROUP)
+        if isinstance(transformer, DimensionReduction):
+            output_dimension = transformer.n_components
         else:
-            output_shape = self.output_shape
+            output_dimension = self.output_dimension
 
-        return input_shape, output_shape
-
-    @property
-    def input_shape(self):  # type: (...) -> int
-        """The dimension of the input variables before applying the transformers."""
-        sizes = [self.learning_set.sizes[name] for name in self.input_names]
-        return sum(sizes)
-
-    @property
-    def output_shape(self):  # type: (...) -> int
-        """The dimension of the output variables before applying the transformers."""
-        sizes = [self.learning_set.sizes[name] for name in self.output_names]
-        return sum(sizes)
+        return input_dimension, output_dimension
 
     @property
     def input_data(self):  # type: (...) -> ndarray
         """The input data matrix."""
-        in_names = self.input_names
-        inputs = self.learning_set.get_data_by_names(in_names, False)
-        return inputs
+        return self.learning_set.get_data_by_names(self.input_names, False)
 
     @property
     def output_data(self):  # type: (...) -> ndarray
         """The output data matrix."""
-        out_names = self.output_names
-        outputs = self.learning_set.get_data_by_names(out_names, False)
-        return outputs
+        return self.learning_set.get_data_by_names(self.output_names, False)
 
     def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
         objects = super(MLSupervisedAlgo, self)._get_objects_to_save()

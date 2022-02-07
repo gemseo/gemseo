@@ -602,7 +602,11 @@ class MixtureOfExperts(MLRegressionAlgo):
         # dim(input_data)  = (n_samples, n_inputs)
         # dim(output_data) = (n_samples, n_clusters, n_outputs)
         output_data = zeros(
-            (input_data.shape[0], self.n_clusters, self.regress_models[0].output_shape)
+            (
+                input_data.shape[0],
+                self.n_clusters,
+                self.regress_models[0].output_dimension,
+            )
         )
         for i in range(self.n_clusters):
             output_data[:, i] = self.regress_models[i].predict(input_data)
@@ -652,8 +656,8 @@ class MixtureOfExperts(MLRegressionAlgo):
         jacobians = zeros(
             (
                 n_samples,
-                self.regress_models[0].output_shape,
-                self.regress_models[0].input_shape,
+                self.regress_models[0].output_dimension,
+                self.regress_models[0].input_dimension,
             )
         )
         for klass in unq_classes:
