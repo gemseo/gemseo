@@ -65,17 +65,8 @@ from numbers import Number
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from numpy import (
-    array,
-    concatenate,
-    delete,
-    genfromtxt,
-    hstack,
-    isnan,
-    ndarray,
-    unique,
-    where,
-)
+from numpy import array, concatenate, delete, hstack, isnan, ndarray, unique, where
+from pandas import DataFrame, read_csv
 from six import string_types
 
 from gemseo.caches.cache_factory import CacheFactory
@@ -85,7 +76,7 @@ from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     split_array_to_dict_of_arrays,
 )
-from gemseo.utils.py23_compat import long
+from gemseo.utils.py23_compat import Path, long
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -166,11 +157,11 @@ class Dataset(object):
         self.length = 0
         self.data = {}
         self._group = by_group
-        self.strings_encoding = None
+        self.strings_encoding = {}
         self._cached_inputs = []
         self._cached_outputs = []
         self.metadata = {}
-        self.__row_names = None
+        self.__row_names = []
 
     def remove(
         self,
@@ -436,11 +427,14 @@ class Dataset(object):
 
         Args:
             variables: The names of the variables.
+
+        Raises:
+            TypeError: When ``variables`` is not a list of string variable names.
         """
-        if not isinstance(variables, list):
-            raise TypeError("variables must be a list of strings.")
-        if any([not isinstance(name, string_types) for name in variables]):
-            raise TypeError("variables must be a list of strings.")
+        if not isinstance(variables, list) or any(
+            [not isinstance(name, string_types) for name in variables]
+        ):
+            raise TypeError("variables must be a list of string variable names.")
 
     @staticmethod
     def __check_sizes_format(
@@ -454,19 +448,25 @@ class Dataset(object):
             sizes: The sizes of the variables.
             variables: The names of the variables.
             dimension: The data dimension.
+
+        Raises:
+            TypeError: When ``sizes`` is not a dictionary of positive integers.
         """
+        type_error = TypeError("sizes must be a dictionary of positive integers.")
 
         def is_size(size):
             return isinstance(size, (int, long)) and size > 0
 
         if not isinstance(sizes, dict):
-            raise TypeError("sizes must be a dictionary of positive integers.")
+            raise type_error
+
         if any([not is_size(sizes.get(name)) for name in variables]):
-            raise TypeError("sizes must be a dictionary of positive integers.")
+            raise type_error
+
         total = sum([sizes[name] for name in variables])
         if total != dimension:
             raise ValueError(
-                "The sum of variables sizes ({}) must be equal "
+                "The sum of the variable sizes ({}) must be equal "
                 "to the data dimension ({}).".format(total, dimension)
             )
 
@@ -682,23 +682,52 @@ class Dataset(object):
         self.__set_variable_data(name, data, group)
         self.__set_variable_properties(name, group, data.shape[1], cache_as_input)
 
-    def __get_strings_encoding(
+    def __convert_array_to_numeric(
         self,
         data,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray,Dict[str,Dict[int,int]]]
-        """Encode string data.
+    ):  # type: (...) -> Tuple[ndarray, Dict[int, Dict[int, str]]]
+        """Convert an array to numeric by encoding the string elements.
+
+        This method looks for the columns of the array containing string values
+        and encodes them into integers.
+
+        For instance,
+        let us consider a column ``['blue', 'yellow', 'yellow', 'red', 'blue']``.
+        The unique values, also called *tags*, are ``['blue', 'red', 'yellow']``
+        and the encoding rule is ``{0: 'blue', 1: 'red', 2: 'yello'}.
+        Then,
+        the column is replaced by ``[0, 2, 2, 1, 0]``.
 
         Args:
-            data: The data to be encoded.
+            data: The array.
 
         Returns:
-            The encoded data and the encoding structure.
+            The array forced to float by encoding its string elements,
+            and the encoding rules for the different columns.
         """
         self.strings_encoding = {name: {} for name in self._groups}
-        encoding = {}
-        if str(data.dtype).startswith(("|S", "<U")):
-            data, encoding = self.__force_array_to_float(data)
-        return data, encoding
+        string_columns = [
+            column_index
+            for column_index, column_value in enumerate(data[0])
+            if isinstance(column_value, string_types)
+        ]
+
+        if not string_columns:
+            return data, {}
+
+        columns_to_codes_to_tags = {}
+        for string_column in string_columns:
+            tags, codes = unique(data[:, string_column], return_inverse=True)
+            columns_to_codes_to_tags[string_column] = dict(enumerate(tags))
+            data[:, string_column] = codes
+
+        # Cast the array to float is its dtype is not numeric.
+        # biufc = boolean, signed integer, unsigned integer, floating-point,
+        #         complex floating-point
+        if data.dtype.kind in "biufc":
+            return data, columns_to_codes_to_tags
+        else:
+            return data.astype("float"), columns_to_codes_to_tags
 
     def set_from_array(
         self,
@@ -736,15 +765,18 @@ class Dataset(object):
             variables, sizes, groups = get(group, data.shape[1], default_name)
         else:
             self.__check_variables_format(variables)
+
         if sizes is None:
             sizes = {name: 1 for name in variables}
+
         self.__check_sizes_format(sizes, variables, data.shape[1])
         if groups is None:
             groups = {name: self.DEFAULT_GROUP for name in variables}
+
         self.__check_groups_format(groups, variables)
         self.__set_data_properties(variables, sizes, groups)
-        data, encoding = self.__get_strings_encoding(data)
-        self.__set_data(data, variables, encoding)
+        data, columns_to_codes_to_labels = self.__convert_array_to_numeric(data)
+        self.__set_data(data, variables, columns_to_codes_to_labels)
 
     def __check_groups_format(
         self,
@@ -757,63 +789,64 @@ class Dataset(object):
             groups: The names of the groups of the variables.
             variables: The names of the variables.
         """
+        type_error = TypeError(
+            "groups must be a dictionary of the form {variable_name: group_name}."
+        )
         if not isinstance(groups, dict):
-            raise TypeError(
-                "groups must be a dictionary indexed by variables"
-                "names whose values are strings."
-            )
+            raise type_error
         for name in variables:
             if groups.get(name) is None:
                 groups.update({name: self.DEFAULT_GROUP})
             elif not isinstance(groups[name], string_types):
-                raise TypeError(
-                    "groups must be a dictionary indexed "
-                    "by variables names whose values are strings."
-                )
+                raise type_error
 
     def __set_data(
         self,
         data,  # type: ndarray
         variables,  # type: Iterable[str]
-        encoding,  # type: Dict[str,Dict[int,int]]
+        columns_to_codes_to_labels,  # type: Dict[int, Dict[int, str]]
     ):  # type: (...) -> None
         """Set data.
 
         Args:
             data: The data to be stored.
             variables: The names of the variables.
-            encoding: An encoding structure
-                mapping the values of the string variables with integers;
-                the keys are the names of the variables
-                and the values are dictionaries
-                whose keys are the components of the variables
-                and the values are the integer values.
+            columns_to_codes_to_labels: An encoding structure
+                of the form: `{column_index: {code: label}}`,
+                mapping the values of the string variables with integers
+                for the different string columns of `data`.
         """
         indices = {group: [] for group in self._names}
         start = 0
-        for name in variables:
-            end = start + self.sizes[name] - 1
-            name_indices = list(range(start, end + 1))
+        for variable in variables:
+            end = start + self.sizes[variable] - 1
+            columns = list(range(start, end + 1))
             start = end + 1
-            indices[self._groups[name]] += name_indices
-            for key in encoding:
-                if key in name_indices:
-                    index = name_indices.index(key)
-                    self.strings_encoding[name][index] = encoding[key]
+            indices[self._groups[variable]] += columns
+            for column in columns_to_codes_to_labels:
+                if column in columns:
+                    index = columns.index(column)
+                    codes_to_labels = columns_to_codes_to_labels[column]
+                    self.strings_encoding[variable][index] = codes_to_labels
+
             if not self._group:
-                self.data[name] = data[:, name_indices]
+                self.data[variable] = data[:, columns]
+
         if self._group:
             for group in self._names:
                 self.data[group] = data[:, indices[group]]
 
-    def _set_variables_positions(self):
-        """Set variables positions."""
-        for varnames in self._names.values():
+    def _set_variables_positions(self):  # type: (...) -> None
+        """Set the positions of the variables."""
+        for variable_names in self._names.values():
             start = 0
-            for varname in varnames:
-                self._positions[varname] = [start, start + self.sizes[varname] - 1]
+            for variable_name in variable_names:
+                self._positions[variable_name] = [
+                    start,
+                    start + self.sizes[variable_name] - 1,
+                ]
                 if self._group:
-                    start += self.sizes[varname]
+                    start += self.sizes[variable_name]
                 else:
                     start = 0
 
@@ -845,55 +878,9 @@ class Dataset(object):
                 self._cached_inputs += names
         self._set_variables_positions()
 
-    @staticmethod
-    def __force_array_to_float(
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
-        """Force a ndarray type to float.
-
-        Args:
-            data: The data to be casted.
-
-        Returns:
-            The data with float type.
-        """
-
-        def __is_not_float(
-            obj,  # type: Any
-        ):  # type: (...) -> bool
-            """Return True if an object cannot be cast to float.
-
-            Args:
-                obj: The object to test.
-
-            Returns:
-                Whether the object can be converted to float.
-            """
-            try:
-                float(obj)
-                return False
-            except ValueError:
-                return True
-
-        first_row = data[0, :]
-        str_indices = [
-            index for index, element in enumerate(first_row) if __is_not_float(element)
-        ]
-
-        strings_encoding = {}
-        for index in range(data.shape[1]):
-            if index in str_indices:
-                column = list(data[:, index])
-                encoding = dict(enumerate(unique(column)))
-                strings_encoding[index] = encoding
-                data[:, index] = unique(column, return_inverse=True)[1]
-
-        data = data.astype("float")
-        return data, strings_encoding
-
     def set_from_file(
         self,
-        filename,  # type: str
+        filename,  # type: Union[Path,str]
         variables=None,  # type: Optional[List[str]]
         sizes=None,  # type: Optional[Dict[str,int]]
         groups=None,  # type: Optional[Dict[str,str]]
@@ -922,14 +909,16 @@ class Dataset(object):
                 read the names of the variables on the first line of the file.
         """
         self._clean()
-        data = genfromtxt(filename, delimiter=delimiter, dtype="str")
         if header:
-            if variables is None:
-                variables = data[0, :].tolist()
-            start_read = 1
+            header = "infer"
         else:
-            start_read = 0
-        self.set_from_array(data[start_read:, :], variables, sizes, groups)
+            header = None
+
+        data = read_csv(filename, delimiter=delimiter, header=header)
+        if header and variables is None:
+            variables = data.columns.values.tolist()
+
+        self.set_from_array(data.values, variables, sizes, groups)
 
     def set_metadata(
         self,
@@ -1130,8 +1119,6 @@ class Dataset(object):
         Returns:
             A pandas DataFrame containing the dataset.
         """
-        from pandas import DataFrame
-
         row1 = []
         row2 = []
         row3 = []
@@ -1172,8 +1159,10 @@ class Dataset(object):
         """
         if inputs is None:
             inputs = self._cached_inputs
+
         if outputs is None:
             outputs = self._cached_outputs
+
         create_cache = CacheFactory().create
         cache_hdf_node_name = cache_hdf_node_name or self.name
         if cache_type == self.HDF5_CACHE:
@@ -1186,10 +1175,12 @@ class Dataset(object):
             )
         else:
             cache = create_cache(cache_type, name=self.name, **options)
+
         for sample in range(len(self)):
             in_values = {name: self[(sample, name)][name] for name in inputs}
             out_values = {name: self[(sample, name)][name] for name in outputs}
             cache.cache_outputs(in_values, inputs, out_values, outputs)
+
         return cache
 
     def get_available_plots(self):  # type: (...) -> List[str]

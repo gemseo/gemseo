@@ -52,9 +52,8 @@ or classification ones.
 """
 from __future__ import division, unicode_literals
 
-from os.path import abspath, dirname, join
-
 from gemseo.core.dataset import Dataset
+from gemseo.utils.py23_compat import Path
 
 
 class IrisDataset(Dataset):
@@ -63,8 +62,7 @@ class IrisDataset(Dataset):
     def __init__(self, name="Iris", by_group=True, as_io=False):
         """Constructor."""
         super(IrisDataset, self).__init__(name, by_group)
-        dirpath = dirname(abspath(__file__))
-        filename = join(dirpath, "iris.data")
+        file_path = Path(__file__).parent / "iris.data"
         variables = [
             "sepal_length",
             "sepal_width",
@@ -89,4 +87,5 @@ class IrisDataset(Dataset):
             }
         else:
             groups = {"specy": "labels"}
-        self.set_from_file(filename, variables, sizes, groups, ",", False)
+
+        self.set_from_file(file_path, variables, sizes, groups, ",", False)
