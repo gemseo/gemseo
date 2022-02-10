@@ -56,7 +56,7 @@ import logging
 from copy import deepcopy
 from typing import Mapping, Tuple
 
-from numpy import inf, ndarray
+from numpy import maximum, minimum, ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -103,8 +103,20 @@ class OATSensitivity(MDODiscipline):
             )
         self.step = step
         self.parameter_space = parameter_space
+        self.output_range = {}
+
+    def __initialize_output_range(
+        self,
+        data,  # type: Mapping[str,ndarray]
+    ):  # type: (...) -> None
+        """Initialize the lower and upper bounds of the outputs from data.
+
+        Args:
+            data: The names and values of the outputs.
+        """
         self.output_range = {
-            name: [inf, -inf] for name in self.discipline.get_output_data_names()
+            output_name: [data[output_name]] * 2
+            for output_name in self.discipline.get_output_data_names()
         }
 
     def __update_output_range(
@@ -119,14 +131,18 @@ class OATSensitivity(MDODiscipline):
         for output_name in self.discipline.get_output_data_names():
             output_value = data[output_name]
             output_range = self.output_range[output_name]
-            output_range[0] = min(output_value, output_range[0])
-            output_range[1] = max(output_value, output_range[1])
+            output_range[0] = minimum(output_value, output_range[0])
+            output_range[1] = maximum(output_value, output_range[1])
 
     def _run(self):  # type: (...) -> None
         inputs = self.get_input_data()
         self.discipline.execute(inputs)
         previous_data = self.discipline.local_data
-        self.__update_output_range(previous_data)
+        if not self.output_range:
+            self.__initialize_output_range(previous_data)
+        else:
+            self.__update_output_range(previous_data)
+
         for input_name in self.get_input_data_names():
             inputs = self.__update_inputs(inputs, input_name, self.step)
             self.discipline.execute(inputs)
@@ -152,9 +168,7 @@ class OATSensitivity(MDODiscipline):
             The output name, then the input name.
         """
         split_name = fd_name.split("!")
-        output_name = split_name[1]
-        input_name = split_name[2]
-        return output_name, input_name
+        return split_name[1], split_name[2]
 
     def get_fd_name(
         self,
