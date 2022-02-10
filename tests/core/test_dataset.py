@@ -22,16 +22,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import division, unicode_literals
 
-from os.path import join
+import re
 
 import numpy as np
 import pytest
 from numpy import allclose, arange, array, concatenate, nan, ones, savetxt, zeros
+from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 
@@ -79,33 +81,9 @@ def file_dataset(tmp_path):
     variables = ["in_1", "in_2", "out_1"]
     sizes = {"in_1": 2, "in_2": 3, "out_1": 2}
     groups = {"in_1": "inputs", "in_2": "inputs", "out_1": "outputs"}
-    filename = join(str(tmp_path), "dataset.txt")
+    filename = tmp_path / "dataset.txt"
     savetxt(filename, data, delimiter=",")
     return filename, data, variables, sizes, groups
-
-
-@pytest.fixture
-def header_file_dataset(tmp_path):
-    inputs = arange(50).reshape(10, 5)
-    outputs = arange(20).reshape(10, 2)
-    data = concatenate([inputs, outputs], axis=1)
-    filename = join(str(tmp_path), "dataset_with_header.txt")
-    header = ",".join(["a", "b", "c", "d", "e", "f", "g"])
-    savetxt(filename, data, delimiter=",", header=header, comments="")
-    return filename, data
-
-
-@pytest.fixture
-def txt_io_dataset():
-    inpt = array([["1", "2"], ["3", "4"]])
-    out = array([["a"], ["b"]])
-    data = concatenate([inpt, out], axis=1)
-    variables = ["var_1", "var_2"]
-    sizes = {"var_1": 2, "var_2": 1}
-    groups = {"var_1": "input", "var_2": "output"}
-    dataset = Dataset()
-    dataset.set_from_array(data, variables, sizes, groups)
-    return dataset
 
 
 def test_is_empty():
@@ -200,7 +178,7 @@ def test_find_and_compare(io_dataset):
         comparison = data.compare("in_1", "+", 0)
 
     comparison = data.compare("in_1", "==", 0)
-    assert (comparison == array([True] + [False] * 9)).all()
+    assert_equal(comparison, array([True] + [False] * 9))
 
     comparison = data.compare("in_1", "==", 0)
     indices = data.find(comparison)
@@ -223,7 +201,7 @@ def test_isnan():
     dataset = Dataset()
     dataset.set_from_array(array([[1.0, 2.0], [3.0, nan], [5.0, 6.0], [nan, 8.0]]))
     is_nan = dataset.is_nan()
-    assert (is_nan == array([False, True, False, True])).all()
+    assert_equal(is_nan, [False, True, False, True])
     assert len(dataset) == 4
     dataset.remove(is_nan)
     assert len(dataset) == 2
@@ -407,11 +385,15 @@ def test_get_data_by_names(io_dataset):
     assert data.shape[1] == 2
 
 
-def test_get_all_data(io_dataset):
-    data = io_dataset.get_all_data(by_group=False, as_dict=True)
-    assert "in_1" in data
-    assert "in_2" in data
-    assert "out_1" in data
+@pytest.mark.parametrize(
+    "by_group,expected_keys",
+    [(False, ["in_1", "in_2", "out_1"]), (True, ["inputs", "outputs"])],
+)
+def test_get_all_data(io_dataset, by_group, expected_keys):
+    """Check that get_all_data returns a dictionary correctly indexed."""
+    data = io_dataset.get_all_data(by_group=by_group, as_dict=True)
+    for key in expected_keys:
+        assert key in data
 
 
 def test_n_variables(io_dataset):
@@ -423,56 +405,44 @@ def test_n_samples(io_dataset):
     assert io_dataset.n_samples == 10
 
 
-# def test_dataset_with_txt_array(txt_io_dataset):
-#     assert_allclose(txt_io_dataset.data['output'], array([[0.], [1.]]))
-#
-#
-# def test_export_io_dataset_to_cache(io_dataset):
-#     cache = io_dataset.export_to_cache()
-#     first_data = cache.get_data(1)
-#     assert_allclose(first_data['inputs']['in_1'], array([0, 1]))
-#     assert_allclose(first_data['inputs']['in_2'], array([2, 3, 4]))
-#     assert_allclose(first_data['outputs']['out_1'], array([0, 1]))
-#     assert_allclose(cache.get_last_cached_inputs()['in_1'],
-#                     array([45, 46]))
-#     assert_allclose(cache.get_last_cached_inputs()['in_2'],
-#                     array([47, 48, 49]))
-#     assert_allclose(cache.get_last_cached_outputs()['out_1'],
-#                     array([18, 19]))
-
-
-def test_export_dataset_to_cache(dataset, tmp_path):
-    cache = dataset.export_to_cache()
-    assert cache.name == "my_dataset"
-    assert cache.get_length() == 10
-    for name, value in cache.get_last_cached_inputs().items():
-        assert (dataset[9][name] == value).all()
-
-    filename = join(str(tmp_path), "cache.hdf5")
+@pytest.mark.parametrize("cache_type", ["MemoryFullCache", "HDF5Cache"])
+@pytest.mark.parametrize("inputs", [None, ["var_1"]])
+@pytest.mark.parametrize("outputs", [None, ["var_2"]])
+def test_export_dataset_to_cache(dataset, tmp_path, cache_type, inputs, outputs):
+    """Check that a dataset is correctly exported to a cache."""
+    input_names = inputs or ["var_1", "var_2"]
+    output_names = outputs or []
     cache = dataset.export_to_cache(
-        cache_type=dataset.HDF5_CACHE, cache_hdf_file=filename
+        cache_type=dataset.MEMORY_FULL_CACHE,
+        cache_hdf_file=str(tmp_path / "cache.hdf5"),
+        inputs=inputs,
+        outputs=outputs,
     )
-    assert cache.get_length() == 10
+    assert len(cache) == 10
     for name, value in cache.get_last_cached_inputs().items():
-        assert (dataset[9][name] == value).all()
+        assert_equal(dataset[9][name], value)
+
+    for input_name in cache.inputs_names:
+        assert input_name in input_names
+
+    for output_name in cache.outputs_names:
+        assert output_name in output_names
 
 
-#
-# def test_dataset_with_file(file_dataset, header_file_dataset):
-#     grp = Dataset.DEFAULT_GROUP
-#     filename, data, variables, sizes, groups = file_dataset
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, variables, sizes, header=False)
-#     assert_allclose(dataset.data[grp], data)
-#     assert dataset.get_names(grp) == ['in_1', 'in_2', 'out_1']
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, header=False)
-#     assert dataset.get_names(grp) == ['x_' + str(i) for i in range(7)]
-#     filename, data = header_file_dataset
-#     dataset = Dataset()
-#     dataset.set_from_file(filename, header=True)
-#     assert dataset.get_names(grp) == ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-#     assert_allclose(dataset.data[grp], data)
+@pytest.mark.parametrize(
+    "filename,header,expected_names",
+    [
+        ("data_without_header.csv", False, ["x_0", "x_1", "x_2", "x_3"]),
+        ("data_with_header.csv", True, ["a", "b", "c", "d"]),
+    ],
+)
+def test_dataset_from_file(filename, header, expected_names):
+    """Check the construction of a dataset from a CSV file."""
+    file_path = Path(__file__).parent / "data" / "dataset" / filename
+    dataset = Dataset()
+    dataset.set_from_file(file_path, header=header)
+    assert_equal(dataset.data[dataset.PARAMETER_GROUP], [[1, 2, 3, 4], [-1, -2, -3, 4]])
+    assert dataset.columns_names == expected_names
 
 
 def test_getitem(dataset, data):
@@ -599,3 +569,38 @@ def test_get_normalized_dataset(io_dataset, excluded_groups, excluded_variables)
         else:
             assert allclose(np.min(data, 0), zeros(data.shape[1]))
             assert allclose(np.max(data, 0), ones(data.shape[1]))
+
+
+def test_malformed_groups():
+    """Check that passing malformed groups raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        TypeError,
+        match=("groups must be a dictionary of the form {variable_name: group_name}."),
+    ):
+        dataset.set_from_array(array([[1]]), variables=["x"], groups={"x": 1})
+
+
+def test_malformed_variables():
+    """Check that passing malformed variables raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        TypeError,
+        match=("variables must be a list of string variable names."),
+    ):
+        dataset.set_from_array(array([[1]]), variables=1)
+
+
+def test_malformed_sizes():
+    """Check that passing malformed sizes raises an error."""
+    dataset = Dataset()
+    with pytest.raises(
+        ValueError,
+        match=(
+            re.escape(
+                "The sum of the variable sizes (2) "
+                "must be equal to the data dimension (1)."
+            )
+        ),
+    ):
+        dataset.set_from_array(array([[1]]), variables=["x"], sizes={"x": 2})
