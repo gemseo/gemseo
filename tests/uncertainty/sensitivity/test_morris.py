@@ -22,10 +22,12 @@
 from __future__ import division, unicode_literals
 
 import pytest
-from numpy import allclose, array, inf, pi
+from numpy import allclose, array, pi
+from numpy.testing import assert_equal
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.morris.oat import OATSensitivity
 
@@ -187,9 +189,14 @@ def test_morris_outputs_bounds(morris, output):
 
 @pytest.fixture
 def oat():
-    """A OAT discipline."""
-    expressions = {"y1": "x1+x2", "y2": "x1-x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
+    """A One-At-a-Time (OAT) discipline."""
+
+    def py_func(x1, x2):
+        y1 = array([x1 + x2])
+        y2 = array([x1 - x2, x1 - x2])
+        return y1, y2
+
+    discipline = AutoPyDiscipline(py_func)
     space = ParameterSpace()
     space.add_variable("x1", l_b=-1.0, u_b=1.0)
     space.add_variable("x2", l_b=-1.0, u_b=1.0)
@@ -217,18 +224,19 @@ def test_oat_get_fd_name(oat):
 def test_oat_execute(oat, x1, x2, fd):
     """Check the execute method."""
     oat.execute({"x1": array([x1]), "x2": array([x2])})
-    assert allclose(oat.local_data["fd!y1!x1"][0], fd[0])
-    assert allclose(oat.local_data["fd!y1!x2"][0], fd[1])
-    assert allclose(oat.local_data["fd!y2!x1"][0], fd[2])
-    assert allclose(oat.local_data["fd!y2!x2"][0], fd[3])
+    assert_equal(oat.local_data["fd!y1!x1"], fd[0])
+    assert_equal(oat.local_data["fd!y1!x2"], fd[1])
+    assert_equal(oat.local_data["fd!y2!x1"], fd[2])
+    assert_equal(oat.local_data["fd!y2!x2"], fd[3])
 
 
 def test_oat_bounds(oat):
     """Check the estimation of the output bounds."""
-    assert oat.output_range == {"y1": [inf, -inf], "y2": [inf, -inf]}
+    assert not oat.output_range
     oat.execute({"x1": array([-1.0]), "x2": array([-1.0])})
     oat.execute({"x1": array([1.0]), "x2": array([1.0])})
-    assert oat.output_range == {"y1": [-2.0, 2.0], "y2": [-0.4, 0.4]}
+    expected = {"y1": [[-2.0], [2.0]], "y2": [[-0.4, -0.4], [0.4, 0.4]]}
+    assert_equal(oat.output_range, expected)
 
 
 @pytest.mark.parametrize("step", [-0.1, 0.0, 0.5, 0.6])
