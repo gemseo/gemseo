@@ -23,7 +23,7 @@ from __future__ import division, unicode_literals
 
 import pytest
 from numpy import allclose, array, pi
-from numpy.testing import assert_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -224,10 +224,10 @@ def test_oat_get_fd_name(oat):
 def test_oat_execute(oat, x1, x2, fd):
     """Check the execute method."""
     oat.execute({"x1": array([x1]), "x2": array([x2])})
-    assert_equal(oat.local_data["fd!y1!x1"], fd[0])
-    assert_equal(oat.local_data["fd!y1!x2"], fd[1])
-    assert_equal(oat.local_data["fd!y2!x1"], fd[2])
-    assert_equal(oat.local_data["fd!y2!x2"], fd[3])
+    assert_almost_equal(oat.local_data["fd!y1!x1"], fd[0])
+    assert_almost_equal(oat.local_data["fd!y1!x2"], fd[1])
+    assert_almost_equal(oat.local_data["fd!y2!x1"], fd[2])
+    assert_almost_equal(oat.local_data["fd!y2!x2"], fd[3])
 
 
 def test_oat_bounds(oat):
