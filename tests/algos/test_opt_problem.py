@@ -685,15 +685,40 @@ def test_observable(pow2_problem):
 
 
 @pytest.mark.parametrize(
-    "filter_non_feasible,expected",
+    "filter_non_feasible,as_dict,expected",
     [
         (
             True,
+            True,
+            {
+                "x": array(
+                    [[1.0, 1.0, np.power(0.9, 1 / 3)], [0.9, 0.9, np.power(0.9, 1 / 3)]]
+                )
+            },
+        ),
+        (
+            True,
+            False,
             np.array(
                 [[1.0, 1.0, np.power(0.9, 1 / 3)], [0.9, 0.9, np.power(0.9, 1 / 3)]]
             ),
         ),
         (
+            False,
+            True,
+            {
+                "x": array(
+                    [
+                        [1.0, 1.0, np.power(0.9, 1 / 3)],
+                        [0.9, 0.9, np.power(0.9, 1 / 3)],
+                        [0.0, 0.0, 0.0],
+                        [0.5, 0.5, 0.5],
+                    ]
+                )
+            },
+        ),
+        (
+            False,
             False,
             np.array(
                 [
@@ -706,12 +731,13 @@ def test_observable(pow2_problem):
         ),
     ],
 )
-def test_get_data_by_names(filter_non_feasible, expected):
+def test_get_data_by_names(filter_non_feasible, as_dict, expected):
     """Test if the data is filtered correctly.
 
     Args:
         filter_non_feasible: If True, remove the non-feasible points from
                 the data.
+        as_dict: If True, the data is returned as a dictionary.
         expected: The reference data for the test.
     """
     # Create a Power2 instance
@@ -735,10 +761,13 @@ def test_get_data_by_names(filter_non_feasible, expected):
     )
     # Get the data back
     data = problem.get_data_by_names(
-        names=["x"], as_dict=False, filter_non_feasible=filter_non_feasible
+        names=["x"], as_dict=as_dict, filter_non_feasible=filter_non_feasible
     )
     # Check output is filtered when needed
-    assert np.array_equal(data, expected)
+    if as_dict:
+        assert np.array_equal(data["x"], expected["x"])
+    else:
+        assert np.array_equal(data, expected)
 
 
 def test_gradient_with_random_variables():
