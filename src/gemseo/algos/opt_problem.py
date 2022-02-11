@@ -1973,7 +1973,11 @@ class OptimizationProblem(object):
         if filter_non_feasible:
             x_feasible, _ = self.get_feasible_points()
             feasible_indexes = [self.database.get_index_of(x) for x in x_feasible]
-            data = data[feasible_indexes, :]
+            if as_dict:
+                for key, value in data.items():
+                    data[key] = value[feasible_indexes, :]
+            else:
+                data = data[feasible_indexes, :]
 
         return data
 
