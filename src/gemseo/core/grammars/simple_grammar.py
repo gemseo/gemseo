@@ -24,7 +24,7 @@ from six import text_type
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import Path, abc
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -139,6 +139,11 @@ class SimpleGrammar(AbstractGrammar):
         if python_typing:
             for element_name, element_value in elements.items():
                 elements[element_name] = self.get_type_from_python_type(element_value)
+
+        # Generalize dict to support DisciplineData objects.
+        for name, type_ in elements.items():
+            if type_ is dict:
+                elements[name] = abc.Mapping
 
         self._names_to_types.update(**elements)
         self._check_types()

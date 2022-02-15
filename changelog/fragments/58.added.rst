@@ -1,0 +1,1 @@
+Disciplines can now use pandas DataFrame via their ``local_data``.

@@ -24,6 +24,7 @@
 
 from __future__ import division, unicode_literals
 
+import collections
 import logging
 import os
 import sys
@@ -39,6 +40,7 @@ from typing import (
     Generator,
     Iterable,
     List,
+    MutableMapping,
     Optional,
     Tuple,
     Union,
@@ -47,6 +49,8 @@ from typing import (
 import six
 from custom_inherit import DocInheritMeta
 from numpy import concatenate, empty, ndarray, zeros
+
+from gemseo.core.discipline_data import DisciplineData
 
 if TYPE_CHECKING:
     from gemseo.core.execution_sequence import SerialExecSequence
@@ -112,7 +116,6 @@ class MDODiscipline(object):
         cache (AbstractCache): The cache
             containing one or several executions of the discipline
             according to the cache policy.
-        local_data (Dict[str, Any]): The last input and output data.
     """
 
     STATUS_VIRTUAL = "VIRTUAL"
@@ -150,7 +153,7 @@ class MDODiscipline(object):
         "residual_variables",
         "output_grammar",
         "name",
-        "local_data",
+        "_local_data",
         "jac",
         "input_grammar",
         "_status",
@@ -219,7 +222,8 @@ class MDODiscipline(object):
 
         # : data converters between execute and _run
         self.data_processor = None
-        self._default_inputs = {}  # : default data to be set if not passed
+        self._default_inputs = None
+        self.__set_default_inputs({})
         # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
@@ -273,7 +277,9 @@ class MDODiscipline(object):
             input_grammar_file, output_grammar_file, self._grammar_type
         )
 
-        self.local_data = {}  # : the inputs and outputs data
+        self._local_data = None
+        self.__set_local_data({})
+
         # : The current status of execution
         self._status = self.STATUS_PENDING
         self._init_shared_attrs()
@@ -297,6 +303,22 @@ class MDODiscipline(object):
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
+
+    @property
+    def local_data(self):  # type (...) -> Mapping[str, Any]
+        """The current input and output data."""
+        return self._local_data
+
+    @local_data.setter
+    def local_data(
+        self, data  # type: MutableMapping[str, Any]
+    ):  # type: (...) -> None
+        self.__set_local_data(data)
+
+    def __set_local_data(
+        self, data  # type: MutableMapping[str, Any]
+    ):  # type: (...) -> None
+        self._local_data = DisciplineData(data)
 
     @property
     def n_calls(self):  # type: (...) -> int
@@ -638,21 +660,24 @@ class MDODiscipline(object):
         """
         if input_data is None:
             return deepcopy(self.default_inputs)
-        if not isinstance(input_data, dict):
+
+        if not isinstance(input_data, collections.Mapping):
             raise TypeError(
                 "Input data must be of dict type, "
                 "got {} instead.".format(type(input_data))
             )
 
         # Take default inputs if not in input_data
-        filt_inputs = self._default_inputs.copy()  # Shallow copy
-        filt_inputs.update(input_data)
+        full_input_data = deepcopy(self._default_inputs)
+        full_input_data.update(input_data)
 
         # Remove inputs that should not be there
-        in_names = self.get_input_data_names()
-        filt_inputs = {key: val for key, val in filt_inputs.items() if key in in_names}
+        input_names = self.get_input_data_names()
+        for key in tuple(full_input_data):
+            if key not in input_names:
+                del full_input_data[key]
 
-        return filt_inputs
+        return full_input_data
 
     def _filter_local_data(self):  # type: (...) -> None
         """Filter the local data after execution.
@@ -661,9 +686,9 @@ class MDODiscipline(object):
         """
         all_data_names = self.get_input_output_data_names()
 
-        self.local_data = {
-            key: val for key, val in self.local_data.items() if key in all_data_names
-        }
+        for key in tuple(self._local_data.keys()):
+            if key not in all_data_names:
+                del self._local_data[key]
 
     def _check_status_before_run(self):  # type: (...) -> None
         """Check the status of the discipline.
@@ -726,7 +751,8 @@ class MDODiscipline(object):
         """
         in_and_out = set(in_names) & set(self.get_output_data_names())
 
-        cached_inputs = dict(input_data.items())
+        cached_inputs = input_data.copy()
+
         for key in in_and_out:
             val = input_data.get(key)
             if val is not None:
@@ -779,7 +805,7 @@ class MDODiscipline(object):
 
         if out_cached is not None:
             self.__update_local_data_from_cache(input_data, out_cached, out_jac)
-            return self.local_data
+            return self._local_data
 
         # Cache was not loaded, see self.linearize
         self._cache_was_loaded = False
@@ -789,18 +815,18 @@ class MDODiscipline(object):
         self._check_status_before_run()
 
         self.check_input_data(input_data)
-        self.local_data = {}
-        self.local_data.update(input_data)
 
         processor = self.data_processor
-        # If the data processor is set, pre-process the data before _run
-        # See gemseo.core.data_processor module
         if processor is not None:
-            self.local_data = processor.pre_process_data(input_data)
+            self.__set_local_data(processor.pre_process_data(input_data))
+        else:
+            self.__set_local_data(input_data)
+
         self.status = self.STATUS_RUNNING
         self._is_linearized = False
         self.__increment_n_calls()
         t_0 = timer()
+
         try:
             # Effectively run the discipline, the _run method has to be
             # Defined by the subclasses
@@ -810,13 +836,14 @@ class MDODiscipline(object):
             # Update the status but
             # raise the same exception
             raise
+
         self.__increment_exec_time(t_0)
         self.status = self.STATUS_DONE
 
         # If the data processor is set, post process the data after _run
         # See gemseo.core.data_processor module
         if processor is not None:
-            self.local_data = processor.post_process_data(self.local_data)
+            self.__set_local_data(processor.post_process_data(self._local_data))
 
         # Filter data that is neither outputs nor inputs
         self._filter_local_data()
@@ -826,12 +853,12 @@ class MDODiscipline(object):
         # Caches output data in case the discipline is called twice in a row
         # with the same inputs
         out_names = self.get_output_data_names()
-        self.cache.cache_outputs(cached_inputs, in_names, self.local_data, out_names)
+        self.cache.cache_outputs(cached_inputs, in_names, self._local_data, out_names)
         # Some disciplines are always linearized during execution, cache the
         # jac in this case
         if self._is_linearized:
             self.cache.cache_jacobian(cached_inputs, in_names, self.jac)
-        return self.local_data
+        return self._local_data
 
     def __update_local_data_from_cache(
         self,
@@ -846,9 +873,8 @@ class MDODiscipline(object):
             out_cached: The output data retrieved from the cache.
             out_jac: The Jacobian data retrieved from the cache.
         """
-        self.local_data = {}
-        self.local_data.update(input_data)
-        self.local_data.update(out_cached)
+        self.__set_local_data(input_data)
+        self._local_data.update(out_cached)
 
         if out_jac is not None:
             self.jac = out_jac
@@ -920,8 +946,8 @@ class MDODiscipline(object):
             outputs = self._differentiated_outputs
         return inputs, outputs
 
-    _retreive_diff_inouts = _retrieve_diff_inouts
     # TODO: deprecate it at some point
+    _retreive_diff_inouts = _retrieve_diff_inouts
 
     @classmethod
     def activate_time_stamps(cls):  # type: (...) -> None
@@ -991,7 +1017,7 @@ class MDODiscipline(object):
         # an input is also an output, if we don't want to keep the computed
         # state (as in MDAs)
         if not self._linearize_on_last_state:
-            self.local_data.update(input_data)
+            self._local_data.update(input_data)
 
         # If the caching was triggered, check if the jacobian
         # was loaded,
@@ -1174,7 +1200,7 @@ class MDODiscipline(object):
         for j_o in outputs:
             j_out = self.jac[j_o]
             out_dv_set = set(j_out.keys())
-            output_vals = self.local_data.get(j_o)
+            output_vals = self._local_data.get(j_o)
             n_out_j = self.__get_len(output_vals)
 
             if not in_set.issubset(out_dv_set):
@@ -1183,7 +1209,7 @@ class MDODiscipline(object):
                 raise KeyError(msg.format(missing_inputs, self.name, j_o))
 
             for j_i in inputs:
-                input_vals = self.local_data.get(j_i)
+                input_vals = self._local_data.get(j_i)
                 n_in_j = self.__get_len(input_vals)
                 j_mat = j_out[j_i]
                 expected_shape = (n_out_j, n_in_j)
@@ -1251,12 +1277,17 @@ class MDODiscipline(object):
     def default_inputs(
         self, default_inputs  # type: Dict[str,Any]
     ):  # type: (...) -> None
-        if not isinstance(default_inputs, dict):
+        if not isinstance(default_inputs, collections.Mapping):
             raise TypeError(
-                "MDODiscipline default inputs must be of dict type, "
+                "MDODiscipline default_inputs must be of dict-like type, "
                 "got {} instead.".format(type(default_inputs))
             )
-        self._default_inputs = default_inputs
+        self.__set_default_inputs(default_inputs)
+
+    def __set_default_inputs(
+        self, data  # type: Dict[str, Any]
+    ):  # type: (...)-> None
+        self._default_inputs = DisciplineData(data)
 
     def _compute_jacobian(
         self,
@@ -1326,11 +1357,7 @@ class MDODiscipline(object):
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(default_dict_factory)
             for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = defaultdict(None)
-                jac[out_n] = jac_loc
-                # When a key is not in the default dict,
-                # ie a variable is not in the
-                # Jacobian; return a defaultdict(None)
+                jac_loc = jac[out_n]
                 for in_n, in_v in zip(inputs_names, inputs_vals):
                     jac_loc[in_n] = np_method((len(out_v), len(in_v)))
             self.jac = jac
@@ -1338,11 +1365,7 @@ class MDODiscipline(object):
             jac = self.jac
             # Only fill the missing sub jacobians
             for out_n, out_v in zip(outputs_names, outputs_vals):
-                jac_loc = jac.get(out_n)
-                if jac_loc is None:
-                    jac_loc = defaultdict(None)
-                    jac[out_n] = jac_loc
-
+                jac_loc = jac.get(out_n, defaultdict(None))
                 for in_n, in_v in zip(inputs_names, inputs_vals):
                     sub_jac = jac_loc.get(in_n)
                     if sub_jac is None:
@@ -1486,7 +1509,7 @@ class MDODiscipline(object):
         self.reset_statuses_for_run()
         # Linearize performs execute() if needed
         self.linearize(input_data)
-        o_k = approx.check_jacobian(
+        return approx.check_jacobian(
             self.jac,
             outputs,
             inputs,
@@ -1501,7 +1524,6 @@ class MDODiscipline(object):
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,
         )
-        return o_k
 
     @property
     def status(self):  # type: (...) -> str
@@ -1671,7 +1693,7 @@ class MDODiscipline(object):
         Args:
             kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
         """
-        self.local_data.update(kwargs)
+        self._local_data.update(kwargs)
 
     def check_input_data(
         self,
@@ -1704,7 +1726,7 @@ class MDODiscipline(object):
             raise_exception: Whether to raise an exception when the data is invalid.
         """
         try:
-            self.output_grammar.load_data(self.local_data, raise_exception)
+            self.output_grammar.load_data(self._local_data, raise_exception)
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
@@ -1748,7 +1770,7 @@ class MDODiscipline(object):
             ValueError: When a variable is not an input of the discipline.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
             raise ValueError(
                 "Discipline {} has no input named {}.".format(self.name, err)
@@ -1770,7 +1792,7 @@ class MDODiscipline(object):
             ValueError: When a variable is not an output of the discipline.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
             raise ValueError(
                 "Discipline {} has no output named {}.".format(self.name, err)
@@ -1829,7 +1851,7 @@ class MDODiscipline(object):
             The local output data.
         """
         return dict(
-            (k, v) for k, v in self.local_data.items() if self.is_output_existing(k)
+            (k, v) for k, v in self._local_data.items() if self.is_output_existing(k)
         )
 
     def get_input_data(self):  # type: (...) -> Dict[str, Any]
@@ -1839,7 +1861,7 @@ class MDODiscipline(object):
             The local input data.
         """
         return dict(
-            (k, v) for k, v in self.local_data.items() if self.is_input_existing(k)
+            (k, v) for k, v in self._local_data.items() if self.is_input_existing(k)
         )
 
     def serialize(
@@ -1957,7 +1979,7 @@ class MDODiscipline(object):
             ValueError: When a name is not a discipline input name.
         """
         try:
-            return self.get_data_list_from_dict(data_names, self.local_data)
+            return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
             raise ValueError(
                 "Discipline {} has no local_data named {}.".format(self.name, err)

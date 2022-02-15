@@ -234,7 +234,7 @@ def test_16_disc_parallel():
     "in_gtype", [MDODiscipline.SIMPLE_GRAMMAR_TYPE, MDODiscipline.JSON_GRAMMAR_TYPE]
 )
 def test_simple_grammar_type(in_gtype):
-    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D, in_gtype)
+    disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(
         disciplines,
         sub_mda_class="MDAJacobi",

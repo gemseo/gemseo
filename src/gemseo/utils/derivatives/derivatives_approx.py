@@ -275,8 +275,8 @@ class DisciplineJacApprox(object):
         plot_result=False,  # type: bool
         file_path="jacobian_errors.pdf",  # type: Union[str,Path]
         show=False,  # type: bool
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
+        figsize_x=10.0,  # type: float
+        figsize_y=10.0,  # type: float
         reference_jacobian_path=None,  # type: Optional[Union[str,Path]]
         save_reference_jacobian=False,  # type: bool
         indices=None,  # type: Optional[Union[int,Sequence[int],slice,Ellipsis]]

@@ -25,6 +25,7 @@ Scalable problem - Design space
 """
 from __future__ import division, unicode_literals
 
+import collections
 import logging
 
 from numpy import ones, zeros
@@ -77,7 +78,11 @@ class TMDesignSpace(object):
         n_coupling = n_coupling or [1, 1]
         check_consistency(n_shared, n_local, n_coupling)
 
-        default_inputs = {} if not isinstance(default_inputs, dict) else default_inputs
+        default_inputs = (
+            {}
+            if not isinstance(default_inputs, collections.Mapping)
+            else default_inputs
+        )
         self.names = []
         self.sizes = {}
         self.lower_bounds = {}

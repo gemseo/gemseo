@@ -666,6 +666,11 @@ Validation of images
     such that the :file:`result_images` directory with the comparisons
     is available at the root of the repository.
 
+Validation of arrays
+    For NumPy arrays,
+    use the
+    `NumPy testing tools <https://numpy.org/doc/stable/reference/routines.testing.html>`_.
+
 Generated files
    Tests that create files shall use the ``tmp_wd`` fixture
    such that the files are created in a temporary directory

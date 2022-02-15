@@ -133,7 +133,7 @@ class MDA(MDODiscipline):
         self._input_couplings = []
         self.matrix_type = JacobianAssembly.SPARSE
         self.use_lu_fact = use_lu_fact
-        # By default dont use an approximate cache for linearization
+        # By default don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()

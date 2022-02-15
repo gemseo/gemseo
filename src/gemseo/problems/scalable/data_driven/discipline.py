@@ -80,7 +80,7 @@ class ScalableDiscipline(MDODiscipline):
         self.scalable_model = create(name, data=data, sizes=sizes, **parameters)
         super(ScalableDiscipline, self).__init__(self.scalable_model.name)
         self.initialize_grammars(data)
-        self._default_inputs = self.scalable_model.default_inputs
+        self.default_inputs = self.scalable_model.default_inputs
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         self.add_differentiated_inputs(self.get_input_data_names())
         self.add_differentiated_outputs(self.get_output_data_names())

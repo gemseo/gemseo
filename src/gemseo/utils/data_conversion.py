@@ -26,7 +26,7 @@ import collections
 from copy import deepcopy
 from typing import Any, Dict, Generator, Iterable, Mapping, Optional, Tuple
 
-from numpy import array, array_equal, concatenate, ndarray
+from numpy import array, concatenate, ndarray
 from six import PY2
 
 STRING_SEPARATOR = "#&#"
@@ -148,7 +148,7 @@ def update_dict_of_arrays_from_array(
     dict_of_arrays,  # type: Mapping[str,ndarray]
     names,  # type: Iterable[str]
     array,  # type: ndarray
-):  # type: (...) -> Dict[str,ndarray]
+):  # type: (...) -> Mapping[str,ndarray]
     """Update some values of a dictionary of NumPy arrays from a NumPy array.
 
     The order of the data in ``array`` follows the order of ``names``.
@@ -184,14 +184,13 @@ def update_dict_of_arrays_from_array(
             "The array must be a NumPy one, got instead: {}.".format(type(array))
         )
 
-    data = dict(deepcopy(dict_of_arrays))
+    data = deepcopy(dict_of_arrays)
 
     if not names:
         return data
 
     i_min = i_max = 0
     for data_name in names:
-
         data_value = dict_of_arrays.get(data_name)
         if data_value is None:
             raise ValueError("There is no reference data for {}.".format(data_name))
@@ -431,32 +430,6 @@ def __flatten_nested_mapping(
                 yield item
         else:
             yield new_key, value
-
-
-def compare_dict_of_arrays(
-    dict_of_arrays,  # type: Mapping[str,ndarray]
-    other_dict_of_arrays,  # type: Mapping[str,ndarray]
-):  # type: (...) -> bool
-    """Check if two dictionaries of NumPy arrays are equal.
-
-    These dictionaries can be nested.
-
-    Args:
-        dictionary: A dictionary of NumPy arrays.
-        other_dictionary: Another dictionary of NumPy arrays.
-
-    Returns:
-        Whether the dictionaries are equal.
-    """
-    if any(isinstance(value, Mapping) for value in dict_of_arrays.values()):
-        dict_of_arrays = flatten_nested_dict(dict_of_arrays)
-        other_dict_of_arrays = flatten_nested_dict(other_dict_of_arrays)
-
-    for key, value in other_dict_of_arrays.items():
-        if key not in dict_of_arrays or not array_equal(dict_of_arrays[key], value):
-            return False
-
-    return True
 
 
 # Before v. 3.3 / Since v. 3.3
