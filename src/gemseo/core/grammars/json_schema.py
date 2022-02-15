@@ -16,15 +16,10 @@
 
 """JSON schema handler."""
 
-from gemseo.utils.py23_compat import PY2
-
-if PY2:
-    from collections import ItemsView, KeysView, Mapping, ValuesView
-else:
-    from collections.abc import ItemsView, KeysView, Mapping, ValuesView
-
 from genson import SchemaBuilder
 from genson.schema.strategies import Object
+
+from gemseo.utils.py23_compat import abc
 
 
 class _MergeRequiredStrategy(Object):
@@ -102,7 +97,7 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
         Returns:
             The keys.
         """
-        return KeysView(self)
+        return abc.KeysView(self)
 
     def items(self):
         """Return the pairs of key and mapped value.
@@ -110,7 +105,7 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
         Returns:
             The pairs of key and mapped value.
         """
-        return ItemsView(self)
+        return abc.ItemsView(self)
 
     def values(self):
         """Return the values.
@@ -118,10 +113,10 @@ class MutableMappingSchemaBuilder(SchemaBuilder):
         Returns:
             The values.
         """
-        return ValuesView(self)
+        return abc.ValuesView(self)
 
     def __eq__(self, other):
-        if not isinstance(other, Mapping):
+        if not isinstance(other, abc.Mapping):
             return NotImplemented
         return dict(self.items()) == dict(other.items())
 

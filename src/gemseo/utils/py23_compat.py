@@ -33,6 +33,7 @@ if PY2:
     xrange = xrange  # noqa: F821
     long = long  # noqa: F821
 
+    import collections as abc  # noqa: F401
     from inspect import getargspec as _getfullargspec
     from re import match  # noqa: F401
 
@@ -62,12 +63,12 @@ if PY2:
 
     backports.unittest_mock.install()
 
-
 else:
     string_dtype = "bytes"
     long = int
     xrange = range
 
+    from collections import abc  # noqa: F401
     from functools import lru_cache  # noqa: F401
     from inspect import getfullargspec as _getfullargspec
     from pathlib import Path  # noqa: F401

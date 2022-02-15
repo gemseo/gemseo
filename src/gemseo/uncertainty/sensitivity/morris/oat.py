@@ -137,7 +137,7 @@ class OATSensitivity(MDODiscipline):
     def _run(self):  # type: (...) -> None
         inputs = self.get_input_data()
         self.discipline.execute(inputs)
-        previous_data = self.discipline.local_data
+        previous_data = self.discipline.local_data.copy()
         if not self.output_range:
             self.__initialize_output_range(previous_data)
         else:
@@ -146,7 +146,7 @@ class OATSensitivity(MDODiscipline):
         for input_name in self.get_input_data_names():
             inputs = self.__update_inputs(inputs, input_name, self.step)
             self.discipline.execute(inputs)
-            new_data = self.discipline.local_data
+            new_data = self.discipline.local_data.copy()
             self.__update_output_range(new_data)
             for output_name in self.discipline.get_output_data_names():
                 out_diff_name = self.get_fd_name(input_name, output_name)

@@ -203,9 +203,9 @@ class SurrogateDiscipline(MDODiscipline):
                If None, use the the center of the learning input space.
         """
         if default_inputs is None:
-            self._default_inputs = self.regression_model.input_space_center
+            self.default_inputs = self.regression_model.input_space_center
         else:
-            self._default_inputs = default_inputs
+            self.default_inputs = default_inputs
 
     def _run(self):  # type: (...) -> None
         input_data = self.get_input_data()

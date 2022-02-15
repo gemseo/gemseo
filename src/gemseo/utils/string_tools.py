@@ -20,21 +20,13 @@
 #        :author: Matthias De Lozzo
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Pretty string utils
-===================
-"""
+"""Pretty string utils."""
 from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, List, Optional
+from typing import Any, Iterable, List, Optional
 
-from gemseo.utils.py23_compat import PY2
-
-if PY2:
-    from collections import Iterable, Mapping
-else:
-    from collections.abc import Iterable, Mapping
+from gemseo.utils.py23_compat import abc
 
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
@@ -54,12 +46,12 @@ def pretty_repr(
     """
     delimiter = kwargs.get("delimiter", ", ")
 
-    if isinstance(obj, Mapping):
+    if isinstance(obj, abc.Mapping):
         return delimiter.join(
             ["{}={}".format(key, repr(val)) for key, val in sorted(obj.items())]
         )
 
-    if isinstance(obj, Iterable):
+    if isinstance(obj, abc.Iterable):
         return delimiter.join([str(val) for val in obj])
 
     return repr(obj)

@@ -28,7 +28,6 @@ import pytest
 from numpy import array, array_equal, ndarray
 
 from gemseo.utils.data_conversion import (
-    compare_dict_of_arrays,
     concatenate_dict_of_arrays_to_array,
     deepcopy_dict_of_arrays,
     flatten_nested_bilevel_dict,
@@ -38,6 +37,7 @@ from gemseo.utils.data_conversion import (
     split_array_to_dict_of_arrays,
     update_dict_of_arrays_from_array,
 )
+from gemseo.utils.testing import compare_dict_of_arrays
 
 
 @pytest.fixture
