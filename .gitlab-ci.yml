@@ -39,11 +39,11 @@ workflow:
 #     pylint
 #     .tests
 #         .tests-linux
-#             py27,py38
-#             py36,py37,py39
+#             py38
+#             py37,py39
 #         .tests-windows
-#             py27-win,py38-win
-#             py36-win,py37-win,py39-win
+#             py38-win
+#             py37-win,py39-win
 
 # Base job template.
 .base:
@@ -158,7 +158,7 @@ style:
   #         - requirements/gemseo.in
   #         # We can only have 2 files as cache keys, changes for python 2 shall hopefully follow the ones for python 3.
   #         # NOTE: This will be properly fixed when we'll use pip-compile'd gemseo.in.
-  #         - requirements/gemseo-conda-python3.txt
+  #         - requirements/gemseo-conda.txt
   #       # Some packages will change when the python version changes, hence the tox env name.
   #       prefix: $CI_JOB_NAME
   #     paths:
@@ -177,8 +177,8 @@ style:
     - changes:
         - src/**/*.*
         - tests/**/*.*
-        - requirements/gemseo-conda-python?.txt
-        - requirements/test-python?.txt
+        - requirements/gemseo-conda.txt
+        - requirements/test.txt
         - setup.cfg
         - tox.ini
         - .gitlab-ci.yml
@@ -204,14 +204,8 @@ style:
     - sed "s|filename=\".*/site-packages|filename=\"src|" -i $COVERAGE_FILE
 
 # Jobs for the tests stage.
-py27:
-  extends: .tests-linux
-
 py38:
   extends: .tests-linux
-
-py27-win:
-  extends: .tests-windows
 
 py38-win:
   extends: .tests-windows
@@ -224,11 +218,6 @@ py38-win:
     # Run for commits on the master branch
     - if: '$CI_COMMIT_BRANCH == "master"'
 
-py36:
-  extends:
-    - .tests-linux
-    - .additional-tests
-
 py37:
   extends:
     - .tests-linux
@@ -237,11 +226,6 @@ py37:
 py39:
   extends:
     - .tests-linux
-    - .additional-tests
-
-py36-win:
-  extends:
-    - .tests-windows
     - .additional-tests
 
 py37-win:

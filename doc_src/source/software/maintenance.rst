@@ -52,7 +52,7 @@ under the same constraints.
 In the context of **tox**,
 the versions of the dependencies
 that shall be installed with :command:`conda`
-are defined in :file:`requirements/gemseo-conda-python{2,3}.txt`,
+are defined in :file:`requirements/gemseo-conda.txt`,
 they are pulled from `conda-forge`_.
 All other dependencies are installed with :command:`pip`,
 they are pulled from `pypi`_.
@@ -60,8 +60,7 @@ they are pulled from `pypi`_.
 When a dependency is changed,
 :file:`setup.cfg` shall always be modified.
 If the changed dependency is installed with :command:`conda`,
-then both :file:`gemseo-conda-python{2,3}.txt`
-and :file:`environment-py{2,3}.yml` shall be modified.
+then :file:`gemseo-conda.txt` shall be modified.
 
 Documentation files like :file:`CREDITS.rst`
 and :file:`dependencies.rst` shall also be updated accordingly.
@@ -118,7 +117,7 @@ To update them:
 .. note::
 
    To reduce discrepancy among the environments,
-   :file:`requirements/test-python3.txt`
+   :file:`requirements/test.txt`
    shall be working for all the python 3 testing environments.
 
 Git hooks are defined and run with `pre-commit`_.
@@ -161,8 +160,7 @@ Then update the actual test requirements with:
 
 .. code-block:: shell
 
-   conda run -p .tox/dev pip-compile -U requirements/test.in -o requirements/test-python3.txt
-   conda run -p .tox/py27 pip-compile -U requirements/test.in -o requirements/test-python2.txt
+   conda run -p .tox/dev pip-compile -U requirements/test.in -o requirements/test.txt
 
 .. note::
 

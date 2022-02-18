@@ -158,23 +158,6 @@ see HDF5Cache.update_file_format for converting it.``,
 please use :meth:`.HDF5Cache.update_file_format`
 to update the format of the file and fix the data hashes.
 
-Handling Python 2 and Python 3 compatibility
---------------------------------------------
-
-See :ref:`python2and3`.
-
-How to use |g| without DISPLAY?
--------------------------------
-
-With python 2.7,
-|g| may error out if the environment variable
-:envvar:`DISPLAY` is not set (because of :mod:`matplotlib`).
-In you shell, run
-
-.. code-block:: console
-
-   export MPLBACKEND=AGG
-
 |g| fails with openturns
 ------------------------
 

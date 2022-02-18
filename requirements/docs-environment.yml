@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.8
-  # The following dependencies must be the same as in requirements/gemseo-conda-python3.txt
+  # The following dependencies must be the same as in requirements/gemseo-conda.txt
   - python-graphviz <=0.16
   - pdfo
   - pip:

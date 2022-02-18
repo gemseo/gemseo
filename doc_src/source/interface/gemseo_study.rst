@@ -37,7 +37,7 @@ There is no need to write any line of code to use this tool. A command line exec
 
 .. warning::
 
-  |g| study analysis only works under Python 3.6 and higher versions.
+  |g| study analysis only works under Python 3.7 and higher versions.
 
 Examples
 --------
