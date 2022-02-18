@@ -53,7 +53,7 @@ The construction of an :class:`.MDODiscipline` consists in three steps:
 The :class:`!MDODiscipline._run` method consists in three steps:
 
 1. Get the input data from :attr:`!MDODiscipline.local_data` and write the :file:`inputs.txt` file,
-2. Run the executable using the :code:`os.system()` command (`see more <https://docs.python.org/fr/2.7/library/os.html#os.system>`_),
+2. Run the executable using the :code:`os.system()` command (`https://docs.python.org/3/library/os.html#os.system`_),
 3. Get the output values and store them to :attr:`!MDODiscipline.local_data`.
 
 Now you can implement the discipline in the following way:

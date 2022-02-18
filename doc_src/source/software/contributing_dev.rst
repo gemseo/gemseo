@@ -85,13 +85,13 @@ Run the tests
 
    .. code-block:: console
 
-      tox -e py27,py37
+      tox -e py38,py39
 
 * on Windows
 
    .. code-block:: console
 
-      tox -e py27-win,py37-win
+      tox -e py38-win,py39-win
 
 Environments
 ------------
@@ -595,7 +595,7 @@ Rework commit history
 Tests
     Avoid commits that break tests,
     only push a branch that passes all the tests
-    for py27 and py38 on your machine.
+    for py38 on your machine.
 
 Testing
 -------
@@ -679,19 +679,15 @@ Generated files
 Executing tests
 +++++++++++++++
 
-For Python 2.7,
+For Python 3.9,
 run the tests with:
 
 .. code-block:: console
 
-   tox -e py27
+   tox -e py39
 
-Replace py27 by py38 for testing with Python 3.8,
-you may run the tests accordingly with Python 2.7,
-3.6,
-3.7,
-3.8
-and 3.9.
+Replace py39 by py38 for testing with Python 3.8,
+you may run the tests accordingly with Python 3.7 and 3.9.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
@@ -704,7 +700,7 @@ Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py27,py38
+   tox -e py37,py38
 
 Under Windows,
 append ``-win`` to the names of the test environments,
@@ -712,7 +708,7 @@ for instance:
 
 .. code-block:: console
 
-   tox -e py27-win,py38-win
+   tox -e py37-win,py38-win
 
 Tests coverage
 ++++++++++++++
@@ -781,12 +777,10 @@ They will be overhauled progressively.
 Type hints
 ~~~~~~~~~~
 
-For functions and methods,
-write type hints with inlined comments as shown in :ref:`example module`
-(this is compatible with both Python 2.7 and 3.6+).
 The type hints are used when generating the functions and methods documentation,
 they will also be used gradually to check and improved the code quality
 with the help of a type checker like `mypy`_.
+(see :ref:`example module`)
 
 Functions and methods arguments shall use `standard duck typing`_.
 In practice, use :class:`Iterable` or :class:`Sequence`

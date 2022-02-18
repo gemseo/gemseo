@@ -58,29 +58,7 @@ install the full feature set in an anaconda environment named *gemseo* for pytho
 
     conda create -c conda-forge -n gemseo python=3.8 gemseo
 
-You can change the Python version to 3.6, 3.7 or 3.9.
-
-Python 2.7 installation
-***********************
-
-For Python 2.7,
-use :download:`this file <../../../environment-py2.yml>`.
-
-Then,
-activate this environment with:
-
-.. code-block:: console
-
-    conda activate gemseo
-
-and you can now proceed with the installation of |g|,
-see :ref:`pypi`.
-
-You may leave the Anaconda environment with:
-
-.. code-block:: console
-
-    conda deactivate
+You can change the Python version to 3.7 or 3.9.
 
 .. _pypi:
 
