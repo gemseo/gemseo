@@ -42,13 +42,16 @@ class DimensionReduction(Transformer):
     def __init__(
         self,
         name="DimensionReduction",  # type: str
-        n_components=5,  # type: int
+        n_components=None,  # type: Optional[int]
         **parameters  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
             name: A name for this transformer.
             n_components: The number of components of the latent space.
+                If ``None``,
+                use the maximum number allowed by the technique,
+                typically ``min(n_samples, n_features)``.
             **parameters: The parameters of the transformer.
         """
         super(DimensionReduction, self).__init__(

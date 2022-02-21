@@ -66,19 +66,18 @@ def test_constructor():
     assert algo.algo is None
 
 
-def test_learn(data, data2d):
-    """Test learn."""
+def test_learn(data):
+    """Test learn with the default number of components (None)."""
     algo = KLSVD(MESH)
     algo.fit(data)
-    assert len(algo.algo.getModes()) == 5
+    assert algo.n_components == 10
 
-    algo = KLSVD(MESH2D)
-    algo.fit(data2d)
-    assert len(algo.algo.getModes()) == 5
 
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     algo = KLSVD(MESH, 10)
     algo.fit(data)
-    assert len(algo.algo.getModes()) == 10
+    assert algo.n_components == 10
 
 
 def test_transform(data, data2d):

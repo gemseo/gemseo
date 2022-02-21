@@ -31,7 +31,7 @@ generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
 from __future__ import division, unicode_literals
 
-from typing import NoReturn, Union
+from typing import NoReturn, Optional, Union
 
 from numpy import matmul, ndarray
 from sklearn.cross_decomposition import PLSRegression
@@ -49,7 +49,7 @@ class PLS(DimensionReduction):
     def __init__(
         self,
         name="PLS",  # type: str
-        n_components=5,  # type: int
+        n_components=None,  # type: Optional[int]
         **parameters  # type: Union[float,int,bool]
     ):  # type: (...) -> None
         """
@@ -69,7 +69,11 @@ class PLS(DimensionReduction):
         Args:
             The data to be fitted.
         """
+        if self.algo.n_components is None:
+            self.algo.n_components = min(min(data.shape), min(other_data.shape))
+
         self.algo.fit(data, other_data)
+        self.parameters["n_components"] = self.algo.n_components
 
     def transform(
         self,
@@ -96,9 +100,4 @@ class PLS(DimensionReduction):
         self,
         data,  # type: ndarray
     ):  # type: (...) -> NoReturn
-        raise NotImplementedError
-
-    @property
-    def components(self):  # type: (...) -> NoReturn
-        """The principal components."""
         raise NotImplementedError

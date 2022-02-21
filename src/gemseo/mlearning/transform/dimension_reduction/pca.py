@@ -48,7 +48,7 @@ class PCA(DimensionReduction):
     def __init__(
         self,
         name="PCA",  # type: str,
-        n_components=5,  # type: int
+        n_components=None,  # type: Optional[int]
         **parameters  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
@@ -64,6 +64,7 @@ class PCA(DimensionReduction):
         *args  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         self.algo.fit(data)
+        self.parameters["n_components"] = self.algo.n_components_
 
     def transform(
         self,

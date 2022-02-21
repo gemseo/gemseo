@@ -48,7 +48,7 @@ class KPCA(DimensionReduction):
     def __init__(
         self,
         name="KPCA",  # type: str
-        n_components=5,  # type: int
+        n_components=None,  # type: Optional[int]
         fit_inverse_transform=True,  # type: bool
         kernel="linear",  # type: str
         **parameters  # type: Optional[Union[float,int,str]]
@@ -75,6 +75,7 @@ class KPCA(DimensionReduction):
         *args  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         self.algo.fit(data)
+        self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
     def transform(
         self,
