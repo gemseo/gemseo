@@ -48,10 +48,18 @@ def test_constructor():
 
 
 def test_learn(data):
-    """Test learn."""
+    """Test learn with the default number of components (None)."""
+    pca = PCA()
+    pca.fit(data)
+    assert pca.n_components == pca.algo.n_components_
+
+
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     n_components = 3
     pca = PCA(n_components=n_components)
     pca.fit(data)
+    assert pca.n_components == n_components
 
 
 def test_transform(data):

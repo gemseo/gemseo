@@ -27,6 +27,8 @@ _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
 from __future__ import division, unicode_literals
 
+from typing import Optional
+
 import openturns
 from numpy import array, ndarray
 from openturns import (
@@ -56,12 +58,12 @@ class KLSVD(DimensionReduction):
     def __init__(
         self,
         mesh,  # type: ndarray
-        n_components=5,  # type: int
+        n_components=None,  # type: Optional[int]
         name="KLSVD",  # type: str
     ):  # type: (...) -> None
         """
         Args:
-            mesh: A mesh passed a 2D array
+            mesh: A mesh passed as a 2D NumPy array
                 whose rows are nodes and columns are the dimensions of the nodes.
         """
         super(KLSVD, self).__init__(name, mesh=mesh, n_components=n_components)
@@ -83,9 +85,11 @@ class KLSVD(DimensionReduction):
         klsvd = KarhunenLoeveSVDAlgorithm(sample, [1] * mesh_size, 0.0, True)
         klsvd.run()
         result = klsvd.getResult()
-        if self.n_components < data.shape[1]:
+        if self.n_components is not None and self.n_components < data.shape[1]:
             result = self._truncate_kl_result(result)
+
         self.algo = result
+        self.parameters["n_components"] = len(self.algo.getEigenvalues())
 
     def transform(
         self,

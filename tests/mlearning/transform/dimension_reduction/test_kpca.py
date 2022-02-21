@@ -48,10 +48,18 @@ def test_constructor():
 
 
 def test_learn(data):
-    """Test learn."""
+    """Test learn with the default number of components (None)."""
+    kpca = KPCA()
+    kpca.fit(data)
+    assert kpca.n_components == len(kpca.algo.eigenvalues_)
+
+
+def test_learn_custom(data):
+    """Test learn with a custom number of components."""
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)
+    assert kpca.n_components == n_components
 
 
 def test_transform(data):
