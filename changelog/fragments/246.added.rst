@@ -1,0 +1,1 @@
+Randomized cross-validation can now use a seed for the sake of reproducibility.

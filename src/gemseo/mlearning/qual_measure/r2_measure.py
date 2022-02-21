@@ -83,8 +83,9 @@ class R2Measure(MLErrorMeasure):
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
-        folds, samples = self._compute_folds(samples, n_folds, randomize)
+        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
         in_grp = self.algo.learning_set.INPUT_GROUP
         out_grp = self.algo.learning_set.OUTPUT_GROUP

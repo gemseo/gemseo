@@ -132,8 +132,9 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
-        folds, samples = self._compute_folds(samples, n_folds, randomize)
+        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
         data = self._get_data()
 

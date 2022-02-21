@@ -92,6 +92,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 
