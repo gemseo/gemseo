@@ -30,7 +30,7 @@ from typing import List, NoReturn, Optional, Sequence, Tuple, Union
 import six
 from custom_inherit import DocInheritMeta
 from numpy import arange, array, array_split, ndarray
-from numpy.random import shuffle
+from numpy.random import default_rng
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
@@ -171,7 +171,8 @@ class MLQualityMeasure(object):
         n_folds=5,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
-        randomize=False,  # type:bool
+        randomize=False,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using the k-folds technique.
 
@@ -182,6 +183,9 @@ class MLQualityMeasure(object):
             multioutput: If True, return the quality measure for each
                 output component. Otherwise, average these measures.
             randomize: Whether to shuffle the samples before dividing them in folds.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                then an unpredictable generator will be used.
 
         Returns:
             The value of the quality measure.
@@ -258,22 +262,30 @@ class MLQualityMeasure(object):
         samples,  # type: Optional[Sequence[int]]
         n_folds,  # type: int
         randomize,  # type: bool
+        seed,  # type: Optional[int]
     ):  # type: (...) -> Tuple[List[ndarray],ndarray]
-        """Divide the elements into folds.
+        """Split the samples into folds.
+
+        E.g. [0, 1, 2, 3, 4, 5] can be split into 3 folds: [0, 1], [2, 3] and [4, 5].
 
         Args:
             samples: The samples to be split into folds.
-                If None, use all the samples.
+                If ``None``, consider all the samples.
             n_folds: The number of folds.
-            randomize: Whether to shuffle the elements before splitting them.
+            randomize: Whether to shuffle the samples before splitting them,
+                e.g. [2, 3], [1, 5] and [0, 4].
+            seed: The seed to initialize the random generator used for shuffling.
+                If ``None``,
+                then an unpredictable random generator will be pulled from the OS.
 
         Returns:
-            * The folds defined as sub-sets of `samples`.
+            * The folds defined as sub-sets of ``samples``.
             * The original samples.
         """
         samples = self._assure_samples(samples)
         if randomize:
-            shuffle(samples)
+            default_rng(seed).shuffle(samples)
+
         return array_split(samples, n_folds), samples
 
 

@@ -90,12 +90,14 @@ class RMSEMeasure(MSEMeasure):
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
         randomize=False,  # type:bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_kfolds(
             n_folds=n_folds,
             samples=samples,
             multioutput=multioutput,
             randomize=randomize,
+            seed=seed,
         )
         return mse ** 0.5
 

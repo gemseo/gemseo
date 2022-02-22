@@ -25,7 +25,7 @@ from __future__ import division, unicode_literals
 from unittest.mock import Mock
 
 import pytest
-from numpy import array
+from numpy import array, array_equal
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import MLAlgo
@@ -105,7 +105,7 @@ def algo_with_three_samples():
 def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
     """Check that randomized cross-validation works correctly."""
     measure = MLQualityMeasure(algo_with_three_samples)
-    folds, final_samples = measure._compute_folds(samples, n_folds, randomize)
+    folds, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
     assert len(folds) == n_folds
     assert set.union(*(set(fold) for fold in folds)) == set(final_samples)
     assert sum([len(fold) == 0 for fold in folds]) == 0
@@ -117,7 +117,7 @@ def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
 
     replicates = []
     for _ in range(10):
-        _, final_samples = measure._compute_folds(samples, n_folds, randomize)
+        _, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
         replicates.append(final_samples.tolist())
 
     replicates = array(replicates)
@@ -127,3 +127,14 @@ def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
         assert not all_replicates_are_identical
     else:
         assert all_replicates_are_identical
+
+
+@pytest.mark.parametrize("seed", [None, 1])
+def test_cross_validation_seed(measure, seed):
+    """Check that the seed is correctly used by cross-validation."""
+    _, samples_1 = measure._compute_folds([0, 1, 2, 3, 4], 5, True, seed)
+    _, samples_2 = measure._compute_folds([0, 1, 2, 3, 4], 5, True, seed)
+    if seed is not None:
+        assert array_equal(samples_1, samples_2)
+    else:
+        assert not array_equal(samples_1, samples_2)
