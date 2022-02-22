@@ -24,6 +24,8 @@
 
 from __future__ import division, unicode_literals
 
+import re
+
 import pytest
 from matplotlib.testing.decorators import image_comparison
 
@@ -46,7 +48,14 @@ TEST_PARAMETERS = {
     "with_size": ({"size": 50}, ["ScatterMatrix_size"]),
     "with_marker": ({"marker": "+"}, ["ScatterMatrix_marker"]),
     "with_classifier": ({"classifier": "c"}, ["ScatterMatrix_classifier"]),
+    "with_names": ({"variable_names": ["x", "y"]}, ["ScatterMatrix_names"]),
 }
+
+
+@pytest.fixture
+def scatter_matrix(dataset):  # type: (...) -> ScatterMatrix # noqa: F811
+    """A scatter matrix to be plotted."""
+    return ScatterMatrix(dataset)
 
 
 @pytest.mark.parametrize(
@@ -56,13 +65,19 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None, extensions=["png"], tol=0.025)
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):  # noqa: F811
-    """Test images created by ScatterMatrix._plot against references.
+def test_plot(kwargs, baseline_images, scatter_matrix, pyplot_close_all):  # noqa: F811
+    """Test images created by ScatterMatrix._plot against references."""
+    scatter_matrix._plot(properties={}, **kwargs)
 
-    Args:
-        kwargs (dict): The optional arguments to pass to ScatterMatrix._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    ScatterMatrix(dataset)._plot(properties={}, **kwargs)
+
+def test_plot_error(scatter_matrix):
+    """Check that an error is raised when the classifier is not variable name."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "wrong_name cannot be used as a classifier "
+            "because it is not a variable name; "
+            "available ones are: ['c', 'x', 'y', 'z']."
+        ),
+    ):
+        scatter_matrix._plot(properties={}, classifier="wrong_name")

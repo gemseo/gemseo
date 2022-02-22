@@ -61,11 +61,12 @@ from __future__ import division, unicode_literals
 
 import logging
 import operator
+from collections import namedtuple
 from numbers import Number
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from numpy import array, concatenate, delete, hstack, isnan, ndarray, unique, where
+from numpy import concatenate, delete, hstack, isnan, ndarray, unique, where
 from pandas import DataFrame, read_csv
 from six import string_types
 
@@ -97,6 +98,8 @@ AllDataType = Union[
     Dict[str, Union[Dict[str, ndarray], ndarray]],
     Tuple[Union[ndarray, Dict[str, ndarray]], List[str], Dict[str, int]],
 ]
+
+ColumnName = namedtuple("ColumnName", "group,variable,component")
 
 
 class Dataset(object):
@@ -934,48 +937,53 @@ class Dataset(object):
         self.metadata[name] = value
 
     @property
-    def columns_names(self):  # type: (...) -> List[Union[str,Tuple[str,str,str]]]
+    def columns_names(self):  # type: (...) -> List[Union[str,ColumnName]]
         """The names of the columns of the dataset."""
-        return self._get_columns_names()
+        return self.__get_column_names()
 
-    def _get_columns_names(
+    def __get_column_names(
         self,
-        as_list=False,  # type: bool
+        as_tuple=False,  # type: bool
         start=0,  # type: int
-    ):  # type: (...) -> List[Union[str,Tuple[str,str,str]]]
+    ):  # type: (...) -> List[Union[str,ColumnName]]
         """Return the names of the columns of the dataset.
 
         If dim(x)=1,
         its column name is 'x'
         while if dim(y)=2,
-        its columns names are either 'x_0' and 'x_1'
-        or [group_name, 'x', '0'] and [group_name, 'x', '1'].
+        its column names are either 'x_0' and 'x_1'
+        or ColumnName(group_name, 'x', '0') and ColumnName(group_name, 'x', '1').
 
         Args:
-            as_list: If True, return the name as a tuple.
-                otherwise, return the name as a string.
+            as_tuple: If True, return the names as named tuples.
+                otherwise, return the names as strings.
             start: The first index for the components of a variable.
                 E.g. with '0': 'x_0', 'x_1', ...
 
         Returns:
-            The names of the columns of the data.
+            The names of the columns of the dataset.
         """
         column_names = []
         for group, names in self._names.items():
             for name in names:
-                if as_list:
-                    column_names += [
-                        [group, name, str(index + start)]
-                        for index in range(self.sizes[name])
-                    ]
+                if as_tuple:
+                    column_names.extend(
+                        [
+                            ColumnName(group, name, str(size + start))
+                            for size in range(self.sizes[name])
+                        ]
+                    )
                 else:
                     if self.sizes[name] == 1:
-                        column_names += [name]
+                        column_names.append(name)
                     else:
-                        column_names += [
-                            "{}_{}".format(name, index + start)
-                            for index in range(self.sizes[name])
-                        ]
+                        column_names.extend(
+                            [
+                                "{}_{}".format(name, size + start)
+                                for size in range(self.sizes[name])
+                            ]
+                        )
+
         return column_names
 
     def get_data_by_group(
@@ -1062,10 +1070,10 @@ class Dataset(object):
         else:
             if not as_dict:
                 data = concatenate(
-                    tuple([self.get_data_by_group(group) for group in self._names]), 1
+                    tuple([self.get_data_by_group(group) for group in self.groups]), 1
                 )
                 names = [
-                    item for sublist in list(self._names.values()) for item in sublist
+                    name for group in self.groups for name in self.get_names(group)
                 ]
                 data = (data, names, self.sizes)
             else:
@@ -1109,6 +1117,7 @@ class Dataset(object):
     def export_to_dataframe(
         self,
         copy=True,  # type: bool
+        variable_names=None,  # type: Optional[Sequence[str]]
     ):  # type: (...) -> DataFrame
         """Export the dataset to a pandas Dataframe.
 
@@ -1119,16 +1128,37 @@ class Dataset(object):
         Returns:
             A pandas DataFrame containing the dataset.
         """
-        row1 = []
-        row2 = []
-        row3 = []
-        for column in self._get_columns_names(True):
-            row1.append(column[0])
-            row2.append(column[1])
-            row3.append(column[2])
-        columns = [array(row1), array(row2), array(row3)]
-        data = self.get_all_data(False, False)
-        dataframe = DataFrame(data[0], columns=columns, copy=copy)
+        if variable_names is None:
+            variable_names = self.variables
+
+        # The column of a DataFrame is defined by three labels:
+        # the group at which the variable belongs,
+        # the name of the variable and
+        # the components of the variable,
+        # e.g. ("inputs", "x", "0").
+        group_labels = []
+        variable_labels = []
+        component_labels = []
+        for (group, variable, component) in self.__get_column_names(True):
+            if variable in variable_names:
+                group_labels.append(group)
+                variable_labels.append(variable)
+                component_labels.append(component)
+
+        # Reorder the variables according to variable_names
+        variable_label_indices = [
+            variable_label_index
+            for variable_name in variable_names
+            for variable_label_index, variable_label_name in enumerate(variable_labels)
+            if variable_label_name == variable_name
+        ]
+        group_labels = [group_labels[index] for index in variable_label_indices]
+        component_labels = [component_labels[index] for index in variable_label_indices]
+        variable_labels = [variable_labels[index] for index in variable_label_indices]
+
+        columns = [group_labels, variable_labels, component_labels]
+        data = self.get_data_by_names(variable_names, as_dict=False)
+        dataframe = DataFrame(data, columns=columns, copy=copy)
         dataframe.index = self.row_names
         return dataframe
 
