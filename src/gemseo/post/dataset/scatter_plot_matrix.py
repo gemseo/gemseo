@@ -51,7 +51,7 @@ labeled.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -71,6 +71,7 @@ class ScatterMatrix(DatasetPlot):
     def _plot(
         self,
         properties,  # type: Mapping
+        variable_names=None,  # type: Optional[Sequence[str]]
         classifier=None,  # type: Optional[str]
         kde=False,  # type: bool
         size=25,  # type: int
@@ -85,18 +86,24 @@ class ScatterMatrix(DatasetPlot):
             size: The size of the points.
             marker: The marker for the points.
         """
+        if variable_names is None:
+            variable_names = self.dataset.variables
+
         figsize_x = properties.get(self.FIGSIZE_X) or 10
         figsize_y = properties.get(self.FIGSIZE_Y) or 10
         if classifier is not None and classifier not in self.dataset.variables:
             raise ValueError(
-                "Classifier must be one of these names: "
-                + ", ".join(self.dataset.variables)
+                f"{classifier} cannot be used as a classifier "
+                f"because it is not a variable name; "
+                f"available ones are: {self.dataset.variables}."
             )
+
         if kde:
             diagonal = "kde"
         else:
             diagonal = "hist"
-        dataframe = self.dataset.export_to_dataframe()
+
+        dataframe = self.dataset.export_to_dataframe(variable_names=variable_names)
         if classifier is None:
             self._scatter_matrix(
                 dataframe, diagonal, size, marker, figsize_x, figsize_y
@@ -105,6 +112,7 @@ class ScatterMatrix(DatasetPlot):
             self._scatter_matrix_for_group(
                 classifier, dataframe, diagonal, size, marker, figsize_x, figsize_y
             )
+
         return [plt.gcf()]
 
     def _scatter_matrix_for_group(
@@ -131,8 +139,8 @@ class ScatterMatrix(DatasetPlot):
         palette = dict(enumerate("bgrcmyk"))
         groups = self.dataset.get_data_by_names([classifier], False)[:, 0:1]
         colors = [palette[group[0] % len(palette)] for group in groups]
-        _, varname = self._get_label(classifier)
-        dataframe = dataframe.drop(varname, 1)
+        _, variable_name = self._get_label(classifier)
+        dataframe = dataframe.drop(variable_name, 1)
         dataframe.columns = self._get_variables_names(dataframe)
         scatter_matrix(
             dataframe,

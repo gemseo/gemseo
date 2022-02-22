@@ -346,13 +346,33 @@ def test_add_group(dataset, ungroup_dataset):
 
 
 def test_export_to_dataframe(dataset):
-    assert len(dataset.export_to_dataframe()) == len(dataset)
+    """Check the dataframe resulting from a dataset export."""
+    variables = ["i1", "o2", "o1", "i2"]
+    sizes = {"i1": 1, "i2": 2, "o1": 1, "o2": 2}
+    dataset = Dataset()
+    dataset.set_from_array(arange(12).reshape(2, 6), variables, sizes)
+    df = dataset.export_to_dataframe()
+    for column, expected_column in zip(
+        df.columns.values,
+        [
+            ("parameters", "i1", "0"),
+            ("parameters", "i2", "0"),
+            ("parameters", "i2", "1"),
+            ("parameters", "o1", "0"),
+            ("parameters", "o2", "0"),
+            ("parameters", "o2", "1"),
+        ],
+    ):
+        assert column == expected_column
+
+    assert_equal(df.values, array([[0, 4, 5, 3, 1, 2], [6, 10, 11, 9, 7, 8]]))
 
 
 def test_get_columns_names():
+    """Check the default names of the dataset columns."""
     dataset = Dataset()
     dataset.set_from_array(array([[1.0], [1.0]]))
-    assert dataset._get_columns_names() == ["x_0"]
+    assert dataset._Dataset__get_column_names() == ["x_0"]
 
 
 def test_get_data_by_group(io_dataset, ungroup_dataset):
