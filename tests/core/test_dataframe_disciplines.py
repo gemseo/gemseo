@@ -35,7 +35,7 @@ from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.utils.testing import compare_dict_of_arrays
 
-from .core.test_discipline_data import to_df_key
+from .test_discipline_data import to_df_key
 
 
 class DFChooser(MDODiscipline):
