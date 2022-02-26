@@ -11,6 +11,89 @@
 Options for {{long_algo_type}} algorithms
 ======================={{ (long_algo_type|length)*'=' }}
 
+.. raw:: html
+
+    <style>
+    th {
+      cursor: pointer;
+    }
+
+    th, td {
+      text-align: center;
+    }
+
+    tr:hover {
+        border: 1px solid black;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2
+    }
+    </style>
+
+    <script>
+    function sortTable(n) {
+      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+      table = document.getElementById("myTable");
+      switching = true;
+      dir = "asc";
+      while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+          shouldSwitch = false;
+          x = rows[i].getElementsByTagName("TD")[n];
+          y = rows[i + 1].getElementsByTagName("TD")[n];
+          if (dir == "asc") {
+            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+              shouldSwitch= true;
+              break;
+            }
+          } else if (dir == "desc") {
+            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount ++;
+        } else {
+          if (switchcount == 0 && dir == "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+    </script>
+{% if features is not none %}
+    <table id="myTable">
+      <tr>
+        <th onclick="sortTable(0)">Algorithm name<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(1)">Handle equality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(2)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(3)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(4)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(5)">Require gradient<br/>&#x25B2;&#x25BC;</th>
+      </tr>
+{% for algo in algos %}
+{% set algo_features = features[algo] %}
+      <tr>
+         <td><a href="#{{ algo|lower|replace('_', '-') }}">{{ algo }}</a></td>
+         <td>{% if algo_features.handle_equality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_inequality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_float_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.handle_integer_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+         <td>{% if algo_features.require_gradient %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
+      </tr>
+{% endfor %}
+    </table>
+    <br/>
+{% endif %}
+
 {% for algo in algos %}
 .. _{{algo}}_options:
 

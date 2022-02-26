@@ -29,7 +29,7 @@ from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import _get_schema
+from gemseo.api import _get_schema, get_algorithm_features
 from gemseo.core.factory import Factory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory
@@ -187,6 +187,7 @@ class AlgoOptionsDoc:
         self.get_options_schema = _get_options_schema
         self.get_website = None
         self.get_description = None
+        self.get_features = None
 
     def get_module(self, algo_name: str) -> str:
         """Return the module path of an algorithm.
@@ -203,6 +204,12 @@ class AlgoOptionsDoc:
     def options(self) -> Dict[str, str]:
         """The options of the different algorithms."""
         return {algo: self.get_options_schema(algo) for algo in self.algos_names}
+
+    @property
+    def features(self) -> Optional[Dict[str, str]]:
+        """The features, if any."""
+        if self.get_features is not None:
+            return {algo: self.get_features(algo) for algo in self.algos_names}
 
     @property
     def websites(self) -> Optional[Dict[str, str]]:
@@ -262,6 +269,7 @@ class AlgoOptionsDoc:
             options=self.options,
             websites=self.websites,
             descriptions=self.descriptions,
+            features=self.features,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
         with open(output_file_path, "w", encoding="utf-8") as outf:
@@ -317,6 +325,8 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         self.get_options_schema = lambda algo: self.get_options_schema_from_method(
             self.get_class(algo)._get_options
         )
+        if algo_type == "opt":
+            self.get_features = get_algorithm_features
 
     @staticmethod
     def __default_description_getter(

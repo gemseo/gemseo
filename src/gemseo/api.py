@@ -151,6 +151,7 @@ from __future__ import division, unicode_literals
 
 import logging
 import re
+from collections import namedtuple
 from typing import (  # noqa F401
     TYPE_CHECKING,
     Any,
@@ -1839,4 +1840,50 @@ def compute_doe(
     library = DOEFactory().create(algo_name)
     return library.compute_doe(
         variables_space, size=size, unit_sampling=unit_sampling, **options
+    )
+
+
+AlgorithmFeatures = namedtuple(
+    "AlgorithmFeature",
+    [
+        "handle_equality_constraints",
+        "handle_inequality_constraints",
+        "handle_float_variables",
+        "handle_integer_variables",
+        "require_gradient",
+    ],
+)
+
+
+def get_algorithm_features(
+    algorithm_name,  # type: str
+):  # type: (...) -> AlgorithmFeatures
+    """Return the features of an optimization algorithm.
+
+    Args:
+        algorithm_name: The name of the optimization algorithm.
+
+    Returns:
+        The features of the optimization algorithm.
+
+    Raises:
+        ValueError: When the optimization algorithm does not exist.
+    """
+    from gemseo.algos.opt.opt_factory import OptimizersFactory
+
+    factory = OptimizersFactory()
+    if not factory.is_available(algorithm_name):
+        raise ValueError(
+            f"{algorithm_name} is not the name of an optimization algorithm."
+        )
+
+    features = factory.create(algorithm_name).lib_dict[algorithm_name]
+    return AlgorithmFeatures(
+        handle_equality_constraints=features.get("handle_equality_constraints", False),
+        handle_inequality_constraints=features.get(
+            "handle_inequality_constraints", False
+        ),
+        handle_float_variables=True,
+        handle_integer_variables=False,
+        require_gradient=features.get("require_grad", False),
     )
