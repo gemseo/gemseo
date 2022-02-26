@@ -32,6 +32,7 @@ from numpy import sin
 from six import string_types
 
 from gemseo.api import (
+    AlgorithmFeatures,
     compute_doe,
     create_cache,
     create_design_space,
@@ -46,6 +47,7 @@ from gemseo.api import (
     export_design_space,
     generate_coupling_graph,
     generate_n2_plot,
+    get_algorithm_features,
     get_algorithm_options_schema,
     get_available_caches,
     get_available_disciplines,
@@ -811,3 +813,23 @@ def test_import_discipline(tmp_wd):
 
     assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
     assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
+
+
+def test_algo_features():
+    """Check that get_algorithm_features returns the features of an optimizer."""
+    expected = AlgorithmFeatures(
+        handle_equality_constraints=True,
+        handle_inequality_constraints=True,
+        handle_float_variables=True,
+        handle_integer_variables=False,
+        require_gradient=True,
+    )
+    assert get_algorithm_features("SLSQP") == expected
+
+
+def test_algo_features_error():
+    """Check that asking for the features of a wrong optimizer raises an error."""
+    with pytest.raises(
+        ValueError, match="wrong_name is not the name of an optimization algorithm."
+    ):
+        assert get_algorithm_features("wrong_name")
