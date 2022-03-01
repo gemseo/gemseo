@@ -20,6 +20,8 @@ Table Of Contents
 
     overview
     aboutus
+    credits
+    plugins
     roadmap
     contributing
     user_guide
