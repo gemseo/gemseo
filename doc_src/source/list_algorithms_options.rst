@@ -22,6 +22,7 @@ Algorithm options
 
    algorithms/doe_algos.rst
    algorithms/formulation_algos.rst
+   algorithms/linear_solver_algos.rst
    algorithms/mda_algos.rst
    algorithms/mlearning_algos.rst
    algorithms/opt_algos.rst
