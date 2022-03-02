@@ -51,7 +51,7 @@
           <a class="sk-nav-link nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">v. {{ release }}</a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             {% for slug, url in versions %}
-              <a class="sk-nav-dropdown-item dropdown-item" href="{{ url }}">{{ slug}}</a>
+              <a class="sk-nav-dropdown-item dropdown-item" href="{{ url }}{{ pagename }}.html">{{ slug }}</a>
             {%- endfor %}
           </div>
         </li>
