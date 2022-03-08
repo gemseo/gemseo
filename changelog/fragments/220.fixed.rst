@@ -1,0 +1,1 @@
+Factories ``get_options_grammar`` methods provide the same content in the returned grammar and the dumped one.

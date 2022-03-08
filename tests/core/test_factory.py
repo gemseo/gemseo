@@ -83,7 +83,7 @@ def test_create_bad_option(reset_factory):
         factory.create("MDF", bad_option="bad_value")
 
 
-def test_parse_docstrings(reset_factory):
+def test_parse_docstrings(reset_factory, tmp_wd):
     factory = Factory(MDOFormulation, ("gemseo.formulations",))
     formulations = factory.classes
 
@@ -97,7 +97,10 @@ def test_parse_docstrings(reset_factory):
         opt_vals = factory.get_default_options_values(form)
         assert len(opt_vals) >= 1
 
-        grammar = factory.get_options_grammar(form)
+        grammar = factory.get_options_grammar(form, write_schema=True)
+        file_name = f"{grammar.name}.json"
+        assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
+
         grammar.load_data(opt_vals, raise_exception=True)
 
         opt_doc = factory.get_options_doc(form)
