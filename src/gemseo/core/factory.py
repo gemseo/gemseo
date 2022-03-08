@@ -44,8 +44,7 @@ class Factory(Multiton):
     """Factory of class objects with cache.
 
     This factory can create an object from a base class
-    or any of its sub-classes
-    that can be imported from the given modules sources.
+    or any of its subclasses that can be imported from the given modules sources.
     There are 3 sources of modules that can be searched:
 
     - fully qualified module names (such as gemseo.problems, ...),
@@ -403,9 +402,6 @@ class Factory(Multiton):
             description_dict=opts_doc,
         )
 
-        if write_schema:
-            grammar.write_schema(schema_file)
-
         # Remove None args from required
         sch_dict = grammar.schema.to_dict()
         required = sch_dict["required"]
@@ -418,6 +414,9 @@ class Factory(Multiton):
 
         if has_changed:
             grammar = JSONGrammar(name, schema=sch_dict)
+
+        if write_schema:
+            grammar.write_schema(schema_file)
 
         return grammar
 
