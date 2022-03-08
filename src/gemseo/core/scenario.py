@@ -24,7 +24,6 @@
 
 from __future__ import division, unicode_literals
 
-import inspect
 import logging
 import timeit
 from datetime import timedelta
@@ -128,8 +127,9 @@ class Scenario(MDODiscipline):
         self._check_disciplines()
         self._init_algo_factory()
         self._form_factory = self._formulation_factory
-        super(Scenario, self).__init__(name=name, grammar_type=grammar_type)
-        self._init_base_grammar(self.__class__.__name__)
+        super(Scenario, self).__init__(
+            name=name, grammar_type=grammar_type, auto_detect_grammar_files=True
+        )
         self._init_formulation(
             formulation,
             objective_name,
@@ -167,27 +167,6 @@ class Scenario(MDODiscipline):
     def design_space(self):  # type: (...) -> DesignSpace
         """The design space on which the scenario is performed."""
         return self.formulation.design_space
-
-    def _init_base_grammar(
-        self,
-        name,  # type: str
-    ):  # type: (...) -> None
-        """Initialize the base grammars from the inputs and outputs of the scenario.
-
-        This ensures that subclasses have base scenario inputs and outputs.
-        This method can be overloaded by subclasses if this is not desired.
-
-        Args:
-            name: The name of the scenario,
-                used as a base name for the JSON schemas to import:
-                `name_input.json` and `name_output.json`.
-        """
-        comp_dir = str(Path(inspect.getfile(self.__class__)).parent)
-        input_grammar_file = self.auto_get_grammar_file(True, name, comp_dir)
-        output_grammar_file = self.auto_get_grammar_file(False, name, comp_dir)
-        self._instantiate_grammars(
-            input_grammar_file, output_grammar_file, grammar_type=self.grammar_type
-        )
 
     def set_differentiation_method(
         self,

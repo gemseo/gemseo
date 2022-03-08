@@ -22,7 +22,7 @@
 
 """Abstraction of processes."""
 
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import collections
 import logging
@@ -43,6 +43,7 @@ from typing import (
     MutableMapping,
     Optional,
     Tuple,
+    Type,
     Union,
 )
 
@@ -268,10 +269,10 @@ class MDODiscipline(object):
 
         if auto_detect_grammar_files:
             if input_grammar_file is None:
-                input_grammar_file = self.auto_get_grammar_file(True)
+                input_grammar_file = self.auto_get_grammar_file(is_input=True)
 
             if output_grammar_file is None:
-                output_grammar_file = self.auto_get_grammar_file(False)
+                output_grammar_file = self.auto_get_grammar_file(is_input=False)
 
         self._instantiate_grammars(
             input_grammar_file, output_grammar_file, self._grammar_type
@@ -382,31 +383,63 @@ class MDODiscipline(object):
         name=None,  # type: Optional[str]
         comp_dir=None,  # type: Optional[Union[str, Path]]
     ):  # type: (...) -> str
-        """Use a naming convention to associate a grammar file to a discipline.
+        """Use a naming convention to associate a grammar file to the discipline.
 
-        Searches in a directory for
+        Search in the directory ``comp_dir`` for
         either an input grammar file named ``name + "_input.json"``
         or an output grammar file named ``name + "_output.json"``.
 
         Args:
             is_input: Whether to search for an input or output grammar file.
             name: The name to be searched in the file names.
-                If None, use :attr:`.MDODiscipline.name`.
-            comp_dir: The directory in which to search the grammar file.
-                If None, use the directory that contains the discipline class.
+                If ``None``,
+                use the name of the discipline class.
+            comp_dir: The directory in which to search for the grammar file.
+                If ``None``,
+                use the directory containing the module of the class.
+
+        Returns:
+            The grammar file path.
+        """
+        cls = self.__class__
+        initial_name = name or cls.__name__
+        classes = [cls] + [
+            base for base in cls.__bases__ if issubclass(base, MDODiscipline)
+        ]
+        names = [initial_name] + [cls.__name__ for cls in classes[1:]]
+
+        in_or_out = "in" if is_input else "out"
+        for cls, name in zip(classes, names):
+            grammar_file_path = self.__get_grammar_file_path(
+                cls, comp_dir, in_or_out, name
+            )
+            if grammar_file_path.is_file():
+                return grammar_file_path
+
+        file_name = f"{initial_name}_{in_or_out}put.json"
+        raise FileNotFoundError(f"The grammar file {file_name} is missing.")
+
+    @staticmethod
+    def __get_grammar_file_path(
+        cls: Type, comp_dir: str | Path | None, in_or_out: str, name: str
+    ) -> Path:
+        """Return the grammar file path.
+
+        Args:
+            cls: The class for which the grammar file is searched.
+            comp_dir: The initial directory path if any.
+            in_or_out: The suffix to look for in the file name, either "in" or "out".
+            name: The name to be searched in the file names.
 
         Returns:
             The grammar file path.
         """
         if comp_dir is None:
-            class_module = sys.modules[self.__class__.__module__]
-            comp_dir = Path(class_module.__file__).parent.absolute()
+            comp_dir = Path(sys.modules[cls.__module__].__file__).parent.absolute()
         else:
             comp_dir = Path(comp_dir)
 
-        name = name or self.name
-        inout = "in" if is_input else "out"
-        return str(comp_dir / "{}_{}put.json".format(name, inout))
+        return comp_dir / f"{name}_{in_or_out}put.json"
 
     def add_differentiated_inputs(
         self,

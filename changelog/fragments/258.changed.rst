@@ -1,0 +1,1 @@
+Classes deriving from Discipline inherits the input and output grammar files of their first parent.
