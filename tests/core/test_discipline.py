@@ -14,14 +14,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+import os
+
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Damien Guenot
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-import os
+import sys
+from pathlib import Path
 from typing import Dict, Tuple
 
 import pytest
@@ -33,7 +35,9 @@ from gemseo.core.data_processor import ComplexDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.scenario import Scenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski.core import SobieskiProblem
 from gemseo.problems.sobieski.wrappers import (
     SobieskiAerodynamics,
@@ -813,3 +817,45 @@ def test_repr_str():
     disc = AutoPyDiscipline(myfunc)
     assert str(disc) == "myfunc"
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
+
+
+def test_grammar_inheritance():
+    """Check that disciplines based on JSON grammar files inherit these files."""
+
+    class NewSellar1(Sellar1):
+        """A discipline whose parent uses IO grammar files."""
+
+    # The discipline works correctly as the parent class has IO grammar files.
+    discipline = NewSellar1()
+    assert "x_local" in discipline.get_input_data_names()
+
+    class NewScenario(Scenario):
+        """A discipline whose parent forces its children to use IO grammar files."""
+
+        def _init_algo_factory(self):
+            pass
+
+    # An error is raised as Scenario does not provide JSON grammar files.
+    with pytest.raises(
+        FileNotFoundError, match="The grammar file NewScenario_input.json is missing."
+    ):
+        NewScenario([discipline], "MDF", "y_1", "design_space_mock")
+
+
+@pytest.mark.parametrize(
+    "grammar_directory,in_or_out,expected",
+    [
+        (
+            None,
+            "in",
+            Path(sys.modules[Sellar1.__module__].__file__).parent.absolute()
+            / "foo_input.json",
+        ),
+        ("foo", "out", Path("foo") / "foo_output.json"),
+    ],
+)
+def test_get_grammar_file_path(grammar_directory, in_or_out, expected):
+    """Check the grammar file path."""
+    get_grammar_file_path = MDODiscipline._MDODiscipline__get_grammar_file_path
+    path = get_grammar_file_path(Sellar1, grammar_directory, in_or_out, "foo")
+    assert path == expected
