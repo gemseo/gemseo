@@ -25,27 +25,38 @@ A :class:`.Lines` plot represents variables vs samples using lines.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Lines(DatasetPlot):
     """Plot sampled variables as lines."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
+        dataset,  # type: Dataset
         variables=None,  # type: Optional[Sequence[str]]
+    ):  # type: (...) -> None
+        """
+        Args:
+            variables: The names of the variables to plot.
+        """
+        super().__init__(dataset, variables=variables)
+
+    def _plot(
+        self, **properties  # type: DatasetPlotPropertyType
     ):  # type: (...) -> List[Figure]
         """
         Args:
             variables: The names of the variables to plot.
         """
         x_data = range(len(self.dataset))
+        variables = self._param.variables
         if variables is None:
             y_data = self.dataset.get_all_data(False, True)
             variables = y_data.keys()

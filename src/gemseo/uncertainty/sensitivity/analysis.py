@@ -423,10 +423,10 @@ class SensitivityAnalysis(object):
         dataset.set_metadata("mesh", mesh)
         mesh_dimension = len(dataset.metadata["mesh"].shape)
         if mesh_dimension == 1:
-            plot = Curves(dataset)
+            plot = Curves(dataset, mesh="mesh", variable=output_name)
             plot.title = title
         elif mesh_dimension == 2:
-            plot = Surfaces(dataset)
+            plot = Surfaces(dataset, mesh="mesh", variable=output_name)
         else:
             raise NotImplementedError
 
@@ -437,8 +437,6 @@ class SensitivityAnalysis(object):
             file_name=file_name,
             file_format=file_format,
             directory_path=directory_path,
-            mesh="mesh",
-            variable=output_name,
             properties=properties,
         )
         return plot

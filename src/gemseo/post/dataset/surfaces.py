@@ -28,26 +28,27 @@ Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 from matplotlib.figure import Figure
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Surfaces(DatasetPlot):
     """Plot surfaces y_i over the mesh x."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         mesh,  # type: str
         variable,  # type: str
         samples=None,  # type:Optional[Sequence[int]]
         add_points=False,  # type: bool
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
@@ -55,6 +56,21 @@ class Surfaces(DatasetPlot):
             samples: The indices of the samples to plot. If None, plot all samples.
             add_points: If True then display the samples over the surface plot.
         """
+        super().__init__(
+            dataset,
+            mesh=mesh,
+            variable=variable,
+            samples=samples,
+            add_points=add_points,
+        )
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
+        mesh = self._param.mesh
+        variable = self._param.variable
+        samples = self._param.samples
         color = properties.get(self.COLOR) or "blue"
         colormap = properties.get(self.COLORMAP) or "Blues"
         x_data = self.dataset.metadata[mesh][:, 0]
@@ -71,7 +87,7 @@ class Surfaces(DatasetPlot):
             axes = fig[-1].add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)
             tcf = axes.tricontourf(triangle, z_data, cmap=colormap)
-            if add_points:
+            if self._param.add_points:
                 axes.scatter(x_data, y_data, color=color)
             axes.set_title("{} - {}".format(variable, variable_component))
             fig[-1].colorbar(tcf)

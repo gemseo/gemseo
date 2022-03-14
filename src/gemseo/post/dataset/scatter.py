@@ -27,24 +27,38 @@ where the color of points can be heterogeneous.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Scatter(DatasetPlot):
     """Plot curve y versus x."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         x,  # type: str
         y,  # type: str
         x_comp=0,  # type: str
         y_comp=0,  # type: str
+    ):  # type: (...) -> None
+        """
+        Args:
+            x: The name of the variable on the x-axis.
+            y: The name of the variable on the y-axis.
+            x_comp: The component of x.
+            y_comp: The component of y.
+        """
+        super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
     ):  # type: (...) -> List[Figure]
         """
         Args:
@@ -53,6 +67,10 @@ class Scatter(DatasetPlot):
             x_comp: The component of x.
             y_comp: The component of y.
         """
+        x = self._param.x
+        y = self._param.y
+        x_comp = self._param.x_comp
+        y_comp = self._param.y_comp
         color = properties.get(self.COLOR) or "blue"
         x_data = self.dataset[x][x][:, x_comp]
         y_data = self.dataset[y][y][:, y_comp]

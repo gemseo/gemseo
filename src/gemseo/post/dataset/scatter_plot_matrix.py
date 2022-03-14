@@ -51,13 +51,14 @@ labeled.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas import DataFrame
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 try:
     from pandas.plotting import scatter_matrix
@@ -68,15 +69,15 @@ except ImportError:
 class ScatterMatrix(DatasetPlot):
     """Scatter plot matrix."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         variable_names=None,  # type: Optional[Sequence[str]]
         classifier=None,  # type: Optional[str]
         kde=False,  # type: bool
         size=25,  # type: int
         marker="o",  # type: str
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             classifier: The name of the variable to build the cluster.
@@ -86,6 +87,24 @@ class ScatterMatrix(DatasetPlot):
             size: The size of the points.
             marker: The marker for the points.
         """
+        super().__init__(
+            dataset,
+            variable_names=variable_names,
+            classifier=classifier,
+            kde=kde,
+            size=size,
+            marker=marker,
+        )
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
+        variable_names = self._param.variable_names
+        classifier = self._param.classifier
+        kde = self._param.kde
+        size = self._param.size
+        marker = self._param.marker
         if variable_names is None:
             variable_names = self.dataset.variables
 

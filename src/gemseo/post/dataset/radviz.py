@@ -53,27 +53,39 @@ the samples positively classified and one for the others.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Radar(DatasetPlot):
     """Radar visualization."""
 
+    def __init__(
+        self,
+        dataset,  # type: Dataset
+        classifier,  # type: str
+    ):  # type: (...) -> None
+        """
+        Args:
+            classifier: The name of the variable to group the data.
+        """
+        super().__init__(dataset, classifier=classifier)
+
     def _plot(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-        classifier,  # type: str
+        **properties,  # type: DatasetPlotPropertyType
     ):  # type: (...) -> List[Figure]
         """
         Args:
             classifier: The name of the variable to group the data.
         """
+        classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
                 "Classifier must be one of these names: "
@@ -87,6 +99,7 @@ class Radar(DatasetPlot):
                 column = (self.dataset.get_group(label), label, str(comp))
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
+
         dataframe.columns = self._get_variables_names(dataframe)
         radviz(dataframe, label)
         return [plt.gcf()]

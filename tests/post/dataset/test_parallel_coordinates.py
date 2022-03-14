@@ -72,12 +72,5 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by ParallelCoordinates._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to ParallelCoordinates._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    ParallelCoordinates(dataset)._plot(properties={}, classifier="x1", **kwargs)
+    """Test images created by ParallelCoordinates._plot against references."""
+    ParallelCoordinates(dataset, classifier="x1", **kwargs)._plot()
