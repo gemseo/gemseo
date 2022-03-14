@@ -1218,3 +1218,33 @@ def test_dataset_missing_values(categorize, export_gradients):
                 dataset.data["parameters"][4].all()
                 == np.array([0.5, 0.5, 0.5, np.nan, np.nan]).all()
             )
+
+
+@pytest.fixture
+def problem_for_eval_obs_jac() -> OptimizationProblem:
+    """An optimization problem to check the option eval_obs_jac."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.differentiation_method = problem.FINITE_DIFFERENCES
+    problem.objective = MDOFunction(lambda x: x, "f", jac=lambda x: 1)
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "c", f_type="ineq", jac=lambda x: 1)
+    )
+    problem.add_observable(MDOFunction(lambda x: x, "o", jac=lambda x: 1))
+    return problem
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"algo_name": "SLSQP", "algo_type": "opt", "max_iter": 1},
+        {"algo_name": "fullfact", "algo_type": "doe", "n_samples": 1},
+    ],
+)
+@pytest.mark.parametrize("eval_obs_jac", [True, False])
+def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac):
+    """Check that the observable derivatives are computed when eval_obs_jac is True."""
+    execute_algo(problem_for_eval_obs_jac, eval_obs_jac=eval_obs_jac, **options)
+    assert problem_for_eval_obs_jac.database.contains_dataname("@o") is eval_obs_jac
