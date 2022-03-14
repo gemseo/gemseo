@@ -52,12 +52,6 @@ TEST_PARAMETERS = {
 }
 
 
-@pytest.fixture
-def scatter_matrix(dataset):  # type: (...) -> ScatterMatrix # noqa: F811
-    """A scatter matrix to be plotted."""
-    return ScatterMatrix(dataset)
-
-
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),
@@ -65,12 +59,12 @@ def scatter_matrix(dataset):  # type: (...) -> ScatterMatrix # noqa: F811
     ids=TEST_PARAMETERS.keys(),
 )
 @image_comparison(None, extensions=["png"], tol=0.025)
-def test_plot(kwargs, baseline_images, scatter_matrix, pyplot_close_all):  # noqa: F811
+def test_plot(dataset, kwargs, baseline_images, pyplot_close_all):  # noqa: F811
     """Test images created by ScatterMatrix._plot against references."""
-    scatter_matrix._plot(properties={}, **kwargs)
+    ScatterMatrix(dataset, **kwargs)._plot()
 
 
-def test_plot_error(scatter_matrix):
+def test_plot_error(dataset):  # noqa: F811
     """Check that an error is raised when the classifier is not variable name."""
     with pytest.raises(
         ValueError,
@@ -80,4 +74,4 @@ def test_plot_error(scatter_matrix):
             "available ones are: ['c', 'x', 'y', 'z']."
         ),
     ):
-        scatter_matrix._plot(properties={}, classifier="wrong_name")
+        ScatterMatrix(dataset, classifier="wrong_name")._plot()

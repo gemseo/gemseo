@@ -22,27 +22,34 @@
 r"""Draw a bar plot from a :class:`.Dataset`. """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import arange, linspace
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class BarPlot(DatasetPlot):
     """Barplot visualization."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
+        dataset,  # type: Dataset
         n_digits=1,  # type: int
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             n_digits: The number of digits to print the different bar values.
         """
+        super().__init__(dataset, n_digits=n_digits)
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
         # radar solid grid lines
         all_data, _, sizes = self.dataset.get_all_data(False, False)
         variables_names = self.dataset.columns_names
@@ -85,7 +92,7 @@ class BarPlot(DatasetPlot):
                 else:
                     pos = -12
                 axe.annotate(
-                    "{}".format(round(height, n_digits)),
+                    "{}".format(round(height, self._param.n_digits)),
                     xy=(rect.get_x() + rect.get_width() / 2, height),
                     xytext=(0, pos),  # 3 points vertical offset
                     textcoords="offset points",

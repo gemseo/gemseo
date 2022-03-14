@@ -22,27 +22,28 @@
 r"""Draw a radar chart from a :class:`.Dataset`. """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import linspace, pi, rad2deg
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class RadarChart(DatasetPlot):
     """Radar Chart visualization."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         display_zero=True,  # type: bool
         connect=False,  # type: bool
         radial_ticks=False,  # type: bool
         n_levels=6,  # type: int
         scientific_notation=True,  # type: bool
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             display_zero: Whether to display the line where the output is equal to zero.
@@ -52,7 +53,21 @@ class RadarChart(DatasetPlot):
             scientific_notation: Whether to format the grid levels
                 with the scientific notation.
         """
-        linestyle = "-o" if connect else "o"
+        super().__init__(
+            dataset,
+            display_zero=display_zero,
+            connect=connect,
+            radial_ticks=radial_ticks,
+            n_levels=n_levels,
+            scientific_notation=scientific_notation,
+        )
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
+
+        linestyle = "-o" if self._param.connect else "o"
 
         fig = plt.figure(figsize=self.figsize)
         axe = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
@@ -97,7 +112,7 @@ class RadarChart(DatasetPlot):
                 label=name,
             )
 
-        if display_zero and self.rmin < 0:
+        if self._param.display_zero and self.rmin < 0:
             circle = plt.Circle(
                 (0, 0),
                 abs(self.rmin),
@@ -111,7 +126,7 @@ class RadarChart(DatasetPlot):
 
         theta_degree = rad2deg(theta[:-1])
         axe.set_thetagrids(theta_degree, variables_names)
-        if radial_ticks:
+        if self._param.radial_ticks:
             labels = []
             for label, angle in zip(axe.get_xticklabels(), theta_degree):
                 x, y = label.get_position()
@@ -135,8 +150,8 @@ class RadarChart(DatasetPlot):
             axe.set_xticklabels([])
 
         axe.set_rlim([self.rmin, self.rmax])
-        rticks = linspace(self.rmin, self.rmax, n_levels)
-        if scientific_notation:
+        rticks = linspace(self.rmin, self.rmax, self._param.n_levels)
+        if self._param.scientific_notation:
             rticks_labels = ["{:.2e}".format(value) for value in rticks]
         else:
             rticks_labels = rticks

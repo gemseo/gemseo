@@ -28,21 +28,21 @@ relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 from matplotlib.figure import Figure
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class ZvsXY(DatasetPlot):
     """Plot surface z versus x,y."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # Dataset
         x,  # type: str
         y,  # type: str
         z,  # type: str
@@ -50,7 +50,7 @@ class ZvsXY(DatasetPlot):
         y_comp=0,  # type: int
         z_comp=0,  # type: int
         add_points=False,  # type: bool
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             x: The name of the variable on the x-axis.
@@ -61,29 +61,50 @@ class ZvsXY(DatasetPlot):
             z_comp: The component of z.
             add_points: If True, display samples over the surface plot.
         """
+        super().__init__(
+            dataset=dataset,
+            x=x,
+            y=y,
+            z=z,
+            x_comp=x_comp,
+            y_comp=y_comp,
+            z_comp=z_comp,
+            add_points=add_points,
+        )
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
         color = properties.get(self.COLOR) or "blue"
         colormap = properties.get(self.COLORMAP) or "Blues"
-        x_data = self.dataset[x][x][:, x_comp]
-        y_data = self.dataset[y][y][:, y_comp]
-        z_data = self.dataset[z][z][:, z_comp]
+        x_data = self.dataset[self._param.x][self._param.x][:, self._param.x_comp]
+        y_data = self.dataset[self._param.y][self._param.y][:, self._param.y_comp]
+        z_data = self.dataset[self._param.z][self._param.z][:, self._param.z_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
         grid = mtri.Triangulation(x_data, y_data)
         tcf = axes.tricontourf(grid, z_data, cmap=colormap)
-        if add_points:
+        if self._param.add_points:
             axes.scatter(x_data, y_data, color=color)
-        if self.dataset.sizes[x] == 1:
-            axes.set_xlabel(self.xlabel or x)
+        if self.dataset.sizes[self._param.x] == 1:
+            axes.set_xlabel(self.xlabel or self._param.x)
         else:
-            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
-        if self.dataset.sizes[y] == 1:
-            axes.set_ylabel(self.ylabel or y)
+            axes.set_xlabel(
+                self.xlabel or "{}({})".format(self._param.x, self._param.x_comp)
+            )
+        if self.dataset.sizes[self._param.y] == 1:
+            axes.set_ylabel(self.ylabel or self._param.y)
         else:
-            axes.set_ylabel(self.ylabel or "{}({})".format(y, y_comp))
-        if self.dataset.sizes[z] == 1:
-            axes.set_title(self.zlabel or z)
+            axes.set_ylabel(
+                self.ylabel or "{}({})".format(self._param.y, self._param.y_comp)
+            )
+        if self.dataset.sizes[self._param.z] == 1:
+            axes.set_title(self.zlabel or self._param.z)
         else:
-            axes.set_title(self.zlabel or "{}({})".format(z, z_comp))
+            axes.set_title(
+                self.zlabel or "{}({})".format(self._param.z, self._param.z_comp)
+            )
         fig.colorbar(tcf)
         return [fig]

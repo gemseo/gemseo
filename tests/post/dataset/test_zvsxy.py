@@ -106,12 +106,6 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by ZvsXY._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to ZvsXY._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    ZvsXY(dataset)._plot(**kwargs)
+    """Test images created by ZvsXY._plot against references."""
+    properties = kwargs.pop("properties")
+    ZvsXY(dataset, **kwargs)._plot(**properties)

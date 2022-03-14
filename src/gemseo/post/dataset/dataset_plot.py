@@ -28,11 +28,13 @@ and to display it on screen or save it to a file.
 This abstract class has to be overloaded by concrete ones
 implementing at least method :meth:`!DatasetPlot._run`.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
+from collections import namedtuple
 from numbers import Number
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
     List,
     Mapping,
@@ -84,6 +86,7 @@ class DatasetPlot(object):
     def __init__(
         self,
         dataset,  # type: Dataset
+        **kwargs,  # type: Any
     ):  # type: (...) -> None
         """
         Args:
@@ -92,8 +95,12 @@ class DatasetPlot(object):
         Raises:
             ValueError: If the dataset is empty.
         """
+        param = namedtuple(f"{self.__class__.__name__}Parameters", kwargs.keys())
+        self._param = param(**kwargs)
+
         if dataset.is_empty():
             raise ValueError("Dataset is empty.")
+
         self.dataset = dataset
         self.__title = None
         self.__xlabel = None
@@ -366,7 +373,10 @@ class DatasetPlot(object):
         Returns:
             The figures.
         """
-        figures = self._plot(properties=properties, **plot_options)
+        if plot_options:
+            self._param = self._param._replace(**plot_options)
+
+        figures = self._plot(**properties)
 
         for index, sub_figure in enumerate(figures):
             if save:

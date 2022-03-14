@@ -52,12 +52,6 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, pyplot_close_all):
-    """Test images created by Radar._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to Radar._plot.
-        baseline_images (list): The images to be compared with.
-        pyplot_close_all: Prevents figures aggregation.
-    """
+    """Test images created by Radar._plot against references."""
     dataset = IrisDataset()
-    Radar(dataset)._plot(properties={}, classifier="specy")
+    Radar(dataset, classifier="specy")._plot()

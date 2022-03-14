@@ -58,27 +58,34 @@ This is useful when the data is labeled.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class AndrewsCurves(DatasetPlot):
     """Andrews curves."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
+        dataset,  # type: Dataset
         classifier,  # type: str
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             classifier: The name of the variable to group the data.
         """
+        super().__init__(dataset, classifier=classifier)
+
+    def _plot(
+        self, **properties  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
+        classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
                 "Classifier must be one of these names: "

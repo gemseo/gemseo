@@ -68,23 +68,12 @@ TEST_PARAMETERS = {
 )
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
-    """Test images created by AndrewsCurves._plot against references.
-
-    Args:
-        kwargs (dict): The optional arguments to pass to AndrewsCurves._plot.
-        baseline_images (list): The images to be compared with.
-        dataset (Dataset): A dataset.
-        pyplot_close_all: Prevents figures aggregation.
-    """
-    AndrewsCurves(dataset)._plot({}, classifier="c")
+    """Test images created by AndrewsCurves._plot against references."""
+    AndrewsCurves(dataset, **kwargs)._plot()
 
 
 def test_error(dataset):
-    """Test an error is raised when a wrong name is given.
-
-    Args:
-        dataset (Dataset): A dataset.
-    """
+    """Test an error is raised when a wrong name is given."""
     expected = "Classifier must be one of these names: c, x, y, z"
     with pytest.raises(ValueError, match=expected):
-        AndrewsCurves(dataset)._plot({}, classifier="foo")
+        AndrewsCurves(dataset, classifier="foo")._plot()

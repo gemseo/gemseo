@@ -32,7 +32,7 @@ def test_empty_dataset():
 
     dataset = Dataset()
     with pytest.raises(ValueError):
-        YvsX(dataset)
+        YvsX(dataset, x="x", y="y")
 
 
 def test_plot_notimplementederror():

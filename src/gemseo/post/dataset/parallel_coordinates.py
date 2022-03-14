@@ -50,25 +50,40 @@ the samples positively classified and one for the others.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping
+from typing import List
 
 from matplotlib.figure import Figure
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class ParallelCoordinates(DatasetPlot):
     """Parallel coordinates."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         classifier,  # type: str
         lower=-inf,  # type: float
         upper=inf,  # type: float
         **kwargs
+    ):  # type: (...) -> None
+        """
+        Args:
+            classifier: The name of the variable to group the data.
+            lower: The lower bound of the cluster.
+            upper: The upper bound of the cluster.
+        """
+        super().__init__(
+            dataset, classifier=classifier, lower=lower, upper=upper, kwargs=kwargs
+        )
+
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
     ):  # type: (...) -> List[Figure]
         """
         Args:
@@ -76,6 +91,10 @@ class ParallelCoordinates(DatasetPlot):
             lower: The lower bound of the cluster.
             upper: The upper bound of the cluster.
         """
+        classifier = self._param.classifier
+        upper = self._param.upper
+        lower = self._param.lower
+        kwargs = self._param.kwargs
         if classifier not in self.dataset.variables:
             raise ValueError(
                 "Classifier must be one of these names: "
@@ -93,6 +112,7 @@ class ParallelCoordinates(DatasetPlot):
             cluster = "{} < {} < {}".format(lower, label, upper)
             cluster = ("classifiers", cluster, "0")
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
+
         axes = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
         axes.set_xticklabels(self._get_variables_names(columns))
         if lower != -inf or upper != inf:
@@ -100,5 +120,6 @@ class ParallelCoordinates(DatasetPlot):
         else:
             default_title = None
             axes.get_legend().remove()
+
         axes.set_title(self.title or default_title)
         return [axes.figure]

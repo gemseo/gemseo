@@ -28,24 +28,25 @@ and the mesh as a metadata.
 """
 from __future__ import division, unicode_literals
 
-from typing import List, Mapping, Optional, Sequence
+from typing import List, Optional, Sequence
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
 class Curves(DatasetPlot):
     """Plot curves y_i over the mesh x."""
 
-    def _plot(
+    def __init__(
         self,
-        properties,  # type: Mapping
+        dataset,  # type: Dataset
         mesh,  # type: str
         variable,  # type: str
         samples=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> List[Figure]
+    ):  # type: (...) -> None
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
@@ -53,13 +54,20 @@ class Curves(DatasetPlot):
             samples: The indices of the samples to plot.
                 If None, plot all the samples.
         """
+        super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
+    def _plot(
+        self,
+        **properties,  # type: DatasetPlotPropertyType
+    ):  # type: (...) -> List[Figure]
         def lines_gen():
             """Linestyle generator."""
             yield "-"
             for i in range(1, self.dataset.n_samples):
                 yield 0, (i, 1, 1, 1)
 
+        variable = self._param.variable
+        samples = self._param.samples
         if samples is not None:
             output = self.dataset[variable][variable][samples, :].T
         else:
@@ -71,6 +79,7 @@ class Curves(DatasetPlot):
         self._set_linestyle(properties, n_samples, [line for line in lines_gen()])
 
         data = (output.T, self.linestyle, self.color, samples)
+        mesh = self._param.mesh
         for output, line_style, color, sample in zip(*data):
             plt.plot(
                 self.dataset.metadata[mesh],
