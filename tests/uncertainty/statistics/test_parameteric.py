@@ -120,7 +120,7 @@ def test_distfitstats_statistics(random_sample):
     stats.compute_variance()
     stats.compute_standard_deviation()
     stats.compute_quantile(0.5)
-    stats.compute_mean_std(3.0)
+    assert stats.compute_margin(3.0) == stats.compute_mean_std(3.0)
 
 
 def test_distfitstats_plot(random_sample, tmpdir):
@@ -269,53 +269,43 @@ def test_distfitstats_available(random_sample):
     assert "Normal" in stat.get_fitting_matrix()
 
 
-def test_expression():
-    assert (
-        ParametricStatistics.compute_expression(
-            "X",
+@pytest.mark.parametrize(
+    "name,options,expression",
+    [
+        (
             "tolerance_interval",
-            coverage=0.9,
-            tolerance=0.99,
-            side=ToleranceIntervalSide.LOWER,
-        )
-        == "TI[X; 0.9, LOWER, 0.99]"
-    )
-    assert (
-        ParametricStatistics.compute_expression(
-            "X",
+            {"coverage": 0.9, "tolerance": 0.99, "side": ToleranceIntervalSide.LOWER},
+            "TI[X; 0.9, LOWER, 0.99]",
+        ),
+        (
             "tolerance_interval",
-            show_name=True,
-            coverage=0.9,
-            tolerance=0.99,
-            side=ToleranceIntervalSide.LOWER,
-        )
-        == "TI[X; coverage=0.9, side=LOWER, tolerance=0.99]"
-    )
-    assert ParametricStatistics.compute_expression("X", "a_value") == "Aval[X]"
-    assert ParametricStatistics.compute_expression("X", "b_value") == "Bval[X]"
-    assert ParametricStatistics.compute_expression("X", "maximum") == "Max[X]"
-    assert ParametricStatistics.compute_expression("X", "mean") == "E[X]"
-    assert ParametricStatistics.compute_expression("X", "mean_std") == "E_StD[X]"
-    assert ParametricStatistics.compute_expression("X", "minimum") == "Min[X]"
-    assert ParametricStatistics.compute_expression("X", "median") == "Med[X]"
-    assert (
-        ParametricStatistics.compute_expression("X", "percentile", order=10)
-        == "p[X; 10]"
-    )
-    assert (
-        ParametricStatistics.compute_expression("X", "probability", value=1.0)
-        == "P[X>=1.0]"
-    )
-    assert (
-        ParametricStatistics.compute_expression(
-            "X", "probability", greater=False, value=1.0
-        )
-        == "P[X<=1.0]"
-    )
-    assert ParametricStatistics.compute_expression("X", "quantile") == "Q[X]"
-    assert (
-        ParametricStatistics.compute_expression("X", "quartile", order=1) == "q[X; 1]"
-    )
-    assert ParametricStatistics.compute_expression("X", "range") == "R[X]"
-    assert ParametricStatistics.compute_expression("X", "variance") == "V[X]"
-    assert ParametricStatistics.compute_expression("X", "moment") == "M[X]"
+            {
+                "show_name": True,
+                "coverage": 0.9,
+                "tolerance": 0.99,
+                "side": ToleranceIntervalSide.LOWER,
+            },
+            "TI[X; coverage=0.9, side=LOWER, tolerance=0.99]",
+        ),
+        ("a_value", {}, "Aval[X]"),
+        ("b_value", {}, "Bval[X]"),
+        ("maximum", {}, "Max[X]"),
+        ("mean", {}, "E[X]"),
+        ("mean_std", {}, "E_StD[X]"),
+        ("mean_std", {"factor": 3.0}, "E_StD[X; 3.0]"),
+        ("margin", {}, "Margin[X]"),
+        ("margin", {"factor": 3.0}, "Margin[X; 3.0]"),
+        ("minimum", {}, "Min[X]"),
+        ("percentile", {"order": 10}, "p[X; 10]"),
+        ("probability", {"value": 1.0}, "P[X >= 1.0]"),
+        ("probability", {"value": 1.0, "greater": False}, "P[X <= 1.0]"),
+        ("quantile", {}, "Q[X]"),
+        ("quartile", {"order": 1}, "q[X; 1]"),
+        ("range", {}, "R[X]"),
+        ("variance", {}, "V[X]"),
+        ("moment", {}, "M[X]"),
+    ],
+)
+def test_expression(name, options, expression):
+    """Check the string expression of a statistic applied to a variable."""
+    assert ParametricStatistics.compute_expression("X", name, **options) == expression
