@@ -270,6 +270,7 @@ class OptimizationProblem(object):
         self.preprocess_options = {}
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
+        self.__eval_obs_jac = False
 
     def __raise_exception_if_functions_are_already_preprocessed(self):
         """Raise an exception if the function have already been pre-processed."""
@@ -946,6 +947,7 @@ class OptimizationProblem(object):
         normalize=True,  # type: bool
         use_database=True,  # type: bool
         round_ints=True,  # type: bool
+        eval_obs_jac=False,  # type: bool
     ):  # type: (...) -> None
         """Pre-process all the functions and eventually the gradient.
 
@@ -955,8 +957,9 @@ class OptimizationProblem(object):
         Args:
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
-            use_database: If True, then the functions are wrapped in the database.
-            round_ints: If True, then round the integer variables.
+            use_database: Whether to wrap the functions in the database.
+            round_ints: Whether to round the integer variables.
+            eval_obs_jac: Whether to evaluate the Jacobian of the observables.
         """
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
@@ -985,6 +988,7 @@ class OptimizationProblem(object):
                 )
                 p_cstr.special_repr = cstr.special_repr
                 self.constraints[icstr] = p_cstr
+
             # Preprocess the observables
             for iobs, obs in enumerate(self.observables):
                 self.nonproc_observables.append(obs)
@@ -997,6 +1001,7 @@ class OptimizationProblem(object):
                 )
                 p_obs.special_repr = obs.special_repr
                 self.observables[iobs] = p_obs
+
             for iobs, obs in enumerate(self.new_iter_observables):
                 self.nonproc_new_iter_observables.append(obs)
                 p_obs = self.__preprocess_func(
@@ -1021,7 +1026,7 @@ class OptimizationProblem(object):
             self.objective.f_type = MDOFunction.TYPE_OBJ
             self.__functions_are_preprocessed = True
             self.check()
-
+            self.__eval_obs_jac = eval_obs_jac
             self.database.add_new_iter_listener(self.execute_observables_callback)
 
     def execute_observables_callback(
@@ -1039,8 +1044,11 @@ class OptimizationProblem(object):
 
         if self.preprocess_options["normalize"]:
             last_x = self.design_space.normalize_vect(last_x)
+
         for func in self.new_iter_observables:
             func(last_x)
+            if self.__eval_obs_jac:
+                func.jac(last_x)
 
     def __preprocess_func(
         self,

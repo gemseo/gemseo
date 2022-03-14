@@ -1,0 +1,1 @@
+Observables can now be derived when the driver option ``eval_obs_jac`` is ``True`` (default: ``False``).

@@ -19,10 +19,7 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-"""
-Driver library
-==============
+"""Driver library.
 
 A driver library aims to solve an :class:`.OptimizationProblem`
 using a particular algorithm from a particular family of numerical methods.
@@ -182,6 +179,7 @@ class DriverLib(AlgoLib):
     USE_DATABASE_OPTION = "use_database"
     NORMALIZE_DESIGN_SPACE_OPTION = "normalize_design_space"
     ROUND_INTS_OPTION = "round_ints"
+    EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     WEBSITE = "website"
     DESCRIPTION = "description"
     MAX_DS_SIZE_PRINT = 40
@@ -318,13 +316,14 @@ class DriverLib(AlgoLib):
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
             LOGGER.info("%s", problem.design_space)
 
-    def execute(self, problem, algo_name=None, **options):
+    def execute(self, problem, algo_name=None, eval_obs_jac=False, **options):
         """Executes the driver.
 
         :param problem: the problem to be solved
         :param algo_name: name of the algorithm
             if None, use self.algo_name
             which may have been set by the factory (Default value = None)
+        :param eval_obs_jac: Whether to evaluate the Jacobian of the observables.
         :param options: the options dict for the algorithm
         """
         self.problem = problem
@@ -346,6 +345,7 @@ class DriverLib(AlgoLib):
             normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
             use_database=options.get(self.USE_DATABASE_OPTION, True),
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
+            eval_obs_jac=eval_obs_jac,
         )
 
         try:  # Term criteria such as max iter or max_time can be triggered in pre_run
