@@ -17,7 +17,7 @@
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
-#        :author:  Francois Gallard
+#        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 """Excel based discipline."""
@@ -27,14 +27,18 @@ from __future__ import division, unicode_literals
 import atexit
 import os
 import shutil
+import sys
 import tempfile
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 from uuid import uuid4
 
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.py23_compat import Path
+
+if sys.platform == "win32":
+    import pythoncom
 
 cwd = Path.cwd()
 try:
@@ -61,13 +65,15 @@ class XLSDiscipline(MDODiscipline):
         "output_names",
         "macro_name",
         "_copy_xls_at_setstate",
+        "_recreate_book_at_run",
     )
 
     def __init__(
         self,
-        xls_file_path,  # type: str
+        xls_file_path,  # type: Union[Path, str]
         macro_name="execute",  # type: Optional[str]
         copy_xls_at_setstate=False,  # type: bool
+        recreate_book_at_run=False,  # type: bool
     ):  # type: (...) -> None
         """Initialize xls file path and macro.
 
@@ -120,6 +126,8 @@ class XLSDiscipline(MDODiscipline):
             copy_xls_at_setstate: If True, create a copy of the original Excel file
                 for each of the pickled parallel processes. This option is required
                 to be set to True for parallelization in Windows platforms.
+            recreate_book_at_run: Whether to rebuild the xls objects at each `_run`
+                call.
 
         Raises:
             ImportError: If `xlwings` cannot be imported.
@@ -134,14 +142,26 @@ class XLSDiscipline(MDODiscipline):
         self.output_names = None
         self._book = None
         self._copy_xls_at_setstate = copy_xls_at_setstate
+        self._recreate_book_at_run = recreate_book_at_run
 
-        self.__init_workbook()
+        # A workbook init creates an instance of `_xls_app`.
+        # It opens an excel process and calls CoInitialize().
+        # This must be done prior to initializing grammars and defaults.
+        # The initial workbook is always called with quit_xls_at_exit=False.
+        # This ensures that the initial workbook will close using `atexit`.
+        self.__create_book()
         self._init_grammars()
         self._init_defaults()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def __init_workbook(self):  # type: (...) -> None
-        """Initialize a workbook.
+    def __create_book(
+        self, quit_xls_at_exit=True  # type: bool
+    ):  # type: (...) -> None
+        """Create a book with xlwings.
+
+        Args:
+            quit_xls_at_exit: Whether to force excel to quit
+                when the python process exits.
 
         Raises:
             ValueError: If there is no sheet in the Excel file
@@ -156,8 +176,11 @@ class XLSDiscipline(MDODiscipline):
         except:  # noqa: E722,B001
             raise RuntimeError("xlwings requires Microsoft Excel")
 
-        # Close the app when exiting
-        atexit.register(self._xls_app.quit)
+        # In multiprocessing or sequential execution, excel closes in each process.
+        # Each process keeps its own _xls_app instance from init to end.
+        # It is therefore possible to register the quit() call at exit.
+        if quit_xls_at_exit:
+            atexit.register(self._xls_app.quit)
 
         self._book = self._xls_app.books.open(str(self._xls_file_path))
         sh_names = [sheet.name for sheet in self._book.sheets]
@@ -186,23 +209,7 @@ class XLSDiscipline(MDODiscipline):
             )
             shutil.copy2(str(self._xls_file_path), str(temp_path))
             self._xls_file_path = temp_path
-        self.__init_workbook()
-
-    def get_attributes_to_serialize(self):  # type: (...) -> List[str]
-        """Overload pickle method to define which attributes are to be serialized.
-
-        Returns:
-             The attributes to serialize.
-        """
-        base = super(XLSDiscipline, self).get_attributes_to_serialize()
-        base += [
-            "_xls_file_path",
-            "input_names",
-            "output_names",
-            "macro_name",
-            "_copy_xls_at_setstate",
-        ]
-        return base
+        self.__create_book()
 
     def __read_sheet_col(
         self,
@@ -270,7 +277,22 @@ class XLSDiscipline(MDODiscipline):
             ValueError: If the "Outputs" sheet does not have the same number of
                 entries in the name column and the value column.
         """
+        # If threading, the run method is called from different threads.
+        # But it is not possible to pass xlwings objects between threads.
+        # That means that each thread has to set `_xls_app` and `_book` to None.
+        # Since CoInitialize was implicitly called at init but has not been called
+        # inside each thread, a call is made here.
+        # We then initialize the workbook again to run the computation inside each
+        # thread.
+        # In this case, the excel process is closed at the end of this _run method.
+        if self._recreate_book_at_run:
+            self._xls_app = None
+            self._book = None
+            pythoncom.CoInitialize()
+            self.__create_book(quit_xls_at_exit=False)
+
         self.__write_inputs(self.local_data)
+
         if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
@@ -288,3 +310,11 @@ class XLSDiscipline(MDODiscipline):
 
         outputs = {k: array([v]) for k, v in zip(self.output_names, out_vals)}
         self.store_local_data(**outputs)
+
+        # When using threads, each computation is made with a unique `_xls_app`.
+        # If we do not quit at this point, we loose the reference and
+        # the process ends up hung.
+        # Therefore, we close everything once we have stored all we need.
+        # For this same reason, overloading __del__ is not an option.
+        if self._recreate_book_at_run:
+            self._xls_app.quit()

@@ -24,7 +24,7 @@ pyside2 <=5.15.2
 scikit-learn >=0.18,<=1.0.1
 sympy >=0.7,<=1.9
 openpyxl <=3.0.7
-xlwings <=0.21.4 ; platform_system=='Windows'
+xlwings <=0.24.6 ; platform_system=='Windows'
 pdfo ==1.0.0
 pytest
 pytest-cov

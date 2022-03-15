@@ -41,7 +41,7 @@ def __tmp_wd(tmp_path):
         os.chdir(str(prev_cwd))
 
 
-# Fixture to more into a temporary directory.
+# Fixture to move into a temporary directory.
 tmp_wd = pytest.fixture()(__tmp_wd)
 
 
