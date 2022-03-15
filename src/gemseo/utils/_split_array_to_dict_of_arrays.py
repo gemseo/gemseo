@@ -84,7 +84,7 @@ def split_array_to_dict_of_arrays(
             result[name] = array[tuple(indices)]
         else:
             result[name] = split_array_to_dict_of_arrays(
-                array[indices],
+                array[tuple(indices)],
                 names_to_sizes,
                 *names[1:],
                 check_consistency=check_consistency
