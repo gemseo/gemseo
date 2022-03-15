@@ -31,38 +31,33 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.string_tools import MultiLineString
 
 
-def test_init_dict_repr():
+def test_from_dict():
+    """Check the creation of an optimization result from a dictionary."""
     dct = {
         "x_0": [0],
         "x_opt": [1],
         "optimizer_name": "LBFGSB",
         "message": "msg",
         "f_opt": 1.1,
-        OptimizationResult.HDF_CSTR_KEY + "cname": [0.0],
+        "constr:cname": [0.0],
         "status": 1,
         "n_obj_call": 10,
         "n_grad_call": 10,
         "n_constr_call": 10,
         "is_feasible": True,
     }
-    res = OptimizationResult.init_from_dict_repr(**dct)
+    res = OptimizationResult.from_dict(dct)
 
     assert res.x_0 == dct["x_0"]
     assert res.optimizer_name == dct["optimizer_name"]
     assert res.message == dct["message"]
     assert res.f_opt == dct["f_opt"]
-    assert (
-        res.constraints_values["cname"]
-        == dct[OptimizationResult.HDF_CSTR_KEY + "cname"]
-    )
+    assert res.constraints_values["cname"] == dct["constr:cname"]
     assert res.status == dct["status"]
     assert res.n_obj_call == dct["n_obj_call"]
     assert res.n_grad_call == dct["n_grad_call"]
     assert res.n_constr_call == dct["n_constr_call"]
     assert res.is_feasible == dct["is_feasible"]
-
-    with pytest.raises(ValueError, match="Unknown attribute: toto."):
-        OptimizationResult.init_from_dict_repr(toto=4)
 
 
 @pytest.fixture(scope="module")

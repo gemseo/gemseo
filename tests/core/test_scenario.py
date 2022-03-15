@@ -27,6 +27,7 @@ from typing import Optional, Sequence
 import pytest
 from numpy import array
 from numpy.linalg import norm
+from numpy.testing import assert_equal
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
@@ -285,10 +286,10 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
 
     Test the case when the Optimization results are available.
     """
-    x_opt = [1.0, 2.0]
-    f_opt = 3
-    constraints_values = [4.0, 5.0]
-    constraints_grad = [6.0, 7.0]
+    x_opt = array([1.0, 2.0])
+    f_opt = array([3.0])
+    constraints_values = {"g": array([4.0, 5.0])}
+    constraints_grad = {"g": array([6.0, 7.0])}
     is_feasible = True
 
     opt_results = OptimizationResult(
@@ -300,14 +301,13 @@ def test_get_optimization_results(mdf_variable_grammar_scenario):
     )
 
     mdf_variable_grammar_scenario.optimization_result = opt_results
-
     optimum = mdf_variable_grammar_scenario.get_optimum()
 
-    assert optimum.x_opt == x_opt
-    assert optimum.f_opt == f_opt
-    assert optimum.constraints_values == constraints_values
-    assert optimum.constraints_grad == constraints_grad
-    assert optimum.is_feasible == is_feasible
+    assert_equal(optimum.x_opt, x_opt)
+    assert_equal(optimum.f_opt, f_opt)
+    assert_equal(optimum.constraints_values, constraints_values)
+    assert_equal(optimum.constraints_grad, constraints_grad)
+    assert optimum.is_feasible is is_feasible
 
 
 def test_get_optimization_results_empty(mdf_scenario):
