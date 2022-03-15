@@ -31,6 +31,7 @@ from six import PY2
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_design_space, create_mda, create_scenario, execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline, to_arrays_dict
 from gemseo.utils.py23_compat import Path
 
@@ -159,3 +160,20 @@ def test_to_arrays_dict(input):
     """Test the function to_arrays_dict."""
     output = to_arrays_dict(input)
     assert output["a"] == array([1.0])
+
+
+def test_multiprocessing():
+    """Test the execution of an AutoPyDiscipline in multiprocessing."""
+    d1 = AutoPyDiscipline(f1)
+    d2 = AutoPyDiscipline(f2)
+
+    parallel_execution = DiscParallelExecution([d1, d2], n_processes=2)
+    parallel_execution.execute(
+        [
+            {"y2": array([2.0]), "z": array([1.0])},
+            {"y1": array([5.0]), "z": array([3.0])},
+        ]
+    )
+
+    assert d1.local_data["y1"] == f1(2.0, 1.0)
+    assert d2.local_data["y2"] == f2(5.0, 3.0)[0]

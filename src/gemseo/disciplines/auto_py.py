@@ -77,6 +77,8 @@ class AutoPyDiscipline(MDODiscipline):
         sizes (Dict[str,int]): The sizes of the input and output variables.
     """
 
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + ("py_func", "out_names")
+
     def __init__(
         self,
         py_func,  # type: Callable[[DataType, ..., DataType],DataType]
