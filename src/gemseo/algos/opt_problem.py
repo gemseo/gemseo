@@ -1680,7 +1680,7 @@ class OptimizationProblem(object):
 
             if opt_pb.SOLUTION_GROUP in h5file:
                 data_dict = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
-                attr = OptimizationResult.init_from_dict_repr(**data_dict)
+                attr = OptimizationResult.from_dict(data_dict)
                 opt_pb.solution = attr
 
             data_dict = cls.__h5_group_to_dict(h5file, opt_pb.OBJECTIVE_GROUP)
