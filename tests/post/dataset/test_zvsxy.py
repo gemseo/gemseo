@@ -54,6 +54,17 @@ def dataset():
     return dataset
 
 
+other_dataset = Dataset()
+sample1 = [0.0, 0.0, 1.0, 0.0]
+sample2 = [0.0, 1.0, 0.0, 1.0]
+sample3 = [1.0, 0.0, 0.0, 1.0]
+sample4 = [1.0, 1.0, 1.0, 0.0]
+sample5 = [0.5, 0.5, 0.5, 0.5]
+data_array = array([[0.25, 0.25, 0.25, 0.25], [0.75, 0.75, 0.75, 0.75]])
+sizes = {"x": 1, "y": 1, "z": 2}
+other_dataset.set_from_array(data_array, variables=["x", "y", "z"], sizes=sizes)
+
+
 # the test parameters, it maps a test name to the inputs and references outputs:
 # - the kwargs to be passed to ParallelCoordinates._plot
 # - the expected file names without extension to be compared
@@ -90,6 +101,36 @@ TEST_PARAMETERS = {
             "properties": {"color": "white"},
         },
         ["ZvsXY_points_and_color"],
+    ),
+    "with_other_datasets": (
+        {
+            "x": "x",
+            "y": "y",
+            "z": "z",
+            "other_datasets": [other_dataset],
+            "properties": {"color": "white"},
+        },
+        ["ZvsXY_other_datasets"],
+    ),
+    "with_isolines": (
+        {
+            "x": "x",
+            "y": "y",
+            "z": "z",
+            "fill": False,
+            "properties": {},
+        },
+        ["ZvsXY_isolines"],
+    ),
+    "with_levels": (
+        {
+            "x": "x",
+            "y": "y",
+            "z": "z",
+            "levels": 2,
+            "properties": {},
+        },
+        ["ZvsXY_levels"],
     ),
 }
 

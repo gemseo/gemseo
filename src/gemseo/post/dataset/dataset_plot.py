@@ -429,11 +429,29 @@ class DatasetPlot(object):
         """
         new_columns = []
         for column in dataframe_columns:
-            if self.dataset.sizes[column[1]] == 1:
-                new_columns.append(column[1])
-            else:
-                new_columns.append("{}({})".format(column[1], column[2]))
+            name = self._get_component_name(column[1], column[2], self.dataset.sizes)
+            new_columns.append(name)
+
         return new_columns
+
+    @staticmethod
+    def _get_component_name(
+        name: str, component: int, names_to_sizes: Mapping[str, int]
+    ) -> str:
+        """Return the name of a variable component.
+
+        Args:
+            name: The name of the variable.
+            component: The component of the variable.
+            names_to_sizes: The sizes of the variables.
+
+        Returns:
+            The name of the variable component.
+        """
+        if names_to_sizes[name] == 1:
+            return name
+        else:
+            return f"{name}({component})"
 
     def _get_label(
         self,

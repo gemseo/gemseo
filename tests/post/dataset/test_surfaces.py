@@ -66,6 +66,14 @@ TEST_PARAMETERS = {
         {"add_points": True},
         ["Surfaces_with_addpoints_0", "Surfaces_with_addpoints_1"],
     ),
+    "with_isolines": (
+        {"fill": False},
+        ["Surfaces_with_isolines_0", "Surfaces_with_isolines_1"],
+    ),
+    "with_levels": (
+        {"levels": 2},
+        ["Surfaces_with_levels_0", "Surfaces_with_levels_1"],
+    ),
 }
 
 
