@@ -26,14 +26,15 @@ A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
 :points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation is
 relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List
+from typing import Iterable, Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 from matplotlib.figure import Figure
 
+from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
 
 
@@ -42,14 +43,17 @@ class ZvsXY(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # Dataset
-        x,  # type: str
-        y,  # type: str
-        z,  # type: str
-        x_comp=0,  # type: int
-        y_comp=0,  # type: int
-        z_comp=0,  # type: int
-        add_points=False,  # type: bool
+        dataset: Dataset,
+        x: str,
+        y: str,
+        z: str,
+        x_comp: int = 0,
+        y_comp: int = 0,
+        z_comp: int = 0,
+        add_points: bool = False,
+        fill: bool = True,
+        levels: int | Sequence[int] = None,
+        other_datasets: Iterable[Dataset] = None,
     ):  # type: (...) -> None
         """
         Args:
@@ -59,7 +63,14 @@ class ZvsXY(DatasetPlot):
             x_comp: The component of x.
             y_comp: The component of y.
             z_comp: The component of z.
-            add_points: If True, display samples over the surface plot.
+            add_points: Whether to display the entries of the dataset as points
+                above the surface.
+            fill: Whether to generate a filled contour plot.
+            levels: Either the number of contour lines
+                or the values of the contour lines in increasing order.
+                If ``None``, select them automatically.
+            other_datasets: Additional datasets to be plotted as points
+                above the surface.
         """
         super().__init__(
             dataset=dataset,
@@ -70,41 +81,67 @@ class ZvsXY(DatasetPlot):
             y_comp=y_comp,
             z_comp=z_comp,
             add_points=add_points,
+            other_datasets=other_datasets,
+            fill=fill,
+            levels=levels,
         )
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-        color = properties.get(self.COLOR) or "blue"
-        colormap = properties.get(self.COLORMAP) or "Blues"
-        x_data = self.dataset[self._param.x][self._param.x][:, self._param.x_comp]
-        y_data = self.dataset[self._param.y][self._param.y][:, self._param.y_comp]
-        z_data = self.dataset[self._param.z][self._param.z][:, self._param.z_comp]
+    def _plot(self, **properties: DatasetPlotPropertyType) -> list[Figure]:
+        other_datasets = self._param.other_datasets
+        x = self._param.x
+        y = self._param.y
+        z = self._param.z
+        x_comp = self._param.x_comp
+        y_comp = self._param.y_comp
+        z_comp = self._param.z_comp
+        n_series = 1
+
+        if other_datasets:
+            n_series += len(other_datasets)
+
+        self._set_color(properties, n_series)
+
+        x_data = self.dataset[x][x][:, x_comp]
+        y_data = self.dataset[y][y][:, y_comp]
+        z_data = self.dataset[z][z][:, z_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
         grid = mtri.Triangulation(x_data, y_data)
-        tcf = axes.tricontourf(grid, z_data, cmap=colormap)
+
+        levels = self._param.levels
+        options = {}
+        options["cmap"] = properties.get(self.COLORMAP) or self.colormap
+
+        if levels is not None:
+            options["levels"] = levels
+
+        if self._param.fill:
+            tcf = axes.tricontourf(grid, z_data, **options)
+        else:
+            tcf = axes.tricontour(grid, z_data, **options)
+
         if self._param.add_points:
-            axes.scatter(x_data, y_data, color=color)
-        if self.dataset.sizes[self._param.x] == 1:
-            axes.set_xlabel(self.xlabel or self._param.x)
-        else:
-            axes.set_xlabel(
-                self.xlabel or "{}({})".format(self._param.x, self._param.x_comp)
-            )
-        if self.dataset.sizes[self._param.y] == 1:
-            axes.set_ylabel(self.ylabel or self._param.y)
-        else:
-            axes.set_ylabel(
-                self.ylabel or "{}({})".format(self._param.y, self._param.y_comp)
-            )
-        if self.dataset.sizes[self._param.z] == 1:
-            axes.set_title(self.zlabel or self._param.z)
-        else:
-            axes.set_title(
-                self.zlabel or "{}({})".format(self._param.z, self._param.z_comp)
-            )
+            axes.scatter(x_data, y_data, color=self.color[0])
+
+        if other_datasets:
+            for index, dataset in enumerate(other_datasets):
+                x_data = dataset[x][x][:, x_comp]
+                y_data = dataset[y][y][:, y_comp]
+                axes.scatter(x_data, y_data, color=self.color[index + 1])
+
+        if self.xlabel is None:
+            self.xlabel = self._get_component_name(x, x_comp, self.dataset.sizes)
+
+        if self.ylabel is None:
+            self.ylabel = self._get_component_name(y, y_comp, self.dataset.sizes)
+
+        if self.zlabel is None:
+            self.zlabel = self._get_component_name(z, z_comp, self.dataset.sizes)
+
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        axes.set_title(self.zlabel)
+
         fig.colorbar(tcf)
         return [fig]

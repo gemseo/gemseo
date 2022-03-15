@@ -26,9 +26,9 @@ of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
 Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
 :math:`z` as a parameter and the mesh as a metadata.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from typing import Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
@@ -43,18 +43,24 @@ class Surfaces(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        mesh,  # type: str
-        variable,  # type: str
-        samples=None,  # type:Optional[Sequence[int]]
-        add_points=False,  # type: bool
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        mesh: str,
+        variable: str,
+        samples: Sequence[int] | None = None,
+        add_points: bool = False,
+        fill: bool = True,
+        levels: int | Sequence[int] = None,
+    ) -> None:
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot. If None, plot all samples.
             add_points: If True then display the samples over the surface plot.
+            fill: Whether to generate a filled contour plot.
+            levels: Either the number of contour lines
+                or the values of the contour lines in increasing order.
+                If ``None``, select them automatically.
         """
         super().__init__(
             dataset,
@@ -62,35 +68,43 @@ class Surfaces(DatasetPlot):
             variable=variable,
             samples=samples,
             add_points=add_points,
+            fill=fill,
+            levels=levels,
         )
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
+    def _plot(self, **properties: DatasetPlotPropertyType) -> list[Figure]:
         mesh = self._param.mesh
         variable = self._param.variable
         samples = self._param.samples
-        color = properties.get(self.COLOR) or "blue"
-        colormap = properties.get(self.COLORMAP) or "Blues"
+        color = properties.get(self.COLOR) or self.color
         x_data = self.dataset.metadata[mesh][:, 0]
         y_data = self.dataset.metadata[mesh][:, 1]
         if samples is not None:
-            outputs = self.dataset[variable][variable][samples, :]
+            samples = self.dataset[variable][variable][samples, :]
         else:
-            outputs = self.dataset[variable][variable]
+            samples = self.dataset[variable][variable]
 
-        sample = 0
-        fig = []
-        for z_data, variable_component in zip(outputs, self.dataset.row_names):
-            fig.append(plt.figure())
-            axes = fig[-1].add_subplot(1, 1, 1)
+        options = {}
+        options["cmap"] = properties.get(self.COLORMAP) or self.colormap
+        levels = self._param.levels
+        if levels is not None:
+            options["levels"] = levels
+
+        figs = []
+        for sample, sample_name in zip(samples, self.dataset.row_names):
+            fig = plt.figure()
+            axes = fig.add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)
-            tcf = axes.tricontourf(triangle, z_data, cmap=colormap)
+            if self._param.fill:
+                tcf = axes.tricontourf(triangle, sample, **options)
+            else:
+                tcf = axes.tricontour(triangle, sample, **options)
+
             if self._param.add_points:
                 axes.scatter(x_data, y_data, color=color)
-            axes.set_title("{} - {}".format(variable, variable_component))
-            fig[-1].colorbar(tcf)
-            fig[-1] = plt.gcf()
-            sample += 1
-        return fig
+
+            axes.set_title(f"{variable} - {sample_name}")
+            fig.colorbar(tcf)
+            figs.append(fig)
+
+        return figs
