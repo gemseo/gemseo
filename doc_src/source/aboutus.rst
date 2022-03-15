@@ -263,6 +263,10 @@ The following people are the contributors to |g|'s development and maintenance:
           Damien<br/>Guénot
     </div>
     <div class="avatar">
+          <img src='_static/authors/selime_gurol.jpg' class='avatar' /><br />
+          Selime<br/>Gürol
+    </div>
+    <div class="avatar">
           <img src='_static/authors/remi_lafage.jpg' class='avatar' /><br />
           Remi<br/>Lafage
     </div>
