@@ -25,8 +25,8 @@ from __future__ import division, unicode_literals
 import logging
 
 from numpy import arange, array, atleast_2d, concatenate, where, zeros
-from numpy.linalg import lstsq, matrix_rank, norm
-from scipy.optimize import linprog
+from numpy.linalg import matrix_rank, norm
+from scipy.optimize import linprog, nnls
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -162,8 +162,7 @@ class LagrangeMultipliers(object):
         else:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
-            mul, residuals, _, sval = lstsq(lhs, rhs, rcond=rcond)
-            LOGGER.info("Min singular values of jacobian = %s", str(sval.min()))
+            mul, residuals = nnls(lhs, rhs)
             LOGGER.info("Residuals norm = %s", str(norm(residuals)))
 
         # stores multipliers in a dictionary
