@@ -134,6 +134,7 @@ class OpenTURNS(DOELibrary):
                 DOELibrary.INTERNAL_NAME: algo_name,
                 DOELibrary.DESCRIPTION: algo_value[0],
                 DOELibrary.WEBSITE: self.__OT_WEBPAGE.format(algo_value[1]),
+                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
             }
 
     def _get_options(

@@ -71,6 +71,7 @@ class CustomDOE(DOELibrary):
                 DOELibrary.LIB: self.__class__.__name__,
                 DOELibrary.INTERNAL_NAME: algo,
                 DOELibrary.DESCRIPTION: desc[algo],
+                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
             }
 
     def _get_options(

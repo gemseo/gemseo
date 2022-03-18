@@ -107,6 +107,7 @@ class PyDOE(DOELibrary):
                 DOELibrary.INTERNAL_NAME: algo,
                 DOELibrary.DESCRIPTION: self.DESC_LIST[idx],
                 DOELibrary.WEBSITE: self.WEB_LIST[idx],
+                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
             }
 
         self.lib_dict["bbdesign"][DOELibrary.MIN_DIMS] = 3

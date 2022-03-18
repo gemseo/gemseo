@@ -116,6 +116,7 @@ class SnOpt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Sparse Nonlinear OPTimizer (SNOPT)",
                 self.WEBSITE: "https://ccom.ucsd.edu/~optimizers",
             }

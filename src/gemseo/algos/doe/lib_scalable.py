@@ -45,6 +45,7 @@ class DiagonalDOE(DOELibrary):
                 DOELibrary.LIB: self.__class__.__name__,
                 DOELibrary.INTERNAL_NAME: algo,
                 DOELibrary.DESCRIPTION: description,
+                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
             }
 
     def _get_options(

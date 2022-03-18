@@ -868,8 +868,33 @@ def test_database_name(problem):
     assert dataset.name == "dataset"
 
 
-def test_int_opt_problem():
-    """Test the execution of an optimization problem with integer variables."""
+@pytest.mark.parametrize(
+    "skip_int_check,expected_message",
+    [
+        (
+            True,
+            "Forcing the execution of an algorithm that does not handle "
+            "integer variables.",
+        ),
+        (
+            False,
+            "Algorithm L-BFGS-B is not adapted to the problem, it does not handle "
+            "integer variables.\n"
+            "Execution may be forced setting the 'skip_int_check' argument "
+            "to 'True'.",
+        ),
+    ],
+)
+def test_int_opt_problem(skip_int_check, expected_message, caplog):
+    """Test the execution of an optimization problem with integer variables.
+
+    Args:
+        skip_int_check: Whether to skip the integer variable handling check
+            of the selected algorithm.
+        expected_message: The expected message to be recovered from the logger or
+            the ValueError message.
+        caplog: Fixture to access and control log capturing.
+    """
     f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
     design_space.add_variable(
@@ -877,8 +902,24 @@ def test_int_opt_problem():
     )
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
-    OptimizersFactory().execute(problem, "L-BFGS-B", normalize_design_space=True)
-    assert problem.get_optimum()[1] == array([2.0])
+
+    if skip_int_check:
+        OptimizersFactory().execute(
+            problem,
+            "L-BFGS-B",
+            normalize_design_space=True,
+            skip_int_check=skip_int_check,
+        )
+        assert expected_message in caplog.text
+        assert problem.get_optimum()[1] == array([2.0])
+    else:
+        with pytest.raises(ValueError, match=expected_message):
+            OptimizersFactory().execute(
+                problem,
+                "L-BFGS-B",
+                normalize_design_space=True,
+                skip_int_check=skip_int_check,
+            )
 
 
 @pytest.fixture(scope="module")

@@ -125,6 +125,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_EQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Method of Moving Asymptotes (MMA)"
                 "implemented in the NLOPT library",
                 self.WEBSITE: "{}#mma-method-of-moving-asymptotes-and-ccsa".format(
@@ -136,6 +137,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: False,
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Constrained Optimization BY Linear "
                 "Approximations (COBYLA) implemented "
                 "in the NLOPT library",
@@ -148,6 +150,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Sequential Least-Squares Quadratic "
                 "Programming (SLSQP) implemented in "
                 "the NLOPT library",
@@ -158,6 +161,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: False,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Bound Optimization BY Quadratic "
                 "Approximation (BOBYQA) implemented "
                 "in the NLOPT library",
@@ -168,6 +172,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Broyden-Fletcher-Goldfarb-Shanno method "
                 "(BFGS) implemented in the NLOPT library",
                 self.WEBSITE: nlopt_doc + "#low-storage-bfgs",
@@ -183,6 +188,7 @@ class Nlopt(OptimizationLibrary):
                 self.REQUIRE_GRAD: False,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "NEWUOA + bound constraints implemented "
                 "in the NLOPT library",
                 self.WEBSITE: nlopt_doc + "#newuoa-bound-constraints",

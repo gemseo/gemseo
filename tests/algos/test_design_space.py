@@ -1097,3 +1097,64 @@ def test_rename_unknown_variable():
     design_space = DesignSpace()
     with pytest.raises(ValueError, match="The variable x is not in the design space."):
         design_space.rename_variable("x", "y")
+
+
+@pytest.mark.parametrize(
+    "variables,expected",
+    [
+        (
+            {
+                "int": {
+                    "size": 2,
+                    "var_type": [DesignVariableType.INTEGER] * 2,
+                    "value": array([1, 2]),
+                },
+                "float": {
+                    "size": 1,
+                    "var_type": DesignVariableType.FLOAT,
+                    "value": array([1.0]),
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "float_1": {
+                    "size": 2,
+                    "var_type": [DesignVariableType.FLOAT] * 2,
+                    "value": array([1, 2]),
+                },
+                "float_2": {
+                    "size": 1,
+                    "var_type": DesignVariableType.FLOAT,
+                    "value": array([1.0]),
+                },
+            },
+            False,
+        ),
+        (
+            {
+                "int_1": {
+                    "size": 2,
+                    "var_type": [DesignVariableType.INTEGER] * 2,
+                    "value": array([1, 2]),
+                },
+                "int_2": {
+                    "size": 1,
+                    "var_type": DesignVariableType.INTEGER,
+                    "value": array([1]),
+                },
+            },
+            True,
+        ),
+    ],
+)
+def test_has_integer_variables(variables, expected):
+    """Test that the correct bool is returned by the _has_integer_variables method."""
+    design_space = DesignSpace()
+    for key, val in variables.items():
+        design_space.add_variable(
+            key, size=val["size"], var_type=val["var_type"], value=val["value"]
+        )
+
+    assert design_space.has_integer_variables() == expected

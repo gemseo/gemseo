@@ -68,6 +68,7 @@ class PDFOOpt(OptimizationLibrary):
                 self.POSITIVE_CONSTRAINTS: True,
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Constrained Optimization"
                 "By Linear Approximations ",
                 self.WEBSITE: doc,
@@ -77,6 +78,7 @@ class PDFOOpt(OptimizationLibrary):
                 self.REQUIRE_GRAD: False,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Bound Optimization By " "Quadratic Approximation",
                 self.WEBSITE: doc,
             },
@@ -85,6 +87,7 @@ class PDFOOpt(OptimizationLibrary):
                 self.REQUIRE_GRAD: False,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "NEWUOA",
                 self.WEBSITE: doc,
             },

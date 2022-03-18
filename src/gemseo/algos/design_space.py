@@ -708,6 +708,17 @@ class DesignSpace(collections.MutableMapping):
                 return False
         return True
 
+    def has_integer_variables(self):  # type: (...) -> bool
+        """Check if the design space has at least one integer variable.
+
+        Returns:
+            Whether the design space has at least one integer variable.
+        """
+        return self.INTEGER.value in [
+            self.variables_types[variable_name][0]
+            for variable_name in self.variables_names
+        ]
+
     def check(self):  # type: (...) -> None
         """Check the state of the design space.
 
