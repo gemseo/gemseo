@@ -49,6 +49,7 @@ from numpy import ndarray, ones_like, where, zeros_like
 from tqdm.utils import _unicode, disp_len
 
 from gemseo.algos.algo_lib import AlgoLib
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import (
@@ -183,6 +184,7 @@ class DriverLib(AlgoLib):
     WEBSITE = "website"
     DESCRIPTION = "description"
     MAX_DS_SIZE_PRINT = 40
+    HANDLE_INTEGER_VARIABLES = "handle_integer_variables"
 
     def __init__(self):
         # Library settings and check
@@ -316,15 +318,71 @@ class DriverLib(AlgoLib):
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
             LOGGER.info("%s", problem.design_space)
 
-    def execute(self, problem, algo_name=None, eval_obs_jac=False, **options):
-        """Executes the driver.
+    def _check_integer_handling(
+        self,
+        design_space,  # type: DesignSpace
+        force_execution,  # type: bool
+    ):  # type: (...) -> None
+        """Check if the algo handles integer variables.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-            if None, use self.algo_name
-            which may have been set by the factory (Default value = None)
-        :param eval_obs_jac: Whether to evaluate the Jacobian of the observables.
-        :param options: the options dict for the algorithm
+        The user may force the execution if needed, in this case a warning is logged.
+
+        Args:
+            design_space: The design space of the problem.
+            force_execution: Whether to force the execution of the algorithm when
+                the problem includes integer variables and the algo does not handle
+                them.
+
+        Raises:
+            ValueError: If `force_execution` is set to `False` and
+                the algo does not handle integer variables and the
+                design space includes at least one integer variable.
+        """
+        algo_properties = self.lib_dict[self.algo_name]
+
+        if design_space.has_integer_variables() and (
+            (DriverLib.HANDLE_INTEGER_VARIABLES not in algo_properties)
+            or not algo_properties[DriverLib.HANDLE_INTEGER_VARIABLES]
+        ):
+            if not force_execution:
+                raise ValueError(
+                    "Algorithm {} is not adapted to the problem, it does not handle "
+                    "integer variables.\n"
+                    "Execution may be forced setting the 'skip_int_check' "
+                    "argument to 'True'.".format(self.algo_name)
+                )
+            else:
+                LOGGER.warning(
+                    "Forcing the execution of an algorithm that does not handle "
+                    "integer variables."
+                )
+
+    def execute(
+        self,
+        problem,  # type: OptimizationProblem
+        algo_name=None,  # type: Optional[str]
+        eval_obs_jac=False,  # type: bool
+        skip_int_check=False,  # type: bool
+        **options  # type: DriverLibOptionType
+    ):  # type: (...) -> OptimizationResult
+        """Execute the driver.
+
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+                If None, use the algo_name attribute
+                which may have been set by the factory.
+            eval_obs_jac: Whether to evaluate the Jacobian of the observables.
+            skip_int_check: Whether to skip the integer variable handling check
+                of the selected algorithm.
+            options: The options for the algorithm.
+
+        Returns:
+            The optimization result.
+
+        Raises:
+            ValueError: If `algo_name` was not either set by the factory or given
+                as an argument.
         """
         self.problem = problem
         if algo_name is not None:
@@ -337,6 +395,7 @@ class DriverLib(AlgoLib):
             )
 
         self._check_algorithm(self.algo_name, problem)
+        self._check_integer_handling(problem.design_space, skip_int_check)
         options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
 

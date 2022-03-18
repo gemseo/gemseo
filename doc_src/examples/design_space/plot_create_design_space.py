@@ -37,8 +37,8 @@ configure_logger()
 
 
 ###############################################################################
-# Create a parameter space
-# ------------------------
+# Create a design space
+# ---------------------
 #
 # The user can create an instance of the :class:`.DesignSpace` using the API
 # and the :func:`.create_design_space` function.
@@ -69,6 +69,37 @@ design_space.add_variable(
     "y", l_b=array([-2.0, -1.0]), u_b=array([2.0, 1.0]), value=array([0.0, 0.0]), size=2
 )
 print(design_space)
+
+###############################################################################
+# By default, each variable infers its type from the given values. One may also
+# specify it with the `var_type` keyword
+design_space.add_variable(
+    "z",
+    l_b=array([0, -1]),
+    u_b=array([3, 1]),
+    value=array([0, 1]),
+    size=2,
+    var_type="integer",
+)
+design_space.add_variable(
+    "w",
+    l_b=array([-2, -5]),
+    u_b=array([3, 1]),
+    value=array([2, -2]),
+    size=2,
+    var_type=["integer", "integer"],
+)
+print(design_space)
+
+###############################################################################
+# .. note::
+#
+#    Some optimization algorithms may not handle integer variables properly.
+#    For updated information about the optimization algorithms that handle
+#    integer variables, refer to :ref:`gen_opt_algos`.
+#
+#    For additional information on how |g| handles integer variables, refer to
+#    :ref:`nutshell_design_space`.
 
 ###############################################################################
 # Remove design variables

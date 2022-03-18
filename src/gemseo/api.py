@@ -1884,6 +1884,6 @@ def get_algorithm_features(
             "handle_inequality_constraints", False
         ),
         handle_float_variables=True,
-        handle_integer_variables=False,
+        handle_integer_variables=features.get("handle_integer_variables", False),
         require_gradient=features.get("require_grad", False),
     )

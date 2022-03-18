@@ -88,6 +88,7 @@ class ScipyLinprog(OptimizationLibrary):
             self.POSITIVE_CONSTRAINTS: False,
             self.HANDLE_EQ_CONS: True,
             self.HANDLE_INEQ_CONS: True,
+            self.HANDLE_INTEGER_VARIABLES: False,
         }
         for algo_dict in self.lib_dict.values():
             algo_dict.update(common_items)

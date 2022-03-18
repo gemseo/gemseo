@@ -70,6 +70,7 @@ class ScipyOpt(OptimizationLibrary):
                 self.POSITIVE_CONSTRAINTS: True,
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Sequential Least-Squares Quadratic "
                 "Programming (SLSQP) implemented in "
                 "the SciPy library",
@@ -80,6 +81,7 @@ class ScipyOpt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Limited-memory BFGS algorithm "
                 "implemented in SciPy library",
                 self.WEBSITE: doc + "generated/scipy.optimize.fmin_l_bfgs_b.html",
@@ -89,6 +91,7 @@ class ScipyOpt(OptimizationLibrary):
                 self.REQUIRE_GRAD: True,
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
                 self.DESCRIPTION: "Truncated Newton (TNC) algorithm "
                 "implemented in SciPy library",
                 self.WEBSITE: doc + "optimize.minimize-tnc.html",
