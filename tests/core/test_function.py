@@ -24,6 +24,7 @@ from __future__ import division, unicode_literals
 
 import math
 import unittest
+from operator import mul, truediv
 from unittest import mock
 
 import numpy as np
@@ -730,3 +731,44 @@ def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
 def test_get_indexed_name(function):
     """Check the indexed function name."""
     assert function.get_indexed_name(3) == "n!3"
+
+
+@pytest.mark.parametrize("fexpr", [None, "x**2"])
+@pytest.mark.parametrize("gexpr", [None, "x**3"])
+@pytest.mark.parametrize(
+    "op,op_name,func,jac", [(mul, "*", 32, 80), (truediv, "/", 0.5, -1.0 / 9)]
+)
+def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
+    """Check the multiplication of a function by a function or its inverse."""
+    f = MDOFunction(lambda x: x ** 2, "f", jac=lambda x: 2 * x, args=["x"], expr=fexpr)
+    g = MDOFunction(
+        lambda x: x ** 3, "g", jac=lambda x: 3 * x ** 2, args=["x"], expr=gexpr
+    )
+
+    f_op_g = op(f, g)
+    suffix = ""
+    if fexpr and gexpr:
+        suffix = f" = {fexpr}{op_name}{gexpr}"
+
+    assert repr(f_op_g) == f"f{op_name}g(x)" + suffix
+    assert f_op_g(2) == func
+    assert f_op_g.jac(2) == jac
+
+
+@pytest.mark.parametrize("expr", [None, "x**2"])
+@pytest.mark.parametrize(
+    "op,op_name,func,jac", [(mul, "*", 16, 24), (truediv, "/", 4, 6)]
+)
+def test_multiplication_by_scalar(expr, op, op_name, func, jac):
+    """Check the multiplication of a function by a scalar or its inverse."""
+    f = MDOFunction(
+        lambda x: x ** 3, "f", jac=lambda x: 3 * x ** 2, args=["x"], expr=expr
+    )
+    f_op_2 = op(f, 2)
+    suffix = ""
+    if expr:
+        suffix = f" = 2{op_name}{expr}"
+
+    assert repr(f_op_2) == f"2{op_name}f(x)" + suffix
+    assert f_op_2(2) == func
+    assert f_op_2.jac(2) == jac

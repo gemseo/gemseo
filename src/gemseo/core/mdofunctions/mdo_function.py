@@ -25,6 +25,7 @@ from __future__ import division, unicode_literals
 import logging
 from multiprocessing import Value
 from numbers import Number
+from operator import mul, truediv
 from typing import (
     Callable,
     Dict,
@@ -651,15 +652,27 @@ class MDOFunction(object):
 
         return min_self
 
+    def __truediv__(self, other):
+        """Define the division operation for MDOFunction.
+
+        This operation supports automatic differentiation
+        if the different functions have an implemented Jacobian function.
+
+        Args:
+            other: The function to divide by.
+        """
+        return MultiplyOperator(other, self, inverse=True)
+
     def __mul__(self, other):
         """Define the multiplication operation for MDOFunction.
 
-        Supports automatic linearization if other and self have a Jacobian.
+        This operation supports automatic differentiation
+        if the different functions have an implemented Jacobian function.
 
         Args:
             other: The function to multiply by.
         """
-        return MultiplyOperator(other, mdo_function=self)
+        return MultiplyOperator(other, self)
 
     @staticmethod
     def _compute_operation_expression(
@@ -1417,6 +1430,7 @@ class MultiplyOperator(MDOFunction):
         self,
         other,  # type: Union[MDOFunction, Number]
         mdo_function,  # type: MDOFunction
+        inverse=False,  # type: bool
     ):  # type: (...) -> None
         """Operator defining the multiplication of the function and another operand.
 
@@ -1426,65 +1440,63 @@ class MultiplyOperator(MDOFunction):
         Args:
             other: The other operand.
             mdo_function: The original function.
+            inverse: Whether to multiply `mdo_function` by the inverse of `other`.
 
         Raises:
             TypeError: If the other operand is
                 neither a number nor a :class:`.MDOFunction`.
         """
-        self.__other = other
-        self.__mdo_function = mdo_function
-
-        self.__is_number = isinstance(self.__other, Number)
-        self.__is_func = isinstance(self.__other, MDOFunction)
-        if not self.__is_number and not self.__is_func:
+        is_func = isinstance(other, MDOFunction)
+        operator = "/" if inverse else "*"
+        if not isinstance(other, Number) and not is_func:
             raise TypeError(
-                "Unsupported * operand for MDOFunction and {}.".format(
-                    type(self.__other)
-                )
+                f"Unsupported {operator} operator for MDOFunction and {type(other)}."
             )
 
+        self.__other = other
+        self.__mdo_function = mdo_function
+        self.__operator = truediv if inverse else mul
+        self.__is_func = is_func
+
+        args = self.__mdo_function.args
+        f_type = self.__mdo_function.f_type
+
         if self.__is_func:
-            out_name = "{}*{}".format(self.__mdo_function.name, self.__other.name)
+            first_operand_name = self.__mdo_function.name
+            first_operand_expr = self.__mdo_function.expr
+            second_operand_name = self.__other.name
+            second_operand_expr = self.__other.expr
 
-            if self.__mdo_function.has_expr() and self.__other.has_expr():
-                expr = "({})*({})".format(self.__mdo_function.expr, self.__other.expr)
-            else:
-                expr = None
+            if args and self.__other.has_args():
+                args = sorted(list(set(args + self.__other.args)))
 
-            if self.__mdo_function.has_args() and self.__other.has_args():
-                args = sorted(list(set(self.__mdo_function.args + self.__other.args)))
-            else:
-                args = None
+            f_type = f_type or self.__other.f_type
 
-            if self.__mdo_function.has_f_type():
-                f_type = self.__mdo_function.f_type
-            elif self.__other.has_f_type():
-                f_type = self.__other.f_type
-            else:
-                f_type = None
+        else:
+            first_operand_name = self.__other
+            second_operand_name = self.__mdo_function.name
+            first_operand_expr = self.__other
+            second_operand_expr = self.__mdo_function.expr
 
-        elif self.__is_number:
-            out_name = "{}*{}".format(self.__mdo_function.name, self.__other)
-            args = self.__mdo_function.args
-            f_type = self.__mdo_function.f_type
+        out_name = f"{first_operand_name}{operator}{second_operand_name}"
 
-            if self.__mdo_function.has_expr():
-                expr = "({})*{}".format(self.__mdo_function.expr, self.__other)
-            else:
-                expr = None
+        if self.__mdo_function.has_expr() and second_operand_expr is not None:
+            expr = f"{first_operand_expr}{operator}{second_operand_expr}"
+        else:
+            expr = None
 
         super(MultiplyOperator, self).__init__(
-            self._mul_f_pt,
+            self._func,
             out_name,
             expr=expr,
-            jac=self._mult_jac,
+            jac=self._jac,
             args=args,
             f_type=f_type,
             dim=self.__mdo_function.dim,
             outvars=self.__mdo_function.outvars,
         )
 
-    def _mul_f_pt(
+    def _func(
         self, x_vect  # type: ndarray
     ):  # type: (...) -> ndarray
         """Evaluate the function and multiply its output value.
@@ -1496,12 +1508,13 @@ class MultiplyOperator(MDOFunction):
             The product of the output value of the function with the number.
         """
         if self.__is_func:
-            mul_f = self.__mdo_function(x_vect) * self.__other(x_vect)
-        elif self.__is_number:
-            mul_f = self.__mdo_function(x_vect) * self.__other
-        return mul_f
+            second_operand = self.__other(x_vect)
+        else:
+            second_operand = self.__other
 
-    def _mult_jac(
+        return self.__operator(self.__mdo_function(x_vect), second_operand)
+
+    def _jac(
         self, x_vect  # type: ndarray
     ):  # type: (...) -> ndarray
         """Evaluate both functions and multiply their output values.
@@ -1513,18 +1526,24 @@ class MultiplyOperator(MDOFunction):
             The product of the output values of the functions.
         """
 
-        if self.__mdo_function.has_jac() and self.__is_number:
-            mult_jac = self.__mdo_function._jac(x_vect) * self.__other
-        elif self.__mdo_function.has_jac() and self.__other.has_jac():
-            self_f = self.__mdo_function(x_vect)
-            other_f = self.__other(x_vect)
-            self_jac = self.__mdo_function._jac(x_vect)
-            other_jac = self.__other.jac(x_vect)
-            mult_jac = self_jac * other_f + other_jac * self_f
-        else:
-            mult_jac = None
+        if not self.__mdo_function.has_jac():
+            return
 
-        return mult_jac
+        if not self.__is_func:
+            return self.__operator(self.__mdo_function._jac(x_vect), self.__other)
+
+        if not self.__other.has_jac():
+            return
+
+        self_f = self.__mdo_function(x_vect)
+        other_f = self.__other(x_vect)
+        self_jac = self.__mdo_function._jac(x_vect)
+        other_jac = self.__other.jac(x_vect)
+
+        if self.__operator == mul:
+            return self_jac * other_f + other_jac * self_f
+
+        return (self_jac * other_f - other_jac * self_f) / other_jac ** 2
 
 
 class Offset(MDOFunction):
