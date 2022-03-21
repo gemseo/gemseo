@@ -80,3 +80,15 @@ def test_failure_for_log_zero_without_fast_evaluation():
     input_data = {"x": array([0.0])}
     with pytest.raises(TypeError):
         disc.execute(input_data)
+
+
+@pytest.mark.parametrize("fast_evaluation", [False, True])
+def test_absolute_value(fast_evaluation):
+    """Check that AnalyticDiscipline handles absolute value."""
+    discipline = AnalyticDiscipline({"y": "Abs(x)"}, fast_evaluation=fast_evaluation)
+    assert discipline.linearize({"x": array([2])}, force_all=True)["y"]["x"] == 1
+    assert discipline.linearize({"x": array([-2])}, force_all=True)["y"]["x"] == -1
+
+    # Be careful: the derivative of sympy.Abs(x) at 0 is equal to 0
+    # even if it is not defined at 0 from a mathematical point of view.
+    assert discipline.linearize({"x": array([0])}, force_all=True)["y"]["x"] == 0
