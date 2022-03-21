@@ -63,10 +63,10 @@ class MLClusteringMeasure(MLQualityMeasure):
         samples = self._assure_samples(samples)
         if not self.algo.is_trained:
             self.algo.learn(samples)
-        data = self._get_data()[samples]
-        labels = self.algo.labels
-        measure = self._compute_measure(data, labels, multioutput)
-        return measure
+
+        return self._compute_measure(
+            self._get_data()[samples], self.algo.labels, multioutput
+        )
 
     def _compute_measure(
         self,
@@ -93,9 +93,7 @@ class MLClusteringMeasure(MLQualityMeasure):
         Returns:
             The learning data indexed by the names of the variables.
         """
-        names = self.algo.var_names
-        data = self.algo.learning_set.get_data_by_names(names, False)
-        return data
+        return self.algo.learning_set.get_data_by_names(self.algo.var_names, False)
 
 
 class MLPredictiveClusteringMeasure(MLClusteringMeasure):
@@ -120,11 +118,9 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         samples = self._assure_samples(samples)
         if not self.algo.is_trained:
             self.algo.learn(samples)
-        names = self.algo.var_names
-        data = test_data.get_data_by_names(names, False)
-        predictions = self.algo.predict(data)
-        measure = self._compute_measure(data, predictions, multioutput)
-        return measure
+
+        data = test_data.get_data_by_names(self.algo.var_names, False)
+        return self._compute_measure(data, self.algo.predict(data), multioutput)
 
     def evaluate_kfolds(
         self,
@@ -143,16 +139,13 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         qualities = []
         for n_fold in range(n_folds):
             test_indices = folds[n_fold]
-            train_indices = npdelete(samples, test_indices)
-            algo.learn(samples=train_indices)
+            algo.learn(samples=npdelete(samples, test_indices))
             test_data = data[test_indices]
-            predictions = algo.predict(test_data)
-            quality = self._compute_measure(test_data, predictions, multioutput)
-            qualities.append(quality)
+            qualities.append(
+                self._compute_measure(test_data, algo.predict(test_data), multioutput)
+            )
 
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def evaluate_bootstrap(
         self,
@@ -170,18 +163,16 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
         qualities = []
         for _ in range(n_replicates):
-            train_indices = unique(choice(n_samples, n_samples))
-            test_indices = npdelete(indices, train_indices)
-            algo.learn(samples=[samples[index] for index in train_indices])
-            test_data = data[[samples[index] for index in test_indices]]
-            predictions = algo.predict(test_data)
+            training_indices = unique(choice(n_samples, n_samples))
+            algo.learn(samples=[samples[index] for index in training_indices])
+            test_data = data[
+                [samples[index] for index in npdelete(indices, training_indices)]
+            ]
+            qualities.append(
+                self._compute_measure(test_data, algo.predict(test_data), multioutput)
+            )
 
-            quality = self._compute_measure(test_data, predictions, multioutput)
-            qualities.append(quality)
-
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def _compute_measure(
         self,
@@ -208,6 +199,4 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         Returns:
             The learning data indexed by the names of the variables.
         """
-        names = self.algo.var_names
-        data = self.algo.learning_set.get_data_by_names(names, False)
-        return data
+        return self.algo.learning_set.get_data_by_names(self.algo.var_names, False)

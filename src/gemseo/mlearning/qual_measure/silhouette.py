@@ -114,6 +114,4 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
             raise NotImplementedError(
                 "The SilhouetteMeasure does not support the multioutput case."
             )
-        measure = silhouette_score(data, labels)
-
-        return measure
+        return silhouette_score(data, labels)
