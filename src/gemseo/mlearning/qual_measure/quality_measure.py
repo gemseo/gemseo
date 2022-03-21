@@ -161,9 +161,10 @@ class MLQualityMeasure(object):
         Returns:
             The value of the quality measure.
         """
-        n_samples = self.algo.learning_set.n_samples
         return self.evaluate_kfolds(
-            samples=samples, n_folds=n_samples, multioutput=multioutput
+            samples=samples,
+            n_folds=self.algo.learning_set.n_samples,
+            multioutput=multioutput,
         )
 
     def evaluate_kfolds(
@@ -235,10 +236,9 @@ class MLQualityMeasure(object):
             Whether val1 is of better quality than val2.
         """
         if cls.SMALLER_IS_BETTER:
-            result = val1 < val2
+            return val1 < val2
         else:
-            result = val1 > val2
-        return result
+            return val1 > val2
 
     def _assure_samples(
         self,

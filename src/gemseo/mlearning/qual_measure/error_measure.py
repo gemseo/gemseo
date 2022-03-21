@@ -59,11 +59,11 @@ class MLErrorMeasure(MLQualityMeasure):
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
         self.algo.learn(samples)
-        inputs = self.algo.input_data[samples]
-        outputs = self.algo.output_data[samples]
-        predictions = self.algo.predict(inputs)
-        measure = self._compute_measure(outputs, predictions, multioutput)
-        return measure
+        return self._compute_measure(
+            self.algo.output_data[samples],
+            self.algo.predict(self.algo.input_data[samples]),
+            multioutput,
+        )
 
     def evaluate_test(
         self,
@@ -73,13 +73,13 @@ class MLErrorMeasure(MLQualityMeasure):
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
         self.algo.learn(samples)
-        in_grp = test_data.INPUT_GROUP
-        out_grp = test_data.OUTPUT_GROUP
-        inputs = test_data.get_data_by_group(in_grp)
-        outputs = test_data.get_data_by_group(out_grp)
-        predictions = self.algo.predict(inputs)
-        measure = self._compute_measure(outputs, predictions, multioutput)
-        return measure
+        return self._compute_measure(
+            test_data.get_data_by_names(self.algo.output_names, False),
+            self.algo.predict(
+                test_data.get_data_by_names(self.algo.input_names, False)
+            ),
+            multioutput,
+        )
 
     def evaluate_kfolds(
         self,
@@ -91,26 +91,25 @@ class MLErrorMeasure(MLQualityMeasure):
     ):  # type: (...) -> Union[float,ndarray]
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
-        in_grp = self.algo.learning_set.INPUT_GROUP
-        out_grp = self.algo.learning_set.OUTPUT_GROUP
-        inputs = self.algo.learning_set.get_data_by_group(in_grp)
-        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+        input_data = self.algo.learning_set.get_data_by_names(
+            self.algo.input_names, False
+        )
+        output_data = self.algo.learning_set.get_data_by_names(
+            self.algo.output_names, False
+        )
 
         algo = deepcopy(self.algo)
 
         qualities = []
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            train = npdelete(samples, fold)
-            algo.learn(samples=train)
-            expected = outputs[fold]
-            predicted = algo.predict(inputs[fold])
-            quality = self._compute_measure(expected, predicted, multioutput)
+            algo.learn(samples=npdelete(samples, fold))
+            quality = self._compute_measure(
+                output_data[fold], algo.predict(input_data[fold]), multioutput
+            )
             qualities.append(quality)
 
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def evaluate_bootstrap(
         self,
@@ -120,29 +119,31 @@ class MLErrorMeasure(MLQualityMeasure):
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
         n_samples = samples.size
-        inds = arange(n_samples)
+        all_indices = arange(n_samples)
 
-        in_grp = self.algo.learning_set.INPUT_GROUP
-        out_grp = self.algo.learning_set.OUTPUT_GROUP
-        inputs = self.algo.learning_set.get_data_by_group(in_grp)
-        outputs = self.algo.learning_set.get_data_by_group(out_grp)
+        input_data = self.algo.learning_set.get_data_by_names(
+            self.algo.input_names, False
+        )
+        output_data = self.algo.learning_set.get_data_by_names(
+            self.algo.output_names, False
+        )
 
         algo = deepcopy(self.algo)
 
         qualities = []
         for _ in range(n_replicates):
-            train = unique(choice(n_samples, n_samples))
-            test = npdelete(inds, train)
-            algo.learn([samples[index] for index in train])
-            test_samples = [samples[index] for index in test]
-            expected = outputs[test_samples]
-            predicted = algo.predict(inputs[test_samples])
-            quality = self._compute_measure(expected, predicted, multioutput)
+            training_indices = unique(choice(n_samples, n_samples))
+            test_indices = npdelete(all_indices, training_indices)
+            algo.learn([samples[index] for index in training_indices])
+            test_samples = [samples[index] for index in test_indices]
+            quality = self._compute_measure(
+                output_data[test_samples],
+                algo.predict(input_data[test_samples]),
+                multioutput,
+            )
             qualities.append(quality)
 
-        quality = sum(qualities) / len(qualities)
-
-        return quality
+        return sum(qualities) / len(qualities)
 
     def _compute_measure(
         self,
