@@ -27,7 +27,7 @@ from typing import Dict, Iterable, Mapping, Optional, Union
 
 from numpy import array, float64, heaviside, zeros
 from six import string_types
-from sympy import Expr, lambdify, symbols
+from sympy import Expr, Symbol, lambdify, symbols
 from sympy.parsing.sympy_parser import parse_expr
 
 from gemseo.core.discipline import MDODiscipline
@@ -98,31 +98,53 @@ class AnalyticDiscipline(MDODiscipline):
         Raises:
             TypeError: When the expression is neither a SymPy expression nor a string.
         """
-        input_symbols = []
+        all_real_input_symbols = []
         for output_name, output_expression in self.expressions.items():
             if isinstance(output_expression, Expr):
-                sympy_expression = output_expression
+                output_expression_to_derive = output_expression
+                real_input_symbols = self.__create_real_input_symbols(output_expression)
             elif isinstance(output_expression, string_types):
-                sympy_expression = parse_expr(output_expression)
+                string_output_expression = output_expression
+                output_expression = parse_expr(string_output_expression)
+                real_input_symbols = self.__create_real_input_symbols(output_expression)
+                output_expression_to_derive = parse_expr(
+                    string_output_expression, local_dict=real_input_symbols
+                )
             else:
                 raise TypeError("Expression must be a SymPy expression or a string.")
 
-            self._sympy_exprs[output_name] = sympy_expression
-            free_symbols = list(sympy_expression.free_symbols)
-            input_symbols += free_symbols
-            input_names_subset = [free_symbol.name for free_symbol in free_symbols]
-            self.expr_symbols_dict[output_name] = input_names_subset
+            self._sympy_exprs[output_name] = output_expression
+            all_real_input_symbols.extend(real_input_symbols.values())
+            self.expr_symbols_dict[output_name] = [name for name in real_input_symbols]
             self._sympy_jac_exprs[output_name] = {
-                input_name: sympy_expression.diff(input_name)
-                for input_name in input_names_subset
+                input_symbol_name: output_expression_to_derive.diff(input_symbol)
+                for input_symbol_name, input_symbol in real_input_symbols.items()
             }
 
         self.input_names = sorted(
-            [input_symbol.name for input_symbol in set(input_symbols)]
+            [input_symbol.name for input_symbol in set(all_real_input_symbols)]
         )
+
+        self.__real_symbols = {symbol.name: symbol for symbol in all_real_input_symbols}
 
         if self._fast_evaluation:
             self._lambdify_expressions()
+
+    def __create_real_input_symbols(
+        self, expression  # type: Expr
+    ):  # type: (...) -> Dict[str, Symbol]
+        """Return the symbols used by a SymPy expression with real type.
+
+        Args:
+            expression: The SymPy expression.
+
+        Returns:
+            The symbols used by ``expression`` with real type.
+        """
+        return {
+            symbol.name: symbols(symbol.name, real=True)
+            for symbol in expression.free_symbols
+        }
 
     def _lambdify_expressions(self):  # type: (...) -> None
         """Lambdify the SymPy expressions."""
@@ -133,15 +155,18 @@ class AnalyticDiscipline(MDODiscipline):
         modules = [numpy_str, {"Heaviside": lambda x: heaviside(x, 1)}]
         for output_name, output_expression in self._sympy_exprs.items():
             input_names = self.expr_symbols_dict[output_name]
-            input_symbols = symbols(input_names)
-            self._sympy_funcs[output_name] = lambdify(input_symbols, output_expression)
+            self._sympy_funcs[output_name] = lambdify(
+                output_expression.free_symbols, output_expression
+            )
+            input_symbols = [self.__real_symbols[k] for k in input_names]
+            jac_expr = self._sympy_jac_exprs[output_name]
             self._sympy_jac_funcs[output_name] = {
-                input_name: lambdify(
+                input_symbol.name: lambdify(
                     input_symbols,
-                    self._sympy_jac_exprs[output_name][input_name],
+                    jac_expr[input_symbol.name],
                     modules,
                 )
-                for input_name in input_names
+                for input_symbol in input_symbols
             }
 
     def _init_default_inputs(self):  # type: (...) -> None
@@ -152,23 +177,23 @@ class AnalyticDiscipline(MDODiscipline):
         }
 
     def _run(self):  # type: (...) -> None
-        outputs = {}
+        output_data = {}
         # Do not pass useless tokens to the expr, this may
         # fail when tokens contains dots, or slow down the process
-        input_values = self.__convert_input_values_to_float()
+        input_data = self.__convert_input_values_to_float()
         if self._fast_evaluation:
             for output_name, output_function in self._sympy_funcs.items():
-                input_names = self.expr_symbols_dict[output_name]
+                input_symbols = self.expr_symbols_dict[output_name]
                 output_value = output_function(
-                    *(input_values[input_name] for input_name in input_names)
+                    *(input_data[input_symbol] for input_symbol in input_symbols)
                 )
-                outputs[output_name] = array([output_value], dtype=float64)
+                output_data[output_name] = array([output_value], dtype=float64)
 
         else:
             for output_name, output_expression in self._sympy_exprs.items():
                 try:
-                    output_value = output_expression.evalf(subs=input_values)
-                    outputs[output_name] = array([output_value], dtype=float64)
+                    output_value = output_expression.evalf(subs=input_data)
+                    output_data[output_name] = array([output_value], dtype=float64)
                 except TypeError:
                     LOGGER.error(
                         "Failed to evaluate expression : %s", str(output_expression)
@@ -176,13 +201,13 @@ class AnalyticDiscipline(MDODiscipline):
                     LOGGER.error("With inputs : %s", str(self.local_data))
                     raise
 
-        self.store_local_data(**outputs)
+        self.store_local_data(**output_data)
 
     def __convert_input_values_to_float(self):  # type: (...) -> Dict[str, float]
         """Return the local data with float values."""
         return {
-            input_name: float(input_value.real)
-            for input_name, input_value in self.local_data.items()
+            input_name: float(self.local_data[input_name].real)
+            for input_name in self.get_input_data_names()
         }
 
     def _compute_jacobian(
@@ -196,19 +221,21 @@ class AnalyticDiscipline(MDODiscipline):
         input_values = self.__convert_input_values_to_float()
         if self._fast_evaluation:
             for output_name, gradient_function in self._sympy_jac_funcs.items():
-                input_names = self.expr_symbols_dict[output_name]
-                for input_name, derivative_function in gradient_function.items():
-                    derivative_value = derivative_function(
-                        *(input_values[input_name] for input_name in input_names)
-                    )
-                    self.jac[output_name][input_name] = array(
-                        [[derivative_value]], dtype=float64
+                input_data = tuple(
+                    input_values[name] for name in self.expr_symbols_dict[output_name]
+                )
+                jac = self.jac[output_name]
+                for input_symbol, derivative_function in gradient_function.items():
+                    jac[input_symbol] = array(
+                        [[derivative_function(*input_data)]], dtype=float64
                     )
         else:
+            subs = {self.__real_symbols[k]: v for k, v in input_values.items()}
             for output_name, output_expression in self._sympy_exprs.items():
+                jac = self.jac[output_name]
+                jac_expr = self._sympy_jac_exprs[output_name]
                 for input_symbol in output_expression.free_symbols:
-                    input_name = input_symbol.name
-                    derivative_expr = self._sympy_jac_exprs[output_name][input_name]
-                    self.jac[output_name][input_name] = array(
-                        [[derivative_expr.evalf(subs=input_values)]], dtype=float64
+                    jac[input_symbol.name] = array(
+                        [[jac_expr[input_symbol.name].evalf(subs=subs)]],
+                        dtype=float64,
                     )
