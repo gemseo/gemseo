@@ -28,7 +28,7 @@ from __future__ import division, unicode_literals
 from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -41,7 +41,7 @@ discipline = create_discipline("SobieskiMission")
 ##############################################################################
 # Create the design space
 # -----------------------
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 design_space.filter(["y_24", "y_34"])
 
 ##############################################################################

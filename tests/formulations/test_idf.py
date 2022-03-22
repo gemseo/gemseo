@@ -29,8 +29,8 @@ from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
@@ -70,7 +70,7 @@ class TestIDF(FormulationsBaseTest):
             SobieskiAerodynamics(dtype),
             SobieskiMission(dtype),
         ]
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         if dtype == "complex128":
             design_space.to_complex()
         if remove_coupl_from_ds:
@@ -138,7 +138,7 @@ class TestIDF(FormulationsBaseTest):
             SobieskiPropulsion("complex128"),
             SobieskiStructure("complex128"),
         ]
-        idf = IDF(disciplines, "y_4", pb.read_design_space())
+        idf = IDF(disciplines, "y_4", pb.design_space)
         x_names = idf.get_optim_variables_names()
         x_dict = pb.get_default_inputs(x_names)
         x_vect = np.concatenate([x_dict[k] for k in x_names])
@@ -259,7 +259,7 @@ class TestIDF(FormulationsBaseTest):
             SobieskiAerodynamics(),
             SobieskiMission(),
         ]
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         idf = IDF(disciplines, "y_4", design_space, start_at_equilibrium=True)
         coupling_names = [
             "y_12",

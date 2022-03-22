@@ -28,7 +28,7 @@ from __future__ import division, unicode_literals
 from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -36,10 +36,10 @@ configure_logger()
 # Instantiate the  disciplines
 # ----------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.wrappers.SobieskiStructure`.
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
+# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
 disciplines = create_discipline(
     [
         "SobieskiPropulsion",
@@ -59,7 +59,7 @@ disciplines = create_discipline(
 #
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 scenario = create_scenario(
     disciplines,
     "IDF",

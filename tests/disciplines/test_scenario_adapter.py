@@ -35,8 +35,8 @@ from gemseo.disciplines.scenario_adapter import (
     MDOObjScenarioAdapter,
     MDOScenarioAdapter,
 )
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
@@ -47,7 +47,7 @@ from gemseo.utils.derivatives_approx import DisciplineJacApprox
 
 def create_design_space():
     """"""
-    return SobieskiProblem().read_design_space()
+    return SobieskiProblem().design_space
 
 
 @pytest.fixture
@@ -265,7 +265,7 @@ def test_compute_jacobian_exceptions(scenario):
 
 def build_struct_scenario():
 
-    ds = SobieskiProblem().read_design_space()
+    ds = SobieskiProblem().design_space
     sc_str = MDOScenario(
         disciplines=[SobieskiStructure()],
         formulation="DisciplinaryOpt",
@@ -282,7 +282,7 @@ def build_struct_scenario():
 
 def build_prop_scenario():
 
-    ds = SobieskiProblem().read_design_space()
+    ds = SobieskiProblem().design_space
     sc_prop = MDOScenario(
         disciplines=[SobieskiPropulsion()],
         formulation="DisciplinaryOpt",

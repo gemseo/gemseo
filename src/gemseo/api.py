@@ -211,7 +211,7 @@ def generate_n2_plot(
     show_data_names=True,  # type: bool
     save=True,  # type: bool
     show=False,  # type: bool
-    figsize=(15, 10),  # type: Tuple[int]
+    figsize=(15.0, 10.0),  # type: Tuple[float, float]
     open_browser=False,  # type: bool
 ):  # type: (...) -> None
     """Generate a N2 plot from disciplines.
@@ -381,7 +381,7 @@ def get_available_disciplines():  # type: (...) -> List[str]
     >>> from gemseo.api import get_available_disciplines
     >>> print(get_available_disciplines())
     ['RosenMF', 'SobieskiAerodynamics', 'ScalableKriging', 'DOEScenario',
-    'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1',
+    'MDOScenario', 'SobieskiMission', 'SobieskiDiscipline', 'Sellar1',
     'Sellar2', 'MDOChain', 'SobieskiStructure', 'AutoPyDiscipline',
     'Structure', 'SobieskiPropulsion', 'Scenario', 'AnalyticDiscipline',
     'MDOScenarioAdapter', 'ScalableDiscipline', 'SellarSystem', 'Aerodynamics',

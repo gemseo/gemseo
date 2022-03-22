@@ -32,7 +32,7 @@ from gemseo.core.data_processor import (
     NameMapping,
 )
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 
 
 class TestDataProcessor(unittest.TestCase):

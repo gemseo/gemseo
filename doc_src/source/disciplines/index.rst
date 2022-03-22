@@ -110,7 +110,7 @@ which results in:
    - classes implementing scenario, a key concept in |g|: :class:`.Scenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
    - classes implementing MDO problem disciplines:
 
-       - Sobieski's SSBJ problem: :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiBaseWrapper`, :class:`~gemseo.problems.sobieski.wrappers.SobieskiStructure` and :class:`~gemseo.problems.sobieski.wrappers.SobieskiPropulsion`,
+       - Sobieski's SSBJ problem: :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`, :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`, :class:`~gemseo.problems.sobieski.disciplines.SobieskiBaseWrapper`, :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure` and :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
        - Sellar problem: :class:`.Sellar1`, :class:`.Sellar2` and :class:`.SellarSystem`,
        - Aerostructure problem: :class:`.Structure`, :class:`.Aerodynamics` and :class:`.Mission`,
        - Propane problem: :class:`.PropaneComb1`, :class:`.PropaneComb2`, :class:`.PropaneComb3` and :class:`.PropaneReaction`,

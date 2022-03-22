@@ -29,7 +29,7 @@ import pytest
 
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,

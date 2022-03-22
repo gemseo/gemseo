@@ -82,8 +82,8 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.py23_compat import Path
 
 
@@ -177,7 +177,7 @@ def test_create_scenario_and_monitor(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
 
     with pytest.raises(
@@ -187,7 +187,7 @@ def test_create_scenario_and_monitor(tmp_wd):
             create_discipline("SobieskiMission"),
             "DisciplinaryOpt",
             "y_4",
-            SobieskiProblem().read_design_space(),
+            SobieskiProblem().design_space,
             scenario_type="unknown",
         )
 
@@ -202,7 +202,7 @@ def test_monitor_scenario(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
 
     observer = Observer()
@@ -225,7 +225,7 @@ def test_execute_post(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
     )
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
@@ -246,7 +246,7 @@ def test_create_doe_scenario(tmp_wd):
         create_discipline("SobieskiMission"),
         "DisciplinaryOpt",
         "y_4",
-        SobieskiProblem().read_design_space(),
+        SobieskiProblem().design_space,
         scenario_type="DOE",
     )
 
@@ -281,7 +281,7 @@ def test_get_scenario_inputs_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     aero = create_discipline(["SobieskiAerodynamics"])
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     sc_aero = create_scenario(
         aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
     )
@@ -445,7 +445,7 @@ def test_create_surrogate(tmp_wd):
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
     disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
     doe.execute({"algo": "fullfact", "n_samples": 10})

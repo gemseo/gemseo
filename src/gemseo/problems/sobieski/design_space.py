@@ -15,32 +15,27 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""The design space of the Sobieski's SSBJ use case."""
 
 from __future__ import division, unicode_literals
 
-import unittest
+from gemseo.algos.design_space import DesignSpace
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
-from gemseo.problems.sobieski.chains import SobieskiChain, SobieskiMDAGaussSeidel
 
+def create_design_space(
+    dtype,  # type: str
+):  # type: (...) -> DesignSpace
+    """Create the design space for the Sobieski's SSBJ use case.
 
-class TestSobieskiChain(unittest.TestCase):
-    """"""
+    Args:
+        dtype: The data type for the NumPy arrays, either "float64" or "complex128".
 
-    def test_exec_chain(self):
-        """"""
-        chain = SobieskiChain()
-        chain.execute()
-
-    def test_exec_mda(self):
-        """"""
-        mda = SobieskiMDAGaussSeidel()
-        mda.execute()
-        self.assertAlmostEqual(
-            mda.get_outputs_by_name("y_4")[0],
-            # 535.78222086,
-            535.78213193,
-            4,
-        )
+    Returns:
+        The design space for the Sobieski's SSBJ use case.
+    """
+    return SobieskiProblem(dtype).design_space

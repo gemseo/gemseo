@@ -25,6 +25,27 @@
                 "type": "number"
             },
             "type": "array"
+        },
+        "c_0": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "minimum fuel weight"
+        },
+        "c_1": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "miscellaneous weight"
+        },
+        "c_2": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "maximum load factor"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

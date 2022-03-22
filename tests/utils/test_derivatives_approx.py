@@ -36,7 +36,7 @@ from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 from gemseo.utils.derivatives_approx import (
     ComplexStep,

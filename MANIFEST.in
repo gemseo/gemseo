@@ -5,6 +5,7 @@ include src/gemseo/post/*.json
 include src/gemseo/problems/*/*.json
 include src/gemseo/uncertainty/*/*.json
 include src/gemseo/problems/*/*_design_space.txt
+include src/gemseo/problems/*/*/*_design_space.txt
 include src/gemseo/*/*/LICENSE.txt
 include src/gemseo/problems/dataset/iris.data
 include src/gemseo/wrappers/icons/*.png

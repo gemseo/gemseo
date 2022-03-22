@@ -104,7 +104,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     # ]
     # )
     #
-    # design_space = SobieskiProblem().read_design_space()
+    # design_space = SobieskiProblem().design_space
     # scenario = create_scenario(
     # disciplines,
     # "MDF",

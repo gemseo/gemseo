@@ -58,7 +58,7 @@ from gemseo.api import (
     create_surrogate,
 )
 from gemseo.core.dataset import Dataset
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -122,7 +122,7 @@ discipline.set_cache_policy(cache_type=discipline.MEMORY_FULL_CACHE)
 # "x_shared", "y_24", "y_34"
 # as inputs of the DOE:
 #
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 
 ##############################################################################

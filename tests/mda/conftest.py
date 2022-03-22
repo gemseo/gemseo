@@ -24,7 +24,7 @@ import pytest
 
 from gemseo.api import create_discipline, create_scenario
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def generate_parallel_doe(
@@ -41,7 +41,7 @@ def generate_parallel_doe(
     Returns:
         The optimum solution of the parallel DOE scenario.
     """
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     scenario = create_scenario(
         create_discipline(
             [

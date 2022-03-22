@@ -26,7 +26,7 @@ import unittest
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiProblem,
@@ -75,7 +75,7 @@ class FormulationsBaseTest(unittest.TestCase):
             SobieskiAerodynamics(dtype),
             SobieskiMission(dtype),
         ]
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         return MDOScenario(
             disciplines,
             formulation=formulation,

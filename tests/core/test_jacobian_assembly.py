@@ -30,9 +30,9 @@ import pytest
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics, SobieskiMission
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics, SobieskiMission
+from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 DIRNAME = os.path.dirname(__file__)
 

@@ -30,7 +30,7 @@ from numpy import allclose, ones
 from gemseo.core.chain import MDOAdditiveChain, MDOChain, MDOParallelChain
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,

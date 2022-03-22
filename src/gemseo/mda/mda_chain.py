@@ -308,7 +308,7 @@ class MDAChain(MDA):
         n_iterations=None,  # type: Optional[int]
         logscale=None,  # type: Optional[Tuple[int,int]]
         filename=None,  # type: Optional[str]
-        figsize=(50, 10),  # type: Tuple[int,int]
+        figsize=(50.0, 10.0),  # type: Tuple[float,float]
     ):  # type: (...) -> None
         for sub_mda in self.sub_mda_list:
             if filename is not None:

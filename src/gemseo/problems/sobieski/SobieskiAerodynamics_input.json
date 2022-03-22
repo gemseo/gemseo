@@ -29,6 +29,13 @@
             },
             "type": "array",
             "description":" total aircraft weight, wing twist"
+        },
+        "c_4": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description":"minimum drag coefficient"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

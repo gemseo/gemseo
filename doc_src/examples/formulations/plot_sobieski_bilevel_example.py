@@ -30,7 +30,7 @@ from copy import deepcopy
 from matplotlib import pyplot as plt
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -38,10 +38,10 @@ configure_logger()
 # Instantiate the  disciplines
 # ----------------------------
 # First, we instantiate the four disciplines of the use case:
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiPropulsion`,
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics`,
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission`
-# and :class:`~gemseo.problems.sobieski.wrappers.SobieskiStructure`.
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiPropulsion`,
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics`,
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission`
+# and :class:`~gemseo.problems.sobieski.disciplines.SobieskiStructure`.
 propu, aero, mission, struct = create_discipline(
     [
         "SobieskiPropulsion",
@@ -60,7 +60,7 @@ propu, aero, mission, struct = create_discipline(
 # instead of minimizing y_4 (range), which is the default option.
 #
 # We need to define the design space.
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 
 ##############################################################################
 # Then, we build a sub-scenario for each strongly coupled disciplines,

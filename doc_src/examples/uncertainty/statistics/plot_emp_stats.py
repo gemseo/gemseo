@@ -36,7 +36,7 @@ based on the bounds of the design parameters.
 from __future__ import division, unicode_literals
 
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.uncertainty.api import create_statistics
 
 configure_logger()
@@ -48,7 +48,7 @@ configure_logger()
 # we create the dataset.
 # For that,
 # we instantiate
-# the discipline :class:`~gems.problems.sobieski.wrappers.SobieskiMission`
+# the discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`
 # of the Sobieski's SSBJ problem which is known to |g|.
 # We update the cache policy so as to cache all data in memory.
 discipline = create_discipline("SobieskiMission")
@@ -57,10 +57,10 @@ discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 ###############################################################################
 # Then,
 # we load the design space of the Sobieski's SSBJ problem
-# by means of the method :meth:`.SobieskiProblem.read_design_space`
+# by means of the property :meth:`.SobieskiProblem.design_space`
 # and :meth:`.DesignSpace.filter` the inputs of the
-# discipline :class:`~gems.problems.sobieski.wrappers.SobieskiMission`.
-parameter_space = SobieskiProblem().read_design_space()
+# discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`.
+parameter_space = SobieskiProblem().design_space
 parameter_space.filter(discipline.get_input_data_names())
 
 ###############################################################################

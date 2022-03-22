@@ -37,7 +37,7 @@ from matplotlib import pyplot as plt
 # The first step is to import some functions from the API
 # and a method to get the design space.
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -69,7 +69,7 @@ disciplines = create_discipline(
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 
 ###############################################################################
 # Create and execute scenario
