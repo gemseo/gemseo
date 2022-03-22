@@ -35,18 +35,18 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.problems.sobieski.wrappers_sg import (
+from gemseo.problems.sobieski._disciplines_sg import (
     SobieskiAerodynamicsSG,
     SobieskiMissionSG,
     SobieskiPropulsionSG,
     SobieskiStructureSG,
+)
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
+    SobieskiAerodynamics,
+    SobieskiMission,
+    SobieskiPropulsion,
+    SobieskiStructure,
 )
 
 
@@ -78,7 +78,7 @@ def build_mdo_scenario(
             SobieskiStructureSG(),
         ]
 
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
     scenario = MDOScenario(
         disciplines,
         formulation=formulation,
@@ -266,7 +266,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario):
 
 def test_typeerror_formulation():
     disciplines = [SobieskiPropulsion()]
-    design_space = SobieskiProblem().read_design_space()
+    design_space = SobieskiProblem().design_space
 
     expected_message = (
         "Formulation must be specified by its name; "

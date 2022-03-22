@@ -1,6 +1,6 @@
 {
     "name": "SobieskiPropulsion_input",
-    "required": [ "y_23","x_3","x_shared"],
+    "required": [ "y_23","x_3","x_shared","c_3"],
     "properties": {
         "y_23": {
             "items": {
@@ -19,6 +19,13 @@
                 "type": "number"
             },
             "type": "array"
+        },
+        "c_3": {
+            "items": {
+                "type": "number"
+            },
+            "type": "array",
+            "description": "engine weight reference"
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

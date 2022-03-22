@@ -32,7 +32,7 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalApproximation
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
-from gemseo.problems.sobieski.wrappers import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 
 HDF_CACHE_PATH = join(dirname(__file__), "dataset.hdf5")
 

@@ -21,7 +21,7 @@ from copy import deepcopy
 from typing import Callable, Dict
 
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiProblem,
@@ -54,7 +54,7 @@ def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
         struct = SobieskiStructure()
         mission = SobieskiMission()
 
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         sc_prop = MDOScenario(
             disciplines=[propulsion],
             formulation="DisciplinaryOpt",
@@ -89,7 +89,7 @@ def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
         for sc in sub_scenarios:
             sc.default_inputs = {"max_iter": 5, "algo": "SLSQP"}
 
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         sc_system = MDOScenario(
             sub_disciplines,
             formulation="BiLevel",

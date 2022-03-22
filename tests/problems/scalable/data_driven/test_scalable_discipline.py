@@ -34,8 +34,8 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
@@ -143,7 +143,12 @@ class ScalableProblem(unittest.TestCase):
             var_ub = {}
             ScalableProblem.scalable_disciplines = []
             for discipline in ScalableProblem.original_disciplines:
-                for input_name in discipline.get_input_data_names():
+                input_names = [
+                    name
+                    for name in discipline.get_input_data_names()
+                    if not name.startswith("c_")
+                ]
+                for input_name in input_names:
                     l_bnds, u_bnds = self.problem.get_bounds_by_name([input_name])
                     var_lb[input_name] = l_bnds
                     var_ub[input_name] = u_bnds

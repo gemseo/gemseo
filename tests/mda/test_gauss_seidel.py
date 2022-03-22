@@ -32,7 +32,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
-from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel
+from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.py23_compat import Path
 
 

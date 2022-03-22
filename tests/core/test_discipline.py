@@ -38,14 +38,14 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
     SobieskiStructure,
 )
-from gemseo.problems.sobieski.wrappers_sg import SobieskiStructureSG
 
 
 def check_jac_equals(
@@ -174,7 +174,7 @@ def test_outputs():
     indata = SobieskiProblem().get_default_inputs()
     struct.execute(indata)
     in_array = struct.get_inputs_asarray()
-    assert len(in_array) == 10
+    assert len(in_array) == 13
 
 
 def test_get_outputs_by_name_exception(sobieski_chain):

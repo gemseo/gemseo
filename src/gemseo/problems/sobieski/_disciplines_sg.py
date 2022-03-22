@@ -19,31 +19,42 @@
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-SSBJ Disciplines wrappers
-*************************
+"""The disciplines of the Sobieski's SSBJ use case with simple grammars.
+
+This disciplines use simple grammars rather than JSON ones mainly for proof of concept.
+Please use the JSON versions with enhanced checks and features.
 """
 from __future__ import division, unicode_literals
+
+from typing import Iterable, Optional
 
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.core import SobieskiProblem
-
-DTYPE_COMPLEX = "complex128"
-DTYPE_DOUBLE = "float64"
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 
-class SobieskiBaseWrapperSimpleGram(MDODiscipline):
-    """Base wrapper for Sobieski problem discipline wrappers and SimpleGrammar."""
+class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
+    """Abstract base discipline for the Sobieski's SSBJ use case with simple grammars.
 
-    def __init__(self, dtype=DTYPE_DOUBLE):
-        """Constructor.
+    Attributes:
+        dtype (str): The data type for the NumPy arrays.
+        init_values (dict[str, ndarray]): The initial values of the design variables.
+        sobieski_problem (SobieskiProblem): The Sobieski's SSBJ use case
+            defining the MDO problem,
+            e.g. disciplines, constraints, design space and reference optimum.
+    """
 
-        :param dtype: type of data, either "float64" or "complex128"
-        :type dtype: str
+    def __init__(
+        self,
+        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
+    ):  # type: (...) -> None
         """
-        super(SobieskiBaseWrapperSimpleGram, self).__init__(
+        Args:
+            dtype: The data type for the NumPy arrays, either "float64" or "complex128".
+        """
+        super(SobieskiDisciplineWithSimpleGrammar, self).__init__(
             auto_detect_grammar_files=False,
             grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
         )
@@ -51,29 +62,32 @@ class SobieskiBaseWrapperSimpleGram(MDODiscipline):
         self.init_values = {}
         self.dtype = dtype
 
-    def _set_default_inputs(self):
-        """Sets the default inputs from grammrs and SobieskiProblem."""
+    def _set_default_inputs(self):  # type: (...) -> None
+        """Set the default inputs from the grammars and the :class:`SobieskiProblem`."""
         self.default_inputs = self.sobieski_problem.get_default_inputs(
             self.get_input_data_names()
         )
 
-    def _run(self):
-        """Run the discipline."""
+    def _run(self):  # type: (...) -> None
         raise NotImplementedError()
 
 
-class SobieskiMissionSG(SobieskiBaseWrapperSimpleGram):
+class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
+    """Mission discipline of the Sobieski's SSBJ use case with a simple grammar.
 
-    """Sobieski range wrapper using Breguet formula Uses simple grammars and not JSON,
-    mainly for concept proof Please use JSON version with enhanced checks and
-    features."""
+    Compute the range with the Breguet formula.
 
-    def __init__(self, dtype=DTYPE_DOUBLE):
-        """Constructor of wrapper for weight computation.
+    Attributes:
+        enable_delay (Union[bool,float]): If ``True``,
+            wait one second before computation.
+            If a positive number, wait the corresponding number of seconds.
+            If ``False``, compute directly.
+    """
 
-        :param dtype: type of data, either "float64" or "complex128"
-        :type dtype: str
-        """
+    def __init__(
+        self,
+        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
+    ):  # type: (...) -> None
         super(SobieskiMissionSG, self).__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(("y_14", "y_24", "y_34", "x_shared"), ndarray)
@@ -81,32 +95,29 @@ class SobieskiMissionSG(SobieskiBaseWrapperSimpleGram):
         self.output_grammar.update_elements(y_4=ndarray)
         self._set_default_inputs()
 
-    def _run(self):
-        """Compute range."""
+    def _run(self):  # type: (...) -> None
         data_names = ["y_14", "y_24", "y_34", "x_shared"]
         y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        y_4 = self.sobieski_problem.blackbox_mission(x_shared, y_14, y_24, y_34)
+        y_4 = self.sobieski_problem.mission.execute(x_shared, y_14, y_24, y_34)
         self.store_local_data(y_4=y_4)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """Linearization of weight analysis.
-
-        :param inputs: Default value = None)
-        :param outputs: Default value = None)
-        """
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...)-> None
         data_names = ["y_14", "y_24", "y_34", "x_shared"]
         y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_mission(
-            x_shared, y_14, y_24, y_34
-        )
+        self.jac = self.sobieski_problem.mission.linearize(x_shared, y_14, y_24, y_34)
 
 
-class SobieskiStructureSG(SobieskiBaseWrapperSimpleGram):
-    """Sobieski mass estimation wrapper Uses simple grammars and not JSON, mainly for
-    concept proof Please use JSON version with enhanced checks and features."""
+class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
+    """Structure discipline of the Sobieski's SSBJ use case with a simple grammar."""
 
-    def __init__(self, dtype=DTYPE_DOUBLE):
-        """Constructor of wrapper for weight computation."""
+    def __init__(
+        self,
+        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
+    ):  # type: (...) -> None
         super(SobieskiStructureSG, self).__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_1", "y_21", "y_31", "x_shared"], ndarray)
@@ -116,39 +127,31 @@ class SobieskiStructureSG(SobieskiBaseWrapperSimpleGram):
         )
         self._set_default_inputs()
 
-    def _run(self):
-        """Compute weight."""
+    def _run(self):  # type: (...) -> None
         data_names = ["x_shared", "y_21", "y_31", "x_1"]
         x_shared, y_21, y_31, x_1 = self.get_inputs_by_name(data_names)
-        y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.blackbox_structure(
+        y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
             x_shared, y_21, y_31, x_1
         )
         self.store_local_data(y_1=y_1, y_11=y_11, y_12=y_12, y_14=y_14, g_1=g_1)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """Linearization of weight analysis.
-
-        :param inputs: Default value = None)
-        :param outputs: Default value = None)
-        """
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...)-> None
         data_names = ["x_shared", "y_21", "y_31", "x_1"]
         x_shared, y_21, y_31, x_1 = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_structure(
-            x_shared, y_21, y_31, x_1
-        )
+        self.jac = self.sobieski_problem.structure.linearize(x_shared, y_21, y_31, x_1)
 
 
-class SobieskiAerodynamicsSG(SobieskiBaseWrapperSimpleGram):
+class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
+    """Aerodynamics discipline for the Sobieski's SSBJ use case with simple grammar."""
 
-    """Sobieski aerodynamic discipline wrapper Uses simple grammars and not JSON, mainly
-    for concept proof Please use JSON version with enhanced checks and features."""
-
-    def __init__(self, dtype=DTYPE_DOUBLE):
-        """Constructor of wrapper for aerodynamic computation.
-
-        :param dtype: type of data, either "float64" or "complex128"
-        :type dtype: str
-        """
+    def __init__(
+        self,
+        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
+    ):  # type: (...) -> None
         super(SobieskiAerodynamicsSG, self).__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_2", "y_12", "y_32", "x_shared"], ndarray)
@@ -158,38 +161,33 @@ class SobieskiAerodynamicsSG(SobieskiBaseWrapperSimpleGram):
         )
         self._set_default_inputs()
 
-    def _run(self):
-        """Compute aerodynamics."""
+    def _run(self):  # type: (...)-> None
         data_names = ["x_2", "y_12", "y_32", "x_shared"]
         x_2, y_12, y_32, x_shared = self.get_inputs_by_name(data_names)
-        y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.blackbox_aerodynamics(
+        y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
             x_shared, y_12, y_32, x_2
         )
         self.store_local_data(y_2=y_2, y_21=y_21, y_23=y_23, y_24=y_24, g_2=g_2)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """Compute the partial derivatives of all outputs wrt all inputs.
-
-        :param inputs: Default value = None)
-        :param outputs: Default value = None)
-        """
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...)-> None
         data_names = ["x_2", "y_12", "y_32", "x_shared"]
         x_2, y_12, y_32, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_aerodynamics(
+        self.jac = self.sobieski_problem.aerodynamics.linearize(
             x_shared, y_12, y_32, x_2
         )
 
 
-class SobieskiPropulsionSG(SobieskiBaseWrapperSimpleGram):
-    """Sobieski propulsion discipline wrapper Uses simple grammars and not JSON, mainly
-    for concept proof Please use JSON version with enhanced checks and features."""
+class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
+    """Propulsion discipline of the Sobieski's SSBJ use case."""
 
-    def __init__(self, dtype=DTYPE_DOUBLE):
-        """Constructor of wrapper for propulsion computation.
-
-        :param dtype: type of data, either "float64" or "complex128"
-        :type dtype: str
-        """
+    def __init__(
+        self,
+        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
+    ):  # type: (...) -> None
         super(SobieskiPropulsionSG, self).__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_3", "y_23", "x_shared"], ndarray)
@@ -199,21 +197,19 @@ class SobieskiPropulsionSG(SobieskiBaseWrapperSimpleGram):
         )
         self._set_default_inputs()
 
-    def _run(self):
-        """Compute propulsion."""
+    def _run(self):  # type: (...) -> None
         data_names = ["x_3", "y_23", "x_shared"]
         x_3, y_23, x_shared = self.get_inputs_by_name(data_names)
-        y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.blackbox_propulsion(
+        y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(
             x_shared, y_23, x_3
         )
         self.store_local_data(y_3=y_3, y_34=y_34, y_31=y_31, y_32=y_32, g_3=g_3)
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """Compute the partial derivatives of all outputs wrt all inputs.
-
-        :param inputs: Default value = None)
-        :param outputs: Default value = None)
-        """
+    def _compute_jacobian(
+        self,
+        inputs=None,  # type: Optional[Iterable[str]]
+        outputs=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...)-> None
         data_names = ["x_3", "y_23", "x_shared"]
         x_3, y_23, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_propulsion(x_shared, y_23, x_3)
+        self.jac = self.sobieski_problem.propulsion.linearize(x_shared, y_23, x_3)

@@ -29,7 +29,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import create_design_space, create_discipline, create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.sobieski.wrappers import SobieskiProblem, SobieskiStructure
+from gemseo.problems.sobieski.disciplines import SobieskiProblem, SobieskiStructure
 from gemseo.utils.py23_compat import PY2, Path
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -89,8 +89,8 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
             with matplotlib pyplot.
     """
     disc = SobieskiStructure()
-    design_space = SobieskiProblem().read_design_space()
-    inputs = disc.get_input_data_names()
+    design_space = SobieskiProblem().design_space
+    inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
     doe_scenario.execute(

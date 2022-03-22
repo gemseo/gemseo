@@ -40,7 +40,7 @@ from matplotlib import pyplot as plt
 from gemseo.api import configure_logger, create_discipline, create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -63,7 +63,7 @@ disciplines = create_discipline(
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 
 ###############################################################################
 # Create and execute scenario

@@ -26,7 +26,7 @@ import unittest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiMission,
     SobieskiProblem,
     SobieskiStructure,
@@ -38,7 +38,7 @@ class TestDisciplinaryOpt(unittest.TestCase):
 
     def test_multiple_disc(self):
         """"""
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         dopt = DisciplinaryOpt([SobieskiStructure(), SobieskiMission()], "y_4", ds)
         dopt.get_expected_dataflow()
         dopt.get_expected_workflow()
@@ -46,7 +46,7 @@ class TestDisciplinaryOpt(unittest.TestCase):
     def test_init(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         dopt = DisciplinaryOpt([sm], "y_4", ds)
         assert dopt.get_expected_dataflow() == []
         assert dopt.get_expected_workflow().sequence_list[0].discipline == sm

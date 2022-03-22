@@ -35,7 +35,7 @@ from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,

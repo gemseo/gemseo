@@ -29,7 +29,8 @@ import numpy as np
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.sequential_mda import GSNewtonMDA
-from gemseo.problems.sobieski.chains import SobieskiMDAGaussSeidel, SobieskiMDAJacobi
+from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 DIRNAME = os.path.dirname(__file__)
 

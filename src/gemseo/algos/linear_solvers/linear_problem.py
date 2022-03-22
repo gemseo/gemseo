@@ -148,7 +148,7 @@ class LinearProblem(object):
                 " Use the 'store_residuals' option for the solver."
             )
 
-        fig = plt.figure(figsize=(11, 6))
+        fig = plt.figure(figsize=(11.0, 6.0))
         plt.plot(self.residuals_history, color="black", lw=2)
         ax1 = fig.gca()
         ax1.set_yscale("log")

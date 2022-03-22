@@ -238,12 +238,12 @@ which is error-prone.
 
 From the previous JSON grammar of the Sobieski Mission discipline,
 we can illustrate the interest of the data check.
-The :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission` will check any data passed to its  :meth:`.MDODiscipline.execute` method before
+The :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission` will check any data passed to its  :meth:`.MDODiscipline.execute` method before
 calling :meth:`!MDODiscipline._run`.
 
 .. code-block:: python
 
-    from gemseo.problems.sobieski.wrappers import SobieskiMission
+    from gemseo.problems.sobieski.disciplines import SobieskiMission
     misssion = SobieskiMission()
     misssion.execute(input_data={"y_14": [1.0, "a"]})
 
@@ -260,12 +260,12 @@ as well as the rules.
     ERROR - 15:15:19 : JSON Grammar schema = {u'name': u'SobieskiMission_input', 'required': [u'x_shared', u'y_14', u'y_24', u'y_34'], u'id': u'#SobieskiMission_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_24': {'items': {'type': u'number'}, 'type': u'array'}, u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'y_14': {'items': {'type': u'number'}, 'type': u'array'}}}
 
 The existence of required inputs is also checked before running.
-The wrapper :class:`~gemseo.problems.sobieski.wrappers.SobieskiMission` has :attr:`!MDODiscipline.default_inputs` set for all its inputs, so
+The wrapper :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission` has :attr:`!MDODiscipline.default_inputs` set for all its inputs, so
 we need first to erase them to show that.
 
 .. code-block:: python
 
-    from gemseo.problems.sobieski.wrappers import SobieskiMission
+    from gemseo.problems.sobieski.disciplines import SobieskiMission
     misssion = SobieskiMission()
     misssion.default_inputs = {}
     misssion.execute(input_data={"y_14": [2.0, "a"]})

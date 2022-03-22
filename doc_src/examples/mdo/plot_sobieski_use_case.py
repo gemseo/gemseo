@@ -72,7 +72,7 @@ from gemseo.api import (
 )
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -119,7 +119,7 @@ disciplines = create_discipline(
 #   :meth:`~gemseo.api.create_design_space` and
 #   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
 #   we will create it directly from the API.
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 ##############################################################################
 #     .. code::
 #

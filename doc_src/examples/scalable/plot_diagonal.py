@@ -25,7 +25,7 @@ Scalable diagonal discipline
 ============================
 
 Let us consider the
-:class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline.
+:class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline.
 We want to build its :class:`.ScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 
@@ -46,7 +46,7 @@ from gemseo.api import (
     create_scalable,
     create_scenario,
 )
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -61,7 +61,7 @@ configure_logger()
 # Instantiate the discipline
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For that, we instantiate the
-# :class:`~gemseo.problems.sobieski.wrappers.SobieskiAerodynamics` discipline
+# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -70,7 +70,7 @@ discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 # Get the input space
 # ~~~~~~~~~~~~~~~~~~~
 # We also define the input space on which to sample the discipline.
-input_space = SobieskiProblem().read_design_space()
+input_space = SobieskiProblem().design_space
 input_space.filter(discipline.get_input_data_names())
 
 ###############################################################################

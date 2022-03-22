@@ -275,8 +275,8 @@ class DisciplineJacApprox(object):
         plot_result=False,  # type: bool
         file_path="jacobian_errors.pdf",  # type: Union[str,Path]
         show=False,  # type: bool
-        figsize_x=10.0,  # type: float
-        figsize_y=10.0,  # type: float
+        figsize_x=10,  # type: int
+        figsize_y=10,  # type: int
         reference_jacobian_path=None,  # type: Optional[Union[str,Path]]
         save_reference_jacobian=False,  # type: bool
         indices=None,  # type: Optional[Union[int,Sequence[int],slice,Ellipsis]]
@@ -503,7 +503,7 @@ class DisciplineJacApprox(object):
             computed_grad = []
 
             if in_names is None:
-                in_names = list(iter(computed_jac[out_data].keys()))
+                in_names = list(approx_jac[out_data].keys())
                 x_names = [
                     inp + "_" + str(i + 1)
                     for inp in in_names
@@ -532,8 +532,8 @@ class DisciplineJacApprox(object):
         approx_jac,  # type: ndarray
         file_path="jacobian_errors.pdf",  # type: Union[str,Path]
         show=False,  # type: bool
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
+        figsize_x=10,  # type: float
+        figsize_y=10,  # type: float
     ):  # type: (...) -> Figure
         """Generate a plot of the exact vs approximated Jacobian.
 

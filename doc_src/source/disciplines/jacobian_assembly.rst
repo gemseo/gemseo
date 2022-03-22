@@ -166,7 +166,7 @@ against finite differences or complex step method, by means of the method :meth:
 
 .. code::
 
-    from gemseo.problems.sobieski.wrappers import SobieskiMission
+    from gemseo.problems.sobieski.disciplines import SobieskiMission
     from gemseo.problems.sobieski.core import SobieskiProblem
 
     problem = SobieskiProblem("complex128")

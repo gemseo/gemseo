@@ -39,7 +39,7 @@ from gemseo.problems.sellar.sellar import (
     Sellar2,
     SellarSystem,
 )
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,

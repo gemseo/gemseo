@@ -32,7 +32,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace, DesignVariable, DesignVariableType
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.third_party.prettytable.prettytable import PY2
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString

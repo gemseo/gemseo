@@ -141,8 +141,8 @@ class ScatterMatrix(DatasetPlot):
         diagonal,  # type: str
         size,  # type: int
         marker,  # type: str
-        figsize_x,  # type: int
-        figsize_y,  # type: int
+        figsize_x,  # type: float
+        figsize_y,  # type: float
     ):  # type: (...) -> None
         """Scatter matrix plot for group.
 
@@ -176,8 +176,8 @@ class ScatterMatrix(DatasetPlot):
         diagonal,  # type: str
         size,  # type: int
         marker,  # type: str
-        figsize_x,  # type: int
-        figsize_y,  # type: int
+        figsize_x,  # type: float
+        figsize_y,  # type: float
     ):  # type: (...) -> None
         """Scatter matrix plot for group.
 

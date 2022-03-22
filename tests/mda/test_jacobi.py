@@ -30,7 +30,7 @@ from numpy import array, isclose
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.chains import SobieskiMDAJacobi
+from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 from .test_gauss_seidel import SelfCoupledDisc
 

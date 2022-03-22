@@ -151,12 +151,12 @@ class DatasetPlot(object):
         self.__colormap = value
 
     @property
-    def figsize(self):  # type: (...) -> Tuple[int,int]
+    def figsize(self):  # type: (...) -> Tuple[float,float]
         """The figure size."""
         return self.__figsize
 
     @property
-    def figsize_x(self):  # type: (...) -> int
+    def figsize_x(self):  # type: (...) -> float
         """The x-component of figure size."""
         return self.__figsize[0]
 
@@ -165,7 +165,7 @@ class DatasetPlot(object):
         self.__figsize = (value, self.figsize_y)
 
     @property
-    def figsize_y(self):  # type: (...) -> int
+    def figsize_y(self):  # type: (...) -> float
         """The y-component of figure size."""
         return self.__figsize[1]
 

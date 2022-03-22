@@ -43,7 +43,7 @@ from gemseo.core.mdofunctions.mdo_function import (
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     update_dict_of_arrays_from_array,

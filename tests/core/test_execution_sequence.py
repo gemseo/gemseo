@@ -35,8 +35,8 @@ from gemseo.core.execution_sequence import (
 )
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import (
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import (
     SobieskiAerodynamics,
     SobieskiMission,
     SobieskiPropulsion,
@@ -215,7 +215,7 @@ class TestExecSequence(unittest.TestCase):
 
     def test_sub_scenario(self):
         d1 = SobieskiPropulsion()
-        design_space = SobieskiProblem().read_design_space()
+        design_space = SobieskiProblem().design_space
         sc_prop = MDOScenario(
             disciplines=[d1],
             formulation="DisciplinaryOpt",

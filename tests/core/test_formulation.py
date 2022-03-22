@@ -31,8 +31,8 @@ from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sobieski.core import SobieskiProblem
-from gemseo.problems.sobieski.wrappers import SobieskiMission
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 
@@ -42,7 +42,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_generator(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "y_4", ds)
         args = ["toto"]
         self.assertRaises(Exception, f._get_generator_with_inputs, *args)
@@ -52,7 +52,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_cstrs(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "y_4", ds)
         prob = f.opt_problem
         assert not prob.has_constraints()
@@ -104,9 +104,7 @@ class TestMDOFormulation(unittest.TestCase):
 
     def test_get_x0(self):
         """"""
-        _ = MDOFormulation(
-            [SobieskiMission()], "y_4", SobieskiProblem().read_design_space()
-        )
+        _ = MDOFormulation([SobieskiMission()], "y_4", SobieskiProblem().design_space)
 
     def test_add_user_defined_constraint_error(self):
         """Check that an error is raised when adding a constraint with wrong type."""
@@ -232,7 +230,7 @@ class TestMDOFormulation(unittest.TestCase):
     def test_get_expected_workflow(self):
         """"""
         sm = SobieskiMission()
-        ds = SobieskiProblem().read_design_space()
+        ds = SobieskiProblem().design_space
         f = MDOFormulation([sm], "Y5", ds)
         self.assertRaises(Exception, f.get_expected_workflow)
 

@@ -801,7 +801,7 @@ class JacobianAssembly(object):
 
         # plot the (sparse) matrix
 
-        fig = plt.figure(figsize=(6, 10))
+        fig = plt.figure(figsize=(6.0, 10.0))
         ax1 = fig.add_subplot(111)
         plt.spy(total_jac, markersize=markersize)
         ax1.set_aspect("auto")

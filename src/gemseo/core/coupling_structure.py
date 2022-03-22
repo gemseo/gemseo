@@ -330,7 +330,7 @@ class MDOCouplingStructure(object):
         show_data_names=True,  # type:bool
         save=True,  # type:bool
         show=False,  # type: bool
-        figsize=(15, 10),  # type: Tuple[int]
+        figsize=(15.0, 10.0),  # type: Tuple[float,float]
         open_browser=False,  # type:bool
     ):  # type: (...) -> None
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.

@@ -37,7 +37,7 @@ from matplotlib import pyplot as plt
 # The first step is to import some functions from the API
 # and a method to get the design space.
 from gemseo.api import configure_logger, create_discipline, create_scenario
-from gemseo.problems.sobieski.core import SobieskiProblem
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 
@@ -49,8 +49,8 @@ configure_logger()
 # influence analysis.
 #
 # The method computes :math:`\frac{d f}{d x_i} \cdot \left(x_{i_*} -
-# x_{i_0}\right)`,
-# where :math:`x_{i_0}` is the initial value of the variable
+# x_{initial_design}\right)`,
+# where :math:`x_{initial_design}` is the initial value of the variable
 # and :math:`x_{i_*}` is the optimal value of the variable.
 
 ###############################################################################
@@ -71,7 +71,7 @@ disciplines = create_discipline(
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
-design_space = SobieskiProblem().read_design_space()
+design_space = SobieskiProblem().design_space
 
 ###############################################################################
 # Create and execute scenario
