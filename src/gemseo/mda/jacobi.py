@@ -125,7 +125,10 @@ class MDAJacobi(MDA):
         self._g_x_n = []
         self.sizes = None
         self.parallel_execution = DiscParallelExecution(
-            disciplines, n_processes, use_threading
+            disciplines,
+            n_processes,
+            use_threading,
+            exceptions_to_re_raise=(ValueError,),
         )
 
     def _compute_input_couplings(self):  # type: (...) -> None

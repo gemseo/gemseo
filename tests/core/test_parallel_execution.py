@@ -295,3 +295,39 @@ def test_par_discipline_lin_no_jac():
     parallel_execution.execute(input_list)
 
     assert sellar_par_lin.n_calls_linearize == 0
+
+
+def f(x: float = 0.0) -> float:
+    """A function that raises an exception on certain conditions."""
+    if x == 0:
+        raise ValueError("Undefined")
+    y = x + 1
+    return y
+
+
+@pytest.mark.parametrize(
+    "exceptions,raises_exception",
+    [(None, False), ((ValueError,), True), ((RuntimeError,), False)],
+)
+def test_re_raise_exceptions(exceptions, raises_exception):
+    """Test that exceptions inside workers are properly handled.
+
+    Args:
+        exceptions: The exceptions that should not be ignored.
+        raises_exception: Whether the input exception matches the one in the
+            reference function.
+    """
+    parallel_execution = ParallelExecution(
+        [f],
+        n_processes=2,
+        exceptions_to_re_raise=exceptions,
+        wait_time_between_fork=0.1,
+    )
+
+    input_list = [array([1.0]), array([0.0])]
+
+    if raises_exception:
+        with pytest.raises(ValueError, match="Undefined"):
+            parallel_execution.execute(input_list)
+    else:
+        assert parallel_execution.execute(input_list) == [array([2.0]), None]
