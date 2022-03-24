@@ -16,18 +16,19 @@
 
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
-#      :author: Francois Gallard
+#      :author: Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 from __future__ import unicode_literals
 
 import pytest
-from numpy import array
+from numpy import array, ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline, create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.sobieski._disciplines_sg import (
     SobieskiAerodynamicsSG,
     SobieskiMissionSG,
@@ -181,3 +182,70 @@ def test_warning_when_missing_option(caplog):
     expected_log = "Driver CustomDOE has no option {}, option is ignored."
     assert expected_log.format("n_samples") not in caplog.text
     assert expected_log.format("unknown_option") in caplog.text
+
+
+def f_sellar_1(x_local: float, y_2: float, x_shared: ndarray) -> float:
+    """Function for discipline 1."""
+    if x_local == 0.0:
+        raise ValueError("Undefined")
+
+    y_1 = (x_shared[0] ** 2 + x_shared[1] + x_local - 0.2 * y_2) ** 0.5
+    return y_1
+
+
+@pytest.mark.parametrize("use_threading", [True, False])
+def test_exception_mda_jacobi(caplog, use_threading):
+    """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
+
+    Args:
+        caplog: Fixture to access and control log capturing.
+        use_threading: Whether to use threading in the MDAJacobi.
+    """
+    sellar1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
+    sellar2 = create_discipline("Sellar2")
+    sellarsystem = create_discipline("SellarSystem")
+    disciplines = [sellar1, sellar2, sellarsystem]
+
+    scenario = DOEScenario(
+        disciplines,
+        "MDF",
+        "obj",
+        main_mda_class="MDAChain",
+        sub_mda_class="MDAJacobi",
+        use_threading=use_threading,
+        n_processes=2,
+        design_space=SellarDesignSpace("float64"),
+    )
+    scenario.execute(
+        {
+            "algo": "CustomDOE",
+            "algo_options": {"samples": array([[0.0, -10.0, 0.0]])},
+        }
+    )
+
+    assert sellarsystem.n_calls == 0
+    assert "Undefined" in caplog.text
+
+
+def test_other_exceptions_caught(caplog):
+    """Check that exceptions that are not ValueErrors are not re-raised.
+
+    Args:
+        caplog: Fixture to access and control log capturing.
+    """
+    discipline = AnalyticDiscipline({"y": "1/x"}, name="func")
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    scenario = DOEScenario(
+        [discipline], "MDF", "y", design_space, main_mda_class="MDAJacobi"
+    )
+    with pytest.raises(Exception):
+        scenario.execute(
+            {
+                "algo": "CustomDOE",
+                "algo_options": {
+                    "samples": array([[0.0]]),
+                },
+            }
+        )
+    assert "0.0 cannot be raised to a negative power" in caplog.text

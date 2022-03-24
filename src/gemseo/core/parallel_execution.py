@@ -16,7 +16,7 @@
 
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret, Francois Gallard
+#        :author: Charlie Vanaret, Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parallel execution of disciplines and functions using multiprocessing."""
 from __future__ import division, unicode_literals
@@ -30,7 +30,7 @@ import threading as th
 import time
 import traceback
 from collections import Iterable
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Type, Union
 
 from numpy import ndarray
 
@@ -84,6 +84,7 @@ class ParallelExecution(object):
         n_processes=N_CPUS,  # type: int
         use_threading=False,  # type: bool
         wait_time_between_fork=0.0,  # type: float
+        exceptions_to_re_raise=None,  # type: Optional[Tuple[Type[Exception]]]
     ):  # type: (...) -> None
         """
         Args:
@@ -101,6 +102,9 @@ class ParallelExecution(object):
                 multiprocessing.
             wait_time_between_fork: The time to wait between two forks of the
                 process/Thread.
+            exceptions_to_re_raise: The exceptions that should be raised again
+                when caught inside a worker. If None, all exceptions coming from
+                workers are caught and the execution is allowed to continue.
 
         Raises:
             ValueError: If there are duplicated workers in `worker_list` when
@@ -109,6 +113,10 @@ class ParallelExecution(object):
         self.worker_list = worker_list
         self.n_processes = n_processes
         self.use_threading = use_threading
+        if exceptions_to_re_raise is None:
+            self.__exceptions_to_re_raise = ()
+        else:
+            self.__exceptions_to_re_raise = exceptions_to_re_raise
 
         if use_threading:
             ids = set(id(worker) for worker in worker_list)
@@ -236,11 +244,16 @@ class ParallelExecution(object):
             got_n_outs = 0
             # Retrieve outputs on the fly to call the callbacks, typically
             # iterates progress bar and stores the data in database or cache
-            while got_n_outs != n_tasks:
+            stop = False
+            while got_n_outs != n_tasks and not stop:
                 index, output = queue_out.get()
                 if isinstance(output, Exception):
                     LOGGER.error("Failed to execute task indexed %s", str(index))
                     LOGGER.error(output)
+                    # Condition to stop the execution only for required exceptions.
+                    # Otherwise, keep getting outputs from the queue.
+                    if isinstance(output, self.__exceptions_to_re_raise):
+                        stop = True
                 else:
                     ordered_outputs[index] = output
                     # Call the callback function
@@ -248,7 +261,7 @@ class ParallelExecution(object):
                         exec_callback(index, output)
                 got_n_outs += 1
 
-            # Tells threads and processes to terminate
+            # Tell threads and processes to terminate
             for _ in processes:
                 queue_in.put(None)
 
@@ -256,10 +269,14 @@ class ParallelExecution(object):
             for proc in processes:
                 proc.join()
 
-            # Update self.workers objects
+            # Check for exceptions and eventually raise them if required.
+            if isinstance(output, self.__exceptions_to_re_raise):
+                raise output
+
+            # Update self.workers objects.
             self._update_local_objects(ordered_outputs)
 
-            # Filters outputs, eventually
+            # Filter outputs, eventually.
             return self._filter_ordered_outputs(ordered_outputs)
 
     @staticmethod
