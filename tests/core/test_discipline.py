@@ -14,14 +14,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import os
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Damien Guenot
 #                 Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Tuple
@@ -843,19 +842,25 @@ def test_grammar_inheritance():
 
 
 @pytest.mark.parametrize(
-    "grammar_directory,in_or_out,expected",
+    "grammar_directory,comp_dir,in_or_out,expected",
     [
         (
+            None,
             None,
             "in",
             Path(sys.modules[Sellar1.__module__].__file__).parent.absolute()
             / "foo_input.json",
         ),
-        ("foo", "out", Path("foo") / "foo_output.json"),
+        (None, "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
+        ("class_gd", None, "out", Path("class_gd") / "foo_output.json"),
+        ("class_gd", "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
     ],
 )
-def test_get_grammar_file_path(grammar_directory, in_or_out, expected):
+def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected):
     """Check the grammar file path."""
+    original_grammar_directory = Sellar1.GRAMMAR_DIRECTORY
+    Sellar1.GRAMMAR_DIRECTORY = grammar_directory
     get_grammar_file_path = MDODiscipline._MDODiscipline__get_grammar_file_path
-    path = get_grammar_file_path(Sellar1, grammar_directory, in_or_out, "foo")
+    path = get_grammar_file_path(Sellar1, comp_dir, in_or_out, "foo")
     assert path == expected
+    Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory

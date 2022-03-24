@@ -36,6 +36,7 @@ from timeit import default_timer as timer
 from typing import (
     TYPE_CHECKING,
     Any,
+    ClassVar,
     Dict,
     Generator,
     Iterable,
@@ -89,19 +90,26 @@ def default_dict_factory():  # type: (...) -> Dict
 class MDODiscipline(object):
     """A software integrated in the workflow.
 
-    The inputs and outputs are defined in a grammar, which can be
-    either a SimpleGrammar or a JSONGrammar, or your own which
-    derives from the Grammar abstract class.
+    To be used,
+    subclass :class:`.MDODiscipline`
+    and implement the :meth:`._run` method which defines the execution of the software.
+    Typically,
+    :meth:`._run` gets the input data stored in the :attr:`.local_data`,
+    passes them to the callable computing the output data, e.g. a software,
+    and stores these output data in the :attr:`.local_data`.
 
-    To be used, use a subclass and implement the _run method
-    which defined the execution of the software.
-    Typically, in the _run method, get the inputs from the
-    input grammar, call your software, and write the outputs
-    to the output grammar.
+    Then,
+    the end-user calls the :meth:`.execute` method
+    with optional ``input_data``;
+    if not,
+    :attr:`.default_inputs` are used.
 
-    The JSONGrammar files are automatically detected when in the same
-    folder as your subclass module and named "CLASSNAME_input.json"
-    use ``auto_detect_grammar_files=True`` to activate this option.
+    This :meth:`.execute` method uses name grammars
+    to check the variable names and types of
+    both the passed input data before calling :meth:`.run`
+    and the returned output data before they are stored in the :attr:`.cache`.
+    A grammar can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar`,
+    or your own which derives from :class:`.AbstractGrammar`.
 
     Attributes:
         input_grammar (AbstractGrammar): The input grammar.
@@ -128,6 +136,9 @@ class MDODiscipline(object):
     __DEPRECATED_GRAMMAR_TYPES = {"JSON": "JSONGrammar", "Simple": "SimpleGrammar"}
     JSON_GRAMMAR_TYPE = "JSONGrammar"
     SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
+
+    GRAMMAR_DIRECTORY: ClassVar[str | None] = None
+    """The directory in which to search for the grammar files if not the class one."""
 
     COMPLEX_STEP = "complex_step"
     FINITE_DIFFERENCES = "finite_differences"
@@ -195,23 +206,25 @@ class MDODiscipline(object):
             name: The name of the discipline.
                 If None, use the class name.
             input_grammar_file: The input grammar file path.
-                If None and ``auto_detect_grammar_files=True``,
-                use the file naming convention ``name + "_input.json"``
-                and look for it in the directory containing the discipline source file
-                If None and ``auto_detect_grammar_files=False``,
+                If ``None`` and ``auto_detect_grammar_files=True``,
+                look for ``"ClassName_input.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module.
+                If ``None`` and ``auto_detect_grammar_files=False``,
                 do not initialize the input grammar from a schema file.
             output_grammar_file: The output grammar file path.
-                If None and ``auto_detect_grammar_files=True``,
-                use the file naming convention ``name + "_output.json"``
-                and look for it in the directory containing the discipline source file
-                If None and ``auto_detect_grammar_files=False``,
+                If ``None`` and ``auto_detect_grammar_files=True``,
+                look for ``"ClassName_output.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module.
+                If ``None`` and ``auto_detect_grammar_files=False``,
                 do not initialize the output grammar from a schema file.
-            auto_detect_grammar_files: Whether to use the naming convention
-                when ``input_grammar_file`` and ``output_grammar_file`` are None.
-                If so,
-                search for these file names in the directory
-                containing the discipline source file.
-            grammar_type: The type of grammar to use for inputs and outputs declaration,
+            auto_detect_grammar_files: Whether to
+                look for ``"ClassName_{input,output}.json"``
+                in the :attr:`.GRAMMAR_DIRECTORY` if any
+                or in the directory of the discipline class module
+                when ``{input,output}_grammar_file`` is ``None``.
+            grammar_type: The type of grammar to define the input and output variables,
                 e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
@@ -394,9 +407,10 @@ class MDODiscipline(object):
             name: The name to be searched in the file names.
                 If ``None``,
                 use the name of the discipline class.
-            comp_dir: The directory in which to search for the grammar file.
-                If ``None``,
-                use the directory containing the module of the class.
+            comp_dir: The directory in which to search the grammar file.
+                If None,
+                use the :attr:`.GRAMMAR_DIRECTORY` if any,
+                or the directory of the discipline class module.
 
         Returns:
             The grammar file path.
@@ -434,12 +448,17 @@ class MDODiscipline(object):
         Returns:
             The grammar file path.
         """
-        if comp_dir is None:
-            comp_dir = Path(sys.modules[cls.__module__].__file__).parent.absolute()
-        else:
-            comp_dir = Path(comp_dir)
+        grammar_directory = comp_dir
+        if grammar_directory is None:
+            grammar_directory = cls.GRAMMAR_DIRECTORY
 
-        return comp_dir / f"{name}_{in_or_out}put.json"
+        if grammar_directory is None:
+            class_module = sys.modules[cls.__module__]
+            grammar_directory = Path(class_module.__file__).parent.absolute()
+        else:
+            grammar_directory = Path(grammar_directory)
+
+        return grammar_directory / f"{name}_{in_or_out}put.json"
 
     def add_differentiated_inputs(
         self,
