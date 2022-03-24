@@ -1078,6 +1078,17 @@ def test_reset_functions(rosenbrock_lhs):
     assert problem.objective.n_calls == 3
 
 
+def test_reset_wo_current_value():
+    """Check OptimizationProblem.reset when the default design value is missing."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "obj")
+    problem.design_space.set_current_x({"x": array([0.0])})
+    problem.reset()
+    assert problem.design_space.get_current_x_dict() == {}
+
+
 def test_reset_preprocess(rosenbrock_lhs):
     """Check OptimizationProblem.reset without functions pre-processing reset."""
     problem, start_point = rosenbrock_lhs

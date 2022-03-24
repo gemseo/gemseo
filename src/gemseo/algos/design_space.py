@@ -1355,7 +1355,8 @@ class DesignSpace(collections.MutableMapping):
                     value = value.astype(self.__TYPES_TO_DTYPES[variable_type])
                 self._current_x[name] = value
 
-        self._check_current_x()
+        if self._current_x:
+            self._check_current_x()
 
     def set_current_variable(
         self,
