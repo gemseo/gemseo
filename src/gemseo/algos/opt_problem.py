@@ -2110,7 +2110,8 @@ class OptimizationProblem(object):
             current_iter: Whether to reset the current iteration
                 :attr:`.OptimizationProblem.current_iter`.
             design_space: Whether to reset the current point
-                of the :attr:`.OptimizationProblem.design_space`.
+                of the :attr:`.OptimizationProblem.design_space`
+                to its initial value (possibly none).
             function_calls: Whether to reset the number of calls of the functions.
             preprocessing: Whether to turn the pre-processing of functions to False.
         """
