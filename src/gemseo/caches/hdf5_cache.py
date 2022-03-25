@@ -237,7 +237,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     INPUTS_GROUP = AbstractCache.INPUTS_GROUP
     OUTPUTS_GROUP = AbstractCache.OUTPUTS_GROUP
     JACOBIAN_GROUP = AbstractCache.JACOBIAN_GROUP
-    FILE_FORMAT_VERSION = 1
+    FILE_FORMAT_VERSION = 2
 
     def __init__(self, hdf_file_path):
         """Constructor.

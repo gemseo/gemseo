@@ -23,12 +23,12 @@
 Caching module to avoid multiple evaluations of a discipline
 ************************************************************
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import sys
-from hashlib import sha1
 from numbers import Number
+from typing import Mapping, Sequence
 
 from numpy import (
     append,
@@ -38,10 +38,14 @@ from numpy import (
     complex128,
     concatenate,
     float64,
+    int32,
+    int64,
+    ndarray,
     uint8,
     vstack,
 )
 from numpy.linalg import norm
+from xxhash import xxh3_64_hexdigest
 
 from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
@@ -885,23 +889,19 @@ class AbstractFullCache(AbstractCache):
         return dataset
 
 
-def hash_data_dict(data, names_tokeep=None):
-    """Hash a data dict using sha1.
-        for group_num, group in node_group.items():
-            hash_value = int(array(read_hash)[0])
+def hash_data_dict(
+    data: Mapping[str, ndarray | int | float],
+    names_tokeep: Sequence[str] | None = None,
+) -> int:
+    """Hash data using xxh3_64 from the xxhash library.
 
-    Parameters
-    ----------
-    data : dict
-        The data dictionary.
-    names_tokeep : list(str)
-        Names of the data to keep for hashing.
-        If None, use sorted(data.keys()).
+    Args:
+        data: The data to hash.
+        names_tokeep: The names of the data to keep for hashing.
+            If None, use all the names sorted lexicographically.
 
-    Returns
-    -------
-    hash : int
-        Hash value of the data dictionary.
+    Returns:
+        The hash value of the data.
 
     Examples
     --------
@@ -909,9 +909,9 @@ def hash_data_dict(data, names_tokeep=None):
     >>> from numpy import array
     >>> data = {'x':array([1.,2.]),'y':array([3.])}
     >>> hash_data_dict(data)
-    1871784392126344814771968055738742895695521374568L
+    13252388834746642440
     >>> hash_data_dict(data,'x')
-    756520441774735697349528776513537427923146459919L
+    4006190450215859422
     """
     names_with_hashed_values = []
 
@@ -925,16 +925,24 @@ def hash_data_dict(data, names_tokeep=None):
         if value is None:
             continue
 
-        try:
-            value = value.view(uint8)
-        except (ValueError, AttributeError):
-            # View may not support discontiguous arrays
-            value = ascontiguousarray(value).view(uint8)
+        # xxh3_64 does not support int or float as input.
+        if isinstance(value, ndarray):
+            if value.dtype == int32 and sys.platform.startswith("win"):
+                value = value.astype(int64)
 
-        hashed_value = int(sha1(value).hexdigest(), 16)
-        names_with_hashed_values.append((name, hashed_value))
+            # xxh3_64 only supports C-contiguous arrays.
+            if not value.flags["C_CONTIGUOUS"]:
+                value = ascontiguousarray(value)
+        else:
+            value = array([value])
 
-    return hash(tuple(names_with_hashed_values))
+        value = value.view(uint8)
+
+        hashed_value = xxh3_64_hexdigest(value)
+        hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))
+        names_with_hashed_values.append((hashed_name, hashed_value))
+
+    return int(xxh3_64_hexdigest(array(names_with_hashed_values)), 16)
 
 
 def check_cache_approx(data_dict, cache_dict, cache_tol=0.0):

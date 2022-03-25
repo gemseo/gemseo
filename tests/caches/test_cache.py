@@ -24,7 +24,7 @@ from __future__ import division, unicode_literals
 import re
 import shutil
 import sys
-from typing import Generator
+from typing import Generator, Union
 
 import h5py
 import pytest
@@ -32,7 +32,7 @@ from numpy import arange, array, eye, float64, zeros
 from numpy.linalg import norm
 from six import PY2
 
-from gemseo.api import create_scenario
+from gemseo.api import create_discipline, create_scenario
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache, HDF5FileSingleton
 from gemseo.core.cache import hash_data_dict, to_real
@@ -40,6 +40,8 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.problems.sellar.sellar import Sellar1, SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.py23_compat import Path, long, string_array, xrange
+
+DIR_PATH = Path(__file__).parent
 
 
 @pytest.fixture(scope="module")
@@ -216,6 +218,57 @@ def test_hash_data_dict():
     hash_data_dict({"i": 10 * arange(3)})
     # Discontiguous array
     hash_data_dict({"i": arange(10)[::3]})
+
+
+@pytest.mark.parametrize(
+    "input_c,input_f",
+    [
+        (array([[1, 2], [3, 4]], order="C"), array([[1, 2], [3, 4]], order="F")),
+        (
+            array([[1.0, 2.0], [3.0, 4.0]], order="C"),
+            array([[1.0, 2.0], [3.0, 4.0]], order="F"),
+        ),
+    ],
+)
+def test_hash_discontiguous_array(input_c, input_f):
+    """Test that the hashes are the same for discontiguous arrays.
+
+    Args:
+        input_c: A C-contiguous array.
+        input_f: A Fortran ordered array.
+    """
+    assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
+
+
+def func(x: Union[int, float]) -> Union[int, float]:
+    """Dummy function to test the cache."""
+    y = x
+    return y
+
+
+@pytest.mark.parametrize(
+    "hdf_name,inputs,expected",
+    [
+        ("int_win.h5", array([1, 2, 3]), array([1, 2, 3])),
+        ("int_linux.h5", array([1, 2, 3]), array([1, 2, 3])),
+        ("float_win.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
+        ("float_linux.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
+    ],
+)
+def test_det_hash(tmp_wd, hdf_name, inputs, expected):
+    """Test that hashed values are the same across sessions.
+
+    Args:
+        tmp_wd: Fixture to move into a temporary directory.
+    """
+    # Use a temporary copy of the file in case the test fails.
+    shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
+    disc = create_discipline("AutoPyDiscipline", py_func=func)
+    disc.set_cache_policy("HDF5Cache", cache_hdf_file=str(tmp_wd / hdf_name))
+    out = disc.execute({"x": inputs})
+
+    assert disc.n_calls == 0
+    assert out["y"].all() == expected.all()
 
 
 def test_to_real():
@@ -470,9 +523,12 @@ def test_check_version_greater(h5_file):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The file cache.h5 cannot be used because its file format version is 2 "
-            "while the expected version is 1: "
-            "see HDFCache.update_file_format to convert it."
+            "The file cache.h5 cannot be used because its file format version is {} "
+            "while the expected version is {}: "
+            "see HDFCache.update_file_format to convert it.".format(
+                HDF5FileSingleton.FILE_FORMAT_VERSION + 1,
+                HDF5FileSingleton.FILE_FORMAT_VERSION,
+            )
         ),
     ):
         HDF5FileSingleton(CACHE_FILE_NAME)
@@ -515,9 +571,7 @@ def test_update_file_format_from_deprecated_file(tmp_wd):
     #     cache = HDF5Cache("cache_with_deprecated_format.h5", "node")
     #     cache.cache_outputs({'x': array([1.])}, ['x'], {'y': array([2.])}, ['y'])
 
-    shutil.copy(
-        str(Path(__file__).parent / deprecated_cache_path), deprecated_cache_path
-    )
+    shutil.copy(str(DIR_PATH / deprecated_cache_path), deprecated_cache_path)
     HDF5Cache.update_file_format(deprecated_cache_path)
 
     cache_path = tmp_wd / "cache.h5"
