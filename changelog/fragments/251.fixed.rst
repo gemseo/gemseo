@@ -1,0 +1,1 @@
+The method ``hash_data_dict`` in ``AbstractFullCache`` returns deterministic hash values, fixing a bug introduced in GEMSEO 3.2.1.
