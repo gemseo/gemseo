@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Copyright 2022 Airbus SAS
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,6 +19,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Damien Guenot
 #       :author: Francois Gallard, Charlie Vanaret, Benoit Pauwels
+#       :author: Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Optimization problem.
 
@@ -211,6 +213,7 @@ class OptimizationProblem(object):
     OBJECTIVE_GROUP = "objective"
     SOLUTION_GROUP = "solution"
     CONSTRAINTS_GROUP = "constraints"
+    OBSERVABLES_GROUP = "observables"
 
     HDF5_FORMAT = "hdf5"
     GGOBI_FORMAT = "ggobi"
@@ -1640,6 +1643,12 @@ class OptimizationProblem(object):
                         c_subgroup = constraint_group.require_group(constraint.name)
                         self.__store_attr_h5data(constraint, c_subgroup)
 
+                if self.observables:
+                    observables_group = h5file.require_group(self.OBSERVABLES_GROUP)
+                    for observable in self.observables:
+                        o_subgroup = observables_group.require_group(observable.name)
+                        self.__store_attr_h5data(observable, o_subgroup)
+
                 if hasattr(self.solution, "get_data_dict_repr"):
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
@@ -1679,12 +1688,12 @@ class OptimizationProblem(object):
                 setattr(opt_pb, attr_name, val)
 
             if opt_pb.SOLUTION_GROUP in h5file:
-                data_dict = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
-                attr = OptimizationResult.from_dict(data_dict)
+                group_data = cls.__h5_group_to_dict(h5file, opt_pb.SOLUTION_GROUP)
+                attr = OptimizationResult.from_dict(group_data)
                 opt_pb.solution = attr
 
-            data_dict = cls.__h5_group_to_dict(h5file, opt_pb.OBJECTIVE_GROUP)
-            attr = MDOFunction.init_from_dict_repr(**data_dict)
+            group_data = cls.__h5_group_to_dict(h5file, opt_pb.OBJECTIVE_GROUP)
+            attr = MDOFunction.init_from_dict_repr(**group_data)
 
             # The generated functions can be called at the x stored in
             # the database
@@ -1697,9 +1706,17 @@ class OptimizationProblem(object):
                 group = get_hdf5_group(h5file, opt_pb.CONSTRAINTS_GROUP)
 
                 for cstr_name in group.keys():
-                    data_dict = cls.__h5_group_to_dict(group, cstr_name)
-                    attr = MDOFunction.init_from_dict_repr(**data_dict)
+                    group_data = cls.__h5_group_to_dict(group, cstr_name)
+                    attr = MDOFunction.init_from_dict_repr(**group_data)
                     opt_pb.constraints.append(attr)
+
+            if opt_pb.OBSERVABLES_GROUP in h5file:
+                group = get_hdf5_group(h5file, opt_pb.OBSERVABLES_GROUP)
+
+                for observable_name in group.keys():
+                    group_data = cls.__h5_group_to_dict(group, observable_name)
+                    attr = MDOFunction.init_from_dict_repr(**group_data)
+                    opt_pb.observables.append(attr)
 
         return opt_pb
 
