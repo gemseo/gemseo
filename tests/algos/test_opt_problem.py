@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Copyright 2022 Airbus SAS
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -16,7 +17,7 @@
 
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
+#        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 from __future__ import division, unicode_literals
@@ -1300,3 +1301,26 @@ def test_observable_jac(problem_for_eval_obs_jac, options, eval_obs_jac):
     """Check that the observable derivatives are computed when eval_obs_jac is True."""
     execute_algo(problem_for_eval_obs_jac, eval_obs_jac=eval_obs_jac, **options)
     assert problem_for_eval_obs_jac.database.contains_dataname("@o") is eval_obs_jac
+
+
+def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
+    """Check if the observables can be retrieved in an HDF file after export and
+    import."""
+    # Add observables to the optimization problem.
+    obs1 = MDOFunction(norm, "design norm")
+    pow2_problem.add_observable(obs1)
+    obs2 = MDOFunction(lambda x: sum(x), "sum")
+    pow2_problem.add_observable(obs2)
+
+    OptimizersFactory().execute(pow2_problem, "SLSQP")
+
+    # Export and import the optimization problem.
+    file_path = tmp_wd / "power2.h5"
+    pow2_problem.export_hdf(file_path)
+    imp_pb = OptimizationProblem.import_hdf(file_path)
+
+    # Check the set of observables.
+    # Assuming that two functions are equal if they have the same name.
+    exp_obs_names = set([obs.name for obs in pow2_problem.observables])
+    imp_obs_names = set([obs.name for obs in imp_pb.observables])
+    assert exp_obs_names == imp_obs_names
