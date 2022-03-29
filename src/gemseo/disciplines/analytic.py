@@ -156,7 +156,7 @@ class AnalyticDiscipline(MDODiscipline):
         for output_name, output_expression in self._sympy_exprs.items():
             input_names = self.expr_symbols_dict[output_name]
             self._sympy_funcs[output_name] = lambdify(
-                output_expression.free_symbols, output_expression
+                list(output_expression.free_symbols), output_expression
             )
             input_symbols = [self.__real_symbols[k] for k in input_names]
             jac_expr = self._sympy_jac_exprs[output_name]
