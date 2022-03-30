@@ -21,11 +21,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 import faulthandler
-from typing import Generator
+from typing import Generator, Tuple
 
 import pytest
-from numpy import array
+from numpy import array, exp, ones
 
+from gemseo.api import create_design_space, create_discipline, create_scenario
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
@@ -183,6 +184,71 @@ def test_multithreading(skip_if_xlwings_is_not_usable):
 
     assert xlsd.get_output_data() == {"c": array([3.0])}
     assert xlsd_2.get_output_data() == {"c": array([8.0])}
+
+
+def f_sellar_system(
+    x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
+) -> Tuple[float, float, float]:
+    """Objective function for the sellar problem."""
+    obj = x_local ** 2 + x_shared_2 + y_1 ** 2 + exp(-y_2)
+    c_1 = 3.16 - y_1 ** 2
+    c_2 = y_2 - 24.0
+    return obj, c_1, c_2
+
+
+def f_sellar_1(
+    x_local: float = 1.0,
+    y_2: float = 1.0,
+    x_shared_1: float = 1.0,
+    x_shared_2: float = 3.0,
+) -> float:
+    """Function for discipline sellar 1."""
+    y_1 = (x_shared_1 ** 2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    return y_1
+
+
+def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable):
+    """Test the execution of a parallel DOE with multithreading at the MDA level.
+
+    At the DOE level, the parallelization uses multiprocessing to compute the samples.
+    At the MDA level of each sample, an MDAJacobi uses multithreading for faster
+    convergence. Both parallelization techniques shall work together.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not usable.
+    """
+    sellar_1 = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
+    sellar_2_xls = XLSDiscipline(
+        DIR_PATH / "sellar_2.xlsx",
+        copy_xls_at_setstate=True,
+        recreate_book_at_run=True,
+    )
+    sellar_system = create_discipline("AutoPyDiscipline", py_func=f_sellar_system)
+    disciplines = [sellar_1, sellar_2_xls, sellar_system]
+
+    design_space = create_design_space()
+    design_space.add_variable("x_local", 1, l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_shared_1", 1, l_b=-10.0, u_b=10.0, value=array([4]))
+    design_space.add_variable("x_shared_2", 1, l_b=0.0, u_b=10.0, value=array([3]))
+
+    scenario = create_scenario(
+        disciplines,
+        formulation="MDF",
+        main_mda_class="MDAChain",
+        sub_mda_class="MDAJacobi",
+        objective_name="obj",
+        design_space=design_space,
+        scenario_type="DOE",
+    )
+    scenario.add_constraint("c_1", "ineq")
+    scenario.add_constraint("c_2", "ineq")
+    doe_input = {
+        "algo": "DiagonalDOE",
+        "n_samples": 2,
+        "algo_options": {"n_processes": 2},
+    }
+    scenario.execute(doe_input)
+    assert scenario.optimization_result.f_opt == 101.0
 
 
 #         def test_macro(self):
