@@ -130,7 +130,7 @@ def test_parallel_doe_hdf_cache(caplog):
     scenario.print_execution_metrics()
     assert len(scenario.formulation.opt_problem.database) == n_samples
     for disc in disciplines:
-        assert disc.cache.get_length() == n_samples
+        assert len(disc.cache) == n_samples
 
     input_data = {
         "n_samples": n_samples,

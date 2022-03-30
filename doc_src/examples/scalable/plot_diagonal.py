@@ -130,7 +130,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
 # ~~~~~~~~~~~~~~~~~~~~
 # For example, we can increase the size of each input by a factor of 2.
 sizes = {
-    name: discipline.cache.varsizes[name] * 2
+    name: discipline.cache.names_to_sizes[name] * 2
     for name in discipline.get_input_data_names()
 }
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
@@ -141,7 +141,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # ~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each output by a factor of 2.
 sizes = {
-    name: discipline.cache.varsizes[name] * 2
+    name: discipline.cache.names_to_sizes[name] * 2
     for name in discipline.get_output_data_names()
 }
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
@@ -153,7 +153,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # Or we can increase the size of each input and each output by a factor of 2.
 names = list(discipline.get_input_data_names())
 names += list(discipline.get_output_data_names())
-sizes = {name: discipline.cache.varsizes[name] * 2 for name in names}
+sizes = {name: discipline.cache.names_to_sizes[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)
 

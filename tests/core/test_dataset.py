@@ -439,13 +439,13 @@ def test_export_dataset_to_cache(dataset, tmp_path, cache_type, inputs, outputs)
         outputs=outputs,
     )
     assert len(cache) == 10
-    for name, value in cache.get_last_cached_inputs().items():
-        assert_equal(dataset[9][name], value)
+    for name, value in cache.last_entry.inputs.items():
+        assert (dataset[9][name] == value).all()
 
-    for input_name in cache.inputs_names:
+    for input_name in cache.input_names:
         assert input_name in input_names
 
-    for output_name in cache.outputs_names:
+    for output_name in cache.output_names:
         assert output_name in output_names
 
 
@@ -539,12 +539,12 @@ def test_export_to_dataset():
     assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
     assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
-    dataset = disc.cache.export_to_dataset(inputs_names=["x1"])
+    dataset = disc.cache.export_to_dataset(input_names=["x1"])
     assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
     assert "x2" not in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)
     assert "cstr" in dataset.get_names(dataset.OUTPUT_GROUP)
-    dataset = disc.cache.export_to_dataset(outputs_names=["obj"])
+    dataset = disc.cache.export_to_dataset(output_names=["obj"])
     assert "x1" in dataset.get_names(dataset.INPUT_GROUP)
     assert "x2" in dataset.get_names(dataset.INPUT_GROUP)
     assert "obj" in dataset.get_names(dataset.OUTPUT_GROUP)

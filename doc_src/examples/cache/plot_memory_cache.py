@@ -59,10 +59,8 @@ print(cache)
 # most of the time a cache is attached to an :class:`.MDODiscipline`. Then, the
 # cache feeding has not to be performed explicitly by the user.
 
-data = {"x": array([1.0]), "y": array([2.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
-data = {"x": array([2.0]), "y": array([3.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
+cache[{"x": array([1.0])}] = {"y": array([2.0])}
+cache[{"x": array([2.0])}] = {"y": array([3.0])}
 print(cache)
 
 ###############################################################################
@@ -71,8 +69,9 @@ print(cache)
 #
 # Once the cache has been filled, the user can get the length of the cache. The
 # user can also print all the data contained inside the cache.
-print(cache.get_length())
-print(cache.get_all_data())
+print(len(cache))
+for data in cache:
+    print(data)
 
 ###############################################################################
 # Get last cached data
@@ -81,8 +80,9 @@ print(cache.get_all_data())
 # The user can access the last entry (inputs or outputs) which have been
 # entered in the cache.
 
-print(cache.get_last_cached_inputs())
-print(cache.get_last_cached_outputs())
+last_entry = cache.last_entry
+print(last_entry.inputs)
+print(last_entry.outputs)
 
 ###############################################################################
 # Clear

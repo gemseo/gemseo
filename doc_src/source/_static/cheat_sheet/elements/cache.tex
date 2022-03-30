@@ -31,18 +31,18 @@ from gemseo.core.cache import HDF5Cache
 in_data = {'x':array([1.]), 'y':array([2.,3.])}
 out_data = {'z': array([-6])}
 cache = HDF5Cache('file.h5', 'node')
-cache.cache_outputs(in_data, ['x'], out_data, ['z'])
+cache[in_data] = out_data
 \end{python}
 Get cached data:
 \begin{python}
-cache.get_last_cached_inputs()
-cache.get_last_cached_outputs()
-cache.get_all_data()
-cache.get_length()
+last_entry = cache.last_entry
+last_cached_inputs = last_entry.inputs
+last_cached_outputs = last_entry.outputs
+len(cache)
 \end{python}
 Get outputs and jacobian if data are cached, else None:
 \begin{python}
-cache.get_outputs(in_data, ['x'])
+_, out_data, jac_data = cache[in_data]
 \end{python}
 \end{minipage}
 };

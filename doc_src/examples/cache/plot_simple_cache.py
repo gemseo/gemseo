@@ -57,15 +57,13 @@ print(cache)
 # -----
 # It is possible to manually add some data into the cache by using the
 # following lines:
-data = {"x": array([1.0]), "y": array([2.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
+cache[{"x": array([1.0])}] = {"y": array([2.0])}
 
 ###############################################################################
 # We can add another entry to the cache, and we can then see that its length is
-# still one. Indeed, as previously mentionned, the :class:`.SimpleCache` only
+# still one. Indeed, as previously mentioned, the :class:`.SimpleCache` only
 # enable to store one evaluation.
-data = {"x": array([2.0]), "y": array([3.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
+cache[{"x": array([2.0])}] = {"y": array([3.0])}
 print(cache)
 
 ###############################################################################
@@ -74,16 +72,19 @@ print(cache)
 # We can display the lenght and the data contained in the cache. As mentionned
 # before, we can see that only the last inputs and outputs cached are
 # available:
-print(cache.get_length())
-print(cache.get_all_data())
+print(len(cache))
+for data in cache:
+    print(data)
 
 ###############################################################################
 # Get last cached data
 # --------------------
 # We can also print the last cached input and output data. For this cache, the
 # last cached inputs and ouputs are also the only ones cached.
-print(cache.get_last_cached_inputs())
-print(cache.get_last_cached_outputs())
+
+last_entry = cache.last_entry
+print(last_entry.inputs)
+print(last_entry.outputs)
 
 ###############################################################################
 # Clear

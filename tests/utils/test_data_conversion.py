@@ -316,3 +316,7 @@ def test_compare_dict_of_arrays(d_1, d_2, d_3, d_4):
     assert compare_dict_of_arrays(d_1, d_2)
     assert not compare_dict_of_arrays(d_1, d_3)
     assert not compare_dict_of_arrays(d_1, d_4)
+    d_1_copy = deepcopy_dict_of_arrays(d_1)
+    d_1_copy["x"] += 0.1
+    assert not compare_dict_of_arrays(d_1, d_1_copy)
+    assert compare_dict_of_arrays(d_1, d_1_copy, tolerance=0.1)

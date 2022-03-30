@@ -244,7 +244,7 @@ class MDAChain(MDA):
             self.mdo_chain.add_differentiated_inputs(inputs)
             self.mdo_chain.add_differentiated_outputs(outputs)
             # the Jacobian of the MDA chain is the Jacobian of the MDO chain
-            last_cached = self.cache.get_last_cached_inputs()
+            last_cached = self.cache.last_entry.inputs
             self.mdo_chain.linearize(last_cached)
             self.jac = self.mdo_chain.jac
         else:

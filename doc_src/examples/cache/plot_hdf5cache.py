@@ -59,16 +59,14 @@ print(cache)
 # Cache
 # -----
 # In this example, we manually add data in the cache from the data dictionary
-# to illsutrate its use.  Yet, it has to be noted that a cache can be attached
+# to illustrate its use.  Yet, it has to be noted that a cache can be attached
 # to an :class:`.MDODiscipline` instance, and the user does not have to feed the
 # cache manually.
 # Here, we provide to the cache the data dictionary, and we set `x` as input
 # and `y` as output.
 
-data = {"x": array([1.0]), "y": array([2.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
-data = {"x": array([2.0]), "y": array([3.0])}
-cache.cache_outputs(data, ["x"], data, ["y"])
+cache[{"x": array([1.0])}] = {"y": array([2.0])}
+cache[{"x": array([2.0])}] = {"y": array([3.0])}
 print(cache)
 
 ###############################################################################
@@ -77,8 +75,9 @@ print(cache)
 # We can now print some information from the cache, such as its length. We can
 # also display all the cached data so far.
 
-print(cache.get_length())
-print(cache.get_all_data())
+print(len(cache))
+for data in cache:
+    print(data)
 
 ###############################################################################
 # Get last cached data
@@ -86,8 +85,9 @@ print(cache.get_all_data())
 # It is also possible to display the last entry cached, for the inputs and the
 # outputs.
 
-print(cache.get_last_cached_inputs())
-print(cache.get_last_cached_outputs())
+last_entry = cache.last_entry
+print(last_entry.inputs)
+print(last_entry.outputs)
 
 ###############################################################################
 # Clear the cache

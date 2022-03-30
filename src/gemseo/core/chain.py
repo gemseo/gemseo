@@ -143,7 +143,7 @@ class MDOChain(MDODiscipline):
         """
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
-        last_cached = discipline.cache.get_last_cached_inputs()
+        last_cached = discipline.cache.last_entry.inputs
         discipline.linearize(last_cached, force_no_exec=True, force_all=True)
 
         for output_name in chain_outputs:
@@ -195,7 +195,7 @@ class MDOChain(MDODiscipline):
         last_discipline = self.disciplines[-1]
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
-        last_cached = last_discipline.cache.get_last_cached_inputs()
+        last_cached = last_discipline.cache.last_entry.inputs
         last_discipline.linearize(last_cached, force_no_exec=True, force_all=True)
         self.jac = self.copy_jacs(last_discipline.jac)
 

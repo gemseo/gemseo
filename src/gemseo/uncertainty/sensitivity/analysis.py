@@ -164,7 +164,7 @@ class SensitivityAnalysis(object):
             }
         )
         inputs = parameter_space.variables_names
-        return discipline.cache.export_to_dataset(inputs_names=inputs)
+        return discipline.cache.export_to_dataset(input_names=inputs)
 
     @property
     def inputs_names(self):  # type: (...) -> List[str]

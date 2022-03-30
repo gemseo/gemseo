@@ -853,9 +853,9 @@ class MDODiscipline(object):
         # Check if the cache already the contains outputs associated to these
         # inputs
         in_names = self.get_input_data_names()
-        out_cached, out_jac = self.cache.get_outputs(input_data, in_names)
+        _, out_cached, out_jac = self.cache[input_data]
 
-        if out_cached is not None:
+        if out_cached:
             self.__update_local_data_from_cache(input_data, out_cached, out_jac)
             return self._local_data
 
@@ -905,11 +905,14 @@ class MDODiscipline(object):
         # Caches output data in case the discipline is called twice in a row
         # with the same inputs
         out_names = self.get_output_data_names()
-        self.cache.cache_outputs(cached_inputs, in_names, self._local_data, out_names)
+        self.cache.cache_outputs(
+            cached_inputs, {name: self._local_data[name] for name in out_names}
+        )
         # Some disciplines are always linearized during execution, cache the
         # jac in this case
         if self._is_linearized:
-            self.cache.cache_jacobian(cached_inputs, in_names, self.jac)
+            self.cache.cache_jacobian(cached_inputs, self.jac)
+
         return self._local_data
 
     def __update_local_data_from_cache(
@@ -1101,7 +1104,7 @@ class MDODiscipline(object):
 
         self._check_jacobian_shape(inputs, outputs)
         # Cache the Jacobian matrix
-        self.cache.cache_jacobian(input_data, self.get_input_data_names(), self.jac)
+        self.cache.cache_jacobian(input_data, self.jac)
 
         return self.jac
 

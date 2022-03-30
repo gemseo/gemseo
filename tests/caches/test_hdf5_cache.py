@@ -42,37 +42,37 @@ def test_runtimerror(tmp_path):
     h_cache1 = create_cache(tmp_path, "Dummy")
     h_cache2 = create_cache(tmp_path, "Dummy")
     data = {"a": ones(1)}
-    data_names = ["a"]
-    group_name = h_cache1.INPUTS_GROUP
+    group_name = h_cache1._INPUTS_GROUP
     hdf_node_path = "DummyCache"
     group_num = 1
-    h_cache1._hdf_file.write_data(
-        data, data_names, group_name, group_num, hdf_node_path
-    )
+    h_cache1._HDF5Cache__hdf_file.write_data(data, group_name, group_num, hdf_node_path)
     with pytest.raises((RuntimeError, IOError)):
-        h_cache2._hdf_file.write_data(
-            data, data_names, group_name, group_num, hdf_node_path
+        h_cache2._HDF5Cache__hdf_file.write_data(
+            data, group_name, group_num, hdf_node_path
         )
 
 
 def test_hasgroup(tmp_path):
     cache = create_cache(tmp_path, "Dummy")
-    cache.cache_outputs({"i": ones(1)}, ["i"], {"o": ones(1)})
-    h5file_sing = cache._hdf_file
+    cache.cache_outputs({"i": ones(1)}, {"o": ones(1)})
+    h5file_sing = cache._HDF5Cache__hdf_file
 
     h5file = h5py.File(h5file_sing.hdf_file_path, "a")
 
-    hasgrp = h5file_sing._has_group(1, cache.INPUTS_GROUP, "Dummy", h5file=h5file)
+    hasgrp = h5file_sing._has_group(
+        1, cache._INPUTS_GROUP, "Dummy", h5_open_file=h5file
+    )
     assert hasgrp
 
-    hasgrp = h5file_sing._has_group(2, cache.INPUTS_GROUP, "Dummy", h5file=h5file)
+    hasgrp = h5file_sing._has_group(
+        2, cache._INPUTS_GROUP, "Dummy", h5_open_file=h5file
+    )
     assert not hasgrp
 
     h5file_sing.write_data(
         {"i": ones(1)},
-        ["i"],
-        group_name=cache.OUTPUTS_GROUP,
-        group_num=2,
-        hdf_node_path="Dummy",
+        cache._OUTPUTS_GROUP,
+        2,
+        "Dummy",
         h5_open_file=h5file,
     )
