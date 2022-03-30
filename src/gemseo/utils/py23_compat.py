@@ -33,6 +33,7 @@ if PY2:
     xrange = xrange  # noqa: F821
     long = long  # noqa: F821
 
+    from builtins import int  # noqa: F401
     from inspect import getargspec as _getfullargspec
     from re import match  # noqa: F401
 
@@ -66,6 +67,7 @@ if PY2:
 else:
     string_dtype = "bytes"
     long = int
+    int = int
     xrange = range
 
     from functools import lru_cache  # noqa: F401
