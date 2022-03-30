@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import pytest
 from numpy import array, ndarray
+from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline, create_scenario
@@ -249,3 +250,21 @@ def test_other_exceptions_caught(caplog):
             }
         )
     assert "0.0 cannot be raised to a negative power" in caplog.text
+
+
+def test_export_to_dataset_with_repeated_inputs():
+    """Check the export of the database with repeated inputs."""
+    discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
+    design_space = DesignSpace()
+    design_space.add_variable("dv")
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
+    samples = array([[1.0], [2.0], [1.0]])
+    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+    dataset = scenario.export_to_dataset(by_group=False)
+    assert_equal(
+        dataset.data,
+        {
+            "dv": samples,
+            "obj": samples * 2,
+        },
+    )

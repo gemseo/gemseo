@@ -29,6 +29,7 @@ from unittest import mock
 import numpy as np
 import pytest
 from numpy import allclose, array, array_equal, cos, inf, ndarray, ones, sin, zeros
+from numpy.testing import assert_equal
 from scipy.linalg import norm
 from scipy.optimize import rosen, rosen_der
 
@@ -1324,3 +1325,36 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
     exp_obs_names = set([obs.name for obs in pow2_problem.observables])
     imp_obs_names = set([obs.name for obs in imp_pb.observables])
     assert exp_obs_names == imp_obs_names
+
+
+@pytest.mark.parametrize(
+    "input_values,expected",
+    [
+        (None, array([[1.0], [2.0]])),
+        (array([[1.0], [2.0], [1.0]]), array([[1.0], [2.0], [1.0]])),
+    ],
+)
+def test_export_to_dataset(input_values, expected):
+    """Check the export of the database."""
+    design_space = DesignSpace()
+    design_space.add_variable("dv")
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x * 2, "obj")
+    problem.constraints.append(
+        MDOFunction(lambda x: x * 3, "cstr", f_type=MDOFunction.TYPE_INEQ)
+    )
+
+    algo = CustomDOE()
+    algo.algo_name = "CustomDOE"
+    algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
+
+    dataset = problem.export_to_dataset(input_values=input_values, by_group=False)
+    assert_equal(
+        dataset.data,
+        {
+            "dv": expected,
+            "obj": expected * 2,
+            "cstr": expected * 3,
+        },
+    )

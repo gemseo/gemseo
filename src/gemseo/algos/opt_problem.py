@@ -1727,6 +1727,7 @@ class OptimizationProblem(object):
         categorize=True,  # type: bool
         opt_naming=True,  # type: bool
         export_gradients=False,  # type: bool
+        input_values=None,  # type: Optional[Iterable[ndarray]]
     ):  # type: (...) -> Dataset
         """Export the database of the optimization problem to a :class:`.Dataset`.
 
@@ -1761,6 +1762,8 @@ class OptimizationProblem(object):
             export_gradients: Whether to export the gradients of the functions
                 (objective function, constraints and observables)
                 if the latter are available in the database of the optimization problem.
+            input_values: The input values to be considered.
+                If ``None``, consider all the input values of the database.
 
         Returns:
             A dataset built from the database of the optimization problem.
@@ -1789,6 +1792,13 @@ class OptimizationProblem(object):
         names_to_sizes = self.design_space.variables_sizes
         input_history = array(self.database.get_x_history())
         n_samples = len(input_history)
+        positions = []
+        if input_values is not None:
+            for input_value in input_values:
+                positions.extend(
+                    where((input_history == input_value).all(axis=1))[0].tolist()
+                )
+
         input_history = split_array_to_dict_of_arrays(
             input_history, names_to_sizes, input_names
         )
@@ -1816,6 +1826,12 @@ class OptimizationProblem(object):
                 gradient_group,
                 cache_output_as_input,
             )
+
+        if positions:
+            dataset.data = {
+                name: value[positions, :] for name, value in dataset.data.items()
+            }
+            dataset.length = len(positions)
 
         return dataset
 
