@@ -147,12 +147,23 @@ class XLSDiscipline(MDODiscipline):
         # A workbook init creates an instance of `_xls_app`.
         # It opens an excel process and calls CoInitialize().
         # This must be done prior to initializing grammars and defaults.
-        # The initial workbook is always called with quit_xls_at_exit=False.
-        # This ensures that the initial workbook will close using `atexit`.
-        self.__create_book()
+        # In serial mode, the initial book is always called with quit_xls_at_exit=True.
+        # In multiprocessing or multithreading,
+        # the book is closed once grammars and default values have been initialized.
+        quit_xls_at_exit = not (recreate_book_at_run or copy_xls_at_setstate)
+        self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
         self._init_grammars()
         self._init_defaults()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
+        if recreate_book_at_run or copy_xls_at_setstate:
+            self.__reset_xls_objects()
+
+    def __reset_xls_objects(self) -> None:
+        """Close the xls app and set `_xls_app` and `_book` to `None`."""
+        if self._xls_app is not None:
+            self._xls_app.kill()
+            self._book = None
+            self._xls_app = None
 
     def __create_book(
         self, quit_xls_at_exit=True  # type: bool
@@ -180,7 +191,7 @@ class XLSDiscipline(MDODiscipline):
         # Each process keeps its own _xls_app instance from init to end.
         # It is therefore possible to register the quit() call at exit.
         if quit_xls_at_exit:
-            atexit.register(self._xls_app.quit)
+            atexit.register(self.__reset_xls_objects)
 
         self._book = self._xls_app.books.open(str(self._xls_file_path))
         sh_names = [sheet.name for sheet in self._book.sheets]
@@ -196,12 +207,13 @@ class XLSDiscipline(MDODiscipline):
                 "that define the outputs of the discipline"
             )
 
+    def __del__(self):
+        self.__reset_xls_objects()
+
     def __setstate__(
         self, state  # type: Mapping[str, Any]
     ):  # type: (...) -> None
         super(XLSDiscipline, self).__setstate__(state)
-        self._book = None
-        self._xls_app = None
         if self._copy_xls_at_setstate:
             temp_dir = Path(tempfile.gettempdir())
             temp_path = temp_dir / self._xls_file_path.name.replace(
@@ -209,7 +221,9 @@ class XLSDiscipline(MDODiscipline):
             )
             shutil.copy2(str(self._xls_file_path), str(temp_path))
             self._xls_file_path = temp_path
-        self.__create_book()
+        # If the book is recreated at _run, there is no need to create one for each process.
+        if self._copy_xls_at_setstate and not self._recreate_book_at_run:
+            self.__create_book()
 
     def __read_sheet_col(
         self,
@@ -279,15 +293,12 @@ class XLSDiscipline(MDODiscipline):
         """
         # If threading, the run method is called from different threads.
         # But it is not possible to pass xlwings objects between threads.
-        # That means that each thread has to set `_xls_app` and `_book` to None.
         # Since CoInitialize was implicitly called at init but has not been called
         # inside each thread, a call is made here.
         # We then initialize the workbook again to run the computation inside each
         # thread.
         # In this case, the excel process is closed at the end of this _run method.
         if self._recreate_book_at_run:
-            self._xls_app = None
-            self._book = None
             pythoncom.CoInitialize()
             self.__create_book(quit_xls_at_exit=False)
 
@@ -317,4 +328,4 @@ class XLSDiscipline(MDODiscipline):
         # Therefore, we close everything once we have stored all we need.
         # For this same reason, overloading __del__ is not an option.
         if self._recreate_book_at_run:
-            self._xls_app.quit()
+            self.__reset_xls_objects()
