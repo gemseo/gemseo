@@ -27,6 +27,7 @@ from typing import Any, Optional, Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.scenario import Scenario
 
@@ -89,6 +90,7 @@ class DOEScenario(Scenario):
         )
         self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
+        self.__samples = None
 
     def _init_algo_factory(self):  # type: (...) -> None
         self._algo_factory = DOEFactory()
@@ -116,6 +118,7 @@ class DOEScenario(Scenario):
             options[self.N_SAMPLES] = n_samples
 
         self.optimization_result = lib.execute(self.formulation.opt_problem, **options)
+        self.__samples = lib.samples
 
         return self.optimization_result
 
@@ -125,4 +128,21 @@ class DOEScenario(Scenario):
         )
         self.input_grammar.update_required_elements(
             algo=True, n_samples=False, algo_options=False
+        )
+
+    def export_to_dataset(
+        self,
+        name=None,  # type: Optional[str]
+        by_group=True,  # type: bool
+        categorize=True,  # type: bool
+        opt_naming=True,  # type: bool
+        export_gradients=False,  # type: bool
+    ):  # type: (...) -> Dataset
+        return self.formulation.opt_problem.export_to_dataset(
+            name=name,
+            by_group=by_group,
+            categorize=categorize,
+            opt_naming=opt_naming,
+            export_gradients=export_gradients,
+            input_values=self.__samples,
         )
