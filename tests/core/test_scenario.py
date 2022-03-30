@@ -29,11 +29,14 @@ from numpy import array
 from numpy.linalg import norm
 from numpy.testing import assert_equal
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
+from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import (
     SobieskiAerodynamicsSG,
@@ -439,21 +442,19 @@ def test_run_log(mdf_scenario, caplog):
         assert string in caplog.text
 
 
-def test_clear_history_before_run(mdf_scenario):
+def test_clear_history_before_run():
     """Check that clear_history_before_run is correctly used in Scenario._run."""
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 1
-
-    def run_algorithm_mock():
-        pass
-
-    mdf_scenario._run_algorithm = run_algorithm_mock
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 1
-
-    mdf_scenario.clear_history_before_run = True
-    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    assert len(mdf_scenario.formulation.opt_problem.database) == 0
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1, value=0.5)
+    discipline = AnalyticDiscipline({"y": "x"})
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)
+    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[1.0]])}})
+    assert len(scenario.formulation.opt_problem.database) == 1
+    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[2.0]])}})
+    assert len(scenario.formulation.opt_problem.database) == 2
+    scenario.clear_history_before_run = True
+    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[3.0]])}})
+    assert len(scenario.formulation.opt_problem.database) == 1
 
 
 def mocked_export_to_dataset(

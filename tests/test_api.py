@@ -694,7 +694,7 @@ def test_create_cache(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     cache = create_cache("MemoryFullCache")
-    assert cache.get_length() == 0
+    assert not cache
 
 
 def test_get_available_caches(tmp_wd):

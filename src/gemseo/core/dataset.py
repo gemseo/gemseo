@@ -1208,9 +1208,9 @@ class Dataset(object):
             cache = create_cache(cache_type, name=self.name, **options)
 
         for sample in range(len(self)):
-            in_values = {name: self[(sample, name)][name] for name in inputs}
-            out_values = {name: self[(sample, name)][name] for name in outputs}
-            cache.cache_outputs(in_values, inputs, out_values, outputs)
+            input_data = {name: self[(sample, name)][name] for name in inputs}
+            output_data = {name: self[(sample, name)][name] for name in outputs}
+            cache.cache_outputs(input_data, output_data)
 
         return cache
 

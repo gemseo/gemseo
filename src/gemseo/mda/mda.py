@@ -282,7 +282,7 @@ class MDA(MDODiscipline):
 
     def _couplings_warm_start(self):  # type: (...) -> None
         """Load the previous couplings values to local data."""
-        cached_outputs = self.cache.get_last_cached_outputs()
+        cached_outputs = self.cache.last_entry.outputs
         if not cached_outputs:
             return
         for input_name in self._input_couplings:

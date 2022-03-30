@@ -295,13 +295,13 @@ def test_cache(cache_name, cache_options, tmp_wd):
     input_data = DisciplineData({"i": np.arange(3)})
     data_out = DisciplineData({"o": np.arange(4)})
 
-    cache.cache_outputs(input_data, input_data.keys(), data_out)
+    cache[input_data] = (data_out, {})
 
-    out, jac = cache.get_outputs(input_data, input_data.keys())
+    _, out, jac = cache[input_data]
 
     compare_dict_of_arrays(out, data_out)
 
-    assert jac is None
+    assert not jac
 
 
 def test_serialization(tmp_wd):

@@ -1,0 +1,3 @@
+The ``AbstractFullCache``'s getters (``get_data`` and ``get_all_data``) return one or more ``CacheItem``, that is a namedtuple with variable groups as fields.
+In ``AbstractFullCache``, ``varsizes`` is renamed as ``names_to_sizes`` and ``max_length`` as ``MAXSIZE``,
+The number of items stored in an AbstractCache can no longer be obtained with ``get_length``, but ``__len__``.

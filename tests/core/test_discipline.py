@@ -358,7 +358,7 @@ def test_serialize_hdf_cache(tmp_wd):
     out_file = "sob_aero.pckl"
     aero.serialize(out_file)
     saero_u = MDODiscipline.deserialize(out_file)
-    assert saero_u.cache.get_last_cached_outputs()["y_2"] is not None
+    assert saero_u.cache.last_entry.outputs["y_2"] is not None
 
 
 def test_data_processor():
@@ -433,7 +433,7 @@ def test_linearize_errors():
     d2.execute({"x": array([1.0])})
     # Shape is not 2D
     with pytest.raises(ValueError):
-        d2.linearize({"x": 1}, force_all=True)
+        d2.linearize({"x": array([1])}, force_all=True)
 
     with pytest.raises(ValueError):
         d2.__setattr__("linearization_mode", "toto")
@@ -566,10 +566,11 @@ def test_execute_rerun_errors():
 
     class MyDisc(MDODiscipline):
         def _run(self):
-            pass
+            self.local_data["b"] = array([1.0])
 
     d = MyDisc()
     d.input_grammar.initialize_from_data_names(["a"])
+    d.output_grammar.initialize_from_data_names(["b"])
     d.execute({"a": [1]})
     d.status = d.STATUS_RUNNING
     with pytest.raises(ValueError):
@@ -697,10 +698,7 @@ def test_cache_run_and_linearize():
     sm._run = run_and_lin
     sm.set_cache_policy()
     sm.execute()
-    assert (
-        sm.cache.get_outputs(sm.default_inputs, next(iter(sm.default_inputs.keys())))
-        is not None
-    )
+    assert sm.cache[sm.default_inputs].jacobian is not None
 
     sm.linearize()
     # Cache must be loaded
