@@ -13,17 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard : initial Scilab version
 #        :author: Arthur Piat : conversion Scilab to Matlab
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab parser.
 
 Overview
@@ -35,10 +32,10 @@ detect inputs and outputs.
 This class is basically used through the :class:`.MatlabDiscipline` class
 in order to build a discipline based on the Matlab function.
 """
-
 import logging
 import re
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 from gemseo.utils.py23_compat import Path
 

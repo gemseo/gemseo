@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
@@ -23,12 +22,17 @@
 The Rastrigin analytic problem
 ******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from cmath import cos, pi, sin
+from cmath import cos
+from cmath import pi
+from cmath import sin
 
-from numpy import array, ones, zeros
+from numpy import array
+from numpy import ones
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem

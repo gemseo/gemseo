@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,13 +26,13 @@ Dataset from a numpy array
 In this example, we will see how to build a :class:`.Dataset` from an numpy
 array. For that, we need to import this :class:`.Dataset` class:
 """
-from __future__ import division, unicode_literals
-
-from numpy import concatenate
-from numpy.random import rand
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
+from numpy import concatenate
+from numpy.random import rand
 
 configure_logger()
 

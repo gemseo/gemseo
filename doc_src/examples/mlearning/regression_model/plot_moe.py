@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -27,14 +26,21 @@ Mixture of experts
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from numpy import array, hstack, linspace, meshgrid, nonzero, sqrt, zeros
-
-from gemseo.api import configure_logger, load_dataset
+from gemseo.api import configure_logger
+from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import array
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import nonzero
+from numpy import sqrt
+from numpy import zeros
 
 configure_logger()
 
@@ -114,7 +120,7 @@ for value in [input_value, another_input_value]:
 n_samples = dataset.n_samples
 # Dataset is based on a DOE of 100=10^2 fullfact.
 input_dim = int(sqrt(n_samples))
-assert input_dim ** 2 == n_samples  # Check that n_samples is a square number
+assert input_dim**2 == n_samples  # Check that n_samples is a square number
 
 colors = ["b", "r", "g", "o", "y"]
 inputs = dataset.get_data_by_group(dataset.INPUT_GROUP)

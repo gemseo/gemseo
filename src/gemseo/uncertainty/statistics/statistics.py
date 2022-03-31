@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Abstract class for the estimation of statistics from a dataset.
 
 Overview
@@ -91,12 +89,16 @@ for the different variables:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from enum import Enum
-from typing import Dict, Iterable, Optional, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -106,7 +108,8 @@ from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -418,7 +421,7 @@ class Statistics(object):
         variable_name,  # type:str
         statistic_name,  # type:str
         show_name=False,  # type:bool
-        **options  # type: Union[bool,float,int]
+        **options,  # type: Union[bool,float,int]
     ):  # type: (...) -> str
         """Return the expression of a statistical function applied to a variable.
 

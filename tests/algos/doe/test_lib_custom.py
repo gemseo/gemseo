@@ -13,25 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 28 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 import pytest
-from numpy import array
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.utils.py23_compat import Path
+from numpy import array
 
-from .utils import execute_problem, generate_test_functions
+from .utils import execute_problem
+from .utils import generate_test_functions
 
 DOE_LIB_NAME = "CustomDOE"
 DOE_FILE_PATH = str(Path(__file__).parent / "dim_3_semicolon.csv")

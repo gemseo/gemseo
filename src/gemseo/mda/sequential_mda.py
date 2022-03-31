@@ -13,15 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -123,7 +126,7 @@ class GSNewtonMDA(MDASequential):
         coupling_structure=None,  # type: Optional[MDOCouplingStructure]
         linear_solver_options=None,  # type: Mapping[str,Any]
         log_convergence=False,  # type: bool
-        **newton_mda_options  # type: float
+        **newton_mda_options,  # type: float
     ):
         """
         Args:
@@ -154,7 +157,7 @@ class GSNewtonMDA(MDASequential):
             coupling_structure=coupling_structure,
             log_convergence=log_convergence,
             linear_solver_options=linear_solver_options,
-            **newton_mda_options
+            **newton_mda_options,
         )
         sequence = [mda_gs, mda_newton]
         super(GSNewtonMDA, self).__init__(

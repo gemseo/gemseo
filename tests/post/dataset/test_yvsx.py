@@ -13,24 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test the class YvsX plotting a variable y versus a variable x."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array
-
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
+from numpy import array
 
 pytestmark = pytest.mark.skipif(
     PY2, reason="image comparison does not work with python 2"

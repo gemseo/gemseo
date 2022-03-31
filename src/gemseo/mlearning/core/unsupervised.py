@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -28,14 +27,22 @@ where the data has no notion of input or output.
 This concept is implemented through the :class:`.MLUnsupervisedAlgo` class,
 which inherits from the :class:`.MLAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Iterable, Mapping, NoReturn, Optional, Sequence
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
 
-from numpy import hstack, ndarray
+from numpy import hstack
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 
 
 class MLUnsupervisedAlgo(MLAlgo):
@@ -55,7 +62,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         data,  # type: Dataset
         transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
+        **parameters,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
         Args:

@@ -13,20 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import arange
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
+from numpy import arange
 
 LEARNING_SIZE = 9
 

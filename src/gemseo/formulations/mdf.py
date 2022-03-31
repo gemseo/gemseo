@@ -13,16 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Sequence
+from typing import Tuple
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -57,7 +61,7 @@ class MDF(MDOFormulation):
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
         main_mda_class="MDAChain",  # type: str
         sub_mda_class="MDAJacobi",  # type: str
-        **mda_options  # type: Any
+        **mda_options,  # type: Any
     ):
         """
         Args:
@@ -88,7 +92,7 @@ class MDF(MDOFormulation):
         self,
         main_mda_class="MDAChain",  # type: str
         sub_mda_class="MDAJacobi",  # type: str
-        **mda_options  # type:Any
+        **mda_options,  # type:Any
     ):  # type: (...) -> None
         """Create the MDA discipline.
 
@@ -103,7 +107,7 @@ class MDF(MDOFormulation):
             main_mda_class,
             self.disciplines,
             grammar_type=self._grammar_type,
-            **mda_options
+            **mda_options,
         )
 
     @classmethod

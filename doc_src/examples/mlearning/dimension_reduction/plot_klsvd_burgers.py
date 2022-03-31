@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -26,10 +25,10 @@ KL-SVD on Burgers equation
 
 Example using KL-SVD on solutions of the Burgers equation.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
 from gemseo.problems.dataset.burgers import BurgersDataset

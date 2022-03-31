@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,13 +20,16 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test dimension reduction with Karhunen-Loeve singular value decomposition."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import array, linspace, pi, sin
-from numpy.random import rand
-
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
+from numpy import array
+from numpy import linspace
+from numpy import pi
+from numpy import sin
+from numpy.random import rand
 
 N_SAMPLES = 100
 

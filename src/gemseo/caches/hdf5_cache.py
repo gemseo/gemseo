@@ -13,28 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store all the entries in a HDF file."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Generator, Optional, Tuple, Union
+from typing import Any
+from typing import Generator
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import h5py
 
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
-from gemseo.core.cache import (
-    AbstractFullCache,
-    CacheEntry,
-    Data,
-    JacobianData,
-    OutputData,
-)
+from gemseo.core.cache import AbstractFullCache
+from gemseo.core.cache import CacheEntry
+from gemseo.core.cache import Data
+from gemseo.core.cache import JacobianData
+from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
@@ -135,7 +137,7 @@ class HDF5Cache(AbstractFullCache):
         index,  # type: int
         group,  # type: str
         h5_open_file=None,  # type: Optional[h5py.File]
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> Tuple[OutputData, JacobianData]
         """
         Args:

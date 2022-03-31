@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
@@ -24,12 +23,15 @@ GGOBI : interactive data visualization software
 
 Export data to the XML file format needed by GGOBI
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import os
 from xml.dom import minidom
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Comment, Element, SubElement
+from xml.etree.ElementTree import Comment
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
 
 
 def prettify(elem):

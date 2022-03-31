@@ -13,17 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mean squared error measure."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
@@ -80,7 +79,7 @@ def test_evaluate_learn(dataset):
     assert mse_train < TOL_DEG_2
     measure = RMSEMeasure(algo)
     rmse_train = measure.evaluate("learn")
-    assert abs(mse_train ** 0.5 - rmse_train) < 1e-6
+    assert abs(mse_train**0.5 - rmse_train) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)
     measure = MSEMeasure(algo)
@@ -106,7 +105,7 @@ def test_evaluate_test(dataset, dataset_test):
     measure = RMSEMeasure(algo)
     rmse_test = measure.evaluate("test", test_data=dataset_test)
 
-    assert abs(mse_test ** 0.5 - rmse_test) < 1e-6
+    assert abs(mse_test**0.5 - rmse_test) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)
     measure = MSEMeasure(algo)
@@ -131,7 +130,7 @@ def test_evaluate_loo(dataset):
     assert mse_loo < TOL_DEG_2
     measure = RMSEMeasure(algo)
     rmse_loo = measure.evaluate("loo")
-    assert abs(mse_loo ** 0.5 - rmse_loo) < 1e-6
+    assert abs(mse_loo**0.5 - rmse_loo) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)
     measure = MSEMeasure(algo)
@@ -147,7 +146,7 @@ def test_evaluate_kfolds(dataset):
     assert mse_kfolds < TOL_DEG_2
     measure = RMSEMeasure(algo)
     rmse_kfolds = measure.evaluate("kfolds")
-    assert abs(mse_kfolds ** 0.5 - rmse_kfolds) < 1e-6
+    assert abs(mse_kfolds**0.5 - rmse_kfolds) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)
     measure = MSEMeasure(algo)
@@ -174,7 +173,7 @@ def test_evaluate_bootstrap(dataset):
     rmse_bootstrap = measure.evaluate("bootstrap")
     rmse_bootstrap_2 = measure.evaluate("bootstrap", samples=list(range(20)))
     assert abs(rmse_bootstrap - rmse_bootstrap_2) < 1e-6
-    assert abs(mse_bootstrap ** 0.5 - rmse_bootstrap) < 1e-6
+    assert abs(mse_bootstrap**0.5 - rmse_bootstrap) < 1e-6
 
     algo = PolynomialRegression(dataset, degree=1)
     measure = MSEMeasure(algo)

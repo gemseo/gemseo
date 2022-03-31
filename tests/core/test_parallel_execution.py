@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -26,25 +25,25 @@ import unittest
 from timeit import default_timer as timer
 
 import pytest
-from numpy import array, complex128, equal, ones
-from scipy.optimize import rosen
-
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.parallel_execution import (
-    IS_WIN,
-    DiscParallelExecution,
-    DiscParallelLinearization,
-    ParallelExecution,
-)
-from gemseo.problems.sellar.sellar import (
-    X_SHARED,
-    Y_1,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-    get_inputs,
-)
+from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution import DiscParallelLinearization
+from gemseo.core.parallel_execution import IS_WIN
+from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from numpy import array
+from numpy import complex128
+from numpy import equal
+from numpy import ones
+from scipy.optimize import rosen
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 7) and IS_WIN,

@@ -14,8 +14,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest
-
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.py23_compat import Path
 
 

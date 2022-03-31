@@ -13,24 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from numbers import Number
 
 import pytest
-from numpy import array, ndarray
-
-from gemseo.core.grammar import InvalidDataException, SimpleGrammar
+from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammar import SimpleGrammar
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2
+from numpy import array
+from numpy import ndarray
 
 TEST_PATH = Path(__file__).parent / "data"
 

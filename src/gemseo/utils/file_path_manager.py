@@ -18,7 +18,8 @@ import re
 from collections import namedtuple
 from enum import Enum
 from re import findall
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString

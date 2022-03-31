@@ -17,10 +17,15 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization volume fraction."""
+from typing import Optional
+from typing import Sequence
 
-from typing import Optional, Sequence
-
-from numpy import array, atleast_2d, mean, ones, ones_like, size
+from numpy import array
+from numpy import atleast_2d
+from numpy import mean
+from numpy import ones
+from numpy import ones_like
+from numpy import size
 
 from gemseo.core.discipline import MDODiscipline
 

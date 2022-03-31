@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
@@ -24,10 +23,8 @@
 #        :author: François Gallard: initial author of the scilab version
 #                                   of MatlabDataProcessorWrapper
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 #
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Definition of Matlab data processor.
 
 Overview
@@ -37,12 +34,14 @@ The class and functions in this module enables to
 manipulate data from and toward the Matlab workspace.
 It also enables to read and write Matlab data file (.mat).
 """
-
-from typing import Mapping, Union
+from typing import Mapping
+from typing import Union
 
 import matlab
 import scipy.io
-from numpy import array, iscomplexobj, ndarray
+from numpy import array
+from numpy import iscomplexobj
+from numpy import ndarray
 
 from gemseo.core.data_processor import DataProcessor
 from gemseo.utils.py23_compat import Path
@@ -139,7 +138,7 @@ def save_matlab_file(
     dict_to_save,  # type: dict
     file_path="output_dict",  # type: Union[str, Path]
     *args,  # type: bool
-    **kwargs  # type: bool
+    **kwargs,  # type: bool
 ):  # type: (...) -> None
     """Create a .mat file from dict of ndarray.
 

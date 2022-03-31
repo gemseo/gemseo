@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 from typing import Any
 
 from gemseo.mda.jacobi import MDAJacobi
@@ -27,7 +26,7 @@ class SobieskiMDAJacobi(MDAJacobi):
         self,
         n_processes=1,  # type: int
         dtype="float64",  # type: str
-        **mda_options  # type: Any
+        **mda_options,  # type: Any
     ):  # type: (...) -> None
         """
         Args:

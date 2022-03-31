@@ -13,17 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Post-optimal analysis."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import atleast_1d, dot, hstack, ndarray, vstack, zeros_like
+from numpy import atleast_1d
+from numpy import dot
+from numpy import hstack
+from numpy import ndarray
+from numpy import vstack
+from numpy import zeros_like
 from numpy.linalg.linalg import norm
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers

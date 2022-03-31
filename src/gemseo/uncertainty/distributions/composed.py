@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Abstract classes defining the concept of joint probability distribution.
 
 Overview
@@ -81,13 +79,16 @@ or for all marginals (:meth:`.ComposedDistribution.plot_all`).
 Lastly, we can compute realizations of the random variable
 by means of the :meth:`.ComposedDistribution.compute_samples` method.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Sequence
+from typing import Iterable
+from typing import Sequence
 
-from numpy import array, concatenate, ndarray
+from numpy import array
+from numpy import concatenate
+from numpy import ndarray
 
 from gemseo.uncertainty.distributions.distribution import Distribution
 from gemseo.utils.string_tools import MultiLineString

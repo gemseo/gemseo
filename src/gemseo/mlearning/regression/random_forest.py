@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -29,10 +28,14 @@ The regression model relies on the RandomForestRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Mapping, Optional, Union
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
@@ -57,7 +60,7 @@ class RandomForestRegressor(MLRegressionAlgo):
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         n_estimators=100,  # type: int
-        **parameters
+        **parameters,
     ):  # type: (...) -> None
         """
         Args:
@@ -69,7 +72,7 @@ class RandomForestRegressor(MLRegressionAlgo):
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
-            **parameters  # type: Optional[Union[bool,int,float,str]]
+            **parameters,  # type: Optional[Union[bool,int,float,str]]
         )
         self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
 

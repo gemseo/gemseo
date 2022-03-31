@@ -13,16 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """|g| main package."""
+import logging as __logging
 
-import logging
+import pkg_resources as __pkg_resources
 
-from ._version import get_versions
+try:
+    __version__ = __pkg_resources.get_distribution("package-name").version
+except __pkg_resources.DistributionNotFound:
+    # package is not installed
+    pass
 
 # by default no logging is produced
-logging.getLogger(__name__).addHandler(logging.NullHandler())
-del logging
-
-__version__ = get_versions()["version"]
-del get_versions
+__logging.getLogger(__name__).addHandler(__logging.NullHandler())

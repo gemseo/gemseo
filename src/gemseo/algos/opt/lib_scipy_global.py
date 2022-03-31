@@ -13,22 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """scipy.optimize global optimization library wrapper."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from distutils.version import LooseVersion
-from typing import Any, Dict, Mapping, Tuple, Union
+from typing import Any
+from typing import Dict
+from typing import Mapping
+from typing import Tuple
+from typing import Union
 
 import scipy
+from distutils.version import LooseVersion
 from numpy import inf as np_inf
-from numpy import isfinite, ndarray, real
+from numpy import isfinite
+from numpy import ndarray
+from numpy import real
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
@@ -126,7 +132,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         ineq_tolerance=1e-6,  # type: float
         normalize_design_space=True,  # type: bool
         local_options=None,  # type: Mapping[str, Any]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> Dict[str, Any] # pylint: disable=W0221
         r"""Set the options default values.
 
@@ -216,7 +222,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
             ineq_tolerance=ineq_tolerance,
             normalize_design_space=normalize_design_space,
             local_options=local_options,
-            **kwargs
+            **kwargs,
         )
 
     def iter_callback(
@@ -328,7 +334,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 init=options["init"],
                 updating=options["updating"],
                 workers=options["workers"],
-                **opts
+                **opts,
             )
         else:  # pragma: no cover
             raise ValueError("Unknown algorithm: {}.".format(self.internal_algo_name))

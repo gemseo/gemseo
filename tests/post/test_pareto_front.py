@@ -13,24 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from unittest import mock  # noqa: F401
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared
@@ -87,7 +85,7 @@ def test_pareto(
         save=False,
         file_path="power",
         objectives=problem.get_all_functions_names(),
-        **kwargs
+        **kwargs,
     )
     post.figures
 
@@ -180,7 +178,7 @@ def test_pareto_binhkorn(
         save=False,
         file_path="binh_korn",
         objectives=["compute_binhkorn"],
-        **kwargs
+        **kwargs,
     )
     post.figures
 

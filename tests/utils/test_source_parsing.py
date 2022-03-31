@@ -13,23 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-
-from gemseo.utils.source_parsing import (
-    get_default_options_values,
-    get_options_doc,
-    parse_google,
-    parse_rest,
-)
+from gemseo.utils.source_parsing import get_default_options_values
+from gemseo.utils.source_parsing import get_options_doc
+from gemseo.utils.source_parsing import parse_google
+from gemseo.utils.source_parsing import parse_rest
 
 
 def function_with_google_docstring(arg1, arg2):

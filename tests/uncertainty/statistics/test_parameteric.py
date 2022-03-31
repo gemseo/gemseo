@@ -13,25 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import numbers
 
 import pytest
-from numpy import array, inf, vstack
-from numpy.random import exponential, lognormal, normal, rand, seed, weibull
-
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
+from numpy import array
+from numpy import inf
+from numpy import vstack
+from numpy.random import exponential
+from numpy.random import lognormal
+from numpy.random import normal
+from numpy.random import rand
+from numpy.random import seed
+from numpy.random import weibull
 
 
 @pytest.fixture(scope="module")

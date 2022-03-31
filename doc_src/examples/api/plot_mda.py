@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -29,16 +28,14 @@ related to MDAs, which are the |g|' objects dedicated to the
 feasibility of the multidisciplinary coupling. All classes
 implementing MDAs inherit from :class:`.MDA` which is an abstract class.
 """
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from gemseo.api import (
-    configure_logger,
-    create_discipline,
-    create_mda,
-    get_available_mdas,
-    get_mda_options_schema,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_mda
+from gemseo.api import get_available_mdas
+from gemseo.api import get_mda_options_schema
 
 configure_logger()
 

@@ -13,21 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
-
 """Graphs of the disciplines dependencies and couplings."""
-
 from __future__ import unicode_literals
 
 import logging
-
-# graphviz is an optional dependency
 from shutil import move
 from typing import Iterator
+
+# graphviz is an optional dependency
 
 try:
     import graphviz

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -25,7 +24,8 @@ A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of p
 whose values are stored in a :class:`.Dataset`. The user can select the style of line or
 markers, as well as the color.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from typing import List
 
@@ -33,7 +33,8 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
+from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class YvsX(DatasetPlot):

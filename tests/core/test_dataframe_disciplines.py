@@ -13,20 +13,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # Antoine DECHAUME
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import numpy as np
 import numpy.testing
 import pytest
-from numpy import array, ndarray
-from pandas import DataFrame
-
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.chain import MDOChain, MDOParallelChain
+from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
@@ -34,6 +31,9 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.utils.testing import compare_dict_of_arrays
+from numpy import array
+from numpy import ndarray
+from pandas import DataFrame
 
 from .test_discipline_data import to_df_key
 

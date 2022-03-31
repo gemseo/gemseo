@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted Weibull distribution."""
-
 import openturns as ot
-from numpy import exp, log
+from numpy import exp
+from numpy import log
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
@@ -80,7 +79,7 @@ class WeibullToleranceInterval(ToleranceInterval):
     ):  # type: (...) -> float
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
-        offset = -(size ** 0.5) * self.__lambda_function(coverage)
+        offset = -(size**0.5) * self.__lambda_function(coverage)
         student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(1 - alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location
@@ -93,7 +92,7 @@ class WeibullToleranceInterval(ToleranceInterval):
     ):  # type: (...) -> float
         xi_ = log(self.__scale)
         delta = 1.0 / self.__shape
-        offset = -(size ** 0.5) * self.__lambda_function(1 - coverage)
+        offset = -(size**0.5) * self.__lambda_function(1 - coverage)
         student = ot.Student(size - 1, offset, 1.0)
         bound = xi_ - delta * student.computeQuantile(alpha)[0] / (size - 1) ** 0.5
         return exp(bound) + self.__location

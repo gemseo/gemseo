@@ -13,17 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard: initial Scilab version
 #        :author: Arthur Piat: conversion Scilab to Matlab and complementary features
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab discipline.
 
 Overview
@@ -34,12 +31,16 @@ which enables to automatically create a wrapper of any Matlab function.
 This class can be used in order to interface any Matlab code
 and to use it inside a MDO process.
 """
-
 import logging
 import os
 import re
-from os.path import exists, join
-from typing import List, Mapping, Optional, Sequence, Union
+from os.path import exists
+from os.path import join
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import matlab.engine
 import numpy as np
@@ -47,13 +48,11 @@ import numpy as np
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.matlab.engine import get_matlab_engine
-from gemseo.wrappers.matlab.matlab_data_processor import (
-    MatlabDataProcessor,
-    convert_array_from_matlab,
-    double2array,
-    load_matlab_file,
-    save_matlab_file,
-)
+from gemseo.wrappers.matlab.matlab_data_processor import convert_array_from_matlab
+from gemseo.wrappers.matlab.matlab_data_processor import double2array
+from gemseo.wrappers.matlab.matlab_data_processor import load_matlab_file
+from gemseo.wrappers.matlab.matlab_data_processor import MatlabDataProcessor
+from gemseo.wrappers.matlab.matlab_data_processor import save_matlab_file
 from gemseo.wrappers.matlab.matlab_parser import MatlabParser
 
 LOGGER = logging.getLogger(__name__)
@@ -518,7 +517,7 @@ class MatlabDiscipline(MDODiscipline):
             out_vals = self.__engine.execute_function(
                 self.__fct_name,
                 *list_of_values,
-                nargout=len(self.__outputs) + len(self.__jac_output_names)
+                nargout=len(self.__outputs) + len(self.__jac_output_names),
             )
 
         except matlab.engine.MatlabExecutionError:

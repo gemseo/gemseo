@@ -14,24 +14,23 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 # Antoine DECHAUME
-
 """
 Create a discipline that uses pandas DataFrames
 ===============================================
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
+
+from gemseo.api import configure_logger
+from gemseo.core.discipline import MDODiscipline
+from numpy import ndarray
+from pandas import DataFrame
 
 # %%
 # Import
 # ------
-from numpy import ndarray
-from pandas import DataFrame
-
-from gemseo.api import configure_logger
-from gemseo.core.discipline import MDODiscipline
 
 configure_logger()
 

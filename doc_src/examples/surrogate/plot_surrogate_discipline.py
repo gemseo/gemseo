@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -34,20 +33,19 @@ with two inputs and two outputs:
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
 For that, we use a :class:`.SurrogateDiscipline` relying on a :class:`.MLRegressionAlgo`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
+
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import create_surrogate
+from numpy import array
 
 ###############################################################################
 # Import
 # ------
-from numpy import array
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-    create_surrogate,
-)
 
 configure_logger()
 

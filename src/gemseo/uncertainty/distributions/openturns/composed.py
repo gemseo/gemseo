@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a joint probability distribution from the OpenTURNS library.
 
 The :class:`.OTComposedDistribution` class is a concrete class
@@ -39,8 +37,10 @@ based on the OpenTURNS library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
-
-from typing import TYPE_CHECKING, Callable, Iterable, Sequence
+from typing import Callable
+from typing import Iterable
+from typing import Sequence
+from typing import TYPE_CHECKING
 
 import openturns as ots
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,8 +20,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quadratic approximations of functions from the optimization history."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from math import ceil
@@ -199,7 +198,7 @@ class QuadApprox(OptPostProcessor):
 
         for i in range(ndv):
             ax_i = plt.subplot(nrows, ncols, i + 1)
-            f_vals = xn_vars ** 2 * hessian[i, i] + self.grad_opt[i] * xn_vars
+            f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
             self.out_data_dict[i] = f_vals
 
             x_vars = self.unnormalize_vector(xn_vars, i, lower_bounds, upper_bounds)

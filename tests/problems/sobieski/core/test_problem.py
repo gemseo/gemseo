@@ -13,20 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import array, complex128, float64, ones, zeros
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import ones
+from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
-
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 @pytest.fixture(scope="module")

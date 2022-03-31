@@ -13,19 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store all the entries in memory."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Optional, Union
+from typing import Any
+from typing import Optional
+from typing import Union
 
-from gemseo.core.cache import AbstractFullCache, Data, JacobianData, OutputData
+from gemseo.core.cache import AbstractFullCache
+from gemseo.core.cache import Data
+from gemseo.core.cache import JacobianData
+from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
@@ -94,7 +99,7 @@ class MemoryFullCache(AbstractFullCache):
         self,
         index,  # type: int
         group,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> Union[OutputData,JacobianData]
         data = self.__data[index].get(group)
         if group == self._JACOBIAN_GROUP and data is not None:

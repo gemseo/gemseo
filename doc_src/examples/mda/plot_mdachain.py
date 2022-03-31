@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -26,9 +25,12 @@ MDAChain
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, create_discipline, create_mda
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_mda
 
 configure_logger()
 

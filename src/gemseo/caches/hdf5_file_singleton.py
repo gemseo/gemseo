@@ -18,19 +18,31 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """HDF5 file singleton used by the HDF5 cache."""
-from typing import ClassVar, Dict, Optional, Union
+from genericpath import exists
+from typing import ClassVar
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 import h5py
-from genericpath import exists
-from numpy import append, bytes_, ndarray, unicode_
+from numpy import append
+from numpy import bytes_
+from numpy import ndarray
+from numpy import unicode_
 from numpy.core.multiarray import array
-from six import PY2, with_metaclass
+from six import PY2
+from six import with_metaclass
 
-from gemseo.core.cache import AbstractFullCache, Data, hash_data_dict, to_real
+from gemseo.core.cache import AbstractFullCache
+from gemseo.core.cache import Data
+from gemseo.core.cache import hash_data_dict
+from gemseo.core.cache import to_real
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import Path, long, string_array, string_dtype
+from gemseo.utils.py23_compat import long
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_array
+from gemseo.utils.py23_compat import string_dtype
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 

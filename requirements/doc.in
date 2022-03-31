@@ -1,7 +1,5 @@
 # This file contains the dependencies used for generating the doc
 
--c test-python3.txt
-
 autodocsumm
 # This custom_inherit has fixes not integrated in the upstream one.
 git+https://github.com/AntoineD/custom_inherit.git@master

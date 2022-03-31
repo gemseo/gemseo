@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -79,17 +78,25 @@ modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
 the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import pickle
-from typing import Iterable, Mapping, Optional, Union
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from numpy import concatenate, ndarray, where, zeros
+from numpy import concatenate
+from numpy import ndarray
+from numpy import where
+from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.utils.py23_compat import Path
 
@@ -112,7 +119,7 @@ class PolynomialRegression(LinearRegression):
         fit_intercept=True,  # type: bool
         penalty_level=0.0,  # type: float
         l2_penalty_ratio=1.0,  # type: float
-        **parameters  # type: Optional[Union[float,int,str,bool]]
+        **parameters,  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
@@ -138,7 +145,7 @@ class PolynomialRegression(LinearRegression):
             fit_intercept=fit_intercept,
             penalty_level=penalty_level,
             l2_penalty_ratio=l2_penalty_ratio,
-            **parameters
+            **parameters,
         )
         self._poly = PolynomialFeatures(degree=degree, include_bias=False)
         self.parameters["degree"] = degree

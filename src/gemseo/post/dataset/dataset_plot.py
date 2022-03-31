@@ -32,23 +32,22 @@ from __future__ import annotations
 
 from collections import namedtuple
 from numbers import Number
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
 from numpy import linspace
 
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -317,7 +316,7 @@ class DatasetPlot(object):
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         properties=None,  # type: Optional[Mapping[str,DatasetPlotPropertyType]]
-        **plot_options  # type: Union[str,int,float,bool,Sequence[str]]
+        **plot_options,  # type: Union[str,int,float,bool,Sequence[str]]
     ):  # type: (...) -> List[Figure]
         """Execute the post processing.
 
@@ -358,7 +357,7 @@ class DatasetPlot(object):
         save,  # type:bool
         show,  # type: bool
         file_path,  # type: Path
-        **plot_options
+        **plot_options,
     ):  # type: (...)-> List[Figure]
         """Create the post processing and save or display it.
 

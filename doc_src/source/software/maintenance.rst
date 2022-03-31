@@ -29,18 +29,37 @@ and not a self contained application,
 it can be installed in environments
 with varying and unknown constraints
 on the versions of its dependencies.
-Thus the versions of its dependencies cannot be pinned\s,
+Thus the versions of its dependencies cannot be pinned,
 but a range of compatible versions shall be defined.
 
-All the dependencies shall be defined in :file:`setup.cfg`,
+All the dependencies of |g| shall be defined in :file:`setup.cfg`,
 this files does not tell where the packages will be pulled from.
 The dependencies could be provided by the packages repositories
 `pypi`_, `anaconda`_ or `conda-forge`_.
 
 Getting |g| to work with
-a common set of packages versions on several platforms
+a set of packages versions common to several platforms
 and python versions is tricky and challenging.
 This kind of work is mostly done by trials and errors.
+
+As opposed to the dependencies of |g|,
+the development dependencies shall be fully controlled.
+Thus their versions are pinned
+so all developers are provided
+with reproducible and working environments.
+The dependencies shall be updated
+at least once in a while (couple months)
+to benefit from packages improvements and bug fixes.
+
+The dependencies update is done with `pip-tools`_
+and from input requirements files.
+These input requirements files contain
+the minimum pinning requirements
+and are intended to be modified by maintainers.
+The `pip-tools`_ package provides the :command:`pip-compile`
+which can process an input requirements file
+to produce a fully pinned requirements file.
+The actual call to `pip-tools`_ is done via ``tox`` (see below).
 
 To reduce maintenance and complexity,
 our testing environments shall have the same packages providers
@@ -49,94 +68,16 @@ Furthermore it shall be identical to
 the references end-user environments
 under the same constraints.
 
-In the context of **tox**,
-the versions of the dependencies
-that shall be installed with :command:`conda`
-are defined in :file:`requirements/gemseo-conda.txt`,
-they are pulled from `conda-forge`_.
-All other dependencies are installed with :command:`pip`,
-they are pulled from `pypi`_.
-
 When a dependency is changed,
 :file:`setup.cfg` shall always be modified.
-If the changed dependency is installed with :command:`conda`,
-then :file:`gemseo-conda.txt` shall be modified.
-
-Documentation files like :file:`CREDITS.rst`
-and :file:`dependencies.rst` shall also be updated accordingly.
-
-CI cache
-~~~~~~~~
-
-To optimize the usage of the CI cache with gitlab,
-the cache shall match closely the contents of the **tox** environments used for testing.
-This is currently done by defining a cache affinity with
-the dependencies of the environments and the environment name.
-The dependencies are stored in the file
-:file:`requirements/gemseo.in` which is created automatically by a custom
-**pre-commit** hook defined in
-``tools/extract_req_in_from_setup_cfg.py``.
-
-Development dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-As opposed to the dependencies of |g|,
-the development dependencies can be fully controlled.
-Thus their versions are pinned
-so all developers are provided
-with reproducible and working environments.
-The dependencies shall be updated
-at least once in a while (couple months)
-to benefit from packages improvements and bug fixes.
-
-This is done with `pip-tools`_
-and from input requirements files.
-These input requirements files contain
-the minimum pinning requirements
-and are intended to be modified by maintainers.
-The `pip-tools`_ package provides the :command:`pip-compile`
-which can process an input requirements file
-to produce a fully pinned requirements file.
-
-We have the following input requirements files:
-
-- dev.in: with development tools with python 3 only,
-- doc.in: for building the documentation with python 3 only.
-
-To update them:
-
-.. code-block:: shell
-
-   conda run -p .tox/dev pip-compile -U requirements/dev.in
-   conda run -p .tox/doc pip-compile -U requirements/doc.in
-
-.. note::
-
-    Append ``-win`` to the environment names under windows.
-
-.. note::
-
-   To reduce discrepancy among the environments,
-   :file:`requirements/test.txt`
-   shall be working for all the python 3 testing environments.
-
-Git hooks are defined and run with `pre-commit`_.
-It relies on packages that are managed
-with `pre-commit`_ instead of `pip-tools`_.
-To update them:
-
-.. code-block:: shell
-
-   conda run -p .tox/dev pre-commit autoupdate
-
-.. note::
-
-    Append ``-win`` to the environment names under windows.
 
 .. warning::
 
    All environments and tools shall be checked
    whenever dependencies have been changed.
+
+Documentation files like :file:`CREDITS.rst`
+and :file:`dependencies.rst` shall also be updated accordingly.
 
 Test dependencies
 -----------------
@@ -144,37 +85,56 @@ Test dependencies
 The test dependencies are defined in :file:`setup.cfg`
 so a end-user can easily run the |g| tests.
 
-To update them,
-change the ``test`` key of the
+To add or constrain them,
+if needed,
+change the contents of the ``test`` key in the
 ``[options.extras_require]`` section
-in :file:`setup.cfg`,
-then execute
+of :file:`setup.cfg`,
+then execute:
 
 .. code-block:: shell
 
-    tox -e style
+    tox -e check
 
 This will call a pre-commit hook that will update
 :file:`requirements/test.in`.
-Then update the actual test requirements with:
+Using a tool prevents human copy/paste errors.
+
+Update the actual test requirements with:
 
 .. code-block:: shell
 
-   conda run -p .tox/dev pip-compile -U requirements/test.in -o requirements/test.txt
+    tox -e update-deps-test
+    tox -e update-deps-test-py27
 
 .. note::
 
-    Append ``-win`` to the environment names under windows.
+   To reduce discrepancy among the environments,
+   :file:`requirements/test.txt`,
+   produced from :file:`requirements/test.in`,
+   shall be working for all the python 3 testing environments.
 
-.. warning::
+Other dependencies
+~~~~~~~~~~~~~~~~~~
 
-   All environments and tools shall be checked
-   whenever dependencies have been changed.
+We have the following input requirements files:
+
+- doc.in: for building the documentation.
+- dist.in: for creating the distribution.
+- check.in: for checking the source files.
+
+To update them:
+
+.. code-block:: shell
+
+    tox -e update-deps-doc
+    tox -e update-deps-dist
+    tox -e update-deps-check
 
 Testing pypi packages
 ---------------------
 
-Run (append ``-win`` on windows)
+Run
 
 .. code-block:: shell
 
@@ -185,7 +145,7 @@ For all the supported Python versions ``X``.
 Testing conda-forge packages
 ----------------------------
 
-Run (append ``-win`` on windows)
+Run
 
 .. code-block:: shell
 
@@ -196,7 +156,7 @@ For all the supported Python versions ``X``.
 Testing anaconda environment file
 ---------------------------------
 
-Run (append ``-win`` on windows)
+Run
 
 .. code-block:: shell
 

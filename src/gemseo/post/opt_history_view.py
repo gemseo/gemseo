@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -21,30 +20,47 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic display of optimization history: functions and x."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
 import matplotlib.gridspec as gridspec
 import pylab
 from matplotlib.figure import Figure
-from matplotlib.ticker import LogFormatter, MaxNLocator
+from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
-from numpy import append, arange, argmin, array, atleast_2d, concatenate, hstack, isnan
+from numpy import append
+from numpy import arange
+from numpy import argmin
+from numpy import array
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import hstack
+from numpy import isnan
 from numpy import log10 as np_log10
 from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
-from numpy import ndarray, ones, ones_like
+from numpy import ndarray
+from numpy import ones
+from numpy import ones_like
 from numpy import sort as np_sort
-from numpy import vstack, where
+from numpy import vstack
+from numpy import where
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
+from gemseo.post.core.colormaps import PARULA
+from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.core.hessians import SR1Approx
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm

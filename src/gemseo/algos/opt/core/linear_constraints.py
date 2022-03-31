@@ -13,13 +13,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
-from numpy import hstack, isfinite, vstack, zeros
+from numpy import hstack
+from numpy import isfinite
+from numpy import vstack
+from numpy import zeros
 
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 

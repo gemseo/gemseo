@@ -14,20 +14,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test clustering measure module."""
-from __future__ import absolute_import, division, unicode_literals
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import array
-
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import (
-    MLClusteringAlgo,
-    MLPredictiveClusteringAlgo,
-)
-from gemseo.mlearning.qual_measure.cluster_measure import (
-    MLClusteringMeasure,
-    MLPredictiveClusteringMeasure,
-)
+from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
+from gemseo.mlearning.qual_measure.cluster_measure import MLClusteringMeasure
+from gemseo.mlearning.qual_measure.cluster_measure import MLPredictiveClusteringMeasure
+from numpy import array
 
 
 @pytest.fixture

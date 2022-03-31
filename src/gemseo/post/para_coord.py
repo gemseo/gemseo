@@ -13,15 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A parallel coordinates plot of functions and x."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import Sequence
@@ -29,10 +28,12 @@ from typing import Sequence
 import matplotlib as mpl
 from matplotlib import pyplot
 from matplotlib.figure import Figure
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 
 LOGGER = logging.getLogger(__name__)
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -37,9 +36,12 @@ the scaling operation linearly transforms the original variable math:`z`
 such that in the scaled space,
 the original data have zero mean and unit standard deviation.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from numpy import mean, ndarray, std
+from numpy import mean
+from numpy import ndarray
+from numpy import std
 from past.utils import old_div
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
@@ -66,7 +68,7 @@ class StandardScaler(Scaler):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         average = mean(data, 0)
         std_ = std(data, 0)

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 """
 Machine learning algorithm selection example
 ============================================
@@ -22,11 +21,11 @@ Machine learning algorithm selection example
 In this example we use the :class:`.MLAlgoSelection` class to perform a grid
 search over different algorithms and hyperparameter values.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
@@ -45,7 +44,7 @@ np.random.seed(54321)
 # We choose :math:`n=20` and :math:`\sigma=0.05`.
 n = 20
 x = np.sort(np.random.random(n))
-y = x ** 2 + np.random.normal(0, 0.05, n)
+y = x**2 + np.random.normal(0, 0.05, n)
 
 dataset = Dataset()
 dataset.add_variable("x", x[:, None], Dataset.INPUT_GROUP)

@@ -13,27 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import sys
 
 import pytest
-from numpy import array, isclose
-
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.py23_compat import Path
+from numpy import array
+from numpy import isclose
 
 
 @pytest.mark.usefixtures("tmp_wd")

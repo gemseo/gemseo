@@ -13,24 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Tests for the class SensitivityAnalysis."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import sys
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array, linspace, pi, sin
-from numpy.testing import assert_array_equal
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.core.dataset import Dataset
@@ -42,6 +36,12 @@ from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
 from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
+from numpy import array
+from numpy import linspace
+from numpy import pi
+from numpy import sin
+from numpy.testing import assert_array_equal
 
 pytestmark = pytest.mark.skipif(
     PY2, reason="image comparison does not work with python 2"
@@ -74,7 +74,7 @@ class Ishigami1D(MDODiscipline):
     def _run(self):
         x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
         time = linspace(0, 1, 100)
-        output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3 ** 4 * sin(x_1) * time
+        output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
         self.store_local_data(out=output)
 
 

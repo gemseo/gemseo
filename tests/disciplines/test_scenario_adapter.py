@@ -13,36 +13,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
 
 import pytest
-from numpy import all as np_all
-from numpy import allclose, array, matmul, ones, zeros, zeros_like
-
 from gemseo.core.chain import MDOChain
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.disciplines.scenario_adapter import (
-    MDOObjScenarioAdapter,
-    MDOScenarioAdapter,
-)
+from gemseo.disciplines.scenario_adapter import MDOObjScenarioAdapter
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.derivatives_approx import DisciplineJacApprox
+from numpy import all as np_all
+from numpy import allclose
+from numpy import array
+from numpy import matmul
+from numpy import ones
+from numpy import zeros
+from numpy import zeros_like
 
 
 def create_design_space():

@@ -13,29 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """OpenTURNS DOE algorithms."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import openturns
-from numpy import array, full
+from numpy import array
+from numpy import full
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
@@ -151,7 +150,7 @@ class OpenTURNS(DOELibrary):
         n_replicates=1000,  # type: int
         seed=1,  # type: int
         max_time=0,  # type: float
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str,OptionType]
         r"""Set the options.
 
@@ -197,7 +196,7 @@ class OpenTURNS(DOELibrary):
             n_replicates=n_replicates,
             seed=seed,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
         return options
@@ -270,7 +269,7 @@ class OpenTURNS(DOELibrary):
         dimension,  # type: int
         n_samples=None,  # type: Optional[int]
         seed=None,  # type:  Optional[int]
-        **options  # type: OptionType
+        **options,  # type: OptionType
     ):  # type: (...) -> ndarray
         """Generate the samples.
 
@@ -366,7 +365,7 @@ class OpenTURNS(DOELibrary):
         self,
         n_samples,  # type: int
         dimension,  # type: int
-        **options  # type: OptionType
+        **options,  # type: OptionType
     ):  # type: (...) -> ndarray
         """Generate a DOE using the LHS algorithm, possibly centered or optimized.
 

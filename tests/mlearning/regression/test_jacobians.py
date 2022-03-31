@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doeving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Test analytical Jacobian expressions against finite difference approximations.
 
 This is done using the built in check method of MDODiscipline. The regression models are
@@ -27,12 +25,10 @@ thus converted to surrogate disciplines. The Jacobians are checked over differen
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import arange, array
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
@@ -43,6 +39,8 @@ from gemseo.mlearning.regression.rbf import RBFRegression
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from numpy import arange
+from numpy import array
 
 LEARNING_SIZE = 10
 
@@ -181,11 +179,11 @@ def test_polyreg(dataset, transformer, fit_intercept, degree):
 
 
 def _r3(r):
-    return r ** 3
+    return r**3
 
 
 def _der_r3(x, norx, eps):
-    return 3.0 * x * norx / eps ** 3
+    return 3.0 * x * norx / eps**3
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)

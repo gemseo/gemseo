@@ -13,18 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mixture of experts regression module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array, hstack, linspace, meshgrid, ones_like
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
@@ -33,9 +31,15 @@ from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.regression.moe import MixtureOfExperts
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from numpy import allclose
+from numpy import array
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import ones_like
 
 ROOT_LEARNING_SIZE = 6
-LEARNING_SIZE = ROOT_LEARNING_SIZE ** 2
+LEARNING_SIZE = ROOT_LEARNING_SIZE**2
 
 INPUT_VALUE = {"x_1": array([1.0]), "x_2": array([2.0])}
 ARRAY_INPUT_VALUE = array([1.0, 2.0])

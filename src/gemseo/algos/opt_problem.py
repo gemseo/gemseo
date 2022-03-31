@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Damien Guenot
@@ -59,57 +58,64 @@ various getters and setters are available,
 as well as methods to export the :class:`.Database`
 to an HDF file or to a :class:`.Dataset` for future post-processing.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
 from functools import reduce
 from numbers import Number
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import h5py
 import numpy
 from numpy import abs as np_abs
 from numpy import all as np_all
 from numpy import any as np_any
-from numpy import (
-    argmin,
-    array,
-    array_equal,
-    inf,
-    insert,
-    issubdtype,
-    multiply,
-    nan,
-    ndarray,
-)
+from numpy import argmin
+from numpy import array
+from numpy import array_equal
+from numpy import inf
+from numpy import insert
+from numpy import issubdtype
+from numpy import multiply
+from numpy import nan
+from numpy import ndarray
 from numpy import number as np_number
 from numpy import where
 from numpy.core import atleast_1d
 from numpy.linalg import norm
 
-from gemseo.algos.aggregation.aggregation_func import (
-    aggregate_iks,
-    aggregate_ks,
-    aggregate_max,
-    aggregate_sum_square,
-)
+from gemseo.algos.aggregation.aggregation_func import aggregate_iks
+from gemseo.algos.aggregation.aggregation_func import aggregate_ks
+from gemseo.algos.aggregation.aggregation_func import aggregate_max
+from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOFunction,
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
+from gemseo.utils.derivatives_approx import ComplexStep
+from gemseo.utils.derivatives_approx import FirstOrderFD
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import PY3, string_array, string_types
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.py23_compat import PY3
+from gemseo.utils.py23_compat import string_array
+from gemseo.utils.py23_compat import string_types
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -226,7 +232,7 @@ class OptimizationProblem(object):
         differentiation_method=USER_GRAD,  # type: str
         fd_step=1e-7,  # type: float
         parallel_differentiation=False,  # type: bool
-        **parallel_differentiation_options  # type: Union[int,bool]
+        **parallel_differentiation_options,  # type: Union[int,bool]
     ):  # type: (...) -> None
         # noqa: D205, D212, D415
         """
@@ -1165,7 +1171,7 @@ class OptimizationProblem(object):
             parallel=self.__parallel_differentiation,
             design_space=self.design_space,
             normalize=normalize,
-            **self.__parallel_differentiation_options
+            **self.__parallel_differentiation_options,
         )
         func.jac = differentiation_object.f_gradient
 

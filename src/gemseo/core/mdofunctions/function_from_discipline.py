@@ -21,12 +21,17 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction subclass to create a function from an MDODiscipline."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import TYPE_CHECKING, Iterable, Optional, Sequence
+from typing import Iterable
+from typing import Optional
+from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import empty, ndarray
+from numpy import empty
+from numpy import ndarray
 
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.mdofunctions.mdo_function import MDOFunction

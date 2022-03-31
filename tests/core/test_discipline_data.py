@@ -13,19 +13,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # Antoine DECHAUME
-
 from copy import deepcopy
-from typing import Any, Mapping
+from typing import Any
+from typing import Mapping
 
 import pandas as pd
 import pytest
-from numpy.testing import assert_array_equal
-
 from gemseo.core.discipline_data import DisciplineData
 from gemseo.utils.py23_compat import PY2
+from numpy.testing import assert_array_equal
 
 
 def to_df_key(

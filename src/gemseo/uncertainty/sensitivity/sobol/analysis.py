@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Class for the estimation of Sobol' indices.
 
 Let us consider the model :math:`Y=f(X_1,\ldots,X_d)`
@@ -98,29 +96,34 @@ The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
 `OpenTURNS capabilities <http://www.openturns.org/>`_.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
-from openturns import (
-    JansenSensitivityAlgorithm,
-    MartinezSensitivityAlgorithm,
-    MauntzKucherenkoSensitivityAlgorithm,
-    SaltelliSensitivityAlgorithm,
-    Sample,
-)
+from openturns import JansenSensitivityAlgorithm
+from openturns import MartinezSensitivityAlgorithm
+from openturns import MauntzKucherenkoSensitivityAlgorithm
+from openturns import SaltelliSensitivityAlgorithm
+from openturns import Sample
 from past.utils import old_div
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
-from gemseo.uncertainty.sensitivity.analysis import IndicesType, SensitivityAnalysis
+from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.py23_compat import Path
 
@@ -428,7 +431,7 @@ class SobolAnalysis(SensitivityAnalysis):
             yerr,
             label="First order",
             transform=trans2,
-            **errorbar_options
+            **errorbar_options,
         )
         intervals = self.get_intervals(False)
         intervals = intervals[output[0]][output[1]]
@@ -448,7 +451,7 @@ class SobolAnalysis(SensitivityAnalysis):
             yerr,
             label="Total order",
             transform=trans1,
-            **errorbar_options
+            **errorbar_options,
         )
         ax.legend(
             loc="lower left",

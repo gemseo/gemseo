@@ -13,31 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import sys
 from copy import deepcopy
-from os.path import dirname, join
+from os.path import dirname
+from os.path import join
 from typing import List
 from unittest import mock
 
 import pytest
-from numpy import array
-
 from gemseo.api import create_discipline
-from gemseo.wrappers.disc_from_exe import (
-    DiscFromExe,
-    FoldersIter,
-    Parsers,
-    parse_key_value_file,
-    parse_outfile,
-    parse_template,
-)
+from gemseo.wrappers.disc_from_exe import DiscFromExe
+from gemseo.wrappers.disc_from_exe import FoldersIter
+from gemseo.wrappers.disc_from_exe import parse_key_value_file
+from gemseo.wrappers.disc_from_exe import parse_outfile
+from gemseo.wrappers.disc_from_exe import parse_template
+from gemseo.wrappers.disc_from_exe import Parsers
+from numpy import array
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum

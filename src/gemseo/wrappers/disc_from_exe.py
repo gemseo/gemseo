@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Make a discipline from an executable."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import re
@@ -28,20 +28,30 @@ import subprocess
 import sys
 from ast import literal_eval
 from copy import deepcopy
-from multiprocessing import Lock, Manager
-from os import listdir, mkdir
+from multiprocessing import Lock
+from multiprocessing import Manager
+from os import listdir
+from os import mkdir
 from os.path import join
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 from uuid import uuid1
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.core.data_processor import DataProcessor  # noqa: F401
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
-from gemseo.utils.py23_compat import Path, xrange
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import xrange
 
 LOGGER = logging.getLogger(__name__)
 

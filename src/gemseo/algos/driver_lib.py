@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Damien Guenot - 26 avr. 2016
@@ -35,32 +34,37 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import logging
 import string
 from time import time
-from typing import Callable, List, Optional, Union
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Union
 
 import tqdm
-from numpy import ndarray, ones_like, where, zeros_like
-from tqdm.utils import _unicode, disp_len
+from numpy import ndarray
+from numpy import ones_like
+from numpy import where
+from numpy import zeros_like
+from tqdm.utils import _unicode
+from tqdm.utils import disp_len
 
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.stop_criteria import (
-    DesvarIsNan,
-    FtolReached,
-    FunctionIsNan,
-    MaxIterReachedException,
-    MaxTimeReached,
-    TerminationCriterion,
-    XtolReached,
-)
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
+from gemseo.algos.stop_criteria import MaxTimeReached
+from gemseo.algos.stop_criteria import TerminationCriterion
+from gemseo.algos.stop_criteria import XtolReached
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
@@ -289,7 +293,7 @@ class DriverLib(AlgoLib):
         self,
         problem,  # type: OptimizationProblem
         algo_name,  # type: str
-        **options  # type: DriverLibOptionType
+        **options,  # type: DriverLibOptionType
     ):  # type: (...) -> None
         """To be overridden by subclasses. Specific method to be executed just before
         _run method call.
@@ -363,7 +367,7 @@ class DriverLib(AlgoLib):
         algo_name=None,  # type: Optional[str]
         eval_obs_jac=False,  # type: bool
         skip_int_check=False,  # type: bool
-        **options  # type: DriverLibOptionType
+        **options,  # type: DriverLibOptionType
     ):  # type: (...) -> OptimizationResult
         """Execute the driver.
 

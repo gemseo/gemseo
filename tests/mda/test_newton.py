@@ -13,38 +13,37 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
 import sys
 
 import pytest
-from numpy import array, float64, isclose, linalg, ones
-
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.core.parallel_execution import IS_WIN
-from gemseo.mda.newton import MDANewtonRaphson, MDAQuasiNewton
-from gemseo.problems.sellar.sellar import (
-    X_SHARED,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.mda.newton import MDANewtonRaphson
+from gemseo.mda.newton import MDAQuasiNewton
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import float64
+from numpy import isclose
+from numpy import linalg
+from numpy import ones
 
 from .test_gauss_seidel import SelfCoupledDisc
 

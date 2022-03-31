@@ -13,27 +13,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for K-means clustering model."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 
 import pytest
-from numpy import allclose, array, integer, ndarray, vstack
-from numpy.linalg import eigvals
-from numpy.random import multivariate_normal, seed
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.py23_compat import long
+from numpy import allclose
+from numpy import array
+from numpy import integer
+from numpy import ndarray
+from numpy import vstack
+from numpy.linalg import eigvals
+from numpy.random import multivariate_normal
+from numpy.random import seed
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])

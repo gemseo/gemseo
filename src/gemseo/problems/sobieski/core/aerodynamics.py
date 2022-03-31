@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation
 #               and/or initial documentation
@@ -25,16 +24,25 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Aerodynamics discipline for the Sobieski's SSBJ use case."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from math import pi
-from typing import Dict, Optional, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
-from numpy import array, cos, ndarray, sin, sqrt, zeros
+from numpy import array
+from numpy import cos
+from numpy import ndarray
+from numpy import sin
+from numpy import sqrt
+from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
-from gemseo.problems.sobieski.core.utils import DEG_TO_RAD, SobieskiBase
+from gemseo.problems.sobieski.core.utils import DEG_TO_RAD
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -89,9 +97,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             The induced drag coefficient.
         """
         self.__k_aero = (
-            (mach ** 2 - 1)
+            (mach**2 - 1)
             * self.math.cos(sweep * DEG_TO_RAD)
-            / (4.0 * self.math.sqrt(sweep ** 2 - 1) - 2)
+            / (4.0 * self.math.sqrt(sweep**2 - 1) - 2)
         )
         return self.__k_aero
 
@@ -113,7 +121,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         up_velo = -DEG_TO_RAD * (mach * mach - 1.0) * sin(sweep * DEG_TO_RAD)
         v_velo = 4.0 * sqrt(sweep * sweep - 1.0) - 2.0
         vp_velo = 4.0 * sweep * (sweep * sweep - 1.0) ** -0.5
-        return (up_velo * v_velo - u_velo * vp_velo) / v_velo ** 2
+        return (up_velo * v_velo - u_velo * vp_velo) / v_velo**2
 
     @staticmethod
     def __compute_dk_aero_dmach(
@@ -133,7 +141,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         return (
             (2.0 * mach)
             * cos(sweep * pi / 180.0)
-            / (4.0 * sqrt(sweep ** 2 - 1.0) - 2.0)
+            / (4.0 * sqrt(sweep**2 - 1.0) - 2.0)
         )
 
     def __compute_dadimcf_dcf(
@@ -375,7 +383,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             The derivative of the lift coefficient with respect to the altitude.
         """
         drhov2_dh = self.__compute_drhov2_dh(altitude, mach)
-        return -2 * ac_mass / wing_area * drhov2_dh / (self.__rhov2 ** 2)
+        return -2 * ac_mass / wing_area * drhov2_dh / (self.__rhov2**2)
 
     def __compute_dcl_dmach(
         self,

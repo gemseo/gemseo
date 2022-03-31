@@ -17,12 +17,11 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from numpy import eye, ones
-from scipy.sparse.linalg import aslinearoperator
-
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
+from numpy import eye
+from numpy import ones
+from scipy.sparse.linalg import aslinearoperator
 
 
 def test_symmetric_filter():

@@ -14,12 +14,10 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Analytical test case # 1
 ========================
@@ -30,13 +28,16 @@ Analytical test case # 1
 #
 # Imports
 # -----------------------------
-from __future__ import division, unicode_literals
-
-from numpy import cos, exp, ones, sin
-from scipy import optimize
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from numpy import cos
+from numpy import exp
+from numpy import ones
+from numpy import sin
+from scipy import optimize
 
 configure_logger()
 

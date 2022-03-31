@@ -13,28 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import division
+from __future__ import unicode_literals
 
-
-from __future__ import division, unicode_literals
-
-from os.path import exists, join
+from os.path import exists
+from os.path import join
 
 import pytest
-from matplotlib import pyplot as plt
-from numpy import array, ndarray
-from numpy.random import rand, seed
-from numpy.testing import assert_array_equal
-
-from gemseo.algos.pareto_front import (
-    compute_pareto_optimal_points,
-    generate_pareto_plots,
-)
+from gemseo.algos.pareto_front import compute_pareto_optimal_points
+from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.utils.py23_compat import Path
+from matplotlib import pyplot as plt
+from numpy import array
+from numpy import ndarray
+from numpy.random import rand
+from numpy.random import seed
+from numpy.testing import assert_array_equal
 
 
 @pytest.fixture()

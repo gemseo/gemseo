@@ -13,23 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import array
-
 from gemseo.problems.scalable.parametric.core.problem import TMProblem
-from gemseo.problems.scalable.parametric.core.variables import (
-    X_SHARED_NAME,
-    get_coupling_name,
-    get_x_local_name,
-)
+from gemseo.problems.scalable.parametric.core.variables import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variables import get_x_local_name
+from gemseo.problems.scalable.parametric.core.variables import X_SHARED_NAME
+from numpy import array
 
 
 @pytest.fixture

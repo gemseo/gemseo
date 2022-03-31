@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -61,21 +60,28 @@ the Jacobian prediction method of the regression algorithm should return the mat
 This concept is implemented through the :class:`.MLRegressionAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
-from typing import Callable, Iterable, Mapping, NoReturn, Optional
+from typing import Callable
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
 
-from numpy import eye, matmul, ndarray
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class MLRegressionAlgo(MLSupervisedAlgo):
@@ -97,14 +103,14 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
+        **parameters,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         super(MLRegressionAlgo, self).__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
-            **parameters
+            **parameters,
         )
 
     class DataFormatters(MLSupervisedAlgo.DataFormatters):

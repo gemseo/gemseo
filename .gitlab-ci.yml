@@ -1,11 +1,10 @@
 default:
-  image: continuumio/miniconda3:4.9.2
+  image: registry.gitlab.com/gemseo/dev/gemseo/multi-python
 
 # Stages executed sequentially until a job fails.
 stages:
   - check
   - tests
-  - coverage
 
 variables:
   TEST_ALL_ENVS:
@@ -14,57 +13,40 @@ variables:
   TEST_ANACONDA_ENV_FILE:
     value: "false"
     description: "Whether to run the tox tests for the anaconda env file."
-  TOX_CONDA_VERSION: "0.8.0"
   MATLAB_PYTHON_WRAPPER_WINDOWS:
       value: ""
       description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
-  CODECOV_VERSION: "2.1.12"
 
 workflow:
   # Prevent duplicated pipelines,
   # see https://docs.gitlab.com/14.3/ee/ci/yaml/index.html#switch-between-branch-pipelines-and-merge-request-pipelines.
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
       when: never
-    - if: '$CI_COMMIT_BRANCH'
+    - when: always
 
 # Jobs are defined as a hierarchy from the most common settings to the specific ones.
 # TODO: make the hierarchy more readable
 # .base
 # .linux
 # .windows
-# .additional-tests
-#     style
+# .extended-tests
+#     check
 #     pylint
 #     .tests
 #         .tests-linux
-#             py38
-#             py37,py39
+#             py39
+#             py37,py38
 #         .tests-windows
-#             py38-win
-#             py37-win,py39-win
+#             py39-win
+#             py37-win,py38-win
 
 # Base job template.
 .base:
   interruptible: true
-
-  # before_script:
-    # # Create the env with tox.
-    # - conda create -p .tox-env pip
-    # # Install tox-conda (will also install tox).
-    # - conda run -p .tox-env --no-capture-output pip install tox-conda==$TOX_CONDA_VERSION
-    # # Show debug info on the anaconda settings.
-    # - conda info --all
-
   script:
     # Run a tox env named after a job name.
-    - tox -e $CI_JOB_NAME
-
-  # cache:
-  #   - key: tox-env-$TOX_CONDA_VERSION
-  #     paths:
-  #       - .tox-env
+    - tox -e $TOX_ENV_NAME
 
 # Specific settings for linux jobs.
 .linux:
@@ -73,13 +55,7 @@ workflow:
     - docker
   variables:
     # Caches on the CI runner host.
-    CONDA_PKGS_DIRS: "/opt/gitlab-runner-cache/conda"
     PIP_CACHE_DIR: "/opt/gitlab-runner-cache/pip"
-  before_script:
-    - python -m venv .tox-venv
-    - source .tox-venv/bin/activate
-    - python -m pip install tox-conda==$TOX_CONDA_VERSION
-
 
 # Specific settings for windows jobs.
 .windows:
@@ -88,16 +64,11 @@ workflow:
     - windows-server-2012
   variables:
     # Caches on the CI runner host.
-    CONDA_PKGS_DIRS: "E:\\conda"
-    PIP_CACHE_DIR: "E:\\pip"
+    PIP_CACHE_DIR: "C:\\pip"
     MATLAB_PYTHON_WRAPPER: $MATLAB_PYTHON_WRAPPER_WINDOWS
-  before_script:
-    - python -m venv .tox-venv
-    - .tox-venv\Scripts\Activate.ps1
-    - python -m pip install tox-conda==$TOX_CONDA_VERSION
 
 # Jobs for the check stage.
-style:
+check:
   extends:
     - .base
     - .linux
@@ -106,34 +77,7 @@ style:
     PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
     # Pass the cache locations through the tox env.
     TOX_TESTENV_PASSENV: PIP_CACHE_DIR PRE_COMMIT_HOME
-  cache:
-    # The extends key does not work for lists.
-    # - !reference [.base, cache]
-    # - key:
-    #     files:
-    #       - requirements/style.txt
-    #     prefix: $CI_JOB_NAME
-    #   paths:
-    #     - .tox/$CI_JOB_NAME
-    - key:
-        files:
-          - .pre-commit-config.yaml
-        prefix: pre-commit-cache
-      paths:
-        - .cache/pre-commit
-
-# pylint:
-#   extends:
-#     - .base
-#     - .linux
-#   stage: check
-#   allow_failure: true
-#   cache:
-#     key:
-#       files:
-#         - requirements/pylint.txt
-#     # Always create the cache.
-#     when: always
+    TOX_ENV_NAME: check
 
 # Tests stage.
 
@@ -142,137 +86,104 @@ style:
   extends: .base
   stage: tests
   variables:
-    COVERAGE_FILE: $CI_JOB_NAME-coverage.xml
-    # Use coverage and generate reports,
-    # via env variables because passing extra command line options to tox within the current file is cumbersome.
+    COVERAGE_FILE: coverage.xml
     # The junitxml is for showing the number of tests if gitlab UI.
-    PYTEST_ADDOPTS: --cov --cov-report=xml --junitxml=report.xml
+    PYTEST_ADDOPTS: --junitxml=report.xml
     TOX_TESTENV_PASSENV: PYTEST_ADDOPTS
-  # cache:
-  #   - !reference [.base, cache]
-  #   - key:
-  #       # Define the cache affinity such that it is tied to the content of the tests env.
-  #       files:
-  #         # The packages installed in an env are loosely defined in those requirements files
-  #         #   (not strictly because these files only define the unpinned direct dependencies).
-  #         - requirements/gemseo.in
-  #         # We can only have 2 files as cache keys, changes for python 2 shall hopefully follow the ones for python 3.
-  #         # NOTE: This will be properly fixed when we'll use pip-compile'd gemseo.in.
-  #         - requirements/gemseo-conda.txt
-  #       # Some packages will change when the python version changes, hence the tox env name.
-  #       prefix: $CI_JOB_NAME
-  #     paths:
-  #       - .tox/$CI_JOB_NAME
   artifacts:
     # Send the artifacts even on job failure.
     when: always
     reports:
       junit: report.xml
       cobertura: $COVERAGE_FILE
-    paths:
-      # For the coverage stage.
-      - $COVERAGE_FILE
   rules:
     # Only run a test job when the following files have changed.
     - changes:
         - src/**/*.*
         - tests/**/*.*
-        - requirements/gemseo-conda.txt
         - requirements/test.txt
         - setup.cfg
         - tox.ini
         - .gitlab-ci.yml
+  after_script:
+    - codecov -t $CODECOV_TOKEN -f $COVERAGE_FILE --required
 
 # Common settings for windows tests jobs.
 .tests-windows:
   extends:
     - .tests
     - .windows
-  after_script:
-    - Rename-Item coverage.xml $COVERAGE_FILE
-    # Workaround coverage files path issues, see https://gitlab.com/gitlab-org/gitlab/-/issues/217664
-    - (Get-Content $COVERAGE_FILE) -replace 'filename=".*/site-packages', 'filename="src' |  Out-File "$COVERAGE_FILE"
 
 # Common settings for linux (linux) jobs.
 .tests-linux:
   extends:
     - .tests
     - .linux
-  after_script:
-    - mv coverage.xml $COVERAGE_FILE
-    # Workaround coverage files path issues, see https://gitlab.com/gitlab-org/gitlab/-/issues/217664
-    - sed "s|filename=\".*/site-packages|filename=\"src|" -i $COVERAGE_FILE
 
 # Jobs for the tests stage.
-py38:
-  extends: .tests-linux
 
-py38-win:
-  extends: .tests-windows
+.base-tests:
+  variables:
+    TOX_ENV_NAME: py39-coverage
 
-# Define jobs for minor env with this additional parent.
-.additional-tests:
+base-linux:
+  extends:
+    - .tests-linux
+    - .base-tests
+
+base-windows:
+  extends:
+    - .tests-windows
+    - .base-tests
+
+# Define jobs for minor python env with this extended parent.
+.extended-tests:
   rules:
-    # For selecting from gitlab UI
-    - if: '$TEST_ALL_ENVS == "true"'
-    # Run for commits on the master branch
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    # For selecting from gitlab UI.
+    - if: '$TEST_ALL_ENVS == "false"'
+      when: never
+    # Run for commits pushed on the master branch.
+    - if: '$CI_COMMIT_BRANCH != "master" && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - !reference [.tests, rules]
+  parallel:
+    matrix:
+      - TOX_ENV_NAME:
+        - py37-coverage
+        - py38-coverage
 
-py37:
+extended-linux:
   extends:
     - .tests-linux
-    - .additional-tests
+    # Last so its rules applies.
+    - .extended-tests
 
-py39:
-  extends:
-    - .tests-linux
-    - .additional-tests
-
-py37-win:
+extended-windows:
   extends:
     - .tests-windows
-    - .additional-tests
-
-py39-win:
-  extends:
-    - .tests-windows
-    - .additional-tests
+    # Last so its rules applies.
+    - .extended-tests
 
 # Jobs for testing anaconda env files.
 .anaconda-env-file:
   rules:
-    # For selecting from gitlab UI
+    # For selecting from gitlab UI.
     - if: '$TEST_ANACONDA_ENV_FILE == "true"'
-    # Run for commits on the master branch
+    # Run for commits on the master branch.
     - if: '$CI_COMMIT_BRANCH == "master"'
+  variables:
+    TOX_ENV_NAME: anaconda-env-file
 
-anaconda-env-file:
+anaconda-env-file-linux:
   stage: tests
   extends:
     - .base
     - .linux
     - .anaconda-env-file
 
-anaconda-env-file-win:
+anaconda-env-file-windows:
   stage: tests
   extends:
     - .base
     - .windows
     - .anaconda-env-file
-
-# Job for the coverage analysis.
-codecov:
-  stage: coverage
-  extends:
-    - .base
-    - .linux
-  rules:
-    # Only run this job for projects on gitlab.com.
-    - if: '$CI_SERVER_URL != "https://gitlab.com"'
-      when: never
-    - !reference [.tests, rules]
-  script:
-    # Install codecov uploader.
-    - pip install install codecov==$CODECOV_VERSION
-    # Run codecov uploader.
-    - codecov -t $CODECOV_TOKEN -f *-coverage.xml --required

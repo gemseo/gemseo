@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Pytest helpers."""
 import contextlib
 import os
@@ -25,7 +24,8 @@ import matplotlib.testing.decorators
 import pytest
 
 from gemseo.core.factory import Factory
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2
 
 
 def __tmp_wd(tmp_path):

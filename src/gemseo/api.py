@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -147,23 +146,22 @@ Surrogates
 API functions
 *************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import re
 from collections import namedtuple
-from typing import (  # noqa F401
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 from numpy import ndarray
 from six import string_types
@@ -641,7 +639,7 @@ def get_formulation_sub_options_schema(
     formulation_name,  # type: str
     output_json=False,  # type: bool
     pretty_print=False,  # type: bool
-    **formulation_options  # type: Any
+    **formulation_options,  # type: Any
 ):  # type: (...) -> Union[str,Dict[str,Any]]
     """Return the schema of the sub-options of a formulation.
 
@@ -679,7 +677,7 @@ def get_formulation_sub_options_schema(
 
 def get_formulations_sub_options_defaults(
     formulation_name,  # type: str
-    **formulation_options  # type: Any
+    **formulation_options,  # type: Any
 ):  # type: (...) -> Dict[str,Any]
     """Return the default values of the sub-options of a formulation.
 
@@ -1053,7 +1051,7 @@ def create_scenario(
     scenario_type="MDO",  # type: str
     grammar_type="JSONGrammar",  # type: str
     maximize_objective=False,  # type: bool
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> Scenario
     """Initialize a scenario.
 
@@ -1109,7 +1107,7 @@ def create_scenario(
             name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
-            **options
+            **options,
         )
 
     if scenario_type == "DOE":
@@ -1121,7 +1119,7 @@ def create_scenario(
             name,
             grammar_type=grammar_type,
             maximize_objective=maximize_objective,
-            **options
+            **options,
         )
 
     raise ValueError(
@@ -1184,7 +1182,7 @@ def configure_logger(
 
 def create_discipline(
     discipline_name,  # type: Union[str,Iterable[str]]
-    **options  # type: Any
+    **options,  # type: Any
 ):
     """Instantiate one or more disciplines.
 
@@ -1254,7 +1252,7 @@ def create_scalable(
     name,  # type: str
     data,  # type: Dataset
     sizes=None,  # type: Mapping[str,int]
-    **parameters  # type: Any
+    **parameters,  # type: Any
 ):  # type: (...) -> ScalableDiscipline
     """Create a scalable discipline from a dataset.
 
@@ -1282,7 +1280,7 @@ def create_surrogate(
     default_inputs=None,  # type: Optional[Dict[str,ndarray]]
     input_names=None,  # type: Optional[Iterable[str]]
     output_names=None,  # type: Optional[Iterable[str]]
-    **parameters  # type: Any
+    **parameters,  # type: Any
 ):  # type: (...) -> SurrogateDiscipline
     """Create a surrogate discipline, either from a dataset or a regression model.
 
@@ -1328,14 +1326,14 @@ def create_surrogate(
         default_inputs,
         input_names,
         output_names,
-        **parameters
+        **parameters,
     )
 
 
 def create_mda(
     mda_name,  # type: str
     disciplines,  # type: Sequence[MDODiscipline]
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> MDA
     """Create a multidisciplinary analysis (MDA).
 
@@ -1373,7 +1371,7 @@ def create_mda(
 def execute_post(
     to_post_proc,  # type:Union[Scenario,OptimizationProblem,str,Path]
     post_name,  # type: str
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> Dict[str,Figure]
     """Post-process a result.
 
@@ -1423,7 +1421,7 @@ def execute_algo(
     opt_problem,  # type: OptimizationProblem
     algo_name,  # type: str
     algo_type="opt",  # type: str
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> OptimizationResult
     """Solve an optimization problem.
 
@@ -1581,7 +1579,7 @@ def export_design_space(
     export_hdf=False,  # type: bool
     fields=None,  # type: Optional[Sequence[str]]
     header_char="",  # type: str
-    **table_options  # type: Any
+    **table_options,  # type: Any
 ):  # type: (...) -> None
     """Save a design space to a text or HDF file.
 
@@ -1682,7 +1680,7 @@ def get_available_caches():  # type: (...) -> List[str]
 def create_cache(
     cache_type,  # type: str
     name=None,  # type: Optional[str]
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> AbstractCache
     """Return a cache.
 
@@ -1782,7 +1780,7 @@ def create_dataset(
 
 def load_dataset(
     dataset,  # type: str
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> Dataset
     """Instantiate a dataset.
 
@@ -1808,7 +1806,7 @@ def compute_doe(
     algo_name,  # type: str
     size=None,  # type: Optional[int]
     unit_sampling=False,  # type: bool
-    **options  # type: DOELibraryOptionType
+    **options,  # type: DOELibraryOptionType
 ):  # type: (...) -> ndarray
     """Compute a design of experiments (DOE) in a variables space.
 

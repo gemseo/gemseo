@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -24,11 +23,11 @@
 Fitting a distribution from data based on OpenTURNS
 ===================================================
 """
-from matplotlib import pyplot as plt
-from numpy.random import randn, seed
-
 from gemseo.api import configure_logger
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from matplotlib import pyplot as plt
+from numpy.random import randn
+from numpy.random import seed
 
 configure_logger()
 

@@ -13,34 +13,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Constraint aggregation methods.
 
 Transform a constraint vector into one scalar equivalent or quasi equivalent constraint.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from functools import wraps
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import ndarray
 
-from gemseo.algos.aggregation.core import (
-    iks_agg,
-    iks_agg_jac_v,
-    ks_agg,
-    ks_agg_jac_v,
-    max_agg,
-    max_agg_jac_v,
-    sum_square_agg,
-    sum_square_agg_jac_v,
-)
+from gemseo.algos.aggregation.core import iks_agg
+from gemseo.algos.aggregation.core import iks_agg_jac_v
+from gemseo.algos.aggregation.core import ks_agg
+from gemseo.algos.aggregation.core import ks_agg_jac_v
+from gemseo.algos.aggregation.core import max_agg
+from gemseo.algos.aggregation.core import max_agg_jac_v
+from gemseo.algos.aggregation.core import sum_square_agg
+from gemseo.algos.aggregation.core import sum_square_agg_jac_v
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
@@ -71,7 +71,7 @@ def check_constraint_type(
         @wraps(func)
         def function_wrapper(
             *args,  # type: Any
-            **kwargs  # type: Any
+            **kwargs,  # type: Any
         ):  # type: (...) -> Any
             """Check that ``func`` has the type `function_type``.
 

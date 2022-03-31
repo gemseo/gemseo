@@ -13,26 +13,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class to describe a function."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from numbers import Number
-from typing import TYPE_CHECKING, Callable, Mapping, Sequence, Union
+from typing import Callable
+from typing import Mapping
+from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import Union
 
-from numpy import hstack, ndarray, reshape, vstack
+from numpy import hstack
+from numpy import ndarray
+from numpy import reshape
+from numpy import vstack
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    update_dict_of_arrays_from_array,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 if TYPE_CHECKING:
     from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator

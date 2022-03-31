@@ -18,7 +18,8 @@ from __future__ import unicode_literals
 
 import json
 import webbrowser
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph

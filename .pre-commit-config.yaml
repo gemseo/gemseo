@@ -1,12 +1,9 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
-
-exclude: ^(src/gemseo/third_party|versioneer.py$|src/gemseo/_version.py$)
+exclude: ^src/gemseo/third_party
 
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.1.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
@@ -28,10 +25,21 @@ repos:
     - id: rst-directive-colons
     - id: rst-inline-touching-normal
 
-- repo: https://github.com/timothycrosley/isort
-  rev: 5.9.1
+- repo: https://github.com/asottile/reorder_python_imports
+  rev: v3.0.1
   hooks:
-  - id: isort
+    - id: reorder-python-imports
+      name: reorder python imports inside src
+      # Workaround https://github.com/asottile/reorder_python_imports/issues/210.
+      entry: env SETUPTOOLS_USE_DISTUTILS=stdlib reorder-python-imports
+      args: [
+        --application-directories,
+        src,
+      ]
+      files: ^src
+    - id: reorder-python-imports
+      name: reorder python imports outside src
+      exclude: ^src
 
 - repo: https://github.com/myint/docformatter
   rev: v1.4
@@ -46,31 +54,31 @@ repos:
       ]
 
 - repo: https://github.com/psf/black
-  rev: 21.6b0
+  rev: 22.3.0
   hooks:
-  - id: black
+    - id: black
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 3.9.2
+  rev: 4.0.1
   hooks:
-  - id: flake8
-    additional_dependencies:
-      - flake8-bugbear==21.3.2
-      # 1.6.0 has a bug
-      # https://gitlab.com/pycqa/flake8-docstrings/-/issues/51
-      - flake8-docstrings==1.5.0
-      - flake8-logging-format==0.6.0
-      - flake8-print==4.0.0
-      - pep8-naming==0.11.1
+    - id: flake8
+      additional_dependencies:
+        - flake8-bugbear==22.3.23
+        # 1.6.0 has a bug
+        # https://gitlab.com/pycqa/flake8-docstrings/-/issues/51
+        - flake8-docstrings==1.5.0
+        - flake8-logging-format==0.6.0
+        - flake8-print==4.0.0
+        - pep8-naming==0.12.1
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.17.10
+  rev: v2.23.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
 
 - repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.1.10
+  rev: v1.1.13
   hooks:
     - id: insert-license
       name: insert LGPL license

@@ -13,21 +13,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline based on analytic expressions."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from numpy import array, float64, heaviside, zeros
+from numpy import array
+from numpy import float64
+from numpy import heaviside
+from numpy import zeros
 from six import string_types
-from sympy import Expr, Symbol, lambdify, symbols
+from sympy import Expr
+from sympy import lambdify
+from sympy import Symbol
+from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
 
 from gemseo.core.discipline import MDODiscipline

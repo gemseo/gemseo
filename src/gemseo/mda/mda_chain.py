@@ -13,19 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An advanced MDA splitting algorithm based on graphs."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from itertools import repeat
 from multiprocessing import cpu_count
-from os.path import join, split
-from typing import Any, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from os.path import join
+from os.path import split
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
@@ -75,7 +83,7 @@ class MDAChain(MDA):
         log_convergence=False,  # type: bool
         linear_solver="DEFAULT",  # type: str
         linear_solver_options=None,  # type: Mapping[str,Any]
-        **sub_mda_options  # type: Optional[Union[float, int, bool, str]]
+        **sub_mda_options,  # type: Optional[Union[float, int, bool, str]]
     ):
         """
         Args:
@@ -119,7 +127,7 @@ class MDAChain(MDA):
             disciplines,
             sub_mda_class=sub_mda_class,
             sub_coupling_structures=sub_coupling_structures,
-            **sub_mda_options
+            **sub_mda_options,
         )
 
         self.log_convergence = log_convergence
@@ -147,7 +155,7 @@ class MDAChain(MDA):
         disciplines,  # type: Sequence[MDODiscipline]
         sub_mda_class="MDAJacobi",  # type: str
         sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
-        **sub_mda_options  # type: Optional[Union[float,int,bool,str]]
+        **sub_mda_options,  # type: Optional[Union[float,int,bool,str]]
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
 
@@ -197,7 +205,7 @@ class MDAChain(MDA):
                         linear_solver=self.linear_solver,
                         linear_solver_options=self.linear_solver_options,
                         coupling_structure=next(sub_coupling_structures_iterator),
-                        **sub_mda_options
+                        **sub_mda_options,
                     )
                     sub_mda.n_processes = self.n_processes
 
@@ -269,7 +277,7 @@ class MDAChain(MDA):
     @property
     def normed_residual(self):  # type: (...) -> float
         """The normed_residuals, computed from the sub-MDAs residuals."""
-        return sum((mda.normed_residual ** 2 for mda in self.sub_mda_list)) ** 0.5
+        return sum((mda.normed_residual**2 for mda in self.sub_mda_list)) ** 0.5
 
     @normed_residual.setter
     def normed_residual(

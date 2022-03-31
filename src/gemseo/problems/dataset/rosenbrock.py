@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -39,9 +38,12 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from numpy import hstack, linspace, meshgrid
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
 
 from gemseo.core.dataset import Dataset
 
@@ -68,12 +70,12 @@ class RosenbrockDataset(Dataset):
         :parma bool opt_naming: use an optimization naming. Default: True.
         """
         super(RosenbrockDataset, self).__init__(name, by_group)
-        root_n_samples = int(n_samples ** 0.5)
+        root_n_samples = int(n_samples**0.5)
         x_i = linspace(-2.0, 2.0, root_n_samples)
         x_i, y_i = meshgrid(x_i, x_i)
         x_i = x_i.reshape((-1, 1))
         y_i = y_i.reshape((-1, 1))
-        z_i = 100 * (y_i - x_i ** 2) ** 2 + (1 - x_i) ** 2
+        z_i = 100 * (y_i - x_i**2) ** 2 + (1 - x_i) ** 2
         data = hstack((x_i, y_i, z_i))
         if categorize:
             if opt_naming:

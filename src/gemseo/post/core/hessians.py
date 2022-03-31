@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
@@ -41,17 +40,33 @@ Notations:
 - :math:`B_k`: the approximation of the Hessian of :math:`f` at :math:`x_k`,
 - :math:`H_k`: the inverse of :math:`B_k`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Generator, Optional, Tuple
+from typing import Generator
+from typing import Optional
+from typing import Tuple
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import array, atleast_2d, concatenate, cumsum
+from numpy import array
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import cumsum
 from numpy import diag as np_diag
-from numpy import dot, eye, inf, ndarray, sqrt, trace, zeros
-from numpy.linalg import LinAlgError, cholesky, inv, multi_dot, norm
+from numpy import dot
+from numpy import eye
+from numpy import inf
+from numpy import ndarray
+from numpy import sqrt
+from numpy import trace
+from numpy import zeros
+from numpy.linalg import cholesky
+from numpy.linalg import inv
+from numpy.linalg import LinAlgError
+from numpy.linalg import multi_dot
+from numpy.linalg import norm
 from numpy.matlib import repmat
 from scipy.optimize import leastsq
 

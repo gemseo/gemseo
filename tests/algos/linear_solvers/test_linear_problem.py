@@ -17,14 +17,16 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import diag, eye, ones, random, zeros
-from scipy.sparse.linalg import aslinearoperator
-
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
+from numpy import diag
+from numpy import eye
+from numpy import ones
+from numpy import random
+from numpy import zeros
+from scipy.sparse.linalg import aslinearoperator
 
 
 def test_init():
@@ -90,7 +92,7 @@ def test_plot_residuals_checks():
 
 def test_residuals():
     problem = LinearProblem(eye(3), ones(3))
-    assert problem.compute_residuals(False, current_x=zeros(3)) == (3 ** 0.5)
+    assert problem.compute_residuals(False, current_x=zeros(3)) == (3**0.5)
     assert problem.compute_residuals(True, current_x=zeros(3)) == 1.0
     assert problem.compute_residuals(current_x=ones(3)) == 0.0
 

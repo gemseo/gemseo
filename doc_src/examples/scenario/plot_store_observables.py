@@ -14,12 +14,10 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Store observables
 =================
@@ -33,27 +31,27 @@ Store observables
 # This is useful in situations where we wish to access, post-process,
 # or save the values of discipline outputs that are not design variables,
 # constraints or objective functions.
-
 ##############################################################################
 # The Sellar problem
 # ------------------
 # We will consider in this example the Sellar problem:
 #
 # .. include:: /tutorials/_description/sellar_problem_definition.inc
-
 ##############################################################################
 # Imports
 # -------
 # All the imports needed for the tutorials are performed here.
 # Note that some of the imports are related to the Python 2/3 compatibility.
-
-from __future__ import division, unicode_literals
-
-from matplotlib import pyplot as plt
-from numpy import array, ones
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from matplotlib import pyplot as plt
+from numpy import array
+from numpy import ones
 
 configure_logger()
 

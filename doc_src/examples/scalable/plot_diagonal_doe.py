@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -30,16 +29,14 @@ and used by the :class:`.ScalableDiagonalModel`.
 The idea is to sample the discipline by varying its inputs proportionally
 on one of the diagonals of its input space.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from matplotlib import pyplot as plt
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-)
 
 configure_logger()
 

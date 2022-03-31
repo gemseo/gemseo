@@ -13,22 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # INITIAL AUTHORS - initial API and implementation and/or
 #                   initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for analytic MDODiscipline based on symbolic expressions."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
 import sympy
-from numpy import array
-from packaging import version
-
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from numpy import array
+from packaging import version
 
 
 @pytest.fixture
@@ -38,7 +37,7 @@ def expressions():
     # SymPy expression
     x, z = sympy.symbols(["x", "z"])
     y_3 = sympy.Piecewise(
-        (sympy.exp(-1 / (1 - x ** 2 - z ** 2)), x ** 2 + z ** 2 < 1), (0, True)
+        (sympy.exp(-1 / (1 - x**2 - z**2)), x**2 + z**2 < 1), (0, True)
     )
     expr_dict["y_3"] = y_3
     # N.B. y_3 is infinitely differentiable with respect to x and z

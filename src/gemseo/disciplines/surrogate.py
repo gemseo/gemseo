@@ -13,27 +13,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Surrogate discipline."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.mlearning.core.ml_algo import MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,7 +63,7 @@ class SurrogateDiscipline(MDODiscipline):
         default_inputs=None,  # type: Optional[Dict[str,ndarray]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
+        **parameters,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         # noqa: D205 D212 D415
         """
@@ -105,7 +111,7 @@ class SurrogateDiscipline(MDODiscipline):
                 transformer=transformer,
                 input_names=input_names,
                 output_names=output_names,
-                **parameters
+                **parameters,
             )
             name = "{}_{}".format(self.regression_model.ABBR, data.name)
         disc_name = disc_name or name

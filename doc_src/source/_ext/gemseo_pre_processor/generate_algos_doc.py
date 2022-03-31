@@ -20,16 +20,21 @@
 import inspect
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
 import jinja2
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.driver_factory import DriverFactory
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import _get_schema, get_algorithm_features
+from gemseo.api import _get_schema
+from gemseo.api import get_algorithm_features
 from gemseo.core.factory import Factory
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
 from gemseo.mda.mda_factory import MDAFactory

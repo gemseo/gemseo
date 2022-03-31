@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -29,11 +28,14 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
-from numpy import ndarray, sqrt
+from numpy import ndarray
+from numpy import sqrt
 from sklearn.decomposition import PCA as SKLPCA
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
@@ -49,7 +51,7 @@ class PCA(DimensionReduction):
         self,
         name="PCA",  # type: str,
         n_components=None,  # type: Optional[int]
-        **parameters  # type: Optional[Union[float,int,str,bool]]
+        **parameters,  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
@@ -61,7 +63,7 @@ class PCA(DimensionReduction):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         self.algo.fit(data)
         self.parameters["n_components"] = self.algo.n_components_

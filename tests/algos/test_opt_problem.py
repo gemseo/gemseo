@@ -14,25 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from functools import partial
-from typing import Dict, Tuple
+from typing import Dict
+from typing import Tuple
 from unittest import mock
 
 import numpy as np
 import pytest
-from numpy import allclose, array, array_equal, cos, inf, ndarray, ones, sin, zeros
-from numpy.testing import assert_equal
-from scipy.linalg import norm
-from scipy.optimize import rosen, rosen_der
-
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -41,14 +36,30 @@ from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.algos.stop_criteria import DesvarIsNan, FunctionIsNan
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.api import execute_algo
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.mdofunctions.mdo_function import MDOFunction, MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.problems.sobieski.disciplines import SobieskiProblem, SobieskiStructure
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.py23_compat import Path
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import cos
+from numpy import inf
+from numpy import ndarray
+from numpy import ones
+from numpy import sin
+from numpy import zeros
+from numpy.testing import assert_equal
+from scipy.linalg import norm
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
@@ -85,11 +96,11 @@ def test_checks():
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.design_space.set_current_x(np.zeros(n))
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.design_space.set_upper_bound("x", np.ones(n))
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.design_space.set_lower_bound("x", -np.ones(n))
 
     with pytest.raises(ValueError):
@@ -139,7 +150,7 @@ def test_add_constraints(pow2_problem):
     assert problem.has_nonlinear_constraints()
 
     ineq2 = MDOFunction(Power2.ineq_constraint1, name="ineq2")
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.add_constraint(ineq2, value=None, cstr_type=None)
 
     problem.add_constraint(ineq1, positive=True)
@@ -283,7 +294,7 @@ def test_constraints_dim(pow2_problem):
         args=["x"],
     )
     problem.add_ineq_constraint(ineq1, value=-1)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.get_ineq_cstr_total_dim()
     assert problem.get_eq_constraints_number() == 0
     assert len(problem.get_nonproc_constraints()) == 0
@@ -297,7 +308,7 @@ def test_check():
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
     design_space.set_current_x(np.array([1.0, 1.0, 1.0]))
     problem = OptimizationProblem(design_space)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         problem.check()
 
 
@@ -778,7 +789,7 @@ def test_gradient_with_random_variables():
     parameter_space.add_random_variable("x", "OTUniformDistribution")
 
     problem = OptimizationProblem(parameter_space)
-    problem.objective = MDOFunction(lambda x: 3 * x ** 2, "func", jac=lambda x: 6 * x)
+    problem.objective = MDOFunction(lambda x: 3 * x**2, "func", jac=lambda x: 6 * x)
     PyDOE().execute(problem, "fullfact", n_samples=3, eval_jac=True)
 
     data = problem.database.get_func_grad_history("func")

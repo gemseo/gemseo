@@ -13,26 +13,38 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for all Multi-disciplinary Design Analyses (MDA).."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from multiprocessing import cpu_count
-from typing import Any, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Set
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from numpy import array, concatenate, ndarray
+from numpy import array
+from numpy import concatenate
+from numpy import ndarray
 from numpy.linalg import norm
 
-from gemseo.core.coupling_structure import DependencyGraph, MDOCouplingStructure
+from gemseo.core.coupling_structure import DependencyGraph
+from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.py23_compat import Path
 
@@ -368,7 +380,7 @@ class MDA(MDODiscipline):
             exec_cache_tol=exec_cache_tol,
             force_no_exec=force_no_exec,
             linear_solver=self.linear_solver,
-            **self.linear_solver_options
+            **self.linear_solver_options,
         )
 
     # fixed point methods

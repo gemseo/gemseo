@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -29,16 +28,23 @@ into two sets. We measure the quality of the regression by comparing the
 predictions with the output on the test set.
 
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from numpy import arange, argmin, hstack, linspace, sort
-from numpy.random import choice, normal, seed
-
-from gemseo.api import configure_logger, create_dataset
+from gemseo.api import configure_logger
+from gemseo.api import create_dataset
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
+from numpy import arange
+from numpy import argmin
+from numpy import hstack
+from numpy import linspace
+from numpy import sort
+from numpy.random import choice
+from numpy.random import normal
+from numpy.random import seed
 
 configure_logger()
 
@@ -47,7 +53,7 @@ configure_logger()
 # -----------------
 seed(12345)
 n_samples = 10
-noise = 0.3 ** 2
+noise = 0.3**2
 max_pow = 5
 amount_train = 0.8
 

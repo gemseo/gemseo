@@ -17,10 +17,12 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization material model interpolation."""
-
 from typing import Sequence
 
-from numpy import atleast_2d, diag, ones, ones_like
+from numpy import atleast_2d
+from numpy import diag
+from numpy import ones
+from numpy import ones_like
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -73,7 +75,7 @@ class MaterialModelInterpolation(MDODiscipline):
         xphys[self.full_elements] = 1
         xphys = xphys.flatten()
         rho = xphys[:]
-        young_modulus = self.Emin + (self.E0 - self.Emin) * xphys ** self.penalty
+        young_modulus = self.Emin + (self.E0 - self.Emin) * xphys**self.penalty
         self.local_data["E"] = young_modulus
         self.local_data["rho"] = rho
         self._is_linearized = True

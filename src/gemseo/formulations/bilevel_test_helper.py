@@ -13,21 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Provide base test class stub for testing bilevel also for |g| plugins."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
-from typing import Callable, Dict
+from typing import Callable
+from typing import Dict
 
 from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiProblem,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 # TODO: remove when PEP 484 type hints will be used
 FixtureFunc = Callable[[Dict[str, float]], MDOScenario]
@@ -96,7 +95,7 @@ def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
             objective_name="y_4",
             design_space=ds.filter(["x_shared", "y_14"]),
             maximize_objective=True,
-            **options
+            **options,
         )
         sc_system.set_differentiation_method("finite_differences", step=1e-6)
         return sc_system

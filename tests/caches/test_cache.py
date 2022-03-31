@@ -13,34 +13,44 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import re
 import shutil
-from typing import Generator, Union
+from typing import Generator
+from typing import Union
 
 import h5py
 import pytest
-from numpy import arange, array, eye, float64, zeros
-from numpy.linalg import norm
-from six import PY2
-
-from gemseo.api import create_discipline, create_scenario
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
-from gemseo.core.cache import hash_data_dict, to_real
+from gemseo.core.cache import hash_data_dict
+from gemseo.core.cache import to_real
 from gemseo.core.chain import MDOParallelChain
-from gemseo.problems.sellar.sellar import Sellar1, SellarSystem
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.utils.py23_compat import Path, long, string_array, xrange
+from gemseo.utils.py23_compat import long
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_array
+from gemseo.utils.py23_compat import xrange
+from numpy import arange
+from numpy import array
+from numpy import eye
+from numpy import float64
+from numpy import zeros
+from numpy.linalg import norm
+from six import PY2
 
 DIR_PATH = Path(__file__).parent
 

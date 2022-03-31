@@ -13,24 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array, empty
-
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
-from gemseo.problems.sobieski.disciplines import SobieskiProblem, SobieskiStructure
-from gemseo.utils.py23_compat import PY2, Path
+from gemseo.problems.sobieski.disciplines import SobieskiProblem
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
+from numpy import array
+from numpy import empty
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -127,7 +130,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, pyplot_close_all):
 # Define a simple analytical function and its Jacobian
 def f(x1=0.0, x2=0.0):
     """A simple analytical test function."""
-    y = 1 * x1 + 2 * x2 ** 2
+    y = 1 * x1 + 2 * x2**2
     return y
 
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
@@ -25,7 +24,6 @@
 #        :author: Nicolas Roussouly: GEMSEO integration
 #
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Definition of the matlab engine singleton for workspace handling.
 
 Overview
@@ -49,16 +47,19 @@ which enables to create only one instance with respect to the ``workspace_name``
 when calling several times the function).
 Following this, :class:`.__MatlabEngine` acts like a singleton.
 """
-
 import logging
 import os
 from enum import Enum
-from typing import List, Optional, Tuple, Union  # noqa F401
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import matlab.engine
 from numpy import ndarray  # noqa F401
 
-from gemseo.utils.py23_compat import Path, lru_cache
+from gemseo.utils.py23_compat import lru_cache
+from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.matlab.matlab_data_processor import double2array
 
 LOGGER = logging.getLogger(__name__)
@@ -274,7 +275,7 @@ class __MatlabEngine:
         self,
         func_name,  # type: str
         *args,  # type: float
-        **kwargs  # type: float
+        **kwargs,  # type: float
     ):  # type: (...) -> Union[float, ndarray]
         """Executes a Matlab function called "func_name".
 

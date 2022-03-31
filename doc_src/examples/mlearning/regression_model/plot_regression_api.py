@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,19 +26,16 @@ API
 Here are some examples of the machine learning API
 applied to regression models.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-)
-from gemseo.mlearning.api import (
-    create_regression_model,
-    get_regression_models,
-    get_regression_options,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.mlearning.api import create_regression_model
+from gemseo.mlearning.api import get_regression_models
+from gemseo.mlearning.api import get_regression_options
 
 configure_logger()
 

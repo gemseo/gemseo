@@ -13,29 +13,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import re
 
 import numpy as np
 import pytest
-from numpy import array, array_equal, inf, int32, ones
-from numpy.linalg import norm
-
-from gemseo.algos.design_space import DesignSpace, DesignVariable, DesignVariableType
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.design_space import DesignVariable
+from gemseo.algos.design_space import DesignVariableType
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.third_party.prettytable.prettytable import PY2
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
+from numpy import array
+from numpy import array_equal
+from numpy import inf
+from numpy import int32
+from numpy import ones
+from numpy.linalg import norm
 
 CURRENT_DIR = Path(__file__).parent
 TEST_INFILE = CURRENT_DIR / "design_space.txt"

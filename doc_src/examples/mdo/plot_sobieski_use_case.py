@@ -14,12 +14,10 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Damien Guénot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Application: Sobieski's Super-Sonic Business Jet (MDO)
 ======================================================
@@ -59,20 +57,18 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # -------
 # All the imports needed for the tutorials are performed here.
 # Note that some of the imports are related to the Python 2/3 compatibility.
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from matplotlib import pyplot as plt
-
-from gemseo.api import (
-    configure_logger,
-    create_discipline,
-    create_scenario,
-    get_available_formulations,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import get_available_formulations
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
+from gemseo.disciplines.utils import get_all_inputs
+from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from matplotlib import pyplot as plt
 
 configure_logger()
 

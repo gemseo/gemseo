@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -24,13 +23,18 @@
 The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
 fit(), transform(), fit_transform() and inverse_transform() methods.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Optional, Sequence
+from typing import Optional
+from typing import Sequence
 
-from numpy import eye, matmul, ndarray
+from numpy import eye
+from numpy import matmul
+from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class Pipeline(Transformer):
@@ -69,7 +73,7 @@ class Pipeline(Transformer):
     def fit(
         self,
         data,  # type: ndarray
-        **options  # type: TransformerFitOptionType
+        **options,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         """Fit the transformer pipeline to the data.
 

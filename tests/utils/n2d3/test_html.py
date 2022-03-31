@@ -19,12 +19,12 @@ from __future__ import unicode_literals
 from filecmp import cmp
 
 import pytest
-from numpy import ones
-
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
-from gemseo.utils.py23_compat import PY3, Path
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY3
+from numpy import ones
 
 
 @pytest.fixture(scope="module")

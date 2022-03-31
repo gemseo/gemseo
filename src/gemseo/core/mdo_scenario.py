@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
@@ -22,10 +21,13 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario whose driver is an optimization algorithm."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Optional, Sequence
+from typing import Any
+from typing import Optional
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -70,7 +72,7 @@ class MDOScenario(Scenario):
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options  # type: Any
+        **formulation_options,  # type: Any
     ):  # type: (...) -> None
         """
         Args:
@@ -96,7 +98,7 @@ class MDOScenario(Scenario):
             design_space,
             name=name,
             grammar_type=grammar_type,
-            **formulation_options
+            **formulation_options,
         )
 
     def _run_algorithm(self):  # type: (...) -> OptimizationResult

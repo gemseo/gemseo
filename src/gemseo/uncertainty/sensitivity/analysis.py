@@ -18,7 +18,6 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Abstract class for the computation and analysis of sensitivity indices.
 
 The purpose of a sensitivity analysis is to
@@ -30,27 +29,28 @@ a :class:`.ParameterSpace` describing the uncertain parameters
 and options associated with a particular concrete class
 inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import (
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    NoReturn,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
 from matplotlib.figure import Figure
-from numpy import array, linspace, ndarray, vstack
+from numpy import array
+from numpy import linspace
+from numpy import ndarray
+from numpy import vstack
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
@@ -62,7 +62,8 @@ from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.py23_compat import Path
 
@@ -138,7 +139,7 @@ class SensitivityAnalysis(object):
         discipline,  # type: MDODiscipline
         parameter_space,  # type: ParameterSpace,
         n_samples,  # type: Optional[int]
-        **options  # type: DOELibraryOptionType
+        **options,  # type: DOELibraryOptionType
     ):  # type: (...) -> Dataset
         """Sample the discipline and return the dataset.
 
@@ -453,7 +454,7 @@ class SensitivityAnalysis(object):
         directory_path=None,  # type: Optional[Union[str,Path]]
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
-        **options  # type:int
+        **options,  # type:int
     ):  # type: (...) -> BarPlot
         """Plot the sensitivity indices on a bar chart.
 
@@ -518,7 +519,7 @@ class SensitivityAnalysis(object):
             file_name=file_name,
             file_format=file_format,
             directory_path=directory_path,
-            **options
+            **options,
         )
         return plot
 
@@ -536,7 +537,7 @@ class SensitivityAnalysis(object):
         file_format=None,  # type: Optional[str]
         min_radius=None,  # type: Optional[float]
         max_radius=None,  # type: Optional[float]
-        **options  # type:bool
+        **options,  # type:bool
     ):  # type: (...) -> RadarChart
         """Plot the sensitivity indices on a radar chart.
 
@@ -610,7 +611,7 @@ class SensitivityAnalysis(object):
             file_name=file_name,
             file_format=file_format,
             directory_path=directory_path,
-            **options
+            **options,
         )
         return plot
 
@@ -662,7 +663,7 @@ class SensitivityAnalysis(object):
         directory_path=None,  # type: Optional[Union[str,Path]]
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
-        **options  # type:bool
+        **options,  # type:bool
     ):  # type: (...) -> Union[BarPlot,RadarChart]
         """Plot a comparison between the current sensitivity indices and other ones.
 

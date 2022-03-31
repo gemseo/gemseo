@@ -13,22 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm calibration."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array, array_equal
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.mlearning.core.calibration import MLAlgoAssessor, MLAlgoCalibration
+from gemseo.mlearning.core.calibration import MLAlgoAssessor
+from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
 
 
 @pytest.fixture(scope="module")

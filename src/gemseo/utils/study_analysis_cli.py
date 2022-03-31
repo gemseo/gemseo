@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """CLI for |g| study."""
-
 import argparse
 import sys
 from ast import literal_eval
-from os import getcwd, mkdir
-from os.path import exists, join
+from os import getcwd
+from os import mkdir
+from os.path import exists
+from os.path import join
 
 from gemseo.utils.study_analysis import StudyAnalysis
 

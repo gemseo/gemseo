@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,19 +22,19 @@
 Scalable problem - Design space
 *******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
 import logging
 
-from numpy import ones, zeros
+from numpy import ones
+from numpy import zeros
 
-from .variables import (
-    X_SHARED_NAME,
-    check_consistency,
-    get_coupling_name,
-    get_x_local_name,
-)
+from .variables import check_consistency
+from .variables import get_coupling_name
+from .variables import get_x_local_name
+from .variables import X_SHARED_NAME
 
 LOGGER = logging.getLogger(__name__)
 

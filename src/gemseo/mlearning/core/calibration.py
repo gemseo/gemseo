@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
@@ -51,12 +50,19 @@ and the machine learning algorithm.
 The inputs of this discipline are hyper-parameters of the machine learning algorithm
 while the output is the quality criterion.
 """
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from typing import Dict, Iterable, Mapping, Optional, Union
-
-from numpy import argmax, argmin, array, ndarray
+from numpy import argmax
+from numpy import argmin
+from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -66,7 +72,9 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 MeasureOptionsType = Dict[str, Union[bool, int, Dataset]]
@@ -104,7 +112,7 @@ class MLAlgoAssessor(MDODiscipline):
         measure,  # type: MLQualityMeasure
         measure_options=None,  # type: Optional[MeasureOptionsType]
         transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        **algo_options  # type: MLAlgoParameterType
+        **algo_options,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
         Args:
@@ -197,7 +205,7 @@ class MLAlgoCalibration(object):
         measure,  # type: MLQualityMeasure
         measure_options=None,  # type: Optional[MeasureOptionsType]
         transformer=None,  # type: Optional[TransformerType]
-        **algo_options  # type: MLAlgoParameterType
+        **algo_options,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
         Args:
@@ -220,7 +228,7 @@ class MLAlgoCalibration(object):
             measure,
             measure_options,
             transformer,
-            **algo_options
+            **algo_options,
         )
         self.algo_assessor = disc
         self.calibration_space = calibration_space

@@ -13,57 +13,56 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class to describe a function."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from multiprocessing import Value
 from numbers import Number
-from operator import mul, truediv
-from typing import (
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    NoReturn,
-    Optional,
-    Sequence,
-    Sized,
-    Tuple,
-    Union,
-)
+from operator import mul
+from operator import truediv
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Sized
+from typing import Tuple
+from typing import Union
 
 from numpy import abs as np_abs
-from numpy import (
-    absolute,
-    add,
-    array,
-    atleast_1d,
-    atleast_2d,
-    concatenate,
-    empty,
-    matmul,
-    multiply,
-    ndarray,
-    ones_like,
-    subtract,
-    vstack,
-    where,
-    zeros,
-    zeros_like,
-)
-from numpy.linalg import multi_dot, norm
+from numpy import absolute
+from numpy import add
+from numpy import array
+from numpy import atleast_1d
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import empty
+from numpy import matmul
+from numpy import multiply
+from numpy import ndarray
+from numpy import ones_like
+from numpy import subtract
+from numpy import vstack
+from numpy import where
+from numpy import zeros
+from numpy import zeros_like
+from numpy.linalg import multi_dot
+from numpy.linalg import norm
 from six import string_types
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.utils.derivatives_approx import ComplexStep, FirstOrderFD
+from gemseo.utils.derivatives_approx import ComplexStep
+from gemseo.utils.derivatives_approx import FirstOrderFD
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1543,7 +1542,7 @@ class MultiplyOperator(MDOFunction):
         if self.__operator == mul:
             return self_jac * other_f + other_jac * self_f
 
-        return (self_jac * other_f - other_jac * self_f) / other_jac ** 2
+        return (self_jac * other_f - other_jac * self_f) / other_jac**2
 
 
 class Offset(MDOFunction):
@@ -2167,7 +2166,7 @@ class ConvexLinearApprox(MDOFunction):
         value = atleast_2d(self.__mdo_function.jac(merged_vect))
         _, inv_step = self.__get_steps(x_new)
         value[:, self.__approx_indexes] = self.__direct_coeffs + multiply(
-            self.__recipr_coeffs, -(inv_step ** 2)
+            self.__recipr_coeffs, -(inv_step**2)
         )
         if self.__mdo_function._dim == 1:
             value = value[0, :]

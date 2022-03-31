@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,12 +20,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoît Pauwels - refactoring
 """Updates a trust parameter according to a decreases' ratio."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import divide, maximum, minimum, multiply
+from numpy import divide
+from numpy import maximum
+from numpy import minimum
+from numpy import multiply
 
 LOGGER = logging.getLogger(__name__)
 

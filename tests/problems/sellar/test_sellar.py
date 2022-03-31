@@ -13,13 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import os
 import unittest
@@ -27,22 +26,19 @@ from math import exp
 
 import numpy as np
 import pytest
-
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sellar.sellar import (
-    C_1,
-    C_2,
-    OBJ,
-    X_LOCAL,
-    X_SHARED,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
+from gemseo.problems.sellar.sellar import C_1
+from gemseo.problems.sellar.sellar import C_2
+from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_LOCAL
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 
@@ -92,7 +88,7 @@ class TestSellar(unittest.TestCase):
         indata[Y_2] = np.ones([1])
         system.execute(indata)
         obj = system.get_outputs_by_name(OBJ)
-        self.assertAlmostEqual(obj, 2 ** 2 + 1 + exp(-1.0), 10)
+        self.assertAlmostEqual(obj, 2**2 + 1 + exp(-1.0), 10)
 
     def test_serialize(self):
         """"""

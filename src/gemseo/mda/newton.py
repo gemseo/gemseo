@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret, Francois Gallard
@@ -28,11 +27,18 @@ Root finding methods include:
 Each of these methods is implemented by a class in this module.
 Both inherit from a common abstract cache.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import ndarray
 from numpy.linalg import norm
@@ -41,10 +47,8 @@ from scipy.optimize import root
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.mda import MDA
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    update_dict_of_arrays_from_array,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 
 # from gemseo.core.parallel_execution import DisciplinesParallelExecution
 LOGGER = logging.getLogger(__name__)
@@ -210,7 +214,7 @@ class MDANewtonRaphson(MDARoot):
             self.relax_factor,
             self.linear_solver,
             matrix_type=self.matrix_type,
-            **self.linear_solver_options
+            **self.linear_solver_options,
         )
         # update current solution with Newton step
         exec_data = deepcopy(self.local_data)

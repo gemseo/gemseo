@@ -13,16 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 from gemseo.utils.derivatives.complex_step import ComplexStep  # noqa: F401
-from gemseo.utils.derivatives.derivatives_approx import EPSILON  # noqa: F401
 from gemseo.utils.derivatives.derivatives_approx import approx_hess  # noqa: F401
 from gemseo.utils.derivatives.derivatives_approx import comp_best_step  # noqa: F401
 from gemseo.utils.derivatives.derivatives_approx import (  # noqa: F401
-    DisciplineJacApprox,
     compute_cancellation_error,
+)
+from gemseo.utils.derivatives.derivatives_approx import (  # noqa: F401
     compute_truncature_error,
 )
+from gemseo.utils.derivatives.derivatives_approx import (  # noqa: F401
+    DisciplineJacApprox,
+)
+from gemseo.utils.derivatives.derivatives_approx import EPSILON  # noqa: F401
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD  # noqa: F401
 
 # TODO: deprecate this module at some point.

@@ -13,16 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
-from typing import Any, Callable, Dict, Optional
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
 
 from numpy import isfinite
-from scipy.optimize import OptimizeResult, linprog
+from scipy.optimize import linprog
+from scipy.optimize import OptimizeResult
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
@@ -103,7 +106,7 @@ class ScipyLinprog(OptimizationLibrary):
         verbose=False,  # type: bool
         normalize_design_space=True,  # type: bool
         disp=False,  # type: bool
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> Dict[str, Any]
         """Retrieve the options of the library.
 
@@ -140,7 +143,7 @@ class ScipyLinprog(OptimizationLibrary):
             verbose=verbose,
             callback=callback,
             normalize_design_space=normalize_ds,
-            **kwargs
+            **kwargs,
         )
         return options
 

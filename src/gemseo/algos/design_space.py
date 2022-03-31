@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -39,38 +38,47 @@ to get or set the value of a given variable property.
 Lastly,
 an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
 import logging
 import sys
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import h5py
 from numpy import abs as np_abs
-from numpy import (
-    array,
-    atleast_1d,
-    complex128,
-    concatenate,
-    empty,
-    equal,
-    finfo,
-    float64,
-    genfromtxt,
-    inf,
-    int32,
-    isnan,
-    logical_or,
-    mod,
-    ndarray,
-    ones,
-    ones_like,
-)
+from numpy import array
+from numpy import atleast_1d
+from numpy import complex128
+from numpy import concatenate
+from numpy import empty
+from numpy import equal
+from numpy import finfo
+from numpy import float64
+from numpy import genfromtxt
+from numpy import inf
+from numpy import int32
+from numpy import isnan
+from numpy import logical_or
+from numpy import mod
+from numpy import ndarray
+from numpy import ones
+from numpy import ones_like
 from numpy import round_ as np_round
-from numpy import string_, vectorize, where, zeros_like
+from numpy import string_
+from numpy import vectorize
+from numpy import where
+from numpy import zeros_like
 from six import string_types
 
 from gemseo.algos.opt_result import OptimizationResult
@@ -79,7 +87,9 @@ from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import Path, string_array, strings_to_unicode_list
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_array
+from gemseo.utils.py23_compat import strings_to_unicode_list
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1748,7 +1758,7 @@ class DesignSpace(collections.MutableMapping):
         output_file,  # type: Union[str,Path],
         fields=None,  # type: Optional[Sequence[str]]
         header_char="",  # type: str
-        **table_options  # type: Any
+        **table_options,  # type: Any
     ):  # type: (...) -> None
         """Export the design space to a text file.
 

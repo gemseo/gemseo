@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -31,9 +30,12 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
    :mod:`~gemseo.mlearning.transform.scaler.scaler`
    :mod:`~gemseo.mlearning.transform.dimension_reduction.dimension_reduction`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import NoReturn, Optional, Union
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -64,7 +66,7 @@ class Transformer(object):
     def __init__(
         self,
         name="Transformer",  # type: str
-        **parameters  # type: Optional[Union[float,int,str,bool]]
+        **parameters,  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
@@ -85,7 +87,7 @@ class Transformer(object):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> NoReturn
         """Fit the transformer to the data.
 
@@ -125,7 +127,7 @@ class Transformer(object):
     def fit_transform(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> ndarray
         """Fit the transformer to the data and transform the data.
 

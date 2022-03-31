@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -59,18 +58,32 @@ given :math:`x` and
 This concept is implemented through the :class:`.MixtureOfExperts` class
 which inherits from the :class:`.MLRegressionAlgo` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Callable, Dict, Iterable, List, Mapping, NoReturn, Optional, Union
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
-from numpy import ndarray, nonzero, unique, where, zeros
+from numpy import ndarray
+from numpy import nonzero
+from numpy import unique
+from numpy import where
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
-from gemseo.mlearning.core.ml_algo import DataType, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.qual_measure.f1_measure import F1Measure
@@ -199,7 +212,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                 self,
                 input_data,  # type: DataType
                 *args,
-                **kwargs
+                **kwargs,
             ):  # type: (...) -> DataType
                 """Evaluate 'predict' with either array or dictionary-based input data.
 
@@ -239,7 +252,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_clusterer(
         self,
         cluster_algo,  # type: str
-        **cluster_params  # type:Optional[MLAlgoParameterType]
+        **cluster_params,  # type:Optional[MLAlgoParameterType]
     ):  # type: (...) -> None
         """Set the clustering algorithm.
 
@@ -253,7 +266,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_classifier(
         self,
         classif_algo,  # type: str
-        **classif_params  # type:Optional[MLAlgoParameterType]
+        **classif_params,  # type:Optional[MLAlgoParameterType]
     ):  # type: (...) -> None
         """Set the classification algorithm.
 
@@ -267,7 +280,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_regressor(
         self,
         regress_algo,  # type: str
-        **regress_params  # type:Optional[MLAlgoParameterType]
+        **regress_params,  # type:Optional[MLAlgoParameterType]
     ):  # type: (...) -> None
         """Set the regression algorithm.
 
@@ -281,7 +294,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_clustering_measure(
         self,
         measure,  # type: MLQualityMeasure
-        **eval_options  # type: EvalOptionType
+        **eval_options,  # type: EvalOptionType
     ):  # type: (...) -> None
         """Set the quality measure for the clustering algorithms.
 
@@ -297,7 +310,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_classification_measure(
         self,
         measure,  # type: MLQualityMeasure
-        **eval_options  # type: EvalOptionType
+        **eval_options,  # type: EvalOptionType
     ):  # type: (...) -> None
         """Set the quality measure for the classification algorithms.
 
@@ -313,7 +326,7 @@ class MixtureOfExperts(MLRegressionAlgo):
     def set_regression_measure(
         self,
         measure,  # type: MLQualityMeasure
-        **eval_options  # type: EvalOptionType
+        **eval_options,  # type: EvalOptionType
     ):  # type: (...) -> None
         """Set the quality measure for the regression algorithms.
 
@@ -331,7 +344,7 @@ class MixtureOfExperts(MLRegressionAlgo):
         name,  # type: str
         calib_space=None,  # type: Optional[DesignSpace]
         calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists  # type:Optional[List[MLAlgoParameterType]]
+        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
     ):  # type: (...) -> None
         """Add a candidate for clustering.
 
@@ -352,7 +365,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                 name=name,
                 calib_space=calib_space,
                 calib_algo=calib_algo,
-                **option_lists
+                **option_lists,
             )
         )
 
@@ -361,7 +374,7 @@ class MixtureOfExperts(MLRegressionAlgo):
         name,  # type: str
         calib_space=None,  # type: Optional[DesignSpace]
         calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists  # type:Optional[List[MLAlgoParameterType]]
+        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
     ):  # type: (...) -> None
         """Add a candidate for classification.
 
@@ -382,7 +395,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                 name=name,
                 calib_space=calib_space,
                 calib_algo=calib_algo,
-                **option_lists
+                **option_lists,
             )
         )
 
@@ -391,7 +404,7 @@ class MixtureOfExperts(MLRegressionAlgo):
         name,  # type: str
         calib_space=None,  # type: Optional[DesignSpace]
         calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists  # type:Optional[List[MLAlgoParameterType]]
+        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
     ):  # type: (...) -> None
         """Add a candidate for regression.
 
@@ -412,7 +425,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                 name=name,
                 calib_space=calib_space,
                 calib_algo=calib_algo,
-                **option_lists
+                **option_lists,
             )
         )
 
@@ -508,7 +521,7 @@ class MixtureOfExperts(MLRegressionAlgo):
             selector = MLAlgoSelection(
                 dataset,
                 self.cluster_measure["measure"],
-                **self.cluster_measure["options"]
+                **self.cluster_measure["options"],
             )
             for cand in self.cluster_cands:
                 selector.add_candidate(**cand)
@@ -535,14 +548,14 @@ class MixtureOfExperts(MLRegressionAlgo):
                 self.classif_algo,
                 data=dataset,
                 output_names=[self.LABELS],
-                **self.classif_params
+                **self.classif_params,
             )
             self.classifier.learn()
         else:
             selector = MLAlgoSelection(
                 dataset,
                 self.classif_measure["measure"],
-                **self.classif_measure["options"]
+                **self.classif_measure["options"],
             )
             for cand in self.classif_cands:
                 selector.add_candidate(output_names=[[self.LABELS]], **cand)
@@ -574,7 +587,7 @@ class MixtureOfExperts(MLRegressionAlgo):
                     dataset,
                     self.regress_measure["measure"],
                     samples=samples,
-                    **self.regress_measure["options"]
+                    **self.regress_measure["options"],
                 )
                 for cand in self.regress_cands:
                     selector.add_candidate(**cand)

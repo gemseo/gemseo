@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -28,25 +27,20 @@ In this example,
 we illustrate the computation of a Pareto front plot for the Binh and Korn problem.
 We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 """
-
 ###############################################################################
 # Import
 # ------
 # The first step is to import some functions from the API,
 # and to configure the logger.
-
 from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from matplotlib import pyplot as plt
 from numpy import array
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-)
-from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 
 configure_logger()
 

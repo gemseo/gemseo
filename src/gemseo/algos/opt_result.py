@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    Francois Gallard
 #    Matthias De Lozzo
@@ -21,8 +20,10 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, fields
-from typing import Mapping, Union
+from dataclasses import dataclass
+from dataclasses import fields
+from typing import Mapping
+from typing import Union
 
 from numpy import ndarray
 

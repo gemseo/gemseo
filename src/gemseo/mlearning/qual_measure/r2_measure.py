@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -39,14 +38,21 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
-from typing import List, NoReturn, Optional, Union
+from typing import List
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
 from numpy import delete as npdelete
-from numpy import mean, ndarray, repeat
-from sklearn.metrics import mean_squared_error, r2_score
+from numpy import mean
+from numpy import ndarray
+from numpy import repeat
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.regression.regression import MLRegressionAlgo

@@ -13,22 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import copy
 from math import sqrt
 from unittest import TestCase
 
 import pytest
-from numpy import isnan, nan
-from scipy.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
@@ -36,6 +32,10 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import isnan
+from numpy import nan
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
 

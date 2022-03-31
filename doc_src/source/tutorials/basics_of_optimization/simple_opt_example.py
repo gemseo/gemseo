@@ -13,19 +13,16 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import numpy as np
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import execute_post
+from gemseo.api import get_available_opt_algorithms
 from scipy import optimize
-
-from gemseo.api import (
-    create_design_space,
-    create_discipline,
-    create_scenario,
-    execute_post,
-    get_available_opt_algorithms,
-)
 
 # PART 1
 
@@ -44,7 +41,7 @@ design_space.add_variable("x2", 1, l_b=-5, u_b=5, var_type="integer")
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute({"algo": "fullfact", "n_samples": 11 ** 2})
+scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
 opt_results = scenario.get_optimum()
 print(

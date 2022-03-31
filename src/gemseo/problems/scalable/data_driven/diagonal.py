@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                  initial documentation
@@ -41,18 +40,31 @@ which is composed of a :class:`.ScalableDiagonalApproximation`.
 With regard to the diagonal DOE, |g| proposes the
 :class:`.DiagonalDOE` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from numbers import Number
 
 import matplotlib.pyplot as plt
-from numpy import arange, argsort, array, array_equal, atleast_1d, hstack
+from numpy import arange
+from numpy import argsort
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_1d
+from numpy import hstack
 from numpy import max as np_max
-from numpy import mean, median
+from numpy import mean
+from numpy import median
 from numpy import min as np_min
-from numpy import nan_to_num, sqrt, vstack, where, zeros
-from numpy.random import choice, rand, randint
+from numpy import nan_to_num
+from numpy import sqrt
+from numpy import vstack
+from numpy import where
+from numpy import zeros
+from numpy.random import choice
+from numpy.random import rand
+from numpy.random import randint
 from numpy.random import seed as npseed
 from past.utils import old_div
 from scipy.interpolate import InterpolatedUnivariateSpline

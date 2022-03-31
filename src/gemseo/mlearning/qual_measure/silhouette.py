@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -51,9 +50,12 @@ belonging to the cluster :math:`k` (:math:`k=1,\\cdots,K`),
 and :math:`|C_k| = \\sum_{j\\in C_k} 1` is the number of points
 in the cluster :math:`k`, :math:`k=1,\\cdots,K`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Optional, Sequence, Union
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import ndarray
 from sklearn.metrics import silhouette_score

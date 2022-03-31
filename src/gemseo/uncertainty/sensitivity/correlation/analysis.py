@@ -19,36 +19,38 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class for the estimation of various correlation coefficients."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import array, vstack
-from openturns import (
-    CorrelationAnalysis_PCC,
-    CorrelationAnalysis_PearsonCorrelation,
-    CorrelationAnalysis_PRCC,
-    CorrelationAnalysis_SignedSRC,
-    CorrelationAnalysis_SpearmanCorrelation,
-    CorrelationAnalysis_SRC,
-    CorrelationAnalysis_SRRC,
-    Sample,
-)
+from numpy import array
+from numpy import vstack
+from openturns import CorrelationAnalysis_PCC
+from openturns import CorrelationAnalysis_PearsonCorrelation
+from openturns import CorrelationAnalysis_PRCC
+from openturns import CorrelationAnalysis_SignedSRC
+from openturns import CorrelationAnalysis_SpearmanCorrelation
+from openturns import CorrelationAnalysis_SRC
+from openturns import CorrelationAnalysis_SRRC
+from openturns import Sample
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.dataset.radar_chart import RadarChart
-from gemseo.uncertainty.sensitivity.analysis import (
-    IndicesType,
-    OutputsType,
-    SensitivityAnalysis,
-)
+from gemseo.uncertainty.sensitivity.analysis import IndicesType
+from gemseo.uncertainty.sensitivity.analysis import OutputsType
+from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.py23_compat import Path
 
@@ -367,7 +369,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         file_format=None,  # type: Optional[str]
         min_radius=-1.0,  # type: float
         max_radius=1.0,  # type: float
-        **options  # type:bool
+        **options,  # type:bool
     ):  # type: (...) -> RadarChart #noqa: D102
         return super(CorrelationAnalysis, self).plot_radar(
             outputs,
@@ -381,5 +383,5 @@ class CorrelationAnalysis(SensitivityAnalysis):
             directory_path=directory_path,
             min_radius=min_radius,
             max_radius=max_radius,
-            **options
+            **options,
         )

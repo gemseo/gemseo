@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -36,11 +35,15 @@ distributed in the following way:
 
 These samples are generated from the NumPy library.
 """
-from numpy import vstack
-from numpy.random import exponential, normal, rand, seed, weibull
-
-from gemseo.api import configure_logger, create_dataset
+from gemseo.api import configure_logger
+from gemseo.api import create_dataset
 from gemseo.uncertainty.api import create_statistics
+from numpy import vstack
+from numpy.random import exponential
+from numpy.random import normal
+from numpy.random import rand
+from numpy.random import seed
+from numpy.random import weibull
 
 configure_logger()
 

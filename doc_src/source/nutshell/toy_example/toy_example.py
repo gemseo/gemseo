@@ -13,33 +13,29 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 """Created on Mar 25, 2019.
 
 @author: matthias.delozzo
 """
-
-from numpy import array, exp
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-    generate_coupling_graph,
-    generate_n2_plot,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
+from numpy import array
+from numpy import exp
 
 configure_logger()
 
 
 def py_function_1(inpt=0.0, output_2=0.0):
-    output_1 = exp(-(inpt ** 2 + output_2 ** 2))
+    output_1 = exp(-(inpt**2 + output_2**2))
     return output_1
 
 
 def py_function_2(inpt=0.0, output_1=0.0):
-    output_2 = exp(-(inpt ** 2 + output_1 ** 2))
+    output_2 = exp(-(inpt**2 + output_1**2))
     return output_2
 
 

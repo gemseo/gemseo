@@ -13,26 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 20 avr. 2016
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import division
+from __future__ import unicode_literals
 
-
-from __future__ import division, unicode_literals
-
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 import pytest
-from numpy import array_equal, loadtxt, ones
-from numpy.linalg import norm
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import array_equal
+from numpy import loadtxt
+from numpy import ones
+from numpy.linalg import norm
 
-from .utils import execute_problem, generate_test_functions
+from .utils import execute_problem
+from .utils import generate_test_functions
 
 DOE_LIB_NAME = "PyDOE"
 
@@ -204,7 +206,7 @@ def get_expected_nsamples(
         The expected number of samples.
     """
     if algo == "ff2n":
-        return 2 ** dim
+        return 2**dim
     if algo == "bbdesign":
         if dim == 5:
             return 46

@@ -13,19 +13,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Pareto Front."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import List, Optional, Sequence, Tuple
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
-from numpy import full, ndarray
+from numpy import full
+from numpy import ndarray
 
 from gemseo.algos.pareto_front import generate_pareto_plots
 from gemseo.post.opt_post_processor import OptPostProcessor

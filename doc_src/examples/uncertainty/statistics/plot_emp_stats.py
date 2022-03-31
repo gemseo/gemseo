@@ -14,13 +14,11 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Empirical estimation of statistics
 ==================================
@@ -33,9 +31,12 @@ For simplification,
 we use uniform distributions for the discipline inputs
 based on the bounds of the design parameters.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.uncertainty.api import create_statistics
 

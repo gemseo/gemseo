@@ -13,23 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest classification module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array, array_equal, linspace, ndarray, zeros
-from numpy.random import permutation, seed
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import linspace
+from numpy import ndarray
+from numpy import zeros
+from numpy.random import permutation
+from numpy.random import seed
 
 seed(12345)
 

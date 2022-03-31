@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -22,22 +21,27 @@
 
 Can be both sequential or parallel execution processes.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
 
-from numpy import dot, ndarray, zeros
+from numpy import dot
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.parallel_execution import (
-    DiscParallelExecution,
-    DiscParallelLinearization,
-)
+from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution import DiscParallelLinearization
 
 LOGGER = logging.getLogger(__name__)
 

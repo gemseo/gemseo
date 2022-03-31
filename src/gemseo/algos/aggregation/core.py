@@ -13,24 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Constraints aggregation core functions."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from math import log
-from typing import Optional, Sequence, Union
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import argmax as np_argmax
-from numpy import array, atleast_2d
+from numpy import array
+from numpy import atleast_2d
 from numpy import exp as np_exp
 from numpy import max as np_max
-from numpy import multiply, ndarray, ones
+from numpy import multiply
+from numpy import ndarray
+from numpy import ones
 from numpy import sum as np_sum
 from numpy import zeros
 
@@ -239,7 +242,7 @@ def iks_agg_jac_v(
         multiply(atleast_2d(np_exp(rho * (orig_val + 1.0 - m))).T, rho * orig_jac),
         axis=0,
     )
-    return (-iks_den_der / iks_den ** 2) * iks_num + iks_num_der / iks_den
+    return (-iks_den_der / iks_den**2) * iks_num + iks_num_der / iks_den
 
 
 def iks_agg_jac(
@@ -279,7 +282,7 @@ def iks_agg_jac(
     iks_num_der = atleast_2d(np_exp(rho * (orig_val + 1.0 - m)))
     iks_num_der += rho * atleast_2d(np_exp(rho * (orig_val + 1.0 - m)) * orig_val)
     iks_den_der = rho * atleast_2d(np_exp(rho * (orig_val + 1.0 - m)))
-    iks_d = atleast_2d((-iks_den_der / iks_den ** 2) * iks_num + iks_num_der / iks_den)
+    iks_d = atleast_2d((-iks_den_der / iks_den**2) * iks_num + iks_num_der / iks_den)
 
     iks_d = multiply(iks_d, scale)
 
@@ -328,7 +331,7 @@ def sum_square_agg(
     if indices is not None:
         orig_val = orig_val[indices]
     orig_val *= scale
-    return np_sum(orig_val ** 2)
+    return np_sum(orig_val**2)
 
 
 def sum_square_agg_jac_v(

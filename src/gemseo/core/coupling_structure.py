@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,22 +20,28 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #          Arthur Piat: greatly improve the N2 layout
 """Graph-based analysis of the weak and strong couplings between several disciplines."""
-
 from __future__ import unicode_literals
 
 import itertools
 import logging
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from typing import Dict
+from typing import List
+from typing import Sequence
+from typing import Set
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
-from matplotlib.figure import Axes, Figure
+from matplotlib.figure import Axes
+from matplotlib.figure import Figure
 from matplotlib.text import Text
 from pylab import gca
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_types
 
 LOGGER = logging.getLogger(__name__)
 

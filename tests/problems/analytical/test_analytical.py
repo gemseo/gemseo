@@ -13,25 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import unittest
 
 import numpy as np
-from numpy import zeros
-
 from gemseo.algos.driver_lib import MaxIterReachedException
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rastrigin import Rastrigin
-from gemseo.problems.analytical.rosenbrock import Rosenbrock, RosenMF
+from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.analytical.rosenbrock import RosenMF
+from numpy import zeros
 
 
 class TestAnalyticalFunctions(unittest.TestCase):

@@ -13,38 +13,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """A Grammar based on JSON schema."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import json
 import logging
 from numbers import Number
-from typing import (
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
-from numpy import generic, ndarray, zeros
+from numpy import generic
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.utils.py23_compat import PY2, JsonSchemaException, Path, compile_schema
+from gemseo.utils.py23_compat import compile_schema
+from gemseo.utils.py23_compat import JsonSchemaException
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2
 from gemseo.utils.string_tools import MultiLineString
 
 if PY2:

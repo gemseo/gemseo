@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -62,35 +61,41 @@ from __future__ import annotations
 import logging
 import operator
 from collections import namedtuple
-from typing import (
-    Any,
-    ClassVar,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    NoReturn,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import ClassVar
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import numpy as np
-from numpy import concatenate, delete, hstack, isnan, ndarray, unique, where
-from pandas import DataFrame, read_csv
+from numpy import concatenate
+from numpy import delete
+from numpy import hstack
+from numpy import isnan
+from numpy import ndarray
+from numpy import unique
+from numpy import where
+from pandas import DataFrame
+from pandas import read_csv
 from six import string_types
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractFullCache
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 from gemseo.post.dataset.factory import DatasetPlotFactory
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
-from gemseo.utils.py23_compat import Path, long, singledispatchmethod
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.py23_compat import long
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import singledispatchmethod
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1225,7 +1230,7 @@ class Dataset(object):
         cache_type=MEMORY_FULL_CACHE,  # type: str
         cache_hdf_file=None,  # type: Optional[str]
         cache_hdf_node_name=None,  # type: Optional[str]
-        **options
+        **options,
     ):  # type: (...) -> AbstractFullCache
         """Export the dataset to a cache.
 
@@ -1257,7 +1262,7 @@ class Dataset(object):
                 hdf_file_path=cache_hdf_file,
                 hdf_node_path=cache_hdf_node_name,
                 name=self.name,
-                **options
+                **options,
             )
         else:
             cache = create_cache(cache_type, name=self.name, **options)
@@ -1283,7 +1288,7 @@ class Dataset(object):
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         properties=None,  # type: Optional[Mapping[str,DatasetPlotPropertyType]]
-        **options
+        **options,
     ):  # type: (...) -> None
         """Plot the dataset from a :class:`.DatasetPlot`.
 

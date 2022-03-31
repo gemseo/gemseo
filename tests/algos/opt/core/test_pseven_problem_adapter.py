@@ -13,15 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Tests for the OptimizationProblem-to-ProblemGeneric adapter."""
-
 import pytest
 
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")

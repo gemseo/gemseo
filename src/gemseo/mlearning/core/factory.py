@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -25,15 +24,20 @@ This module contains a factory to instantiate a :class:`.MLAlgo` from its class 
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import pickle
-from typing import List, Optional, Union
+from typing import List
+from typing import Optional
+from typing import Union
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
-from gemseo.mlearning.core.ml_algo import MLAlgo, MLAlgoParameterType, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
@@ -55,7 +59,7 @@ class MLAlgoFactory(object):
     def create(
         self,
         ml_algo,  # type: str
-        **options  # type: Optional[Union[Dataset,TransformerType,MLAlgoParameterType]]
+        **options,  # type: Optional[Union[Dataset,TransformerType,MLAlgoParameterType]]
     ):  # type: (...) -> MLAlgo
         """Create an instance of a machine learning algorithm.
 
@@ -107,7 +111,7 @@ class MLAlgoFactory(object):
         model = self.factory.create(
             objects.pop("algo_name"),
             data=objects.pop("data"),
-            **objects.pop("parameters")
+            **objects.pop("parameters"),
         )
         for key, value in objects.items():
             setattr(model, key, value)

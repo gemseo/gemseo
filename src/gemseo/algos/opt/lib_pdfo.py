@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -23,14 +22,38 @@
 from __future__ import division
 
 import logging
-from typing import Any, Dict, Optional, Union
+import os
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Union
 
-from numpy import inf, isfinite, ndarray, real
-from pdfo import pdfo
+from numpy import inf
+from numpy import isfinite
+from numpy import ndarray
+from numpy import real
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.utils.py23_compat import PY2
+
+# workaround to prevent dll error with xlwings from pypi with anaconda python:
+# backup the state of the environment variable CONDA_DLL_SEARCH_MODIFICATION_ENABLE
+# which could be modified by pdfo
+conda_dll_search_modification_enable = os.environ.get(
+    "CONDA_DLL_SEARCH_MODIFICATION_ENABLE"
+)
+
+from pdfo import pdfo  # noqa: E402
+
+# workaround to prevent dll error with xlwings from pypi with anaconda python:
+# restore the state of the environment variable CONDA_DLL_SEARCH_MODIFICATION_ENABLE
+if conda_dll_search_modification_enable is None:
+    os.environ.pop("CONDA_DLL_SEARCH_MODIFICATION_ENABLE", None)
+else:
+    os.environ[
+        "CONDA_DLL_SEARCH_MODIFICATION_ENABLE"
+    ] = conda_dll_search_modification_enable
 
 OptionType = Optional[Union[str, int, float, bool, ndarray]]
 
@@ -112,7 +135,7 @@ class PDFOOpt(OptimizationLibrary):
         chkfunval=False,  # type: bool
         ensure_bounds=True,  # type: bool
         normalize_design_space=True,  # type: bool
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str, Any]
         r"""Set the options default values.
 
@@ -174,7 +197,7 @@ class PDFOOpt(OptimizationLibrary):
             chkfunval=chkfunval,
             ensure_bounds=ensure_bounds,
             normalize_design_space=nds,
-            **kwargs
+            **kwargs,
         )
         return popts
 

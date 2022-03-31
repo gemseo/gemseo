@@ -13,17 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for optimization history post-processing."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import inspect
-from os.path import abspath, dirname, exists, join
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from os.path import abspath
+from os.path import dirname
+from os.path import exists
+from os.path import join
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
@@ -33,9 +42,11 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import OrderedDict, Path
+from gemseo.utils.py23_compat import OrderedDict
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.source_parsing import get_options_doc
 
 OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str]]
@@ -149,7 +160,7 @@ class OptPostProcessor(object):
         file_name=None,  # type: Optional[str]
         file_extension=None,  # type: Optional[str]
         fig_size=None,  # type: Optional[Tuple[float, float]]
-        **options  # type: OptPostProcessorOptionType
+        **options,  # type: OptPostProcessorOptionType
     ):  # type: (...) -> Dict[str,Figure]
         """Post-process the optimization problem.
 
@@ -203,7 +214,7 @@ class OptPostProcessor(object):
             directory_path=directory_path_to_be_checked,
             file_extension=file_extension,
             fig_size=fig_size,
-            **options
+            **options,
         )
         if not self.opt_problem.database:
             raise ValueError(
@@ -218,7 +229,7 @@ class OptPostProcessor(object):
             file_name=file_name,
             file_extension=file_extension,
             directory_path=directory_path,
-            **options
+            **options,
         )
         return self.__figures
 
@@ -250,7 +261,7 @@ class OptPostProcessor(object):
         file_name=None,  # type: Optional[str]
         file_extension=None,  # type: Optional[str]
         fig_size=None,  # type: Optional[Tuple[float, float]]
-        **options  # type: OptPostProcessorOptionType
+        **options,  # type: OptPostProcessorOptionType
     ):  # type: (...) -> Dict[str,Figure]
         """Run the post-processor.
 

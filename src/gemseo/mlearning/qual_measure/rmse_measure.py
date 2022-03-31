@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -39,9 +38,12 @@ where
 :math:`\\hat{y}` are the predictions and
 :math:`y` are the data points.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Optional, Sequence, Union
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import ndarray
 
@@ -71,7 +73,7 @@ class RMSEMeasure(MSEMeasure):
         mse = super(RMSEMeasure, self).evaluate_learn(
             samples=samples, multioutput=multioutput
         )
-        return mse ** 0.5
+        return mse**0.5
 
     def evaluate_test(
         self,
@@ -82,7 +84,7 @@ class RMSEMeasure(MSEMeasure):
         mse = super(RMSEMeasure, self).evaluate_test(
             test_data, samples=samples, multioutput=multioutput
         )
-        return mse ** 0.5
+        return mse**0.5
 
     def evaluate_kfolds(
         self,
@@ -99,7 +101,7 @@ class RMSEMeasure(MSEMeasure):
             randomize=randomize,
             seed=seed,
         )
-        return mse ** 0.5
+        return mse**0.5
 
     def evaluate_bootstrap(
         self,
@@ -110,4 +112,4 @@ class RMSEMeasure(MSEMeasure):
         mse = super(RMSEMeasure, self).evaluate_bootstrap(
             n_replicates=n_replicates, samples=samples, multioutput=multioutput
         )
-        return mse ** 0.5
+        return mse**0.5

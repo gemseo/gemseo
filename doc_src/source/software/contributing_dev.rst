@@ -14,20 +14,18 @@
 
 .. _pytest: https://docs.pytest.org
 .. _tox: https://tox.readthedocs.io
-.. _tox-conda: https://github.com/tox-dev/tox-conda
-.. _anaconda: https://docs.anaconda.com/anaconda/install
 .. _sphinx: https://www.sphinx-doc.org
 .. _gitflow: https://nvie.com/posts/a-successful-git-branching-model
 .. _pylint: https://pylint.readthedocs.io
 .. _pep8: https://pep8.org
 .. _flake8: https://flake8.pycqa.org
 .. _black: https://black.readthedocs.io
-.. _isort: https://timothycrosley.github.io/isort
+.. _reorder_python_imports: https://github.com/asottile/reorder_python_imports
 .. _conventional commits: https://www.conventionalcommits.org
 .. _commitizen: https://commitizen-tools.github.io/commitizen
 .. _semantic versioning: https://semver.org
 .. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
-.. _semantic linefeeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
 .. _mypy: http://mypy-lang.org
 .. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet.html?highlight=Sequence#standard-duck-types
 .. _pytest-cov: https://pytest-cov.readthedocs.io
@@ -36,6 +34,10 @@
 .. _profiler: https://docs.python.org/3/library/profile.html
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
+.. _graphviz: https://graphviz.org/download
+.. _PyCharm: https://www.jetbrains.com/pycharm
+.. _pre-commit: https://pre-commit.com
+.. _pipx: https://pypa.github.io/pipx
 
 .. _dev:
 
@@ -66,32 +68,22 @@ Quick start
 
 First time setup:
 
-* Create a main environment with `tox-conda`_, see :ref:`requirements`.
-* Then on Linux
+* Install the :ref:`requirements`.
 
-  .. code-block:: console
+* Run the tests for Python 3.9
+  and create a development environment under :file:`.tox/py39`:
 
-     tox -e dev
+.. code-block:: console
 
-* or, on Windows
+  tox -e py39 --develop
 
-  .. code-block:: console
+* Run the checks:
 
-     tox -e dev-win
+.. code-block:: console
 
-Run the tests
+  tox -e check
 
-* on Linux
-
-   .. code-block:: console
-
-      tox -e py38,py39
-
-* on Windows
-
-   .. code-block:: console
-
-      tox -e py38-win,py39-win
+* `configure PyCharm`_
 
 Environments
 ------------
@@ -127,29 +119,40 @@ in directories named after the environments.
 Requirements
 ++++++++++++
 
-We use `tox`_ and `tox-conda`_ along with `anaconda`_,
-you need to have them installed before moving along.
-Create an Anaconda environment with `tox-conda`_:
+Make sure Python 3 is installed,
+preferably 3.9.
+
+Install `pipx`_ first:
 
 .. code-block:: console
 
-   conda create -n tox python=3.8 pip
-   conda activate tox
-   pip install tox-conda
-   conda deactivate
-   conda activate tox
+   python -m pip install --user pipx
+   python -m pipx ensurepath
 
-The last two commands are necessary
-to have the :command:`tox` executable available
-in the just created environment.
+You may need to log out and back in for the system path update to be taken into account.
+
+Then install `tox`_ and `pre-commit`_:
+
+.. code-block:: console
+
+   pipx install tox
+   pipx install pre-commit
+
+Finally,
+make sure that `graphviz`_ is installed
+(for rendering graphs).
 
 .. _matlab_requirements:
 
 MATLAB requirements
 ~~~~~~~~~~~~~~~~~~~
 
+MATLAB is a proprietary and optional dependency of |g|,
+if it is not available, the corresponding features
+will not be available without any other consequences.
+
 The MATLAB Python API is not defined as a dependency of |g|,
-it has to be installed manually in the Anaconda environment.
+it has to be installed manually in a tox environment.
 The Python API usually needs to be built
 and installed since it is not done by default during the MATLAB installation.
 
@@ -165,7 +168,12 @@ with eventually a conditional dependency on the Python version:
 pSeven requirements
 ~~~~~~~~~~~~~~~~~~~
 
-Like the MATLAB Python API, the pSeven one shall be installed manually in the Anaconda environment.
+pSeven is a proprietary and optional dependency of |g|,
+if it is not available, the corresponding features
+will not be available without any other consequences.
+
+Like the MATLAB Python API,
+the pSeven one shall be installed manually in a tox environment.
 
 For testing with `tox`_,
 set the environment variable :envvar:`PSEVEN_PYTHON_WRAPPER`
@@ -180,7 +188,7 @@ The environments created by `tox`_
 and their usage are described in the different sections below.
 In this section we give the common command line usages and tips.
 
-Create the environment named *env* and run its commands with:
+Create and execute the environment named *env* and run its commands with:
 
 .. code-block:: console
 
@@ -210,23 +218,25 @@ or if `tox`_ cannot figure out
 that a dependency has been updated
 (for instance with dependencies defined by a git branch).
 
-We use `tox`_ with `anaconda`_ environments,
-activate the `tox`_ environment named *env* with:
+Activate the `tox`_ environment named *env* with:
+
+* On Linux and MacOS:
 
 .. code-block:: console
 
-   conda activate .tox/env
+   source .tox/env/bin/.activate
 
-.. note::
+* On Windows:
 
-  An Anaconda environment created by `tox`_ has no Anaconda name,
-  thus :command:`conda` cannot activate it by its name as usual.
+.. code-block:: console
+
+   source .tox/env/Scripts/.activate
 
 Activating environments may be useful for instance
 to investigate a particular issue that happens
 in a specific environment and not others.
 You may modify an activated environment
-just like any other `anaconda`_ environment,
+just like any other environment,
 in case of trouble just recreate it.
 Be aware that the environment variables defined in :file:`tox.ini`
 will not be set with a manually activated environment.
@@ -247,49 +257,27 @@ for example:
 Not all the environments allow this feature,
 see the specific topics below for more information.
 
-.. note::
-
-  On Windows,
-  the environment names shall be suffixed with *-win*.
-  This is a limitation of `tox`_.
-
 Coding
 ------
 
 Coding environment
 ++++++++++++++++++
 
-Create the development environment:
+Create a development environment:
 
-* On Linux
+.. code-block:: console
 
-  .. code-block:: console
+  tox -e py39 --develop
 
-     tox -e dev
-
-* On Windows
-
-  .. code-block:: console
-
-     tox -e dev-win
-
-This will create an environment with:
-
-* |g| installed in `editable mode`_,
-* all the |g| dependencies,
-* tools used for development
-  (debugging,
-  code checking
-  and formatting)
-* git settings (see :ref:`git`)
-
+This will create an environment based on Python 3.9 with
+|g| installed in `editable mode`_,
 With an editable installation,
 |g| appears installed in the development environment created by `tox`_,
 but yet is still editable in the source tree.
 
 .. note::
 
-  You do not need to activate this environment for contributing to |g|.
+  You do not need to activate this environment for coding into |g|.
 
 .. _coding-style:
 
@@ -298,7 +286,7 @@ Coding Style
 
 We use the `pep8`_ convention.
 The formatting of the source code is done
-with `isort`_ and `black`_.
+with `reorder_python_imports`_ and `black`_.
 The code is systematically checked with `flake8`_
 and on demand with `pylint`_.
 A git commit shall have no flake8 violations.
@@ -474,6 +462,8 @@ Reviewing a MR
 * When all the reviews have been resolved,
   you shall approve the MR.
 
+.. _git hooks:
+
 Git hooks
 +++++++++
 
@@ -542,8 +532,13 @@ Where:
 * *[optional footer(s)]* with information about Breaking Changes and reference
   issues that this commit closes
 
-From the ``.tox/dev`` environment,
-you may use `commitizen`_ to easily create commits that follow `conventional commits`_.
+You may use `commitizen`_ to easily create commits that follow `conventional commits`_.
+Install it with:
+
+.. code-block:: console
+
+   pip install commitizen --user
+
 Run it and and let it drive you through with:
 
 .. code-block:: console
@@ -595,7 +590,7 @@ Rework commit history
 Tests
     Avoid commits that break tests,
     only push a branch that passes all the tests
-    for py38 on your machine.
+    for py39 on your machine.
 
 Testing
 -------
@@ -686,15 +681,14 @@ run the tests with:
 
    tox -e py39
 
-Replace py39 by py38 for testing with Python 3.8,
-you may run the tests accordingly with Python 3.7 and 3.9.
+Replace py39 by py38 for testing with Python 3.8.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
 
 .. code-block:: console
 
-   tox -e py38 -- --last-failed --step-wise
+   tox -e py39 -- --last-failed --step-wise
 
 Run the tests for several Python versions with for instance (on Linux):
 
@@ -702,23 +696,15 @@ Run the tests for several Python versions with for instance (on Linux):
 
    tox -e py37,py38
 
-Under Windows,
-append ``-win`` to the names of the test environments,
-for instance:
-
-.. code-block:: console
-
-   tox -e py37-win,py38-win
-
 Tests coverage
 ++++++++++++++
 
-For a selected python version (for instance Python 3.8),
+For a selected python version,
 get the coverage information with:
 
 .. code-block:: console
 
-   tox -e py38 -- --cov --cov-report=term
+   tox -e py39-coverage
 
 See `pytest-cov`_ for more information.
 
@@ -737,9 +723,6 @@ On Linux, generate the documentation with:
 .. code-block:: console
 
    tox -e doc
-
-Under Windows,
-append ``-win`` to the names of the this environment.
 
 Pass options to ``sphinx-build`` after ``--``,
 for instance:
@@ -803,10 +786,10 @@ and ``True`` when type checking:
     if TYPE_CHECKING:
         from gemseo.api import create_discipline
 
-Linefeeds
-~~~~~~~~~
+Line feeds
+~~~~~~~~~~
 
-Use `semantic linefeeds`_
+Use `semantic line feeds`_
 by starting a new line at the end of each sentence,
 and splitting sentences themselves at natural breaks between clauses,
 a text file becomes far easier to edit and version control.
@@ -846,3 +829,45 @@ The profiling data could be analyzed with one of these tools:
 - `kcachegrind <https://kcachegrind.github.io/html/Home.html>`_,
   after having converted the profiling data with
   `pyprof2calltree <https://github.com/pwaller/pyprof2calltree/>`_
+
+.. _configure PyCharm:
+
+Configure PyCharm
+-----------------
+
+`PyCharm`_ is one of the best tools for writing Python code.
+We provide some configuration files to help configuring it
+for developing |g|.
+
+Code style
+~~~~~~~~~~
+
+Configure `PyCharm`_ to match the code style used by |g|.
+Download :download:`this file </_static/pycharm/python-code-style.xml>`,
+open the `PyCharm`_ settings,
+go to ``Editor > Code Style > Python`` and
+select ``Import Scheme...``:
+
+.. image:: /_images/pycharm/configure-code-style.png
+
+File watchers
+~~~~~~~~~~~~~
+
+File watchers can automatically run tools on file save.
+Some tools used by the :ref:`git hooks` can be executed
+in order to be notified of code issues earlier
+and avoid having to fix files when creating a commit.
+
+Download :download:`this file </_static/pycharm/file-watchers.xml>`,
+open the `PyCharm`_ settings,
+go to ``Tools > File Watchers`` and
+click on the import icon:
+
+.. image:: /_images/pycharm/configure-file-watchers.png
+
+Then for all the file watchers,
+edit their settings
+and change the ``Program:`` entry
+with the path to ``pre-commit`` as installed in :ref:`requirements`:
+
+.. image:: /_images/pycharm/file-watchers-settings.png

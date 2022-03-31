@@ -13,18 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Gradient approximation by finite differences."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import argmax, finfo, ndarray, ones, tile, where, zeros
+from numpy import argmax
+from numpy import finfo
+from numpy import ndarray
+from numpy import ones
+from numpy import tile
+from numpy import where
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.parallel_execution import ParallelExecution
@@ -52,7 +64,7 @@ class FirstOrderFD(GradientApproximator):
         parallel=False,  # type: bool
         design_space=None,  # type: Optional[DesignSpace]
         normalize=True,  # type: bool
-        **parallel_args  # type: Union[int,bool,float]
+        **parallel_args,  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         super(FirstOrderFD, self).__init__(
             f_pointer,
@@ -60,7 +72,7 @@ class FirstOrderFD(GradientApproximator):
             parallel=parallel,
             design_space=design_space,
             normalize=normalize,
-            **parallel_args
+            **parallel_args,
         )
 
     def f_gradient(
@@ -68,7 +80,7 @@ class FirstOrderFD(GradientApproximator):
         x_vect,  # type: ndarray
         step=None,  # type: Optional[float,ndarray]
         x_indices=None,  # type: Optional[Sequence[int]]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         return super(FirstOrderFD, self).f_gradient(
             x_vect, step=step, x_indices=x_indices, **kwargs
@@ -80,7 +92,7 @@ class FirstOrderFD(GradientApproximator):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: Union[float,ndarray]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         if step is None:
             step = self.step
@@ -127,7 +139,7 @@ class FirstOrderFD(GradientApproximator):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: Union[float,ndarray]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         if step is None:
             step = self.step
@@ -205,7 +217,7 @@ class FirstOrderFD(GradientApproximator):
         self,
         x_vect,  # type: ndarray
         numerical_error=EPSILON,  # type: float
-        **kwargs
+        **kwargs,
     ):  # type: (...) -> Tuple[ndarray,ndarray]
         r"""Compute the gradient by real step.
 
@@ -403,5 +415,5 @@ def approx_hess(
     Returns:
         The approximation of the Hessian matrix at the current step :math:`x`.
     """
-    hess = (f_p - 2 * f_x + f_m) / (step ** 2)
+    hess = (f_p - 2 * f_x + f_m) / (step**2)
     return hess

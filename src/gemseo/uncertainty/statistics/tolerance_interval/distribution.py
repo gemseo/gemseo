@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,11 +20,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted probability distribution."""
 import logging
-from typing import Any, Tuple, Type
+from typing import Any
+from typing import Tuple
+from typing import Type
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import array, inf, ndarray
+from numpy import array
+from numpy import inf
+from numpy import ndarray
 
 from gemseo.core.factory import Factory
 from gemseo.utils.base_enum import BaseEnum
@@ -193,7 +196,7 @@ class ToleranceIntervalFactory(object):
         self,
         class_name,  # type: str
         size,  # type: int
-        *args  # type: float
+        *args,  # type: float
     ):  # type: (...) -> ToleranceInterval
         """Return an instance of :class:`.ToleranceInterval`.
 

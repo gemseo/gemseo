@@ -14,7 +14,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Split an array to a dictionary of arrays (Python 3)."""
-from typing import Dict, Iterable, Mapping
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
 
 from numpy import ndarray
 
@@ -87,7 +89,7 @@ def split_array_to_dict_of_arrays(
                 array[tuple(indices)],
                 names_to_sizes,
                 *names[1:],
-                check_consistency=check_consistency
+                check_consistency=check_consistency,
             )
 
         first_index += size

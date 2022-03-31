@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Test helpers."""
 from __future__ import unicode_literals
 
@@ -21,9 +20,11 @@ from functools import partial
 from typing import List
 
 import pytest
-
-from gemseo.api import create_discipline, create_scenario
-from gemseo.problems.sellar.sellar import Sellar1, Sellar2, SellarSystem
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 

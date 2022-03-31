@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -29,16 +28,17 @@ with respect to the problem dimension for the aerostructure problem.
 For that,
 we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.data_driven.api import (
-    create_scalability_study,
-    plot_scalability_results,
-)
+from gemseo.problems.scalable.data_driven.api import create_scalability_study
+from gemseo.problems.scalable.data_driven.api import plot_scalability_results
 
 configure_logger()
 

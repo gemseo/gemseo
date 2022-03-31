@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,7 +20,8 @@
 #        :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Optimization library wrappers base class."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import Optional
@@ -29,12 +29,10 @@ from typing import Optional
 from numpy import ndarray
 
 from gemseo.algos.driver_lib import DriverLib
-from gemseo.algos.stop_criteria import (
-    FtolReached,
-    XtolReached,
-    is_f_tol_reached,
-    is_x_tol_reached,
-)
+from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import is_f_tol_reached
+from gemseo.algos.stop_criteria import is_x_tol_reached
+from gemseo.algos.stop_criteria import XtolReached
 
 LOGGER = logging.getLogger(__name__)
 

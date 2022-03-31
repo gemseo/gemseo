@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,12 +20,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """scipy.optimize optimization library wrapper."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Union
 
-from numpy import isfinite, ndarray, real
+from numpy import isfinite
+from numpy import ndarray
+from numpy import real
 from scipy import optimize
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
@@ -123,7 +128,7 @@ class ScipyOpt(OptimizationLibrary):
         scale=None,  # type: Optional[float]
         rescale=-1,  # type: float
         offset=None,  # type: Optional[float]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> Dict[str, Any]
         r"""Set the options default values.
 
@@ -198,7 +203,7 @@ class ScipyOpt(OptimizationLibrary):
             scale=scale,
             rescale=rescale,
             offset=offset,
-            **kwargs
+            **kwargs,
         )
         return popts
 

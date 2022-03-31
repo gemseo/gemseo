@@ -13,25 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from unittest import mock
 
 import pytest
+from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_scalable import DiagonalDOE
 from numpy import array
 from numpy.testing import assert_equal
 from pytest import approx
 
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.lib_scalable import DiagonalDOE
-
-from .utils import check_problem_execution, execute_problem
+from .utils import check_problem_execution
+from .utils import execute_problem
 
 DOE_LIB_NAME = "DiagonalDOE"
 

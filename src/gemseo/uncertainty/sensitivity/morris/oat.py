@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 r"""Class to apply the OAT technique used by :class:`.MorrisIndices`.
 
 OAT technique
@@ -49,14 +47,17 @@ from an initial point
 From these elementary effects, we can compare their absolute values
 :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Mapping, Tuple
+from typing import Mapping
+from typing import Tuple
 
-from numpy import maximum, minimum, ndarray
+from numpy import maximum
+from numpy import minimum
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline

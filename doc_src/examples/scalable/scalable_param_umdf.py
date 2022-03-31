@@ -14,13 +14,11 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Parametric scalable MDO problem - MDF
 =====================================
@@ -35,9 +33,11 @@ and a weakly one, with the following properties:
 
 We would like to solve this MDO problem by means of an MDF formulation.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, generate_n2_plot
+from gemseo.api import configure_logger
+from gemseo.api import generate_n2_plot
 from gemseo.problems.scalable.parametric.problem import TMScalableProblem
 from gemseo.uncertainty.umdo.umdo_scenario import UMDOScenario
 

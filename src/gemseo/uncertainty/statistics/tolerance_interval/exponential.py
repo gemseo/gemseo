@@ -13,14 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted exponential distribution."""
-
 import openturns as ot
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
@@ -60,7 +58,7 @@ class ExponentialToleranceInterval(ToleranceInterval):
         alpha,  # type: float
         size,  # type: int
     ):  # type: (...) -> float
-        k_1 = 1 - (coverage ** size / alpha) ** (1.0 / (size - 1))
+        k_1 = 1 - (coverage**size / alpha) ** (1.0 / (size - 1))
         return self.__location + k_1 / self.__rate
 
     def _compute_upper_bound(

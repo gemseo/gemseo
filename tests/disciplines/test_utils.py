@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from typing import List
 
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
+from gemseo.disciplines.utils import get_all_inputs
+from gemseo.disciplines.utils import get_all_outputs
 
 
 @pytest.fixture(scope="module")

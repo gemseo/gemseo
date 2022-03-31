@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -21,42 +20,38 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
-
 """A database of function calls and design variables."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from ast import literal_eval
 from hashlib import sha1
-from itertools import chain, islice
-from typing import (
-    Any,
-    Callable,
-    ItemsView,
-    Iterable,
-    KeysView,
-    List,
-    Mapping,
-    Optional,
-    Set,
-    Tuple,
-    Union,
-    ValuesView,
-)
+from itertools import chain
+from itertools import islice
+from typing import Any
+from typing import Callable
+from typing import ItemsView
+from typing import Iterable
+from typing import KeysView
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import Union
+from typing import ValuesView
 from xml.etree.ElementTree import parse as parse_element
 
 import h5py
-from numpy import (
-    array,
-    atleast_2d,
-    concatenate,
-    float64,
-    isclose,
-    ndarray,
-    string_,
-    uint8,
-)
+from numpy import array
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import float64
+from numpy import isclose
+from numpy import ndarray
+from numpy import string_
+from numpy import uint8
 from numpy.linalg import norm
 from six import string_types
 

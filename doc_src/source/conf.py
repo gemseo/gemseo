@@ -12,24 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -- General configuration ------------------------------------------------
-
 import collections
 import datetime
 import os
 import re
 import sys
 from dataclasses import asdict
+from importlib.metadata import version
 from pathlib import Path
-from typing import Iterable, List, Mapping, Tuple, Union
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Tuple
+from typing import Union
 
 import requests
 import sphinx.ext.autodoc.typehints
-from sphinx.util import inspect, typing
+from sphinx.util import inspect
+from sphinx.util import typing
 from sphinx_gallery.sorting import ExampleTitleSortKey
-
-import gemseo
 
 os.chdir((Path(__file__).resolve()).parent)
 
@@ -149,11 +151,8 @@ project = "GEMSEO"
 
 copyright = "{}, IRT Saint Exupéry".format(datetime.datetime.now().year)
 
-# The short X.Y version.
-version = gemseo.__version__
-
-# The full version, including alpha/beta/rc tags.
-release = version
+release = version("gemseo")
+version = release
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"

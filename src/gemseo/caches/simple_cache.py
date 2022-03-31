@@ -13,20 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store only one entry."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
-from typing import Generator, Iterable, Optional
+from typing import Generator
+from typing import Iterable
+from typing import Optional
 
-from gemseo.core.cache import AbstractCache, CacheEntry, Data, JacobianData, OutputData
+from gemseo.core.cache import AbstractCache
+from gemseo.core.cache import CacheEntry
+from gemseo.core.cache import Data
+from gemseo.core.cache import JacobianData
+from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.testing import compare_dict_of_arrays
 

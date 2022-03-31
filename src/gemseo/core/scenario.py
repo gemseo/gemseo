@@ -13,23 +13,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """The base class for the scenarios."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import timeit
 from datetime import timedelta
 from os import remove
-from os.path import basename, exists
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from os.path import basename
+from os.path import exists
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 from six import string_types
 
@@ -38,13 +44,16 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
+from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessorOptionType
 from gemseo.post.post_factory import PostFactory
 from gemseo.utils.py23_compat import Path
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +107,7 @@ class Scenario(MDODiscipline):
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options  # type: Any
+        **formulation_options,  # type: Any
     ):  # type: (...) -> None
         """
         Args:
@@ -135,7 +144,7 @@ class Scenario(MDODiscipline):
             objective_name,
             design_space,
             grammar_type=grammar_type,
-            **formulation_options
+            **formulation_options,
         )
         self.formulation.opt_problem.database.name = self.name
         self.post_factory = PostFactory()
@@ -193,7 +202,7 @@ class Scenario(MDODiscipline):
         constraint_name=None,  # type: Optional[str]
         value=None,  # type: Optional[float]
         positive=False,  # type:bool
-        **kwargs
+        **kwargs,
     ):  # type: (...) -> None
         """Add a design constraint.
 
@@ -232,7 +241,7 @@ class Scenario(MDODiscipline):
             constraint_name=constraint_name,
             value=value,
             positive=positive,
-            **kwargs
+            **kwargs,
         )
 
     def add_observable(
@@ -261,7 +270,7 @@ class Scenario(MDODiscipline):
         formulation,  # type: str
         objective_name,  # type: str
         design_space,  # type: DesignSpace
-        **formulation_options  # type: Any
+        **formulation_options,  # type: Any
     ):  # type: (...) -> None
         """Initialize the MDO formulation.
 
@@ -283,7 +292,7 @@ class Scenario(MDODiscipline):
             disciplines=self.disciplines,
             objective_name=objective_name,
             design_space=design_space,
-            **formulation_options
+            **formulation_options,
         )
         self.formulation_name = formulation
         self.formulation = form_inst
@@ -398,7 +407,7 @@ class Scenario(MDODiscipline):
     def post_process(
         self,
         post_name,  # type: str
-        **options  # type: Union[OptPostProcessorOptionType,Path]
+        **options,  # type: Union[OptPostProcessorOptionType,Path]
     ):  # type: (...) -> OptPostProcessor
         """Post-process the optimization history.
 

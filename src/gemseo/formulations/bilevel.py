@@ -13,31 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Bi-level formulation."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.chain import MDOChain, MDOParallelChain
+from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
@@ -85,7 +84,7 @@ class BiLevel(MDOFormulation):
         apply_cstr_to_system=True,  # type: bool
         reset_x0_before_opt=False,  # type: bool
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **mda_options  # type: Any
+        **mda_options,  # type: Any
     ):  # type: (...) -> None
         """
         Args:
@@ -150,7 +149,7 @@ class BiLevel(MDOFormulation):
         output_functions=False,  # type: bool
         use_non_shared_vars=False,  # type: bool
         adapter_class=MDOScenarioAdapter,  # type:MDOScenarioAdapter
-        **adapter_options
+        **adapter_options,
     ):  # type: (...) -> List[MDOScenarioAdapter]
         """Build the MDOScenarioAdapter required for each sub scenario.
 
@@ -175,7 +174,7 @@ class BiLevel(MDOFormulation):
                 adapter_inputs,
                 adapter_outputs,
                 grammar_type=self._grammar_type,
-                **adapter_options
+                **adapter_options,
             )
             adapters.append(adapter)
         return adapters
@@ -313,7 +312,7 @@ class BiLevel(MDOFormulation):
     def _build_mdas(
         self,
         mda_name,  # type: str
-        **mda_options  # type:Optional[Union[str,int,float,bool]]
+        **mda_options,  # type:Optional[Union[str,int,float,bool]]
     ):  # type: (...) -> None
         """Build the chain on top of which all functions are built.
 

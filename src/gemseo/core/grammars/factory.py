@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a derived class of :class:`.AbstractGrammar`."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import List
@@ -41,7 +41,7 @@ class GrammarFactory(object):
         self,
         class_name,  # type: str
         name,  # type: str
-        **options
+        **options,
     ):  # type: (...) -> AbstractGrammar
         """Create a grammar.
 
