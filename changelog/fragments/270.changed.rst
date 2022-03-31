@@ -1,0 +1,2 @@
+Accessing a unique entry of a Dataset no longer returns 2D arrays but 1D arrays.
+Accessing a unique feature of a Dataset no longer returns a dictionary of arrays but an array.

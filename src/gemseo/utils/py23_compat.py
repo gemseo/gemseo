@@ -143,6 +143,9 @@ if sys.version_info < (3, 8):
     else:
         importlib_metadata = None
 
+    import singledispatchmethod
+
 else:
+    from functools import singledispatchmethod  # noqa: F401
     from importlib import metadata as importlib_metadata  # noqa: F401
     from itertools import accumulate  # noqa: F401

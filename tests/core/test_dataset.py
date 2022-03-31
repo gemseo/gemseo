@@ -209,10 +209,10 @@ def test_isnan():
 
 def test_find_and_remove(io_dataset):
     data = io_dataset
-    assert 0 in data["in_1"]["in_1"][:, 0]
+    assert 0 in data["in_1"][:, 0]
     assert len(data) == 10
     data.remove(data.compare("in_1", "==", 0))
-    assert 0 not in data["in_1"]["in_1"][:, 0]
+    assert 0 not in data["in_1"][:, 0]
     assert len(data) == 9
 
 
@@ -433,7 +433,7 @@ def test_export_dataset_to_cache(dataset, tmp_path, cache_type, inputs, outputs)
     input_names = inputs or ["var_1", "var_2"]
     output_names = outputs or []
     cache = dataset.export_to_cache(
-        cache_type=dataset.MEMORY_FULL_CACHE,
+        cache_type=cache_type,
         cache_hdf_file=str(tmp_path / "cache.hdf5"),
         inputs=inputs,
         outputs=outputs,
@@ -465,58 +465,72 @@ def test_dataset_from_file(filename, header, expected_names):
     assert dataset.columns_names == expected_names
 
 
-def test_getitem(dataset, data):
-    with pytest.raises(TypeError):
-        # item is a bad item
-        dataset[{}]
-    with pytest.raises(TypeError):
-        # item is a list with bad elements
-        dataset[[{}]]
-    with pytest.raises(TypeError):
-        # item is a tuple whose first element is a list with bad elements
-        dataset[([{}], "var_1")]
-    with pytest.raises(TypeError):
-        # item is a tuple whose first element is a bad element
-        dataset[({}, "var_1")]
-    with pytest.raises(TypeError):
-        # item is a tuple whose second element is a list with bad elements
-        dataset[(1, [{}])]
-    with pytest.raises(TypeError):
-        # item is a tuple whose second element is a bad element
-        dataset[(1, {})]
-    with pytest.raises(ValueError):
-        dataset["dummy"]
-    with pytest.raises(ValueError):
-        dataset[1000]
-    res = dataset["var_1"]
-    assert allclose(res["var_1"], data[:, 0:1])
-    res = dataset["var_2"]
-    assert allclose(res["var_2"], data[:, 1:3])
-    res = dataset[["var_1", "var_2"]]
-    assert allclose(res["var_1"], data[:, 0:1])
-    assert allclose(res["var_2"], data[:, 1:3])
-    res = dataset[2]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    assert allclose(res["var_2"], data[2:3, 1:3])
-    res = dataset[[2, 3]]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[2:4]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[(2, "var_1")]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    res = dataset[(2, ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:3, 0:1])
-    assert allclose(res["var_2"], data[2:3, 1:3])
-    res = dataset[([2, 3], "var_1")]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    res = dataset[([2, 3], ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
-    res = dataset[(slice(2, 4), ["var_1", "var_2"])]
-    assert allclose(res["var_1"], data[2:4, 0:1])
-    assert allclose(res["var_2"], data[2:4, 1:3])
+@pytest.fixture(scope="module")
+def x_dataset():
+    dataset = Dataset()
+    dataset.add_variable("x", array([[1.0], [-1.0]]))
+    dataset.add_variable("y", array([[2.0, 3.0], [-2.0, -3.0]]))
+    return dataset
+
+
+@pytest.mark.parametrize(
+    "item,expected",
+    [
+        (0, {"x": array([1.0]), "y": array([2.0, 3.0])}),
+        ([0], {"x": array([[1.0]]), "y": array([[2.0, 3.0]])}),
+        ([1, 0], {"x": array([[-1.0], [1.0]]), "y": array([[-2.0, -3.0], [2.0, 3.0]])}),
+        (
+            slice(0, 2),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        (
+            Ellipsis,
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        ("x", array([[1.0], [-1.0]])),
+        (["x"], {"x": array([[1.0], [-1.0]])}),
+        (
+            ["x", "y"],
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        ((0, "x"), array([1.0])),
+        (([0], "x"), array([[1.0]])),
+        ((0, ["x"]), {"x": array([1.0])}),
+        ((0, ["x", "y"]), {"x": array([1.0]), "y": array([2.0, 3.0])}),
+        (([0], ["x"]), {"x": array([[1.0]])}),
+        (
+            ([1, 0], ["x", "y"]),
+            {"x": array([[-1.0], [1.0]]), "y": array([[-2.0, -3.0], [2.0, 3.0]])},
+        ),
+        (
+            (slice(0, 2), ["x", "y"]),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+        (
+            (Ellipsis, ["x", "y"]),
+            {"x": array([[1.0], [-1.0]]), "y": array([[2.0, 3.0], [-2.0, -3.0]])},
+        ),
+    ],
+)
+def test_getitem(x_dataset, item, expected):
+    """Check the access to an item."""
+    assert_equal(x_dataset[item], expected)
+
+
+@pytest.mark.parametrize(
+    "item,error,msg",
+    [
+        ("dummy", KeyError, "There is not variable named 'dummy' in the dataset."),
+        (1000, KeyError, "Entries must be integers between -2 and 1; got 1000."),
+        ((0, 1), TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+        ([1, "x"], TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+        (1.0, TypeError, Dataset._Dataset__GETITEM_ERROR_MESSAGE),
+    ],
+)
+def test_getitem_raising_error(x_dataset, item, error, msg):
+    """Check that accessing an unknown item raises an error."""
+    with pytest.raises(error, match=re.escape(msg)):
+        x_dataset[item]
 
 
 def test_plot(dataset, tmp_path):

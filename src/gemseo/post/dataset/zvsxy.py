@@ -101,9 +101,9 @@ class ZvsXY(DatasetPlot):
 
         self._set_color(properties, n_series)
 
-        x_data = self.dataset[x][x][:, x_comp]
-        y_data = self.dataset[y][y][:, y_comp]
-        z_data = self.dataset[z][z][:, z_comp]
+        x_data = self.dataset[x][:, x_comp]
+        y_data = self.dataset[y][:, y_comp]
+        z_data = self.dataset[z][:, z_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
@@ -126,8 +126,8 @@ class ZvsXY(DatasetPlot):
 
         if other_datasets:
             for index, dataset in enumerate(other_datasets):
-                x_data = dataset[x][x][:, x_comp]
-                y_data = dataset[y][y][:, y_comp]
+                x_data = dataset[x][:, x_comp]
+                y_data = dataset[y][:, y_comp]
                 axes.scatter(x_data, y_data, color=self.color[index + 1])
 
         if self.xlabel is None:

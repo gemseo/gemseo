@@ -80,9 +80,9 @@ class Surfaces(DatasetPlot):
         x_data = self.dataset.metadata[mesh][:, 0]
         y_data = self.dataset.metadata[mesh][:, 1]
         if samples is not None:
-            samples = self.dataset[variable][variable][samples, :]
+            samples = self.dataset[variable][samples, :]
         else:
-            samples = self.dataset[variable][variable]
+            samples = self.dataset[variable]
 
         options = {}
         options["cmap"] = properties.get(self.COLORMAP) or self.colormap

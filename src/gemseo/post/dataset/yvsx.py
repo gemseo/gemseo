@@ -66,8 +66,8 @@ class YvsX(DatasetPlot):
         y_comp = self._param.y_comp
         color = properties.get(self.COLOR) or "blue"
         style = properties.get(self.LINESTYLE) or "o"
-        x_data = self.dataset[x][x][:, x_comp]
-        y_data = self.dataset[y][y][:, y_comp]
+        x_data = self.dataset[x][:, x_comp]
+        y_data = self.dataset[y][:, y_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)

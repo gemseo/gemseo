@@ -347,11 +347,11 @@ def test_init_from_dataset_default(io_dataset):
         assert (parameter_space[name].var_type == "float").all()
         assert name in parameter_space.deterministic_variables
     assert parameter_space["in_1"].size == 2
-    ref = io_dataset["in_1"]["in_1"].min(0)
+    ref = io_dataset["in_1"].min(0)
     assert (parameter_space["in_1"].l_b == ref).all()
-    ref = io_dataset["in_1"]["in_1"].max(0)
+    ref = io_dataset["in_1"].max(0)
     assert (parameter_space["in_1"].u_b == ref).all()
-    ref = (io_dataset["in_1"]["in_1"].max(0) + io_dataset["in_1"]["in_1"].min(0)) / 2.0
+    ref = (io_dataset["in_1"].max(0) + io_dataset["in_1"].min(0)) / 2.0
     assert (parameter_space["in_1"].value == ref).all()
     assert parameter_space["in_2"].size == 3
     assert parameter_space["out_1"].size == 2
