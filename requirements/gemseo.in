@@ -13,6 +13,7 @@ pandas >=0.16,<=1.4.1
 pyxdsm <=2.2.0
 requests
 scipy >=1.1,<=1.7.1
+singledispatchmethod ; python_version=='3.7'
 six
 tqdm >=4.41,<=4.61.0
 xdsmjs >=1.0.0,<=1.0.1

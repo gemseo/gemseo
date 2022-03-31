@@ -69,9 +69,9 @@ class Curves(DatasetPlot):
         variable = self._param.variable
         samples = self._param.samples
         if samples is not None:
-            output = self.dataset[variable][variable][samples, :].T
+            output = self.dataset[variable][samples, :].T
         else:
-            output = self.dataset[variable][variable].T
+            output = self.dataset[variable].T
             samples = range(output.shape[1])
         n_samples = output.shape[1]
 

@@ -57,13 +57,24 @@ or the data associated to a group or the data associated to a list of variables.
 It is also possible to export the :class:`.Dataset`
 to an :class:`.AbstractFullCache` or a pandas DataFrame.
 """
-from __future__ import division, unicode_literals
+from __future__ import annotations
 
 import logging
 import operator
 from collections import namedtuple
-from numbers import Number
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    NoReturn,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 import numpy as np
 from numpy import concatenate, delete, hstack, isnan, ndarray, unique, where
@@ -78,7 +89,7 @@ from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     split_array_to_dict_of_arrays,
 )
-from gemseo.utils.py23_compat import Path, long
+from gemseo.utils.py23_compat import Path, long, singledispatchmethod
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 LOGGER = logging.getLogger(__name__)
@@ -92,8 +103,10 @@ LOGICAL_OPERATORS = {
     "!=": operator.ne,
 }
 
+EntryItemType = Union[int, Sequence[int], slice]
+VariableItemType = Union[str, Iterable[str]]
 ItemType = Union[
-    int, str, List[int], List[str], Tuple[Union[int, List[int]], Union[str, List[str]]]
+    EntryItemType, VariableItemType, Tuple[EntryItemType, VariableItemType]
 ]
 AllDataType = Union[
     Dict[str, Union[Dict[str, ndarray], ndarray]],
@@ -104,41 +117,83 @@ ColumnName = namedtuple("ColumnName", "group,variable,component")
 
 
 class Dataset(object):
-    """A generic class to store data.
+    """A generic class to store data."""
 
-    Attributes:
-        name (str): The name of the dataset.
-        sizes (Dict[str,int]): The sizes of the variables.
-        dimension (Dict[str,int]): The dimensions of the groups of variables.
-        length (int): The length of the dataset.
-        strings_encoding (Dict): The encoding structure,
-            mapping the values of the string variables with integers;
-            the keys are the names of the variables
-            and the values are dictionaries
-            whose keys are the components of the variables
-            and the values are the integer values.
-        metadata (Dict[str,Any]): The metadata
-            used to store any kind of information that are not variables,
-            e.g. the mesh associated with a multi-dimensional variable.
+    name: str
+    """The name of the dataset."""
+
+    sizes: dict[str, int]
+    """The sizes of the variables."""
+
+    dimension: dict[str, int]
+    """The dimensions of the groups of variables."""
+
+    length: int
+    """The length of the dataset."""
+
+    strings_encoding: dict[str, dict[int, int]]
+    """The encoding structure mapping the values of the string variables with integers.
+
+    The keys are the names of the variables
+    and the values are dictionaries
+    whose keys are the components of the variables
+    and the values are the integer values.
     """
 
-    PARAMETER_GROUP = "parameters"
-    DESIGN_GROUP = "design_parameters"
-    FUNCTION_GROUP = "functions"
-    INPUT_GROUP = "inputs"
-    OUTPUT_GROUP = "outputs"
-    GRADIENT_GROUP = "gradients"
-    DEFAULT_GROUP = PARAMETER_GROUP
-    DEFAULT_NAMES = {
+    metadata: dict[str, Any]
+    """The metadata used to store any kind of information that are not variables,
+
+    E.g. the mesh associated with a multi-dimensional variable.
+    """
+
+    PARAMETER_GROUP: ClassVar[str] = "parameters"
+    """The group name for the parameters."""
+
+    DESIGN_GROUP: ClassVar[str] = "design_parameters"
+    """The group name for the design variables of an :class:`.OptimizationProblem`."""
+
+    FUNCTION_GROUP: ClassVar[str] = "functions"
+    """The group name for the functions of an :class:`.OptimizationProblem`."""
+
+    INPUT_GROUP: ClassVar[str] = "inputs"
+    """The group name for the input variables."""
+
+    OUTPUT_GROUP: ClassVar[str] = "outputs"
+    """The group name for the output variables."""
+
+    GRADIENT_GROUP: ClassVar[str] = "gradients"
+    """The group name for the gradients."""
+
+    DEFAULT_GROUP: ClassVar[str] = PARAMETER_GROUP
+    """The default name to group the variables."""
+
+    DEFAULT_NAMES: ClassVar[dict[str, str]] = {
         PARAMETER_GROUP: "x",
         DESIGN_GROUP: "dp",
         FUNCTION_GROUP: "func",
         INPUT_GROUP: "in",
         OUTPUT_GROUP: "out",
     }
+    """The default variable names for the different groups."""
 
-    HDF5_CACHE = "HDF5Cache"
-    MEMORY_FULL_CACHE = "MemoryFullCache"
+    HDF5_CACHE: ClassVar[str] = "HDF5Cache"
+    """The name of the :class:`.HDF5Cache`."""
+
+    MEMORY_FULL_CACHE: ClassVar[str] = "MemoryFullCache"
+    """The name of the :class:`.MemoryFullCache`."""
+
+    __GETITEM_ERROR_MESSAGE: ClassVar[str] = (
+        "You can get items from a dataset in one of the following ways: "
+        "dataset[3] for the 4th sample, "
+        "dataset['x'] for the variable 'x', "
+        "dataset[['x', 'y']] for the variables 'x' and 'y', "
+        "dataset[[0, 3]] for the 1st and 4th samples, "
+        "dataset[(1, 'x')] for the variable 'x' of the 2nd sample, "
+        "dataset[(1, ['x', 'y'])] for the variables 'x' and 'y' of the 2nd sample, "
+        "dataset[([0, 3], 'x')] for the variable 'x' of the 1st and 4th samples, "
+        "dataset[([0, 3], ['x', 'y'])] for the variables 'x' and 'y' "
+        "of the 1st and 4th samples."
+    )
 
     def __init__(
         self,
@@ -244,9 +299,9 @@ class Dataset(object):
                 )
             )
         if value_1 in self.variables:
-            value_1 = self[value_1][value_1][:, component_1]
+            value_1 = self[value_1][:, component_1]
         if value_2 in self.variables:
-            value_2 = self[value_2][value_2][:, component_2]
+            value_2 = self[value_2][:, component_2]
         try:
             result = LOGICAL_OPERATORS[logical_operator](value_1, value_2)
         except KeyError:
@@ -1207,9 +1262,9 @@ class Dataset(object):
         else:
             cache = create_cache(cache_type, name=self.name, **options)
 
-        for sample in range(len(self)):
-            input_data = {name: self[(sample, name)][name] for name in inputs}
-            output_data = {name: self[(sample, name)][name] for name in outputs}
+        for sample in self:
+            input_data = {name: sample[name] for name in inputs}
+            output_data = {name: sample[name] for name in outputs}
             cache.cache_outputs(input_data, output_data)
 
         return cache
@@ -1264,101 +1319,65 @@ class Dataset(object):
         )
         return post
 
-    def __getitem(
-        self,
-        indices,  # type: Sequence[int],
-        names,  # type: Iterable[str],
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Get the items associated with sample indices and variables names.
+    def __iter__(self):  # type: (...) -> Dict[str, ndarray]
+        for item in range(len(self)):
+            yield self[item]
 
-        Args:
-            indices: The samples indices.
+    @singledispatchmethod
+    def __split_item(self, item) -> NoReturn:
+        raise TypeError(self.__GETITEM_ERROR_MESSAGE)
 
-        Returns:
-            The data related to the samples and variables names.
-        """
-        for index in indices:
-            is_lower = index < -1
-            is_greater = index >= self.length
-            is_int = isinstance(index, int)
-            if index == self.n_samples:
-                raise IndexError
-            if is_lower or is_greater or not is_int:
-                raise ValueError("{} is not a sample index.".format(index))
-        for name in names:
-            if name not in self._groups:
-                raise ValueError("'{}' is not a variable name.".format(name))
-        item = self.get_data_by_names(names)
-        if len(indices) == 1:
-            indices = indices[0]
-        item = {name: value[indices, :] for name, value in list(item.items())}
+    @__split_item.register
+    def _(self, item: int) -> Tuple[int, List[str]]:
+        return item, self.variables
+
+    @__split_item.register
+    def _(self, item: type(Ellipsis)) -> Tuple[type(Ellipsis), List[str]]:
+        return item, self.variables
+
+    @__split_item.register
+    def _(self, item: slice) -> Tuple[slice, List[str]]:
+        return item, self.variables
+
+    @__split_item.register
+    def _(self, item: str) -> Tuple[type(Ellipsis), str]:
+        return Ellipsis, item
+
+    @__split_item.register
+    def _(self, item: list) -> Tuple[Union[type(Ellipsis), List[int]], List[str]]:
+        if all(isinstance(name, str) for name in item):
+            return Ellipsis, item
+        elif all(isinstance(entry, int) for entry in item):
+            return item, self.variables
+        else:
+            raise TypeError(self.__GETITEM_ERROR_MESSAGE)
+
+    @__split_item.register
+    def _(self, item: tuple) -> Tuple[Any, Any]:
+        if len(item) != 2:
+            raise TypeError(self.__GETITEM_ERROR_MESSAGE)
         return item
 
     def __getitem__(
         self,
-        key,  # type: ItemType
-    ):  # type: (...) -> Dict[str,ndarray]
-        indices = list(range(0, self.length))
-        type_error_msg = (
-            "You can get items from a dataset in one of the following ways: "
-            "dataset[3] for the 4th sample, "
-            "dataset['x'] for the variable 'x', "
-            "dataset[['x','y']] for the variables 'x' and 'y', "
-            "dataset[[0,3]] for the 1st and 4th samples, "
-            "dataset[(1,'x')] for the variable 'x' of the 2nd sample, "
-            "dataset[(1,['x','y'])] for the variables 'x' and 'y' of the 2nd sample, "
-            "dataset[([0,3],'x')] for the variable 'x' of the 1st and 4th samples, "
-            "dataset[([0,3],['x','y'])] for the variables 'x' and 'y' "
-            "of the 1st and 4th samples, "
-        )
+        item,  # type: ItemType
+    ):  # type: (...) -> Union[Dict[str, ndarray], ndarray]
+        entries, variables = self.__split_item(item)
+        try:
+            if isinstance(variables, str):
+                return self.get_data_by_names([variables])[variables][entries, :]
 
-        def getitem_list(index):
-            """Get the item when the index is a list."""
-            if all(isinstance(elem, string_types) for elem in index):
-                item = self.__getitem(indices, index)
-            elif all(isinstance(elem, Number) for elem in index):
-                item = self.__getitem(index, self.variables)
-            else:
-                raise TypeError(type_error_msg)
-            return item
-
-        def getitem_tuple(tpl):
-            """Get the item when the index is a tuple."""
-            if isinstance(tpl[0], Number):
-                indices = [tpl[0]]
-            elif isinstance(tpl[0], slice):
-                indices = list(range(tpl[0].start, tpl[0].stop, tpl[0].step or 1))
-            elif isinstance(tpl[0], list):
-                if all(isinstance(elem, Number) for elem in tpl[0]):
-                    indices = tpl[0]
-                else:
-                    raise TypeError(type_error_msg)
-            else:
-                raise TypeError(type_error_msg)
-            if isinstance(tpl[1], string_types):
-                names = [tpl[1]]
-            elif isinstance(tpl[1], list):
-                if all(isinstance(elem, string_types) for elem in tpl[1]):
-                    names = tpl[1]
-                else:
-                    raise TypeError(type_error_msg)
-            else:
-                raise TypeError(type_error_msg)
-            return self.__getitem(indices, names)
-
-        if isinstance(key, Number):
-            item = self.__getitem([key], self.variables)
-        elif isinstance(key, string_types):
-            item = self.__getitem(indices, [key])
-        elif isinstance(key, list):
-            item = getitem_list(key)
-        elif isinstance(key, slice):
-            item = getitem_list(list(range(key.start, key.stop, key.step or 1)))
-        elif isinstance(key, tuple) and len(key) == 2:
-            item = getitem_tuple(key)
-        else:
-            raise TypeError(type_error_msg)
-        return item
+            data = self.get_data_by_names(variables)
+            return {name: value[entries, :] for name, value in data.items()}
+        except IndexError:
+            size = len(self)
+            raise KeyError(
+                f"Entries must be integers between {-size} and {size-1}; got {entries}."
+            )
+        except KeyError as name:
+            raise KeyError(f"There is not variable named {name} in the dataset.")
+        except TypeError:
+            raise TypeError(self.__GETITEM_ERROR_MESSAGE)
 
     @property
     def row_names(self):  # type: (...) -> List[str]

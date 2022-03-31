@@ -524,7 +524,7 @@ class ScalableDiagonalApproximation(object):
         """
         x2_scaled = nan_to_num(dataset.get_data_by_group(dataset.INPUT_GROUP) ** 2)
         t_scaled = [atleast_1d(sqrt(mean(val.real))) for val in x2_scaled]
-        f_scaled = dataset[function_name][function_name].real
+        f_scaled = dataset[function_name].real
 
         # sort t_scaled and f_scaled following the t_scaled ascending order
         indices = argsort([val[0] for val in t_scaled])
