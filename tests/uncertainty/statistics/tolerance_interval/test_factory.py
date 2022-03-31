@@ -15,7 +15,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the factory used to create instances of :class:`.ToleranceInterval`."""
 import pytest
-
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
 )

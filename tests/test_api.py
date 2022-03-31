@@ -13,70 +13,63 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import json
 import re
 from unittest import mock
 
 import pytest
-from numpy import array, cos, linspace
-from numpy import pi as np_pi
-from numpy import sin
-from six import string_types
-
-from gemseo.api import (
-    AlgorithmFeatures,
-    compute_doe,
-    create_cache,
-    create_design_space,
-    create_discipline,
-    create_mda,
-    create_parameter_space,
-    create_scalable,
-    create_scenario,
-    create_surrogate,
-    execute_algo,
-    execute_post,
-    export_design_space,
-    generate_coupling_graph,
-    generate_n2_plot,
-    get_algorithm_features,
-    get_algorithm_options_schema,
-    get_available_caches,
-    get_available_disciplines,
-    get_available_doe_algorithms,
-    get_available_formulations,
-    get_available_mdas,
-    get_available_opt_algorithms,
-    get_available_post_processings,
-    get_available_scenario_types,
-    get_available_surrogates,
-    get_discipline_inputs_schema,
-    get_discipline_options_defaults,
-    get_discipline_options_schema,
-    get_discipline_outputs_schema,
-    get_formulation_options_schema,
-    get_formulation_sub_options_schema,
-    get_formulations_options_defaults,
-    get_formulations_sub_options_defaults,
-    get_mda_options_schema,
-    get_post_processing_options_schema,
-    get_scenario_differentiation_modes,
-    get_scenario_inputs_schema,
-    get_scenario_options_schema,
-    get_surrogate_options_schema,
-    import_discipline,
-    load_dataset,
-    monitor_scenario,
-    print_configuration,
-)
+from gemseo.api import AlgorithmFeatures
+from gemseo.api import compute_doe
+from gemseo.api import create_cache
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_mda
+from gemseo.api import create_parameter_space
+from gemseo.api import create_scalable
+from gemseo.api import create_scenario
+from gemseo.api import create_surrogate
+from gemseo.api import execute_algo
+from gemseo.api import execute_post
+from gemseo.api import export_design_space
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
+from gemseo.api import get_algorithm_features
+from gemseo.api import get_algorithm_options_schema
+from gemseo.api import get_available_caches
+from gemseo.api import get_available_disciplines
+from gemseo.api import get_available_doe_algorithms
+from gemseo.api import get_available_formulations
+from gemseo.api import get_available_mdas
+from gemseo.api import get_available_opt_algorithms
+from gemseo.api import get_available_post_processings
+from gemseo.api import get_available_scenario_types
+from gemseo.api import get_available_surrogates
+from gemseo.api import get_discipline_inputs_schema
+from gemseo.api import get_discipline_options_defaults
+from gemseo.api import get_discipline_options_schema
+from gemseo.api import get_discipline_outputs_schema
+from gemseo.api import get_formulation_options_schema
+from gemseo.api import get_formulation_sub_options_schema
+from gemseo.api import get_formulations_options_defaults
+from gemseo.api import get_formulations_sub_options_defaults
+from gemseo.api import get_mda_options_schema
+from gemseo.api import get_post_processing_options_schema
+from gemseo.api import get_scenario_differentiation_modes
+from gemseo.api import get_scenario_inputs_schema
+from gemseo.api import get_scenario_options_schema
+from gemseo.api import get_surrogate_options_schema
+from gemseo.api import import_discipline
+from gemseo.api import load_dataset
+from gemseo.api import monitor_scenario
+from gemseo.api import print_configuration
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
@@ -85,6 +78,12 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.py23_compat import Path
+from numpy import array
+from numpy import cos
+from numpy import linspace
+from numpy import pi as np_pi
+from numpy import sin
+from six import string_types
 
 
 class Observer(object):

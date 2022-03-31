@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,10 +26,12 @@ DesignSpace import and export from disk
 In this example, we will see how to read, filter, and export a design space
 from the disk.
 """
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from gemseo.api import configure_logger, export_design_space, read_design_space
+from gemseo.api import configure_logger
+from gemseo.api import export_design_space
+from gemseo.api import read_design_space
 
 configure_logger()
 

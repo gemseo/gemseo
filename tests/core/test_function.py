@@ -13,41 +13,41 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import math
 import unittest
-from operator import mul, truediv
+from operator import mul
+from operator import truediv
 from unittest import mock
 
 import numpy as np
 import pytest
-from numpy import allclose, array, eye, matmul, ones, zeros
-from numpy.linalg import norm
-from scipy import optimize
-
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOFunction,
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-    SetPtFromDatabase,
-)
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
+from gemseo.core.mdofunctions.mdo_function import SetPtFromDatabase
 from gemseo.core.mdofunctions.norm_db_function import NormDBFunction
 from gemseo.core.mdofunctions.norm_function import NormFunction
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    update_dict_of_arrays_from_array,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
+from numpy import allclose
+from numpy import array
+from numpy import eye
+from numpy import matmul
+from numpy import ones
+from numpy import zeros
+from numpy.linalg import norm
+from scipy import optimize
 
 
 class TestMdofunction(unittest.TestCase):
@@ -740,9 +740,9 @@ def test_get_indexed_name(function):
 )
 def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
     """Check the multiplication of a function by a function or its inverse."""
-    f = MDOFunction(lambda x: x ** 2, "f", jac=lambda x: 2 * x, args=["x"], expr=fexpr)
+    f = MDOFunction(lambda x: x**2, "f", jac=lambda x: 2 * x, args=["x"], expr=fexpr)
     g = MDOFunction(
-        lambda x: x ** 3, "g", jac=lambda x: 3 * x ** 2, args=["x"], expr=gexpr
+        lambda x: x**3, "g", jac=lambda x: 3 * x**2, args=["x"], expr=gexpr
     )
 
     f_op_g = op(f, g)
@@ -762,7 +762,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac):
 def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     """Check the multiplication of a function by a scalar or its inverse."""
     f = MDOFunction(
-        lambda x: x ** 3, "f", jac=lambda x: 3 * x ** 2, args=["x"], expr=expr
+        lambda x: x**3, "f", jac=lambda x: 3 * x**2, args=["x"], expr=expr
     )
     f_op_2 = op(f, 2)
     suffix = ""

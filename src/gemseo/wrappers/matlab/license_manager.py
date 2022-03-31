@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
@@ -22,7 +21,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Arthur Piat
 #        :author: Nicolas Roussouly: GEMSEO integration
-
 """Definition of the Matlab license manager.
 
 Overview
@@ -32,9 +30,9 @@ This module contains the :class:`.LicenseManager`
 which enables to check the presence of any toolbox licenses
 of the Matlab installation.
 """
-
 import logging
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.matlab.engine import __MatlabEngine

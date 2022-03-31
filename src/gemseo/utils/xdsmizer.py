@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Remi Lafage
@@ -33,25 +32,30 @@ A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matri
 the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
 Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import webbrowser
 from json import dumps
 from multiprocessing import RLock
-from os.path import basename, splitext
+from os.path import basename
+from os.path import splitext
 from tempfile import mkdtemp
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.execution_sequence import (
-    AtomicExecSequence,
-    CompositeExecSequence,
-    LoopExecSequence,
-    ParallelExecSequence,
-    SerialExecSequence,
-)
+from gemseo.core.execution_sequence import AtomicExecSequence
+from gemseo.core.execution_sequence import CompositeExecSequence
+from gemseo.core.execution_sequence import LoopExecSequence
+from gemseo.core.execution_sequence import ParallelExecSequence
+from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.monitoring import Monitoring
 from gemseo.core.scenario import Scenario

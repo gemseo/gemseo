@@ -13,45 +13,48 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Dict, List, Tuple
+from typing import Dict
+from typing import List
+from typing import Tuple
 
 import pytest
-from numpy import arange, array, atleast_2d, hstack, ndarray
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_dataset
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.api import (
-    create_classification_model,
-    create_clustering_model,
-    create_mlearning_model,
-    create_regression_model,
-    get_classification_models,
-    get_classification_options,
-    get_clustering_models,
-    get_clustering_options,
-    get_mlearning_models,
-    get_mlearning_options,
-    get_regression_models,
-    get_regression_options,
-    import_classification_model,
-    import_clustering_model,
-    import_mlearning_model,
-    import_regression_model,
-)
+from gemseo.mlearning.api import create_classification_model
+from gemseo.mlearning.api import create_clustering_model
+from gemseo.mlearning.api import create_mlearning_model
+from gemseo.mlearning.api import create_regression_model
+from gemseo.mlearning.api import get_classification_models
+from gemseo.mlearning.api import get_classification_options
+from gemseo.mlearning.api import get_clustering_models
+from gemseo.mlearning.api import get_clustering_options
+from gemseo.mlearning.api import get_mlearning_models
+from gemseo.mlearning.api import get_mlearning_options
+from gemseo.mlearning.api import get_regression_models
+from gemseo.mlearning.api import get_regression_options
+from gemseo.mlearning.api import import_classification_model
+from gemseo.mlearning.api import import_clustering_model
+from gemseo.mlearning.api import import_mlearning_model
+from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import arange
+from numpy import array
+from numpy import atleast_2d
+from numpy import hstack
+from numpy import ndarray
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [

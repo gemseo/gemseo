@@ -13,23 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import unittest
 
-from numpy import array, ones, zeros
-from scipy.optimize import rosen
-
-from gemseo.core.func_operations import LinearComposition, RestrictedFunction
+from gemseo.core.func_operations import LinearComposition
+from gemseo.core.func_operations import RestrictedFunction
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.problems.analytical.rosenbrock import RosenMF
+from numpy import array
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
 
 
 class TestFunctionOperations(unittest.TestCase):

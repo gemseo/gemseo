@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,18 +22,18 @@
 Scalable disciplines from Tedford and Martins (2010)
 ****************************************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.scalable.parametric.core.models import TMMainModel, TMSubModel
-from gemseo.problems.scalable.parametric.core.variables import (
-    X_SHARED_NAME,
-    get_coupling_name,
-    get_u_local_name,
-    get_x_local_name,
-)
+from gemseo.problems.scalable.parametric.core.models import TMMainModel
+from gemseo.problems.scalable.parametric.core.models import TMSubModel
+from gemseo.problems.scalable.parametric.core.variables import get_coupling_name
+from gemseo.problems.scalable.parametric.core.variables import get_u_local_name
+from gemseo.problems.scalable.parametric.core.variables import get_x_local_name
+from gemseo.problems.scalable.parametric.core.variables import X_SHARED_NAME
 
 LOGGER = logging.getLogger(__name__)
 

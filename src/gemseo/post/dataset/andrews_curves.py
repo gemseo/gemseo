@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -56,7 +55,8 @@ by means of the :code:`classifier` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from typing import List
 
@@ -65,7 +65,8 @@ from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
+from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class AndrewsCurves(DatasetPlot):

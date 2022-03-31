@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation
 #               and/or initial documentation
@@ -25,12 +24,15 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Mission discipline for the Sobieski's SSBJ use case."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import Dict
 
-from numpy import array, ndarray, zeros
+from numpy import array
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
 

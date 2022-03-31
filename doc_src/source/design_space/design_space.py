@@ -13,12 +13,13 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from numpy import array, ones
-
-from gemseo.api import create_design_space, read_design_space
+from gemseo.api import create_design_space
+from gemseo.api import read_design_space
+from numpy import array
+from numpy import ones
 
 design_space = read_design_space("design_space.txt")
 print(design_space)

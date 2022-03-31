@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -26,14 +25,17 @@ Transformer pipeline example
 
 In this example, we will create a pipeline of transformers.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from numpy import allclose, linspace, matmul, sin
-
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.pipeline import Pipeline
 from gemseo.mlearning.transform.scaler.scaler import Scaler
+from numpy import allclose
+from numpy import linspace
+from numpy import matmul
+from numpy import sin
 
 configure_logger()
 

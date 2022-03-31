@@ -13,16 +13,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import pytest
-from numpy import ones
-
 from gemseo.problems.topo_opt.density_filter_disc import DensityFilter
+from numpy import ones
 
 THRESHOLD = 1e-10
 

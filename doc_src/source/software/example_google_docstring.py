@@ -20,8 +20,9 @@ Todo:
     * For module TODOs
     * You have to also use ``sphinx.ext.todo`` extension
 """
-
-from typing import Iterable, List, Optional  # noqa: F401
+from typing import Iterable
+from typing import List
+from typing import Optional
 
 import six
 from custom_inherit import DocInheritMeta

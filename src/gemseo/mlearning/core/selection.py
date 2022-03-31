@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -46,10 +45,14 @@ using the class :class:`.MLAlgoCalibration`.
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from itertools import product
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 from six import string_types
 
@@ -59,10 +62,8 @@ from gemseo.core.scenario import ScenarioInputDataType
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.qual_measure.quality_measure import (
-    MLQualityMeasure,
-    MLQualityMeasureFactory,
-)
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
+from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasureFactory
 from gemseo.mlearning.qual_measure.quality_measure import (
     OptionType as MeasureOptionType,
 )
@@ -89,7 +90,7 @@ class MLAlgoSelection(object):
         measure,  # type: Union[str,MLQualityMeasure]
         eval_method=MLQualityMeasure.LEARN,  # type: str
         samples=None,  # type: Optional[Sequence[int]]
-        **measure_options  # type:MeasureOptionType
+        **measure_options,  # type:MeasureOptionType
     ):  # type: (...) -> None
         """
         Args:
@@ -132,7 +133,7 @@ class MLAlgoSelection(object):
         name,  # type:str
         calib_space=None,  # type: Optional[DesignSpace]
         calib_algo=None,  # type: Optional[ScenarioInputDataType]
-        **option_lists
+        **option_lists,
     ):  # type: (...) -> None
         """Add a machine learning algorithm candidate.
 
@@ -182,7 +183,7 @@ class MLAlgoSelection(object):
                     calib_space,
                     self.measure,
                     self.measure_options,
-                    **params
+                    **params,
                 )
                 calib.execute(calib_algo)
                 algo_new = calib.optimal_algorithm

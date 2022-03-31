@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
@@ -22,13 +21,21 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A discipline running a scenario."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from copy import copy, deepcopy
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from copy import copy
+from copy import deepcopy
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
-from numpy import atleast_1d, zeros
+from numpy import atleast_1d
+from numpy import zeros
 from numpy.core.multiarray import ndarray
 from numpy.linalg import norm
 

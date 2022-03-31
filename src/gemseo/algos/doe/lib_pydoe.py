@@ -13,19 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PyDOE algorithms wrapper."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 from numpy.random import RandomState
 from numpy.random import seed as set_seed
 
@@ -128,7 +134,7 @@ class PyDOE(DOELibrary):
         wait_time_between_samples=0.0,  # type: float
         seed=1,  # type: int
         max_time=0,  # type: float
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
         """Set the options.
 
@@ -177,7 +183,7 @@ class PyDOE(DOELibrary):
             wait_time_between_samples=wtbs,
             seed=seed,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
         return popts

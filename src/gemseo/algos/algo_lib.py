@@ -18,14 +18,16 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Base class for algorithm libraries."""
-
 from __future__ import unicode_literals
 
 import inspect
 import logging
-from typing import Any, Dict, List, Mapping, MutableMapping
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import MutableMapping
 
 from numpy import ndarray
 
@@ -122,7 +124,7 @@ class AlgoLib(object):
         self,
         problem,  # type: LinearProblem
         algo_name,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> None  # pragma: no cover
         """Save the solver options and name in the problem attributes.
 
@@ -138,7 +140,7 @@ class AlgoLib(object):
         problem,  # type: LinearProblem
         algo_name,  # type: str
         result,  # type: ndarray
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> None  # pragma: no cover
         """Save the LinearProblem to the disk when required.
 
@@ -230,7 +232,7 @@ class AlgoLib(object):
         self,
         problem,  # type: Any
         algo_name=None,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> None
         """Executes the driver.
 

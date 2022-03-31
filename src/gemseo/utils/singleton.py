@@ -13,16 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Singletons implementation and variants."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from os.path import realpath
 from typing import Any
@@ -82,7 +80,7 @@ class _Multiton(type):
     def __call__(
         cls,
         *args,  # type: Any
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type (...) -> None
         key = (cls,) + args + tuple(kwargs.items())
         try:

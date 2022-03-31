@@ -13,28 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 18 mars 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import division
+from __future__ import unicode_literals
 
-
-from __future__ import division, unicode_literals
-
-from gemseo.problems.sobieski._disciplines_sg import (
-    SobieskiAerodynamicsSG,
-    SobieskiMissionSG,
-    SobieskiPropulsionSG,
-    SobieskiStructureSG,
-)
+from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 
 def test_init_range():

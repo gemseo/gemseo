@@ -21,12 +21,12 @@ Solve a 2D L-shape topology optimization problem
 ================================================
 """
 import matplotlib.pyplot as plt
-from matplotlib import colors
-
-from gemseo.api import configure_logger, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_scenario
 from gemseo.problems.topo_opt.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
+from matplotlib import colors
 
 configure_logger()
 # %%

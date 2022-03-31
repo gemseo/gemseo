@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,13 +22,22 @@
 
 The concept of quality measure is implemented with the :class:`.MLQualityMeasure` class.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import List, NoReturn, Optional, Sequence, Tuple, Union
+from typing import List
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import arange, array, array_split, ndarray
+from numpy import arange
+from numpy import array
+from numpy import array_split
+from numpy import ndarray
 from numpy.random import default_rng
 
 from gemseo.core.dataset import Dataset
@@ -75,7 +83,7 @@ class MLQualityMeasure(object):
         self,
         method=LEARN,  # type: str
         samples=None,  # type: Optional[Sequence[int]]
-        **options  # type: Optional[OptionType]
+        **options,  # type: Optional[OptionType]
     ):  # type: (...) -> Union[float,ndarray]
         """Evaluate the quality measure.
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -23,23 +22,32 @@
 DOE library base class wrapper
 ******************************
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import traceback
 from multiprocessing import current_process
-from typing import Dict, Iterable, List, MutableMapping, Optional, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import MutableMapping
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import ndarray, savetxt, vstack
+from numpy import ndarray
+from numpy import savetxt
+from numpy import vstack
 from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.parallel_execution import SUBPROCESS_NAME, ParallelExecution
+from gemseo.core.parallel_execution import ParallelExecution
+from gemseo.core.parallel_execution import SUBPROCESS_NAME
 
 LOGGER = logging.getLogger(__name__)
 
@@ -107,7 +115,7 @@ class DOELibrary(DriverLib):
         self,
         problem,  # type: OptimizationProblem
         algo_name,  # type: str
-        **options  # type: DOELibraryOptionType
+        **options,  # type: DOELibraryOptionType
     ):  # type: (...) -> None
         super(DOELibrary, self)._pre_run(problem, algo_name, **options)
 
@@ -246,7 +254,7 @@ class DOELibrary(DriverLib):
         )
         LOGGER.info(
             "Final number of samples for DOE = %s vs %s requested",
-            str(n_samples_dir ** dimension),
+            str(n_samples_dir**dimension),
             str(n_samples),
         )
         return [n_samples_dir] * dimension
@@ -429,7 +437,7 @@ class DOELibrary(DriverLib):
         variables_space,  # type: DesignSpace
         size=None,  # type: Optional[int]
         unit_sampling=False,  # type: bool
-        **options  # type: DOELibraryOptionType
+        **options,  # type: DOELibraryOptionType
     ):  # type: (...) -> ndarray
         """Compute a design of experiments (DOE) in a variables space.
 

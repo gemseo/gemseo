@@ -13,18 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Most basic grammar implementation."""
 import logging
 from collections import defaultdict
-from typing import Any, Iterable, List, Mapping, Optional, Sequence, Union
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import ndarray
 from six import text_type
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.utils.py23_compat import Path, abc
+from gemseo.utils.py23_compat import abc
+from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -39,7 +45,7 @@ class SimpleGrammar(AbstractGrammar):
         name,  # type: str
         names_to_types=None,  # type: Optional[Mapping[str,type]]
         required_names=None,  # type: Optional[Mapping[str,bool]]
-        **kwargs  # type: Union[str,Path]
+        **kwargs,  # type: Union[str,Path]
     ):  # type: (...) -> None
         """
         Args:
@@ -133,7 +139,7 @@ class SimpleGrammar(AbstractGrammar):
     def update_elements(
         self,
         python_typing=False,  # type: bool
-        **elements  # type: Mapping[str,type]
+        **elements,  # type: Mapping[str,type]
     ):  # type: (...) -> None
 
         if python_typing:

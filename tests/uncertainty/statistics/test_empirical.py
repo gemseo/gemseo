@@ -13,21 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from numpy import allclose
+from numpy import array
 
 
 @pytest.fixture(scope="module")

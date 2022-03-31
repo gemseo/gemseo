@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,14 +22,16 @@
 Scalable study
 ==============
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
 import pickle
 
 from matplotlib import pyplot as plt
-from numpy import arange, where
+from numpy import arange
+from numpy import where
 from numpy.random import rand
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -517,7 +518,7 @@ class TMScalableStudy(object):
             formulation,
             OBJECTIVE_NAME,
             self.problem.design_space,
-            **self.formulation_options.get(formulation, {})
+            **self.formulation_options.get(formulation, {}),
         )
         LOGGER.info("Make the starting point feasible.")
         for disc in range(self.n_disciplines):

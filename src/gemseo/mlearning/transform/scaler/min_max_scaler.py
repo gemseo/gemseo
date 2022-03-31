@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -36,7 +35,8 @@ In the MinMax scaling method,
 the scaling operation linearly transforms the original variable :math:`z`
 such that the minimum of the original data corresponds to 0 and the maximum to 1.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from numpy import ndarray
 
@@ -64,7 +64,7 @@ class MinMaxScaler(Scaler):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         l_b = data.min(0)
         u_b = data.max(0)

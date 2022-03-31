@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation
 #               and/or initial documentation
@@ -25,7 +24,8 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """The Sobieski's SSBJ problem."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import cmath
 import logging
@@ -33,9 +33,19 @@ import math
 import random
 from collections import namedtuple
 from random import uniform
-from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import array, complex128, concatenate, float64, ndarray, ones
+from numpy import array
+from numpy import complex128
+from numpy import concatenate
+from numpy import float64
+from numpy import ndarray
+from numpy import ones
 from six import string_types
 
 from gemseo.algos.design_space import DesignSpace

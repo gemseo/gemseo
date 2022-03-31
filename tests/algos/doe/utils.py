@@ -13,17 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibrary
@@ -52,7 +55,7 @@ def get_problem(
 def execute_problem(
     doe_algo_name,  # type: str
     dim=3,  # type: int
-    **options  # type: Any
+    **options,  # type: Any
 ):  # type: (...) -> DOELibrary
     """Create and execute a problem.
 

@@ -13,15 +13,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pytest
-from numpy import array, ones
-
 from gemseo.problems.topo_opt.volume_fraction_disc import VolumeFraction
+from numpy import array
+from numpy import ones
 
 THRESHOLD = 1e-10
 

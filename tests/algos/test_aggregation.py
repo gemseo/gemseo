@@ -13,26 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array, concatenate, vstack
-
-from gemseo.algos.aggregation.aggregation_func import (
-    aggregate_iks,
-    aggregate_ks,
-    aggregate_max,
-    aggregate_sum_square,
-)
+from gemseo.algos.aggregation.aggregation_func import aggregate_iks
+from gemseo.algos.aggregation.aggregation_func import aggregate_ks
+from gemseo.algos.aggregation.aggregation_func import aggregate_max
+from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from numpy import allclose
+from numpy import array
+from numpy import concatenate
+from numpy import vstack
 
 
 def create_problem():

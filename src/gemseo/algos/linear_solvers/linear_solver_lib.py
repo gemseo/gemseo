@@ -17,17 +17,18 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Base wrapper for all linear solvers."""
-
 import logging
 import pickle
-from typing import Any, Mapping, Optional
+from typing import Any
+from typing import Mapping
+from typing import Optional
 from uuid import uuid4
 
 from numpy import ndarray
 from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import LinearOperator, spilu
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import spilu
 
 from gemseo.algos.algo_lib import AlgoLib
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
@@ -58,7 +59,7 @@ class LinearSolverLib(AlgoLib):
         self,
         linear_problem,  # type: LinearProblem
         algo_name,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> Any
         """Solve the linear system.
 
@@ -130,7 +131,7 @@ class LinearSolverLib(AlgoLib):
         self,
         problem,  # type: LinearProblem
         algo_name,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> None
         """Set the solver options and name in the problem attributes.
 
@@ -147,7 +148,7 @@ class LinearSolverLib(AlgoLib):
         problem,  # type: LinearProblem
         algo_name,  # type: str
         result,  # type: ndarray
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> None # noqa: D107
         """Save the LinearProblem to the disk when required.
 

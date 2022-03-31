@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,15 +20,21 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """NLopt library wrapper."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 import nlopt
 from nlopt import RoundoffLimited
-from numpy import atleast_1d, atleast_2d, ndarray
+from numpy import atleast_1d
+from numpy import atleast_2d
+from numpy import ndarray
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
@@ -217,7 +222,7 @@ class Nlopt(OptimizationLibrary):
         eq_tolerance=1e-2,  # type: float
         ineq_tolerance=1e-4,  # type: float
         init_step=0.25,  # type: float
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> Dict[str, NLoptOptionsType]
         r"""Retrieve the options of the Nlopt library.
 
@@ -260,7 +265,7 @@ class Nlopt(OptimizationLibrary):
             eq_tolerance=eq_tolerance,
             ineq_tolerance=ineq_tolerance,
             init_step=init_step,
-            **kwargs
+            **kwargs,
         )
 
         return popts
@@ -355,7 +360,7 @@ class Nlopt(OptimizationLibrary):
     def __set_prob_options(
         self,
         nlopt_problem,  # type: nlopt.opt
-        **opt_options  # type: Any
+        **opt_options,  # type: Any
     ):  # type: (...) -> nlopt.opt
         """Set the options for the NLopt algorithm.
 

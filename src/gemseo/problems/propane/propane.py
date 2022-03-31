@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #    initial documentation
@@ -94,12 +93,17 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from cmath import sqrt
-from os.path import dirname, join
+from os.path import dirname
+from os.path import join
 
-from numpy import array, complex128, ones, zeros
+from numpy import array
+from numpy import complex128
+from numpy import ones
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline

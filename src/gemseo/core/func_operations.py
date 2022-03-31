@@ -13,14 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """
 Functional operations
 *********************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from numpy import delete, insert, ndarray
+from numpy import delete
+from numpy import insert
+from numpy import ndarray
 
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 

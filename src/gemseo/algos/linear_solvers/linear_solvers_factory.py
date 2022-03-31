@@ -17,13 +17,13 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """A factory to instantiate linear solvers from their class names."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, List
+from typing import Any
+from typing import List
 
 from numpy import ndarray
 
@@ -68,7 +68,7 @@ class LinearSolversFactory(DriverFactory):
         self,
         problem,  # type: LinearProblem
         algo_name,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> ndarray
         """Execute the driver.
 

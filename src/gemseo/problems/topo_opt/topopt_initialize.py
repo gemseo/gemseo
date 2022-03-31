@@ -18,9 +18,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generation of the design space and disciplines of the topology optimization
 problems."""
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 
-from numpy import arange, concatenate, dot, fix, kron, logical_and, ones, where, zeros
+from numpy import arange
+from numpy import concatenate
+from numpy import dot
+from numpy import fix
+from numpy import kron
+from numpy import logical_and
+from numpy import ones
+from numpy import where
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline

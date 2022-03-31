@@ -13,27 +13,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
 
 import pytest
-from numpy import array, ones, zeros
-from scipy.optimize import rosen, rosen_der
-from six import PY2
-
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import create_design_space, create_mda, create_scenario, execute_algo
+from gemseo.api import create_design_space
+from gemseo.api import create_mda
+from gemseo.api import create_scenario
+from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.disciplines.auto_py import AutoPyDiscipline, to_arrays_dict
+from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.disciplines.auto_py import to_arrays_dict
 from gemseo.utils.py23_compat import Path
+from numpy import array
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+from six import PY2
 
 
 def create_ds(n):

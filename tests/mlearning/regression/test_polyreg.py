@@ -13,25 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial regression module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array, hstack, linspace, meshgrid, sqrt, zeros
-from scipy.special import comb
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from numpy import allclose
+from numpy import array
+from numpy import hstack
+from numpy import linspace
+from numpy import meshgrid
+from numpy import sqrt
+from numpy import zeros
+from scipy.special import comb
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -62,9 +67,9 @@ def dataset():
     x_2 = linspace(-1, 2, root_learning_size)
     x_1, x_2 = meshgrid(x_1, x_2)
     x_1, x_2 = x_1.flatten()[:, None], x_2.flatten()[:, None]
-    y_1 = 1 + x_1 + x_2 ** 2
-    y_2 = 3 + 4 * x_1 * x_2 + 5 * x_1 ** 3
-    y_3 = 10 * x_1 * x_2 ** 2 + 7 * x_2 ** 5
+    y_1 = 1 + x_1 + x_2**2
+    y_2 = 3 + 4 * x_1 * x_2 + 5 * x_1**3
+    y_3 = 10 * x_1 * x_2**2 + 7 * x_2**5
 
     data = hstack([x_1, x_2, y_1, y_2, y_3])
     variables = ["x_1", "x_2", "y_1", "y_2", "y_3"]

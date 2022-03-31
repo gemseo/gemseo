@@ -14,12 +14,10 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Analytical test case # 3
 ========================
@@ -31,16 +29,16 @@ Analytical test case # 3
 #
 # Imports
 # -------
-
-from __future__ import division, unicode_literals
-
-from numpy import sum as np_sum
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.api import configure_logger, execute_post
+from gemseo.api import configure_logger
+from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from numpy import sum as np_sum
 
 LOGGER = configure_logger()
 
@@ -72,7 +70,7 @@ problem.objective = objective
 # We can see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE),
 # e.g. full factorial design
-DOEFactory().execute(problem, "fullfact", n_samples=11 ** 2)
+DOEFactory().execute(problem, "fullfact", n_samples=11**2)
 
 #############################################################################
 # Post-process the results

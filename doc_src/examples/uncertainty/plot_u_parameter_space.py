@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,10 +26,11 @@ Parameter space
 In this example,
 we will see the basics of :class:`.ParameterSpace`.
 """
-from matplotlib import pyplot as plt
-
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from matplotlib import pyplot as plt
 
 configure_logger()
 

@@ -14,7 +14,9 @@
 
 .. _pytest: https://docs.pytest.org
 .. _Anaconda: https://docs.anaconda.com/anaconda/install
-.. _learn: https://docs.anaconda.com
+.. _venv: https://docs.python.org/3.9/library/venv.html
+.. _pip: https://pip.pypa.io/en/stable/getting-started/
+.. _graphviz: https://graphviz.org/download
 
 .. _installation:
 
@@ -23,7 +25,9 @@ Installation
 
 You may install the core or the full features set of |g|.
 See :ref:`dependencies` for more information.
-There are different ways to install |g| depending on your platform and Python version.
+There are different ways to install |g|, they are described below.
+
+.. _python-env:
 
 .. _environment:
 
@@ -31,42 +35,22 @@ Requirements
 ************
 
 To install |g|,
-you need a Python environment.
-We strongly recommend to use `Anaconda`_
-to create a dedicated environment for |g|.
+you should use a python environment.
+You can create environments with
+the Python built-in `venv`_ module
+or with `Anaconda`_.
 
-Anaconda
---------
-
-`Anaconda`_ is a free multi-platform Python distribution
-(for commercial use and redistribution)
-that facilitates the installation of Python
-and non-Python packages,
-since it handles pre-compiled packages.
-Furthermore,
-it does not require any administrator privilege.
-You may install `Anaconda`_
-and `learn`_ how to use it.
-
-Python 3 installation
-*********************
-
-For Python 3,
-install the full feature set in an anaconda environment named *gemseo* for python 3.8 with
-
-.. code-block:: console
-
-    conda create -c conda-forge -n gemseo python=3.8 gemseo
-
-You can change the Python version to 3.7 or 3.9.
+For using the full features set,
+if you are not using `Anaconda`_,
+make sure that `graphviz`_ is installed
+(for rendering graphs).
 
 .. _pypi:
 
 Install from Pypi
------------------
+*****************
 
-Create an :ref:`environment`,
-then install the core features of the latest version with:
+Install the core features of the latest version with
 
 .. code-block:: console
 
@@ -78,11 +62,24 @@ or the full features with:
 
     pip install gemseo[all]
 
-Install from an archive
------------------------
+See `pip`_ for more information.
 
-Create an :ref:`environment`,
-then install the core features from an archive with:
+Install from Anaconda
+*********************
+
+Install the full features
+in an anaconda environment named *gemseo* for python 3.9 with
+
+.. code-block:: console
+
+    conda create -c conda-forge -n gemseo python=3.9 gemseo
+
+You can change the python version to 3.6, 3.7 or 3.8.
+
+Install from an archive
+***********************
+
+Install the core features from an archive with
 
 .. code-block:: console
 
@@ -95,10 +92,9 @@ or the full features with:
     pip install gemseo-x.y.z.zip[all]
 
 Install the development version
--------------------------------
+*******************************
 
-Create an :ref:`environment`,
-then install the core features of the development version with:
+Install the core features of the development version with
 
 .. code-block:: console
 
@@ -109,6 +105,32 @@ or the full features with:
 .. code-block:: console
 
     pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop#egg=gemseo[all]
+
+Install for Python 2.7
+**********************
+
+Download :download:`this file <../../../environment-py2.yml>`
+and create an anaconda environment for |g| with
+
+.. code-block:: console
+
+    conda env create -f environment-py2.yml
+
+Then,
+activate this environment with:
+
+.. code-block:: console
+
+    conda activate gemseo
+
+and you can now proceed with the installation of |g| from Pypi,
+see :ref:`pypi`.
+
+You may leave the anaconda environment with
+
+.. code-block:: console
+
+    conda deactivate
 
 Test the installation
 *********************

@@ -13,23 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Compute and display a Pareto Front."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from itertools import combinations
-from typing import Optional, Sequence, Tuple
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
 from numpy import all as np_all
 from numpy import any as np_any
-from numpy import array, full, ndarray, vstack
+from numpy import array
+from numpy import full
+from numpy import ndarray
+from numpy import vstack
 
 
 def compute_pareto_optimal_points(

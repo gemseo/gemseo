@@ -13,17 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
-from numpy import array
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.core.dataset import Dataset
 from gemseo.problems.scalable.data_driven.factory import ScalableModelFactory
+from numpy import array
 
 
 def test_constructor():

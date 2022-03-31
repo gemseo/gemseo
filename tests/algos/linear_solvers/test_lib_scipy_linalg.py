@@ -21,13 +21,16 @@ import pickle
 from os import remove
 
 import pytest
-from numpy import eye, ones, random, zeros
-from scipy.linalg import norm
-from scipy.sparse.linalg import LinearOperator, spilu
-
 from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from numpy import eye
+from numpy import ones
+from numpy import random
+from numpy import zeros
+from scipy.linalg import norm
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import spilu
 
 RESIDUALS_TOL = 1e-12
 

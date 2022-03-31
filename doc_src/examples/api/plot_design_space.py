@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -29,16 +28,14 @@ design space, which is a key element to represent the space of parameters on
 which a scenario will evaluate a list of disciplines.
 
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import export_design_space
+from gemseo.api import read_design_space
 from numpy import array
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    export_design_space,
-    read_design_space,
-)
 
 configure_logger()
 

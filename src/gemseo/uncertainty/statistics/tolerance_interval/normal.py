@@ -13,22 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted normal distribution."""
-
 from typing import Tuple
 
 import openturns as ot
-from numpy import array, inf, ndarray
+from numpy import array
+from numpy import inf
+from numpy import ndarray
 from past.utils import old_div
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
 
@@ -70,10 +72,10 @@ class NormalToleranceInterval(ToleranceInterval):
             ToleranceIntervalSide.UPPER,
             ToleranceIntervalSide.LOWER,
         ]:
-            offset = ot.Normal().computeQuantile(coverage)[0] * size ** 0.5
+            offset = ot.Normal().computeQuantile(coverage)[0] * size**0.5
             student = ot.Student(size - 1, offset, 1.0)
             student_quantile = student.computeQuantile(1 - alpha)[0]
-            tolerance_factor = old_div(student_quantile, size ** 0.5)
+            tolerance_factor = old_div(student_quantile, size**0.5)
 
             if side == ToleranceIntervalSide.UPPER:
                 upper = self.__mean + tolerance_factor * self.__std

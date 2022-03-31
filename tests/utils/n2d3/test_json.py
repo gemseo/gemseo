@@ -19,11 +19,10 @@ from __future__ import unicode_literals
 from json import loads
 
 import pytest
-from numpy import ones
-
 from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.n2d3.n2_json import N2JSON
+from numpy import ones
 
 
 @pytest.fixture(scope="module")

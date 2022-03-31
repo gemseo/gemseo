@@ -13,23 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Generate a gantt chart with processes execution time data."""
-
 from __future__ import unicode_literals
 
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.file_path_manager import FilePathManager, FileType
+from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.py23_compat import Path
 

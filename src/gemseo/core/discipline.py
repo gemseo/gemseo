@@ -13,15 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Abstraction of processes."""
-
 from __future__ import annotations
 
 import collections
@@ -30,27 +27,30 @@ import os
 import sys
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Manager, Value, cpu_count
+from multiprocessing import cpu_count
+from multiprocessing import Manager
+from multiprocessing import Value
 from multiprocessing.sharedctypes import Synchronized
 from timeit import default_timer as timer
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    MutableMapping,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any
+from typing import ClassVar
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import List
+from typing import MutableMapping
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import TYPE_CHECKING
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import concatenate, empty, ndarray, zeros
+from numpy import concatenate
+from numpy import empty
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.core.discipline_data import DisciplineData
 
@@ -520,7 +520,7 @@ class MDODiscipline(object):
     def __create_new_cache(
         self,
         class_name,  # type: str
-        **kwargs  # type: Union[bool, float, str]
+        **kwargs,  # type: Union[bool, float, str]
     ):  # type (...) -> AbstractCache
         """Create a cache object.
 

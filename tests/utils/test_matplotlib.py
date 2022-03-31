@@ -17,9 +17,8 @@
 from unittest.mock import patch
 
 import pytest
-from matplotlib import pyplot as plt
-
 from gemseo.utils.matplotlib_figure import save_show_figure
+from matplotlib import pyplot as plt
 
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])

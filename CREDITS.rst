@@ -80,6 +80,9 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `pathlib2 <https://github.com/mcmtroffaes/pathlib2>`_
     MIT
 
+`pdfo <https://www.pdfo.net>`_
+    BSD 3-Clause
+
 `pyDOE <https://github.com/tisimst/pyDOE>`_
     BSD 3-Clause
 
@@ -132,9 +135,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/scipy-logo.png
         :target: https://www.scipy.org/scipylib/
 
-`setuptools <https://setuptools.readthedocs.io/>`_
-    MIT
-
 `snopt-python <https://github.com/snopt/snopt-python>`_
     MIT
 
@@ -171,6 +171,9 @@ colormap
     MIT
     (Only used in Python 2.7, otherwise it is an external dependency)
 
+`pre-commit <https://pre-commit.com>`_
+    MIT
+
 `prettytable <https://github.com/kxxoling/PTable>`_
     BSD 3-Clause
 
@@ -183,9 +186,6 @@ colormap
 `SOMPY <https://github.com/sevamoo/SOMPY>`_
     Apache v2.0
 
-`versioneer <https://github.com/python-versioneer/python-versioneer>`_
-    CC0 1.0
-
 `WhatsOpt-CLI <https://github.com/OneraHub/WhatsOpt-CLI>`_
     Apache v2.0
 
@@ -197,8 +197,24 @@ External application
 
 Some external applications are used by GEMSEO,
 but not linked with the application,
-for documentation generation,
+for development,
+documentation generation,
 training or example purposes.
+
+`black <https://black.readthedocs.io>`_
+    MIT
+
+`flake8 <https://flake8.pycqa.org>`_
+    MIT
+
+`reorder_python_imports <https://github.com/asottile/reorder_python_imports>`_
+    MIT
+
+`setuptools <https://setuptools.readthedocs.io/>`_
+    MIT
+
+`setuptools_scm <https://github.com/pypa/setuptools_scm>`_
+    MIT
 
 `Sphinx <http://www.sphinx-doc.org/>`_
     Sphinx

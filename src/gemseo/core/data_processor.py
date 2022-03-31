@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,11 +22,13 @@
 Data conversion between discipline data check and _run()
 ********************************************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import array, complex128
+from numpy import array
+from numpy import complex128
 
 LOGGER = logging.getLogger(__name__)
 

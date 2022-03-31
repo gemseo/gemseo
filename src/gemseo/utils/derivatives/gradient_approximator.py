@@ -13,16 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Gradient approximation."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
-from numpy import array, finfo, float64, ndarray
+from numpy import array
+from numpy import finfo
+from numpy import float64
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.factory import Factory
@@ -55,7 +64,7 @@ class GradientApproximator(object):
         parallel=False,  # type: bool
         design_space=None,  # type: Optional[DesignSpace]
         normalize=True,  # type: bool
-        **parallel_args  # type: Union[int,bool,float]
+        **parallel_args,  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         """
         Args:
@@ -104,7 +113,7 @@ class GradientApproximator(object):
         x_vect,  # type: ndarray
         step=None,  # type: Optional[float]
         x_indices=None,  # type: Optional[Sequence[int]]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         """Approximate the gradient of the function for a given input vector.
 
@@ -143,7 +152,7 @@ class GradientApproximator(object):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: float
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         """Approximate the gradient in parallel.
 
@@ -165,7 +174,7 @@ class GradientApproximator(object):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: Union[float,ndarray]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         """Approximate the gradient.
 
@@ -255,7 +264,7 @@ class GradientApproximationFactory(object):
         f_pointer,  # type: Callable
         step=None,  # type: Optional[float]
         parallel=False,  # type: bool
-        **parallel_args
+        **parallel_args,
     ):  # type: (...) -> GradientApproximator
         """Create a gradient approximator.
 

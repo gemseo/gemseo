@@ -18,12 +18,16 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the constraints on a radar chart at a given database index."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Optional, Union
+from typing import Iterable
+from typing import Optional
+from typing import Union
 
-from numpy import vstack, zeros
+from numpy import vstack
+from numpy import zeros
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost

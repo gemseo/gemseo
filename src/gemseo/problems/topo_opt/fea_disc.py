@@ -17,22 +17,21 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite element analysis (FEA) for 2D topology optimization problems."""
-
-from typing import Optional, Sequence, Union
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 import scipy
-from numpy import (
-    arange,
-    array,
-    atleast_2d,
-    dot,
-    kron,
-    newaxis,
-    ones,
-    setdiff1d,
-    tile,
-    zeros,
-)
+from numpy import arange
+from numpy import array
+from numpy import atleast_2d
+from numpy import dot
+from numpy import kron
+from numpy import newaxis
+from numpy import ones
+from numpy import setdiff1d
+from numpy import tile
+from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -176,7 +175,7 @@ class FininiteElementAnalysis(MDODiscipline):
         )
         return (
             em
-            / (1 - self.nu ** 2)
+            / (1 - self.nu**2)
             * array(
                 [
                     [k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]],

@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to create a probability distribution from the SciPy library.
 
 The :class:`.SPDistribution` class is a concrete class
@@ -48,21 +46,26 @@ The constructor has also optional arguments:
 - a standard representation of these parameters
   (default: use :code:`parameters`).
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Callable, Iterable, List, Mapping, Optional, Union
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 import scipy
 import scipy.stats as sp_stats
-from numpy import array, ndarray, vstack
+from numpy import array
+from numpy import ndarray
+from numpy import vstack
 
-from gemseo.uncertainty.distributions.distribution import (
-    Distribution,
-    ParametersType,
-    StandardParametersType,
-)
+from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.distribution import ParametersType
+from gemseo.uncertainty.distributions.distribution import StandardParametersType
 from gemseo.uncertainty.distributions.scipy.composed import SPComposedDistribution
 from gemseo.utils.string_tools import MultiLineString
 

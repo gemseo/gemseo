@@ -13,20 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #       :author: Francois Gallard, integration and cleanup
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Implementation of the Lagrange multipliers."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import arange, array, atleast_2d, concatenate, where, zeros
-from numpy.linalg import matrix_rank, norm
-from scipy.optimize import linprog, nnls
+from numpy import arange
+from numpy import array
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import where
+from numpy import zeros
+from numpy.linalg import matrix_rank
+from numpy.linalg import norm
+from scipy.optimize import linprog
+from scipy.optimize import nnls
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem

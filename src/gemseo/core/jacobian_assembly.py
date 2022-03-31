@@ -19,13 +19,20 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Coupled derivatives calculations."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
-from numpy import atleast_2d, concatenate, empty, ones, zeros
-from scipy.sparse import dia_matrix, dok_matrix, vstack
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import empty
+from numpy import ones
+from numpy import zeros
+from scipy.sparse import dia_matrix
+from scipy.sparse import dok_matrix
+from scipy.sparse import vstack
 from scipy.sparse.csc import csc_matrix
 from scipy.sparse.linalg.dsolve.linsolve import factorized
 from scipy.sparse.linalg.interface import LinearOperator
@@ -501,7 +508,7 @@ class JacobianAssembly(object):
         use_lu_fact=False,
         exec_cache_tol=None,
         force_no_exec=False,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the Jacobian of total derivatives of the coupled system formed by the
         disciplines.
@@ -577,7 +584,7 @@ class JacobianAssembly(object):
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options
+                **linear_solver_options,
             )
         elif mode == JacobianAssembly.ADJOINT_MODE:
             # transposed square matrix dR/dy^T
@@ -598,7 +605,7 @@ class JacobianAssembly(object):
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options
+                **linear_solver_options,
             )
         else:
             raise ValueError("Incorrect linearization mode " + str(mode))
@@ -670,7 +677,7 @@ class JacobianAssembly(object):
         relax_factor,
         linear_solver="DEFAULT",
         matrix_type=SPARSE,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the Newton step for the coupled system of residuals formed by the
         disciplines.
@@ -855,7 +862,7 @@ class CoupledSystem(object):
         dfun_dy,
         linear_solver="DEFAULT",
         use_lu_fact=False,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in direct mode.
 
@@ -890,7 +897,7 @@ class CoupledSystem(object):
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options
+            **linear_solver_options,
         )
 
     def adjoint_mode(
@@ -902,7 +909,7 @@ class CoupledSystem(object):
         dfun_dy,
         linear_solver="DEFAULT",
         use_lu_fact=False,
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in adjoint mode.
 
@@ -931,7 +938,7 @@ class CoupledSystem(object):
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options
+            **linear_solver_options,
         )
 
     def _direct_mode(
@@ -944,7 +951,7 @@ class CoupledSystem(object):
         dfun_dx,
         dfun_dy,
         linear_solver="DEFAULT",
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in direct mode.
 
@@ -990,7 +997,7 @@ class CoupledSystem(object):
         dfun_dx,
         dfun_dy,
         linear_solver="DEFAULT",
-        **linear_solver_options
+        **linear_solver_options,
     ):
         """Compute the total derivative Jacobian in adjoint mode.
 

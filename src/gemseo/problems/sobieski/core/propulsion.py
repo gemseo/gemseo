@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation
 #               and/or initial documentation
@@ -25,12 +24,18 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Propulsion discipline for the Sobieski's SSBJ use case."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
-from numpy import append, array, ndarray, zeros
+from numpy import append
+from numpy import array
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
 from gemseo.problems.sobieski.core.utils import SobieskiBase
@@ -124,12 +129,12 @@ class SobieskiPropulsion(SobieskiDiscipline):
             + self.sfc_coeff[1] * mach
             + self.sfc_coeff[2] * altitude
             + self.sfc_coeff[3] * throttle
-            + self.sfc_coeff[4] * mach ** 2
+            + self.sfc_coeff[4] * mach**2
             + 2 * altitude * mach * self.sfc_coeff[5]
             + 2 * throttle * mach * self.sfc_coeff[6]
-            + self.sfc_coeff[7] * altitude ** 2
+            + self.sfc_coeff[7] * altitude**2
             + 2 * throttle * altitude * self.sfc_coeff[8]
-            + self.sfc_coeff[9] * throttle ** 2
+            + self.sfc_coeff[9] * throttle**2
         )
 
     def __compute_throttle_ua(
@@ -150,9 +155,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
             self.thua_coeff[0]
             + self.thua_coeff[1] * mach
             + self.thua_coeff[2] * altitude
-            + self.thua_coeff[3] * mach ** 2
+            + self.thua_coeff[3] * mach**2
             + 2 * self.thua_coeff[4] * mach * altitude
-            + self.thua_coeff[5] * altitude ** 2
+            + self.thua_coeff[5] * altitude**2
         )
 
     def __compute_throttle_constraint(
@@ -285,7 +290,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
             The derivative of the engin scale factor with respect to the throttle.
         """
         throttle = self.__compute_dim_throttle(adim_throttle)
-        return -self.throttle_coeff * drag / (3.0 * throttle ** 2)
+        return -self.throttle_coeff * drag / (3.0 * throttle**2)
 
     def __compute_temp(
         self,
@@ -330,7 +335,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
             The engine weight.
         """
         c_3 = c_3 or self.constants[3]
-        return c_3 * (esf ** 1.05) * 3
+        return c_3 * (esf**1.05) * 3
 
     def execute(
         self,
@@ -465,7 +470,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
             The derivative of the engine weight wrt the variable ``x``.
         """
         c_3 = c_3 or self.constants[3]
-        return 3 * c_3 * 1.05 * desf_dx * esf ** 0.05
+        return 3 * c_3 * 1.05 * desf_dx * esf**0.05
 
     def __compute_dsfc_dthrottle(
         self,
@@ -683,7 +688,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         dg_3_dy_23 = zeros((3, 1), dtype=self.dtype)
 
         esf = self.__compute_esf(drag, throttle)
-        jacobian["y_3"]["c_3"][1, 0] = 3 * (esf ** 1.05)
+        jacobian["y_3"]["c_3"][1, 0] = 3 * (esf**1.05)
 
         # dSFC_dthrottle
         jacobian["y_3"]["x_3"][0, 0] = self.__compute_dsfc_dthrottle(

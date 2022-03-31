@@ -13,31 +13,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
-from typing import Dict, List, Union
+from typing import Dict
+from typing import List
+from typing import Union
 
 import pytest
-from numpy import array, array_equal, ndarray
-
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    deepcopy_dict_of_arrays,
-    flatten_nested_bilevel_dict,
-    flatten_nested_dict,
-    nest_flat_bilevel_dict,
-    nest_flat_dict,
-    split_array_to_dict_of_arrays,
-    update_dict_of_arrays_from_array,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
+from gemseo.utils.data_conversion import flatten_nested_dict
+from gemseo.utils.data_conversion import nest_flat_bilevel_dict
+from gemseo.utils.data_conversion import nest_flat_dict
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.data_conversion import update_dict_of_arrays_from_array
 from gemseo.utils.testing import compare_dict_of_arrays
+from numpy import array
+from numpy import array_equal
+from numpy import ndarray
 
 
 @pytest.fixture

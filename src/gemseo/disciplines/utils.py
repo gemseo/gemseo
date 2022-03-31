@@ -14,9 +14,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A set of functions to handle disciplines."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import TYPE_CHECKING, Iterable, List
+from typing import Iterable
+from typing import List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import MDODiscipline

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -31,14 +30,14 @@ applied to clustering models.
 ###############################################################################
 # Import
 # ------
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, load_dataset
-from gemseo.mlearning.api import (
-    create_clustering_model,
-    get_clustering_models,
-    get_clustering_options,
-)
+from gemseo.api import configure_logger
+from gemseo.api import load_dataset
+from gemseo.mlearning.api import create_clustering_model
+from gemseo.mlearning.api import get_clustering_models
+from gemseo.mlearning.api import get_clustering_options
 
 configure_logger()
 

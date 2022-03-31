@@ -13,36 +13,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 from __future__ import unicode_literals
 
 import pytest
-from numpy import array, ndarray
-from numpy.testing import assert_equal
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_discipline, create_scenario
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.problems.sobieski._disciplines_sg import (
-    SobieskiAerodynamicsSG,
-    SobieskiMissionSG,
-    SobieskiPropulsionSG,
-    SobieskiStructureSG,
-)
+from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG
+from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import ndarray
+from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(

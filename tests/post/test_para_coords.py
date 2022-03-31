@@ -13,20 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
-
-from numpy import ones
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.utils.py23_compat import Path
+from numpy import ones
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 

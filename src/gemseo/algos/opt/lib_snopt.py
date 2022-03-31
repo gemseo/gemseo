@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,19 +20,32 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """SNOPT optimization library wrapper."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from numpy import append, array, concatenate
+from numpy import append
+from numpy import array
+from numpy import concatenate
 from numpy import float as np_float
-from numpy import float64, hstack
+from numpy import float64
+from numpy import hstack
 from numpy import int as np_int
-from numpy import isinf, ndarray, ones, reshape
+from numpy import isinf
+from numpy import ndarray
+from numpy import ones
+from numpy import reshape
 from numpy import str as np_str
-from numpy import vstack, where, zeros
+from numpy import vstack
+from numpy import where
+from numpy import zeros
 from optimize.snopt7 import SNOPT_solver
 
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
@@ -131,7 +143,7 @@ class SnOpt(OptimizationLibrary):
         max_time=0,  # type: float
         max_iter=999,  # type: int # pylint: disable=W0221
         normalize_design_space=True,  # type: bool
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str, Any]
         """Set the options.
 
@@ -161,7 +173,7 @@ class SnOpt(OptimizationLibrary):
             xtol_rel=xtol_rel,
             xtol_abs=xtol_abs,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
     @staticmethod

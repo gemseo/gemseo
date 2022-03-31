@@ -26,21 +26,21 @@ Gantt Chart
 In this example, we illustrate the use of the Gantt chart plot
 on the Sobieski's SSBJ problem.
 """
-
-
 ###############################################################################
 # Import
 # ------
 # The first step is to import some functions from the API
 # and a method to get the design space.
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from matplotlib import pyplot as plt
-
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from matplotlib import pyplot as plt
 
 configure_logger()
 

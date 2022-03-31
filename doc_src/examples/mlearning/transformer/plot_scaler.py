@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -26,19 +25,20 @@ Scaler example
 
 In this example, we will create a scaler to transform data.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from numpy import linspace
-from numpy import max as npmax
-from numpy import mean
-from numpy import min as npmin
-from numpy import sin, std
-
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.mlearning.transform.scaler.standard_scaler import StandardScaler
+from numpy import linspace
+from numpy import max as npmax
+from numpy import mean
+from numpy import min as npmin
+from numpy import sin
+from numpy import std
 
 configure_logger()
 

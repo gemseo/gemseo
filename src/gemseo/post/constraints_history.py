@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import Sequence
@@ -28,7 +28,8 @@ import numpy as np
 from matplotlib import pyplot
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.core.colormaps import PARULA, RG_SEISMIC
+from gemseo.post.core.colormaps import PARULA
+from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.compatibility.matplotlib import SymLogNorm
 

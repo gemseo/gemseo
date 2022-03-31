@@ -21,8 +21,6 @@
 from unittest import mock
 
 import pytest
-from numpy import array
-
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -32,6 +30,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import execute_algo
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from numpy import array
 
 FACTORY = DOEFactory()
 

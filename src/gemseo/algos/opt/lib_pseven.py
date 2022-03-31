@@ -13,19 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Wrapper for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
-
 from __future__ import unicode_literals
 
 import sys
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
+from typing import Union
 
 import numpy
 from da import p7core
@@ -34,18 +37,14 @@ from numpy import ndarray
 from gemseo.algos.opt.core.pseven_problem_adapter import PSevenProblem
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.algos.stop_criteria import (
-    DesvarIsNan,
-    FtolReached,
-    FunctionIsNan,
-    MaxIterReachedException,
-    MaxTimeReached,
-    XtolReached,
-)
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FtolReached
+from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
+from gemseo.algos.stop_criteria import MaxTimeReached
+from gemseo.algos.stop_criteria import XtolReached
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 from gemseo.utils.py23_compat import Path
 
 
@@ -231,7 +230,7 @@ class PSevenOpt(OptimizationLibrary):
         eq_tolerance=1e-2,  # type: float
         ineq_tolerance=1e-4,  # type: float
         log_path=None,  # type: Optional[str]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> Dict
         """Set the default options values.
 
@@ -356,7 +355,7 @@ class PSevenOpt(OptimizationLibrary):
             eq_tolerance=eq_tolerance,
             ineq_tolerance=ineq_tolerance,
             log_path=log_path,
-            **kwargs
+            **kwargs,
         )
 
         # Set the pSeven's techniques

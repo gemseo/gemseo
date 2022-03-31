@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -25,25 +24,25 @@ The :class:`.KLSVD` class wraps the KarhunenLoeveSVDAlgorithm
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from typing import Optional
 
 import openturns
-from numpy import array, ndarray
-from openturns import (
-    Basis,
-    Field,
-    FunctionCollection,
-    KarhunenLoeveResult,
-    KarhunenLoeveSVDAlgorithm,
-    Matrix,
-    Mesh,
-    Point,
-    ProcessSample,
-    RankMCovarianceModel,
-    Sample,
-)
+from numpy import array
+from numpy import ndarray
+from openturns import Basis
+from openturns import Field
+from openturns import FunctionCollection
+from openturns import KarhunenLoeveResult
+from openturns import KarhunenLoeveSVDAlgorithm
+from openturns import Matrix
+from openturns import Mesh
+from openturns import Point
+from openturns import ProcessSample
+from openturns import RankMCovarianceModel
+from openturns import Sample
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
@@ -78,7 +77,7 @@ class KLSVD(DimensionReduction):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         sample = self._get_process_sample(data)
         mesh_size = self.ot_mesh.getVerticesNumber()

@@ -13,17 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate MDA from their class names."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, List, Optional, Sequence, Union
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
@@ -47,7 +51,7 @@ class MDAFactory(object):
         self,
         mda_name,  # type: str
         disciplines,  # type: Sequence[MDODiscipline]
-        **options  # type: MDAOptionType
+        **options,  # type: MDAOptionType
     ):  # type: (...) -> MDA
         """Create a MDA.
 

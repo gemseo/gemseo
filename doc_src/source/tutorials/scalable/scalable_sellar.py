@@ -13,18 +13,14 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 #  Contributors:
 #     INITIAL AUTHORS - initial API and implementation
 #                       and/or initial documentation
 #        @author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-
-from numpy import arange
-
 from gemseo.api import create_discipline
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from numpy import arange
 
 sellar = create_discipline("Sellar1")
 design_space = SellarDesignSpace()

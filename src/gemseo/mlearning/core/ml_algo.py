@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -95,22 +94,32 @@ to be carefully tuned in order to maximize the generalization power of the model
    :mod:`~gemseo.mlearning.core.calibration`
    :mod:`~gemseo.mlearning.core.selection`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import pickle
 from copy import deepcopy
-from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Dict
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import six
 from custom_inherit import DocInheritMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFactory
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.py23_compat import Path, xrange
-from gemseo.utils.string_tools import MultiLineString, pretty_repr
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import xrange
+from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import pretty_repr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -163,7 +172,7 @@ class MLAlgo(object):
         self,
         data,  # type: Dataset
         transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        **parameters  # type: MLAlgoParameterType
+        **parameters,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
         Args:

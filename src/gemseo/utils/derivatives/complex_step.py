@@ -13,18 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Gradient approximation by complex step."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import complex128, finfo, ndarray, where, zeros
+from numpy import complex128
+from numpy import finfo
+from numpy import ndarray
+from numpy import where
+from numpy import zeros
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
@@ -63,7 +73,7 @@ class ComplexStep(GradientApproximator):
         parallel=False,  # type: bool
         design_space=None,  # type: Optional[DesignSpace]
         normalize=True,  # type: bool
-        **parallel_args  # type: Union[int,bool,float]
+        **parallel_args,  # type: Union[int,bool,float]
     ):  # type: (...) -> None
         super(ComplexStep, self).__init__(
             f_pointer,
@@ -71,7 +81,7 @@ class ComplexStep(GradientApproximator):
             parallel=parallel,
             design_space=design_space,
             normalize=True,
-            **parallel_args
+            **parallel_args,
         )
 
     @GradientApproximator.step.setter
@@ -86,7 +96,7 @@ class ComplexStep(GradientApproximator):
         x_vect,  # type: ndarray
         step=None,  # type: Optional[complex]
         x_indices=None,  # type: Optional[Sequence[int]]
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         if norm(x_vect.imag) != 0.0:
             raise ValueError(
@@ -103,7 +113,7 @@ class ComplexStep(GradientApproximator):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: float
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         def func_noargs(
             f_input_values,  # type: ndarray
@@ -142,7 +152,7 @@ class ComplexStep(GradientApproximator):
         n_perturbations,  # type: int
         input_perturbations,  # type: ndarray
         step,  # type: float
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...) -> ndarray
         gradient = []
         for perturbation_index in xrange(n_perturbations):

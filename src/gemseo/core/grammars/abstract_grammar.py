@@ -13,29 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Rules and checks for disciplines inputs/outputs validation."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -75,7 +71,7 @@ class AbstractGrammar(object):
     def __init__(
         self,
         name,  # type: str
-        **kwargs  # type: Union[str,Path]
+        **kwargs,  # type: Union[str,Path]
     ):  # type: (...) -> None
         """
         Args:
@@ -297,7 +293,7 @@ class AbstractGrammar(object):
     def update_elements(
         self,
         python_typing=False,  # type: bool
-        **elements  # type: Mapping[str,type]
+        **elements,  # type: Mapping[str,type]
     ):  # type: (...) -> None
         """Add or update elements from their names and types.
 

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -25,14 +24,14 @@ Plot - Radard chart
 ===================
 
 """
-from __future__ import division, unicode_literals
-
-from matplotlib import pyplot as plt
-from numpy import array
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
+from matplotlib import pyplot as plt
+from numpy import array
 
 configure_logger()
 

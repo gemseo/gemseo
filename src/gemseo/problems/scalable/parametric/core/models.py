@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,24 +22,27 @@
 Scalable problem - Models
 *************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import array, atleast_2d, diag, dot, eye
+from numpy import array
+from numpy import atleast_2d
+from numpy import diag
+from numpy import dot
+from numpy import eye
 from numpy import mean as npmean
 from numpy import ndarray
 from numpy import sum as npsum
 from past.utils import old_div
 
-from .variables import (
-    OBJECTIVE_NAME,
-    X_SHARED_NAME,
-    get_constraint_name,
-    get_coupling_name,
-    get_u_local_name,
-    get_x_local_name,
-)
+from .variables import get_constraint_name
+from .variables import get_coupling_name
+from .variables import get_u_local_name
+from .variables import get_x_local_name
+from .variables import OBJECTIVE_NAME
+from .variables import X_SHARED_NAME
 
 LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +118,7 @@ class TMMainModel(object):
         :param dict(ndarray) coupling: list of coupling variables
             (one element per sub-discipline).
         """
-        obj = npmean(x_shared ** 2)
+        obj = npmean(x_shared**2)
         obj += npmean(
             [
                 npmean(coupling[get_coupling_name(index)] ** 2)

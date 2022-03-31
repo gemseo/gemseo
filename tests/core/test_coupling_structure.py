@@ -13,44 +13,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import unittest
 from os.path import exists
 from random import shuffle
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from numpy import array
-
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sellar.sellar import (
-    C_1,
-    C_2,
-    OBJ,
-    Y_1,
-    Y_2,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sellar.sellar import C_1
+from gemseo.problems.sellar.sellar import C_2
+from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import Y_1
+from gemseo.problems.sellar.sellar import Y_2
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.py23_compat import PY2
+from matplotlib.testing.decorators import image_comparison
+from numpy import array
 
-from .test_dependency_graph import DISC_DESCRIPTIONS, create_disciplines_from_desc
+from .test_dependency_graph import create_disciplines_from_desc
+from .test_dependency_graph import DISC_DESCRIPTIONS
 
 
 @pytest.mark.usefixtures("tmp_wd")

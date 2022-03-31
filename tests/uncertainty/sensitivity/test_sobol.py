@@ -13,22 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from os import remove
 
 import pytest
-from numpy import pi
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from numpy import pi
 
 
 def test_sobol_algos():

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -29,9 +28,11 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 from sklearn.decomposition import KernelPCA
@@ -51,7 +52,7 @@ class KPCA(DimensionReduction):
         n_components=None,  # type: Optional[int]
         fit_inverse_transform=True,  # type: bool
         kernel="linear",  # type: str
-        **parameters  # type: Optional[Union[float,int,str]]
+        **parameters,  # type: Optional[Union[float,int,str]]
     ):
         """
         Args:
@@ -66,13 +67,13 @@ class KPCA(DimensionReduction):
             n_components,
             fit_inverse_transform=fit_inverse_transform,
             kernel=kernel,
-            **parameters
+            **parameters,
         )
 
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)

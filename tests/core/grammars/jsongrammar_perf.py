@@ -13,28 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import argparse
 import cProfile
 import string
 import sys
 import timeit
-from itertools import combinations, islice
+from itertools import combinations
+from itertools import islice
 
 import numpy as np
-from numpy import ones
-from numpy.random import choice, seed
-from pyperf import Runner
-
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_chain import MDAChain
+from numpy import ones
+from numpy.random import choice
+from numpy.random import seed
+from pyperf import Runner
 
 seed(1)
 

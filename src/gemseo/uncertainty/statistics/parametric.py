@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class for the parametric estimation of statistics from a dataset.
 
 Overview
@@ -90,26 +88,33 @@ Additional ones are:
 - :meth:`.plot_criteria`:
   this method plots the criterion values for a given variable.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
-from typing import Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import matplotlib.pyplot as plt
-from numpy import array, linspace, ndarray
+from numpy import array
+from numpy import linspace
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
 from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.uncertainty.distributions.openturns.fitting import (
-    MeasureType,
-    OTDistributionFitter,
-)
+from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
+from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.statistics.statistics import Statistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalFactory,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceIntervalSide,
 )
 

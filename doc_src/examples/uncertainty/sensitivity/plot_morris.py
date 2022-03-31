@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -26,12 +25,11 @@ Morris analysis
 """
 import pprint
 
-from matplotlib import pyplot as plt
-from numpy import pi
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
 from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
+from matplotlib import pyplot as plt
+from numpy import pi
 
 #######################################################################################
 # In this example,

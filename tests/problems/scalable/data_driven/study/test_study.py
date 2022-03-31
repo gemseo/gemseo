@@ -13,31 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import os
 
 import pytest
-
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy
-from gemseo.problems.sellar.sellar import (
-    OBJ,
-    X_LOCAL,
-    X_SHARED,
-    Y_1,
-    Sellar1,
-    Sellar2,
-    SellarSystem,
-)
+from gemseo.problems.sellar.sellar import OBJ
+from gemseo.problems.sellar.sellar import Sellar1
+from gemseo.problems.sellar.sellar import Sellar2
+from gemseo.problems.sellar.sellar import SellarSystem
+from gemseo.problems.sellar.sellar import X_LOCAL
+from gemseo.problems.sellar.sellar import X_SHARED
+from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 

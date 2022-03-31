@@ -1,3 +1,14 @@
+[build-system]
+# setuptools_scm 6 and setuptools 45 are no longer compatible with python 2.7
+requires = [
+    "setuptools>=44",
+    "wheel",
+    "setuptools_scm[toml]>=5.0,<6.4"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
 [tool.pytest.ini_options]
 # show extra info on xfailed, xpassed, and skipped tests
 addopts = "--disable-pytest-warnings -rxs"
@@ -9,7 +20,7 @@ log_file_format = "%(levelname)8s - %(asctime)s: %(message)s"
 # filterwarnings = ignore::pytest.PytestExperimentalApiWarning
 
 [tool.black]
-target-version = ['py27']
+target-version = ['py37']
 
 [tool.towncrier]
     package = "gemseo"

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
@@ -23,12 +22,17 @@
 The Rosenbrock analytic problem
 *******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import array, atleast_2d, ones, zeros
-from scipy.optimize import rosen, rosen_der
+from numpy import array
+from numpy import atleast_2d
+from numpy import ones
+from numpy import zeros
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem

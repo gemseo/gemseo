@@ -17,13 +17,13 @@
 
 print("Parsed inputs.txt file")
 a = b = 0.0
-exec (open("inputs.txt").read())  # noqa
+exec(open("inputs.txt").read())  # noqa
 
 print("a=", a)
 print("b=", b)
 
 print("executing simulation...")
-c = a ** 2 + b ** 2
+c = a**2 + b**2
 
 print("Done.")
 print("Computed output: c = a**2+b**2 = ", c)

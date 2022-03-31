@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -67,34 +66,35 @@ from over-fitting, typically some norm of its argument.
 The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
 through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import (
-    Callable,
-    Dict,
-    Iterable,
-    Mapping,
-    NoReturn,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
-from numpy import array, atleast_2d, ndarray
+from numpy import array
+from numpy import atleast_2d
+from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.core.ml_algo import DataType, MLAlgo, MLAlgoParameterType
+from gemseo.mlearning.core.ml_algo import DataType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import SavedObjectType as MLAlgoSaveObjectType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
 
@@ -120,7 +120,7 @@ class MLSupervisedAlgo(MLAlgo):
         transformer=DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
-        **parameters  # type: MLAlgoParameterType
+        **parameters,  # type: MLAlgoParameterType
     ):  # type: (...) -> None
         """
         Args:
@@ -192,7 +192,7 @@ class MLSupervisedAlgo(MLAlgo):
                 self,
                 input_data,  # type: DataType
                 *args,
-                **kwargs
+                **kwargs,
             ):  # type: (...) -> DataType
                 """Evaluate 'predict' with either array or dictionary-based input data.
 
@@ -259,7 +259,7 @@ class MLSupervisedAlgo(MLAlgo):
                 self,
                 input_data,  # type: DataType
                 *args,
-                **kwargs
+                **kwargs,
             ):  # type: (...) -> DataType
                 """Evaluate 'predict' with either a 1D or 2D NumPy data array.
 
@@ -328,7 +328,7 @@ class MLSupervisedAlgo(MLAlgo):
                     self,
                     input_data,  # type: DataType
                     *args,
-                    **kwargs
+                    **kwargs,
                 ):  # type: (...) -> DataType
                     """Evaluate 'predict' after or before data transformation.
 

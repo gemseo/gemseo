@@ -21,7 +21,8 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """An MDOFunction subclass to support formulations."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import TYPE_CHECKING
@@ -31,11 +32,9 @@ from numpy import isnan as np_isnan
 from numpy import ndarray
 
 from gemseo.algos.database import Database
-from gemseo.algos.stop_criteria import (
-    DesvarIsNan,
-    FunctionIsNan,
-    MaxIterReachedException,
-)
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:

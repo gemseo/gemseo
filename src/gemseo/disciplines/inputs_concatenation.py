@@ -13,16 +13,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The concatenation of several input variables into a single one."""
+from typing import Optional
+from typing import Sequence
 
-from typing import Optional, Sequence
-
-from numpy import diag, ones, zeros
+from numpy import diag
+from numpy import ones
+from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.py23_compat import accumulate

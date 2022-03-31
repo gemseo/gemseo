@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -29,18 +28,17 @@ on the Binh and Korn multi-objective problem.
 """
 from __future__ import unicode_literals
 
-from matplotlib import pyplot as plt
-
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.api import configure_logger
+from gemseo.post.post_factory import PostFactory
+from gemseo.problems.analytical.binh_korn import BinhKorn
+from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
 # ------
 # The first step is to import some functions from the API
 # and a method to get the design space.
-from gemseo.api import configure_logger
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.binh_korn import BinhKorn
 
 configure_logger()
 

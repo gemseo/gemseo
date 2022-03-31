@@ -13,28 +13,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 """Test the dataset module."""
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
 
 import numpy as np
 import pytest
-from numpy import allclose, arange, array, concatenate, nan, ones, savetxt, zeros
-from numpy.testing import assert_equal
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.dataset import LOGICAL_OPERATORS, Dataset
+from gemseo.core.dataset import Dataset
+from gemseo.core.dataset import LOGICAL_OPERATORS
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import concatenate
+from numpy import nan
+from numpy import ones
+from numpy import savetxt
+from numpy import zeros
+from numpy.testing import assert_equal
 
 
 @pytest.fixture

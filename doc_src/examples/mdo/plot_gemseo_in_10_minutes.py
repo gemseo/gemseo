@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -40,23 +39,22 @@
 # First, we will import all the classes and functions needed for the tutorials.
 # The first imports (__future__ and future) enable to run the tutorial
 # using either a Python 2 or a Python 3 interpreter.
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from math import exp
 
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from matplotlib import pyplot as plt
-from numpy import array, ones
+from numpy import array
+from numpy import ones
 
 ###############################################################################
 # Finally, the following functions from the |g| API are imported. They will be
 # used latter in order to instantiate |g| objects.
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-)
 
 configure_logger()
 
@@ -89,15 +87,15 @@ configure_logger()
 
 def f_sellar_system(x_local=1.0, x_shared_2=3.0, y_1=1.0, y_2=1.0):
     """Objective function."""
-    obj = x_local ** 2 + x_shared_2 + y_1 ** 2 + exp(-y_2)
-    c_1 = 3.16 - y_1 ** 2
+    obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
+    c_1 = 3.16 - y_1**2
     c_2 = y_2 - 24.0
     return obj, c_1, c_2
 
 
 def f_sellar_1(x_local=1.0, y_2=1.0, x_shared_1=1.0, x_shared_2=3.0):
     """Function for discipline 1."""
-    y_1 = (x_shared_1 ** 2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
     return y_1
 
 

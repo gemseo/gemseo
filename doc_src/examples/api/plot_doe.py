@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -28,13 +27,12 @@ In this example, we will discover the different functions of the API
 related to design of experiments.
 
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import (
-    configure_logger,
-    get_algorithm_options_schema,
-    get_available_doe_algorithms,
-)
+from gemseo.api import configure_logger
+from gemseo.api import get_algorithm_options_schema
+from gemseo.api import get_available_doe_algorithms
 
 configure_logger()
 

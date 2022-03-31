@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -24,7 +23,10 @@
 from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Iterable, List, Optional
+from typing import Any
+from typing import Iterable
+from typing import List
+from typing import Optional
 
 from gemseo.utils.py23_compat import abc
 
@@ -34,7 +36,7 @@ MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
 
 def pretty_repr(
     obj,  # type: Any
-    **kwargs  # type: Any
+    **kwargs,  # type: Any
 ):  # type: (...)-> str
     """String representation of an object.
 
@@ -90,7 +92,7 @@ class MultiLineString(object):
         self,
         str_format,  # type: str
         *args,  # type: Any
-        **kwargs  # type: Any
+        **kwargs,  # type: Any
     ):  # type: (...)-> None
         """Add a line.
 

@@ -13,27 +13,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """An adapter from `.OptimizationProblem` to a pSeven ProblemGeneric."""
-
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 from da import p7core
-from numpy import array, atleast_1d, concatenate, full, full_like, ndarray
+from numpy import array
+from numpy import atleast_1d
+from numpy import concatenate
+from numpy import full
+from numpy import full_like
+from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import (
-    MDOFunction,
-    MDOLinearFunction,
-    MDOQuadraticFunction,
-)
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
+from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 
 
 class PSevenProblem(p7core.gtopt.ProblemGeneric):

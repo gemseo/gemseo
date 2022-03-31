@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
@@ -47,7 +46,8 @@ the concept of scalability study:
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import numbers
@@ -57,7 +57,8 @@ from numpy import inf
 
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_types
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -651,7 +652,7 @@ class ScalabilityStudy(object):
                         scaling=scaling,
                         disc_names=problem.disciplines,
                         output_names=problem.outputs,
-                        **statistics
+                        **statistics,
                     )
                     fpath = result.get_file_path(self.directory)
                     msg.add("Save statistics in {}", fpath)
@@ -768,7 +769,7 @@ class ScalabilityStudy(object):
             self.start_at_equilibrium,
             self.active_probability,
             self.feasibility_level,
-            **formulation_options
+            **formulation_options,
         )
 
     def __execute_scenario(self, problem, algo, opt_index):

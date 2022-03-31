@@ -13,18 +13,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the NLopt library wrapper."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from unittest import TestCase
-
-from numpy import array, inf
-from scipy.optimize.optimize import rosen, rosen_der
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -32,6 +29,10 @@ from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.analytical.power_2 import Power2
+from numpy import array
+from numpy import inf
+from scipy.optimize.optimize import rosen
+from scipy.optimize.optimize import rosen_der
 
 from .opt_lib_test_base import OptLibraryTestBase
 

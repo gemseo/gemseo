@@ -13,24 +13,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to create or execute a post-processor from its class name."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Union
 
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.factory import Factory
-from gemseo.post.opt_post_processor import OptPostProcessor, OptPostProcessorOptionType
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.opt_post_processor import OptPostProcessorOptionType
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +97,7 @@ class PostFactory(object):
         directory_path=None,  # type: Optional[Union[str,Path]]
         file_name=None,  # type: Optional[str]
         file_extension=None,  # type: Optional[str]
-        **options  # type: OptPostProcessorOptionType
+        **options,  # type: OptPostProcessorOptionType
     ):  # type: (...) -> Dict[str,Figure]
         """Post-process an optimization problem.
 
@@ -123,7 +129,7 @@ class PostFactory(object):
             file_name=file_name,
             file_extension=file_extension,
             directory_path=directory_path,
-            **options
+            **options,
         )
         self.executed_post.append(post)
         return post

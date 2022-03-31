@@ -13,25 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import sys
 
 import pytest
-from numpy import allclose, array, concatenate
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.parallel_execution import IS_WIN, DiscParallelExecution
+from gemseo.core.parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution import IS_WIN
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegression
+from numpy import allclose
+from numpy import array
+from numpy import concatenate
 
 LEARNING_SIZE = 9
 

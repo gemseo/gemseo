@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -32,10 +31,15 @@ The classifier relies on the SVC class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.svm.SVC.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Callable, Iterable, Mapping, Optional, Union
+from typing import Callable
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 from sklearn.svm import SVC
@@ -62,7 +66,7 @@ class SVMClassifier(MLClassificationAlgo):
         C=1.0,  # noqa: N803 # type: float
         kernel="rbf",  # type: Optional[str,Callable]
         probability=False,  # type: bool
-        **parameters  # type: Optional[Union[int,float,bool,str]]
+        **parameters,  # type: Optional[Union[int,float,bool,str]]
     ):  # type: (...) -> None
         # noqa: D205,D212,D415
         """
@@ -83,7 +87,7 @@ class SVMClassifier(MLClassificationAlgo):
             C=C,
             kernel=kernel,
             probability=probability,
-            **parameters
+            **parameters,
         )
         self.algo = SVC(C=C, kernel=kernel, probability=probability, **parameters)
 

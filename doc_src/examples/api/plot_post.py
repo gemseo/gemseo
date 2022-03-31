@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -28,19 +27,17 @@ In this example, we will discover the different functions of the API
 related to graphical post-processing of scenarios.
 
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from matplotlib import pyplot as plt
-
-from gemseo.api import (
-    configure_logger,
-    create_discipline,
-    create_scenario,
-    execute_post,
-    get_available_post_processings,
-    get_post_processing_options_schema,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import execute_post
+from gemseo.api import get_available_post_processings
+from gemseo.api import get_post_processing_options_schema
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from matplotlib import pyplot as plt
 
 configure_logger()
 

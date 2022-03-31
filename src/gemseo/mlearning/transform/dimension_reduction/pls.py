@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -29,11 +28,15 @@ This dimension reduction algorithm relies on the PLSRegression class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import NoReturn, Optional, Union
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
-from numpy import matmul, ndarray
+from numpy import matmul
+from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
@@ -50,7 +53,7 @@ class PLS(DimensionReduction):
         self,
         name="PLS",  # type: str
         n_components=None,  # type: Optional[int]
-        **parameters  # type: Union[float,int,bool]
+        **parameters,  # type: Union[float,int,bool]
     ):  # type: (...) -> None
         """
         Args:

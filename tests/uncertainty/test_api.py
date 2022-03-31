@@ -13,29 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division, unicode_literals
-
-from numpy import pi
-from numpy.random import normal
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.api import (
-    create_distribution,
-    create_sensitivity_analysis,
-    create_statistics,
-    get_available_distributions,
-    get_available_sensitivity_analyses,
-)
+from gemseo.uncertainty.api import create_distribution
+from gemseo.uncertainty.api import create_sensitivity_analysis
+from gemseo.uncertainty.api import create_statistics
+from gemseo.uncertainty.api import get_available_distributions
+from gemseo.uncertainty.api import get_available_sensitivity_analyses
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.parametric import ParametricStatistics
+from numpy import pi
+from numpy.random import normal
 
 
 def test_available_distribution():

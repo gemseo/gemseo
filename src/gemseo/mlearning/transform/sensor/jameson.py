@@ -13,19 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A 1D Jameson sensor."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from numpy import abs as np_abs
-from numpy import amax, ndarray
+from numpy import amax
+from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class JamesonSensor(Transformer):
@@ -55,7 +57,7 @@ class JamesonSensor(Transformer):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         self.threshold = self.threshold * amax(data)
 

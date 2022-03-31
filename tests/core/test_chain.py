@@ -13,29 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import os
 import unittest
 from itertools import permutations
 
 import pytest
-from numpy import allclose, ones
-
-from gemseo.core.chain import MDOAdditiveChain, MDOChain, MDOParallelChain
+from gemseo.core.chain import MDOAdditiveChain
+from gemseo.core.chain import MDOChain
+from gemseo.core.chain import MDOParallelChain
 from gemseo.core.execution_sequence import ParallelExecSequence
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import allclose
+from numpy import ones
 
 DIRNAME = os.path.dirname(__file__)
 

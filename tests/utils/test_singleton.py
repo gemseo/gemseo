@@ -13,25 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from os.path import dirname
 
 import pytest
+from gemseo.utils.singleton import _Multiton
+from gemseo.utils.singleton import Multiton
+from gemseo.utils.singleton import SingleInstancePerAttributeId
+from gemseo.utils.singleton import SingleInstancePerFileAttribute
 from six import with_metaclass
-
-from gemseo.utils.singleton import (
-    Multiton,
-    SingleInstancePerAttributeId,
-    SingleInstancePerFileAttribute,
-    _Multiton,
-)
 
 
 class MultitonOneArg(Multiton):

@@ -13,18 +13,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 """Build a diagonal DOE for scalable model construction."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Container, Dict, Optional, Union
+from typing import Container
+from typing import Dict
+from typing import Optional
+from typing import Union
 
-from numpy import array, ndarray
+from numpy import array
+from numpy import ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 
@@ -56,7 +60,7 @@ class DiagonalDOE(DOELibrary):
         n_samples=2,  # type: int
         reverse=None,  # type: Optional[Container[str]]
         max_time=0,  # type: float
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
         """Get the options.
 
@@ -84,7 +88,7 @@ class DiagonalDOE(DOELibrary):
             n_samples=n_samples,
             reverse=reverse,
             max_time=max_time,
-            **kwargs
+            **kwargs,
         )
 
     def _generate_samples(

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -25,13 +24,15 @@ Plot - YvsX
 ===========
 
 """
-from __future__ import division, unicode_literals
-
-from matplotlib import pyplot as plt
-from numpy import linspace, pi, sin
+from __future__ import division
+from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
+from matplotlib import pyplot as plt
+from numpy import linspace
+from numpy import pi
+from numpy import sin
 
 configure_logger()
 

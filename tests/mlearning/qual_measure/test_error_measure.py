@@ -13,18 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test error measure module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import linspace
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
@@ -33,6 +31,7 @@ from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 from gemseo.utils.py23_compat import xrange
+from numpy import linspace
 
 
 @pytest.fixture

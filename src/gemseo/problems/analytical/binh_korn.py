@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
@@ -36,12 +35,15 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq y \leq 3.0
    \end{aligned}
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from typing import Tuple
 
-from numpy import array, ndarray, zeros
+from numpy import array
+from numpy import ndarray
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem

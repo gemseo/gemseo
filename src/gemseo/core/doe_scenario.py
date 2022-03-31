@@ -13,17 +13,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                        documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scenario whose driver is a design of experiments."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Optional, Sequence
+from typing import Any
+from typing import Optional
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -60,7 +62,7 @@ class DOEScenario(Scenario):
         design_space,  # type: DesignSpace
         name=None,  # type: Optional[str]
         grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options  # type: Any
+        **formulation_options,  # type: Any
     ):  # type: (...) -> None
         """
         Args:
@@ -86,7 +88,7 @@ class DOEScenario(Scenario):
             design_space,
             name,
             grammar_type,
-            **formulation_options
+            **formulation_options,
         )
         self.seed = 0
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}

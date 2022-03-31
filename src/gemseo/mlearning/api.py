@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -28,16 +27,22 @@ The machine learning API provides methods for creating new and loading
 existing machine learning models. It also provides methods for listing
 available models and options.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
 from gemseo.api import _get_schema
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
-from gemseo.mlearning.core.ml_algo import MLAlgo, TransformerType
+from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
@@ -125,7 +130,7 @@ def create_mlearning_model(
     name,  # type: str
     data,  # type: Dataset
     transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-    **parameters
+    **parameters,
 ):  # type:(...) -> MLAlgo
     """Create a machine learning algorithm from a learning dataset.
 
@@ -160,7 +165,7 @@ def create_regression_model(
     name,  # type: str
     data,  # type: Dataset
     transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]  # noqa: B950
-    **parameters
+    **parameters,
 ):  # type: (...) -> MLRegressionAlgo
     """Create a regression model from a learning dataset.
 
@@ -202,7 +207,7 @@ def create_classification_model(
     name,  # type: str
     data,  # type: Dataset
     transformer=MLSupervisedAlgo.DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]  # noqa: B950
-    **parameters
+    **parameters,
 ):  # type: (...) -> MLClassificationAlgo
     """Create a classification model from a learning dataset.
 
@@ -234,7 +239,7 @@ def create_clustering_model(
     name,  # type: str
     data,  # type: Dataset
     transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-    **parameters
+    **parameters,
 ):  # type: (...) -> MLClusteringAlgo
     """Create a clustering model from a learning dataset.
 

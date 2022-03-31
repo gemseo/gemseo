@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -28,42 +27,39 @@ import logging
 import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
-from typing import (
-    Any,
-    ClassVar,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any
+from typing import ClassVar
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from numpy import (
-    append,
-    array,
-    ascontiguousarray,
-    complex128,
-    concatenate,
-    float64,
-    int32,
-    int64,
-    ndarray,
-    uint8,
-    vstack,
-)
+from numpy import append
+from numpy import array
+from numpy import ascontiguousarray
+from numpy import complex128
+from numpy import concatenate
+from numpy import float64
+from numpy import int32
+from numpy import int64
+from numpy import ndarray
+from numpy import uint8
+from numpy import vstack
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    flatten_nested_bilevel_dict,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
-from gemseo.utils.locks import synchronized, synchronized_hashes
-from gemseo.utils.multi_processing import Manager, RLock, Value
+from gemseo.utils.locks import synchronized
+from gemseo.utils.locks import synchronized_hashes
+from gemseo.utils.multi_processing import Manager
+from gemseo.utils.multi_processing import RLock
+from gemseo.utils.multi_processing import Value
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.testing import compare_dict_of_arrays
 
@@ -530,7 +526,7 @@ class AbstractFullCache(AbstractCache):
         self,
         index,  # type: int
         group,  # type: str
-        **options
+        **options,
     ):  # type: (...) -> Union[Data,JacobianData]
         """Read the data of an entry.
 

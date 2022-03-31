@@ -13,19 +13,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Dummy linear discipline."""
-
-from typing import Optional, Sequence
+from typing import Optional
+from typing import Sequence
 
 from numpy import ones
 from numpy.random import rand
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class LinearDiscipline(MDODiscipline):

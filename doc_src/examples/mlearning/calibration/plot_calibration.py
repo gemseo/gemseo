@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
@@ -23,16 +22,16 @@
 Calibration of a polynomial regression
 ======================================
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from matplotlib.tri import Triangulation
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
+from matplotlib.tri import Triangulation
 
 ###############################################################################
 # Load the dataset

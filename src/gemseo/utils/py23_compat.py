@@ -13,20 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Python2 and Python3 compatibility layer."""
-
 import operator
 import sys
-from typing import Callable, Iterable, List, Tuple
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import Tuple
 
-from numpy import array, ndarray
-from six import PY2, PY3, string_types  # noqa: F401
+from numpy import array
+from numpy import ndarray
+from six import PY2
+from six import PY3
+from six import string_types  # noqa: F401
 
 if PY2:
     string_dtype = "string"

@@ -13,24 +13,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Self Organizing Maps to display high dimensional design spaces."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from math import floor, sqrt
+from math import floor
+from math import sqrt
 
 import matplotlib
-from numpy import array, bincount, float64, int32, isnan, logical_not
+from numpy import array
+from numpy import bincount
+from numpy import float64
+from numpy import int32
+from numpy import isnan
+from numpy import logical_not
 from numpy import max as np_max
-from numpy import mean, mgrid
+from numpy import mean
+from numpy import mgrid
 from numpy import min as np_min
-from numpy import ndarray, nonzero, unique, where, zeros
+from numpy import ndarray
+from numpy import nonzero
+from numpy import unique
+from numpy import where
+from numpy import zeros
 from pylab import plt
 
 from gemseo.algos.opt_problem import OptimizationProblem

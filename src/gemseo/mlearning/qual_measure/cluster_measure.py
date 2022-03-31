@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -24,21 +23,25 @@
 The concept of clustering quality measure is implemented with the
 :class:`.MLClusteringMeasure` class and proposes different evaluation methods.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
-from typing import Dict, NoReturn, Optional, Sequence, Union
+from typing import Dict
+from typing import NoReturn
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from numpy import arange
 from numpy import delete as npdelete
-from numpy import ndarray, unique
+from numpy import ndarray
+from numpy import unique
 from numpy.random import choice
 
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.cluster.cluster import (
-    MLClusteringAlgo,
-    MLPredictiveClusteringAlgo,
-)
+from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
+from gemseo.mlearning.cluster.cluster import MLPredictiveClusteringAlgo
 from gemseo.mlearning.qual_measure.quality_measure import MLQualityMeasure
 
 

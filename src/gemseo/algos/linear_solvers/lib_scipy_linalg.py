@@ -13,23 +13,34 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Wrappers for scipy's linear solvers."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from numpy import find_common_type, ndarray
+from numpy import find_common_type
+from numpy import ndarray
 from scipy.sparse import spmatrix
 from scipy.sparse.base import issparse
-from scipy.sparse.linalg import LinearOperator, bicg, bicgstab, gmres, lgmres, qmr, splu
+from scipy.sparse.linalg import bicg
+from scipy.sparse.linalg import bicgstab
+from scipy.sparse.linalg import gmres
+from scipy.sparse.linalg import lgmres
+from scipy.sparse.linalg import LinearOperator
+from scipy.sparse.linalg import qmr
+from scipy.sparse.linalg import splu
 
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
@@ -298,7 +309,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
         self,
         lhs,  # type: Union[ndarray, spmatrix, LinearOperator]
         rhs,  # type: ndarray
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> Tuple[ndarray, int]
         """Run the default solver.
 

@@ -13,20 +13,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A formulation for uncoupled or weakly coupled problems."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import List, Sequence, Tuple
+from typing import List
+from typing import Sequence
+from typing import Tuple
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
+from gemseo.core.execution_sequence import ExecutionSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.disciplines.utils import get_all_inputs
 

@@ -14,13 +14,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest
-from numpy import allclose, array, array_equal, atleast_2d
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from numpy import allclose
+from numpy import array
+from numpy import array_equal
+from numpy import atleast_2d
 
 
 @pytest.fixture()
@@ -72,7 +74,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size):
     problem.objective = MDOFunction(lambda x: sum(x), "func")
     doe_library_class().execute(problem, algo_name, n_samples=n_samples)
     data = problem.export_to_dataset("data")["x"]
-    if n_samples < 2 ** size:
+    if n_samples < 2**size:
         expected_min = expected_max = 1.0
         expected_shape = (1, size)
     else:

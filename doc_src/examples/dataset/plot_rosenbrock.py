@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -40,11 +39,12 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import load_dataset
 from matplotlib import pyplot as plt
-
-from gemseo.api import configure_logger, load_dataset
 
 configure_logger()
 

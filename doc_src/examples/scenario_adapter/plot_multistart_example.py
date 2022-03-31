@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Arthur Piat, Francois Gallard
@@ -28,17 +27,15 @@ Runs simple optimization problem with multiple starting points
 Nests a :class:`.MDOScenario` in a :class:`.DOEScenario`
 using a :class:`.MDOScenarioAdapter`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from matplotlib import pyplot as plt
-
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
+from matplotlib import pyplot as plt
 
 configure_logger()
 

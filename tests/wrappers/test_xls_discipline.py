@@ -13,23 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 # INITIAL AUTHORS - initial API and implementation and/or
 #                   initial documentation
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 import faulthandler
-from typing import Generator, Tuple
+from typing import Generator
+from typing import Tuple
 
 import pytest
-from numpy import array, exp, ones
-
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
+from numpy import array
+from numpy import exp
+from numpy import ones
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
@@ -190,8 +192,8 @@ def f_sellar_system(
     x_local: float = 1.0, x_shared_2: float = 3.0, y_1: float = 1.0, y_2: float = 1.0
 ) -> Tuple[float, float, float]:
     """Objective function for the sellar problem."""
-    obj = x_local ** 2 + x_shared_2 + y_1 ** 2 + exp(-y_2)
-    c_1 = 3.16 - y_1 ** 2
+    obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
+    c_1 = 3.16 - y_1**2
     c_2 = y_2 - 24.0
     return obj, c_1, c_2
 
@@ -203,7 +205,7 @@ def f_sellar_1(
     x_shared_2: float = 3.0,
 ) -> float:
     """Function for discipline sellar 1."""
-    y_1 = (x_shared_1 ** 2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
+    y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
     return y_1
 
 

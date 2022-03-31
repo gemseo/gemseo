@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
@@ -21,21 +20,24 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
 MDO problem."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from ast import literal_eval
-from typing import Iterable, List, Mapping, Optional, Tuple
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
 
 from pandas import DataFrame  # noqa F401
 from pandas import read_excel
 
-from gemseo.api import (
-    create_design_space,
-    create_scenario,
-    generate_n2_plot,
-    get_available_formulations,
-)
+from gemseo.api import create_design_space
+from gemseo.api import create_scenario
+from gemseo.api import generate_n2_plot
+from gemseo.api import get_available_formulations
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
@@ -536,7 +538,7 @@ class StudyAnalysis(object):
             scenario_descr[XLSStudyParser.FORMULATION],
             scenario_descr[XLSStudyParser.OBJECTIVE_FUNCTION],
             design_space,
-            **options_dict
+            **options_dict,
         )
         for cstr in scenario_descr[XLSStudyParser.CONSTRAINTS]:
             scenario.add_constraint(cstr)

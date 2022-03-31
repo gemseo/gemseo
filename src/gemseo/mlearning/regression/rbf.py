@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -38,13 +37,26 @@ The RBF model relies on the Rbf class of the
 `scipy library
 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import pickle
-from typing import Callable, Dict, Iterable, Mapping, Optional, Union
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from numpy import array, average, exp, finfo, hstack, log, ndarray, sqrt
+from numpy import array
+from numpy import average
+from numpy import exp
+from numpy import finfo
+from numpy import hstack
+from numpy import log
+from numpy import ndarray
+from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
 from six import string_types
@@ -53,7 +65,8 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.py23_compat import PY3, Path
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY3
 
 LOGGER = logging.getLogger(__name__)
 
@@ -198,7 +211,7 @@ class RBFRegression(MLRegressionAlgo):
             Returns:
                 The derivative of the function.
             """
-            return input_data / eps ** 2 / sqrt((norm_input_data / eps) ** 2 + 1)
+            return input_data / eps**2 / sqrt((norm_input_data / eps) ** 2 + 1)
 
         @classmethod
         def der_inverse_multiquadric(
@@ -218,7 +231,7 @@ class RBFRegression(MLRegressionAlgo):
             Returns:
                 The derivative of the function.
             """
-            return -input_data / eps ** 2 / ((norm_input_data / eps) ** 2 + 1) ** 1.5
+            return -input_data / eps**2 / ((norm_input_data / eps) ** 2 + 1) ** 1.5
 
         @classmethod
         def der_gaussian(
@@ -238,7 +251,7 @@ class RBFRegression(MLRegressionAlgo):
             Returns:
                 The derivative of the function.
             """
-            return -2 * input_data / eps ** 2 * exp(-((norm_input_data / eps) ** 2))
+            return -2 * input_data / eps**2 * exp(-((norm_input_data / eps) ** 2))
 
         @classmethod
         def der_linear(
@@ -284,7 +297,7 @@ class RBFRegression(MLRegressionAlgo):
             Returns:
                 The derivative of the function.
             """
-            return 3 * norm_input_data * input_data / eps ** 3
+            return 3 * norm_input_data * input_data / eps**3
 
         @classmethod
         def der_quintic(
@@ -304,7 +317,7 @@ class RBFRegression(MLRegressionAlgo):
             Returns:
                 The derivative of the function.
             """
-            return 5 * norm_input_data ** 3 * input_data / eps ** 5
+            return 5 * norm_input_data**3 * input_data / eps**5
 
         @classmethod
         def der_thin_plate(
@@ -328,7 +341,7 @@ class RBFRegression(MLRegressionAlgo):
             return (
                 (norm_input_data > cls.TOL)
                 * input_data
-                / eps ** 2
+                / eps**2
                 * (1 + 2 * log(norm_input_data / eps + cls.TOL))
             )
 
@@ -347,7 +360,7 @@ class RBFRegression(MLRegressionAlgo):
                 function=self.parameters["function"],
                 epsilon=self.parameters["epsilon"],
                 smooth=self.parameters["smooth"],
-                norm=self.parameters["norm"]
+                norm=self.parameters["norm"],
             )
         else:
             self.algo = []
@@ -358,7 +371,7 @@ class RBFRegression(MLRegressionAlgo):
                     function=self.parameters["function"],
                     epsilon=self.parameters["epsilon"],
                     smooth=self.parameters["smooth"],
-                    norm=self.parameters["norm"]
+                    norm=self.parameters["norm"],
                 )
                 self.algo.append(rbf)
 

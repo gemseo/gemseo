@@ -13,23 +13,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
 
 import pytest
-from matplotlib.testing.decorators import image_comparison
-from six import PY2
-
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
 from gemseo.utils.py23_compat import Path
+from matplotlib.testing.decorators import image_comparison
+from six import PY2
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 

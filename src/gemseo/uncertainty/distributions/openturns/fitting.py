@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class to fit a distribution from data based on OpenTURNS.
 
 Overview
@@ -102,11 +100,16 @@ associated with the criterion and a criterion selection:
 - 'first': Select the first distribution for which the criterion is
   greater (or lower, depending on the criterion) than the level.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Callable, List, Mapping, Sequence, Tuple, Union
+from typing import Callable
+from typing import List
+from typing import Mapping
+from typing import Sequence
+from typing import Tuple
+from typing import Union
 
 import openturns as ots
 from numpy import ndarray

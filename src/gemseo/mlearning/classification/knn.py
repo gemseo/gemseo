@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -90,12 +89,17 @@ The classifier relies on the KNeighborsClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Mapping, Optional, Union
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from numpy import ndarray, stack
+from numpy import ndarray
+from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
 from gemseo.core.dataset import Dataset
@@ -118,7 +122,7 @@ class KNNClassifier(MLClassificationAlgo):
         input_names=None,  # type: Optional[Iterable[str]]
         output_names=None,  # type: Optional[Iterable[str]]
         n_neighbors=5,  # type: int
-        **parameters  # type: Union[int,str]
+        **parameters,  # type: Union[int,str]
     ):  # type: (...) -> None
         """
         Args:
@@ -130,7 +134,7 @@ class KNNClassifier(MLClassificationAlgo):
             input_names=input_names,
             output_names=output_names,
             n_neighbors=n_neighbors,
-            **parameters
+            **parameters,
         )
         self.algo = KNeighborsClassifier(n_neighbors, **parameters)
 

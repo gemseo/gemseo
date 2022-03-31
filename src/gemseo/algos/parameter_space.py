@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Variable space defining both deterministic and uncertain variables.
 
 Overview
@@ -67,13 +65,21 @@ The :class:`.ParameterSpace` also provides the following methods:
 - :meth:`.is_uncertain`: checks if a parameter is uncertain,
 - :meth:`.is_deterministic`: checks if a parameter is deterministic.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
 import logging
 import sys
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import TYPE_CHECKING
+from typing import Union
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset
@@ -208,7 +214,7 @@ class ParameterSpace(DesignSpace):
         name,  # type: str
         distribution,  # type: str
         size=1,  # type: int
-        **parameters  # type: DistributionParametersType
+        **parameters,  # type: DistributionParametersType
     ):  # type: (...) -> None
         """Add a random variable from a probability distribution.
 

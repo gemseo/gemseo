@@ -13,25 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 20 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 from unittest import mock
 
 import pytest
-from numpy import unique
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from numpy import unique
 
-from .utils import execute_problem, generate_test_functions, get_problem
+from .utils import execute_problem
+from .utils import generate_test_functions
+from .utils import get_problem
 
 DOE_LIB_NAME = "OpenTURNS"
 
@@ -149,7 +151,7 @@ def test_opt_lhs_wrong_properties(options):
             algo_name="OT_OPT_LHS",
             dim=2,
             n_samples=3,
-            **options
+            **options,
         )
 
 

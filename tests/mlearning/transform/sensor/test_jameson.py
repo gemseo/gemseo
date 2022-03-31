@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, arange, ndarray
-
 from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
+from numpy import allclose
+from numpy import arange
+from numpy import ndarray
 
 
 @pytest.fixture

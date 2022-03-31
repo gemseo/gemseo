@@ -14,35 +14,30 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Scalable problem of Tedford and Martins, 2010
 =============================================
 
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import generate_n2_plot
+from gemseo.problems.scalable.parametric.core.design_space import TMDesignSpace
+from gemseo.problems.scalable.parametric.disciplines import TMMainDiscipline
+from gemseo.problems.scalable.parametric.disciplines import TMSubDiscipline
+from gemseo.problems.scalable.parametric.problem import TMScalableProblem
+from gemseo.problems.scalable.parametric.study import TMParamSS
+from gemseo.problems.scalable.parametric.study import TMParamSSPost
+from gemseo.problems.scalable.parametric.study import TMScalableStudy
 from numpy import array
 from numpy.random import rand
-
-from gemseo.api import configure_logger, generate_n2_plot
-from gemseo.problems.scalable.parametric.core.design_space import TMDesignSpace
-from gemseo.problems.scalable.parametric.disciplines import (
-    TMMainDiscipline,
-    TMSubDiscipline,
-)
-from gemseo.problems.scalable.parametric.problem import TMScalableProblem
-from gemseo.problems.scalable.parametric.study import (
-    TMParamSS,
-    TMParamSSPost,
-    TMScalableStudy,
-)
 
 configure_logger()
 

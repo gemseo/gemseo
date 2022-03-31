@@ -1,6 +1,9 @@
 import re
 from collections import OrderedDict
-from typing import Any, Dict, Iterable, cast
+from typing import Any
+from typing import cast
+from typing import Dict
+from typing import Iterable
 
 from docutils import nodes
 from docutils.nodes import Element

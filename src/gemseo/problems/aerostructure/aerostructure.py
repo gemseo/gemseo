@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #    initial documentation
@@ -71,9 +70,13 @@ and
            \end{aligned}
            \right.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from numpy import array, atleast_2d, complex128, ones
+from numpy import array
+from numpy import atleast_2d
+from numpy import complex128
+from numpy import ones
 
 from gemseo.core.discipline import MDODiscipline
 
@@ -280,7 +283,7 @@ class Aerodynamics(MDODiscipline):
         self._init_jacobian(inputs, outputs, with_zeros=True)
         sweep, thick_airfoils = self.get_inputs_by_name(["sweep", "thick_airfoils"])
         self.jac["drag"]["sweep"] = atleast_2d(
-            array([0.1 * 2.0 * sweep[0] / 360.0 ** 2.0])
+            array([0.1 * 2.0 * sweep[0] / 360.0**2.0])
         )
         self.jac["drag"]["thick_airfoils"] = atleast_2d(
             array([0.1 * (2.0 * thick_airfoils[0] - 1.0)])
@@ -388,7 +391,7 @@ class Structure(MDODiscipline):
         self._init_jacobian(inputs, outputs, with_zeros=True)
         sweep = self.get_inputs_by_name("sweep")
         self.jac["mass"]["sweep"] = atleast_2d(
-            array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0 ** 3])
+            array([4000.0 * 3.0 * sweep[0] ** 2 / 360.0**3])
         )
         self.jac["mass"]["thick_panels"] = atleast_2d(array([100.0]))
         self.jac["mass"]["forces"] = atleast_2d(array([200.0]))

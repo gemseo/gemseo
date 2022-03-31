@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Post-processing for scalability study.
 
 The :class:`.PostScalabilityStudy` class implements the way as the set of
@@ -43,19 +41,23 @@ of the true problem.
    that satisfies this budget, or even saves us time. Thus, it is important
    to carefully define these cost functions.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-from numpy import array, atleast_3d
+from numpy import array
+from numpy import atleast_3d
 from numpy import bool as np_bool
-from numpy import median, poly1d, polyfit
+from numpy import median
+from numpy import poly1d
+from numpy import polyfit
 
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path, string_types
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import string_types
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -223,7 +225,7 @@ class PostScalabilityStudy(object):
         xticks=None,
         xticks_labels=None,
         xmargin=0.0,
-        **options
+        **options,
     ):
         """Plot the results using different methods according to the presence or absence
         of replicate values.

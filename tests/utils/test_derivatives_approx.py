@@ -13,22 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
-from math import cos, exp, log10, sin
+from math import cos
+from math import exp
+from math import log10
+from math import sin
 
 import pytest
-from numpy import array, complex128, float64, zeros
-from numpy.linalg import norm
-from scipy.optimize import rosen, rosen_der
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -38,12 +36,17 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
-from gemseo.utils.derivatives_approx import (
-    ComplexStep,
-    DisciplineJacApprox,
-    FirstOrderFD,
-    comp_best_step,
-)
+from gemseo.utils.derivatives_approx import comp_best_step
+from gemseo.utils.derivatives_approx import ComplexStep
+from gemseo.utils.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives_approx import FirstOrderFD
+from numpy import array
+from numpy import complex128
+from numpy import float64
+from numpy import zeros
+from numpy.linalg import norm
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 
 def test_init_first_order_fd():
@@ -304,7 +307,7 @@ def test_derivatives_on_design_boundaries(caplog, normalize, lower_bound, upper_
     problem = OptimizationProblem(
         design_space, differentiation_method="finite_differences"
     )
-    problem.objective = MDOFunction(lambda x: x ** 2, "my_objective")
+    problem.objective = MDOFunction(lambda x: x**2, "my_objective")
 
     OptimizersFactory().execute(
         problem, "SLSQP", max_iter=1, eval_jac=True, normalize_design_space=normalize

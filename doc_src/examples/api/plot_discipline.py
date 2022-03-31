@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -24,23 +23,22 @@
 Discipline
 ==========
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from numpy import array
-
-from gemseo.api import (
-    configure_logger,
-    create_discipline,
-    generate_coupling_graph,
-    generate_n2_plot,
-    get_available_disciplines,
-    get_discipline_inputs_schema,
-    get_discipline_options_defaults,
-    get_discipline_options_schema,
-    get_discipline_outputs_schema,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
+from gemseo.api import get_available_disciplines
+from gemseo.api import get_discipline_inputs_schema
+from gemseo.api import get_discipline_options_defaults
+from gemseo.api import get_discipline_options_schema
+from gemseo.api import get_discipline_outputs_schema
 from gemseo.core.discipline import MDODiscipline
-from gemseo.disciplines.utils import get_all_inputs, get_all_outputs
+from gemseo.disciplines.utils import get_all_inputs
+from gemseo.disciplines.utils import get_all_outputs
+from numpy import array
 
 configure_logger()
 

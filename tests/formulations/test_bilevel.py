@@ -13,20 +13,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from copy import deepcopy
 
 import pytest
-
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import create_design_space, create_discipline, create_scenario
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
@@ -34,6 +34,7 @@ from gemseo.formulations.bilevel_test_helper import create_sobieski_bilevel_scen
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+
 from tests.core.test_dependency_graph import create_disciplines_from_desc
 
 

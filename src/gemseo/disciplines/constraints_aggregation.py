@@ -13,24 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """An MDODiscipline to aggregates constraints using KS/IKS/Max methods."""
-
-from typing import Any, Optional, Sequence
+from typing import Any
+from typing import Optional
+from typing import Sequence
 
 from numpy import atleast_1d
 
-from gemseo.algos.aggregation.core import iks_agg, iks_agg_jac, ks_agg, ks_agg_jac
+from gemseo.algos.aggregation.core import iks_agg
+from gemseo.algos.aggregation.core import iks_agg_jac
+from gemseo.algos.aggregation.core import ks_agg
+from gemseo.algos.aggregation.core import ks_agg_jac
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.data_conversion import (
-    concatenate_dict_of_arrays_to_array,
-    split_array_to_dict_of_arrays,
-)
+from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 METHODS_MAP = {"KS": ks_agg, "IKS": iks_agg}
 METHODS_JAC_MAP = {"KS": ks_agg_jac, "IKS": iks_agg_jac}
@@ -55,7 +55,7 @@ class ConstrAggegationDisc(MDODiscipline):
         constr_data_names,  # type: Sequence[str]
         method_name,  # type: str
         name=None,  # type: Optional[str]
-        **meth_options  # type: Any
+        **meth_options,  # type: Any
     ):  # type: (...) -> None # noqa: D205,D212,D415
         """
         Args:

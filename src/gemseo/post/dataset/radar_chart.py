@@ -13,23 +13,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a radar chart from a :class:`.Dataset`. """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from numpy import linspace, pi, rad2deg
+from numpy import linspace
+from numpy import pi
+from numpy import rad2deg
 
 from gemseo.core.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot, DatasetPlotPropertyType
+from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class RadarChart(DatasetPlot):

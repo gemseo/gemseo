@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -43,13 +42,17 @@ This method has to be overloaded.
    :mod:`~gemseo.mlearning.transform.scaler.min_max_scaler`
    :mod:`~gemseo.mlearning.transform.scaler.standard_scaler`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
-from numpy import diag, eye, ndarray
+from numpy import diag
+from numpy import eye
+from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +101,7 @@ class Scaler(Transformer):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         LOGGER.warning(
             (

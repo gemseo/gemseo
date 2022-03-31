@@ -13,26 +13,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Correlations in the optimization database."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from functools import partial
-from typing import List, Optional, Sequence, Tuple
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
 import pylab
 from matplotlib import ticker
 from matplotlib.figure import Figure
-from numpy import atleast_2d, ndarray
+from numpy import atleast_2d
+from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 from gemseo.utils.py23_compat import fullmatch

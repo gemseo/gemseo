@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,10 +26,10 @@ Probability distributions based on SciPy
 In this example,
 we seek to create a probability distribution based on the SciPy library.
 """
-from matplotlib import pyplot as plt
-
 from gemseo.api import configure_logger
-from gemseo.uncertainty.api import create_distribution, get_available_distributions
+from gemseo.uncertainty.api import create_distribution
+from gemseo.uncertainty.api import get_available_distributions
+from matplotlib import pyplot as plt
 
 configure_logger()
 

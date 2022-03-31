@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation
 #               and/or initial documentation
@@ -25,16 +24,23 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Structure discipline for the Sobieski's SSBJ use case."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
-from numpy import append, array, ndarray, ones, zeros
+from numpy import append
+from numpy import array
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
 
 from gemseo.problems.sobieski.core.discipline import SobieskiDiscipline
-from gemseo.problems.sobieski.core.utils import DEG_TO_RAD, SobieskiBase
+from gemseo.problems.sobieski.core.utils import DEG_TO_RAD
+from gemseo.problems.sobieski.core.utils import SobieskiBase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -175,9 +181,9 @@ class SobieskiStructure(SobieskiDiscipline):
         wing_weight_coeff = (
             0.0051
             * ((lift * c_2) ** 0.557)
-            * (wing_area ** 0.649)
-            * (aspect_ratio ** 0.5)
-            * (tc_ratio ** -0.4)
+            * (wing_area**0.649)
+            * (aspect_ratio**0.5)
+            * (tc_ratio**-0.4)
             * ((1 + wing_taper_ratio) ** 0.1)
             * ((self.math.cos(sweep * DEG_TO_RAD)) ** -1.0)
             * ((0.1875 * wing_area) ** 0.1)
@@ -260,7 +266,7 @@ class SobieskiStructure(SobieskiDiscipline):
             The derivative of the fuel wing weight with respect to
             the reference surface.
         """
-        return 637.5 / 54.0 * wing_area ** 0.5 * tc_ratio / self.math.sqrt(aspect_ratio)
+        return 637.5 / 54.0 * wing_area**0.5 * tc_ratio / self.math.sqrt(aspect_ratio)
 
     def __compute_dhalfspan_dar(
         self, wing_area  # type: float
@@ -900,7 +906,7 @@ class SobieskiStructure(SobieskiDiscipline):
         jacobian["y_1"]["x_1"][0, 1] += jacobian["y_1"]["x_1"][1, 1]
 
         # dtotal_weight_dLift
-        jacobian["y_1"]["y_21"][0, 0] = 0.557 * lift ** -1 * wing_w
+        jacobian["y_1"]["y_21"][0, 0] = 0.557 * lift**-1 * wing_w
         # dtotal_weight_dWe
         jacobian["y_1"]["y_31"][0, 0] = 1.0
 

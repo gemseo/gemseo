@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -70,12 +69,17 @@ This clustering algorithm relies on the KMeans class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cluster.KMeans.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Mapping, Optional, Union
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Union
 
-from numpy import finfo, ndarray
+from numpy import finfo
+from numpy import ndarray
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
 
@@ -100,7 +104,7 @@ class KMeans(MLPredictiveClusteringAlgo):
         var_names=None,  # type: Optional[Iterable[str]]
         n_clusters=5,  # type: int
         random_state=0,  # type: Optional[int]
-        **parameters  # type: Optional[Union[int,float,bool,str]]
+        **parameters,  # type: Optional[Union[int,float,bool,str]]
     ):  # type: (...) -> None
         """
         Args:
@@ -115,7 +119,7 @@ class KMeans(MLPredictiveClusteringAlgo):
             var_names=var_names,
             n_clusters=n_clusters,
             random_state=random_state,
-            **parameters
+            **parameters,
         )
         self.algo = SKLKmeans(n_clusters, random_state=random_state, **parameters)
 

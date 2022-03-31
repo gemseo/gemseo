@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,17 +26,15 @@ Formulation
 In this example, we will discover the different functions of the API
 related to MDO formulations: their names, their options and their sub-options.
 """
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from gemseo.api import (
-    configure_logger,
-    get_available_formulations,
-    get_formulation_options_schema,
-    get_formulation_sub_options_schema,
-    get_formulations_options_defaults,
-    get_formulations_sub_options_defaults,
-)
+from gemseo.api import configure_logger
+from gemseo.api import get_available_formulations
+from gemseo.api import get_formulation_options_schema
+from gemseo.api import get_formulation_sub_options_schema
+from gemseo.api import get_formulations_options_defaults
+from gemseo.api import get_formulations_sub_options_defaults
 
 configure_logger()
 

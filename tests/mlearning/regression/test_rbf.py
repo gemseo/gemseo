@@ -13,25 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test radial basis function regression module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, array
-from scipy.interpolate.rbf import Rbf
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.regression.rbf import RBFRegression
+from numpy import allclose
+from numpy import array
+from scipy.interpolate.rbf import Rbf
 
 LEARNING_SIZE = 9
 
@@ -70,10 +70,10 @@ def model_with_custom_function(dataset):  # type: (...) -> RBFRegression
     """A trained RBFRegression  f(r) = r**2 - 1 as kernel function."""
 
     def der_function(input_data, norm_input_data, eps):
-        return 2 * input_data / eps ** 2
+        return 2 * input_data / eps**2
 
     rbf = RBFRegression(
-        dataset, function=(lambda r: r ** 2 - 1), der_function=der_function
+        dataset, function=(lambda r: r**2 - 1), der_function=der_function
     )
     rbf.learn()
     return rbf

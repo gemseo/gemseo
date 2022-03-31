@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -33,20 +32,19 @@ For that, we can use a 20-length :class:`.DiagonalDOE`
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scalable
+from gemseo.api import create_scenario
+from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from matplotlib import pyplot as plt
 
 ###############################################################################
 # Import
 # ------
-from gemseo.api import (
-    configure_logger,
-    create_discipline,
-    create_scalable,
-    create_scenario,
-)
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 configure_logger()
 

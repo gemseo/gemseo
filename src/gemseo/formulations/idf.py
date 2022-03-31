@@ -19,19 +19,28 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Individual Discipline Feasible (IDF) formulation."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable
+from typing import List
+from typing import Sequence
+from typing import Tuple
 
 from numpy import abs as np_abs
-from numpy import concatenate, eye, ndarray, ones_like, zeros
+from numpy import concatenate
+from numpy import eye
+from numpy import ndarray
+from numpy import ones_like
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.chain import MDOParallelChain
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence, ExecutionSequenceFactory
+from gemseo.core.execution_sequence import ExecutionSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -69,10 +68,15 @@ This clustering algorithm relies on the GaussianMixture class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.mixture.GaussianMixture.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Iterable, Mapping, NoReturn, Optional, Union
+from typing import Iterable
+from typing import Mapping
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 from sklearn.mixture import GaussianMixture as SKLGaussianMixture
@@ -95,7 +99,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
         transformer=None,  # type: Optional[Mapping[str,TransformerType]]
         var_names=None,  # type: Optional[Iterable[str]]
         n_components=5,  # type: int
-        **parameters  # type: Optional[Union[int,float,str,bool]]
+        **parameters,  # type: Optional[Union[int,float,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
@@ -106,7 +110,7 @@ class GaussianMixture(MLPredictiveClusteringAlgo):
             transformer=transformer,
             var_names=var_names,
             n_components=n_components,
-            **parameters
+            **parameters,
         )
         self.algo = SKLGaussianMixture(n_components, **parameters)
 

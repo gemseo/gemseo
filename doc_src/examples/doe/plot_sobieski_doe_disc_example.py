@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -23,12 +22,14 @@
 Simple disciplinary DOE example on the Sobieski SSBJ test case
 ==============================================================
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from matplotlib import pyplot as plt
-
-from gemseo.api import configure_logger, create_discipline, create_scenario
+from gemseo.api import configure_logger
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
+from matplotlib import pyplot as plt
 
 configure_logger()
 

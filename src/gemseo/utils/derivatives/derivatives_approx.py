@@ -13,29 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite differences approximation."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import pickle
 from itertools import chain
 from multiprocessing import cpu_count
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 
@@ -147,7 +145,7 @@ class DisciplineJacApprox(object):
             self.func,
             step=self.step,
             parallel=self.__parallel,
-            **self.__par_args
+            **self.__par_args,
         )
 
     def auto_set_step(
@@ -716,5 +714,5 @@ def approx_hess(
     Returns:
         The approximation of the Hessian matrix at the current step :math:`x`.
     """
-    hess = (f_p - 2 * f_x + f_m) / (step ** 2)
+    hess = (f_p - 2 * f_x + f_m) / (step**2)
     return hess

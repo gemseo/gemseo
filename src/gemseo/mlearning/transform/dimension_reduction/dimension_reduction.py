@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -27,13 +26,17 @@ The :class:`.DimensionReduction` class implements the concept of dimension reduc
 
    :mod:`~gemseo.mlearning.transform.dimension_reduction.pca`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from typing import NoReturn, Optional, Union
+from typing import NoReturn
+from typing import Optional
+from typing import Union
 
 from numpy import ndarray
 
-from gemseo.mlearning.transform.transformer import Transformer, TransformerFitOptionType
+from gemseo.mlearning.transform.transformer import Transformer
+from gemseo.mlearning.transform.transformer import TransformerFitOptionType
 
 
 class DimensionReduction(Transformer):
@@ -43,7 +46,7 @@ class DimensionReduction(Transformer):
         self,
         name="DimensionReduction",  # type: str
         n_components=None,  # type: Optional[int]
-        **parameters  # type: Optional[Union[float,int,str,bool]]
+        **parameters,  # type: Optional[Union[float,int,str,bool]]
     ):  # type: (...) -> None
         """
         Args:
@@ -61,7 +64,7 @@ class DimensionReduction(Transformer):
     def fit(
         self,
         data,  # type: ndarray
-        *args  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> NoReturn
         """Fit the transformer to the data.
 

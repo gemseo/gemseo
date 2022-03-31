@@ -13,27 +13,32 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                        initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - stacked data ; docstrings
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import h5py
 import pytest
-from numpy import arange, array, ones, string_
-from numpy.linalg import norm
-from numpy.testing import assert_almost_equal
-from scipy.optimize import rosen, rosen_der
-
-from gemseo.algos.database import Database, HashableNdarray
+from gemseo.algos.database import Database
+from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2, OrderedDict, Path
+from gemseo.utils.py23_compat import OrderedDict
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import PY2
+from numpy import arange
+from numpy import array
+from numpy import ones
+from numpy import string_
+from numpy.linalg import norm
+from numpy.testing import assert_almost_equal
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail.hdf5"

@@ -13,29 +13,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Factory base class."""
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import importlib
 import logging
 import os
 import pkgutil
 import sys
-from typing import Any, Dict, Iterable, List, Optional, Type, Union
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Type
+from typing import Union
 
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.py23_compat import PY3, importlib_metadata, lru_cache
-from gemseo.utils.singleton import Multiton, _Multiton
-from gemseo.utils.source_parsing import get_default_options_values, get_options_doc
+from gemseo.utils.py23_compat import importlib_metadata
+from gemseo.utils.py23_compat import PY3
+from gemseo.utils.singleton import _Multiton
+from gemseo.utils.singleton import Multiton
+from gemseo.utils.source_parsing import get_default_options_values
+from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
 
@@ -273,7 +280,6 @@ class Factory(Multiton):
         return False
 
     @property
-    @lru_cache()
     def classes(self):  # type: (...) -> List[str]
         """Return the available classes.
 
@@ -320,7 +326,7 @@ class Factory(Multiton):
     def create(
         self,
         class_name,  # type: str
-        **options  # type: Any
+        **options,  # type: Any
     ):  # type: (...) -> Any
         """Return an instance of a class.
 
@@ -423,7 +429,7 @@ class Factory(Multiton):
     def get_sub_options_grammar(
         self,
         name,  # type: str
-        **options  # type: str
+        **options,  # type: str
     ):  # type: (...) -> JSONGrammar
         """Return the JSONGrammar of the sub options of a class.
 
@@ -441,7 +447,7 @@ class Factory(Multiton):
     def get_default_sub_options_values(
         self,
         name,  # type: str
-        **options  # type: str
+        **options,  # type: str
     ):  # type: (...) -> JSONGrammar
         """Return the default values of the sub options of a class.
 

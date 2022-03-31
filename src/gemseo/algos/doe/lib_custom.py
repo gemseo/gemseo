@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -21,12 +20,21 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
 """Design of experiments from custom data."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, List, Optional, Sequence, TextIO, Union
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import TextIO
+from typing import Union
 
-from numpy import apply_along_axis, atleast_2d, loadtxt, ndarray
+from numpy import apply_along_axis
+from numpy import atleast_2d
+from numpy import loadtxt
+from numpy import ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.py23_compat import Path
@@ -85,7 +93,7 @@ class CustomDOE(DOELibrary):
         eval_jac=False,  # type: bool
         n_processes=1,  # type: int
         wait_time_between_samples=0.0,  # type: float
-        **kwargs  # type: OptionType
+        **kwargs,  # type: OptionType
     ):  # type: (...) -> Dict[str,OptionType]
         """Set the options.
 
@@ -121,7 +129,7 @@ class CustomDOE(DOELibrary):
             eval_jac=eval_jac,
             n_processes=n_processes,
             wait_time_between_samples=wtbs,
-            **kwargs
+            **kwargs,
         )
 
     def read_file(

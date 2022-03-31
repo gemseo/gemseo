@@ -19,7 +19,14 @@
 """A discipline for topology optimization density filter."""
 from typing import Optional
 
-from numpy import array, atleast_2d, ceil, maximum, minimum, ones, tile, zeros
+from numpy import array
+from numpy import atleast_2d
+from numpy import ceil
+from numpy import maximum
+from numpy import minimum
+from numpy import ones
+from numpy import tile
+from numpy import zeros
 from numpy.linalg import norm
 from scipy.sparse import coo_matrix
 

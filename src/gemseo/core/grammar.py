@@ -13,9 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Stub module for backward compatibility."""
-
 # TODO: to be deprecated
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar  # noqa: F401
 from gemseo.core.grammars.errors import InvalidDataException  # noqa: F401

@@ -17,11 +17,10 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Linear equations problem."""
-
 import logging
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure

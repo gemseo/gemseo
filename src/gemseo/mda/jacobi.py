@@ -18,19 +18,28 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Jacobi algorithm for solving MDAs."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
-from typing import Any, Dict, Mapping, Optional, Sequence
+from typing import Any
+from typing import Dict
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
 
-from numpy import atleast_2d, concatenate, dot, ndarray
+from numpy import atleast_2d
+from numpy import concatenate
+from numpy import dot
+from numpy import ndarray
 from numpy.linalg import lstsq
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory, LoopExecSequence
+from gemseo.core.execution_sequence import ExecutionSequenceFactory
+from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.mda.mda import MDA
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays

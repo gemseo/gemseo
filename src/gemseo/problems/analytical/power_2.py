@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Damien Guenot
@@ -23,7 +22,8 @@
 A quadratic analytical problem
 ******************************
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 
@@ -111,11 +111,11 @@ class Power2(OptimizationProblem):
         if self.exception_error:
             if self.iter_error < 3:
                 self.iter_error += 1
-                obj = np_sum(x_dv ** 2)
+                obj = np_sum(x_dv**2)
             else:
                 raise ValueError
         else:
-            obj = np_sum(x_dv ** 2)
+            obj = np_sum(x_dv**2)
         return obj
 
     @staticmethod

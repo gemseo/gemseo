@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Class for the empirical estimation of statistics from a dataset.
 
 Overview
@@ -45,17 +43,22 @@ By default,
 this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Optional
+from typing import Dict
+from typing import Iterable
+from typing import Optional
 
 from numpy import all as np_all
 from numpy import max as np_max
 from numpy import mean
 from numpy import min as np_min
-from numpy import ndarray, quantile, std, var
+from numpy import ndarray
+from numpy import quantile
+from numpy import std
+from numpy import var
 from scipy.stats import moment
 
 from gemseo.core.dataset import Dataset

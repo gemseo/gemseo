@@ -13,32 +13,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import json
 import unittest
 from copy import deepcopy
-from os.path import abspath, dirname, exists, join
+from os.path import abspath
+from os.path import dirname
+from os.path import exists
+from os.path import join
 
 import pytest
-
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.mdo_scenario import MDODiscipline, MDOScenario
+from gemseo.core.mdo_scenario import MDODiscipline
+from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
-from gemseo.utils.xdsmizer import XDSMizer, expand
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.xdsmizer import expand
+from gemseo.utils.xdsmizer import XDSMizer
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -84,7 +85,7 @@ class TestXDSMizer(unittest.TestCase):
             formulation=formulation,
             objective_name="y_4",
             design_space=SobieskiProblem().design_space,
-            **options
+            **options,
         )
 
         sc.formulation.minimize_objective = False

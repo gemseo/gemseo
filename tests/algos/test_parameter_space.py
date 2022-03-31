@@ -13,22 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import pytest
-from numpy import allclose, arange, array, array_equal, concatenate, ndarray
-
-from gemseo.algos.design_space import DesignSpace, DesignVariable
-from gemseo.algos.parameter_space import ParameterSpace, RandomVariable
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.design_space import DesignVariable
+from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.algos.parameter_space import RandomVariable
 from gemseo.core.dataset import Dataset
 from gemseo.uncertainty.distributions.composed import ComposedDistribution
+from numpy import allclose
+from numpy import arange
+from numpy import array
+from numpy import array_equal
+from numpy import concatenate
+from numpy import ndarray
 
 
 def test_constructor():
@@ -281,7 +286,7 @@ def test_unnormalize_vect():
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(
-        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5 ** 0.5])
+        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5**0.5])
     )
     assert space.unnormalize_vect(array([0.5]))[0] == 1.0
 
@@ -293,7 +298,7 @@ def test_normalize_vect():
         "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
     )
     assert allclose(
-        space.normalize_vect(array([2.0 - 1.5 ** 0.5]), use_dist=True), array([0.5])
+        space.normalize_vect(array([2.0 - 1.5**0.5]), use_dist=True), array([0.5])
     )
     assert space.normalize_vect(array([1.0]))[0] == 0.5
 

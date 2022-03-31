@@ -13,26 +13,27 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import unittest
 from copy import deepcopy
-from os.path import dirname, join
+from os.path import dirname
+from os.path import join
 
 import numpy as np
-from numpy import array
-
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import create_discipline, create_scenario
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.derivatives_approx import comp_best_step
+from numpy import array
+
 
 DS_FILE = join(dirname(__file__), "sobieski_design_space.txt")
 

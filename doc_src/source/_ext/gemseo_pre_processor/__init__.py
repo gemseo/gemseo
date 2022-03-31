@@ -12,13 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """A sphinx extension to pre-process the docs."""
-
 import os
 from pathlib import Path
 
-from . import generate_algos_doc, module_template
+from . import generate_algos_doc
+from . import module_template
 
 
 def setup(app):

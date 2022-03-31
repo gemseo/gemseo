@@ -13,15 +13,13 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from gemseo.api import (
-    create_discipline,
-    create_scenario,
-    get_available_formulations,
-    get_available_scenario_types,
-)
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import get_available_formulations
+from gemseo.api import get_available_scenario_types
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 
 get_available_scenario_types()

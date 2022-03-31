@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,11 +22,10 @@
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict
+from typing import Tuple
 
 import pytest
-from numpy import array, complex128, ndarray
-
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.core.chain import MDOChain
 from gemseo.core.data_processor import ComplexDataProcessor
@@ -39,12 +37,13 @@ from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import (
-    SobieskiAerodynamics,
-    SobieskiMission,
-    SobieskiPropulsion,
-    SobieskiStructure,
-)
+from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from numpy import array
+from numpy import complex128
+from numpy import ndarray
 
 
 def check_jac_equals(

@@ -26,7 +26,6 @@ if version.parse(openturns.__version__) < version.parse("1.18"):
     ):  # type: (...) -> openturns.Point
         return result.getEigenValues()
 
-
 else:
 
     def get_eigenvalues(

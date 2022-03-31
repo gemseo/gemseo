@@ -13,20 +13,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to convert data structures."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import collections
 from copy import deepcopy
-from typing import Any, Dict, Generator, Iterable, Mapping, Optional, Tuple
+from typing import Any
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
 
-from numpy import array, concatenate, ndarray
+from numpy import array
+from numpy import concatenate
+from numpy import ndarray
 from six import PY2
 
 STRING_SEPARATOR = "#&#"
@@ -67,7 +75,7 @@ if PY2:
         array,  # type: ndarray
         names_to_sizes,  # type: Mapping[str,int]
         *names,  # type: Iterable[str]
-        **kwargs  # type: bool
+        **kwargs,  # type: bool
     ):  # type: (...) -> Dict[str,ndarray]
         """Split a NumPy array into a dictionary of NumPy arrays.
 
@@ -132,13 +140,12 @@ if PY2:
                     array[indices],
                     names_to_sizes,
                     *names[1:],
-                    check_consistency=check_consistency
+                    check_consistency=check_consistency,
                 )
 
             first_index += size
 
         return result
-
 
 else:
     from ._split_array_to_dict_of_arrays import split_array_to_dict_of_arrays

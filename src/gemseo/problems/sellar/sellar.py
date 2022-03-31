@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
@@ -77,12 +76,22 @@ constraints and objective:
   this :class:`.MDODiscipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from cmath import exp, sqrt
-from typing import Dict, Iterable, List, Optional
+from cmath import exp
+from cmath import sqrt
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
 
-from numpy import array, atleast_2d, complex128, ndarray, ones, zeros
+from numpy import array
+from numpy import atleast_2d
+from numpy import complex128
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
 

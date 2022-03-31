@@ -13,30 +13,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from typing import Any, Mapping, Tuple, Union
+from typing import Any
+from typing import Mapping
+from typing import Tuple
+from typing import Union
 
 import numpy as np
 import pytest
-from numpy import array, multiply, ndarray, outer
-from numpy.linalg import LinAlgError, norm
-from scipy.optimize import rosen_hess
-
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.core.hessians import (
-    BFGSApprox,
-    HessianApproximation,
-    LSTSQApprox,
-    SR1Approx,
-)
+from gemseo.post.core.hessians import BFGSApprox
+from gemseo.post.core.hessians import HessianApproximation
+from gemseo.post.core.hessians import LSTSQApprox
+from gemseo.post.core.hessians import SR1Approx
 from gemseo.utils.py23_compat import Path
+from numpy import array
+from numpy import multiply
+from numpy import ndarray
+from numpy import outer
+from numpy.linalg import LinAlgError
+from numpy.linalg import norm
+from scipy.optimize import rosen_hess
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
 ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
@@ -67,7 +70,7 @@ def compare_approximations(
     approx_class,  # type: HessianApproximation
     problem,  # type: OptimizationProblem
     ermax=0.7,  # type: float
-    **kwargs  # type: Mapping[str, Any]
+    **kwargs,  # type: Mapping[str, Any]
 ):  # type: (...) -> None
     """Check that the approximated hessian is close enough to the reference one.
 

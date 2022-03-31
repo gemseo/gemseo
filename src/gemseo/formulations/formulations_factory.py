@@ -13,17 +13,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a formulation or check its availability."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import List, Sequence
+from typing import List
+from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -49,7 +50,7 @@ class MDOFormulationsFactory(object):
         disciplines,  # type: Sequence[MDODiscipline]
         objective_name,  # type: str
         design_space,  # type: DesignSpace
-        **options
+        **options,
     ):  # type: (...) -> MDOFormulation
         """Create a formulation.
 
@@ -65,7 +66,7 @@ class MDOFormulationsFactory(object):
             disciplines=disciplines,
             design_space=design_space,
             objective_name=objective_name,
-            **options
+            **options,
         )
 
     @property

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
@@ -22,11 +21,15 @@
 from typing import Dict
 
 import pytest
-from numpy import array, concatenate, diag, ndarray, ones, zeros
-from numpy.testing import assert_array_equal
-
 from gemseo.api import create_discipline
 from gemseo.disciplines.inputs_concatenation import ConcatenationDiscipline
+from numpy import array
+from numpy import concatenate
+from numpy import diag
+from numpy import ndarray
+from numpy import ones
+from numpy import zeros
+from numpy.testing import assert_array_equal
 
 
 @pytest.fixture()

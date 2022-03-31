@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -75,35 +74,44 @@ The PCE model relies on the FunctionalChaosAlgorithm class
 of the `openturns library <https://openturns.github.io/openturns/latest/user_manual/
 response_surface/_generated/openturns.FunctionalChaosAlgorithm.html>`_.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping, Optional, Tuple, Union
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 import openturns
 from numpy import all as np_all
-from numpy import array, concatenate, isin, ndarray, zeros, zeros_like
-from openturns import (
-    LARS,
-    AdaptiveStieltjesAlgorithm,
-    CleaningStrategy,
-    ComposedDistribution,
-    CorrectedLeaveOneOut,
-    FixedStrategy,
-    Function,
-    FunctionalChaosAlgorithm,
-    FunctionalChaosSobolIndices,
-    GaussProductExperiment,
-    HyperbolicAnisotropicEnumerateFunction,
-    IntegrationStrategy,
-    LeastSquaresMetaModelSelectionFactory,
-    LeastSquaresStrategy,
-    MarginalTransformationEvaluation,
-    OrthogonalBasis,
-    OrthogonalProductPolynomialFactory,
-    Point,
-    StandardDistributionPolynomialFactory,
-)
+from numpy import array
+from numpy import concatenate
+from numpy import isin
+from numpy import ndarray
+from numpy import zeros
+from numpy import zeros_like
+from openturns import AdaptiveStieltjesAlgorithm
+from openturns import CleaningStrategy
+from openturns import ComposedDistribution
+from openturns import CorrectedLeaveOneOut
+from openturns import FixedStrategy
+from openturns import Function
+from openturns import FunctionalChaosAlgorithm
+from openturns import FunctionalChaosSobolIndices
+from openturns import GaussProductExperiment
+from openturns import HyperbolicAnisotropicEnumerateFunction
+from openturns import IntegrationStrategy
+from openturns import LARS
+from openturns import LeastSquaresMetaModelSelectionFactory
+from openturns import LeastSquaresStrategy
+from openturns import MarginalTransformationEvaluation
+from openturns import OrthogonalBasis
+from openturns import OrthogonalProductPolynomialFactory
+from openturns import Point
+from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset

@@ -13,25 +13,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """Module containing a factory to create an instance of :class:`.Distribution`."""
+from __future__ import division
+from __future__ import unicode_literals
 
-from __future__ import division, unicode_literals
-
-from typing import List, Optional, Union
+from typing import List
+from typing import Optional
+from typing import Union
 
 from gemseo.core.factory import Factory
-from gemseo.uncertainty.distributions.distribution import (
-    Distribution,
-    ParametersType,
-    StandardParametersType,
-)
+from gemseo.uncertainty.distributions.distribution import Distribution
+from gemseo.uncertainty.distributions.distribution import ParametersType
+from gemseo.uncertainty.distributions.distribution import StandardParametersType
 
 DistributionParametersType = Union[
     int, ParametersType, Optional[StandardParametersType], float
@@ -72,7 +70,7 @@ class DistributionFactory(object):
         self,
         distribution_name,  # type: str
         variable,  # type: str
-        **parameters  # type: DistributionParametersType
+        **parameters,  # type: DistributionParametersType
     ):
         # type: (...) -> Distribution
         """Create a probability distribution for a given random variable.

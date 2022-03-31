@@ -13,21 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the derivatives of the functions."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import Dict, Iterable, Mapping
+from typing import Dict
+from typing import Iterable
+from typing import Mapping
 
 from matplotlib import pyplot
 from matplotlib.figure import Figure
-from numpy import arange, atleast_2d, ndarray
+from numpy import arange
+from numpy import atleast_2d
+from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
 

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -28,23 +27,23 @@ In this demo, we apply a mixture of experts regression model to the Burgers
 dataset. In order to reduce the output dimension, we apply a PCA to the
 outputs.
 """
-
 ###############################################################################
 # Imports
 # -------
 # Import from standard libraries and |g|.
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-from numpy import nonzero
-
-from gemseo.api import configure_logger, load_dataset
+from gemseo.api import configure_logger
+from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
 from gemseo.mlearning.transform.dimension_reduction.kpca import KPCA
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
+from matplotlib.lines import Line2D
+from numpy import nonzero
 
 configure_logger()
 

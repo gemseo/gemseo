@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 """Copyright ONERA, taken from WhatsOpt-CLI https://github.com/OneraHub/WhatsOpt-
 CLI/blob/master/whatsopt/show_utils.py.
 
@@ -21,7 +20,8 @@ Distributed under the Apache 2.0 license
 
 Minor modifications by Francois Gallard : merge the two methods an comment
 """
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
+from typing import Union
 
 from gemseo.utils.py23_compat import Path
 

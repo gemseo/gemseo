@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -24,19 +23,18 @@
 Scenario
 ========
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import (
-    configure_logger,
-    create_design_space,
-    create_discipline,
-    create_scenario,
-    get_available_scenario_types,
-    get_scenario_differentiation_modes,
-    get_scenario_inputs_schema,
-    get_scenario_options_schema,
-    monitor_scenario,
-)
+from gemseo.api import configure_logger
+from gemseo.api import create_design_space
+from gemseo.api import create_discipline
+from gemseo.api import create_scenario
+from gemseo.api import get_available_scenario_types
+from gemseo.api import get_scenario_differentiation_modes
+from gemseo.api import get_scenario_inputs_schema
+from gemseo.api import get_scenario_options_schema
+from gemseo.api import monitor_scenario
 
 configure_logger()
 

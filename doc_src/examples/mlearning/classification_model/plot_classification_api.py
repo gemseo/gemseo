@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
@@ -27,14 +26,14 @@ Classification API
 Here are some examples of the machine learning API
 applied to classification models.
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
-from gemseo.api import configure_logger, load_dataset
-from gemseo.mlearning.api import (
-    create_classification_model,
-    get_classification_models,
-    get_classification_options,
-)
+from gemseo.api import configure_logger
+from gemseo.api import load_dataset
+from gemseo.mlearning.api import create_classification_model
+from gemseo.mlearning.api import get_classification_models
+from gemseo.mlearning.api import get_classification_options
 
 configure_logger()
 

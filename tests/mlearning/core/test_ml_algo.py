@@ -13,39 +13,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm module."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import re
 
 import pytest
-from numpy import arange, array_equal
-
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.utils.py23_compat import Path, xrange
+from gemseo.utils.py23_compat import Path
+from gemseo.utils.py23_compat import xrange
+from numpy import arange
+from numpy import array_equal
 
-
-class NewMLAlgo(MLAlgo):
-    """New machine learning algorithm class."""
-
-    LIBRARY = "NewLibrary"
-
-    def learn(self, samples=None):
-        super(NewMLAlgo, self).learn(samples=samples)
-        self._trained = True
-
-    def _learn(self, indices):
-        pass
+from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
 @pytest.fixture
@@ -117,7 +107,7 @@ def test_transformer_wrong_type(dataset):
 def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):
     """Test save and load."""
     # Let the factory find NewMLAlgo
-    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent)
+    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "new_ml_algo")
 
     model = NewMLAlgo(dataset)
     model.learn()

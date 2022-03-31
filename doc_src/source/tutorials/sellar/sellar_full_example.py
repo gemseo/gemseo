@@ -13,22 +13,19 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """A from scratch example on the Sellar problem."""
-
 from math import exp
-
-from numpy import array, ones
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
+from numpy import array
+from numpy import ones
 
 configure_logger()
 

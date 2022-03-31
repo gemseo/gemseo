@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
 #        :author: François Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
 """
 Dummy linear discipline generator
 =================================
@@ -32,12 +30,13 @@ The MDA of the generated disciplines will always converge because all the output
 are in [0, 1] if the inputs are in [0, 1].
 The analytic Jacobian is provided.
 """
-
 import string
-from itertools import islice, permutations
+from itertools import islice
+from itertools import permutations
 from typing import List
 
-from numpy import arange, array
+from numpy import arange
+from numpy import array
 from numpy.random import shuffle
 
 from gemseo.core.discipline import MDODiscipline

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #         documentation
@@ -46,21 +45,24 @@ on the problem dimension.
 .. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
 import os
 from copy import deepcopy
 
-from numpy import array, ones, random, where, zeros
+from numpy import array
+from numpy import ones
+from numpy import random
+from numpy import where
+from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.api import (
-    create_design_space,
-    create_scenario,
-    generate_coupling_graph,
-    generate_n2_plot,
-)
+from gemseo.api import create_design_space
+from gemseo.api import create_scenario
+from gemseo.api import generate_coupling_graph
+from gemseo.api import generate_n2_plot
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
@@ -82,7 +84,7 @@ class ScalableProblem(object):
         ineq_constraints=None,
         maximize_objective=False,
         sizes=None,
-        **parameters
+        **parameters,
     ):
         """Constructor.
 
@@ -227,7 +229,7 @@ class ScalableProblem(object):
                     "ScalableDiagonalModel",
                     self.data[disc],
                     new_varsizes,
-                    **copied_parameters
+                    **copied_parameters,
                 )
             )
             self.scaled_sizes.update(deepcopy(new_varsizes))
@@ -239,7 +241,7 @@ class ScalableProblem(object):
         start_at_equilibrium=False,
         active_probability=0.1,
         feasibility_level=0.5,
-        **options
+        **options,
     ):
         """Create MDO scenario from the scalable disciplines.
 
@@ -271,7 +273,7 @@ class ScalableProblem(object):
                 deepcopy(design_space),
                 scenario_type=scenario_type,
                 maximize_objective=max_obj,
-                **options
+                **options,
             )
         equilibrium = {} if not isinstance(equilibrium, dict) else equilibrium
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)

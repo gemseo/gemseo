@@ -21,12 +21,17 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction consistency constraint subclass to support formulations."""
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import logging
-from typing import TYPE_CHECKING, Sequence
+from typing import Sequence
+from typing import TYPE_CHECKING
 
-from numpy import eye, ndarray, ones_like, zeros
+from numpy import eye
+from numpy import ndarray
+from numpy import ones_like
+from numpy import zeros
 
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction

@@ -14,7 +14,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -23,10 +22,12 @@
 Generate an N2 and XDSM from an Excel description of the MDO problem
 ====================================================================
 """
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 from os import mkdir
-from os.path import exists, join
+from os.path import exists
+from os.path import join
 
 from gemseo.api import configure_logger
 from gemseo.utils.study_analysis import StudyAnalysis

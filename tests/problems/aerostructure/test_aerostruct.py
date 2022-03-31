@@ -13,28 +13,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-
-from __future__ import division, unicode_literals
+from __future__ import division
+from __future__ import unicode_literals
 
 import unittest
 from math import exp
 
 import numpy as np
-
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.aerostructure.aerostructure import (
-    Aerodynamics,
-    Mission,
-    Structure,
-    get_inputs,
-)
+from gemseo.problems.aerostructure.aerostructure import Aerodynamics
+from gemseo.problems.aerostructure.aerostructure import get_inputs
+from gemseo.problems.aerostructure.aerostructure import Mission
+from gemseo.problems.aerostructure.aerostructure import Structure
 from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
