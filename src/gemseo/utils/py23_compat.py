@@ -147,7 +147,7 @@ if sys.version_info < (3, 8):
     else:
         importlib_metadata = None
 
-    import singledispatchmethod
+    from singledispatchmethod import singledispatchmethod
 
 else:
     from functools import singledispatchmethod  # noqa: F401

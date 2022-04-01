@@ -858,6 +858,10 @@ Some tools used by the :ref:`git hooks` can be executed
 in order to be notified of code issues earlier
 and avoid having to fix files when creating a commit.
 
+First,
+install the ``File Watchers`` plugin by opening the `PyCharm`_ settings,
+and search in ``Plugins > Markerplace``.
+
 Download :download:`this file </_static/pycharm/file-watchers.xml>`,
 open the `PyCharm`_ settings,
 go to ``Tools > File Watchers`` and
