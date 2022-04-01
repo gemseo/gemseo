@@ -30,8 +30,6 @@ repos:
   hooks:
     - id: reorder-python-imports
       name: reorder python imports inside src
-      # Workaround https://github.com/asottile/reorder_python_imports/issues/210.
-      entry: env SETUPTOOLS_USE_DISTUTILS=stdlib reorder-python-imports
       args: [
         --application-directories,
         src,
