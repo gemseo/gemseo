@@ -216,15 +216,15 @@ class XLSDiscipline(MDODiscipline):
         self, state  # type: Mapping[str, Any]
     ):  # type: (...) -> None
         super(XLSDiscipline, self).__setstate__(state)
-        if self._copy_xls_at_setstate:
+        # If the book is recreated at _run, there is no need to create one for each
+        # process.
+        if self._copy_xls_at_setstate and not self._recreate_book_at_run:
             temp_dir = Path(tempfile.gettempdir())
             temp_path = temp_dir / self._xls_file_path.name.replace(
                 ".xls", str(uuid4()) + ".xls"
             )
             shutil.copy2(str(self._xls_file_path), str(temp_path))
             self._xls_file_path = temp_path
-        # If the book is recreated at _run, there is no need to create one for each process.
-        if self._copy_xls_at_setstate and not self._recreate_book_at_run:
             self.__create_book()
 
     def __read_sheet_col(
