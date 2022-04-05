@@ -21,6 +21,8 @@ six
 tqdm >=4.41,<=4.61.0
 typing ; python_version<'3'
 xdsmjs >=1.0.0,<=1.0.1
+xxhash ==2.0.2 ; python_version<'3'
+xxhash ==3.0.0 ; python_version>='3'
 graphviz ==0.16
 nlopt >=2.4.2,<=2.7.0 ; python_version>='3'
 openturns >=1.13,<=1.18
