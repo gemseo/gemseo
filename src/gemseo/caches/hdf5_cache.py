@@ -26,11 +26,12 @@ Caching module to avoid multiple evaluations of a discipline
 from __future__ import division, unicode_literals
 
 import logging
+import sys
 from os.path import exists
 from typing import Union
 
 import h5py
-from numpy import append, array, bytes_, unicode_
+from numpy import append, array, bytes_, int64, int_, unicode_
 from six import with_metaclass
 
 from gemseo.core.cache import AbstractCache, AbstractFullCache, hash_data_dict, to_real
@@ -223,7 +224,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     INPUTS_GROUP = AbstractCache.INPUTS_GROUP
     OUTPUTS_GROUP = AbstractCache.OUTPUTS_GROUP
     JACOBIAN_GROUP = AbstractCache.JACOBIAN_GROUP
-    FILE_FORMAT_VERSION = 1
+    FILE_FORMAT_VERSION = 2
 
     def __init__(self, hdf_file_path):
         """Constructor.
@@ -331,6 +332,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         for key, val in data.items():
             if val.dtype.type is bytes_:
                 data[key] = val.astype(unicode_)
+            if val.dtype == int64 and PY2 and sys.platform.startswith("win"):
+                data[key] = val.astype(int_)
 
         return data, data_hash
 

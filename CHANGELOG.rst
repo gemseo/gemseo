@@ -25,6 +25,14 @@ The format is based on
 and this project adheres to
 `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 3.2.2 (March 2022)
+**************************
+
+Fixed
+-----
+
+- Cache may not be used because of the way data was hashed.
+
 Version 3.2.1 (November 2021)
 *****************************
 
