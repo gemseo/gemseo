@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from typing import ClassVar
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -56,16 +57,25 @@ class CustomDOE(DOELibrary):
     whereas a text file (extension .txt) does not.
     """
 
-    ALGO_LIST = ["CustomDOE"]
-    COMMENTS_KEYWORD = "comments"
-    DELIMITER_KEYWORD = "delimiter"
-    SKIPROWS_KEYWORD = "skiprows"
-    DOE_FILE = "doe_file"
-    SAMPLES = "samples"
+    COMMENTS_KEYWORD: ClassVar[str] = "comments"
+    """The name given to the string indicating a comment line."""
+
+    DELIMITER_KEYWORD: ClassVar[str] = "delimiter"
+    """The name given to the string separating two fields."""
+
+    DOE_FILE: ClassVar[str] = "doe_file"
+    """The name given to the DOE file."""
+
+    SAMPLES: ClassVar[str] = "samples"
+    """The name given to the samples."""
+
+    SKIPROWS_KEYWORD: ClassVar[str] = "skiprows"
+    """The name given to the number of skipped rows in the DOE file."""
 
     def __init__(self):  # type: (...) -> None
         super(CustomDOE, self).__init__()
-        self.file_dv_names_list = None
+        name = self.__class__.__name__
+        self.algo_name = name
 
         desc = {
             "CustomDOE": (
@@ -74,13 +84,12 @@ class CustomDOE(DOELibrary):
                 "or as a sequence of sequences of numbers."
             )
         }
-        for algo in self.ALGO_LIST:
-            self.lib_dict[algo] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo,
-                DOELibrary.DESCRIPTION: desc[algo],
-                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
-            }
+        self.lib_dict[name] = {
+            DOELibrary.LIB: name,
+            DOELibrary.INTERNAL_NAME: name,
+            DOELibrary.DESCRIPTION: desc[name],
+            DOELibrary.HANDLE_INTEGER_VARIABLES: True,
+        }
 
     def _get_options(
         self,
@@ -118,7 +127,6 @@ class CustomDOE(DOELibrary):
         Returns:
             The processed options.
         """
-        wtbs = wait_time_between_samples
         return self._process_options(
             max_time=max_time,
             doe_file=doe_file,
@@ -128,7 +136,7 @@ class CustomDOE(DOELibrary):
             skiprows=skiprows,
             eval_jac=eval_jac,
             n_processes=n_processes,
-            wait_time_between_samples=wtbs,
+            wait_time_between_samples=wait_time_between_samples,
             **kwargs,
         )
 
@@ -211,8 +219,6 @@ class CustomDOE(DOELibrary):
                 " the samples ({}).".format(self.problem.dimension, samples.shape[1])
             )
 
-        samples = apply_along_axis(
+        return apply_along_axis(
             self.problem.design_space.transform_vect, axis=1, arr=samples
         )
-
-        return samples
