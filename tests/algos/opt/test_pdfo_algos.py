@@ -26,6 +26,7 @@ from unittest import TestCase
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_pdfo import PDFOOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -178,3 +179,8 @@ def get_pb_options(pb_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("PDFOOpt", get_options, get_pb_options):
     setattr(TestPDFO, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert PDFOOpt.LIBRARY_NAME == "PDFO"

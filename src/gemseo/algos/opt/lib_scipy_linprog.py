@@ -52,6 +52,8 @@ class ScipyLinprog(OptimizationLibrary):
         REDUNDANCY_REMOVAL: "rr",
     }
 
+    LIBRARY_NAME = "SciPy"
+
     def __init__(self):
         """Constructor.
 
@@ -63,22 +65,34 @@ class ScipyLinprog(OptimizationLibrary):
 
         self.lib_dict = {
             "LINEAR_INTERIOR_POINT": {
+                self.ALGORITHM_NAME: "Linear interior point",
+                self.DESCRIPTION: (
+                    "Linear programming by the interior-point"
+                    " method implemented in the SciPy library"
+                ),
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "interior-point",
-                self.DESCRIPTION: "Linear programming by the interior-point"
-                " method implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-interior-point.html",
+                self.WEBSITE: f"{doc}optimize.linprog-interior-point.html",
             },
             ScipyLinprog.REVISED_SIMPLEX: {
+                self.ALGORITHM_NAME: "Revised simplex",
+                self.DESCRIPTION: (
+                    "Linear programming by a two-phase revised"
+                    " simplex algorithm implemented in the SciPy library"
+                ),
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "revised simplex",
-                self.DESCRIPTION: "Linear programming by a two-phase revised"
-                " simplex algorithm implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-revised_simplex.html",
+                self.WEBSITE: f"{doc}optimize.linprog-revised_simplex.html",
             },
             "SIMPLEX": {
+                self.ALGORITHM_NAME: "Simplex",
+                self.DESCRIPTION: (
+                    "Linear programming by the two-phase simplex"
+                    " algorithm implemented in the SciPy library"
+                ),
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "simplex",
-                self.DESCRIPTION: "Linear programming by the two-phase simplex"
-                " algorithm implemented in the SciPy library",
-                self.WEBSITE: doc + "optimize.linprog-simplex.html",
+                self.WEBSITE: f"{doc}optimize.linprog-simplex.html",
             },
         }
         if PY2:

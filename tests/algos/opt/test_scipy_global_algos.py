@@ -24,6 +24,7 @@ from unittest.case import TestCase
 
 import pytest
 from gemseo.algos.database import Database
+from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
@@ -84,3 +85,8 @@ def get_options(algo_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("ScipyGlobalOpt", get_options):
     setattr(TestScipyGlobalOpt, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyGlobalOpt.LIBRARY_NAME == "SciPy"

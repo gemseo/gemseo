@@ -56,6 +56,8 @@ class ScipyOpt(OptimizationLibrary):
         OptimizationLibrary.PG_TOL: "gtol",
     }
 
+    LIBRARY_NAME = "SciPy"
+
     def __init__(self):
         """Constructor.
 
@@ -70,36 +72,45 @@ class ScipyOpt(OptimizationLibrary):
         doc = "https://docs.scipy.org/doc/scipy/reference/"
         self.lib_dict = {
             "SLSQP": {
-                self.INTERNAL_NAME: "SLSQP",
-                self.REQUIRE_GRAD: True,
-                self.POSITIVE_CONSTRAINTS: True,
+                self.ALGORITHM_NAME: "SLSQP",
+                self.DESCRIPTION: (
+                    "Sequential Least-Squares Quadratic Programming (SLSQP) "
+                    "implemented in the SciPy library"
+                ),
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Sequential Least-Squares Quadratic "
-                "Programming (SLSQP) implemented in "
-                "the SciPy library",
-                self.WEBSITE: doc + "optimize.minimize-slsqp.html",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "SLSQP",
+                self.REQUIRE_GRAD: True,
+                self.POSITIVE_CONSTRAINTS: True,
+                self.WEBSITE: f"{doc}optimize.minimize-slsqp.html",
             },
             "L-BFGS-B": {
+                self.ALGORITHM_NAME: "L-BFGS-B",
+                self.DESCRIPTION: (
+                    "Limited-memory BFGS algorithm implemented in SciPy library"
+                ),
+                self.HANDLE_EQ_CONS: False,
+                self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "L-BFGS-B",
                 self.REQUIRE_GRAD: True,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Limited-memory BFGS algorithm "
-                "implemented in SciPy library",
-                self.WEBSITE: doc + "generated/scipy.optimize.fmin_l_bfgs_b.html",
+                self.WEBSITE: f"{doc}generated/scipy.optimize.fmin_l_bfgs_b.html",
             },
             "TNC": {
-                self.INTERNAL_NAME: "TNC",
-                self.REQUIRE_GRAD: True,
+                self.ALGORITHM_NAME: "TNC",
+                self.DESCRIPTION: (
+                    "Truncated Newton (TNC) algorithm implemented in SciPy library"
+                ),
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Truncated Newton (TNC) algorithm "
-                "implemented in SciPy library",
-                self.WEBSITE: doc + "optimize.minimize-tnc.html",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "TNC",
+                self.REQUIRE_GRAD: True,
+                self.WEBSITE: f"{doc}optimize.minimize-tnc.html",
             },
         }
 

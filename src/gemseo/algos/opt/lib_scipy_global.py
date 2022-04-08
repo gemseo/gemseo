@@ -52,6 +52,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
     """
 
     LIB_COMPUTE_GRAD = True
+    LIBRARY_NAME = "SciPy"
 
     def __init__(self):
         """Constructor.
@@ -67,34 +68,40 @@ class ScipyGlobalOpt(OptimizationLibrary):
         doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
         self.lib_dict = {
             "DUAL_ANNEALING": {
-                self.INTERNAL_NAME: "dual_annealing",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
+                self.ALGORITHM_NAME: "Dual annealing",
+                self.DESCRIPTION: "Dual annealing",
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: True,
-                self.DESCRIPTION: "Dual annealing",
-                self.WEBSITE: doc + "scipy.optimize.dual_annealing.html",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "dual_annealing",
+                self.REQUIRE_GRAD: False,
+                self.POSITIVE_CONSTRAINTS: False,
+                self.WEBSITE: f"{doc}scipy.optimize.dual_annealing.html",
             },
             "SHGO": {
+                self.ALGORITHM_NAME: "SHGO",
+                self.DESCRIPTION: "Simplicial homology global optimization",
+                self.HANDLE_EQ_CONS: True,
+                self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: True,
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "shgo",
                 self.REQUIRE_GRAD: False,
                 self.POSITIVE_CONSTRAINTS: True,
+                self.WEBSITE: f"{doc}scipy.optimize.shgo.html",
+            },
+            "DIFFERENTIAL_EVOLUTION": {
+                self.ALGORITHM_NAME: "Differential evolution",
+                self.DESCRIPTION: "Differential Evolution algorithm",
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: True,
-                self.DESCRIPTION: "Simplicial homology global optimization",
-                self.WEBSITE: doc + "scipy.optimize.shgo.html",
-            },
-            "DIFFERENTIAL_EVOLUTION": {
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: "differential_evolution",
                 self.REQUIRE_GRAD: False,
                 self.POSITIVE_CONSTRAINTS: False,
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: True,
-                self.DESCRIPTION: "Differential Evolution algorithm",
-                self.WEBSITE: doc + "scipy.optimize.differential_evolution.html",
+                self.WEBSITE: f"{doc}scipy.optimize.differential_evolution.html",
             },
         }
         # maximum function calls option passed to the algorithm

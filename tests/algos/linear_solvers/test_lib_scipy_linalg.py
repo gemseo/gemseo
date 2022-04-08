@@ -187,3 +187,8 @@ def test_algo_none():
     problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
         lib.execute(problem, algo_name=None)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyLinalgAlgos.LIBRARY_NAME == "SciPy"

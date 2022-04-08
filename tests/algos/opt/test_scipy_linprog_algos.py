@@ -20,6 +20,7 @@
 from unittest.case import TestCase
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -92,3 +93,8 @@ class TestScipyLinprog(TestCase):
         optim_result = OptimizersFactory().execute(problem, algo_name)
         assert allclose(optim_result.x_opt, array([1.0, 2.0]) / 3.0)
         self.assertAlmostEqual(optim_result.f_opt, 0.0)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyLinprog.LIBRARY_NAME == "SciPy"

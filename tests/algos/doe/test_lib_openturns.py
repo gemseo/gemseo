@@ -28,6 +28,7 @@ from unittest import mock
 
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
+from gemseo.algos.doe.lib_openturns import OpenTURNS
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from numpy import unique
 
@@ -315,3 +316,8 @@ def test_compute_stratified_doe(variables_space, name, size):
         variables_space, centers=[0.0] * variables_space.dimension, levels=[0.1]
     )
     assert doe.shape == (size, variables_space.dimension)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert OpenTURNS.LIBRARY_NAME == "OpenTURNS"

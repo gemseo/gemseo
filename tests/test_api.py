@@ -817,10 +817,13 @@ def test_import_discipline(tmp_wd):
 def test_algo_features():
     """Check that get_algorithm_features returns the features of an optimizer."""
     expected = AlgorithmFeatures(
+        library_name="SciPy",
+        algorithm_name="SLSQP",
         handle_equality_constraints=True,
         handle_inequality_constraints=True,
         handle_float_variables=True,
         handle_integer_variables=False,
+        handle_multiobjective=False,
         require_gradient=True,
     )
     assert get_algorithm_features("SLSQP") == expected

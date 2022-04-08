@@ -109,6 +109,8 @@ class SnOpt(OptimizationLibrary):
         142: "error in basis package",
     }
 
+    LIBRARY_NAME = "SNOPT"
+
     def __init__(self):
         """Constructor.
 
@@ -124,12 +126,14 @@ class SnOpt(OptimizationLibrary):
         self.__n_eq_constraints = 0
         self.lib_dict = {
             "SNOPTB": {
-                self.INTERNAL_NAME: "SNOPTB",
-                self.REQUIRE_GRAD: True,
+                self.ALGORITHM_NAME: "SNOPT",
+                self.DESCRIPTION: "Sparse Nonlinear OPTimizer (SNOPT)",
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Sparse Nonlinear OPTimizer (SNOPT)",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "SNOPTB",
+                self.REQUIRE_GRAD: True,
                 self.WEBSITE: "https://ccom.ucsd.edu/~optimizers",
             }
         }
