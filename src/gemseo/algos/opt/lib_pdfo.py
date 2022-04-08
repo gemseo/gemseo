@@ -72,6 +72,8 @@ class PDFOOpt(OptimizationLibrary):
         OptimizationLibrary.MAX_ITER: "max_iter",
     }
 
+    LIBRARY_NAME = "PDFO"
+
     def __init__(self):
         """Constructor.
 
@@ -86,32 +88,37 @@ class PDFOOpt(OptimizationLibrary):
         doc = "https://www.pdfo.net/"
         self.lib_dict = {
             "PDFO_COBYLA": {
-                self.INTERNAL_NAME: "cobyla",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: True,
+                self.ALGORITHM_NAME: "COBYLA",
+                self.DESCRIPTION: "Constrained Optimization By Linear Approximations ",
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Constrained Optimization"
-                "By Linear Approximations ",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "cobyla",
+                self.POSITIVE_CONSTRAINTS: True,
+                self.REQUIRE_GRAD: False,
                 self.WEBSITE: doc,
             },
             "PDFO_BOBYQA": {
-                self.INTERNAL_NAME: "bobyqa",
-                self.REQUIRE_GRAD: False,
+                self.ALGORITHM_NAME: "BOBYQA",
+                self.DESCRIPTION: "Bound Optimization By Quadratic Approximation",
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Bound Optimization By " "Quadratic Approximation",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.REQUIRE_GRAD: False,
+                self.INTERNAL_NAME: "bobyqa",
                 self.WEBSITE: doc,
             },
             "PDFO_NEWUOA": {
-                self.INTERNAL_NAME: "newuoa",
-                self.REQUIRE_GRAD: False,
+                self.ALGORITHM_NAME: "NEWUOA",
+                self.DESCRIPTION: "NEWUOA",
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "NEWUOA",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: "newuoa",
+                self.REQUIRE_GRAD: False,
                 self.WEBSITE: doc,
             },
         }

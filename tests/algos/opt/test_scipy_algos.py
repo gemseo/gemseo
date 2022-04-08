@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from unittest import TestCase
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.lib_scipy import ScipyOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.algos.opt.opt_lib import OptimizationLibrary as OptLib
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -199,3 +200,8 @@ class TestScipy(TestCase):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("SCIPY"):
     setattr(TestScipy, test_method.__name__, test_method)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert ScipyOpt.LIBRARY_NAME == "SciPy"

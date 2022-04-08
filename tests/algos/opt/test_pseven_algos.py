@@ -290,3 +290,10 @@ def test_log_file(tmpdir):
     assert path.is_file()
     # Check that the file is not empty
     assert path.stat().st_size > 0
+
+
+def test_library_name():
+    """Check the library name."""
+    from gemseo.algos.opt.lib_pseven import PSevenOpt
+
+    assert PSevenOpt.LIBRARY_NAME == "pSeven"

@@ -72,6 +72,8 @@ class CustomDOE(DOELibrary):
     SKIPROWS_KEYWORD: ClassVar[str] = "skiprows"
     """The name given to the number of skipped rows in the DOE file."""
 
+    LIBRARY_NAME = "GEMSEO"
+
     def __init__(self):  # type: (...) -> None
         super(CustomDOE, self).__init__()
         name = self.__class__.__name__

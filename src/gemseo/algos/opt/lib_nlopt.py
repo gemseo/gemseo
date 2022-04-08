@@ -120,67 +120,88 @@ class Nlopt(OptimizationLibrary):
         -5: FORCED_STOP,
     }
 
+    LIBRARY_NAME = "NLopt"
+
     def __init__(self):  # type: (...) -> None
         super(Nlopt, self).__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
         self.lib_dict = {
             "NLOPT_MMA": {
+                self.ALGORITHM_NAME: "MMA",
+                self.DESCRIPTION: (
+                    "Method of Moving Asymptotes (MMA)"
+                    "implemented in the NLOPT library"
+                ),
+                self.HANDLE_EQ_CONS: False,
+                self.HANDLE_INEQ_CONS: True,
+                self.HANDLE_INTEGER_VARIABLES: False,
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: nlopt.LD_MMA,
                 self.REQUIRE_GRAD: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Method of Moving Asymptotes (MMA)"
-                "implemented in the NLOPT library",
-                self.WEBSITE: "{}#mma-method-of-moving-asymptotes-and-ccsa".format(
-                    nlopt_doc
-                ),
+                self.WEBSITE: f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
             },
             "NLOPT_COBYLA": {
-                self.INTERNAL_NAME: nlopt.LN_COBYLA,
-                self.REQUIRE_GRAD: False,
+                self.ALGORITHM_NAME: "COBYLA",
+                self.DESCRIPTION: (
+                    "Constrained Optimization BY Linear "
+                    "Approximations (COBYLA) implemented "
+                    "in the NLOPT library"
+                ),
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Constrained Optimization BY Linear "
-                "Approximations (COBYLA) implemented "
-                "in the NLOPT library",
-                self.WEBSITE: "{}".format(nlopt_doc)
-                + "#cobyla-constrained-optimization-by-linear-"
-                "approximations",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.REQUIRE_GRAD: False,
+                self.INTERNAL_NAME: nlopt.LN_COBYLA,
+                self.WEBSITE: (
+                    f"{nlopt_doc}#cobyla-constrained-optimization-by-linear-"
+                    "approximations"
+                ),
             },
             "NLOPT_SLSQP": {
-                self.INTERNAL_NAME: nlopt.LD_SLSQP,
-                self.REQUIRE_GRAD: True,
+                self.ALGORITHM_NAME: "SLSQP",
+                self.DESCRIPTION: (
+                    "Sequential Least-Squares Quadratic "
+                    "Programming (SLSQP) implemented in "
+                    "the NLOPT library"
+                ),
                 self.HANDLE_EQ_CONS: True,
                 self.HANDLE_INEQ_CONS: True,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Sequential Least-Squares Quadratic "
-                "Programming (SLSQP) implemented in "
-                "the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#slsqp",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: nlopt.LD_SLSQP,
+                self.REQUIRE_GRAD: True,
+                self.WEBSITE: f"{nlopt_doc}#slsqp",
             },
             "NLOPT_BOBYQA": {
+                self.ALGORITHM_NAME: "BOBYQA",
+                self.DESCRIPTION: (
+                    "Bound Optimization BY Quadratic "
+                    "Approximation (BOBYQA) implemented "
+                    "in the NLOPT library"
+                ),
+                self.HANDLE_EQ_CONS: False,
+                self.HANDLE_INEQ_CONS: False,
+                self.HANDLE_INTEGER_VARIABLES: False,
+                self.HANDLE_MULTIOBJECTIVE: False,
                 self.INTERNAL_NAME: nlopt.LN_BOBYQA,
                 self.REQUIRE_GRAD: False,
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Bound Optimization BY Quadratic "
-                "Approximation (BOBYQA) implemented "
-                "in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#bobyqa",
+                self.WEBSITE: f"{nlopt_doc}#bobyqa",
             },
             "NLOPT_BFGS": {
-                self.INTERNAL_NAME: nlopt.LD_LBFGS,
-                self.REQUIRE_GRAD: True,
+                self.ALGORITHM_NAME: "BFGS",
+                self.DESCRIPTION: (
+                    "Broyden-Fletcher-Goldfarb-Shanno method "
+                    "(BFGS) implemented in the NLOPT library"
+                ),
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "Broyden-Fletcher-Goldfarb-Shanno method "
-                "(BFGS) implemented in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#low-storage-bfgs",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: nlopt.LD_LBFGS,
+                self.REQUIRE_GRAD: True,
+                self.WEBSITE: f"{nlopt_doc}#low-storage-bfgs",
             },
             # Does not work on Rastrigin => banned
             #             'NLOPT_ESCH': { Does not work on Rastrigin
@@ -189,14 +210,17 @@ class Nlopt(OptimizationLibrary):
             #                 self.HANDLE_EQ_CONS: False,
             #                 self.HANDLE_INEQ_CONS: False},
             "NLOPT_NEWUOA": {
-                self.INTERNAL_NAME: nlopt.LN_NEWUOA_BOUND,
-                self.REQUIRE_GRAD: False,
+                self.ALGORITHM_NAME: "NEWUOA",
+                self.DESCRIPTION: (
+                    "NEWUOA + bound constraints implemented in the NLOPT library"
+                ),
                 self.HANDLE_EQ_CONS: False,
                 self.HANDLE_INEQ_CONS: False,
                 self.HANDLE_INTEGER_VARIABLES: False,
-                self.DESCRIPTION: "NEWUOA + bound constraints implemented "
-                "in the NLOPT library",
-                self.WEBSITE: nlopt_doc + "#newuoa-bound-constraints",
+                self.HANDLE_MULTIOBJECTIVE: False,
+                self.INTERNAL_NAME: nlopt.LN_NEWUOA_BOUND,
+                self.REQUIRE_GRAD: False,
+                self.WEBSITE: f"{nlopt_doc}#newuoa-bound-constraints",
             },
             # Does not work on Rastrigin => banned
             #             'NLOPT_ISRES': {

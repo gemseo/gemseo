@@ -19,12 +19,14 @@
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for algorithm libraries."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import inspect
 import logging
 from typing import Any
+from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import List
 from typing import Mapping
 from typing import MutableMapping
@@ -70,6 +72,12 @@ class AlgoLib(object):
     OPTIONS_DIR = "options"
     OPTIONS_MAP = {}
     PROBLEM_TYPE = "problem_type"
+
+    ALGORITHM_NAME: Final[str] = "algorithm_name"
+    """The label for the name of an algorithm."""
+
+    LIBRARY_NAME: ClassVar[str | None] = None
+    """The name of the interfaced library."""
 
     def __init__(self):  # type: (...) -> None
         # Library settings and check

@@ -124,6 +124,8 @@ class OpenTURNS(DOELibrary):
         OT_FACTORIAL: openturns.Factorial,
     }
 
+    LIBRARY_NAME = "OpenTURNS"
+
     def __init__(self):
         super(OpenTURNS, self).__init__()
         self.__sequence = None

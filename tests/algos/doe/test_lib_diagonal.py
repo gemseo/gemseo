@@ -109,3 +109,8 @@ def test_reverse(variables_space, reverse, samples):
     library = DOEFactory().create(DOE_LIB_NAME)
     doe = library.compute_doe(variables_space, 3, unit_sampling=True, reverse=reverse)
     assert_equal(doe, samples)
+
+
+def test_library_name():
+    """Check the library name."""
+    assert DiagonalDOE.LIBRARY_NAME == "GEMSEO"

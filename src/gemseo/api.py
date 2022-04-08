@@ -1844,10 +1844,13 @@ def compute_doe(
 AlgorithmFeatures = namedtuple(
     "AlgorithmFeature",
     [
+        "algorithm_name",
+        "library_name",
         "handle_equality_constraints",
         "handle_inequality_constraints",
         "handle_float_variables",
         "handle_integer_variables",
+        "handle_multiobjective",
         "require_gradient",
     ],
 )
@@ -1875,13 +1878,15 @@ def get_algorithm_features(
             f"{algorithm_name} is not the name of an optimization algorithm."
         )
 
-    features = factory.create(algorithm_name).lib_dict[algorithm_name]
+    driver = factory.create(algorithm_name)
+    features = driver.lib_dict[algorithm_name]
     return AlgorithmFeatures(
-        handle_equality_constraints=features.get("handle_equality_constraints", False),
-        handle_inequality_constraints=features.get(
-            "handle_inequality_constraints", False
-        ),
+        algorithm_name=features.get(driver.ALGORITHM_NAME, algorithm_name),
+        library_name=driver.LIBRARY_NAME,
+        handle_equality_constraints=features.get(driver.HANDLE_EQ_CONS, False),
+        handle_inequality_constraints=features.get(driver.HANDLE_INEQ_CONS, False),
         handle_float_variables=True,
-        handle_integer_variables=features.get("handle_integer_variables", False),
-        require_gradient=features.get("require_grad", False),
+        handle_integer_variables=features.get(driver.HANDLE_INTEGER_VARIABLES, False),
+        handle_multiobjective=features.get(driver.HANDLE_MULTIOBJECTIVE, False),
+        require_gradient=features.get(driver.REQUIRE_GRAD, False),
     )

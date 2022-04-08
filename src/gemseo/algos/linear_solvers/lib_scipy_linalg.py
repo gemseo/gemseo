@@ -85,6 +85,8 @@ class ScipyLinalgAlgos(LinearSolverLib):
         "DEFAULT": __WEBPAGE.format("splu"),
     }
 
+    LIBRARY_NAME = "SciPy"
+
     def __init__(self):  # type: (...) -> None
         super(ScipyLinalgAlgos, self).__init__()
         self.methods_map = {

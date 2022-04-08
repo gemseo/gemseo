@@ -189,6 +189,7 @@ class DriverLib(AlgoLib):
     DESCRIPTION = "description"
     MAX_DS_SIZE_PRINT = 40
     HANDLE_INTEGER_VARIABLES = "handle_integer_variables"
+    HANDLE_MULTIOBJECTIVE = "handle_multiobjective"
 
     def __init__(self):
         # Library settings and check

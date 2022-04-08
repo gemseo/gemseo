@@ -54,10 +54,18 @@ class TestSNOPT(TestCase):
         if OptimizersFactory().is_available("SnOpt"):
             OptimizersFactory().create("SnOpt")
 
+    def test_library_name(self):
+        """Check the library name."""
+        if OptimizersFactory().is_available("SnOpt"):
+            from gemseo.algos.opt.lib_snopt import SnOpt
+
+            assert SnOpt.LIBRARY_NAME == "pSeven"
+
 
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("SnOpt"):
     setattr(TestSNOPT, test_method.__name__, test_method)
+
 
 if __name__ == "__main__":
     unittest.main()

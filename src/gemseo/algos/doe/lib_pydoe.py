@@ -104,6 +104,7 @@ class PyDOE(DOELibrary):
     FACE_KEYWORD = "face"
     CENTER_BB_KEYWORD = "center_bb"
     CENTER_CC_KEYWORD = "center_cc"
+    LIBRARY_NAME = "PyDOE"
 
     def __init__(self):  # type: (...) -> None
         super(PyDOE, self).__init__()

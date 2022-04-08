@@ -41,6 +41,7 @@ class DiagonalDOE(DOELibrary):
     """Class used to create a diagonal DOE."""
 
     __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
+    LIBRARY_NAME = "GEMSEO"
 
     def __init__(self):  # type: (...) -> None
         super(DiagonalDOE, self).__init__()
