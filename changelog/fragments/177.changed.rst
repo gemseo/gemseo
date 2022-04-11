@@ -1,0 +1,1 @@
+Updating a dictionary of NumPy arrays from a complex array no longer converts the complex numbers to the original data type except if required.

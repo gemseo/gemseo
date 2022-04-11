@@ -401,9 +401,7 @@ class DisciplineJacApprox(object):
                         )
                         LOGGER.error(msg)
                         LOGGER.info("Approximate jacobian = \n%s", approx_jac)
-                        LOGGER.info(
-                            "Provided by linearize method = \n{}%s", computed_jac
-                        )
+                        LOGGER.info("Provided by linearize method = \n%s", computed_jac)
                         LOGGER.info(
                             "Difference of jacobians = \n%s", approx_jac - computed_jac
                         )

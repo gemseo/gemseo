@@ -48,9 +48,9 @@ from typing import Union
 
 import tqdm
 from numpy import ndarray
-from numpy import ones_like
+from numpy import ones
 from numpy import where
-from numpy import zeros_like
+from numpy import zeros
 from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
@@ -546,11 +546,11 @@ class DriverLib(AlgoLib):
         if normalize_ds:
             norm_dict = dspace.normalize
             norm_array = dspace.dict_to_array(norm_dict)
-            xvec = self.problem.get_x0_normalized()
-            l_b = where(norm_array, zeros_like(xvec), l_b)
-            u_b = where(norm_array, ones_like(xvec), u_b)
+            l_b = where(norm_array, zeros(norm_array.shape), l_b)
+            u_b = where(norm_array, ones(norm_array.shape), u_b)
+            xvec = self.problem.get_x0_normalized(cast_to_real=True)
         else:
-            xvec = self.problem.design_space.get_current_x()
+            xvec = self.problem.design_space.get_current_x(complex_to_real=True)
 
         return xvec, l_b, u_b
 

@@ -910,18 +910,22 @@ class DesignSpace(collections.MutableMapping):
     def get_current_x(
         self,
         variables_names=None,  # type: Optional[Iterable[str]]
+        complex_to_real: bool = False,  # type: bool
     ):  # type: (...) -> ndarray
         """Return the current point in the design space.
 
         Args:
             variables_names: The names of the required variables.
                 If None, use the names of the variables of the design space.
+            complex_to_real: Whether to cast complex number to real ones.
 
         Raises:
             KeyError: If a variable has no current value.
         """
         try:
             x_arr = self.dict_to_array(self._current_x, all_var_list=variables_names)
+            if complex_to_real:
+                return x_arr.real
             return x_arr
         except KeyError as err:
             raise KeyError(
@@ -1639,7 +1643,12 @@ class DesignSpace(collections.MutableMapping):
                 if u_b is not None and u_b[i] is not None:
                     data["upper_bound"] = u_b[i]
                 if curr is not None:
-                    data["value"] = curr[i]
+                    value = curr[i]
+                    # The current value of a float variable can be a complex array
+                    # when approximating gradients with complex step.
+                    if var_type[i] == "float":
+                        value = value.real
+                    data["value"] = value
                 table.add_row([data[key] for key in fields])
 
         table.align["name"] = "l"

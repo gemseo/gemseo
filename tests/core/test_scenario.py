@@ -29,6 +29,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
+from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
@@ -477,3 +478,39 @@ def test_export_to_dataset(mdf_scenario):
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
     )
     assert dataset == (1, 2, 3, 4, 5)
+
+
+@pytest.fixture
+def complex_step_scenario() -> MDOScenario:
+    """The scenario to be used by test_complex_step."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+
+    class MyDiscipline(MDODiscipline):
+        """The identity discipline f computing y = f(x) = x."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.input_grammar.initialize_from_data_names(["x"])
+            self.output_grammar.initialize_from_data_names(["y"])
+
+        def _run(self) -> None:
+            self.local_data["y"] = self.local_data["x"]
+
+    scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
+    scenario.set_differentiation_method(scenario.COMPLEX_STEP)
+    return scenario
+
+
+@pytest.mark.parametrize("normalize_design_space", [False, True])
+def test_complex_step(complex_step_scenario, normalize_design_space):
+    """Check that complex step approximation works correctly."""
+    complex_step_scenario.execute(
+        {
+            "algo": "SLSQP",
+            "max_iter": 10,
+            "algo_options": {"normalize_design_space": normalize_design_space},
+        }
+    )
+
+    assert complex_step_scenario.optimization_result.x_opt[0] == 0.0

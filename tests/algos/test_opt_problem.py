@@ -363,6 +363,15 @@ def test_pb_type(pow2_problem):
         problem.check()
 
 
+def test_differentiation_method_without_current_x(pow2_problem):
+    """Check that a ValueError is raised when the current x is not defined."""
+    pow2_problem.design_space.set_current_x({})
+    with pytest.raises(
+        ValueError, match=r"Current x is not defined in the design space\."
+    ):
+        pow2_problem._OptimizationProblem__add_fd_jac("foo", False)
+
+
 def test_differentiation_method(pow2_problem):
     problem = pow2_problem
     problem.differentiation_method = problem.COMPLEX_STEP
@@ -1369,3 +1378,20 @@ def test_export_to_dataset(input_values, expected):
             "cstr": expected * 3,
         },
     )
+
+
+@pytest.fixture(scope="module")
+def problem_with_complex_value() -> OptimizationProblem:
+    """A problem using a design space with a float variable whose value is complex."""
+    x = array([1.0 + 0j])
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    design_space._current_x["x"] = x
+    return OptimizationProblem(design_space)
+
+
+@pytest.mark.parametrize("cast", [False, True])
+def test_get_x0_normalized_no_complex(problem_with_complex_value, cast):
+    """Check that the complex value of a float variable is converted to float."""
+    normalized_x0 = problem_with_complex_value.get_x0_normalized(cast_to_real=cast)
+    assert (normalized_x0.dtype.kind == "c") is not cast
