@@ -172,11 +172,11 @@ class NormDBFunction(MDOFunction):
 
             # if not evaluated yet, evaluate
             if self.__normalize:
-                jac_n = self.__orig_func.jac(xn_vect).real
+                jac_n = self.__orig_func.jac(xn_vect)
                 jac_u = self.__optimization_problem.design_space.unnormalize_grad(jac_n)
 
             else:
-                jac_u = self.__orig_func.jac(xu_vect).real
+                jac_u = self.__orig_func.jac(xu_vect)
                 jac_n = self.__optimization_problem.design_space.normalize_grad(jac_u)
             if np_any(np_isnan(jac_n)) and self.__optimization_problem.stop_if_nan:
                 raise FunctionIsNan(
@@ -192,10 +192,10 @@ class NormDBFunction(MDOFunction):
             jac_n = self.__optimization_problem.design_space.normalize_grad(jac_u)
 
         if self.__normalize:
-            return jac_n
+            return jac_n.real
 
         else:
-            return jac_u
+            return jac_u.real
 
     @property
     def expects_normalized_inputs(self):  # type: (...) -> bool

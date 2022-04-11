@@ -719,15 +719,21 @@ class OptimizationProblem(object):
         """
         return len(self.get_ineq_constraints()) > 0
 
-    def get_x0_normalized(self):  # type: (...) -> ndarray
+    def get_x0_normalized(self, cast_to_real=False):  # type: (...) -> ndarray
         """Return the current values of the design variables after normalization.
+
+        Args:
+            cast_to_real: Whether to cast the return value to real.
 
         Returns:
             The current values of the design variables
             normalized between 0 and 1 from their lower and upper bounds.
         """
         dspace = self.design_space
-        return dspace.normalize_vect(dspace.get_current_x())
+        normalized_x0 = dspace.normalize_vect(dspace.get_current_x())
+        if cast_to_real:
+            return normalized_x0.real
+        return normalized_x0
 
     def get_dimension(self):  # type: (...) -> int
         """Retrieve the total number of design variables.
@@ -1158,7 +1164,13 @@ class OptimizationProblem(object):
             func: The function to be derivated.
             normalize: Whether to unnormalize the input vector of the function
                 before evaluate it.
+
+        Raises:
+            ValueError: When the current value is not defined.
         """
+        if not self.design_space.has_current_x():
+            raise ValueError("Current x is not defined in the design space.")
+
         differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
             self.differentiation_method
         )

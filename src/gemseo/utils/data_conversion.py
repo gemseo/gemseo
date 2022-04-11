@@ -155,10 +155,13 @@ def update_dict_of_arrays_from_array(
     dict_of_arrays,  # type: Mapping[str,ndarray]
     names,  # type: Iterable[str]
     array,  # type: ndarray
+    cast_complex=False,  # type: bool
 ):  # type: (...) -> Mapping[str,ndarray]
     """Update some values of a dictionary of NumPy arrays from a NumPy array.
 
     The order of the data in ``array`` follows the order of ``names``.
+    The original data type is kept
+    except if `array` is complex and ``cast_complex`` is ``False``.
 
     Example:
         >>> result = update_dict_of_arrays_from_array(
@@ -173,6 +176,7 @@ def update_dict_of_arrays_from_array(
         dict_of_arrays: The dictionary of NumPy arrays to be updated.
         names: The keys of the dictionary for which to update the values.
         array: The NumPy array with which to update the dictionary of NumPy arrays.
+        cast_complex: Whether to cast ``array`` when its data type is complex.
 
     Returns:
         A deep copy of ``dict_of_arrays``
@@ -210,8 +214,13 @@ def update_dict_of_arrays_from_array(
                 "for data named: {}.".format(array, data_value.shape, data_name)
             )
 
-        data[data_name] = array[i_min:i_max].reshape(data_value.shape)
-        data[data_name] = data[data_name].astype(data_value.dtype)
+        new_data_value = array[i_min:i_max]
+        is_complex = new_data_value.dtype.kind == "c"
+        if not is_complex or (is_complex and cast_complex):
+            new_data_value = new_data_value.astype(data_value.dtype)
+
+        data[data_name] = new_data_value
+
         i_min = i_max
 
     if i_max != array.size:

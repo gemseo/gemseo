@@ -18,8 +18,7 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Gradient approximation by complex step."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
@@ -75,6 +74,8 @@ class ComplexStep(GradientApproximator):
         normalize=True,  # type: bool
         **parallel_args,  # type: Union[int,bool,float]
     ):  # type: (...) -> None
+        if design_space is not None:
+            design_space.to_complex()
         super(ComplexStep, self).__init__(
             f_pointer,
             step=step,

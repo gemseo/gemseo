@@ -1162,3 +1162,20 @@ def test_has_integer_variables(variables, expected):
         )
 
     assert design_space.has_integer_variables() == expected
+
+
+@pytest.fixture(scope="module")
+def design_space_with_complex_value() -> DesignSpace:
+    """A design space with a float variable whose value is complex."""
+    x = array([1.0 + 0j])
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    design_space._current_x["x"] = x
+    return design_space
+
+
+@pytest.mark.parametrize("cast", [False, True])
+def test_get_current_x_no_complex(design_space_with_complex_value, cast):
+    """Check that the complex value of a float variable is converted to float."""
+    current_x = design_space_with_complex_value.get_current_x(complex_to_real=cast)
+    assert (current_x.dtype.kind == "c") is not cast
