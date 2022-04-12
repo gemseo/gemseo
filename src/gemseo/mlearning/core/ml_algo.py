@@ -109,7 +109,7 @@ from typing import Tuple
 from typing import Union
 
 import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
@@ -129,14 +129,7 @@ DataType = Union[ndarray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class MLAlgo(object):
+class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm.
 
     Such a model is built from a training dataset,

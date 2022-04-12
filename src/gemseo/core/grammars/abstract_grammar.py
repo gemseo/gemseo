@@ -36,8 +36,7 @@ from typing import Union
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray, zeros
 
 from gemseo.utils.py23_compat import Path
@@ -45,14 +44,7 @@ from gemseo.utils.py23_compat import Path
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class AbstractGrammar(object):
+class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
     """The abstraction of a grammar.
 
     A grammar is a set of elements characterised by their names and types.

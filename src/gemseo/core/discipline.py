@@ -46,7 +46,7 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
@@ -80,14 +80,7 @@ def default_dict_factory():  # type: (...) -> Dict
     return defaultdict(None)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class MDODiscipline(object):
+class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     """A software integrated in the workflow.
 
     To be used,

@@ -100,8 +100,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.dataset import Dataset
@@ -114,14 +113,7 @@ from gemseo.utils.string_tools import pretty_repr
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class Statistics(object):
+class Statistics(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class to interface a statistics library.
 
     Attributes:

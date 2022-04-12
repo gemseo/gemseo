@@ -41,8 +41,7 @@ from gemseo.core.json_grammar import JSONGrammar
 if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array, copy, in1d, ndarray, where, zeros
 from six import string_types
 
@@ -54,14 +53,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class MDOFormulation(object):
+class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract MDO formulation class to be extended in subclasses for use.
 
     This class creates the objective function and constraints from the disciplines.

@@ -42,7 +42,6 @@ from __future__ import unicode_literals
 from numpy import mean
 from numpy import ndarray
 from numpy import std
-from past.utils import old_div
 
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.mlearning.transform.transformer import TransformerFitOptionType
@@ -72,5 +71,5 @@ class StandardScaler(Scaler):
     ):  # type: (...) -> None
         average = mean(data, 0)
         std_ = std(data, 0)
-        self.offset = old_div(-average, std_)
+        self.offset = -average / std_
         self.coefficient = 1.0 / std_

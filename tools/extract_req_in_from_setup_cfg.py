@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -15,52 +14,64 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Extract the requirements from setup.cfg to requirements .in files."""
+from __future__ import annotations
+
 import argparse
-import sys
 from configparser import ConfigParser
 from pathlib import Path
 from typing import Iterable
+from typing import Sequence
 
 
-def main(
+def extract_requirments(
     output_file_path: str,
     add_install_requires: bool,
     extras_require_keys: Iterable[str],
-) -> None:
+) -> int:
     """Main routine.
 
     Args:
-        output_file_path: Path to the output file.
-        add_install_requires: If True, process the install_requires section.
-        extras_require_keys: Extras_requires keys to process.
+        output_file_path: The path to the output file.
+        add_install_requires: Whether to consider the install_requires section.
+        extras_require_keys: The extras_requires keys to consider.
+
+    Returns:
+        The exit status.
     """
-    # read setup.cfg
     setup_cfg = ConfigParser()
     setup_cfg.read("setup.cfg")
 
-    requirements = []
+    requirements = ""
 
     if add_install_requires:
         try:
-            requirements += [setup_cfg["options"]["install_requires"]]
+            requirements += setup_cfg["options"]["install_requires"]
         except KeyError:
-            sys.exit("install_requires section cannot be found")
+            print("install_requires section cannot be found")  # noqa: T001
+            return 1
 
     for key in extras_require_keys:
         try:
-            requirements += [setup_cfg["options.extras_require"][key]]
+            requirements += setup_cfg["options.extras_require"][key]
         except KeyError:
-            sys.exit(f"extras_require name {key} cannot be found")
+            print(f"extras_require name {key} cannot be found")  # noqa: T001
+            return 1
 
-    # dump the requirements file
-    with Path(output_file_path).open("w") as req_file:
-        for req in requirements:
-            if not req:
-                continue
-            req_file.write(f"{req.strip()}\n")
+    # Make sure there is no empty line before and a single newline after.
+    Path(output_file_path).write_text(requirements.strip() + "\n")
+
+    return 0
 
 
-if __name__ == "__main__":
+def main(argv: Sequence[str] | None = None) -> int:
+    """Main entry point.
+
+    Args:
+        argv: The CLI arguments.
+
+    Returns:
+        The exit status.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output_file_path", help="Path to the output file")
     parser.add_argument(
@@ -70,13 +81,19 @@ if __name__ == "__main__":
         help="Whether to process the install_requires section",
     )
     parser.add_argument(
-        "--extras-require-key",
+        "--add-extras-require-key",
         default=[],
         action="append",
         metavar="NAME",
         help="Name of the extras_require to process, can be used multiple times",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    main(args.output_file_path, args.add_install_requires, args.extras_require_key)
+    return extract_requirments(
+        args.output_file_path, args.add_install_requires, args.add_extras_require_key
+    )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

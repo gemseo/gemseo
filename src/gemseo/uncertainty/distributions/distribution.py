@@ -85,13 +85,11 @@ from typing import Tuple
 from typing import Union
 
 import matplotlib.pyplot as plt
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import arange
 from numpy import array
 from numpy import ndarray
-from past.utils import old_div
 
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
@@ -106,8 +104,7 @@ StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[Tuple[str, int, float], StandardParametersType]
 
 
-@six.add_metaclass(DocInheritMeta(abstract_base_class=True))
-class Distribution(object):
+class Distribution(metaclass=GoogleDocstringInheritanceMeta):
     """Probability distribution related to a random variable.
 
     The dimension of the random variable can be greater than 1. In this case,
@@ -395,7 +392,7 @@ class Distribution(object):
             variable_name = "{}({})".format(variable_name, index)
         l_b = self.num_lower_bound[index]
         u_b = self.num_upper_bound[index]
-        x_values = arange(l_b, u_b, old_div((u_b - l_b), 100))
+        x_values = arange(l_b, u_b, (u_b - l_b) / 100)
         y1_values = [self._pdf(index)(x_value) for x_value in x_values]
         fig, (ax1, ax2) = plt.subplots(1, 2)
         fig.suptitle("Probability distribution of {}".format(variable_name))

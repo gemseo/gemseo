@@ -23,10 +23,10 @@ from __future__ import annotations
 
 import inspect
 import logging
+from pathlib import Path
 from typing import Any
 from typing import ClassVar
 from typing import Dict
-from typing import Final
 from typing import List
 from typing import Mapping
 from typing import MutableMapping
@@ -36,7 +36,7 @@ from numpy import ndarray
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import Path
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)

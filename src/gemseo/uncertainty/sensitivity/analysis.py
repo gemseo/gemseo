@@ -45,7 +45,7 @@ from typing import Tuple
 from typing import Union
 
 import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import linspace
@@ -73,14 +73,7 @@ OutputsType = Union[str, Tuple[str, int], Sequence[Union[str, Tuple[str, int]]]]
 IndicesType = Dict[str, List[Dict[str, ndarray]]]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class SensitivityAnalysis(object):
+class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
     """Sensitivity analysis.
 
     The :class:`.SensitivityAnalysis` class provides both

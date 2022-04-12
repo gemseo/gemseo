@@ -1,6 +1,5 @@
-custom_inherit ==2.4.0
+docstring-inheritance ==1.0.0
 fastjsonschema <=2.15.1
-future
 genson ==1.2.2
 h5py >=2.3,<=3.6.0
 importlib_metadata ; python_version=='3.7'
@@ -16,6 +15,7 @@ scipy >=1.1,<=1.7.3
 singledispatchmethod ; python_version=='3.7'
 six
 tqdm >=4.41,<=4.62.3
+typing-extensions >=4,<5
 xdsmjs >=1.0.0,<=1.0.1
 xxhash ==3.0.0
 graphviz >=0.16,<=0.19

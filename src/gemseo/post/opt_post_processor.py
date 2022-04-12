@@ -34,8 +34,7 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -55,8 +54,7 @@ PlotOutputType = List[
 ]
 
 
-@six.add_metaclass(DocInheritMeta(abstract_base_class=True))
-class OptPostProcessor(object):
+class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class for optimization post-processing methods.
 
     Attributes:

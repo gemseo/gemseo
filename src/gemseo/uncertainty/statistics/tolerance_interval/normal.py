@@ -25,7 +25,6 @@ import openturns as ot
 from numpy import array
 from numpy import inf
 from numpy import ndarray
-from past.utils import old_div
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
@@ -75,7 +74,7 @@ class NormalToleranceInterval(ToleranceInterval):
             offset = ot.Normal().computeQuantile(coverage)[0] * size**0.5
             student = ot.Student(size - 1, offset, 1.0)
             student_quantile = student.computeQuantile(1 - alpha)[0]
-            tolerance_factor = old_div(student_quantile, size**0.5)
+            tolerance_factor = student_quantile / size**0.5
 
             if side == ToleranceIntervalSide.UPPER:
                 upper = self.__mean + tolerance_factor * self.__std
@@ -88,7 +87,7 @@ class NormalToleranceInterval(ToleranceInterval):
             z_p = ot.Normal().computeQuantile((1 + coverage) / 2.0)[0]
             u_term = (1 + 1.0 / size) ** 0.5 * z_p
             chi_square = ot.ChiSquare(size - 1)
-            v_term = (old_div((size - 1), chi_square.computeQuantile(alpha)[0])) ** 0.5
+            v_term = ((size - 1) / chi_square.computeQuantile(alpha)[0]) ** 0.5
             w_term = (
                 1
                 + (size - 3 - chi_square.computeQuantile(alpha)[0])
