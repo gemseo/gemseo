@@ -138,7 +138,6 @@ def create_statistics(
         >>> discipline = create_discipline(
         ...     "AnalyticDiscipline", expressions=expressions
         ... )
-        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
         >>>
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
@@ -157,7 +156,7 @@ def create_statistics(
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = discipline.cache.export_to_dataset()
+        >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.mean()

@@ -28,6 +28,7 @@ from numbers import Number
 from operator import mul
 from operator import truediv
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -185,6 +186,9 @@ class MDOFunction(object):
 
     # N.B. the space character ensures same length whatever the sign of the coefficient
 
+    activate_counters: ClassVar[bool] = True
+    """Whether to count the number of function evaluations."""
+
     def __init__(
         self,
         func,  # type: Optional[Callable[[ndarray],ndarray]]
@@ -221,7 +225,11 @@ class MDOFunction(object):
                 If None, use the default string representation.
         """
         super(MDOFunction, self).__init__()
-        self._n_calls = Value("i", 0)
+        if self.activate_counters:
+            self._n_calls = Value("i", 0)
+        else:
+            self._n_calls = None
+
         # Initialize attributes
         self._f_type = None
         self._func = NotImplementedCallable()
@@ -251,13 +259,17 @@ class MDOFunction(object):
         This count is both multiprocess- and multithread-safe, thanks to the locking
         process used by :meth:`.MDOFunction.evaluate`.
         """
-        return self._n_calls.value
+        if self.activate_counters:
+            return self._n_calls.value
 
     @n_calls.setter
     def n_calls(
         self,
         value,  # type: int
     ):  # type: (...) -> None
+        if not self.activate_counters:
+            raise RuntimeError("The function counters are disabled.")
+
         with self._n_calls.get_lock():
             self._n_calls.value = value
 
@@ -281,18 +293,21 @@ class MDOFunction(object):
         Returns:
             The value of the outputs of the function.
         """
-        with self._n_calls.get_lock():
-            self._n_calls.value += 1
-        val = self._func(x_vect)
-        self.last_eval = val
-        return val
+        if self.activate_counters:
+            with self._n_calls.get_lock():
+                self._n_calls.value += 1
+
+        self.last_eval = self._func(x_vect)
+        return self.last_eval
 
     @func.setter
     def func(
         self,
         f_pointer,  # type: Callable[[ndarray],ndarray]
     ):  # type: (...) -> None
-        self._n_calls.value = 0
+        if self.activate_counters:
+            self._n_calls.value = 0
+
         self._func = f_pointer
 
     def __call__(
@@ -310,13 +325,11 @@ class MDOFunction(object):
         Returns:
             The value of the outputs of the function.
         """
-        val = self.evaluate(x_vect, self.force_real)
-        return val
+        return self.evaluate(x_vect)
 
     def evaluate(
         self,
         x_vect,  # type: ndarray
-        force_real=False,  # type: bool
     ):  # type: (...) -> ndarray
         """Evaluate the function and store the dimension of the output space.
 
@@ -327,10 +340,18 @@ class MDOFunction(object):
         Returns:
             The value of the output of the function.
         """
-        val = self.__counted_f(x_vect)
-        if force_real:
+        if self.activate_counters:
+            val = self.__counted_f(x_vect)
+        else:
+            # we duplicate the logic here of __counted_f on purpose for performance
+            val = self._func(x_vect)
+            self.last_eval = val
+
+        if self.force_real:
             val = val.real
-        self.dim = atleast_1d(val).shape[0]
+
+        if self.dim is None:
+            self.dim = val.size if isinstance(val, ndarray) else 1
         return val
 
     @property
@@ -794,7 +815,7 @@ class MDOFunction(object):
 
         # Build the first-order Taylor polynomial
         coefficients = self.jac(x_vect)
-        func_val = self.__call__(x_vect)
+        func_val = self.evaluate(x_vect)
         if isinstance(func_val, ndarray):
             # Make sure the function value is at most 1-dimensional
             func_val = func_val.flatten()
@@ -929,7 +950,7 @@ class MDOFunction(object):
         linear_coeffs = gradient - hess_dot_vect
 
         # Buid the zero-order coefficient
-        zero_coeff = matmul(0.5 * hess_dot_vect - gradient, x_vect) + self.__call__(
+        zero_coeff = matmul(0.5 * hess_dot_vect - gradient, x_vect) + self.evaluate(
             x_vect
         )
 
@@ -1715,7 +1736,7 @@ class FunctionRestriction(MDOFunction):
             The value of the outputs of the restriction.
         """
         x_vect = self.__extend_subvect(x_subvect)
-        value = self.__mdo_function.__call__(x_vect)
+        value = self.__mdo_function.evaluate(x_vect)
         return value
 
     def _jac(
@@ -2142,7 +2163,7 @@ class ConvexLinearApprox(MDOFunction):
         merged_vect = where(self.__approx_indexes, self.__x_vect, x_new)
         step, inv_step = self.__get_steps(x_new)
         value = (
-            self.__mdo_function.__call__(merged_vect)
+            self.__mdo_function.evaluate(merged_vect)
             + matmul(self.__direct_coeffs, step)
             + matmul(self.__recipr_coeffs, inv_step)
         )

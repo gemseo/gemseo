@@ -152,7 +152,7 @@ class ScatterPlotMatrix(OptPostProcessor):
         # Next line is a trick for a bug workaround in numpy/matplotlib
         # https://stackoverflow.com/questions/39180873/
         # pandas-dataframe-valueerror-num-must-be-1-num-0-not-1
-        vals = (list(x) for x in vals)
+        vals = (list(x.real) for x in vals)
         frame = DataFrame(vals, columns=x_labels)
         scatter_matrix(
             frame,

@@ -63,6 +63,12 @@ class NormFunction(MDOFunction):
         self.__orig_func = orig_func
         self.__round_ints = round_ints
         self.__optimization_problem = optimization_problem
+        # For performance
+        design_space = self.__optimization_problem.design_space
+        self.__unnormalize_vect = design_space.unnormalize_vect
+        self.__round_vect = design_space.round_vect
+        self.__normalize_grad = design_space.normalize_grad
+        self.__evaluate_orig_func = self.__orig_func.evaluate
 
         super(NormFunction, self).__init__(
             self._func,
@@ -88,10 +94,10 @@ class NormFunction(MDOFunction):
             The value of the function at this input vector.
         """
         if self.__normalize:
-            x_vect = self.__optimization_problem.design_space.unnormalize_vect(x_vect)
+            x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
-            x_vect = self.__optimization_problem.design_space.round_vect(x_vect)
-        return self.__orig_func(x_vect)
+            x_vect = self.__round_vect(x_vect)
+        return self.__evaluate_orig_func(x_vect)
 
     def _jac(
         self,
@@ -114,12 +120,12 @@ class NormFunction(MDOFunction):
                 "has no Jacobian matrix !".format(self.__orig_func)
             )
         if self.__normalize:
-            x_vect = self.__optimization_problem.design_space.unnormalize_vect(x_vect)
+            x_vect = self.__unnormalize_vect(x_vect)
         if self.__round_ints:
-            x_vect = self.__optimization_problem.design_space.round_vect(x_vect)
+            x_vect = self.__round_vect(x_vect)
         g_u = self.__orig_func.jac(x_vect)
         if self.__normalize:
-            return self.__optimization_problem.design_space.normalize_grad(g_u)
+            return self.__normalize_grad(g_u)
         return g_u
 
     @property

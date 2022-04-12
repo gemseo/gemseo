@@ -62,7 +62,6 @@ configure_logger()
 # :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
-discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 
 ###############################################################################
 # Get the input space
@@ -91,9 +90,9 @@ scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
 # Build the scalable discipline
 # -----------------------------
 # The second step is to build a :class:`.ScalableDiscipline`,
-# using a :class:`.ScalableDiagonalModel` and the cache of the discipline,
+# using a :class:`.ScalableDiagonalModel` and the database
 # converted to a :class:`.Dataset`.
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 scalable = create_scalable("ScalableDiagonalModel", dataset)
 
 ###############################################################################
@@ -127,10 +126,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
 # Twice as many inputs
 # ~~~~~~~~~~~~~~~~~~~~
 # For example, we can increase the size of each input by a factor of 2.
-sizes = {
-    name: discipline.cache.names_to_sizes[name] * 2
-    for name in discipline.get_input_data_names()
-}
+sizes = {name: dataset.sizes[name] * 2 for name in discipline.get_input_data_names()}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)
 
@@ -151,7 +147,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # Or we can increase the size of each input and each output by a factor of 2.
 names = list(discipline.get_input_data_names())
 names += list(discipline.get_output_data_names())
-sizes = {name: discipline.cache.names_to_sizes[name] * 2 for name in names}
+sizes = {name: dataset.sizes[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)
 

@@ -34,6 +34,7 @@ from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.mda.mda import MDA
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -813,6 +814,67 @@ def test_repr_str():
     disc = AutoPyDiscipline(myfunc)
     assert str(disc) == "myfunc"
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
+
+
+def test_activate_counters():
+    """Check that the discipline counters are active by default."""
+    discipline = MDODiscipline()
+    assert discipline.n_calls == 0
+    assert discipline.n_calls_linearize == 0
+    assert discipline.exec_time == 0
+
+    discipline._run = lambda: None
+    discipline.execute()
+    assert discipline.n_calls == 1
+    assert discipline.n_calls_linearize == 0
+    assert discipline.exec_time > 0
+
+
+def test_deactivate_counters():
+    """Check that the discipline counters are set to None when deactivated."""
+    activate_counters = MDODiscipline.activate_counters
+
+    MDODiscipline.activate_counters = False
+
+    discipline = MDODiscipline()
+    assert discipline.n_calls is None
+    assert discipline.n_calls_linearize is None
+    assert discipline.exec_time is None
+
+    discipline._run = lambda: None
+    discipline.execute()
+    assert discipline.n_calls is None
+    assert discipline.n_calls_linearize is None
+    assert discipline.exec_time is None
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.n_calls = 1
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.n_calls_linearize = 1
+
+    with pytest.raises(RuntimeError, match="The discipline counters are disabled."):
+        discipline.exec_time = 1
+
+    MDODiscipline.activate_counters = activate_counters
+
+
+def test_cache_none():
+    """Check that the discipline cache can be deactivate."""
+    discipline = MDODiscipline(cache_type=None)
+    assert discipline.activate_cache is True
+    assert discipline.cache is None
+
+    MDODiscipline.activate_cache = False
+    discipline = MDODiscipline()
+    assert discipline.cache is None
+
+    discipline._run = lambda: None
+    discipline.execute()
+
+    assert MDA.activate_cache is True
+
+    MDODiscipline.activate_cache = True
 
 
 def test_grammar_inheritance():

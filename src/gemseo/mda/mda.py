@@ -78,6 +78,8 @@ class MDA(MDODiscipline):
         "linear_solver_tolerance",
     )
 
+    activate_cache = True
+
     def __init__(
         self,
         disciplines,  # type: Sequence[MDODiscipline]

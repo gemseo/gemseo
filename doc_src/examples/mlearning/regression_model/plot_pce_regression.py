@@ -69,7 +69,6 @@ design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 # We can build a learning set by means of a
 # :class:`~gemseo.core.doe_scenario.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
-discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
 )
@@ -78,12 +77,12 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 ###############################################################################
 # Create the regression model
 # ---------------------------
-# Then, we build the linear regression model from the discipline cache and
+# Then, we build the linear regression model from the database and
 # displays this model.
 prob_space = create_parameter_space()
 prob_space.add_random_variable("x_1", "OTUniformDistribution")
 prob_space.add_random_variable("x_2", "OTUniformDistribution")
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 model = create_regression_model(
     "PCERegression", data=dataset, probability_space=prob_space, transformer=None
 )

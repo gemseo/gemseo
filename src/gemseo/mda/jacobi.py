@@ -167,7 +167,6 @@ class MDAJacobi(MDA):
             input_local_data: The input data of the disciplines.
         """
         self.reset_disciplines_statuses()
-
         if self.n_processes > 1:
             n_disc = len(self.disciplines)
             inputs_copy_list = [deepcopy(input_local_data) for _ in range(n_disc)]

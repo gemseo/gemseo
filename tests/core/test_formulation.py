@@ -25,6 +25,7 @@ import math
 import unittest
 
 import numpy as np
+import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.formulation import MDOFormulation
 from gemseo.core.mdo_scenario import MDOScenario
@@ -33,6 +34,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from numpy.dual import norm
 
 
 class TestMDOFormulation(unittest.TestCase):
@@ -149,26 +151,36 @@ class TestMDOFormulation(unittest.TestCase):
         f = MDOFormulation([sm], "y_4", design_space)
 
         x = np.concatenate([rid[n] for n in dvs])
-        f.mask_x(dvs, x, dvs)
-        f.mask_x(dvs, x)
-        f.mask_x_swap_order(dvs, x, dvs)
+        c = f.mask_x_swap_order(dvs, x, dvs)
+        expected = np.array(
+            [
+                0.05,
+                4.5e04,
+                1.6,
+                5.5,
+                55.0,
+                1000.0,
+                50606.9741711000024,
+                7306.20262123999964,
+            ]
+        )
+        assert norm(c - expected) < 1e-14
+        x_values_dict = f._get_dv_indices(dvs)
+        assert x_values_dict == {"x_shared": (0, 4, 4), "y_14": (4, 8, 4)}
 
-        f._get_x_mask_swap(dvs)
-        self.assertRaises(Exception, f._get_x_mask_swap, dvs, ["toto"])
+        with pytest.raises(KeyError):
+            f.mask_x_swap_order(dvs + ["toto"], x)
 
-        self.assertRaises(ValueError, f.mask_x_swap_order, dvs + ["toto"], x)
-        #         x_masked = f.mask_x_swap_order(dvs, x[0:3])
-
-        f.mask_x_swap_order(
+        ff = f.mask_x_swap_order(
             ["x_shared"],
             x_vect=np.zeros(19),
             all_data_names=design_space.variables_names,
         )
+        assert (ff == np.zeros(4)).all()
 
         design_space.remove_variable("x_shared")
         design_space.add_variable("x_shared", 10)
-        self.assertRaises(ValueError, f.mask_x, dvs, x)
-        self.assertRaises(ValueError, f.mask_x_swap_order, dvs, x)
+        self.assertRaises(IndexError, f.mask_x_swap_order, dvs, x)
 
     def test_remove_sub_scenario_dv_from_ds(self):
         ds2 = DesignSpace()
@@ -203,28 +215,6 @@ class TestMDOFormulation(unittest.TestCase):
 
         f = MDOFormulation([sm], "Y5", design_space)
         self.assertRaises(Exception, lambda: f.get_objective())
-
-    def test_get_x_mask(self):
-        sm = SobieskiMission()
-        dvs = ["x_shared", "y_14"]
-
-        design_space = DesignSpace()
-        for name in dvs:
-            design_space.add_variable(name, 1)
-
-        f = MDOFormulation([sm], "y_4", design_space)
-        x = np.concatenate([np.ones(1)] * 2)
-        xm = f.mask_x(dvs, x, dvs)
-        f.unmask_x(dvs, xm)
-        f.unmask_x_swap_order(dvs, xm)
-        f.mask_x_swap_order(dvs, x, dvs)
-        f.unmask_x_swap_order(dvs, x, dvs, x_full=x)
-        self.assertTrue([True for i in range(len(dvs))], f._get_x_mask_swap(dvs, dvs))
-        f._get_x_mask_swap(dvs)
-
-        design_space.remove_variable("x_shared")
-        design_space.add_variable("x_shared", 10)
-        self.assertRaises(ValueError, f.unmask_x_swap_order, dvs, x)
 
     def test_get_expected_workflow(self):
         """"""

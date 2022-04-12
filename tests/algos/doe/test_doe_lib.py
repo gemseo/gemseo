@@ -18,13 +18,12 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from unittest import mock
-
 import pytest
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibrary
+from gemseo.algos.doe.lib_pydoe import PyDOE
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import execute_algo
@@ -53,16 +52,28 @@ def test_evaluate_samples(doe):
     doe.execute(problem, "fullfact", n_samples=2, wait_time_between_samples=1)
 
 
-@pytest.mark.skip_under_windows
 def test_evaluate_samples_multiproc(doe):
     problem = Power2()
+    n_samples = 8
     doe.execute(
         problem,
         "fullfact",
-        n_samples=2,
+        n_samples=n_samples,
         n_processes=2,
-        wait_time_between_samples=1,
+        wait_time_between_samples=0.01,
+        eval_jac=True,
     )
+    new_pb = Power2()
+    x_history = problem.database.get_x_history()
+    assert len(x_history) == n_samples
+    for sample in x_history:
+        val_ref = new_pb.objective(sample)
+        val_sample = problem.database.get_f_of_x("pow2", sample)
+        assert val_ref == val_sample
+
+        grad_ref = new_pb.objective.jac(sample)
+        grad_sample = problem.database.get_f_of_x("@pow2", sample)
+        assert (grad_ref == grad_sample).all()
 
 
 def test_phip_criteria():
@@ -76,28 +87,26 @@ def test_phip_criteria():
 @pytest.fixture(scope="module")
 def variables_space():
     """A mock design space."""
-    design_space = mock.Mock()
-    design_space.dimension = 2
-    design_space.untransform_vect = mock.Mock(return_value=array([1, 2]))
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=2.0, value=1.0)
+    design_space.add_variable("y", l_b=-1.0, u_b=1.0, value=0.0)
     return design_space
 
 
-def test_compute_doe_transformed(doe, variables_space):
+def test_compute_doe_transformed(variables_space):
     """Check the computation of a transformed DOE in a variables space."""
-    doe.algo_name = "lhs"
-    points = doe.compute_doe(variables_space, size=3, unit_sampling=True)
-    assert points.shape == (3, 2)
-    assert points.max() <= 1.0
-    assert points.min() >= 0.0
-    variables_space.untransform_vect.assert_not_called()
+    doe = PyDOE()
+    doe.algo_name = "fullfact"
+    points = doe.compute_doe(variables_space, size=4, unit_sampling=True)
+    assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
-def test_compute_doe_nontransformed(doe, variables_space):
+def test_compute_doe_nontransformed(variables_space):
     """Check the computation of a non-transformed DOE in a variables space."""
-    doe.algo_name = "lhs"
-    points = doe.compute_doe(variables_space, size=3)
-    assert points.shape == (3, 2)
-    assert variables_space.untransform_vect.call_count == 3
+    doe = PyDOE()
+    doe.algo_name = "fullfact"
+    points = doe.compute_doe(variables_space, size=4)
+    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
 @pytest.fixture(scope="module")
@@ -113,13 +122,13 @@ def doe_database(request):  # type: (...) -> Database
     problem = OptimizationProblem(space)
     problem.objective = MDOFunction(lambda x: x, "func")
     execute_algo(
-        problem, "CustomDOE", samples=array([[-2.0], [0.0], [2.0]]), algo_type="doe"
+        problem, "CustomDOE", samples=array([[-2.0], [0.0], [1.0]]), algo_type="doe"
     )
     return problem.database
 
 
 @pytest.mark.parametrize("doe_database", [True, False], indirect=["doe_database"])
-@pytest.mark.parametrize("var", [-2.0, 0.0, 2.0])
+@pytest.mark.parametrize("var", [-2.0, 0.0, 1.0])
 def test_transformation(doe_database, var):
     """Check that the transformation of variables works correctly.
 

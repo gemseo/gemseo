@@ -42,6 +42,7 @@ import logging
 import string
 from time import time
 from typing import Callable
+from typing import ClassVar
 from typing import List
 from typing import Optional
 from typing import Union
@@ -183,11 +184,19 @@ class DriverLib(AlgoLib):
     MAX_TIME = "max_time"
     USE_DATABASE_OPTION = "use_database"
     NORMALIZE_DESIGN_SPACE_OPTION = "normalize_design_space"
+    _NORMALIZE_DS = True
     ROUND_INTS_OPTION = "round_ints"
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
     WEBSITE = "website"
     DESCRIPTION = "description"
     MAX_DS_SIZE_PRINT = 40
+
+    _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
+    """The name of the option to activate the progress bar in the optimization log."""
+
+    activate_progress_bar: ClassVar[bool] = True
+    """Whether to activate the progress bar in the optimization log."""
+
     HANDLE_INTEGER_VARIABLES = "handle_integer_variables"
     HANDLE_MULTIOBJECTIVE = "handle_multiobjective"
 
@@ -195,6 +204,7 @@ class DriverLib(AlgoLib):
         # Library settings and check
         super(DriverLib, self).__init__()
         self.__progress_bar = None
+        self.__activate_progress_bar = self.activate_progress_bar
         self.__max_iter = 0
         self.__iter = 0
         self._start_time = None
@@ -226,24 +236,34 @@ class DriverLib(AlgoLib):
         self.__max_iter = max_iter
         self.__iter = 0
         self.__message = message
-        self.__progress_bar = ProgressBar(
-            total=self.__max_iter,
-            desc=self.__message,
-            ascii=False,
-            file=TqdmToLogger(),
-        )
+        if self.__activate_progress_bar:
+            self.__progress_bar = ProgressBar(
+                total=self.__max_iter,
+                desc=self.__message,
+                ascii=False,
+                file=TqdmToLogger(),
+            )
+        else:
+            self.deactivate_progress_bar()
+
         self._start_time = time()
         self.problem.max_iter = max_iter
 
     def __set_progress_bar_objective_value(
-        self, x_vect  # type: ndarray
+        self, x_vect  # type: Optional[ndarray]
     ):  # type: (...) -> None
         """Set the objective value in the progress bar.
 
         Args:
             x_vect: The design variables values.
+                If None, consider the objective at the last iteration.
         """
-        value = self.problem.database.get_f_of_x(self.problem.objective.name, x_vect)
+        if x_vect is None:
+            value = self.problem.objective.last_eval
+        else:
+            value = self.problem.database.get_f_of_x(
+                self.problem.objective.name, x_vect
+            )
 
         if value is not None:
             # if maximization problem: take the opposite
@@ -281,8 +301,6 @@ class DriverLib(AlgoLib):
                 raise MaxTimeReached()
 
         if self.__progress_bar is not None:
-            if x_vect is None:
-                x_vect = self.problem.database.get_x_by_iter(-1)
             self.__set_progress_bar_objective_value(x_vect)
 
     def finalize_iter_observer(self):  # type: (...) -> None
@@ -401,12 +419,20 @@ class DriverLib(AlgoLib):
 
         self._check_algorithm(self.algo_name, problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
+        activate_progress_bar = options.pop(
+            self._ACTIVATE_PROGRESS_BAR_OPTION_NAME, None
+        )
+        if activate_progress_bar is not None:
+            self.__activate_progress_bar = activate_progress_bar
+
         options = self._update_algorithm_options(**options)
         self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
 
         problem.check()
         problem.preprocess_functions(
-            normalize=options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True),
+            normalize=options.get(
+                self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
+            ),
             use_database=options.get(self.USE_DATABASE_OPTION, True),
             round_ints=options.get(self.ROUND_INTS_OPTION, True),
             eval_obs_jac=eval_obs_jac,

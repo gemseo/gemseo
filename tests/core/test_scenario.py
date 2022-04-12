@@ -20,6 +20,7 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
 import unittest
 from typing import Optional
 from typing import Sequence
@@ -30,10 +31,8 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
@@ -438,19 +437,68 @@ def test_run_log(mdf_scenario, caplog):
         assert string in caplog.text
 
 
-def test_clear_history_before_run():
+def test_clear_history_before_run(mdf_scenario):
     """Check that clear_history_before_run is correctly used in Scenario._run."""
-    design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1, value=0.5)
-    discipline = AnalyticDiscipline({"y": "x"})
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[1.0]])}})
-    assert len(scenario.formulation.opt_problem.database) == 1
-    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[2.0]])}})
-    assert len(scenario.formulation.opt_problem.database) == 2
-    scenario.clear_history_before_run = True
-    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": array([[3.0]])}})
-    assert len(scenario.formulation.opt_problem.database) == 1
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    def run_algorithm_mock():
+        pass
+
+    mdf_scenario._run_algorithm = run_algorithm_mock
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 1
+
+    mdf_scenario.clear_history_before_run = True
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    assert len(mdf_scenario.formulation.opt_problem.database) == 0
+
+
+@pytest.mark.parametrize(
+    "activate,text",
+    [
+        (True, "Scenario Execution Statistics"),
+        (False, "The discipline counters are disabled."),
+    ],
+)
+def test_print_execution_metrics(mdf_scenario, caplog, activate, text):
+    """Check the print of the execution metrics w.r.t.
+
+    activate_counters.
+    """
+    activate_counters = MDODiscipline.activate_counters
+    MDODiscipline.activate_counters = activate
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    mdf_scenario.print_execution_metrics()
+    assert text in caplog.text
+    MDODiscipline.activate_counters = activate_counters
+
+
+def test_get_execution_metrics(mdf_scenario):
+    """Check the string returned byecution_metrics."""
+    mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
+    expected = re.compile(
+        "Scenario Execution Statistics\n"
+        "   Discipline: SobieskiPropulsion\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiAerodynamics\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiMission\n"
+        "      Executions number: 1\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Discipline: SobieskiStructure\n"
+        "      Executions number: 10\n"
+        "      Execution time: .* s\n"
+        "      Linearizations number: 1\n"
+        "   Total number of executions calls: 31\n"
+        "   Total number of linearizations: 4"
+    )
+    assert expected.match(str(mdf_scenario._Scenario__get_execution_metrics()))
 
 
 def mocked_export_to_dataset(
@@ -473,7 +521,7 @@ def mocked_export_to_dataset(
 def test_export_to_dataset(mdf_scenario):
     """Check that export_to_dataset calls OptimizationProblem.export_to_dataset."""
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 1})
-    mdf_scenario.formulation.opt_problem.export_to_dataset = mocked_export_to_dataset
+    mdf_scenario.export_to_dataset = mocked_export_to_dataset
     dataset = mdf_scenario.export_to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
     )

@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from numpy import array, copy, in1d, ndarray, where, zeros
+from numpy import arange, copy, empty, in1d, ndarray, where, zeros
 from six import string_types
 
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -307,66 +307,6 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             " has all inputs named %s" % (type(self).__name__, input_names)
         )
 
-    def mask_x(
-        self,
-        masking_data_names,  # type: Iterable[str]
-        x_vect,  # type: ndarray
-        all_data_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> ndarray
-        """Mask a vector from a subset of names, with respect to a set of names.
-
-        Args:
-            masking_data_names: The names of data to keep.
-            x_vect: The vector of float to mask.
-            all_data_names: The set of all names.
-                If None, use the design variables stored in the design space.
-
-        Returns:
-            A boolean mask with the same shape as the input vector.
-        """
-        if all_data_names is None:
-            all_data_names = self.get_optim_variables_names()
-        i_min = 0
-        x_mask = array([False] * x_vect.size)
-        for key in all_data_names:
-            var_length = self._get_dv_length(key)
-            i_max = i_min + var_length
-            if len(x_vect) < i_max:
-                raise ValueError(
-                    "Inconsistent input size array %s = %s"
-                    " for the design variable of length %s"
-                    % (key, x_vect.shape, var_length)
-                )
-            if key in masking_data_names:
-                x_mask[i_min:i_max] = True
-            i_min = i_max
-
-        return x_vect[x_mask]
-
-    def unmask_x(
-        self,
-        masking_data_names,  # type: Iterable[str]
-        x_masked,  # type: ndarray
-        all_data_names=None,  # type: Optional[Iterable[str]]
-        x_full=None,  # type: ndarray
-    ):  # type: (...) -> ndarray
-        """Unmask a vector from a subset of names, with respect to a set of names.
-
-        Args:
-            masking_data_names: The names of the kept data.
-            x_masked: The boolean vector to unmask.
-            all_data_names: The set of all names.
-                If None, use the design variables stored in the design space.
-            x_full: The default values for the full vector.
-                If None, use the zero vector.
-
-        Returns:
-            The vector related to the input mask.
-        """
-        return self.unmask_x_swap_order(
-            masking_data_names, x_masked, all_data_names, x_full
-        )
-
     def _get_dv_length(
         self,
         variable_name,  # type: str
@@ -381,48 +321,34 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The size of the variable.
         """
-        return self.opt_problem.design_space.get_size(variable_name)
+        return self.opt_problem.design_space.variables_sizes[variable_name]
 
-    def _get_x_mask_swap(
+    def _get_dv_indices(
         self,
-        masking_data_names,  # type: Iterable[str]
-        all_data_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> Tuple[Dict[str,Tuple[int,int]],int,int]
-        """Get a mask from a subset of names, with respect to a set of names.
-
-        This method eventually swaps the order of the values
-        if the order of the data names is inconsistent between these sets.
+        all_data_names,  # type: Iterable[str]
+    ):  # type: (...) -> Tuple[Dict[str,Tuple[int,int,int]],int]
+        """Get the indices of the sub vectors which compose the design variables vector.
 
         Args:
-            masking_data_names: The names of data to keep.
             all_data_names: The set of all names.
-                If None, use the design variables stored in the design space.
 
         Returns:
-            A mask as well as
-            the dimension of the restricted variable space
-            and the dimension of the original variable space.
-
-            The mask is a dictionary
-            indexed by the names of the variables coming from the subset.
-            For a given name,
-            the value is a tuple
+            For a given name, the value is a tuple
             whose first component is its lowest dimension in the original space
             and the second one is the lowest dimension of the variable that follows it
             in the original space.
         """
-        if all_data_names is None:
-            all_data_names = self.get_optim_variables_names()
-        i_min = 0
-        x_values_dict = {}
-        n_x = 0
+        i_min = i_max = 0
+        variables_sizes = self.opt_problem.design_space.variables_sizes
+        indices = {}
+
         for key in all_data_names:
-            i_max = i_min + self._get_dv_length(key)
-            if key in masking_data_names:
-                x_values_dict[key] = (i_min, i_max)
-                n_x += i_max - i_min
+            loc_size = variables_sizes[key]
+            i_max += loc_size
+            indices[key] = (i_min, i_max, loc_size)
             i_min = i_max
-        return x_values_dict, n_x, i_max
+
+        return indices
 
     def unmask_x_swap_order(
         self,
@@ -446,30 +372,32 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The vector related to the input mask.
+
+        Raises:
+            IndexError: when the sizes of variables are inconsistent.
         """
         if all_data_names is None:
             all_data_names = self.get_optim_variables_names()
-        x_values_dict, _, len_x = self._get_x_mask_swap(
-            masking_data_names, all_data_names
-        )
+        indices = self._get_dv_indices(all_data_names)
+        variables_sizes = self.opt_problem.design_space.variables_sizes
+        total_size = sum((variables_sizes[var] for var in all_data_names))
         if x_full is None:
-            x_unmask = zeros(len_x, dtype=x_masked.dtype)
+            x_unmask = zeros(total_size, dtype=x_masked.dtype)
         else:
             x_unmask = copy(x_full)
 
         i_x = 0
-        for key in all_data_names:
-            if key in x_values_dict:
-                i_min, i_max = x_values_dict[key]
-                n_x = i_max - i_min
-                if x_masked.size < i_x + n_x:
-                    raise ValueError(
-                        "Inconsistent data shapes !\n"
-                        "Try to unmask data %s of length %s\n"
-                        "With values of length: %s" % (key, n_x, x_masked.size)
-                    )
-                x_unmask[i_min:i_max] = x_masked[i_x : i_x + n_x]
-                i_x += n_x
+        try:
+            for key in all_data_names:
+                if key in masking_data_names:
+                    i_min, i_max, n_x = indices[key]
+                    x_unmask[i_min:i_max] = x_masked[i_x : i_x + n_x]
+                    i_x += n_x
+        except IndexError:
+            raise ValueError(
+                "Inconsistent input array size of values array "
+                "with reference data shape %s" % (x_unmask.shape)
+            )
         return x_unmask
 
     def mask_x_swap_order(
@@ -491,37 +419,59 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The masked version of the input vector.
-        """
-        if all_data_names is None:
-            all_data_names = self.get_optim_variables_names()
-        x_values_dict, n_x, _ = self._get_x_mask_swap(
-            masking_data_names, all_data_names
-        )
-        x_masked = zeros(n_x, dtype=x_vect.dtype)
-        i_max = 0
-        i_min = 0
-        for key in masking_data_names:
-            if key not in x_values_dict:
-                raise ValueError(
-                    "Inconsistent inputs of masking. "
-                    "Key %s is in masking_data_names %s "
-                    "but not in provided all_data_names : %s!"
-                    % (key, masking_data_names, all_data_names)
-                )
-            value = x_values_dict[key]
-            i_max += value[1] - value[0]
-            len_x = len(x_vect)
-            if len(x_masked) < i_max or len_x <= value[0] or len_x < value[1]:
-                raise ValueError(
-                    "Inconsistent input array size of values array %s "
-                    "with reference data shape %s, "
-                    "for data named: %s of size: %s"
-                    % (x_vect, x_vect.shape, key, i_max)
-                )
-            x_masked[i_min:i_max] = x_vect[value[0] : value[1]]
-            i_min = i_max
 
-        return x_masked
+        Raises:
+            IndexError: when the sizes of variables are inconsistent.
+        """
+        x_mask = self.get_x_mask_x_swap_order(masking_data_names, all_data_names)
+        return x_vect[x_mask]
+
+    def get_x_mask_x_swap_order(
+        self,
+        masking_data_names,  # type: Iterable[str]
+        all_data_names=None,  # type: Optional[Iterable[str]]
+    ):  # type: (...) -> ndarray
+        """Mask a vector from a subset of names, with respect to a set of names.
+
+        This method eventually swaps the order of the values
+        if the order of the data names is inconsistent between these sets.
+
+        Args:
+            masking_data_names: The names of the kept data.
+            x_vect: The vector to mask.
+            all_data_names: The set of all names.
+                If None, use the design variables stored in the design space.
+
+        Returns:
+            The masked version of the input vector.
+
+        Raises:
+            IndexError: when the sizes of variables are inconsistent.
+            ValueError: when the names of variables are inconsistent.
+        """
+        design_space = self.opt_problem.design_space
+        if all_data_names is None:
+            all_data_names = design_space.variables_names
+
+        variables_sizes = design_space.variables_sizes
+        total_size = sum((variables_sizes[var] for var in masking_data_names))
+        indices = self._get_dv_indices(all_data_names)
+        x_mask = empty(total_size, dtype="int")
+        i_masked_min = i_masked_max = 0
+        try:
+            for key in masking_data_names:
+                i_min, i_max, loc_size = indices[key]
+                i_masked_max += loc_size
+                x_mask[i_masked_min:i_masked_max] = arange(i_min, i_max)
+                i_masked_min = i_masked_max
+        except KeyError as err:
+            raise ValueError(
+                "Inconsistent inputs of masking. "
+                "Key %s is in masking_data_names %s "
+                "but not in provided all_data_names : %s!"
+                % (err, masking_data_names, all_data_names)
+            )
+        return x_mask
 
     def _remove_unused_variables(self):  # type: (...) -> None
         """Remove variables in the design space that are not discipline inputs."""

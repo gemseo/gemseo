@@ -51,7 +51,6 @@ configure_logger()
 datasets = {}
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 for discipline in disciplines:
-    discipline.set_cache_policy("MemoryFullCache")
     design_space = AerostructureDesignSpace()
     design_space.filter(discipline.get_input_data_names())
     output = next(iter(discipline.get_output_data_names()))
@@ -59,8 +58,7 @@ for discipline in disciplines:
         discipline, "DisciplinaryOpt", output, design_space, scenario_type="DOE"
     )
     scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
-    datasets[discipline.name] = discipline.cache.export_to_dataset()
-    discipline.cache.clear()
+    datasets[discipline.name] = scenario.export_to_dataset(opt_naming=False)
 
 ###############################################################################
 # Define the design problem

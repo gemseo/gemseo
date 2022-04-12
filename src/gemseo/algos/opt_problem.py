@@ -67,6 +67,7 @@ from functools import reduce
 from numbers import Number
 from typing import Any
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -220,6 +221,9 @@ class OptimizationProblem(object):
     SOLUTION_GROUP = "solution"
     CONSTRAINTS_GROUP = "constraints"
     OBSERVABLES_GROUP = "observables"
+
+    activate_bound_check: ClassVar[bool] = True
+    """Whether to check if a point is in the design space before calling functions."""
 
     HDF5_FORMAT = "hdf5"
     GGOBI_FORMAT = "ggobi"
@@ -901,12 +905,13 @@ class OptimizationProblem(object):
                 x_vect = self.get_x0_normalized()
             else:
                 # Checks proposed x wrt bounds
-                x_u_r = self.design_space.unnormalize_vect(x_vect)
-                self.design_space.check_membership(x_u_r)
+                x_u_r = self.design_space.unnormalize_vect(x_vect, no_check=True)
+                if self.activate_bound_check:
+                    self.design_space.check_membership(x_u_r)
         else:
             if x_vect is None:
                 x_vect = self.design_space.get_current_x()
-            else:
+            elif self.activate_bound_check:
                 # Checks proposed x wrt bounds
                 self.design_space.check_membership(x_vect)
 
@@ -931,15 +936,15 @@ class OptimizationProblem(object):
         if normalization_expected and not normalize:
             func_inputs = self.design_space.normalize_vect(x_vect)
         elif not normalization_expected and normalize:
-            func_inputs = self.design_space.unnormalize_vect(x_vect)
+            func_inputs = self.design_space.unnormalize_vect(x_vect, no_check=True)
         else:
             func_inputs = x_vect
 
         # Evaluate the functions
         outputs = {}
         for func in functions:
-            try:
-                outputs[func.name] = func(func_inputs)
+            try:  # Calling func.evaluate is faster than func()
+                outputs[func.name] = func.evaluate(func_inputs)
             except ValueError:
                 LOGGER.error("Failed to evaluate function %s", func.name)
                 raise
@@ -1105,7 +1110,6 @@ class OptimizationProblem(object):
             self.__add_fd_jac(func, normalize)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
-        func.force_real = True
         if use_database:
             func = NormDBFunction(func, normalize, is_observable, self)
         return func
@@ -2175,7 +2179,7 @@ class OptimizationProblem(object):
         if design_space:
             self.design_space.set_current_x(self.__initial_current_x)
 
-        if function_calls:
+        if function_calls and MDOFunction.activate_counters:
             for func in self.get_all_functions():
                 func.n_calls = 0
 

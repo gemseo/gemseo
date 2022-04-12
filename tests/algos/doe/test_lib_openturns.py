@@ -279,7 +279,7 @@ def variables_space():
     design_space.variables_names = ["x"]
     design_space.variables_sizes = {"x": 2}
     design_space.dimension = 2
-    design_space.untransform_vect = lambda doe: doe
+    design_space.untransform_vect = lambda doe, no_check: doe
     return design_space
 
 

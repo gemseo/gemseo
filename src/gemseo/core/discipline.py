@@ -39,6 +39,7 @@ from typing import Generator
 from typing import Iterable
 from typing import List
 from typing import MutableMapping
+from typing import NoReturn
 from typing import Optional
 from typing import Tuple
 from typing import Type
@@ -140,6 +141,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     HDF5_CACHE = "HDF5Cache"
     MEMORY_FULL_CACHE = "MemoryFullCache"
 
+    activate_cache: bool = True
+    """Whether to cache the discipline evaluations by default."""
+
     APPROX_MODES = [FINITE_DIFFERENCES, COMPLEX_STEP]
     AVAILABLE_MODES = (
         JacobianAssembly.AUTO_MODE,
@@ -153,6 +157,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     RE_EXECUTE_DONE_POLICY = "RE_EXEC_DONE"
     RE_EXECUTE_NEVER_POLICY = "RE_EXEC_NEVER"
     N_CPUS = cpu_count()
+
+    activate_counters: ClassVar[bool] = True
+    """Whether to activate the counters (execution time, calls and linearizations)."""
+
+    activate_input_data_check: ClassVar[bool] = True
+    """Whether to check the input data respect the input grammar."""
+
+    activate_output_data_check: ClassVar[bool] = True
+    """Whether to check the output data respect the output grammar."""
 
     _ATTR_TO_SERIALIZE = (
         "residual_variables",
@@ -191,7 +204,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         output_grammar_file=None,  # type: Optional[Union[str, Path]]
         auto_detect_grammar_files=False,  # type: bool
         grammar_type=JSON_GRAMMAR_TYPE,  # type: str
-        cache_type=SIMPLE_CACHE,  # type: str
+        cache_type=SIMPLE_CACHE,  # type: Optional[str]
         cache_file_path=None,  # type: Optional[Union[str, Path]]
     ):  # type: (...) -> None
         """
@@ -221,8 +234,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 e.g. :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE`
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
             cache_type: The type of policy to cache the discipline evaluations,
-                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE`
-                or :attr:`.MDODiscipline.HDF5_CACHE`.
+                e.g. :attr:`.MDODiscipline.SIMPLE_CACHE` to cache the last one,
+                :attr:`.MDODiscipline.HDF5_CACHE` to cache them in a HDF file,
+                or :attr:`.MDODiscipline.MEMORY_FULL_CACHE` to cache them in memory.
+                If ``None`` or if :class:`.MDODiscipline.activate_cache` is ``True``,
+                do not cache the discipline evaluations.
             cache_file_path: The HDF file path
                 when ``grammar_type`` is :attr:`.MDODiscipline.HDF5_CACHE`.
         """
@@ -261,9 +277,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         else:
             self.name = name
 
-        self.cache = self.__create_new_cache(
-            cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
-        )
+        self.cache = None
+        if not self.activate_cache:
+            cache_type = None
+
+        if cache_type is not None:
+            self.cache = self.__create_new_cache(
+                cache_type, hdf_file_path=cache_file_path, hdf_node_path=self.name
+            )
+
         self._cache_was_loaded = False
 
         # linearize mode :auto, adjoint, direct
@@ -289,7 +311,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         # : The current status of execution
         self._status = self.STATUS_PENDING
-        self._init_shared_attrs()
+        if self.activate_counters:
+            self._init_shared_attrs()
+
         self._status_observers = []
 
     def __str__(self):  # type: (...) -> str
@@ -328,54 +352,69 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._local_data = DisciplineData(data)
 
     @property
-    def n_calls(self):  # type: (...) -> int
+    def n_calls(self):  # type: (...) -> int | None
         """The number of times the discipline was executed.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._n_calls.value
+        if self.activate_counters:
+            return self._n_calls.value
 
     @n_calls.setter
     def n_calls(
         self,
         value,  # type: int
     ):  # type: (...) -> None
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._n_calls.value = value
 
     @property
-    def exec_time(self):  # type: (...) -> float
+    def exec_time(self):  # type: (...) -> float | None
         """The cumulated execution time of the discipline.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._exec_time.value
+        if self.activate_counters:
+            return self._exec_time.value
 
     @exec_time.setter
     def exec_time(
         self,
         value,  # type: float
     ):  # type: (...) -> None
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._exec_time.value = value
 
     @property
-    def n_calls_linearize(self):  # type: (...) -> int
+    def n_calls_linearize(self):  # type: (...) -> int | None
         """The number of times the discipline was linearized.
 
-        .. note::
+        This property is multiprocessing safe.
 
-            This property is multiprocessing safe.
+        Raises:
+            RuntimeError: When the discipline counters are disabled.
         """
-        return self._n_calls_linearize.value
+        if self.activate_counters:
+            return self._n_calls_linearize.value
 
     @n_calls_linearize.setter
     def n_calls_linearize(
         self,
         value,  # type: int
-    ):  # type: (...) -> None
+    ):  # type: (...) -> None | NoReturn
+        if not self.activate_counters:
+            raise RuntimeError("The discipline counters are disabled.")
+
         self._n_calls_linearize.value = value
 
     @property
@@ -712,15 +751,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 "got {} instead.".format(type(input_data))
             )
 
-        # Take default inputs if not in input_data
-        full_input_data = deepcopy(self._default_inputs)
-        full_input_data.update(input_data)
-
-        # Remove inputs that should not be there
-        input_names = self.get_input_data_names()
-        for key in tuple(full_input_data):
-            if key not in input_names:
-                del full_input_data[key]
+        full_input_data = DisciplineData({})
+        for key in self.input_grammar.data_names:
+            val = input_data.get(key)
+            if val is not None:
+                full_input_data[key] = val
+            else:
+                val = self._default_inputs.get(key)
+                if val is not None:
+                    full_input_data[key] = val
 
         return full_input_data
 
@@ -843,23 +882,25 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 
-        # Check if the cache already the contains outputs associated to these
-        # inputs
-        in_names = self.get_input_data_names()
-        _, out_cached, out_jac = self.cache[input_data]
-
-        if out_cached:
-            self.__update_local_data_from_cache(input_data, out_cached, out_jac)
-            return self._local_data
+        if self.cache is not None:
+            # Check if the cache already contains the outputs associated to these inputs
+            in_names = self.get_input_data_names()
+            _, out_cached, out_jac = self.cache[input_data]
+            if out_cached:
+                self.__update_local_data_from_cache(input_data, out_cached, out_jac)
+                return self._local_data
 
         # Cache was not loaded, see self.linearize
         self._cache_was_loaded = False
 
-        # Save the state of the inputs
-        cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
+        if self.cache is not None:
+            # Save the state of the inputs
+            cached_inputs = self.__get_input_data_for_cache(input_data, in_names)
+
         self._check_status_before_run()
 
-        self.check_input_data(input_data)
+        if self.activate_input_data_check:
+            self.check_input_data(input_data)
 
         processor = self.data_processor
         if processor is not None:
@@ -869,7 +910,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self.status = self.STATUS_RUNNING
         self._is_linearized = False
-        self.__increment_n_calls()
+        if self.activate_counters:
+            self.__increment_n_calls()
+
         t_0 = timer()
 
         try:
@@ -882,7 +925,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             # raise the same exception
             raise
 
-        self.__increment_exec_time(t_0)
+        if self.activate_counters:
+            self.__increment_exec_time(t_0)
+
         self.status = self.STATUS_DONE
 
         # If the data processor is set, post process the data after _run
@@ -893,18 +938,20 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # Filter data that is neither outputs nor inputs
         self._filter_local_data()
 
-        self.check_output_data()
+        if self.activate_output_data_check:
+            self.check_output_data()
 
-        # Caches output data in case the discipline is called twice in a row
-        # with the same inputs
-        out_names = self.get_output_data_names()
-        self.cache.cache_outputs(
-            cached_inputs, {name: self._local_data[name] for name in out_names}
-        )
-        # Some disciplines are always linearized during execution, cache the
-        # jac in this case
-        if self._is_linearized:
-            self.cache.cache_jacobian(cached_inputs, self.jac)
+        if self.cache is not None:
+            # Caches output data in case the discipline is called twice in a row
+            # with the same inputs
+            out_names = self.get_output_data_names()
+            self.cache.cache_outputs(
+                cached_inputs, {name: self._local_data[name] for name in out_names}
+            )
+            # Some disciplines are always linearized during execution, cache the
+            # jac in this case
+            if self._is_linearized:
+                self.cache.cache_jacobian(cached_inputs, self.jac)
 
         return self._local_data
 
@@ -1091,13 +1138,17 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             self.jac = self._jac_approx.compute_approx_jac(outputs, inputs)
         else:
             self._compute_jacobian(inputs, outputs)
-            self.__increment_exec_time(t_0, linearize=True)
+            if self.activate_counters:
+                self.__increment_exec_time(t_0, linearize=True)
 
-        self.__increment_n_calls_lin()
+        if self.activate_counters:
+            self.__increment_n_calls_lin()
 
         self._check_jacobian_shape(inputs, outputs)
-        # Cache the Jacobian matrix
-        self.cache.cache_jacobian(input_data, self.jac)
+
+        if self.cache is not None:
+            # Cache the Jacobian matrix
+            self.cache.cache_jacobian(input_data, self.jac)
 
         return self.jac
 
@@ -1277,9 +1328,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                     raise ValueError(msg.format(*data))
 
         # Discard imaginary part of Jacobian
-        for jac_loc in self.jac.values():
-            for desv, jac_out in jac_loc.items():
-                jac_loc[desv] = jac_out.real
+        for output_jacobian in self.jac.values():
+            for input_name, input_output_jacobian in output_jacobian.items():
+                output_jacobian[input_name] = input_output_jacobian.real
 
     @property
     def cache_tol(self):  # type: (...) -> float
@@ -1289,7 +1340,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         If norm(stored_input_data-input_data) <= cache_tol * norm(stored_input_data),
         the cached data for ``stored_input_data`` is returned
         when calling ``self.execute(input_data)``.
+
+        Raises:
+            ValueError: When the discipline does not have a cache.
         """
+        if self.cache is None:
+            raise ValueError(
+                "The discipline {} does not have a cache.".format(self.name)
+            )
+
         return self.cache.tolerance
 
     @cache_tol.setter
@@ -1297,6 +1356,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self,
         cache_tol,  # type: float
     ):  # type: (...) -> None
+        if self.cache is None:
+            raise ValueError(
+                "The discipline {} does not have a cache.".format(self.name)
+            )
+
         self._set_cache_tol(cache_tol)
 
     def _set_cache_tol(
@@ -1852,7 +1916,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the input variables.
         """
-        return self.input_grammar.get_data_names()
+        return self.input_grammar.data_names
 
     def get_output_data_names(self):  # type: (...) -> List[str]
         """Return the names of the output variables.
@@ -1860,7 +1924,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the output variables.
         """
-        return self.output_grammar.get_data_names()
+        return self.output_grammar.data_names
 
     def get_input_output_data_names(self):  # type: (...) -> List[str]
         """Return the names of the input and output variables.
@@ -1868,8 +1932,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        outpt = self.output_grammar.get_data_names()
-        inpt = self.input_grammar.get_data_names()
+        outpt = self.output_grammar.data_names
+        inpt = self.input_grammar.data_names
         return list(set(outpt) | set(inpt))
 
     def get_all_inputs(self):  # type: (...) -> List[Any]

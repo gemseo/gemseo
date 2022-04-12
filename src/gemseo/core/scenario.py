@@ -87,7 +87,7 @@ class Scenario(MDODiscipline):
         formulation (MDOFormulation): The MDO formulation.
         formulation_name (str): The name of the MDO formulation.
         optimization_result (OptimizationResult): The optimization result.
-        post_factory (PostFactory): The factory for post-processors.
+        post_factory (Optional[PostFactory]): The factory for post-processors if any.
     """
 
     # Constants for input variables in json schema
@@ -96,6 +96,8 @@ class Scenario(MDODiscipline):
     L_BOUNDS = "l_bounds"
     ALGO = "algo"
     ALGO_OPTIONS = "algo_options"
+    activate_input_data_check = True
+    activate_output_data_check = True
 
     _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE
 
@@ -132,6 +134,8 @@ class Scenario(MDODiscipline):
         self._algo_factory = None
         self._opt_hist_backup_path = None
         self._gen_opt_backup_plot = False
+        self._algo_name = None
+        self._lib = None
 
         self._check_disciplines()
         self._init_algo_factory()
@@ -147,9 +151,17 @@ class Scenario(MDODiscipline):
             **formulation_options,
         )
         self.formulation.opt_problem.database.name = self.name
-        self.post_factory = PostFactory()
+        self.__post_factory = None
         self._update_input_grammar()
         self.clear_history_before_run = False
+
+    @property
+    def post_factory(self):  # type: (...) -> Optional[PostFactory]
+        """The factory of post-processors."""
+        if self.__post_factory is None:
+            self.__post_factory = PostFactory()
+
+        return self.__post_factory
 
     @property
     def _formulation_factory(self):  # type:(...) -> MDOFormulationsFactory
@@ -416,10 +428,9 @@ class Scenario(MDODiscipline):
                 i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
             options: The options for the post-processor.
         """
-        post = self.post_factory.execute(
+        return self.post_factory.execute(
             self.formulation.opt_problem, post_name, **options
         )
-        return post
 
     def _run(self):  # type: (...) -> None
         t_0 = timeit.default_timer()
@@ -461,22 +472,34 @@ class Scenario(MDODiscipline):
             statuses[disc.__class__.__name__] = disc.status
         return statuses
 
-    def print_execution_metrics(self):  # type: (...)-> None
-        """Print the total number of executions and cumulated runtime by discipline."""
+    def __get_execution_metrics(self):  # type: (...) -> MultiLineString
+        """Return the execution metrics of the scenarios."""
         n_lin = 0
         n_calls = 0
-        LOGGER.info("* Scenario Executions statistics *")
+        msg = MultiLineString()
+        msg.add("Scenario Execution Statistics")
+        msg.indent()
         for disc in self.disciplines:
-            LOGGER.info("* Discipline: %s", disc.name)
-            LOGGER.info("Executions number: %s", str(disc.n_calls))
-            LOGGER.info("Execution time:  %s s", str(disc.exec_time))
+            msg.add("Discipline: {}", disc.name)
+            msg.indent()
+            msg.add("Executions number: {}", disc.n_calls)
+            msg.add("Execution time: {} s", disc.exec_time)
+            msg.add("Linearizations number: {}", disc.n_calls_linearize)
+            msg.dedent()
 
             n_calls += disc.n_calls
-            LOGGER.info("Linearizations number: %s", str(disc.n_calls_linearize))
-
             n_lin += disc.n_calls_linearize
-        LOGGER.info("Total number of executions calls %s", str(n_calls))
-        LOGGER.info("Total number of linearizations %s", str(n_lin))
+
+        msg.add("Total number of executions calls: {}", n_calls)
+        msg.add("Total number of linearizations: {}", n_lin)
+        return msg
+
+    def print_execution_metrics(self):  # type: (...)-> None
+        """Print the total number of executions and cumulated runtime by discipline."""
+        if MDODiscipline.activate_counters:
+            LOGGER.info("%s", self.__get_execution_metrics())
+        else:
+            LOGGER.info("The discipline counters are disabled.")
 
     def xdsmize(
         self,

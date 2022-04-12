@@ -118,8 +118,7 @@ class Power2(OptimizationProblem):
             obj = np_sum(x_dv**2)
         return obj
 
-    @staticmethod
-    def pow2_jac(x_dv):
+    def pow2_jac(self, x_dv):
         """Compute the gradient of objective.
 
         :param x_dv: design variable vector
@@ -129,8 +128,7 @@ class Power2(OptimizationProblem):
         """
         return 2 * x_dv
 
-    @staticmethod
-    def ineq_constraint1(x_dv):
+    def ineq_constraint1(self, x_dv):
         """Compute the first inequality constraint.
 
         :param x_dv: design variable vector
@@ -140,8 +138,7 @@ class Power2(OptimizationProblem):
         """
         return -array([(x_dv[0] ** 3 - 0.5)])
 
-    @staticmethod
-    def ineq_constraint2(x_dv):
+    def ineq_constraint2(self, x_dv):
         """Compute the second inequality constraint.
 
         :param x_dv: design variable vector
@@ -151,8 +148,7 @@ class Power2(OptimizationProblem):
         """
         return -array([(x_dv[1] ** 3 - 0.5)])
 
-    @staticmethod
-    def eq_constraint(x_dv):
+    def eq_constraint(self, x_dv):
         """Compute the equality constraint.
 
         :param x_dv: design variable vector
@@ -162,8 +158,7 @@ class Power2(OptimizationProblem):
         """
         return -array([x_dv[2] ** 3 - 0.9])
 
-    @staticmethod
-    def ineq_constraint1_jac(x_dv):
+    def ineq_constraint1_jac(self, x_dv):
         """Compute the first inequality constraint gradient.
 
         :param x_dv: design variable vector
@@ -173,8 +168,7 @@ class Power2(OptimizationProblem):
         """
         return -array([3 * x_dv[0] * x_dv[0], 0.0, 0.0])
 
-    @staticmethod
-    def ineq_constraint2_jac(x_dv):
+    def ineq_constraint2_jac(self, x_dv):
         """Compute the second inequality constraint gradient.
 
         :param x_dv: design variable vector
@@ -184,8 +178,7 @@ class Power2(OptimizationProblem):
         """
         return -array([0, 3 * x_dv[1] * x_dv[1], 0.0])
 
-    @staticmethod
-    def eq_constraint_jac(x_dv):
+    def eq_constraint_jac(self, x_dv):
         """Compute the equality constraint gradient.
 
         :param x_dv: design variable vector

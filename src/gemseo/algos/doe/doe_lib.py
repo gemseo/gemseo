@@ -39,7 +39,6 @@ from typing import Union
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 from numpy import savetxt
-from numpy import vstack
 from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
@@ -70,6 +69,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     _VARIABLES_NAMES = "variables_names"
     _VARIABLES_SIZES = "variables_sizes"
     SEED = "seed"
+    _NORMALIZE_DS = False
 
     def __init__(self):
         """Constructor Abstract class."""
@@ -110,20 +110,21 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         **options,  # type: DOELibraryOptionType
     ):  # type: (...) -> None
         super(DOELibrary, self)._pre_run(problem, algo_name, **options)
-
         problem.stop_if_nan = False
         LOGGER.info("%s", problem)
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
         self.samples = self._generate_samples(**options)
+        self.untransformed_samples = self.problem.design_space.untransform_vect(
+            self.samples, no_check=True
+        )
 
-        # Initialize the order as it is not necessarily guaranteed
-        # when using parallel execution.
-        for sample in self.samples:
-            self.problem.database.store(
-                self.__compute_input_vector(sample), {}, add_iter=True
-            )
+        if options.get(self.N_PROCESSES, 1) > 1:
+            # Initialize the order as it is not necessarily guaranteed
+            # when using parallel execution.
+            for sample in self.untransformed_samples:
+                self.problem.database.store(sample, {}, add_iter=True)
 
         self.init_iter_observer(len(self.samples), "DOE sampling")
         self.problem.add_callback(self.new_iteration_callback)
@@ -276,55 +277,11 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             self.deactivate_progress_bar()
             self.problem.database.clear_listeners()
 
-        return self.__evaluate_functions(sample)
-
-    def __evaluate_functions(
-        self,
-        sample,  # type: ndarray
-    ):  # type: (...) -> Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
-        """Compute the constraints and objective, and possibly their derivatives.
-
-        Args:
-            sample: A point from the unit hypercube.
-
-        Returns:
-            The output values of the constraints and objective functions,
-            as well as their Jacobian matrices if :attr:`.eval_jac` is ``True``.
-        """
-        # `sample` belongs to the unit hypercube
-        # and must be converted into a point of the input variables space
-        # before evaluating the functions.
-        # evaluate_functions can do that
-        # with normalize=True but using DesignSpace.unnormalize_vect
-        # which is an affine transformation.
-        # Affine transformation cannot be applied
-        # to the special case of random variables
-        # which need the inverse transformation technique
-        # implemented in ParameterSpace.untransform_vect.
-        # So,
-        # one uses __compute_input_vector to untransform and round `sample`
-        # and passes the result to evaluate_functions with normalize=False.
         return self.problem.evaluate_functions(
-            x_vect=self.__compute_input_vector(sample),
+            x_vect=self.problem.design_space.untransform_vect(sample, no_check=True),
             eval_jac=self.eval_jac,
             normalize=False,
         )
-
-    def __compute_input_vector(
-        self,
-        sample,  # type: ndarray
-    ):  # type: (...) -> ndarray
-        """Convert a point from the unit hypercube to the input variables space.
-
-        Args:
-            sample: A point from the unit hypercube.
-
-        Returns:
-            A point in the input variables space.
-        """
-        untransform_vect = self.problem.design_space.untransform_vect
-        round_vect = self.problem.design_space.round_vect
-        return round_vect(untransform_vect(sample))
 
     def evaluate_samples(
         self,
@@ -341,7 +298,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 evaluation, in seconds.
         """
         self.eval_jac = eval_jac
-        unnormalize_grad = self.problem.design_space.unnormalize_grad
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", str(n_processes))
             # Create a list of tasks: execute functions
@@ -353,8 +309,8 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution
-            for sample in self.samples:
-                database.store(self.__compute_input_vector(sample), {}, add_iter=True)
+            for sample in self.untransformed_samples:
+                database.store(sample, {}, add_iter=True)
 
             def store_callback(
                 index,  # type: int
@@ -369,10 +325,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 out, jac = outputs
                 if jac:
                     for key, val in jac.items():
-                        val = unnormalize_grad(val)
                         out["@" + key] = val
 
-                database.store(self.__compute_input_vector(self.samples[index]), out)
+                database.store(self.untransformed_samples[index], out)
 
             # The list of inputs of the tasks is the list of samples
             parallel.execute(self.samples, exec_callback=store_callback)
@@ -386,9 +341,13 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 LOGGER.warning(
                     "Wait time between samples option is ignored" " in sequential run."
                 )
-            for sample in self.samples:
+            for sample in self.untransformed_samples:
                 try:
-                    self.__evaluate_functions(sample)
+                    self.problem.evaluate_functions(
+                        x_vect=sample,
+                        eval_jac=self.eval_jac,
+                        normalize=False,
+                    )
                 except ValueError:
                     LOGGER.error(
                         "Problem with evaluation of sample :"
@@ -451,7 +410,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         if unit_sampling:
             return doe
 
-        return vstack([variables_space.untransform_vect(sample) for sample in doe])
+        return variables_space.untransform_vect(doe, no_check=True)
 
     def __get_algorithm_options(
         self,

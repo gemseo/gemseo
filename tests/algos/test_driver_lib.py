@@ -22,8 +22,11 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+from unittest import mock
+
 import pytest
 from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.py23_compat import PY2
@@ -34,10 +37,17 @@ class MyDriver(DriverLib):
     pass
 
 
-def test_max_iter_fail():
-    """Check that a ValueError is raised for an invalid `max_iter` input."""
+@pytest.fixture(scope="module")
+def optimization_problem():
+    """A mock optimization problem."""
+    problem = mock.Mock()
+    problem.dimension = 2
+    return problem
 
-    MyDriver()._pre_run(None, None)
+
+def test_max_iter_fail(optimization_problem):
+    """Check that a ValueError is raised for an invalid `max_iter` input."""
+    MyDriver()._pre_run(optimization_problem, None)
     with pytest.raises(ValueError, match="max_iter must be >=1, got -1"):
         MyDriver().init_iter_observer(max_iter=-1, message="message")
 
@@ -110,3 +120,11 @@ def test_new_iteration_callback_xvect(caplog):
     test_driver.new_iteration_callback()
 
     assert "Toto" in caplog.text
+
+
+@pytest.mark.parametrize("activate_progress_bar", [False, True])
+def test_progress_bar(activate_progress_bar):
+    """Check the activation of the progress bar from the options of a DriverLib."""
+    driver = OptimizersFactory().create("SLSQP")
+    driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
+    assert (driver._DriverLib__progress_bar is None) is not activate_progress_bar

@@ -155,6 +155,7 @@ def update_dict_of_arrays_from_array(
     dict_of_arrays,  # type: Mapping[str,ndarray]
     names,  # type: Iterable[str]
     array,  # type: ndarray
+    copy=True,  # type: bool
     cast_complex=False,  # type: bool
 ):  # type: (...) -> Mapping[str,ndarray]
     """Update some values of a dictionary of NumPy arrays from a NumPy array.
@@ -176,6 +177,8 @@ def update_dict_of_arrays_from_array(
         dict_of_arrays: The dictionary of NumPy arrays to be updated.
         names: The keys of the dictionary for which to update the values.
         array: The NumPy array with which to update the dictionary of NumPy arrays.
+        copy: Whether to update a copy ``reference_input_data``.
+        copy: Whether to update ``dict_of_arrays`` or a copy of ``dict_of_arrays``.
         cast_complex: Whether to cast ``array`` when its data type is complex.
 
     Returns:
@@ -195,35 +198,39 @@ def update_dict_of_arrays_from_array(
             "The array must be a NumPy one, got instead: {}.".format(type(array))
         )
 
-    data = deepcopy(dict_of_arrays)
+    if copy:
+        data = deepcopy(dict_of_arrays)
+    else:
+        data = dict_of_arrays
 
     if not names:
         return data
 
-    i_min = i_max = 0
-    for data_name in names:
-        data_value = dict_of_arrays.get(data_name)
-        if data_value is None:
-            raise ValueError("There is no reference data for {}.".format(data_name))
+    i_min = 0
+    i_max = 0
+    full_size = array.size
+    try:
+        for data_name in names:
+            data_value = dict_of_arrays[data_name]
+            i_max = i_min + data_value.size
+            new_data_value = array[range(i_min, i_max)]
+            is_complex = new_data_value.dtype.kind == "c"
+            if not is_complex or (is_complex and cast_complex):
+                new_data_value = new_data_value.astype(data_value.dtype)
 
-        i_max = i_min + data_value.size
-        if len(array) < i_max:
+            data[data_name] = new_data_value
+            i_min = i_max
+    except IndexError as err:
+        if full_size < i_max:
             raise ValueError(
                 "Inconsistent input array size of values array {} "
                 "with reference data shape {} "
                 "for data named: {}.".format(array, data_value.shape, data_name)
             )
+        else:
+            raise err
 
-        new_data_value = array[i_min:i_max]
-        is_complex = new_data_value.dtype.kind == "c"
-        if not is_complex or (is_complex and cast_complex):
-            new_data_value = new_data_value.astype(data_value.dtype)
-
-        data[data_name] = new_data_value
-
-        i_min = i_max
-
-    if i_max != array.size:
+    if i_max != full_size:
         raise ValueError(
             "Inconsistent data shapes: "
             "could not use the whole data array of shape {} "

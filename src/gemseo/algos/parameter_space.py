@@ -340,10 +340,19 @@ class ParameterSpace(DesignSpace):
         for name in self.uncertain_variables:
             val = value[name]
             distribution = self.distributions[name]
-            if inverse:
-                current_v = distribution.compute_inverse_cdf(val)
+            if val.ndim == 1:
+                if inverse:
+                    current_v = distribution.compute_inverse_cdf(val)
+                else:
+                    current_v = distribution.compute_cdf(val)
             else:
-                current_v = distribution.compute_cdf(val)
+                if inverse:
+                    current_v = [
+                        distribution.compute_inverse_cdf(sample) for sample in val
+                    ]
+                else:
+                    current_v = [distribution.compute_cdf(sample) for sample in val]
+
             values[name] = array(current_v)
 
         return values
@@ -377,9 +386,11 @@ class ParameterSpace(DesignSpace):
             else:
                 if not isinstance(value, ndarray):
                     raise TypeError(error_msg)
-                if len(value.flatten()) != self.variables_sizes[variable]:
+
+                if value.shape[-1] != self.variables_sizes[variable]:
                     raise ValueError(error_msg)
-                if any(value.flatten() > 1.0) or any(value.flatten() < 0.0):
+
+                if (value > 1.0).any() or (value < 0.0).any():
                     raise ValueError(error_msg)
 
     def __str__(self):  # type: (...) -> str
@@ -461,6 +472,7 @@ class ParameterSpace(DesignSpace):
         minus_lb=True,  # type:bool
         no_check=False,  # type: bool
         use_dist=False,  # type:bool
+        out=None,  # type: Optional[ndarray]
     ):  # type: (...) ->ndarray
         """Unnormalize a normalized vector of the parameter space.
 
@@ -477,44 +489,62 @@ class ParameterSpace(DesignSpace):
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If True, remove the lower bounds at normalization.
-            no_check: If True, do not check that the values are in [0,1].
-            use_dist: If True, unnormalize the components of the random variables
+            minus_lb: Whether to remove the lower bounds at normalization.
+            no_check: Whether to check if the components are in :math:`[0,1]`.
+            use_dist: Whether to unnormalize the components of the random variables
                 with their inverse cumulative probability distributions.
+            out: The array to store the unnormalized vector.
+                If None, create a new array.
 
         Returns:
             The unnormalized vector.
         """
         if not use_dist:
-            return super(ParameterSpace, self).unnormalize_vect(x_vect)
+            return super(ParameterSpace, self).unnormalize_vect(
+                x_vect, no_check=no_check, out=out
+            )
 
+        if x_vect.ndim not in [1, 2]:
+            raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
+
+        return self.__unnormalize_vect(x_vect, no_check)
+
+    def __unnormalize_vect(self, x_vect, no_check):
         data_names = self.variables_names
         data_sizes = self.variables_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
-        x_u_geom = super(ParameterSpace, self).unnormalize_vect(x_vect)
+        x_u_geom = super(ParameterSpace, self).unnormalize_vect(
+            x_vect, no_check=no_check
+        )
         x_u = self.evaluate_cdf(dict_sample, inverse=True)
         x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
-        missing_names = list(set(data_names) - set(x_u.keys()))
+        missing_names = [name for name in data_names if name not in x_u]
         for name in missing_names:
             x_u[name] = x_u_geom[name]
-        x_u = concatenate_dict_of_arrays_to_array(x_u, data_names)
-        return x_u
+
+        return concatenate_dict_of_arrays_to_array(x_u, data_names)
 
     def transform_vect(
-        self, vector  # type: ndarray
+        self,
+        vector,  # type: ndarray
+        out=None,  # type: Optional[ndarray]
     ):  # type:(...) -> ndarray
-        return self.normalize_vect(vector, use_dist=True)
+        return self.normalize_vect(vector, use_dist=True, out=out)
 
     def untransform_vect(
-        self, vector  # type: ndarray
+        self,
+        vector,  # type: ndarray
+        no_check=False,  # type: bool
+        out=None,  # type: Optional[ndarray]
     ):  # type:(...) -> ndarray
-        return self.unnormalize_vect(vector, use_dist=True)
+        return self.unnormalize_vect(vector, use_dist=True, no_check=no_check, out=out)
 
     def normalize_vect(
         self,
         x_vect,  # type:ndarray
         minus_lb=True,  # type: bool
         use_dist=False,  # type: bool
+        out=None,  # type: Optional[ndarray]
     ):  # type: (...) ->ndarray
         """Normalize a vector of the parameter space.
 
@@ -534,24 +564,32 @@ class ParameterSpace(DesignSpace):
             minus_lb: If True, remove the lower bounds at normalization.
             use_dist: If True, normalize the components of the random variables
                 with their cumulative probability distributions.
+            out: The array to store the normalized vector.
+                If None, create a new array.
 
         Returns:
             The normalized vector.
         """
         if not use_dist:
-            return super(ParameterSpace, self).normalize_vect(x_vect)
+            return super(ParameterSpace, self).normalize_vect(x_vect, out=out)
 
+        if x_vect.ndim not in [1, 2]:
+            raise ValueError("x_vect must be either a 1D or a 2D NumPy array.")
+
+        return self.__normalize_vect(x_vect)
+
+    def __normalize_vect(self, x_vect):
         data_names = self.variables_names
         data_sizes = self.variables_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
-        x_u_geom = super(ParameterSpace, self).normalize_vect(x_vect)
-        x_u = self.evaluate_cdf(dict_sample, inverse=False)
-        x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
-        missing_names = list(set(data_names) - set(x_u.keys()))
+        x_n_geom = super(ParameterSpace, self).normalize_vect(x_vect)
+        x_n = self.evaluate_cdf(dict_sample, inverse=False)
+        x_n_geom = split_array_to_dict_of_arrays(x_n_geom, data_sizes, data_names)
+        missing_names = [name for name in data_names if name not in x_n]
         for name in missing_names:
-            x_u[name] = x_u_geom[name]
-        x_u = concatenate_dict_of_arrays_to_array(x_u, data_names)
-        return x_u
+            x_n[name] = x_n_geom[name]
+
+        return concatenate_dict_of_arrays_to_array(x_n, data_names)
 
     @property
     def deterministic_variables(self):  # type: (...) -> List[str]
