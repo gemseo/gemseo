@@ -728,6 +728,29 @@ def test_expect_normalized_inputs_normdbfunction(function, problem, normalize):
     assert func.expects_normalized_inputs == normalize
 
 
+def test_activate_counters():
+    """Check that the function counter is active by default."""
+    func = MDOFunction(lambda x: x, "func")
+    assert func.n_calls == 0
+    func(array([1.0]))
+    assert func.n_calls == 1
+
+
+def test_deactivate_counters():
+    """Check that the function counter is set to None when deactivated."""
+    activate_counters = MDOFunction.activate_counters
+
+    MDOFunction.activate_counters = False
+
+    func = MDOFunction(lambda x: x, "func")
+    assert func.n_calls is None
+
+    with pytest.raises(RuntimeError, match="The function counters are disabled."):
+        func.n_calls = 1
+
+    MDOFunction.activate_counters = activate_counters
+
+
 def test_get_indexed_name(function):
     """Check the indexed function name."""
     assert function.get_indexed_name(3) == "n!3"

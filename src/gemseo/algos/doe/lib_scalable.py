@@ -27,7 +27,8 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-from numpy import array
+from numpy import hstack
+from numpy import linspace
 from numpy import ndarray
 
 from gemseo.algos.doe.doe_lib import DOELibrary
@@ -124,11 +125,16 @@ class DiagonalDOE(DOELibrary):
             for index in range(start, start + sizes[name]):
                 name_by_index[index] = name
             start += sizes[name]
+
         samples = []
         for index in range(options[self.DIMENSION]):
             if str(index) in reverse or name_by_index[index] in reverse:
-                numerators = range(n_samples - 1, -1, -1)
+                start = 1.0
+                end = 0.0
             else:
-                numerators = range(0, n_samples)
-            samples.append([numerator / (n_samples - 1.0) for numerator in numerators])
-        return array(samples).T
+                start = 0.0
+                end = 1.0
+
+            samples.append(linspace(start, end, n_samples)[:, None])
+
+        return hstack(samples)

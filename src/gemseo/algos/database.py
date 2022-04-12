@@ -25,8 +25,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+import sys
 from ast import literal_eval
-from hashlib import sha1
 from itertools import chain
 from itertools import islice
 from typing import Any
@@ -45,15 +45,16 @@ from xml.etree.ElementTree import parse as parse_element
 
 import h5py
 from numpy import array
+from numpy import array_equal
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import float64
-from numpy import isclose
 from numpy import ndarray
 from numpy import string_
 from numpy import uint8
 from numpy.linalg import norm
 from six import string_types
+from xxhash._xxhash import xxh3_64_hexdigest
 
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -137,6 +138,11 @@ class Database(object):
         if input_hdf_file is not None:
             self.import_hdf(input_hdf_file)
 
+    @property
+    def last_item(self):  # type: (...) -> DatabaseValueType
+        """The last item stored in the database."""
+        return next(reversed(self.__dict.values()))
+
     def __setitem__(
         self,
         key,  # type: Union[ndarray, HashableNdarray]
@@ -154,15 +160,13 @@ class Database(object):
                 * If the key is neither an array, nor a hashable array.
                 * If the value is not a dictionary.
         """
-        if not isinstance(key, (ndarray, HashableNdarray)):
-            raise TypeError(
-                "Optimization history keys must be design variables numpy arrays."
-            )
-        if not isinstance(value, dict):
-            raise TypeError("Optimization history values must be data dictionary.")
         if isinstance(key, HashableNdarray):
             self.__dict[key] = OrderedDict(value)
         else:
+            if not isinstance(key, ndarray):
+                raise TypeError(
+                    "Optimization history keys must be design variables numpy arrays."
+                )
             self.__dict[HashableNdarray(key, True)] = OrderedDict(value)
 
     def is_new_eval(
@@ -184,9 +188,10 @@ class Database(object):
         n_cval = len(curr_val)
         return (n_cval == 1 and self.ITER_TAG in curr_val) or n_cval == 0
 
-    @staticmethod
-    def __get_hashed_key(
+    def get_hashed_key(
+        self,
         x_vect,  # type: Union[ndarray, HashableNdarray]
+        copy=False,  # type: bool
     ):  # type: (...) -> HashableNdarray
         """Convert an array to a hashable array.
 
@@ -194,30 +199,34 @@ class Database(object):
 
         Args:
             x_vect: An array.
+            copy: Whether to copy the original array.
 
         Returns:
             The input array converted to a hashable array.
 
         Raises:
-            TypeError: If the input is not an array.
+            TypeError: If the input is not an array or HashableNdarray.
         """
-        if not isinstance(x_vect, (ndarray, HashableNdarray)):
-            raise TypeError("Database keys must have ndarray type.")
         if isinstance(x_vect, ndarray):
-            return HashableNdarray(x_vect)
-        return x_vect
+            return HashableNdarray(x_vect, tight=copy)
+
+        if isinstance(x_vect, HashableNdarray):
+            if copy and not x_vect.tight:
+                x_vect.wrapped = array(x_vect.wrapped)
+
+            return x_vect
+
+        raise KeyError("Invalid key type {}.".format(type(x_vect)))
 
     def __getitem__(
         self, x_vect  # type: ndarray
-    ):  # type: (...) -> DatabaseValueType
-        hashed = self.__get_hashed_key(x_vect)
-        return self.__dict[hashed]
+    ):  # type: (...) -> DatabaseValueType | None
+        return self.__dict.get(self.get_hashed_key(x_vect))
 
     def __delitem__(
         self, x_vect  # type: ndarray
     ):  # type: (...) -> None
-        hashed = self.__get_hashed_key(x_vect)
-        del self.__dict[hashed]
+        del self.__dict[self.get_hashed_key(x_vect)]
 
     def setdefault(
         self,
@@ -305,7 +314,7 @@ class Database(object):
         Returns:
             This values of input design variables.
         """
-        return [x_vect.unwrap() for x_vect in self.__dict.keys()]
+        return [x_vect.wrapped for x_vect in self.__dict.keys()]
 
     def get_last_n_x(
         self, n  # type: int
@@ -328,7 +337,7 @@ class Database(object):
                 "the database size = {}".format(n, n_max)
             )
         return [
-            x_vect.unwrap() for x_vect in islice(self.__dict.keys(), n_max - n, n_max)
+            x_vect.wrapped for x_vect in islice(self.__dict.keys(), n_max - n, n_max)
         ]
 
     def get_index_of(
@@ -386,7 +395,7 @@ class Database(object):
         # key located at the required iteration using the islice method from
         # itertools.
         key = next(islice(iter(self.__dict), iteration, iteration + 1))
-        return key.unwrap()
+        return key.wrapped
 
     def clear(self, reset_iteration_counter=False):  # type: (...) -> None
         """Clear the database.
@@ -469,7 +478,7 @@ class Database(object):
                     val = val[0]
                 outf_l.append(val)
                 if x_hist:
-                    x_history.append(x_vect.unwrap())
+                    x_history.append(x_vect.wrapped)
         outf = array(outf_l)
         if x_hist:
             return outf, x_history
@@ -543,13 +552,15 @@ class Database(object):
             the required input values.
             ``None`` if no point matches.
         """
-        if isclose(dist_tol, 0.0, rtol=1e-16):
-            vals = self.get(x_vect)
-            if vals is not None:
-                return vals.get(fname)  # Returns None if not in self
+        if abs(dist_tol) < sys.float_info.epsilon:
+            val = self.get(x_vect)
+            if val is not None:
+                return val.get(fname)
         else:
+            if isinstance(x_vect, HashableNdarray):
+                x_vect = x_vect.wrapped
             for x_key, vals in self.items():
-                x_v = x_key.unwrap()
+                x_v = x_key.wrapped
                 if norm(x_v - x_vect) <= dist_tol * norm(x_v):
                     return vals.get(fname)
         return None
@@ -573,11 +584,6 @@ class Database(object):
             TypeError: If the type of the required key is neither an array
                 nor a hashable array.
         """
-        if not isinstance(x_vect, (HashableNdarray, ndarray)):
-            raise TypeError(
-                "The key must be an ndarray with the values "
-                "of the input design variables."
-            )
         if isinstance(x_vect, ndarray):
             x_vect = HashableNdarray(x_vect)
         return self.__dict.get(x_vect, default)
@@ -628,33 +634,33 @@ class Database(object):
             values_dict: The output values corresponding to the input values.
             add_iter: True if iterations are added to the output values, False otherwise.
         """
-        self.__hdf_export_buffer.append(self.__get_hashed_key(x_vect))
+        x_vect_hash = self.get_hashed_key(x_vect, True)
 
         n_values = len(values_dict)
         values_not_empty = n_values > 1 or (
             n_values == 1 and self.ITER_TAG not in values_dict
         )
-        if self.contains_x(x_vect):
-            curr_val = self.get_value(x_vect)
+        curr_val = self.get(x_vect_hash)
+        self.__hdf_export_buffer.append(x_vect_hash)
+        if curr_val is None:
+            self.__max_iteration += 1
+            cval_ok = True
+            curr_val = values_dict
+            if add_iter:
+                curr_val[self.ITER_TAG] = [self.__max_iteration]
+            self[x_vect_hash] = curr_val
+        else:
             # No new keys = already computed = new iteration
             # otherwise just calls to other functions
             cval_ok = (len(curr_val) == 1 and self.ITER_TAG in curr_val) or not curr_val
-            curr_val.update(OrderedDict(values_dict))
-            self[x_vect] = curr_val
+            curr_val.update(values_dict)
+
+        if self.__store_listeners:
             self.notify_store_listeners()
-            # Notify the new iteration after storing x_vect
-            # because callbacks may need an updated x_vect
+        # Notify the new iteration after storing x_vect
+        # because callbacks may need an updated x_vect
+        if self.__newiter_listeners:
             if cval_ok and values_not_empty:
-                self.notify_newiter_listeners(x_vect)
-        else:
-            self.__max_iteration += 1
-            if add_iter:
-                values_dict = dict(
-                    values_dict, **{self.ITER_TAG: [self.__max_iteration]}
-                )
-            self[x_vect] = values_dict
-            self.notify_store_listeners()
-            if values_not_empty:
                 self.notify_newiter_listeners(x_vect)
 
     def add_store_listener(
@@ -680,7 +686,8 @@ class Database(object):
         """Add a listener to be called when a new iteration is stored to the database.
 
         Args:
-            listener_func: The function to be called.
+            listener_func: The function to be called, it must have one argument that is
+                the current x_vector.
 
         Raises:
             TypeError: If the argument is not a callable.
@@ -709,14 +716,15 @@ class Database(object):
             x_vect: The values of the design variables. If None, use
                 the values of the last iteration.
         """
-        if x_vect is None:
+        if not self.__newiter_listeners:
+            return
+        if isinstance(x_vect, HashableNdarray):
+            x_vect = x_vect.wrapped
+        elif x_vect is None:
             x_vect = self.get_x_by_iter(-1)
 
         for func in self.__newiter_listeners:
-            try:
-                func(x_vect)
-            except TypeError:
-                func()
+            func(x_vect)
 
     def get_all_data_names(
         self,
@@ -840,7 +848,7 @@ class Database(object):
                         out_vals.append(missing_tag)
                 if out_vals:
                     f_history.append(out_vals)
-                    x_history.append(x_vect.unwrap())
+                    x_history.append(x_vect.wrapped)
         return f_history, x_history
 
     @staticmethod
@@ -881,7 +889,7 @@ class Database(object):
             )
 
         design_vars_group.create_dataset(
-            str(index_dataset), data=design_vars_values.unwrap()
+            str(index_dataset), data=design_vars_values.wrapped
         )
 
     def _add_hdf_output_dataset(
@@ -1462,20 +1470,25 @@ class HashableNdarray(object):
         """
         self.__tight = tight
         self.wrapped = array(wrapped) if tight else wrapped
-        self.__hash = int(sha1(wrapped.view(uint8)).hexdigest(), 16)
+        self.__hash = int(xxh3_64_hexdigest(wrapped.view(uint8)), 16)
+
+    @property
+    def tight(self) -> bool:
+        """Whether the wrapped array is a copy of the original one.copied."""
+        return self.__tight
 
     def __eq__(
         self, other  # type: Any
     ):  # type: (...) -> bool
-        if not isinstance(other, HashableNdarray):
+        if hash(self) != hash(other):
             return False
-        return all(self.wrapped == other.wrapped)
+        return array_equal(self.wrapped, other.wrapped)
 
     def __hash__(self):  # type: (...) -> int
         return self.__hash
 
     def __str__(self):  # type: (...) -> str
-        return str(array(self.wrapped))
+        return str(self.wrapped)
 
     def __repr__(self):  # type: (...) -> str
         return str(self)

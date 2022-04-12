@@ -23,11 +23,13 @@ from __future__ import unicode_literals
 
 import json
 import re
-from unittest import mock
 
 import pytest
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.driver_lib import DriverLib
 from gemseo.api import AlgorithmFeatures
 from gemseo.api import compute_doe
+from gemseo.api import configure
 from gemseo.api import create_cache
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
@@ -74,10 +76,14 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.scenario import Scenario
+from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.utils.py23_compat import Path
+from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
@@ -729,6 +735,25 @@ def test_print_configuration(capfd):
     out, err = capfd.readouterr()
     assert not err
 
+    expected = MultiLineString()
+    expected.add("Settings")
+    expected.indent()
+    expected.add("MDODiscipline")
+    expected.indent()
+    expected.add("The caches are activated.")
+    expected.add("The counters are activated.")
+    expected.add("The input data are checked before running the discipline.")
+    expected.add("The output data are checked after running the discipline.")
+    expected.dedent()
+    expected.add("MDOFunction")
+    expected.indent()
+    expected.add("The counters are activated.")
+    expected.dedent()
+    expected.add("DriverLib")
+    expected.indent()
+    expected.add("The progress bar is activated.")
+    assert str(expected) in out
+
     gemseo_modules = [
         "MDODiscipline",
         "OptimizationLibrary",
@@ -777,26 +802,24 @@ def test_get_schema_pretty_print(capfd):
 @pytest.fixture(scope="module")
 def variables_space():
     """A mock design space."""
-    design_space = mock.Mock()
-    design_space.dimension = 2
-    design_space.untransform_vect = mock.Mock(return_value=array([1, 2]))
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=2.0, value=1.0)
+    design_space.add_variable("y", l_b=-1.0, u_b=1.0, value=0.0)
     return design_space
 
 
 def test_compute_doe_transformed(variables_space):
     """Check the computation of a transformed DOE in a variables space."""
-    points = compute_doe(variables_space, size=3, algo_name="lhs", unit_sampling=True)
-    assert points.shape == (3, 2)
-    assert points.max() <= 1.0
-    assert points.min() >= 0.0
-    variables_space.untransform_vect.assert_not_called()
+    points = compute_doe(
+        variables_space, size=4, algo_name="fullfact", unit_sampling=True
+    )
+    assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
 
 
 def test_compute_doe_nontransformed(variables_space):
     """Check the computation of a non-transformed DOE in a variables space."""
-    points = compute_doe(variables_space, size=3, algo_name="lhs")
-    assert points.shape == (3, 2)
-    assert variables_space.untransform_vect.call_count == 3
+    points = compute_doe(variables_space, size=4, algo_name="fullfact")
+    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
 def test_import_discipline(tmp_wd):
@@ -812,6 +835,67 @@ def test_import_discipline(tmp_wd):
 
     assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
     assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
+
+
+@pytest.mark.parametrize("activate_discipline_counters", [False, True])
+@pytest.mark.parametrize("activate_function_counters", [False, True])
+@pytest.mark.parametrize("activate_progress_bar", [False, True])
+@pytest.mark.parametrize("activate_discipline_cache", [False, True])
+@pytest.mark.parametrize("check_input_data", [False, True])
+@pytest.mark.parametrize("check_output_data", [False, True])
+def test_configure(
+    activate_discipline_counters,
+    activate_function_counters,
+    activate_progress_bar,
+    activate_discipline_cache,
+    check_input_data,
+    check_output_data,
+):
+    """Check that the configuration of GEMSEO works correctly."""
+    configure(
+        activate_discipline_counters=activate_discipline_counters,
+        activate_function_counters=activate_function_counters,
+        activate_progress_bar=activate_progress_bar,
+        activate_discipline_cache=activate_discipline_cache,
+        check_input_data=check_input_data,
+        check_output_data=check_output_data,
+    )
+    assert MDOFunction.activate_counters == activate_function_counters
+    assert MDODiscipline.activate_counters == activate_discipline_counters
+    assert MDODiscipline.activate_input_data_check == check_input_data
+    assert MDODiscipline.activate_output_data_check == check_output_data
+    assert MDODiscipline.activate_cache == activate_discipline_cache
+    assert DriverLib.activate_progress_bar == activate_progress_bar
+    assert Scenario.activate_input_data_check
+    assert Scenario.activate_output_data_check
+    assert MDA.activate_cache
+    configure(
+        activate_discipline_counters=True,
+        activate_function_counters=True,
+        activate_progress_bar=True,
+        activate_discipline_cache=True,
+        check_input_data=True,
+        check_output_data=True,
+    )
+
+
+def test_configure_default():
+    """Check the default use of configure."""
+    configure()
+    assert MDOFunction.activate_counters is False
+    assert MDODiscipline.activate_counters is False
+    assert MDODiscipline.activate_input_data_check is False
+    assert MDODiscipline.activate_output_data_check is False
+    assert MDODiscipline.activate_cache is False
+    assert DriverLib.activate_progress_bar is False
+    configure(
+        activate_discipline_counters=True,
+        activate_function_counters=True,
+        activate_progress_bar=True,
+        activate_discipline_cache=True,
+        check_input_data=True,
+        check_output_data=True,
+    )
 
 
 def test_algo_features():

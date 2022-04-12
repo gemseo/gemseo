@@ -105,8 +105,18 @@ class DOEScenario(Scenario):
         if options is None:
             options = {}
 
-        lib = self._algo_factory.create(algo_name)
-        lib.init_options_grammar(algo_name)
+        # Store the lib in case we rerun the same algorithm,
+        # for multilevel scenarios for instance
+        # This significantly speedups the process
+        # also because of the option grammar that is long to create
+        if self._algo_name is not None and self._algo_name == algo_name:
+            lib = self._lib
+        else:
+            lib = self._algo_factory.create(algo_name)
+            lib.init_options_grammar(algo_name)
+            self._lib = lib
+            self._algo_name = algo_name
+
         if self.SEED in lib.opt_grammar.get_data_names() and self.SEED not in options:
             options[self.SEED] = self.seed
 

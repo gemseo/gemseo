@@ -1383,10 +1383,9 @@ def test_export_to_dataset(input_values, expected):
 @pytest.fixture(scope="module")
 def problem_with_complex_value() -> OptimizationProblem:
     """A problem using a design space with a float variable whose value is complex."""
-    x = array([1.0 + 0j])
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space._current_x["x"] = x
+    design_space.set_current_x(({"x": array([1.0 + 0j])}))
     return OptimizationProblem(design_space)
 
 

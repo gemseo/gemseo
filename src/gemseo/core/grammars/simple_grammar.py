@@ -73,6 +73,11 @@ class SimpleGrammar(AbstractGrammar):
         if required_names is not None:
             self._required_names.update(required_names)
 
+    @property
+    def data_names_keyset(self):  # type: (...) -> Iterable[str]
+        """The data names of the grammar as dict_keys."""
+        return self._names_to_types.keys()
+
     def is_required(
         self, element_name  # type: str
     ):  # type: (...) -> bool

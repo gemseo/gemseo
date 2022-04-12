@@ -61,8 +61,8 @@ maximize_objective = True
 # Then, we create the disciplinary :class:`.AbstractFullCache` datasets
 # based on a :class:`.DiagonalDOE`.
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
+datasets = []
 for discipline in disciplines:
-    discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = AerostructureDesignSpace()
     design_space.filter(discipline.get_input_data_names())
     output = next(iter(discipline.get_output_data_names()))
@@ -70,6 +70,7 @@ for discipline in disciplines:
         discipline, "DisciplinaryOpt", output, design_space, scenario_type="DOE"
     )
     scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
+    datasets.append(scenario.export_to_dataset(opt_naming=False))
 
 ###############################################################################
 # Instantiate a scalable problem
@@ -77,7 +78,6 @@ for discipline in disciplines:
 # In a third stage, we instantiate a :class:`.ScalableProblem`
 # from these disciplinary datasets and from the definition of the MDO problem.
 # We also increase the dimension of the sweep parameter.
-datasets = [discipline.cache.export_to_dataset() for discipline in disciplines]
 problem = ScalableProblem(
     datasets,
     design_variables,

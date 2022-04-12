@@ -51,7 +51,6 @@ configure_logger()
 discipline = create_discipline(
     "AnalyticDiscipline", expressions={"z": "2*x-3*sin(2*pi*y)"}
 )
-discipline.set_cache_policy("MemoryFullCache")
 
 ###############################################################################
 # Create the design space
@@ -76,7 +75,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
 
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 dataset.plot("ScatterMatrix", save=False, show=False)
 
 ###############################################################################
@@ -89,7 +88,6 @@ dataset.plot("ScatterMatrix", save=False, show=False)
 # where the :math:`(x,y)` points follow the :math:`t\mapsto -t` line
 # while  the :math:`(x,y)` points follow the :math:`t\mapsto t` line
 # with the default configuration.
-discipline.cache.clear()
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "z", design_space, scenario_type="DOE"
 )
@@ -97,7 +95,7 @@ scenario.execute(
     {"algo": "DiagonalDOE", "n_samples": 10, "algo_options": {"reverse": ["y"]}}
 )
 
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 dataset.plot("ScatterMatrix", save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

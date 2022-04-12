@@ -224,29 +224,47 @@ def test_range():
     assert allclose(rng[2][1], -rng[2][0])
 
 
-def test_normalize():
-    """Check that normalize works correctly."""
+@pytest.fixture(scope="module")
+def parameter_space():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
     space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
     space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
-    vector = array([0.5] * 6)
-    u_vector = space.normalize_vect(vector, use_dist=True)
-    expectation = array([0.5] * 2 + [0.25] + [0.598706] * 3)
+    return space
+
+
+@pytest.mark.parametrize("one_dim", [True, False])
+def test_normalize(parameter_space, one_dim):
+    """Check that normalize works correctly with both 1D and 2D arrays."""
+    if one_dim:
+        vector = array([0.5] * 6)
+    else:
+        vector = array([0.5] * 12).reshape((2, 6))
+
+    u_vector = parameter_space.normalize_vect(vector, use_dist=True)
+    values = [0.5] * 2 + [0.25] + [0.598706] * 3
+    if one_dim:
+        expectation = array(values)
+    else:
+        expectation = array([values, values])
     assert allclose(u_vector, expectation, 1e-3)
 
 
-def test_unnormalize():
-    """Check that unnormalize works correctly."""
-    space = ParameterSpace()
-    space.add_variable("x1")
-    space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
-    u_vector = array([0.5] * 2 + [0.25] + [0.598706] * 3)
-    vector = space.unnormalize_vect(u_vector, use_dist=True)
-    expectation = array([0.5] * 6)
+@pytest.mark.parametrize("one_dim", [True, False])
+def test_unnormalize(parameter_space, one_dim):
+    """Check that unnormalize works correctly with both 1D and 2D arrays."""
+    values = [0.5] * 2 + [0.25] + [0.598706] * 3
+    if one_dim:
+        u_vector = array(values)
+    else:
+        u_vector = array([values, values])
+    vector = parameter_space.unnormalize_vect(u_vector, use_dist=True)
+    values = [0.5] * 6
+    if one_dim:
+        expectation = array(values)
+    else:
+        expectation = array([values, values])
     assert allclose(vector, expectation, 1e-3)
 
 

@@ -166,8 +166,10 @@ from typing import Union
 from numpy import ndarray
 from six import string_types
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -187,7 +189,6 @@ if TYPE_CHECKING:
         ScalableDiscipline,
     )
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
@@ -1516,6 +1517,9 @@ def print_configuration():  # type: (...) -> None
     from gemseo.post.post_factory import PostFactory
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
+    settings = _log_settings()
+    LOGGER.info("%s", settings)
+    print(settings)  # noqa: T001
     for factory in (
         DisciplinesFactory,
         OptimizersFactory,
@@ -1841,6 +1845,51 @@ def compute_doe(
     )
 
 
+def _log_settings():  # type: (...) -> None
+    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+    add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
+    add_not_prefix = lambda x: "" if x else " not"  # noqa: E731
+    text = MultiLineString()
+    text.add("Settings")
+    text.indent()
+    text.add("MDODiscipline")
+    text.indent()
+    text.add(
+        "The caches are {}activated.",
+        add_de_prefix(MDODiscipline.activate_cache),
+    )
+    text.add(
+        "The counters are {}activated.",
+        add_de_prefix(MDODiscipline.activate_counters),
+    )
+    text.add(
+        "The input data are{} checked before running the discipline.",
+        add_not_prefix(MDODiscipline.activate_input_data_check),
+    )
+    text.add(
+        "The output data are{} checked after running the discipline.",
+        add_not_prefix(MDODiscipline.activate_output_data_check),
+    )
+    text.dedent()
+    text.add("MDOFunction")
+    text.indent()
+    text.add(
+        "The counters are {}activated.",
+        add_de_prefix(MDOFunction.activate_counters),
+    )
+    text.dedent()
+    text.add("DriverLib")
+    text.indent()
+    text.add(
+        "The progress bar is {}activated.",
+        add_de_prefix(DriverLib.activate_progress_bar),
+    )
+    return text
+
+
 AlgorithmFeatures = namedtuple(
     "AlgorithmFeature",
     [
@@ -1890,3 +1939,55 @@ def get_algorithm_features(
         handle_multiobjective=features.get(driver.HANDLE_MULTIOBJECTIVE, False),
         require_gradient=features.get(driver.REQUIRE_GRAD, False),
     )
+
+
+def configure(
+    activate_discipline_counters=False,  # type: bool
+    activate_function_counters=False,  # type: bool
+    activate_progress_bar=False,  # type: bool
+    activate_discipline_cache=False,  # type: bool
+    check_input_data=False,  # type: bool
+    check_output_data=False,  # type: bool
+    check_desvars_bounds=False,  # type: bool
+):  # type: (...) -> None
+    """Update the configuration of |g| if needed.
+
+    This could be useful to speed up calculations in presence of cheap disciplines
+    such as analytic formula and surrogate models.
+
+    Warning:
+        This function should be called before calling anything from |g|.
+
+    Args:
+        activate_discipline_counters: Whether to activate the counters
+            attached to the disciplines,
+            in charge of counting their execution time,
+            number of evaluations
+            and number of linearizations.
+        activate_function_counters: Whether to activate the counters
+            attached to the functions,
+            in charge of counting their number of evaluations.
+        activate_progress_bar: Whether to activate the progress bar
+            attached to the drivers,
+            in charge to log the execution of the process:
+            iteration, execution time and objective value.
+        activate_discipline_cache: Whether to activate the discipline cache.
+        check_input_data: Whether to check the input data of a discipline
+            before execution.
+        check_output_data: Whether to check the output data of a discipline
+            before execution.
+        check_desvars_bounds: Whether to check the membership of design variables
+            in the bounds when evaluating the functions in OptimizationProblem.
+    """
+    from gemseo.algos.driver_lib import DriverLib
+    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
+
+    MDODiscipline.activate_counters = activate_discipline_counters
+    MDOFunction.activate_counters = activate_function_counters
+    DriverLib.activate_progress_bar = activate_progress_bar
+    MDODiscipline.activate_input_data_check = check_input_data
+    MDODiscipline.activate_output_data_check = check_output_data
+    MDODiscipline.activate_cache = activate_discipline_cache
+    OptimizationProblem.activate_bound_check = check_desvars_bounds

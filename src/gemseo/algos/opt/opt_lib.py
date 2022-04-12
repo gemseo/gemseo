@@ -175,7 +175,7 @@ class OptimizationLibrary(DriverLib):
         self.init_iter_observer(max_iter, "Optimization")
         problem.add_callback(self.new_iteration_callback)
         eval_jac = self.is_algo_requires_grad(algo_name)
-        normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, True)
+        normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS)
         # First, evaluate all functions at x_0. Some algorithms don't do this
         self.problem.evaluate_functions(
             eval_jac=eval_jac, eval_obj=True, normalize=normalize

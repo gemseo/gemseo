@@ -146,10 +146,13 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The evaluations of the discipline.
         """
-        discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
+        objective_name = self.default_output[0]
         scenario = DOEScenario(
-            [discipline], "DisciplinaryOpt", self.default_output[0], parameter_space
+            [discipline], "DisciplinaryOpt", objective_name, parameter_space
         )
+        for output_name in discipline.get_output_data_names():
+            if output_name != objective_name:
+                scenario.add_observable(output_name)
         scenario.execute(
             {
                 "algo": self._algo_name,
@@ -157,8 +160,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
                 "algo_options": options,
             }
         )
-        inputs = parameter_space.variables_names
-        return discipline.cache.export_to_dataset(input_names=inputs)
+        return scenario.export_to_dataset(opt_naming=False)
 
     @property
     def inputs_names(self):  # type: (...) -> List[str]

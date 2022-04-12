@@ -59,7 +59,6 @@ from typing import Mapping
 from typing import Optional
 from typing import Union
 
-from numpy import argmax
 from numpy import argmin
 from numpy import array
 from numpy import ndarray
@@ -233,7 +232,6 @@ class MLAlgoCalibration(object):
         self.algo_assessor = disc
         self.calibration_space = calibration_space
         self.maximize_objective = not measure.SMALLER_IS_BETTER
-        disc.set_cache_policy(disc.MEMORY_FULL_CACHE)
         self.dataset = None
         self.optimal_parameters = None
         self.optimal_criterion = None
@@ -269,20 +267,12 @@ class MLAlgoCalibration(object):
                 self.calibration_space,
                 maximize_objective=self.maximize_objective,
             )
-        self.scenario.disciplines[0].cache.clear()
+        self.scenario.add_observable(self.algo_assessor.LEARNING)
         self.scenario.execute(input_data)
         x_opt = self.scenario.design_space.get_current_x_dict()
         f_opt = self.scenario.get_optimum().f_opt
-        cache = self.scenario.disciplines[0].cache
-        self.dataset = cache.export_to_dataset(by_group=False)
-        if self.maximize_objective:
-            algo_opt = self.algos[
-                argmax(self.get_history(self.algo_assessor.CRITERION))
-            ]
-        else:
-            algo_opt = self.algos[
-                argmin(self.get_history(self.algo_assessor.CRITERION))
-            ]
+        self.dataset = self.scenario.export_to_dataset(by_group=False, opt_naming=False)
+        algo_opt = self.algos[argmin(self.get_history(self.algo_assessor.CRITERION))]
         self.optimal_parameters = x_opt
         self.optimal_criterion = f_opt
         self.optimal_algorithm = algo_opt
@@ -300,7 +290,10 @@ class MLAlgoCalibration(object):
             The history of the variable.
         """
         if self.dataset is not None:
-            return self.dataset.data[name]
+            if name == self.algo_assessor.CRITERION and self.maximize_objective:
+                return -self.dataset.data["-" + name]
+            else:
+                return self.dataset.data[name]
 
     @property
     def algos(self):  # type: (...) -> MLAlgo

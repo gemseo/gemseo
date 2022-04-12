@@ -546,8 +546,9 @@ class JacobianAssembly(object):
         self._add_differentiated_inouts(functions, variables, couplings)
 
         for disc in self.coupling_structure.disciplines:
-            if exec_cache_tol is not None:
+            if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
+
             disc.linearize(in_data, force_no_exec=force_no_exec)
 
         # compute the sizes from the Jacobians

@@ -69,6 +69,8 @@ class ConsistencyCstr(MDOFunction):
         else:
             self.__norm_fact = 1.0
 
+        self.__dv_len = self.__formulation.design_space.variables_sizes
+
         expr = ""
         for out_c in self.__output_couplings:
             expr += "{0}({1}) - {0}\n".format(out_c, ", ".join(self.__dv_names_of_disc))
@@ -126,12 +128,12 @@ class ConsistencyCstr(MDOFunction):
             o_min = 0
             o_max = 0
             for out in self.__output_couplings:
-                o_len = self.__formulation._get_dv_length(out)
+                o_len = self.__dv_len[out]
                 i_min = 0
                 i_max = 0
                 o_max += o_len
                 for x_i in x_names:
-                    x_len = self.__formulation._get_dv_length(x_i)
+                    x_len = self.__dv_len[x_i]
                     i_max += x_len
                     if x_i == out:
                         x_jac_2d[o_min:o_max, i_min:i_max] = eye(x_len)

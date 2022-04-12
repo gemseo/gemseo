@@ -310,8 +310,10 @@ class MDOScenarioAdapter(MDODiscipline):
                 if disc.is_input_existing(indata):
                     disc.default_inputs[indata] = self.local_data[indata]
 
-        # Default inputs have changed, therefore caches shall be cleared
-        self.scenario.cache.clear()
+        if self.scenario.cache is not None:
+            # Default inputs have changed, therefore caches shall be cleared
+            self.scenario.cache.clear()
+
         self.scenario.reset_statuses_for_run()
 
         self._reset_optimization_problem()
@@ -604,25 +606,30 @@ class MDOObjScenarioAdapter(MDOScenarioAdapter):
     def _retrieve_top_level_outputs(self):  # type: (...) -> None
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
-        top_leveld = formulation.get_top_level_disc()
+        top_level_disciplines = formulation.get_top_level_disc()
 
         # Get the optimal outputs
-        optim_data = opt_problem.design_space.get_current_x_dict()
+        optimum = opt_problem.design_space.get_current_x_dict()
         f_opt = opt_problem.get_optimum()[0]
         if not opt_problem.minimize_objective:
             f_opt = -f_opt
         if not opt_problem.is_mono_objective:
             raise ValueError("The objective function must be single-valued.")
-        optim_data[opt_problem.objective.outvars[0]] = atleast_1d(f_opt)
 
         # Overwrite the adapter local data
-        for outdata in self._outputs_list:
-            for disc in top_leveld:
-                if disc.is_output_existing(outdata) and outdata not in optim_data:
-                    self.local_data[outdata] = disc.local_data[outdata]
-            out_ds = optim_data.get(outdata)
-            if out_ds is not None:
-                self.local_data[outdata] = out_ds
+        objective = opt_problem.objective.outvars[0]
+        if objective in self._outputs_list:
+            self.local_data[objective] = atleast_1d(f_opt)
+
+        for output in self._outputs_list:
+            if output != objective:
+                for discipline in top_level_disciplines:
+                    if discipline.is_output_existing(output) and output not in optimum:
+                        self.local_data[output] = discipline.local_data[output]
+
+                value = optimum.get(output)
+                if value is not None:
+                    self.local_data[output] = value
 
     def _compute_jacobian(
         self,

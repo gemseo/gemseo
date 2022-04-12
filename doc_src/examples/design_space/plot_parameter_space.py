@@ -79,10 +79,9 @@ print(sample)
 # --------------------------------------------
 # We can also sample a discipline over the parameter space. For simplicity,
 # we instantiate an :class:`.AnalyticDiscipline` from a dictionary of
-# expressions and update the cache policy # so as to cache all data in memory.
+# expressions.
 
 discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
-discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 
 ###############################################################################
 # From these parameter space and discipline, we build a :class:`.DOEScenario`
@@ -103,9 +102,9 @@ scenario = create_scenario(
 scenario.execute({"algo": "lhs", "n_samples": 100})
 
 ###############################################################################
-# We can visualize the result by encapsulating the disciplinary cache in
+# We can visualize the result by encapsulating the database in
 # a :class:`.Dataset`:
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 
 ###############################################################################
 # This visualization can be tabular for example:
@@ -123,9 +122,8 @@ dataset.plot("ScatterMatrix")
 parameter_space.filter(parameter_space.uncertain_variables)
 
 ###############################################################################
-# Then, we clear the cache, create a new scenario from this parameter space
+# Then, we create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
-discipline.cache.clear()
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
 )
@@ -136,5 +134,5 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # We can see that the deterministic variable 'x' is set to its default
 # value for all evaluations, contrary to the previous case where we were
 # considering the whole parameter space.
-dataset = discipline.cache.export_to_dataset()
+dataset = scenario.export_to_dataset(opt_naming=False)
 print(dataset.export_to_dataframe())

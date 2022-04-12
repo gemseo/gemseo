@@ -108,11 +108,10 @@ class LagrangeMultipliers(object):
         """
         if not isinstance(opt_problem, OptimizationProblem):
             raise ValueError(
-                "Argument of LagrangeMultiplier class"
-                + " has to be an instance of OptimizationProblem"
+                "LagrangeMultipliers must be initialized with an OptimizationProblem."
             )
         if opt_problem.solution is None:
-            raise ValueError("Optimization problem was not solved !")
+            raise ValueError("The optimization problem was not solved.")
 
     def compute(self, x_vect, ineq_tolerance=1e-6, rcond=-1):
         """Computes and returns the Lagrange multipliers, as a post-processing of the

@@ -114,6 +114,8 @@ class JSONGrammar(AbstractGrammar):
         self.schema = None
         self._schema_dict = None
         self._properties_dict = None
+        self.__data_names = None
+        self.__data_names_keyset = None
         self._init_schema()
 
         if schema is not None:
@@ -131,6 +133,8 @@ class JSONGrammar(AbstractGrammar):
         self.schema = MutableMappingSchemaBuilder()
         self._schema_dict = None
         self._properties_dict = None
+        self.__data_names = None
+        self.__data_names_keyset = None
 
     @property
     def schema_dict(self):  # type: (...) -> Dict[str,DictSchemaType]
@@ -138,6 +142,23 @@ class JSONGrammar(AbstractGrammar):
         if self._schema_dict is None:
             self._schema_dict = self.schema.to_schema()
         return self._schema_dict
+
+    @property
+    def data_names(self):  # type: (...) -> List[str]
+        """The data names of the grammar."""
+        if self.__data_names is None:
+            self.__data_names = list(self.data_names_keyset)
+        return self.__data_names
+
+    @property
+    def data_names_keyset(self):  # type: (...) -> Iterable[str]
+        """The data names of the grammar as dict_keys."""
+        if self.__data_names_keyset is None:
+            try:
+                self.__data_names_keyset = self.properties_dict
+            except ValueError:
+                self.__data_names_keyset = {}
+        return self.__data_names_keyset
 
     @property
     def properties_dict(self):  # type: (...) -> Dict[str,DictSchemaType]
@@ -397,7 +418,7 @@ class JSONGrammar(AbstractGrammar):
         self.__set_grammar_from_dict(self.schema, description_dict)
 
     def get_data_names(self):  # type: (...) -> List[str]
-        return list(self.schema.keys())
+        return self.data_names
 
     def is_data_name_existing(
         self,
@@ -535,6 +556,8 @@ class JSONGrammar(AbstractGrammar):
         self._validator = None
         self._properties_dict = None
         self._schema_dict = None
+        self.__data_names = None
+        self.__data_names_keyset = None
 
     def set_item_value(
         self,

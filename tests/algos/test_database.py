@@ -127,11 +127,9 @@ def test_set_item():
     with pytest.raises(TypeError):
         database.setdefault(hash_k, k)
     database.setdefault(hash_k, {"f": 1})
-    with pytest.raises(TypeError):
-        database.get(1.0)
-    with pytest.raises(TypeError):
-        database.get(1.0)
-    with pytest.raises(TypeError):
+    assert database.get(1.0) is None
+    assert database.get(1.0) is None
+    with pytest.raises(KeyError):
         database[1.0]
     database.get(k)
     database[k]
@@ -143,8 +141,13 @@ def test_set_wrong_item():
     msg = "Optimization history keys must be design variables numpy arrays"
     with pytest.raises(TypeError, match=msg):
         database["1"] = "toto"
-    msg = "Optimization history values must be data dictionary"
-    with pytest.raises(TypeError, match=msg):
+
+    if PY2:
+        msg = "need more than 1 value to unpack"
+    else:
+        msg = "dictionary update sequence "
+
+    with pytest.raises(ValueError, match=msg):
         database[array([1.0])] = "toto"
 
 
@@ -734,17 +737,21 @@ def test_name():
     assert Database(name="my_database").name == "my_database"
 
 
-def test_newiter_listeners_no_x():
-    """Test that new iter listeners are properly called when no x_vect is given."""
+def test_notify_newiter_listeners():
+    """Check that notify_newiter_listeners works properly."""
     database = Database()
-    database.store(
-        array([0.79499653, 0.20792012, 0.96630481]),
-        {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
-    )
-    database.add_new_iter_listener(lambda x: x)
+    database.x_sum = 0
 
-    # This call would fail without an x_vect
+    def add(x):
+        database.x_sum += x
+
+    database.store(array([1]), {"y": 0})
+    assert database.notify_newiter_listeners() is None
+    database.add_new_iter_listener(add)
     database.notify_newiter_listeners()
+    assert database.x_sum == 1
+    database.notify_newiter_listeners(HashableNdarray(array([2])))
+    assert database.x_sum == 3
 
 
 @pytest.fixture
@@ -763,3 +770,8 @@ def test_clear(simple_database, reset_iteration_counter, max_iteration):
     simple_database.clear(reset_iteration_counter)
     assert len(simple_database) == 0
     assert simple_database.get_max_iteration() == max_iteration
+
+
+def test_last_item(simple_database):
+    """Check that the property last_item is the last item stored in the database."""
+    assert simple_database.last_item["y"] == 1.0

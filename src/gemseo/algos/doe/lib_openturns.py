@@ -499,4 +499,4 @@ class OpenTURNS(DOELibrary):
             The samples.
         """
         samples = array(openturns.RandomGenerator.Generate(dimension * n_samples))
-        return samples.reshape((n_samples, dimension), order="F")
+        return samples.reshape((n_samples, dimension))

@@ -105,7 +105,7 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 
 ###############################################################################
 # We can export the optimization problem to a :class:`.Dataset`:
-dataset = scenario.formulation.opt_problem.export_to_dataset(name="samples")
+dataset = scenario.export_to_dataset(name="samples")
 
 ###############################################################################
 # and visualize it in a tabular way:
@@ -128,7 +128,6 @@ uncertain_space = parameter_space.extract_uncertain_space()
 ###############################################################################
 # Then, we clear the cache, create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
-discipline.cache.clear()
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", uncertain_space, scenario_type="DOE"
 )
@@ -140,5 +139,5 @@ scenario.execute({"algo": "lhs", "n_samples": 100})
 # We can see that the deterministic variable 'x' is set to its default value
 # for all evaluations,
 # contrary to the previous case where we were considering the whole parameter space:
-dataset = scenario.formulation.opt_problem.export_to_dataset(name="samples")
+dataset = scenario.export_to_dataset(name="samples")
 print(dataset.export_to_dataframe())

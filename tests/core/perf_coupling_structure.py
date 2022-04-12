@@ -20,6 +20,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from base_benchmarkee import BaseBenchmarkee
 from pyperf import Runner
 
 
@@ -78,19 +79,6 @@ def _compute_graph(nodes):
 #         graph[disc_i] = successors_i
 #         disc_i += 1
 #     return graph, edges
-
-
-class BaseBenchmarkee:
-    """Abstract base class for benchmarked code."""
-
-    def __init__(self):
-        self.setup()
-
-    def setup(self):
-        """Prepare data for the benchmarked run method."""
-
-    def run(self):
-        """Run the code to be benchmarked."""
 
 
 class ComputeGraphBenchmarkee(BaseBenchmarkee):

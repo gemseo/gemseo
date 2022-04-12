@@ -101,11 +101,16 @@ def test_update_dict_of_arrays_from_array_wrong_data_type(dict_to_be_updated):
         )
 
 
-@pytest.mark.parametrize("source_dict", [{"y": None}, {"z": array([1.0])}])
-def test_update_dict_of_arrays_from_array_wrong_name(source_dict):
-    with pytest.raises(ValueError, match="There is no reference data for y."):
+def test_update_dict_of_arrays_from_array_wrong_name():
+    with pytest.raises(KeyError, match="y"):
         update_dict_of_arrays_from_array(
-            source_dict,
+            {"z": array([1.0])},
+            ["y"],
+            array([0.5]),
+        )
+    with pytest.raises(AttributeError, match="'int' object has no attribute 'size'"):
+        update_dict_of_arrays_from_array(
+            {"y": 1},
             ["y"],
             array([0.5]),
         )
@@ -130,10 +135,10 @@ def test_update_dict_of_arrays_from_array_too_short(dict_to_be_updated):
     """Check that updating a dictionary with an array that is too short raises an
     error."""
     with pytest.raises(
-        Exception,
-        match=(
-            r"Inconsistent input array size of values array \[0.5\] "
-            r"with reference data shape \(2L?,\) for data named: z\."
+        ValueError,
+        match=re.escape(
+            "Inconsistent input array size of values array [0.5] "
+            "with reference data shape (2,) for data named: z."
         ),
     ):
         update_dict_of_arrays_from_array(dict_to_be_updated, "z", array([0.5]))

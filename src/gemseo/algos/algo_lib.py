@@ -85,6 +85,7 @@ class AlgoLib(object):
         self.algo_name = None
         self.internal_algo_name = None
         self.problem = None
+        self.opt_grammar = None
 
     def init_options_grammar(
         self,
@@ -94,6 +95,13 @@ class AlgoLib(object):
 
         :param algo_name: The name of the algorithm.
         """
+        # Store the lib in case we rerun the same algorithm,
+        # for multilevel scenarios for instance
+        # This significantly speedups the process
+        # because of the option grammar that is long to create
+        if self.opt_grammar is not None and self.opt_grammar.name == algo_name:
+            return self.opt_grammar
+
         library_directory = Path(inspect.getfile(self.__class__)).parent
         options_directory = library_directory / self.OPTIONS_DIR
         algo_schema_file = options_directory / "{}_options.json".format(

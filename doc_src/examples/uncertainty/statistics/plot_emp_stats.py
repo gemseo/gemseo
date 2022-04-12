@@ -51,9 +51,7 @@ configure_logger()
 # we instantiate
 # the discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`
 # of the Sobieski's SSBJ problem which is known to |g|.
-# We update the cache policy so as to cache all data in memory.
 discipline = create_discipline("SobieskiMission")
-discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
 
 ###############################################################################
 # Then,
@@ -79,8 +77,8 @@ scenario.execute({"algo": "OT_MONTE_CARLO", "n_samples": 100})
 # ----------------------------------------------------------------
 # In this second stage,
 # we create an :class:`.EmpiricalStatistics`
-# from the cached data encapsulated in a :class:`.Dataset`:
-dataset = discipline.cache.export_to_dataset()
+# from the database encapsulated in a :class:`.Dataset`:
+dataset = scenario.export_to_dataset(opt_naming=False)
 analysis = create_statistics(dataset, name="SobieskiMission")
 
 print(analysis)

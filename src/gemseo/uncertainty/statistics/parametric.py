@@ -148,7 +148,6 @@ class ParametricStatistics(Statistics):
         >>> discipline = create_discipline(
         ...     "AnalyticDiscipline", expressions=expressions
         ... )
-        >>> discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
         >>>
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
@@ -165,7 +164,7 @@ class ParametricStatistics(Statistics):
         ... )
         >>> scenario.execute({'algo': 'OT_MONTE_CARLO', 'n_samples': 100})
         >>>
-        >>> dataset = discipline.cache.export_to_dataset()
+        >>> dataset = scenario.export_to_dataset(opt_naming=False)
         >>>
         >>> statistics = ParametricStatistics(
         ...     dataset, ['Normal', 'Uniform', 'Triangular']

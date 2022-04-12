@@ -78,6 +78,7 @@ class FunctionFromDiscipline(MDOFunction):
         self.__x_names = x_names
         self.__all_data_names = all_data_names
         self.__differentiable = differentiable
+        self.__x_mask = None
 
         if self.__discipline is None:
             self.__gen = self.__mdo_formulation._get_generator_from(
@@ -119,11 +120,11 @@ class FunctionFromDiscipline(MDOFunction):
         Returns:
             The value of the outputs.
         """
-        x_of_disc = self.__mdo_formulation.mask_x_swap_order(
-            self.__x_names, x_vect, self.__all_data_names
-        )
-        obj_allx_val = self.__out_x_func(x_of_disc)
-        return obj_allx_val
+        if self.__x_mask is None:
+            self.__x_mask = self.__mdo_formulation.get_x_mask_x_swap_order(
+                self.__x_names, self.__all_data_names
+            )
+        return self.__out_x_func(x_vect[self.__x_mask])
 
     def _func_jac(
         self, x_vect  # type: ndarray
@@ -136,9 +137,11 @@ class FunctionFromDiscipline(MDOFunction):
         Returns:
             The value of the gradient of the outputs.
         """
-        x_of_disc = self.__mdo_formulation.mask_x_swap_order(
-            self.__x_names, x_vect, self.__all_data_names
-        )
+        if self.__x_mask is None:
+            self.__x_mask = self.__mdo_formulation.get_x_mask_x_swap_order(
+                self.__x_names, self.__all_data_names
+            )
+        x_of_disc = x_vect[self.__x_mask]
 
         loc_jac = self.__out_x_func.jac(x_of_disc)  # pylint: disable=E1102
 
