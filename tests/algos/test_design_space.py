@@ -29,7 +29,9 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space import DesignVariable
 from gemseo.algos.design_space import DesignVariableType
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
+from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.third_party.prettytable.prettytable import PY2
 from gemseo.utils.py23_compat import Path
@@ -79,6 +81,7 @@ def design_space():
     ds.add_variable("x20", var_type=b"float")
     ds.add_variable("x21", value=0.5)
     ds.add_variable("x22", size=2)
+    ds.add_variable("x23", 1, l_b=0.0, u_b=1.0, value=array([1]), var_type="float")
     return ds
 
 
@@ -1179,3 +1182,24 @@ def test_get_current_x_no_complex(design_space_with_complex_value, cast):
     """Check that the complex value of a float variable is converted to float."""
     current_x = design_space_with_complex_value.get_current_x(complex_to_real=cast)
     assert (current_x.dtype.kind == "c") is not cast
+
+
+def test_cast_to_var_type(design_space: DesignSpace):
+    """Test that a given value is cast to var_type in add_variable.
+
+    Args:
+        design_space: fixture that returns the design space for testing.
+    """
+    design_space.filter(["x23"])
+    assert design_space.get_current_x() == array([1.0], dtype=np.float64)
+
+
+@pytest.mark.parametrize("normalize", [True, False])
+def test_normalization_casting(design_space: DesignSpace, normalize: bool):
+    """Test that integer variable keep their type after unnormalization."""
+    design_space.filter(["x14"])
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(lambda x: x, "f")
+    out = problem.evaluate_functions(normalize=normalize)
+    assert out[0]["f"] == array([2])
+    assert out[0]["f"].dtype == int32

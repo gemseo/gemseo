@@ -1,0 +1,1 @@
+Fix normalization/unnormalization of functions and disciplines that only contain integer variables.

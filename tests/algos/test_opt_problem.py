@@ -900,7 +900,7 @@ def test_database_name(problem):
         ),
         (
             False,
-            "Algorithm L-BFGS-B is not adapted to the problem, it does not handle "
+            "Algorithm SLSQP is not adapted to the problem, it does not handle "
             "integer variables.\n"
             "Execution may be forced setting the 'skip_int_check' argument "
             "to 'True'.",
@@ -920,7 +920,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
     f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
     design_space.add_variable(
-        "x", 1, l_b=1, u_b=3, value=1 * ones(1), var_type="integer"
+        "x", 1, l_b=1, u_b=3, value=array([1]), var_type="integer"
     )
     problem = OptimizationProblem(design_space)
     problem.objective = -f_1
@@ -928,7 +928,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
     if skip_int_check:
         OptimizersFactory().execute(
             problem,
-            "L-BFGS-B",
+            "SLSQP",
             normalize_design_space=True,
             skip_int_check=skip_int_check,
         )
@@ -938,7 +938,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
         with pytest.raises(ValueError, match=expected_message):
             OptimizersFactory().execute(
                 problem,
-                "L-BFGS-B",
+                "SLSQP",
                 normalize_design_space=True,
                 skip_int_check=skip_int_check,
             )
