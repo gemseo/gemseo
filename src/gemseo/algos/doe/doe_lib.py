@@ -36,8 +36,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 from numpy import savetxt
 from numpy import vstack
@@ -55,14 +54,7 @@ DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
 DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class DOELibrary(DriverLib):
+class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class to use for DOE library link See DriverLib."""
 
     MIN_DIMS = "min_dims"

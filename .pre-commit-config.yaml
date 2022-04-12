@@ -80,7 +80,7 @@ repos:
   hooks:
     - id: insert-license
       name: insert LGPL license
-      exclude: ^(tests/third_party/genson_tests|doc_src)
+      exclude: ^doc_src
       files: \.py$
       args:
         - --license-filepath
@@ -111,8 +111,8 @@ repos:
       entry: >
         ./tools/extract_req_in_from_setup_cfg.py
         --add-install-requires
-        --extras-require-key all
-        --extras-require-key test
+        --add-extras-require-key all
+        --add-extras-require-key test
         requirements/gemseo.in
     - id: extract_req_in_from_setup_cfg
       name: extract test requirements
@@ -121,5 +121,5 @@ repos:
       files: ^setup\.cfg$
       entry: >
         ./tools/extract_req_in_from_setup_cfg.py
-        --extras-require-key test
+        --add-extras-require-key test
         requirements/test.in

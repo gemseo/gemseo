@@ -31,7 +31,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.scalable.data_driven.diagonal import ScalableDiagonalApproximation
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from past.utils import old_div
 
 HDF_CACHE_PATH = join(dirname(__file__), "dataset.hdf5")
 
@@ -65,7 +64,7 @@ def test_build_model(sobieski_aerodynamics):
 
         :param n_samples: number of samples
         """
-        return old_div(np.arange(n_samples), (n_samples - 1.0))
+        return np.arange(n_samples) / (n_samples - 1.0)
 
     # MDL: I think that the following lines are wrong because because
     # scalable_func must take in inputs a 1D numpy array whose length

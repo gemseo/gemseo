@@ -42,8 +42,7 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import linspace
 
 from gemseo.utils.file_path_manager import FilePathManager
@@ -62,14 +61,7 @@ from gemseo.utils.py23_compat import Path
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class DatasetPlot(object):
+class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset.
 
     Attributes:

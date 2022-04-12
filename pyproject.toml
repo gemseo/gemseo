@@ -1,5 +1,4 @@
 [build-system]
-# setuptools_scm 6 and setuptools 45 are no longer compatible with python 2.7
 requires = [
     "setuptools>=44",
     "wheel",

@@ -16,18 +16,11 @@ External Dependencies
 
 GEMSEO depends on software with compatible licenses that are listed below.
 
-`backports.functools-lru-cache <https://github.com/jaraco/backports.functools_lru_cache>`_
+`docstring-inheritance <https://antoined.github.io/docstring-inheritance/>`_
     MIT
-
-`custom-inherit <https://github.com/rsokl/custom_inherit>`_
-    MIT
-
-`enum34 <https://pypi.org/project/enum34/>`_
-    BSD
 
 `Fast JSON schema <https://github.com/horejsek/python-fastjsonschema>`_
     BSD 3-Clause
-    (Only for Python 3, for Python 2.7, FastJsonschema is embedded in GEMSEO source code)
 
 `genson <https://github.com/wolverdude/genson/>`_
     MIT
@@ -38,7 +31,7 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/graphviz-logo.png
         :target: https://github.com/xflr6/graphviz
 
-`H5py <https://www.h5py.org/>`_
+`h5py <https://www.h5py.org/>`_
     BSD 3-Clause
 
 `jinja2 <https://palletsprojects.com/p/jinja/>`_
@@ -77,17 +70,8 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pandas-logo.svg
         :target: https://pandas.pydata.org/
 
-`pathlib2 <https://github.com/mcmtroffaes/pathlib2>`_
-    MIT
-
 `pdfo <https://www.pdfo.net>`_
     BSD 3-Clause
-
-`pyDOE <https://github.com/tisimst/pyDOE>`_
-    BSD 3-Clause
-
-    .. image:: /_static/dependencies/pydoe-logo.png
-        :target: https://github.com/tisimst/pyDOE
 
 `pyDOE2 <https://github.com/clicumu/pyDOE2>`_
     BSD 3-Clause
@@ -110,9 +94,6 @@ GEMSEO depends on software with compatible licenses that are listed below.
 
     .. image:: /_static/dependencies/python-logo.svg
         :target: https://www.python.org/
-
-`Python-future <https://github.com/PythonCharmers/python-future>`_
-    MIT
 
 `pyXDSM <https://github.com/mdolab/pyXDSM>`_
     Apache v2.0
@@ -150,14 +131,17 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `typing <https://github.com/python/typing>`_
     Python Software License
 
+`typing-extensions <https://pypi.org/project/typing-extensions>`_
+    Python Software License
+
 `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
     Apache v2.0
 
 `xlwings CE <https://www.xlwings.org/>`_
     BSD 3-Clause
 
-    .. image:: /_static/dependencies/xlwings-logo.svg
-        :target: https://www.xlwings.org/
+`python-xxhash <https://github.com/ifduyue/python-xxhash>`_
+    BSD 2-Clause
 
 Internal Dependencies
 ---------------------
@@ -167,21 +151,11 @@ GEMSEO source code includes software with compatible licenses that are listed be
 colormap
     CC0 1.0
 
-`Fast Json schema <https://github.com/horejsek/python-fastjsonschema>`_
-    MIT
-    (Only used in Python 2.7, otherwise it is an external dependency)
-
-`pre-commit <https://pre-commit.com>`_
-    MIT
-
 `prettytable <https://github.com/kxxoling/PTable>`_
     BSD 3-Clause
 
 `Reorder.js <https://github.com/jdfekete/reorder.js>`_
     BSD 3-Clause
-
-`pyXDSM <https://github.com/mdolab/pyXDSM>`_
-    Apache v2.0
 
 `SOMPY <https://github.com/sevamoo/SOMPY>`_
     Apache v2.0
@@ -207,7 +181,10 @@ training or example purposes.
 `flake8 <https://flake8.pycqa.org>`_
     MIT
 
-`reorder_python_imports <https://github.com/asottile/reorder_python_imports>`_
+`pre-commit <https://pre-commit.com>`_
+    MIT
+
+`reorder-python-imports <https://github.com/asottile/reorder_python_imports>`_
     MIT
 
 `setuptools <https://setuptools.readthedocs.io/>`_

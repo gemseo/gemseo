@@ -25,8 +25,7 @@ from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import finfo
 from numpy import float64
@@ -40,14 +39,7 @@ EPSILON = finfo(float).eps
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class GradientApproximator(object):
+class GradientApproximator(metaclass=GoogleDocstringInheritanceMeta):
     """A gradient approximator.
 
     Attributes:

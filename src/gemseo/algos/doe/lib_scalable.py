@@ -68,7 +68,7 @@ class DiagonalDOE(DOELibrary):
         Args:
             eval_jac: Whether to evaluate the Jacobian.
             n_processes: The number of processes.
-            wait_time_between samples: The waiting time between two samples.
+            wait_time_between_samples: The waiting time between two samples.
             n_samples: The number of samples.
                 The number of samples must be greater than or equal to 2.
             reverse: The dimensions or variables to sample from their upper bounds to

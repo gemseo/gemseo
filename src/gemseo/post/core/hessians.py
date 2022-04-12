@@ -48,8 +48,7 @@ from typing import Generator
 from typing import Optional
 from typing import Tuple
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
@@ -76,14 +75,7 @@ from gemseo.algos.design_space import DesignSpace
 LOGGER = logging.getLogger(__name__)
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class HessianApproximation(object):
+class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     r"""Approximation of the Hessian matrix from an optimization history.
 
     Attributes:

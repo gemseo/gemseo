@@ -99,12 +99,12 @@ check:
   rules:
     # Only run a test job when the following files have changed.
     - changes:
-        - src/**/*.*
-        - tests/**/*.*
-        - requirements/test.txt
-        - setup.cfg
-        - tox.ini
-        - .gitlab-ci.yml
+      - src/**/*.*
+      - tests/**/*.*
+      - requirements/test.txt
+      - setup.cfg
+      - tox.ini
+      - .gitlab-ci.yml
   after_script:
     - codecov -t $CODECOV_TOKEN -f $COVERAGE_FILE --required
 

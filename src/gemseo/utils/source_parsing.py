@@ -97,7 +97,7 @@ def parse_rest(
 
 
 # regex pattern for finding the arguments section of a google docstring
-# doc_inherit.DocInheritMeta replaces the section title "Args" with "Parameters"
+# docstring-inheritance replaces the section title "Args" with "Parameters"
 RE_PATTERN_ARGS_SECTION = re.compile(
     r"(?:Args|Parameters)\s*:\s*\n(.*?)(?:Returns:|Raises:|$)", flags=re.DOTALL
 )

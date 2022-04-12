@@ -116,7 +116,6 @@ from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
-from past.utils import old_div
 
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_openturns import OpenTURNS
@@ -224,7 +223,7 @@ class SobolAnalysis(SensitivityAnalysis):
         inputs = Sample(self.dataset.get_data_by_group(self.dataset.INPUT_GROUP))
         outputs = self.dataset.get_data_by_names(output_names, True)
         dim = self.dataset.dimension[self.dataset.INPUT_GROUP]
-        n_samples = int(old_div(len(self.dataset), (dim + 2)))
+        n_samples = int(len(self.dataset) / (dim + 2))
         self.__sobol = {}
         for output_name, value in outputs.items():
             self.__sobol[output_name] = []

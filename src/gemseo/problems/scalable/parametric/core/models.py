@@ -35,7 +35,6 @@ from numpy import eye
 from numpy import mean as npmean
 from numpy import ndarray
 from numpy import sum as npsum
-from past.utils import old_div
 
 from .variables import get_constraint_name
 from .variables import get_coupling_name
@@ -129,7 +128,7 @@ class TMMainModel(object):
         for index in range(self.n_submodels):
             constraint = get_constraint_name(index)
             coupling_name = get_coupling_name(index)
-            tmp = old_div(coupling[coupling_name], self.coefficients[index])
+            tmp = coupling[coupling_name] / self.coefficients[index]
             output[constraint] = 1 - tmp
         return output
 
@@ -140,17 +139,17 @@ class TMMainModel(object):
         :param dict(ndarray) coupling: list of coupling variables
             (one element per sub-discipline).
         """
-        tmp = old_div(2 * x_shared, len(x_shared))
+        tmp = 2 * x_shared / len(x_shared)
         jacobian = {OBJECTIVE_NAME: {}}
         jacobian[OBJECTIVE_NAME][X_SHARED_NAME] = atleast_2d(tmp)
         for index in range(self.n_submodels):
             constraint = get_constraint_name(index)
             coupling_name = get_coupling_name(index)
             jacobian[constraint] = {}
-            tmp = old_div(2 * coupling[coupling_name], len(coupling[coupling_name]))
+            tmp = 2 * coupling[coupling_name] / len(coupling[coupling_name])
             tmp /= self.n_submodels
             jacobian[OBJECTIVE_NAME][coupling_name] = atleast_2d(tmp)
-            tmp = diag(old_div(-1.0, self.coefficients[index]))
+            tmp = diag(-1.0 / self.coefficients[index])
             jacobian[constraint][coupling_name] = atleast_2d(tmp)
         return jacobian
 
@@ -282,12 +281,12 @@ class TMSubModel(object):
         norm = cpl_sum.reshape((-1, 1))
         norm += npsum(self.c_shared, 1).reshape((-1, 1))
         norm += npsum(self.c_local, 1).reshape((-1, 1))
-        der = old_div(-self.c_local, norm)
+        der = -self.c_local / norm
         jacobian = {coupling_name: {}}
         jacobian[coupling_name][x_local_name] = der
         jacobian[coupling_name][u_local_name] = eye(der.shape[0])
-        der = old_div(-self.c_shared, norm)
+        der = -self.c_shared / norm
         jacobian[coupling_name][X_SHARED_NAME] = der
         for cpl_name, cpl_value in self.c_coupling.items():
-            jacobian[coupling_name][cpl_name] = old_div(cpl_value, norm)
+            jacobian[coupling_name][cpl_name] = cpl_value / norm
         return jacobian

@@ -66,7 +66,6 @@ from numpy.random import choice
 from numpy.random import rand
 from numpy.random import randint
 from numpy.random import seed as npseed
-from past.utils import old_div
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problems.scalable.data_driven.model import ScalableModel
@@ -261,7 +260,7 @@ class ScalableDiagonalModel(ScalableModel):
         )
         if not is_binary_matrix:
             dp_sum = dependency_matrix.sum(0)
-            dependency_matrix = old_div(dependency_matrix, dp_sum)
+            dependency_matrix = dependency_matrix // dp_sum
 
         fig, axes = plt.subplots()
         axes.matshow(dependency_matrix, cmap="Greys", vmin=0)
@@ -342,12 +341,12 @@ class ScalableDiagonalModel(ScalableModel):
                 plt.ylim(-0.1, 1.1)
                 plt.plot(
                     x_vals,
-                    old_div((y_vals - min(y_vals)), (max(y_vals) - min(y_vals))),
+                    (y_vals - min(y_vals)) // (max(y_vals) - min(y_vals)),
                     label=func + str(index),
                 )
                 plt.plot(
                     doe_t,
-                    old_div((doe_f - min(y_vals)), (max(y_vals) - min(y_vals))),
+                    (doe_f - min(y_vals)) // (max(y_vals) - min(y_vals)),
                     "or",
                 )
                 plt.xlabel("Scaled abscissa", fontsize=18)
@@ -671,7 +670,7 @@ class ScalableDiagonalApproximation(object):
                     coeffs[in_id] * interpolated_fun_1d[interp_id](in_val)
                     for in_id, in_val in enumerate(input_vars)
                 ]
-                tmp = old_div(sum(tmp), sum(coeffs))
+                tmp = sum(tmp) / sum(coeffs)
                 result[out_id] = tmp
             return result
 
@@ -689,7 +688,7 @@ class ScalableDiagonalApproximation(object):
                     coeffs[in_id] * interpolated_dfun_1d[interp_id](in_val)
                     for in_id, in_val in enumerate(input_vars)
                 ]
-                tmp = old_div(array(tmp), sum(coeffs))
+                tmp = array(tmp) / sum(coeffs)
                 dresult[out_id, :] = tmp
             return dresult
 

@@ -37,8 +37,7 @@ from typing import NoReturn
 from typing import Optional
 from typing import Union
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.core.factory import Factory
@@ -46,14 +45,7 @@ from gemseo.core.factory import Factory
 TransformerFitOptionType = Union[float, int, str]
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class Transformer(object):
+class Transformer(metaclass=GoogleDocstringInheritanceMeta):
     """Transformer baseclass.
 
     Attributes:

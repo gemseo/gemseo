@@ -24,8 +24,7 @@ from typing import Any
 from typing import Tuple
 from typing import Type
 
-import six
-from custom_inherit import DocInheritMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import inf
 from numpy import ndarray
@@ -38,14 +37,7 @@ LOGGER = logging.getLogger(__name__)
 ToleranceIntervalSide = BaseEnum("ToleranceIntervalSide", "LOWER UPPER BOTH")
 
 
-@six.add_metaclass(
-    DocInheritMeta(
-        abstract_base_class=True,
-        style="google_with_merge",
-        include_special_methods=True,
-    )
-)
-class ToleranceInterval(object):
+class ToleranceInterval(metaclass=GoogleDocstringInheritanceMeta):
     """Computation of tolerance intervals from a data-fitted probability distribution.
 
     A :class:`.ToleranceInterval` (TI) is initialized
