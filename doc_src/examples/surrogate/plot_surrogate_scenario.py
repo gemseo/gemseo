@@ -141,9 +141,7 @@ scenario = create_scenario(
 ##############################################################################
 # Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
 scenario.execute({"n_samples": 30, "algo": "lhs"})
-mission_dataset = scenario.export_to_dataset(
-    inputs_names=["x_shared", "y_24", "y_34"], opt_naming=False
-)
+mission_dataset = scenario.export_to_dataset(opt_naming=False)
 
 ##############################################################################
 # .. seealso::

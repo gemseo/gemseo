@@ -46,8 +46,8 @@ configure_logger()
 # - y with dimension 2 which is a cache output.
 
 cache = MemoryFullCache()
-cache[{"x": array([1.0])}] = {"y": array([2.0, 3.0])}
-cache[{"x": array([4.0])}] = {"y": array([5.0, 6.0])}
+cache[{"x": array([1.0])}] = ({"y": array([2.0, 3.0])}, None)
+cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 
 ##############################################################################
 # Create a dataset

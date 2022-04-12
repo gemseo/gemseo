@@ -56,13 +56,13 @@ print(cache)
 # -----
 # It is possible to manually add some data into the cache by using the
 # following lines:
-cache[{"x": array([1.0])}] = {"y": array([2.0])}
+cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
 
 ###############################################################################
 # We can add another entry to the cache, and we can then see that its length is
 # still one. Indeed, as previously mentioned, the :class:`.SimpleCache` only
 # enable to store one evaluation.
-cache[{"x": array([2.0])}] = {"y": array([3.0])}
+cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 print(cache)
 
 ###############################################################################

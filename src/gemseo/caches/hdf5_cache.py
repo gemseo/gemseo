@@ -76,8 +76,9 @@ class HDF5Cache(AbstractFullCache):
 
     def __str__(self):  # type: (...) -> str
         msg = MultiLineString()
-        msg.add(str(super(HDF5Cache, self)))
-        msg.add("HDF file path: {}", self.__file_path)
+        msg.add(super(HDF5Cache, self).__str__())
+        msg.indent()
+        msg.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
         msg.add("HDF node path: {}", self.__hdf_node_path)
         return str(msg)
 

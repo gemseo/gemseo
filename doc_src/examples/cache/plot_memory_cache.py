@@ -58,8 +58,8 @@ print(cache)
 # most of the time a cache is attached to an :class:`.MDODiscipline`. Then, the
 # cache feeding has not to be performed explicitly by the user.
 
-cache[{"x": array([1.0])}] = {"y": array([2.0])}
-cache[{"x": array([2.0])}] = {"y": array([3.0])}
+cache[{"x": array([1.0])}] = ({"y": array([2.0])}, None)
+cache[{"x": array([2.0])}] = ({"y": array([3.0])}, None)
 print(cache)
 
 ###############################################################################
