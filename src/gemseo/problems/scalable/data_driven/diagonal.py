@@ -260,7 +260,7 @@ class ScalableDiagonalModel(ScalableModel):
         )
         if not is_binary_matrix:
             dp_sum = dependency_matrix.sum(0)
-            dependency_matrix = dependency_matrix // dp_sum
+            dependency_matrix = dependency_matrix / dp_sum
 
         fig, axes = plt.subplots()
         axes.matshow(dependency_matrix, cmap="Greys", vmin=0)
@@ -341,12 +341,12 @@ class ScalableDiagonalModel(ScalableModel):
                 plt.ylim(-0.1, 1.1)
                 plt.plot(
                     x_vals,
-                    (y_vals - min(y_vals)) // (max(y_vals) - min(y_vals)),
+                    (y_vals - min(y_vals)) / (max(y_vals) - min(y_vals)),
                     label=func + str(index),
                 )
                 plt.plot(
                     doe_t,
-                    (doe_f - min(y_vals)) // (max(y_vals) - min(y_vals)),
+                    (doe_f - min(y_vals)) / (max(y_vals) - min(y_vals)),
                     "or",
                 )
                 plt.xlabel("Scaled abscissa", fontsize=18)

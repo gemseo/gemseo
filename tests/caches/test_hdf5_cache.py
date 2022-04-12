@@ -21,17 +21,16 @@
 from __future__ import division
 from __future__ import unicode_literals
 
-from os.path import join
-
 import h5py
 import pytest
 from gemseo.caches.cache_factory import CacheFactory
+from gemseo.utils.string_tools import MultiLineString
 from numpy import ones
 
 
 def create_cache(tmp_path, h5_node="Dummy"):
     factory = CacheFactory()
-    hdf_file_path = join(str(tmp_path), "dummy.h5")
+    hdf_file_path = tmp_path / "dummy.h5"
     return factory.create(
         "HDF5Cache", hdf_file_path=hdf_file_path, hdf_node_path=h5_node
     )
@@ -75,3 +74,21 @@ def test_hasgroup(tmp_path):
         "Dummy",
         h5_open_file=h5file,
     )
+
+
+def test_str(tmp_path):
+    """Check string representation."""
+    cache = create_cache(tmp_path, "Dummy")
+    cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
+    cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
+    expected = MultiLineString()
+    expected.add("Name: Dummy")
+    expected.indent()
+    expected.add("Type: HDF5Cache")
+    expected.add("Tolerance: 0.0")
+    expected.add("Input names: ['i']")
+    expected.add("Output names: ['o']")
+    expected.add("Length: 2")
+    expected.add(f"HDF file path: {tmp_path / 'dummy.h5'}")
+    expected.add("HDF node path: Dummy")
+    assert str(cache) == str(expected)

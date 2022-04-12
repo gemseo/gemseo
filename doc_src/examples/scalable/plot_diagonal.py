@@ -68,7 +68,8 @@ discipline = create_discipline("SobieskiAerodynamics")
 # ~~~~~~~~~~~~~~~~~~~
 # We also define the input space on which to sample the discipline.
 input_space = SobieskiProblem().design_space
-input_space.filter(discipline.get_input_data_names())
+input_names = [name for name in discipline.get_input_data_names() if name != "c_4"]
+input_space.filter(input_names)
 
 ###############################################################################
 # Build the DOE scenario
@@ -80,6 +81,9 @@ input_space.filter(discipline.get_input_data_names())
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_2", input_space, scenario_type="DOE"
 )
+for output_name in discipline.get_output_data_names():
+    if output_name != "y_2":
+        scenario.add_observable(output_name)
 scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
 
 ###############################################################################
@@ -126,7 +130,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=False)
 # Twice as many inputs
 # ~~~~~~~~~~~~~~~~~~~~
 # For example, we can increase the size of each input by a factor of 2.
-sizes = {name: dataset.sizes[name] * 2 for name in discipline.get_input_data_names()}
+sizes = {name: dataset.sizes[name] * 2 for name in input_names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)
 
@@ -145,8 +149,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # Twice as many variables
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each input and each output by a factor of 2.
-names = list(discipline.get_input_data_names())
-names += list(discipline.get_output_data_names())
+names = input_names + discipline.get_output_data_names()
 sizes = {name: dataset.sizes[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)

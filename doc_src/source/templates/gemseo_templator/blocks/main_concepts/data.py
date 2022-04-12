@@ -22,6 +22,6 @@ block = Block(
         'Use a <a href="dataset.html">dataset</a> to store many kinds of data '
         "and make them easy to handle for visualization, display and query purposes."
     ),
-    examples="examples/discipline/index.html",
+    examples="examples/cache/index.html",
     info="saving_data.html",
 )
