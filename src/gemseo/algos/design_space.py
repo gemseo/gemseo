@@ -386,7 +386,9 @@ class DesignSpace(collections.MutableMapping):
             self._check_value(array_value, name)
             if len(array_value) == 1 and size > 1:
                 array_value = array_value * ones(size)
-            self._current_x[name] = array_value
+            self._current_x[name] = array_value.astype(
+                self.__TYPES_TO_DTYPES[self.variables_types[name][0]], copy=False
+            )
             self._check_current_x_value(name)
 
     def _add_type(
@@ -1055,8 +1057,11 @@ class DesignSpace(collections.MutableMapping):
         # Normalize the relevant components:
         if self.has_current_x():
             current_dtype = self.get_current_x().dtype
+            # Normalization will not work with integers.
+            if current_dtype.kind == "i":
+                current_dtype = float64
         else:
-            current_dtype = float
+            current_dtype = float64
         norm_vect = x_vect.astype(current_dtype, copy=True)
 
         # In case lb=ub
@@ -1208,10 +1213,15 @@ class DesignSpace(collections.MutableMapping):
 
                 LOGGER.warning(msg)
         # Unnormalize the relevant components:
+        recast_to_int = False
         if self.has_current_x():
             current_dtype = self.get_current_x().dtype
+            # Normalization will not work with integers.
+            if current_dtype.kind == "i":
+                current_dtype = float64
+                recast_to_int = True
         else:
-            current_dtype = float
+            current_dtype = float64
         unnorm_vect = x_vect.astype(current_dtype, copy=True)
 
         if n_dims == 1:
@@ -1229,8 +1239,10 @@ class DesignSpace(collections.MutableMapping):
             else:
                 unnorm_vect[:, inds_fixed] = l_bounds[inds_fixed]
 
-        r_xvec = self.round_vect(unnorm_vect)
-        return r_xvec
+        if recast_to_int:
+            return self.round_vect(unnorm_vect).astype(int32)
+        else:
+            return self.round_vect(unnorm_vect)
 
     def transform_vect(
         self, vector  # type: ndarray
