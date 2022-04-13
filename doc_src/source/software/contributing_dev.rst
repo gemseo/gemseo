@@ -224,13 +224,13 @@ Activate the `tox`_ environment named *env* with:
 
 .. code-block:: console
 
-   source .tox/env/bin/.activate
+   source .tox/env/bin/activate
 
 * On Windows:
 
 .. code-block:: console
 
-   source .tox/env/Scripts/.activate
+   .tox\env\Scripts\activate.bat
 
 Activating environments may be useful for instance
 to investigate a particular issue that happens
