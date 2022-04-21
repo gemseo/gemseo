@@ -114,7 +114,7 @@ check:
     - .tests
     - .windows
 
-# Common settings for linux (linux) jobs.
+# Common settings for linux tests jobs.
 .tests-linux:
   extends:
     - .tests
@@ -143,7 +143,7 @@ base-windows:
     - if: '$TEST_ALL_ENVS == "false"'
       when: never
     # Run for commits pushed on the master branch.
-    - if: '$CI_COMMIT_BRANCH != "master" && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH != "master"'
       when: never
     - !reference [.tests, rules]
   parallel:
@@ -163,27 +163,3 @@ extended-windows:
     - .tests-windows
     # Last so its rules applies.
     - .extended-tests
-
-# Jobs for testing anaconda env files.
-.anaconda-env-file:
-  rules:
-    # For selecting from gitlab UI.
-    - if: '$TEST_ANACONDA_ENV_FILE == "true"'
-    # Run for commits on the master branch.
-    - if: '$CI_COMMIT_BRANCH == "master"'
-  variables:
-    TOX_ENV_NAME: anaconda-env-file
-
-anaconda-env-file-linux:
-  stage: tests
-  extends:
-    - .base
-    - .linux
-    - .anaconda-env-file
-
-anaconda-env-file-windows:
-  stage: tests
-  extends:
-    - .base
-    - .windows
-    - .anaconda-env-file
