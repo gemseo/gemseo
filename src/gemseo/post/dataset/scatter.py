@@ -72,7 +72,7 @@ class Scatter(DatasetPlot):
         y = self._param.y
         x_comp = self._param.x_comp
         y_comp = self._param.y_comp
-        color = properties.get(self.COLOR) or "blue"
+        color = properties.get(self.COLOR) or self.color or "blue"
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 

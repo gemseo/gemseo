@@ -55,7 +55,8 @@ dataset.add_variable("y2", outputs_2, "outputs", cache_as_input=False)
 # Plot y1 and y2
 # --------------
 # We can use the :class:`.Lines` plot.
-plot = Lines(dataset)
-plot.execute(save=False, show=False, variables=["y1", "y2"])
+plot = Lines(dataset, variables=["y1", "y2"])
+plot.linestyle = ["--", "-"]
+plot.execute(save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
