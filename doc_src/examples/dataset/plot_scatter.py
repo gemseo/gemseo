@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.scatter import Scatter
 from matplotlib import pyplot as plt
 from numpy import linspace
 from numpy import pi
@@ -52,6 +53,8 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # Plot y vs x
 # -----------
 # We can use the :class:`.Scatter` plot
-dataset.plot("Scatter", x="x", y="y", properties={"color": color}, show=False)
+plot = Scatter(dataset, "x", "y")
+plot.color = color
+plot.execute(show=False, save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

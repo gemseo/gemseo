@@ -65,8 +65,8 @@ class YvsX(DatasetPlot):
         x_comp = self._param.x_comp
         y = self._param.y
         y_comp = self._param.y_comp
-        color = properties.get(self.COLOR) or "blue"
-        style = properties.get(self.LINESTYLE) or "o"
+        color = properties.get(self.COLOR) or self.color or "blue"
+        style = properties.get(self.LINESTYLE) or self.linestyle or "o"
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 

@@ -29,6 +29,7 @@ from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.core.dataset import Dataset
+from gemseo.post.dataset.yvsx import YvsX
 from matplotlib import pyplot as plt
 from numpy import linspace
 from numpy import pi
@@ -51,6 +52,8 @@ dataset.add_variable("y", outputs, "outputs", cache_as_input=False)
 # Plot y vs x
 # -----------
 # We can use the :class:`.YvsX` plot
-dataset.plot("YvsX", x="x", y="y", properties={"linestyle": "--o"}, show=False)
+plot = YvsX(dataset, "x", "y")
+plot.linestyle = "--o"
+plot.execute(save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

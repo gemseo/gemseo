@@ -20,8 +20,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Plot - Radard chart
-===================
+Plot - Radar chart
+==================
 
 """
 from __future__ import division
@@ -49,9 +49,9 @@ dataset.row_names = ["series_1", "series_2"]
 # Plot the two series on a radar chart
 # ------------------------------------
 # We can use the :class:`~gemseo.post.dataset.radar_chart.RadarChart` plot:
-plot = RadarChart(dataset)
+plot = RadarChart(dataset, connect=True, radial_ticks=True)
 plot.rmin = -0.5
 plot.rmax = 1.0
-plot.execute(show=False, save=False, connect=True, radial_ticks=True)
+plot.execute(save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

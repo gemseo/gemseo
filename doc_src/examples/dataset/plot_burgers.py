@@ -30,6 +30,7 @@ from __future__ import unicode_literals
 
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
+from gemseo.post.dataset.curves import Curves
 from matplotlib import pyplot as plt
 
 configure_logger()
@@ -60,6 +61,6 @@ print(dataset)
 ##############################################################################
 # Plot the data
 # -------------
-dataset.plot("Curves", mesh="x", variable="u_t", show=False, save=False)
+Curves(dataset, "x", "u_t").execute(save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
