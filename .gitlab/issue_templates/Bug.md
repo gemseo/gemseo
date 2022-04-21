@@ -12,7 +12,7 @@ Before opening a new issue, make sure to search in the issues and verify the iss
 
 <!-- Which version of gemseo was used. -->
 
-## Platfom info
+## Platform info
 
 <!-- Which OS type and version were used. -->
 
