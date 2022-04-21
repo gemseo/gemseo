@@ -181,6 +181,10 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
                 to all the variables of this group.
                 If None, do not transform the variables.
             **parameters: The parameters of the machine learning algorithm.
+
+        Raises:
+            ValueError: When both the variable and the group it belongs to
+                have a transformer.
         """
         self.learning_set = data
         self.parameters = parameters
@@ -195,6 +199,15 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
         self._learning_samples_indices = xrange(len(self.learning_set))
+        transformer_keys = set(self.transformer)
+        for group in self.learning_set.groups:
+            names = self.learning_set.get_names(group)
+            if group in self.transformer and transformer_keys & set(names):
+                raise ValueError(
+                    "An MLAlgo cannot have both a transformer "
+                    "for all variables of a group and a transformer "
+                    "for one variable of this group."
+                )
 
     @staticmethod
     def __create_transformer(
@@ -235,26 +248,31 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
     def learn(
         self,
         samples=None,  # type: Optional[Sequence[int]]
+        fit_transformers=True,  # type: bool
     ):  # type: (...) -> None
         """Train the machine learning algorithm from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
                 If None, use the whole learning dataset.
+            fit_transformers: Whether to fit the variable transformers.
         """
         if samples is not None:
             self._learning_samples_indices = samples
-        self._learn(samples)
+        self._learn(samples, fit_transformers)
         self._trained = True
 
     def _learn(
-        self, indices  # type: Optional[Sequence[int]]
+        self,
+        indices,  # type: Optional[Sequence[int]]
+        fit_transformers,  # type: bool
     ):  # type: (...) -> None
         """Define the indices of the learning samples.
 
         Args:
             indices: The indices of the learning samples.
                 If None, use the whole learning dataset.
+            fit_transformers: Whether to fit the variable transformers.
         """
         raise NotImplementedError
 

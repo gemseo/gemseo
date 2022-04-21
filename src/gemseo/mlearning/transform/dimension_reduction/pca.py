@@ -60,7 +60,7 @@ class PCA(DimensionReduction):
         super(PCA, self).__init__(name, n_components=n_components, **parameters)
         self.algo = SKLPCA(n_components, **parameters)
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

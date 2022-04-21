@@ -22,8 +22,6 @@
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import Tuple
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -72,17 +70,6 @@ def model_with_transform(dataset):  # type: (...) -> LinearRegression
     )
     linreg.learn()
     return linreg
-
-
-@pytest.fixture
-def models_with_pls(
-    dataset,
-):  # type: (...) -> Tuple[ LinearRegression,LinearRegression]
-    """Two trained LinearRegression with inputs or outputs scaling."""
-    linreg1 = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
-    linreg1.learn()
-    linreg2 = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
-    return linreg1, linreg2
 
 
 def test_constructor(dataset):
@@ -200,14 +187,15 @@ def test_prediction_with_transform(model_with_transform):
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_pls(models_with_pls):
+def test_prediction_with_pls(dataset):
     """Test prediction."""
+    model = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
+    model.learn()
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
         "x_1": array([[1.0], [0.0], [-1.0]]),
         "x_2": array([[2.0], [0.0], [1.0]]),
     }
-    model = models_with_pls[0]
     prediction = model.predict(input_value)
     another_prediction = model.predict(another_input_value)
     assert isinstance(prediction, dict)
@@ -216,8 +204,18 @@ def test_prediction_with_pls(models_with_pls):
     assert allclose(prediction["y_2"], array([-9.0]))
     assert allclose(another_prediction["y_1"], array([[9.0], [1.0], [2.0]]))
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
-    model = models_with_pls[1]
-    with pytest.raises(NotImplementedError):
+
+
+def test_prediction_with_pls_failure(dataset):
+    """Test that PLS does not work with output group."""
+    model = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            "The transformer PLS cannot be applied to the outputs "
+            "to build a supervised machine learning algorithm."
+        ),
+    ):
         model.learn()
 
 

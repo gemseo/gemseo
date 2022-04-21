@@ -67,6 +67,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         """
         self.name = name
         self.parameters = parameters
+        self.is_fitted = False
 
     def duplicate(self):  # type: (...) -> Transformer
         """Duplicate the current object.
@@ -77,6 +78,19 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         return self.__class__(self.name, **self.parameters)
 
     def fit(
+        self,
+        data,  # type: ndarray
+        *args,  # type: TransformerFitOptionType
+    ):  # type: (...) -> NoReturn
+        """Fit the transformer to the data.
+
+        Args:
+            data: The data to be fitted.
+        """
+        self._fit(data, *args)
+        self.is_fitted = True
+
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

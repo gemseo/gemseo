@@ -61,7 +61,7 @@ class DimensionReduction(Transformer):
             name, n_components=n_components, **parameters
         )
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

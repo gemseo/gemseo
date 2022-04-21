@@ -33,6 +33,7 @@ from gemseo.mlearning.transform.scaler.scaler import Scaler
 from gemseo.utils.py23_compat import Path
 from gemseo.utils.py23_compat import xrange
 from numpy import arange
+from numpy import array
 from numpy import array_equal
 
 from .new_ml_algo.new_ml_algo import NewMLAlgo
@@ -127,3 +128,18 @@ def test_save_and_load(dataset, tmp_path, monkeypatch, reset_factory):
     assert len(imported_model.learning_set) == 0
     assert imported_model.is_trained
     assert imported_model.sizes == dataset.sizes
+
+
+def test_transformers_error(dataset):
+    """Check that MLAlgo cannot use a transformer for both group and variable."""
+    dataset = Dataset()
+    dataset.add_variable("x", array([[1.0]]), group="foo")
+    with pytest.raises(
+        ValueError,
+        match=(
+            "An MLAlgo cannot have both a transformer "
+            "for all variables of a group and a transformer "
+            "for one variable of this group."
+        ),
+    ):
+        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

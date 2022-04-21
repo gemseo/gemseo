@@ -13,17 +13,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from gemseo.mlearning.core.ml_algo import MLAlgo
+import pytest
+from gemseo.core.dataset import Dataset
+from gemseo.mlearning.regression.gpr import GaussianProcessRegression
+from numpy import linspace
+from numpy import pi
+from numpy import sin
 
 
-class NewMLAlgo(MLAlgo):
-    """New machine learning algorithm class."""
-
-    LIBRARY = "NewLibrary"
-
-    def learn(self, samples=None):
-        super(NewMLAlgo, self).learn(samples=samples)
-        self._trained = True
-
-    def _learn(self, indices, fit_transformers):
-        pass
+@pytest.fixture(scope="module")
+def algo_for_transformer():
+    """A GP regression of f(x) = x*sin(x)**2 over [0, 2*pi] with 20 points."""
+    dataset = Dataset()
+    x = linspace(0, 2 * pi, 20)[:, None]
+    dataset.add_variable("x", x, group="inputs")
+    dataset.add_variable("y", x * sin(x) ** 2, group="outputs")
+    algo = GaussianProcessRegression(
+        dataset,
+        transformer=GaussianProcessRegression.DEFAULT_TRANSFORMER,
+        n_restarts_optimizer=0,
+    )
+    algo.learn()
+    return algo

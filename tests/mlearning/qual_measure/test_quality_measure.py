@@ -34,17 +34,25 @@ from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def measure():  # type: (...) -> MLQualityMeasure
-    """The quality measure related to an trained machine learning algorithm."""
-    dataset = Dataset("the_dataset")
-    dataset.add_variable("x", array([[1]]))
+def dataset() -> Dataset:
+    """The learning dataset."""
+    data = Dataset("the_dataset")
+    data.add_variable("x", array([[1]]))
+    return data
+
+
+@pytest.fixture(scope="module")
+def measure(dataset):  # type: (...) -> MLQualityMeasure
+    """The quality measure related to a trained machine learning algorithm."""
     return MLQualityMeasure(MLAlgo(dataset))
 
 
-def test_constructor(measure):
+@pytest.mark.parametrize("fit_transformers", [False, True])
+def test_constructor(fit_transformers, dataset):
     """Test construction."""
-    assert measure.algo is not None
+    measure = MLQualityMeasure(MLAlgo(dataset), fit_transformers=fit_transformers)
     assert measure.algo.learning_set.name == "the_dataset"
+    assert measure._fit_transformers is fit_transformers
 
 
 def test_evaluate(measure):
@@ -94,6 +102,7 @@ def algo_with_three_samples():
     learning_set.n_samples = 5
     algo = Mock()
     algo.learning_set = learning_set
+    algo.learning_samples_indices = [0, 1, 2, 3, 4]
     return algo
 
 

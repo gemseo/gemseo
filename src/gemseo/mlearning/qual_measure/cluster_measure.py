@@ -37,7 +37,6 @@ from numpy import arange
 from numpy import delete as npdelete
 from numpy import ndarray
 from numpy import unique
-from numpy.random import choice
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
@@ -51,22 +50,21 @@ class MLClusteringMeasure(MLQualityMeasure):
     def __init__(
         self,
         algo,  # type: MLClusteringAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for clustering.
         """
-        super(MLClusteringMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_learn(
         self,
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
+        self._train_algo(samples)
         samples = self._assure_samples(samples)
-        if not self.algo.is_trained:
-            self.algo.learn(samples)
-
         return self._compute_measure(
             self._get_data()[samples], self.algo.labels, multioutput
         )
@@ -105,12 +103,13 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
     def __init__(
         self,
         algo,  # type: MLPredictiveClusteringAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for predictive clustering.
         """
-        super(MLPredictiveClusteringMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_test(
         self,
@@ -118,10 +117,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        if not self.algo.is_trained:
-            self.algo.learn(samples)
-
+        self._train_algo(samples)
         data = test_data.get_data_by_names(self.algo.var_names, False)
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
@@ -133,17 +129,17 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         randomize=False,  # type:bool
         seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
-        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
-
+        self._train_algo(samples)
         data = self._get_data()
-
         algo = deepcopy(self.algo)
-
         qualities = []
-        for n_fold in range(n_folds):
-            test_indices = folds[n_fold]
-            algo.learn(samples=npdelete(samples, test_indices))
-            test_data = data[test_indices]
+        folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
+        for fold in folds:
+            algo.learn(
+                samples=npdelete(samples, fold),
+                fit_transformers=self._fit_transformers,
+            )
+            test_data = data[fold]
             qualities.append(
                 self._compute_measure(test_data, algo.predict(test_data), multioutput)
             )
@@ -155,7 +151,9 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
+        self._train_algo(samples)
         samples = self._assure_samples(samples)
         n_samples = samples.size
         indices = arange(n_samples)
@@ -165,15 +163,19 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         algo = deepcopy(self.algo)
 
         qualities = []
+        generator = self._get_rng(seed)
         for _ in range(n_replicates):
-            training_indices = unique(choice(n_samples, n_samples))
-            algo.learn(samples=[samples[index] for index in training_indices])
-            test_data = data[
-                [samples[index] for index in npdelete(indices, training_indices)]
-            ]
-            qualities.append(
-                self._compute_measure(test_data, algo.predict(test_data), multioutput)
+            train_indices = unique(generator.choice(n_samples, n_samples))
+            test_indices = npdelete(indices, train_indices)
+            algo.learn(
+                samples=[samples[index] for index in train_indices],
+                fit_transformers=self._fit_transformers,
             )
+            test_data = data[[samples[index] for index in test_indices]]
+            predictions = algo.predict(test_data)
+
+            quality = self._compute_measure(test_data, predictions, multioutput)
+            qualities.append(quality)
 
         return sum(qualities) / len(qualities)
 

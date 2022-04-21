@@ -90,10 +90,13 @@ class MLClassificationAlgo(MLSupervisedAlgo):
     def _learn(
         self,
         indices,  # type: Optional[Sequence[int]]
+        fit_transformers,  # type: bool
     ):  # type: (...) -> None
         output_data = self.learning_set.get_data_by_names(self.output_names, False)
         self.n_classes = unique(output_data).shape[0]
-        super(MLClassificationAlgo, self)._learn(indices)
+        super(MLClassificationAlgo, self)._learn(
+            indices, fit_transformers=fit_transformers
+        )
 
     @MLSupervisedAlgo.DataFormatters.format_input_output
     def predict_proba(

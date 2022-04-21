@@ -70,7 +70,7 @@ class KPCA(DimensionReduction):
             **parameters,
         )
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

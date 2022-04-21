@@ -216,7 +216,23 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 Returns:
                     Either the raw output data of 'predict_jac'
                     or a transformed version according to the requirements.
+
+                Raises:
+                    NotImplementedError: When the transformer is applied to a variable
+                        rather than to a group of variables.
                 """
+                if (
+                    self._input_variables_to_transform
+                    or self._output_variables_to_transform
+                ):
+                    # TODO: implement this case
+                    raise NotImplementedError(
+                        "The Jacobian of regression models cannot be computed "
+                        "when the transformed quantities are variables; "
+                        "please transform the whole group 'inputs' or 'outputs' "
+                        "or do not use data transformation."
+                    )
+
                 inputs = self.learning_set.INPUT_GROUP
                 if inputs in self.transformer:
                     jac = self.transformer[inputs].compute_jacobian(input_data)
@@ -293,6 +309,9 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
         Returns:
             The predicted Jacobian data with shape (n_samples, n_outputs, n_inputs).
+
+        Raises:
+            NotImplementedError: When the method is called.
         """
         name = self.__class__.__name__
         raise NotImplementedError("Derivatives are not available for {}".format(name))

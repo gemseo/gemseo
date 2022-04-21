@@ -61,7 +61,7 @@ class MinMaxScaler(Scaler):
         """
         super(MinMaxScaler, self).__init__(name, offset, coefficient)
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

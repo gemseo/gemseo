@@ -23,17 +23,23 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
 from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
+    DimensionReduction,
+)
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-from gemseo.mlearning.transform.scaler.scaler import Scaler
 from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
 from numpy import zeros
+from numpy.ma.testutils import assert_close
+from numpy.testing import assert_equal
 
 
 @pytest.fixture
@@ -192,68 +198,140 @@ def test_format_sample(io_dataset):
     assert array_equal(out_values, INPUT_VALUES)
 
 
-def test_format_transform(io_dataset):
-    """Test format transform decorators."""
+@pytest.fixture(scope="module")
+def dataset_for_transform() -> Dataset:
+    """A dataset to check that DataFormatter format_transform()."""
+    data = Dataset()
+    data.add_variable("x1", array([[0.0], [2.0]]), group=Dataset.INPUT_GROUP)
+    data.add_variable("x2", array([[0.0], [2.0]]), group=Dataset.INPUT_GROUP)
+    data.add_variable("y1", array([[0.0], [4.0]]), group=Dataset.OUTPUT_GROUP)
+    data.add_variable("y2", array([[0.0], [4.0]]), group=Dataset.OUTPUT_GROUP)
+    return data
 
-    class LearnableMLSupervisedAlgo(MLSupervisedAlgo):
-        """Supervised algorithm that can learn."""
 
-        def _fit(self, input_data, output_data):
-            """Fit data."""
-            assert input_data.shape == (10, 3)
-            assert output_data.shape == (10, 3)
+class NewSupervisedAlgo(MLSupervisedAlgo):
+    """A supervised algorithm without fitting algorithm."""
 
-        def _predict(self, input_data):
-            """Predict."""
-            return input_data
+    def _fit(self, input_data, output_data):
+        return
 
-    partially_transformed = [None]
-    transformer = {
-        Dataset.INPUT_GROUP: Scaler(offset=5),
-        Dataset.OUTPUT_GROUP: Scaler(offset=3),
-    }
-    ml_algo = LearnableMLSupervisedAlgo(io_dataset, transformer=transformer)
-    ml_algo.learn()
 
-    @MLSupervisedAlgo.DataFormatters.format_transform(
-        transform_inputs=False, transform_outputs=False
+@pytest.mark.parametrize(
+    "transform_inputs,transform_outputs,transform_in_key,transform_out_key,expected",
+    [
+        (False, False, "inputs", "outputs", array([[0.0, 0.0], [2.0, 2.0]])),
+        (False, False, "x1", "outputs", array([[0.0, 0.0], [2.0, 2.0]])),
+        (False, False, "inputs", "y1", array([[0.0, 0.0], [2.0, 2.0]])),
+        (False, False, "x1", "y1", array([[0.0, 0.0], [2.0, 2.0]])),
+        (False, True, "inputs", "outputs", array([[0.0, 0.0], [8.0, 8.0]])),
+        (False, True, "x1", "outputs", array([[0.0, 0.0], [8.0, 8.0]])),
+        (False, True, "inputs", "y1", array([[0.0, 0.0], [8.0, 2.0]])),
+        (False, True, "x1", "y1", array([[0.0, 0.0], [8.0, 2.0]])),
+        (True, False, "inputs", "outputs", array([[0.0, 0.0], [1.0, 1.0]])),
+        (True, False, "x1", "outputs", array([[0.0, 0.0], [1.0, 2.0]])),
+        (True, False, "inputs", "y1", array([[0.0, 0.0], [1.0, 1.0]])),
+        (True, False, "x1", "y1", array([[0.0, 0.0], [1.0, 2.0]])),
+        (True, True, "inputs", "outputs", array([[0.0, 0.0], [4.0, 4.0]])),
+        (True, True, "x1", "outputs", array([[0.0, 0.0], [4.0, 8.0]])),
+        (True, True, "inputs", "y1", array([[0.0, 0.0], [4.0, 1.0]])),
+        (True, True, "x1", "y1", array([[0.0, 0.0], [4.0, 2.0]])),
+    ],
+)
+def test_format_transform(
+    dataset_for_transform,
+    transform_inputs,
+    transform_outputs,
+    transform_in_key,
+    transform_out_key,
+    expected,
+):
+    """Check the DataFormatter format_transform().
+
+    This formatter replaces a function by a composition of functions:
+    1. transforms the input data,
+    2. evaluate the original function,
+    3. untransforms the output data.
+
+    Args:
+        dataset_for_transform: The dataset used by the ML algorithm.
+        transform_inputs: Whether to transform the input data
+            before calling the original function.
+        transform_outputs: Whether to untransform the output data
+            after calling the original function.
+        transform_in_key: The name of the input to transform or the input group.
+        transform_out_key: The name of the output to transform or the output group.
+        expected: The untransformed output data.
+    """
+    # 1. Define the transformer: MinMaxScaler for an {in,out}put name or group.
+    transformer = {transform_in_key: "MinMaxScaler", transform_out_key: "MinMaxScaler"}
+
+    # 2. Train a supervised algo.
+    algo = NewSupervisedAlgo(dataset_for_transform, transformer=transformer)
+    algo.learn()
+
+    # 3. Create the DataFormatter to format the prediction method of tha algorithm.
+    format_function = algo.DataFormatters.format_transform(
+        transform_inputs, transform_outputs
     )
-    def predict_transform_none(self, input_data):
-        assert self == ml_algo
-        partially_transformed[0] = input_data
-        return input_data
+    # 4. For ease of understanding, we consider the identity as prediction method.
+    # its input and output data are supposed to be formatted data
+    # if I/O formatters are available.
+    predict = lambda self, x: x  # noqa: E731
+    formatted_identity_function = format_function(predict)
 
-    @MLSupervisedAlgo.DataFormatters.format_transform(transform_inputs=False)
-    def predict_transform_outputs(self, input_data):
-        assert self == ml_algo
-        partially_transformed[0] = input_data
-        return input_data
+    # 5. Check the value
+    input_data = dataset_for_transform.get_all_data()[0]["inputs"]
+    assert_equal(formatted_identity_function(algo, input_data), expected)
 
-    @MLSupervisedAlgo.DataFormatters.format_transform(transform_outputs=False)
-    def predict_transform_inputs(self, input_data):
-        assert self == ml_algo
-        partially_transformed[0] = input_data
-        return input_data
 
-    @MLSupervisedAlgo.DataFormatters.format_transform()
-    def predict_transform_both(self, input_data):
-        assert self == ml_algo
-        partially_transformed[0] = input_data
-        return input_data
+@pytest.fixture(scope="module")
+def dataset() -> Dataset:
+    """A learning dataset for the function y=x."""
+    data = Dataset()
+    data.add_variable("x", array([[1.0], [2.0]]), group=Dataset.INPUT_GROUP)
+    data.add_variable("y", array([[1.0], [2.0]]), group=Dataset.OUTPUT_GROUP)
+    return data
 
-    for input_data in [INPUT_VALUE_1D, INPUT_VALUE_2D, INPUT_VALUES]:
-        output_data = predict_transform_none(ml_algo, input_data)
-        assert array_equal(input_data, partially_transformed[0])
-        assert array_equal(input_data, output_data)
 
-        output_data = predict_transform_inputs(ml_algo, input_data)
-        assert array_equal(input_data + 5, partially_transformed[0])
-        assert array_equal(input_data + 5, output_data)
+@pytest.mark.parametrize("name", [Dataset.INPUT_GROUP, Dataset.OUTPUT_GROUP, "x", "y"])
+@pytest.mark.parametrize("fit_transformers", [False, True])
+def test_fit_transformers_option(dataset, name, fit_transformers):
+    """Check that the fit_transformers option is correctly used."""
+    algo = MLSupervisedAlgo(dataset, transformer={name: "MinMaxScaler"})
+    algo._fit = lambda x, y: None
+    algo.learn(fit_transformers=fit_transformers)
+    assert (float(algo.transformer[name].offset) == -1) is fit_transformers
 
-        output_data = predict_transform_outputs(ml_algo, input_data)
-        assert array_equal(input_data, partially_transformed[0])
-        assert array_equal(input_data - 3, output_data)
 
-        output_data = predict_transform_both(ml_algo, input_data)
-        assert array_equal(input_data + 5, partially_transformed[0])
-        assert array_equal(input_data + 5 - 3, output_data)
+@pytest.mark.parametrize(
+    "name,expected", [("x", {"x": 3, "y": 1}), ("y", {"x": 1, "y": 3})]
+)
+def test_compute_transformed_variable_sizes(dataset, name, expected):
+    """Check that the compute_transformed_variable_sizes method works."""
+    algo = MLSupervisedAlgo(
+        dataset, transformer={name: DimensionReduction(n_components=3)}
+    )
+    algo._MLSupervisedAlgo__compute_transformed_variable_sizes()
+    sizes = algo._transformed_variable_sizes
+    assert sizes == expected
+    assert algo._transformed_input_sizes == {"x": sizes["x"]}
+    assert algo._transformed_output_sizes == {"y": sizes["y"]}
+
+
+def test_crossed_transformer_failure(dataset):
+    """Check that a crossed transformer cannot be applied to outputs."""
+    algo = MLSupervisedAlgo(dataset, transformer={"y": "PLS"})
+    expected = re.escape(
+        "The transformer PLS cannot be applied to the outputs "
+        "to build a supervised machine learning algorithm."
+    )
+    with pytest.raises(NotImplementedError, match=expected):
+        algo.learn()
+
+
+def test_crossed_transformer(dataset):
+    """Check that a crossed transformer can be applied to inputs."""
+    algo = MLSupervisedAlgo(dataset, transformer={"x": "PLS"})
+    algo._fit = lambda x, y: None
+    algo.learn()
+    assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))

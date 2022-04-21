@@ -54,7 +54,7 @@ class JamesonSensor(Transformer):
         self.removing_part = removing_part
         self.dimension = dimension
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

@@ -62,7 +62,7 @@ class PLS(DimensionReduction):
         super(PLS, self).__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         other_data,  # type: ndarray
