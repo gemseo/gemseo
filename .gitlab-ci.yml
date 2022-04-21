@@ -96,6 +96,8 @@ check:
     reports:
       junit: report.xml
       cobertura: $COVERAGE_FILE
+  # To get the total coverage shown in gitlab UI.
+  coverage: '/^TOTAL.+?(\d+\%)$/'
   rules:
     # Only run a test job when the following files have changed.
     - changes:
