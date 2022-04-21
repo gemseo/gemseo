@@ -70,10 +70,10 @@ class Pipeline(Transformer):
         transformers = [trans.duplicate() for trans in self.transformers]
         return self.__class__(self.name, transformers)
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
-        **options,  # type: TransformerFitOptionType
+        *args,  # type: TransformerFitOptionType
     ):  # type: (...) -> None
         """Fit the transformer pipeline to the data.
 
@@ -83,7 +83,7 @@ class Pipeline(Transformer):
             data: The data to be fitted.
         """
         for transformer in self.transformers:
-            data = transformer.fit_transform(data, **options)
+            data = transformer.fit_transform(data, *args)
 
     def transform(
         self,

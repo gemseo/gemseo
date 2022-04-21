@@ -88,8 +88,9 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
     def _learn(
         self,
         indices,  # type: Optional[Sequence[int]]
+        fit_transformers,  # type: bool
     ):  # type: (...) -> None
-        super(MLClusteringAlgo, self)._learn(indices)
+        super(MLClusteringAlgo, self)._learn(indices, fit_transformers=fit_transformers)
         if self.labels is None:
             raise ValueError("self._fit() shall assign labels.")
         self.n_clusters = unique(self.labels).shape[0]

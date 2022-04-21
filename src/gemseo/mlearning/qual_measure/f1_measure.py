@@ -53,12 +53,13 @@ class F1Measure(MLErrorMeasure):
     def __init__(
         self,
         algo,  # type: MLClassificationAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for classification.
         """
-        super(F1Measure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,

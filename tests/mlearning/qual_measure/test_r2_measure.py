@@ -31,6 +31,7 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
@@ -156,3 +157,14 @@ def test_evaluate_bootstrap(dataset):
     measure = R2Measure(algo)
     with pytest.raises(NotImplementedError):
         measure.evaluate("bootstrap")
+
+
+@pytest.mark.parametrize("fit", [False, True])
+def test_fit_transformers(algo_for_transformer, fit):
+    """Check that transformers are fitted with the sub-datasets."""
+    m1 = R2Measure(algo_for_transformer)
+    m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
+    assert (
+        allclose(m1.evaluate("kfolds", seed=0), m2.evaluate("kfolds", seed=0))
+        is not fit
+    )

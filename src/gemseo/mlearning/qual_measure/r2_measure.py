@@ -66,12 +66,13 @@ class R2Measure(MLErrorMeasure):
     def __init__(
         self,
         algo,  # type: MLRegressionAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for regression.
         """
-        super(R2Measure, self).__init__(algo)
+        super().__init__(algo, fit_transformers)
 
     def _compute_measure(
         self,
@@ -92,12 +93,8 @@ class R2Measure(MLErrorMeasure):
     ):  # type: (...) -> Union[float,ndarray]
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
-        input_data = self.algo.learning_set.get_data_by_names(
-            self.algo.input_names, False
-        )
-        output_data = self.algo.learning_set.get_data_by_names(
-            self.algo.output_names, False
-        )
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
         multiout = "raw_values" if multioutput else "uniform_average"
 
@@ -108,7 +105,9 @@ class R2Measure(MLErrorMeasure):
         var = mean_squared_error(output_data, ymean, multioutput=multiout)
         for n_fold in range(n_folds):
             fold = folds[n_fold]
-            algo.learn(samples=npdelete(samples, fold))
+            algo.learn(
+                samples=npdelete(samples, fold), fit_transformers=self._fit_transformers
+            )
             mse = mean_squared_error(
                 output_data[fold], algo.predict(input_data[fold]), multioutput=multiout
             )
@@ -121,5 +120,6 @@ class R2Measure(MLErrorMeasure):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[List[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> NoReturn
         raise NotImplementedError

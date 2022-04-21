@@ -32,6 +32,7 @@ from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
+from numpy import allclose
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache_policy(MODEL.MEMORY_FULL_CACHE)
@@ -158,7 +159,7 @@ def test_evaluate_kfolds(dataset):
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    measure = MSEMeasure(algo)
+    measure = MSEMeasure(algo, fit_transformers=True)
     mse_kfolds = measure.evaluate("kfolds")
     assert mse_kfolds < TOL_DEG_2
 
@@ -179,3 +180,24 @@ def test_evaluate_bootstrap(dataset):
     measure = MSEMeasure(algo)
     mse_bootstrap = measure.evaluate("bootstrap")
     assert mse_bootstrap < TOL_DEG_1
+
+
+@pytest.mark.parametrize("method", ["bootstrap", "kfolds"])
+@pytest.mark.parametrize("fit", [False, True])
+def test_fit_transformers(algo_for_transformer, method, fit):
+    """Check that transformers are fitted with the sub-datasets."""
+    m1 = MSEMeasure(algo_for_transformer)
+    m2 = MSEMeasure(algo_for_transformer, fit_transformers=fit)
+    assert allclose(m1.evaluate(method, seed=0), m2.evaluate(method, seed=0)) is not fit
+
+
+@pytest.mark.parametrize("method", ["bootstrap", "kfolds"])
+@pytest.mark.parametrize("seed", [None, 0])
+def test_seed(algo_for_transformer, method, seed):
+    """Check that the seed is correctly used."""
+    m = MSEMeasure(algo_for_transformer)
+    kwargs = {"method": method, "seed": seed}
+    if method == "kfolds":
+        kwargs["randomize"] = True
+
+    assert allclose(m.evaluate(**kwargs), m.evaluate(**kwargs)) is (seed is not None)

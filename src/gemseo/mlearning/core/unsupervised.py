@@ -55,7 +55,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         input_names (List[str]): The names of the variables.
     """
 
-    ABBR = "MLUnupervisedAlgo"
+    ABBR = "MLUnsupervisedAlgo"
 
     def __init__(
         self,
@@ -77,12 +77,13 @@ class MLUnsupervisedAlgo(MLAlgo):
     def _learn(
         self,
         indices,  # type: Optional[Sequence[int]]
+        fit_transformers,  # type: bool
     ):  # type: (...) -> None
         if set(self.var_names) == set(self.learning_set.variables):
             data = []
             for group in self.learning_set.groups:
                 sub_data = self.learning_set.get_data_by_group(group)
-                if group in self.transformer:
+                if fit_transformers and group in self.transformer:
                     sub_data = self.transformer[group].fit_transform(sub_data)
                 data.append(sub_data)
             data = hstack(data)
@@ -90,7 +91,7 @@ class MLUnsupervisedAlgo(MLAlgo):
             data = []
             for name in self.var_names:
                 sub_data = self.learning_set.get_data_by_names([name], False)
-                if name in self.transformer:
+                if fit_transformers and name in self.transformer:
                     sub_data = self.transformer[name].fit_transform(sub_data)
                 data.append(sub_data)
             data = hstack(data)

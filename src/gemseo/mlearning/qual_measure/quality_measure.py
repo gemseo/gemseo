@@ -18,13 +18,10 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Here is the baseclass to measure the quality of machine learning algorithms.
+"""Measuring the quality of a machine learning algorithm."""
+from __future__ import annotations
 
-The concept of quality measure is implemented with the :class:`.MLQualityMeasure` class.
-"""
-from __future__ import division
-from __future__ import unicode_literals
-
+from typing import ClassVar
 from typing import List
 from typing import NoReturn
 from typing import Optional
@@ -33,11 +30,11 @@ from typing import Tuple
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from numpy import arange
 from numpy import array
 from numpy import array_split
 from numpy import ndarray
 from numpy.random import default_rng
+from numpy.random import Generator
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
@@ -47,29 +44,69 @@ OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
 
 
 class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
-    """An abstract quality measure for machine learning algorithms.
 
-    Attributes:
-        algo (MLAlgo): The machine learning algorithm.
+    """An abstract quality measure to assess a machine learning algorithm.
+
+    This measure can be minimized (e.g. :class:`.MSEMeasure`)
+    or maximized (e.g. :class:`.R2Measure`).
+
+    It can be evaluated from the learning dataset, from a test dataset
+    or using resampling techniques such as boostrap, cross-validation or leave-one-out.
+
+    The machine learning algorithm is usually trained.
+    If not but required by the evaluation technique,
+    the quality measure will train it.
+
+    Lastly,
+    the transformers of the algorithm fitted from the learning dataset
+    can be used as is by the resampling methods
+    or re-fitted for each algorithm trained on a subset of the learning dataset.
     """
 
-    LEARN = "learn"
-    TEST = "test"
-    LOO = "loo"
-    KFOLDS = "kfolds"
-    BOOTSTRAP = "bootstrap"
+    algo: MLAlgo
+    """The machine learning algorithm usually trained."""
 
-    SMALLER_IS_BETTER = True  # To be overwritten in inheriting classes
+    _fit_transformers: bool
+    """Whether to re-fit the transformers when using resampling techniques.
+
+    If ``False``, use the transformers fitted with the whole learning dataset.
+    """
+
+    LEARN: ClassVar[str] = "learn"
+    """The name of the method to evaluate the measure on the learning dataset."""
+
+    TEST: ClassVar[str] = "test"
+    """The name of the method to evaluate the measure on a test dataset."""
+
+    LOO: ClassVar[str] = "loo"
+    """The name of the method to evaluate the measure by leave-one-out."""
+
+    KFOLDS: ClassVar[str] = "kfolds"
+    """The name of the method to evaluate the measure by cross-validation."""
+
+    BOOTSTRAP: ClassVar[str] = "bootstrap"
+    """The name of the method to evaluate the measure by bootstrap."""
+
+    SMALLER_IS_BETTER: ClassVar[bool] = True
+    """Whether to minimize or maximize the measure."""
 
     def __init__(
         self,
         algo,  # type: MLAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm.
+            fit_transformers: Whether to re-fit the transformers
+                when using resampling techniques.
+                If ``False``,
+                use the transformers of the algorithm fitted
+                from the whole learning dataset.
         """
         self.algo = algo
+        self._fit_transformers = fit_transformers
+        self.__default_seed = 0
 
     def evaluate(
         self,
@@ -80,43 +117,35 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         """Evaluate the quality measure.
 
         Args:
-            method: The name of the method
-                to evaluate the quality measure.
+            method: The name of the method to evaluate the quality measure.
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
-            **options: The options of the estimation method (e.g. 'test_data' for
-                the 'test' method, 'n_replicates' for the bootstrap one, ...)
+                If ``None``, use the whole learning dataset.
+            **options: The options of the estimation method
+                (e.g. ``test_data`` for the *test* method,
+                ``n_replicates`` for the *bootstrap* one, ...).
 
         Returns:
             The value of the quality measure.
 
         Raises:
-            ValueError: If the name of the method is unknown.
+            ValueError: When the name of the method is unknown.
         """
-        if method == self.LEARN:
-            evaluation = self.evaluate_learn(samples=samples, **options)
-        elif method == self.TEST:
-            evaluation = self.evaluate_test(samples=samples, **options)
-        elif method == self.LOO:
-            evaluation = self.evaluate_loo(samples=samples, **options)
-        elif method == self.KFOLDS:
-            evaluation = self.evaluate_kfolds(samples=samples, **options)
-        elif method == self.BOOTSTRAP:
-            evaluation = self.evaluate_bootstrap(samples=samples, **options)
-        else:
-            raise ValueError("The method '{}' is not available.".format(method))
-        return evaluation
+        try:
+            evaluate = getattr(self, f"evaluate_{method.lower()}")
+            return evaluate(samples=samples, **options)
+        except AttributeError:
+            raise ValueError(f"The method '{method}' is not available.")
 
     def evaluate_learn(
         self,
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> NoReturn
-        """Evaluate the quality measure using the learning dataset.
+        """Evaluate the quality measure from the learning dataset.
 
         Args:
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
+                If ``None``, use the whole learning dataset.
             multioutput: Whether to return the quality measure
                 for each output component. If not, average these measures.
 
@@ -134,10 +163,10 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         """Evaluate the quality measure using a test dataset.
 
         Args:
-            dataset: The test dataset.
+            test_data: The test dataset.
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
-            multioutput: If True, return the quality measure for each
+                If ``None``, use the whole learning dataset.
+            multioutput: If ``True``, return the quality measure for each
                 output component. Otherwise, average these measures.
 
         Returns:
@@ -154,8 +183,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
-            multioutput: If True, return the quality measure for each
+                If ``None``, use the whole learning dataset.
+            multioutput: If ``True``, return the quality measure for each
                 output component. Otherwise, average these measures.
 
         Returns:
@@ -180,8 +209,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             n_folds: The number of folds.
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
-            multioutput: If True, return the quality measure for each
+                If ``None``, use the whole learning dataset.
+            multioutput: If ``True``, return the quality measure for each
                 output component. Otherwise, average these measures.
             randomize: Whether to shuffle the samples before dividing them in folds.
             seed: The seed of the pseudo-random number generator.
@@ -198,15 +227,19 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> NoReturn
         """Evaluate the quality measure using the bootstrap technique.
 
         Args:
             n_replicates: The number of bootstrap replicates.
             samples: The indices of the learning samples.
-                If None, use the whole learning dataset.
-            multioutput: If True, return the quality measure for each
+                If ``None``, use the whole learning dataset.
+            multioutput: If ``True``, return the quality measure for each
                 output component. Otherwise, average these measures.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                then an unpredictable generator will be used.
 
         Returns:
             The value of the quality measure.
@@ -221,7 +254,7 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
     ):  # type: (...) -> bool
         """Compare the quality between two values.
 
-        This methods returns True if the first one is better than the second one.
+        This methods returns ``True`` if the first one is better than the second one.
 
         For most measures, a smaller value is "better" than a larger one (MSE
         etc.). But for some, like an R2-measure, higher values are better than
@@ -244,18 +277,19 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         self,
         samples,  # type: Optional[Sequence[int]]
     ):  # type: (...) -> ndarray
-        """Get the list of all samples if samples is None.
+        """Return the indices of the samples.
 
         Args:
-            samples: The list of samples. Can also be None.
+            samples: The indices of the samples.
+                If ``None``, use the learning samples of the algorithm.
 
         Returns:
-            The samples.
+            The indices of the samples.
         """
         if samples is None:
-            return arange(self.algo.learning_set.n_samples)
-        else:
-            return array(samples)
+            samples = self.algo.learning_samples_indices
+
+        return array(samples)
 
     def _compute_folds(
         self,
@@ -284,9 +318,34 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
         """
         samples = self._assure_samples(samples)
         if randomize:
-            default_rng(seed).shuffle(samples)
+            self._get_rng(seed).shuffle(samples)
 
         return array_split(samples, n_folds), samples
+
+    def _get_rng(self, seed: int | None) -> Generator:
+        """Return a random number generator.
+
+        Args:
+            seed: The seed.
+                If ``None``, use the default seed.
+
+        Returns:
+            A random number generator.
+        """
+        self.__default_seed += 1
+        if seed is None:
+            seed = self.__default_seed
+        return default_rng(seed)
+
+    def _train_algo(self, samples: Sequence[int] | None) -> None:
+        """Train the original algorithm if necessary.
+
+        Args:
+            samples: The indices of the samples to be learned.
+                If ``None``, consider all the samples of the learning set.
+        """
+        if not self.algo.is_trained:
+            self.algo.learn(samples)
 
 
 class MLQualityMeasureFactory(Factory):

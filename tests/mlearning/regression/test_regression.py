@@ -23,6 +23,8 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import re
+
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.regression.gpr import GaussianProcessRegression
@@ -69,9 +71,10 @@ def test_predict(io_dataset):
     assert allclose(prediction["y_1"], output_data["y_1"])
 
 
-def test_predict_jacobian():
-    """Test predict Jacobian."""
-    data = array(
+@pytest.fixture(scope="module")
+def dataset_for_jacobian() -> Dataset:
+    """The dataset used to check the Jacobian computation."""
+    samples = array(
         [
             [1.0, 2.0, 3.0, 6.0, -6.0],
             [2.0, 3.0, 4.0, 9.0, -9.0],
@@ -81,10 +84,39 @@ def test_predict_jacobian():
     variables = ["x_1", "x_2", "y_1"]
     sizes = {"x_1": 1, "x_2": 2, "y_1": 2}
     groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    dataset = Dataset("dataset_name")
-    dataset.set_from_array(data, variables, sizes, groups)
-    ml_algo = LinearRegression(dataset)
+    data = Dataset("dataset_name")
+    data.set_from_array(samples, variables, sizes, groups)
+    return data
+
+
+@pytest.mark.parametrize(
+    "groups", [None, ["inputs"], ["outputs"], ["inputs", "outputs"]]
+)
+def test_predict_jacobian(dataset_for_jacobian, groups):
+    """Test predict Jacobian."""
+    if not groups:
+        transformer = None
+    else:
+        transformer = {group: "MinMaxScaler" for group in groups}
+    ml_algo = LinearRegression(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
     assert allclose(jac["y_1"]["x_1"], array([[1.0], [-1.0]]))
     assert allclose(jac["y_1"]["x_2"], array([[1.0, 1.0], [-1.0, -1.0]]))
+
+
+@pytest.mark.parametrize("variable", ["x_1", "y_1"])
+def test_predict_jacobian_failure(dataset_for_jacobian, variable):
+    """Test predict Jacobian when the transformer uses a variable name."""
+    expected = re.escape(
+        "The Jacobian of regression models cannot be computed "
+        "when the transformed quantities are variables; "
+        "please transform the whole group 'inputs' or 'outputs' "
+        "or do not use data transformation."
+    )
+    ml_algo = LinearRegression(
+        dataset_for_jacobian, transformer={variable: "MinMaxScaler"}
+    )
+    ml_algo.learn()
+    with pytest.raises(NotImplementedError, match=expected):
+        ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})

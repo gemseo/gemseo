@@ -36,7 +36,6 @@ from numpy import arange
 from numpy import delete as npdelete
 from numpy import ndarray
 from numpy import unique
-from numpy.random import choice
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
@@ -49,23 +48,23 @@ class MLErrorMeasure(MLQualityMeasure):
     def __init__(
         self,
         algo,  # type: MLSupervisedAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for supervised learning.
         """
-        super(MLErrorMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_learn(
         self,
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        self.algo.learn(samples)
+        self._train_algo(samples)
         return self._compute_measure(
-            self.algo.output_data[samples],
-            self.algo.predict(self.algo.input_data[samples]),
+            self.algo.output_data,
+            self.algo.predict(self.algo.input_data),
             multioutput,
         )
 
@@ -75,8 +74,7 @@ class MLErrorMeasure(MLQualityMeasure):
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
     ):  # type: (...) -> Union[float,ndarray]
-        samples = self._assure_samples(samples)
-        self.algo.learn(samples)
+        self._train_algo(samples)
         return self._compute_measure(
             test_data.get_data_by_names(self.algo.output_names, False),
             self.algo.predict(
@@ -93,24 +91,23 @@ class MLErrorMeasure(MLQualityMeasure):
         randomize=False,  # type:bool
         seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
+        self._train_algo(samples)
+        samples = self._assure_samples(samples)
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
-        input_data = self.algo.learning_set.get_data_by_names(
-            self.algo.input_names, False
-        )
-        output_data = self.algo.learning_set.get_data_by_names(
-            self.algo.output_names, False
-        )
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
         algo = deepcopy(self.algo)
 
         qualities = []
-        for n_fold in range(n_folds):
-            fold = folds[n_fold]
-            algo.learn(samples=npdelete(samples, fold))
-            quality = self._compute_measure(
-                output_data[fold], algo.predict(input_data[fold]), multioutput
+        for fold in folds:
+            algo.learn(
+                samples=npdelete(samples, fold), fit_transformers=self._fit_transformers
             )
+            expected = output_data[fold]
+            predicted = algo.predict(input_data[fold])
+            quality = self._compute_measure(expected, predicted, multioutput)
             qualities.append(quality)
 
         return sum(qualities) / len(qualities)
@@ -120,25 +117,27 @@ class MLErrorMeasure(MLQualityMeasure):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[None]
     ):  # type: (...) -> Union[float,ndarray]
         samples = self._assure_samples(samples)
+        self._train_algo(samples)
         n_samples = samples.size
-        all_indices = arange(n_samples)
+        input_data = self.algo.input_data
+        output_data = self.algo.output_data
 
-        input_data = self.algo.learning_set.get_data_by_names(
-            self.algo.input_names, False
-        )
-        output_data = self.algo.learning_set.get_data_by_names(
-            self.algo.output_names, False
-        )
+        all_indices = arange(n_samples)
 
         algo = deepcopy(self.algo)
 
         qualities = []
+        generator = self._get_rng(seed)
         for _ in range(n_replicates):
-            training_indices = unique(choice(n_samples, n_samples))
+            training_indices = unique(generator.choice(n_samples, n_samples))
             test_indices = npdelete(all_indices, training_indices)
-            algo.learn([samples[index] for index in training_indices])
+            algo.learn(
+                [samples[index] for index in training_indices],
+                fit_transformers=self._fit_transformers,
+            )
             test_samples = [samples[index] for index in test_indices]
             quality = self._compute_measure(
                 output_data[test_samples],

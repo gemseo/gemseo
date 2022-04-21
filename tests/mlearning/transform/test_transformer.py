@@ -39,13 +39,21 @@ def test_constructor():
     another_transformer = Transformer("Another Transformer")
     assert transformer.name is not None
     assert another_transformer.name == "Another Transformer"
+    assert not transformer.is_fitted
 
 
 def test_fit(data):
-    """Test fit method."""
+    """Test fit method.
+
+    fit calls _fit which is an abstract method and then sets is_fitted as True.
+    """
     transformer = Transformer()
     with pytest.raises(NotImplementedError):
         transformer.fit(data)
+
+    transformer._fit = lambda data, *args: None
+    transformer.fit("foo")
+    assert transformer.is_fitted
 
 
 def test_transform(data):

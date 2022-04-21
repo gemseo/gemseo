@@ -74,7 +74,7 @@ class KLSVD(DimensionReduction):
         """The mesh."""
         return self.parameters["mesh"]
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType

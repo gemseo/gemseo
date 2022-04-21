@@ -58,12 +58,13 @@ class RMSEMeasure(MSEMeasure):
     def __init__(
         self,
         algo,  # type: MLRegressionAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for regression.
         """
-        super(RMSEMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_learn(
         self,
@@ -108,6 +109,7 @@ class RMSEMeasure(MSEMeasure):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
         mse = super(RMSEMeasure, self).evaluate_bootstrap(
             n_replicates=n_replicates, samples=samples, multioutput=multioutput

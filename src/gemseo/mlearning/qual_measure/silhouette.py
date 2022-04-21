@@ -73,12 +73,13 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
     def __init__(
         self,
         algo,  # type: MLPredictiveClusteringAlgo
+        fit_transformers=False,  # type: bool
     ):  # type: (...) -> None
         """
         Args:
             algo: A machine learning algorithm for clustering.
         """
-        super(SilhouetteMeasure, self).__init__(algo)
+        super().__init__(algo, fit_transformers=fit_transformers)
 
     def evaluate_test(
         self,
@@ -103,6 +104,7 @@ class SilhouetteMeasure(MLPredictiveClusteringMeasure):
         n_replicates=100,  # type: int
         samples=None,  # type: Optional[Sequence[int]]
         multioutput=True,  # type: bool
+        seed=None,  # type: Optional[int]
     ):  # type: (...) -> Union[float,ndarray]
         raise NotImplementedError
 

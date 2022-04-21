@@ -98,7 +98,7 @@ class Scaler(Transformer):
     ):  # type: (...) -> None
         self.parameters["coefficient"] = value
 
-    def fit(
+    def _fit(
         self,
         data,  # type: ndarray
         *args,  # type: TransformerFitOptionType
