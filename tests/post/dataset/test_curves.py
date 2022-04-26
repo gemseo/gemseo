@@ -57,6 +57,16 @@ def dataset():
 TEST_PARAMETERS = {
     "without_option": ({}, ["Curves"]),
     "with_subsamples": ({"samples": [1]}, ["Curves_with_subsamples"]),
+    "with_properties": (
+        {
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            }
+        },
+        ["Curves_properties"],
+    ),
 }
 
 
@@ -69,4 +79,7 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by Curves._plot against references."""
-    Curves(dataset, mesh="mesh", variable="output", **kwargs)._plot()
+    properties = kwargs.pop("properties", None)
+    Curves(dataset, mesh="mesh", variable="output", **kwargs).execute(
+        save=False, show=False, properties=properties
+    )

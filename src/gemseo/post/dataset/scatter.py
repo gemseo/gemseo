@@ -27,14 +27,11 @@ where the color of points can be heterogeneous.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class Scatter(DatasetPlot):
@@ -57,34 +54,29 @@ class Scatter(DatasetPlot):
         """
         super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-        """
-        Args:
-            x: The name of the variable on the x-axis.
-            y: The name of the variable on the y-axis.
-            x_comp: The component of x.
-            y_comp: The component of y.
-        """
+    def _plot(self) -> list[Figure]:
         x = self._param.x
         y = self._param.y
         x_comp = self._param.x_comp
         y_comp = self._param.y_comp
-        color = properties.get(self.COLOR) or self.color or "blue"
+        color = self.color or "blue"
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
         axes.scatter(x_data, y_data, color=color)
+
         if self.dataset.sizes[x] == 1:
             axes.set_xlabel(self.xlabel or x)
         else:
-            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
+            axes.set_xlabel(self.xlabel or f"{x}({x_comp})")
+
         if self.dataset.sizes[y] == 1:
             axes.set_ylabel(self.ylabel or y)
         else:
-            axes.set_ylabel(self.ylabel or "{}({})".format(y, y_comp))
+            axes.set_ylabel(self.ylabel or f"{y}({y_comp})")
+
+        axes.set_title(self.title)
+
         return [fig]

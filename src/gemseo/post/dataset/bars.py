@@ -22,8 +22,6 @@ r"""Draw a bar plot from a :class:`.Dataset`. """
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import arange
@@ -31,7 +29,6 @@ from numpy import linspace
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class BarPlot(DatasetPlot):
@@ -48,10 +45,7 @@ class BarPlot(DatasetPlot):
         """
         super().__init__(dataset, n_digits=n_digits)
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
+    def _plot(self) -> list[Figure]:
         # radar solid grid lines
         all_data, _, sizes = self.dataset.get_all_data(False, False)
         variables_names = self.dataset.columns_names
@@ -104,6 +98,8 @@ class BarPlot(DatasetPlot):
 
         axe.set_xticks(discretization)
         axe.set_xticklabels(variables_names)
+        axe.set_xlabel(self.xlabel)
+        axe.set_ylabel(self.ylabel)
         axe.set_title(self.title, fontsize=self.font_size * 1.2)
         axe.legend(fontsize=self.font_size)
         return [fig]

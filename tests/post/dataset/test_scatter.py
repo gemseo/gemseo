@@ -69,6 +69,18 @@ TEST_PARAMETERS = {
         {"x": "z", "y": "y", "x_comp": 1, "properties": {}},
         ["Scatter_2d_input_given_component"],
     ),
+    "with_properties": (
+        {
+            "x": "z",
+            "y": "y",
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            },
+        },
+        ["Scatter_properties"],
+    ),
 }
 
 
@@ -81,5 +93,5 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by Scatter._plot against references."""
-    properties = kwargs.pop("properties")
-    Scatter(dataset, **kwargs)._plot(**properties)
+    properties = kwargs.pop("properties", None)
+    Scatter(dataset, **kwargs).execute(save=False, show=False, properties=properties)

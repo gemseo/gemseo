@@ -71,6 +71,16 @@ TEST_PARAMETERS = {
         {"levels": 2},
         ["Surfaces_with_levels_0", "Surfaces_with_levels_1"],
     ),
+    "with_properties": (
+        {
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            }
+        },
+        ["Surfaces_properties_0", "Surfaces_properties_1"],
+    ),
 }
 
 
@@ -87,4 +97,7 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by Surfaces._plot against references."""
-    Surfaces(dataset, mesh="mesh", variable="output", **kwargs)._plot()
+    properties = kwargs.pop("properties", None)
+    Surfaces(dataset, mesh="mesh", variable="output", **kwargs).execute(
+        save=False, show=False, properties=properties
+    )

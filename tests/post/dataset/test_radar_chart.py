@@ -54,6 +54,14 @@ TEST_PARAMETERS = {
     "with_connect": ({"connect": True}, ["RadarChart_connect"]),
     "with_radial_ticks": ({"radial_ticks": True}, ["RadarChart_radial_ticks"]),
     "with_n_levels": ({"n_levels": 3}, ["RadarChart_n_levels"]),
+    "with_properties": (
+        {
+            "properties": {
+                "title": "The title",
+            }
+        },
+        ["RadarChart_properties"],
+    ),
 }
 
 
@@ -66,4 +74,5 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by RadarChart._plot against references."""
-    RadarChart(dataset, **kwargs)._plot()
+    properties = kwargs.pop("properties", None)
+    RadarChart(dataset, **kwargs).execute(save=False, show=False, properties=properties)

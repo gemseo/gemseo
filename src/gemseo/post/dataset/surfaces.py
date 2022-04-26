@@ -35,7 +35,6 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class Surfaces(DatasetPlot):
@@ -72,11 +71,10 @@ class Surfaces(DatasetPlot):
             levels=levels,
         )
 
-    def _plot(self, **properties: DatasetPlotPropertyType) -> list[Figure]:
+    def _plot(self) -> list[Figure]:
         mesh = self._param.mesh
         variable = self._param.variable
         samples = self._param.samples
-        color = properties.get(self.COLOR) or self.color
         x_data = self.dataset.metadata[mesh][:, 0]
         y_data = self.dataset.metadata[mesh][:, 1]
         if samples is not None:
@@ -84,8 +82,7 @@ class Surfaces(DatasetPlot):
         else:
             samples = self.dataset[variable]
 
-        options = {}
-        options["cmap"] = properties.get(self.COLORMAP) or self.colormap
+        options = {"cmap": self.colormap}
         levels = self._param.levels
         if levels is not None:
             options["levels"] = levels
@@ -101,9 +98,11 @@ class Surfaces(DatasetPlot):
                 tcf = axes.tricontour(triangle, sample, **options)
 
             if self._param.add_points:
-                axes.scatter(x_data, y_data, color=color)
+                axes.scatter(x_data, y_data, color=self.color)
 
-            axes.set_title(f"{variable} - {sample_name}")
+            axes.set_xlabel(self.xlabel)
+            axes.set_ylabel(self.ylabel)
+            axes.set_title(f"{self.title or self.zlabel or variable} - {sample_name}")
             fig.colorbar(tcf)
             figs.append(fig)
 

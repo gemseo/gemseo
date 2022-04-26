@@ -48,6 +48,14 @@ TEST_PARAMETERS = {
     "with_names": ({"variable_names": ["x", "y"]}, ["ScatterMatrix_names"]),
     "with_upper": ({"plot_lower": False}, ["ScatterMatrix_lower"]),
     "with_lower": ({"plot_upper": False}, ["ScatterMatrix_upper"]),
+    "with_properties": (
+        {
+            "properties": {
+                "title": "The title",
+            }
+        },
+        ["ScatterMatrix_properties"],
+    ),
 }
 
 
@@ -60,7 +68,10 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"], tol=0.025)
 def test_plot(dataset, kwargs, baseline_images, pyplot_close_all):  # noqa: F811
     """Test images created by ScatterMatrix._plot against references."""
-    ScatterMatrix(dataset, **kwargs)._plot()
+    properties = kwargs.pop("properties", None)
+    ScatterMatrix(dataset, **kwargs).execute(
+        save=False, show=False, properties=properties
+    )
 
 
 def test_plot_error(dataset):  # noqa: F811

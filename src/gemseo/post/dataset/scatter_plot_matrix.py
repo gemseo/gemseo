@@ -50,7 +50,6 @@ labeled.
 """
 from __future__ import annotations
 
-from typing import List
 from typing import Sequence
 
 import matplotlib.pyplot as plt
@@ -58,7 +57,6 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 try:
     from pandas.plotting import scatter_matrix
@@ -102,7 +100,7 @@ class ScatterMatrix(DatasetPlot):
             plot_upper=plot_upper,
         )
 
-    def _plot(self, **properties: DatasetPlotPropertyType) -> List[Figure]:
+    def _plot(self) -> list[Figure]:
         variable_names = self._param.variable_names
         classifier = self._param.classifier
         kde = self._param.kde
@@ -111,8 +109,6 @@ class ScatterMatrix(DatasetPlot):
         if variable_names is None:
             variable_names = self.dataset.variables
 
-        figsize_x = properties.get(self.FIGSIZE_X) or 10.0
-        figsize_y = properties.get(self.FIGSIZE_Y) or 10.0
         if classifier is not None and classifier not in self.dataset.variables:
             raise ValueError(
                 f"{classifier} cannot be used as a classifier "
@@ -140,7 +136,7 @@ class ScatterMatrix(DatasetPlot):
             diagonal=diagonal,
             s=size,
             marker=marker,
-            figsize=(figsize_x, figsize_y),
+            figsize=self.figsize,
             **kwargs,
         )
 
@@ -169,4 +165,5 @@ class ScatterMatrix(DatasetPlot):
                 axes[-1, i].get_xaxis().set_visible(True)
                 axes[i, 0].get_yaxis().set_visible(True)
 
+        plt.suptitle(self.title)
         return [plt.gcf()]

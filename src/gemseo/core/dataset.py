@@ -1000,10 +1000,11 @@ class Dataset(object):
     @property
     def columns_names(self):  # type: (...) -> List[Union[str,ColumnName]]
         """The names of the columns of the dataset."""
-        return self.__get_column_names()
+        return self.get_column_names()
 
-    def __get_column_names(
+    def get_column_names(
         self,
+        variables=None,  # type: Sequence[str]
         as_tuple=False,  # type: bool
         start=0,  # type: int
     ):  # type: (...) -> List[Union[str,ColumnName]]
@@ -1016,6 +1017,8 @@ class Dataset(object):
         or ColumnName(group_name, 'x', '0') and ColumnName(group_name, 'x', '1').
 
         Args:
+            variables: The names of the variables.
+                If ``None``, use all the variables.
             as_tuple: If True, return the names as named tuples.
                 otherwise, return the names as strings.
             start: The first index for the components of a variable.
@@ -1027,6 +1030,8 @@ class Dataset(object):
         column_names = []
         for group, names in self._names.items():
             for name in names:
+                if variables and name not in variables:
+                    continue
                 if as_tuple:
                     column_names.extend(
                         [
@@ -1200,7 +1205,7 @@ class Dataset(object):
         group_labels = []
         variable_labels = []
         component_labels = []
-        for (group, variable, component) in self.__get_column_names(True):
+        for (group, variable, component) in self.get_column_names(as_tuple=True):
             if variable in variable_names:
                 group_labels.append(group)
                 variable_labels.append(variable)

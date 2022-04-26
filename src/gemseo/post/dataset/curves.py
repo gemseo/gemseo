@@ -28,7 +28,6 @@ and the mesh as a metadata.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
 from typing import Optional
 from typing import Sequence
 
@@ -37,7 +36,6 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class Curves(DatasetPlot):
@@ -59,10 +57,7 @@ class Curves(DatasetPlot):
         """
         super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
+    def _plot(self) -> list[Figure]:
         def lines_gen():
             """Linestyle generator."""
             yield "-"
@@ -78,8 +73,8 @@ class Curves(DatasetPlot):
             samples = range(output.shape[1])
         n_samples = output.shape[1]
 
-        self._set_color(properties, n_samples)
-        self._set_linestyle(properties, n_samples, [line for line in lines_gen()])
+        self._set_color(n_samples)
+        self._set_linestyle(n_samples, [line for line in lines_gen()])
 
         data = (output.T, self.linestyle, self.color, samples)
         mesh = self._param.mesh
@@ -92,7 +87,8 @@ class Curves(DatasetPlot):
                 label=self.dataset.row_names[sample],
             )
         plt.xlabel(self.xlabel or mesh)
-        plt.ylabel(self.ylabel or "{}({})".format(variable, mesh))
+        plt.ylabel(self.ylabel or f"{variable}({mesh})")
+        plt.title(self.title)
         plt.legend(loc=self.legend_location)
         fig = plt.gcf()
         fig.set_size_inches(*self.figsize)
