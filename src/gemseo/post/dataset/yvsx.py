@@ -27,14 +27,11 @@ markers, as well as the color.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class YvsX(DatasetPlot):
@@ -57,28 +54,30 @@ class YvsX(DatasetPlot):
         """
         super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
+    def _plot(self) -> list[Figure]:
         x = self._param.x
         x_comp = self._param.x_comp
         y = self._param.y
         y_comp = self._param.y_comp
-        color = properties.get(self.COLOR) or self.color or "blue"
-        style = properties.get(self.LINESTYLE) or self.linestyle or "o"
+        color = self.color or "blue"
+        style = self.linestyle or "o"
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 
         fig = plt.figure()
         axes = fig.add_subplot(1, 1, 1)
         axes.plot(x_data, y_data, style, color=color)
+
         if self.dataset.sizes[x] == 1:
             axes.set_xlabel(self.xlabel or x)
         else:
-            axes.set_xlabel(self.xlabel or "{}({})".format(x, x_comp))
+            axes.set_xlabel(self.xlabel or f"{x}({x_comp})")
+
         if self.dataset.sizes[y] == 1:
             axes.set_ylabel(self.ylabel or y)
         else:
-            axes.set_ylabel("{}({})".format(y, y_comp))
+            axes.set_ylabel(self.ylabel or f"{y}({y_comp})")
+
+        axes.set_title(self.title)
+
         return [fig]

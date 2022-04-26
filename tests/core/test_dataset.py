@@ -379,7 +379,7 @@ def test_get_columns_names():
     """Check the default names of the dataset columns."""
     dataset = Dataset()
     dataset.set_from_array(array([[1.0], [1.0]]))
-    assert dataset._Dataset__get_column_names() == ["x_0"]
+    assert dataset.get_column_names() == ["x_0"]
 
 
 def test_get_data_by_group(io_dataset, ungroup_dataset):

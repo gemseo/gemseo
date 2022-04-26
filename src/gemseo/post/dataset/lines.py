@@ -25,7 +25,6 @@ A :class:`.Lines` plot represents variables vs samples using lines.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
 from typing import Optional
 from typing import Sequence
 
@@ -34,7 +33,6 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class Lines(DatasetPlot):
@@ -51,13 +49,7 @@ class Lines(DatasetPlot):
         """
         super().__init__(dataset, variables=variables)
 
-    def _plot(
-        self, **properties  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-        """
-        Args:
-            variables: The names of the variables to plot.
-        """
+    def _plot(self) -> list[Figure]:
         x_data = range(len(self.dataset))
         variables = self._param.variables
         if variables is None:
@@ -67,10 +59,9 @@ class Lines(DatasetPlot):
             y_data = self.dataset[variables]
 
         plt.figure(figsize=self.figsize)
-        self._set_color(properties, len(variables))
-        self._set_linestyle(properties, len(variables), "-")
-        index = 0
-        for name, value in y_data.items():
+        self._set_color(len(variables))
+        self._set_linestyle(len(variables), "-")
+        for index, (name, value) in enumerate(y_data.items()):
             plt.plot(
                 x_data,
                 value,
@@ -78,7 +69,7 @@ class Lines(DatasetPlot):
                 color=self.color[index],
                 label=name,
             )
-            index += 1
+
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.title)

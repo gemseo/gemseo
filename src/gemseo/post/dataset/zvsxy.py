@@ -36,7 +36,6 @@ from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class ZvsXY(DatasetPlot):
@@ -55,7 +54,7 @@ class ZvsXY(DatasetPlot):
         fill: bool = True,
         levels: int | Sequence[int] = None,
         other_datasets: Iterable[Dataset] = None,
-    ):  # type: (...) -> None
+    ) -> None:
         """
         Args:
             x: The name of the variable on the x-axis.
@@ -87,7 +86,7 @@ class ZvsXY(DatasetPlot):
             levels=levels,
         )
 
-    def _plot(self, **properties: DatasetPlotPropertyType) -> list[Figure]:
+    def _plot(self) -> list[Figure]:
         other_datasets = self._param.other_datasets
         x = self._param.x
         y = self._param.y
@@ -100,7 +99,7 @@ class ZvsXY(DatasetPlot):
         if other_datasets:
             n_series += len(other_datasets)
 
-        self._set_color(properties, n_series)
+        self._set_color(n_series)
 
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
@@ -111,8 +110,7 @@ class ZvsXY(DatasetPlot):
         grid = mtri.Triangulation(x_data, y_data)
 
         levels = self._param.levels
-        options = {}
-        options["cmap"] = properties.get(self.COLORMAP) or self.colormap
+        options = {"cmap": self.colormap}
 
         if levels is not None:
             options["levels"] = levels
@@ -140,9 +138,12 @@ class ZvsXY(DatasetPlot):
         if self.zlabel is None:
             self.zlabel = self._get_component_name(z, z_comp, self.dataset.sizes)
 
+        if self.title is None:
+            self.title = self.zlabel
+
         axes.set_xlabel(self.xlabel)
         axes.set_ylabel(self.ylabel)
-        axes.set_title(self.zlabel)
+        axes.set_title(self.title)
 
         fig.colorbar(tcf)
         return [fig]

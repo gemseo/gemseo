@@ -38,6 +38,16 @@ pytestmark = pytest.mark.skipif(
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
     "default": ({}, ["Radar"]),
+    "with_properties": (
+        {
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            }
+        },
+        ["Radar_properties"],
+    ),
 }
 
 
@@ -50,5 +60,8 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, pyplot_close_all):
     """Test images created by Radar._plot against references."""
+    properties = kwargs.pop("properties", None)
     dataset = IrisDataset()
-    Radar(dataset, classifier="specy")._plot()
+    Radar(dataset, classifier="specy").execute(
+        save=False, show=False, properties=properties
+    )

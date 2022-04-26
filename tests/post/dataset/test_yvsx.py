@@ -73,6 +73,18 @@ TEST_PARAMETERS = {
         {"x": "z", "y": "y", "x_comp": 1, "properties": {}},
         ["YvsX_2d_input_given_component"],
     ),
+    "with_properties": (
+        {
+            "x": "x",
+            "y": "y",
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            },
+        },
+        ["YvsX_properties"],
+    ),
 }
 
 
@@ -85,5 +97,5 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by YvsX._plot against references."""
-    properties = kwargs.pop("properties")
-    YvsX(dataset, **kwargs)._plot(**properties)
+    properties = kwargs.pop("properties", None)
+    YvsX(dataset, **kwargs).execute(save=False, show=False, properties=properties)

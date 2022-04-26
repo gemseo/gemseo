@@ -53,15 +53,12 @@ the samples positively classified and one for the others.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class Radar(DatasetPlot):
@@ -78,14 +75,7 @@ class Radar(DatasetPlot):
         """
         super().__init__(dataset, classifier=classifier)
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-        """
-        Args:
-            classifier: The name of the variable to group the data.
-        """
+    def _plot(self) -> list[Figure]:
         classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -103,4 +93,7 @@ class Radar(DatasetPlot):
 
         dataframe.columns = self._get_variables_names(dataframe)
         radviz(dataframe, label)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.title)
         return [plt.gcf()]

@@ -66,7 +66,15 @@ other_dataset.set_from_array(data_array, variables=["x", "y", "z"], sizes=sizes)
 # - the kwargs to be passed to ParallelCoordinates._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default_z0": ({"x": "x", "y": "y", "z": "z", "properties": {}}, ["ZvsXY_z0"]),
+    "default_z0": (
+        {
+            "x": "x",
+            "y": "y",
+            "z": "z",
+            "properties": {},
+        },
+        ["ZvsXY_z0"],
+    ),
     "default_z1": (
         {"x": "x", "y": "y", "z": "z", "z_comp": 1, "properties": {}},
         ["ZvsXY_z1"],
@@ -129,6 +137,19 @@ TEST_PARAMETERS = {
         },
         ["ZvsXY_levels"],
     ),
+    "with_properties": (
+        {
+            "x": "x",
+            "y": "y",
+            "z": "z",
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            },
+        },
+        ["ZvsXY_properties"],
+    ),
 }
 
 
@@ -145,5 +166,5 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by ZvsXY._plot against references."""
-    properties = kwargs.pop("properties")
-    ZvsXY(dataset, **kwargs)._plot(**properties)
+    properties = kwargs.pop("properties", None)
+    ZvsXY(dataset, **kwargs).execute(save=False, show=False, properties=properties)

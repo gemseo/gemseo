@@ -58,15 +58,12 @@ This is useful when the data is labeled.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class AndrewsCurves(DatasetPlot):
@@ -83,9 +80,7 @@ class AndrewsCurves(DatasetPlot):
         """
         super().__init__(dataset, classifier=classifier)
 
-    def _plot(
-        self, **properties  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
+    def _plot(self) -> list[Figure]:
         classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -101,4 +96,7 @@ class AndrewsCurves(DatasetPlot):
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
         andrews_curves(dataframe, varname)
+        plt.xlabel(self.xlabel)
+        plt.ylabel(self.ylabel)
+        plt.title(self.title)
         return [plt.gcf()]

@@ -22,8 +22,6 @@ r"""Draw a radar chart from a :class:`.Dataset`. """
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from numpy import linspace
@@ -32,7 +30,6 @@ from numpy import rad2deg
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class RadarChart(DatasetPlot):
@@ -65,13 +62,8 @@ class RadarChart(DatasetPlot):
             scientific_notation=scientific_notation,
         )
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-
+    def _plot(self) -> list[Figure]:
         linestyle = "-o" if self._param.connect else "o"
-
         fig = plt.figure(figsize=self.figsize)
         axe = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
         axe.grid(True, color="k", linewidth=0.3, linestyle=":")

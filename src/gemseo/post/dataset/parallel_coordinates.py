@@ -50,15 +50,12 @@ the samples positively classified and one for the others.
 from __future__ import division
 from __future__ import unicode_literals
 
-from typing import List
-
 from matplotlib.figure import Figure
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
 
 
 class ParallelCoordinates(DatasetPlot):
@@ -82,16 +79,7 @@ class ParallelCoordinates(DatasetPlot):
             dataset, classifier=classifier, lower=lower, upper=upper, kwargs=kwargs
         )
 
-    def _plot(
-        self,
-        **properties,  # type: DatasetPlotPropertyType
-    ):  # type: (...) -> List[Figure]
-        """
-        Args:
-            classifier: The name of the variable to group the data.
-            lower: The lower bound of the cluster.
-            upper: The upper bound of the cluster.
-        """
+    def _plot(self) -> list[Figure]:
         classifier = self._param.classifier
         upper = self._param.upper
         lower = self._param.lower
@@ -117,10 +105,12 @@ class ParallelCoordinates(DatasetPlot):
         axes = parallel_coordinates(dataframe, cluster, cols=columns, **kwargs)
         axes.set_xticklabels(self._get_variables_names(columns))
         if lower != -inf or upper != inf:
-            default_title = "Cobweb plot based on the classifier: {}".format(cluster[1])
+            default_title = f"Cobweb plot based on the classifier: {cluster[1]}"
         else:
             default_title = None
             axes.get_legend().remove()
 
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
         axes.set_title(self.title or default_title)
         return [axes.figure]

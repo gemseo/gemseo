@@ -37,7 +37,7 @@ def test_plot_notimplementederror():
     dataset.set_from_array(array([[1, 2]]))
     post = DatasetPlot(dataset)
     with pytest.raises(NotImplementedError):
-        post._plot({})
+        post._plot()
 
 
 def test_get_label():
@@ -95,3 +95,15 @@ def test_setters(plot, attribute, value):
     """Check the attribute setters."""
     setattr(plot, attribute, value)
     assert getattr(plot, attribute) == value
+
+
+def test_execute_properties(plot):
+    """Check that properties are correctly used."""
+    plot._plot = lambda: []
+    plot.execute(save=False, show=False, properties={"xlabel": "foo"})
+    assert plot.xlabel == "foo"
+
+    with pytest.raises(
+        AttributeError, match=r"bar is not an attribute of DatasetPlot\."
+    ):
+        plot.execute(save=False, show=False, properties={"bar": "foo"})

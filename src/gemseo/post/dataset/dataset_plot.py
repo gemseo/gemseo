@@ -331,7 +331,18 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The figures.
+
+        Raises:
+            AttributeError: When the name of a property is not the name of an attribute.
         """
+        properties = properties or {}
+        for name, value in properties.items():
+            if not hasattr(self, name):
+                raise AttributeError(
+                    f"{name} is not an attribute of {self.__class__.__name__}."
+                )
+            setattr(self, name, value)
+
         if file_path is not None:
             file_path = Path(file_path)
 
@@ -341,11 +352,10 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             file_name=file_name,
             file_extension=file_format,
         )
-        return self._run(properties or {}, save, show, file_path, **plot_options)
+        return self._run(save, show, file_path, **plot_options)
 
     def _run(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
         save,  # type:bool
         show,  # type: bool
         file_path,  # type: Path
@@ -354,7 +364,6 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         """Create the post processing and save or display it.
 
         Args:
-            properties: The general properties of a :class:`.DatasetPlot`.
             save: If True, save the plot on the disk.
             show: If True, display the plot.
             file_path: The file path.
@@ -367,7 +376,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         if plot_options:
             self._param = self._param._replace(**plot_options)
 
-        figures = self._plot(**properties)
+        figures = self._plot()
 
         for index, sub_figure in enumerate(figures):
             if save:
@@ -392,14 +401,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         return figures
 
-    def _plot(
-        self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType]
-    ):  # type: (...) -> List[Figure]
+    def _plot(self) -> list[Figure]:
         """Define the way as the dataset is plotted.
-
-        Args:
-            properties: The general properties of a :class:`.DatasetPlot`.
 
         Returns:
             The figures.
@@ -482,38 +485,32 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def _set_color(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType],
         n_items,  # type: int
     ):  # type: (...) -> None
         """Set the colors of the items to be plotted.
 
         Args:
-            properties: The graphical properties of the :class:`.DatasetPlot`.
             n_items: The number of items to be plotted.
         """
         colormap = plt.cm.get_cmap(self.colormap)
         default_color = [colormap(color) for color in linspace(0, 1, n_items)]
-        self.color = properties.get(self.COLOR) or self.color or default_color
+        self.color = self.color or default_color
         if isinstance(self.color, string_types):
             self.color = [self.color] * n_items
 
     def _set_linestyle(
         self,
-        properties,  # type: Mapping[str,DatasetPlotPropertyType],
         n_items,  # type: int
         default_value,  # type: str
     ):  # type: (...) -> None
         """Set the line style of the items to be plotted.
 
         Args:
-            properties: The graphical properties of the :class:`.DatasetPlot`.
             n_items: The number of items to be plotted.
             default_value: The default line style.
         """
 
-        self.linestyle = (
-            properties.get(self.LINESTYLE) or self.linestyle or default_value
-        )
+        self.linestyle = self.linestyle or default_value
         if isinstance(self.linestyle, string_types):
             self.linestyle = [self.linestyle] * n_items
 

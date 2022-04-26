@@ -58,6 +58,16 @@ TEST_PARAMETERS = {
         {"lower": 0.1, "upper": 0.75},
         ["ParallelCoordinates_lower_upper"],
     ),
+    "with_properties": (
+        {
+            "properties": {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            }
+        },
+        ["ParallelCoordinates_properties"],
+    ),
 }
 
 
@@ -70,4 +80,7 @@ TEST_PARAMETERS = {
 @image_comparison(None, extensions=["png"])
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by ParallelCoordinates._plot against references."""
-    ParallelCoordinates(dataset, classifier="x1", **kwargs)._plot()
+    properties = kwargs.pop("properties", None)
+    ParallelCoordinates(dataset, classifier="x1", **kwargs).execute(
+        save=False, show=False, properties=properties
+    )
