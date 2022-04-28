@@ -31,6 +31,7 @@ from typing import Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -71,7 +72,11 @@ class Surfaces(DatasetPlot):
             levels=levels,
         )
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         mesh = self._param.mesh
         variable = self._param.variable
         samples = self._param.samples
@@ -89,7 +94,7 @@ class Surfaces(DatasetPlot):
 
         figs = []
         for sample, sample_name in zip(samples, self.dataset.row_names):
-            fig = plt.figure()
+            fig = plt.figure(figsize=self.figsize)
             axes = fig.add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)
             if self._param.fill:

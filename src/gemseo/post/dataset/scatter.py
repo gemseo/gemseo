@@ -24,10 +24,9 @@ A :class:`.Scatter` plot represents a set of points
 :math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
 where the color of points can be heterogeneous.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -54,7 +53,11 @@ class Scatter(DatasetPlot):
         """
         super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         x = self._param.x
         y = self._param.y
         x_comp = self._param.x_comp
@@ -63,8 +66,7 @@ class Scatter(DatasetPlot):
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 
-        fig = plt.figure()
-        axes = fig.add_subplot(1, 1, 1)
+        fig, axes = self._get_figure_and_axes(fig, axes)
         axes.scatter(x_data, y_data, color=color)
 
         if self.dataset.sizes[x] == 1:

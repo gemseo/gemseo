@@ -26,6 +26,7 @@ import pytest
 from gemseo.post.dataset.radviz import Radar
 from gemseo.problems.dataset.iris import IrisDataset
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 
 pytestmark = pytest.mark.skipif(
@@ -37,14 +38,13 @@ pytestmark = pytest.mark.skipif(
 # - the kwargs to be passed to Radar._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["Radar"]),
+    "default": ({}, {}, ["Radar"]),
     "with_properties": (
+        {},
         {
-            "properties": {
-                "xlabel": "The xlabel",
-                "ylabel": "The ylabel",
-                "title": "The title",
-            }
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
         },
         ["Radar_properties"],
     ),
@@ -52,16 +52,16 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, pyplot_close_all):
+def test_plot(kwargs, properties, baseline_images, pyplot_close_all, fig_and_axes):
     """Test images created by Radar._plot against references."""
-    properties = kwargs.pop("properties", None)
     dataset = IrisDataset()
-    Radar(dataset, classifier="specy").execute(
-        save=False, show=False, properties=properties
-    )
+    plot = Radar(dataset, classifier="specy")
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, properties=properties, fig=fig, axes=axes)

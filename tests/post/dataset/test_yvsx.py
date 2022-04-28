@@ -26,6 +26,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -51,37 +52,39 @@ def dataset():
 # - the kwargs to be passed to YvsX._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({"x": "x", "y": "y", "properties": {}}, ["YvsX"]),
+    "default": ({"x": "x", "y": "y"}, {}, ["YvsX"]),
     "with_color": (
-        {"x": "x", "y": "y", "properties": {"color": "red"}},
+        {"x": "x", "y": "y"},
+        {"color": "red"},
         ["YvsX_color"],
     ),
     "with_style": (
-        {"x": "x", "y": "y", "properties": {"linestyle": "-"}},
+        {"x": "x", "y": "y"},
+        {"linestyle": "-"},
         ["YvsX_style"],
     ),
-    "with_2d_output": ({"x": "x", "y": "z", "properties": {}}, ["YvsX_2d_output"]),
+    "with_2d_output": ({"x": "x", "y": "z"}, {}, ["YvsX_2d_output"]),
     "with_2d_output_given_component": (
-        {"x": "x", "y": "z", "y_comp": 1, "properties": {}},
+        {"x": "x", "y": "z", "y_comp": 1},
+        {},
         ["YvsX_2d_output_given_component"],
     ),
     "with_2d_input": (
-        {"x": "z", "y": "y", "properties": {}},
+        {"x": "z", "y": "y"},
+        {},
         ["YvsX_2d_input"],
     ),
     "with_2d_input_given_component": (
-        {"x": "z", "y": "y", "x_comp": 1, "properties": {}},
+        {"x": "z", "y": "y", "x_comp": 1},
+        {},
         ["YvsX_2d_input_given_component"],
     ),
     "with_properties": (
+        {"x": "x", "y": "y"},
         {
-            "x": "x",
-            "y": "y",
-            "properties": {
-                "xlabel": "The xlabel",
-                "ylabel": "The ylabel",
-                "title": "The title",
-            },
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
         },
         ["YvsX_properties"],
     ),
@@ -89,13 +92,17 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
     """Test images created by YvsX._plot against references."""
-    properties = kwargs.pop("properties", None)
-    YvsX(dataset, **kwargs).execute(save=False, show=False, properties=properties)
+    plot = YvsX(dataset, **kwargs)
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)

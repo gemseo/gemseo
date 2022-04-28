@@ -26,6 +26,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -55,15 +56,14 @@ def dataset():
 # - the kwargs to be passed to Curves._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "without_option": ({}, ["Curves"]),
-    "with_subsamples": ({"samples": [1]}, ["Curves_with_subsamples"]),
+    "without_option": ({}, {}, ["Curves"]),
+    "with_subsamples": ({"samples": [1]}, {}, ["Curves_with_subsamples"]),
     "with_properties": (
+        {},
         {
-            "properties": {
-                "xlabel": "The xlabel",
-                "ylabel": "The ylabel",
-                "title": "The title",
-            }
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
         },
         ["Curves_properties"],
     ),
@@ -71,15 +71,17 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
     """Test images created by Curves._plot against references."""
-    properties = kwargs.pop("properties", None)
-    Curves(dataset, mesh="mesh", variable="output", **kwargs).execute(
-        save=False, show=False, properties=properties
-    )
+    plot = Curves(dataset, mesh="mesh", variable="output", **kwargs)
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)

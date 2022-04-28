@@ -26,6 +26,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -51,20 +52,20 @@ def dataset():
 # - the kwargs to be passed to ParallelCoordinates._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["ParallelCoordinates"]),
-    "with_lower": ({"lower": 0.25}, ["ParallelCoordinates_lower"]),
-    "with_upper": ({"upper": 0.75}, ["ParallelCoordinates_upper"]),
+    "default": ({}, {}, ["ParallelCoordinates"]),
+    "with_lower": ({"lower": 0.25}, {}, ["ParallelCoordinates_lower"]),
+    "with_upper": ({"upper": 0.75}, {}, ["ParallelCoordinates_upper"]),
     "with_lower_upper": (
         {"lower": 0.1, "upper": 0.75},
+        {},
         ["ParallelCoordinates_lower_upper"],
     ),
     "with_properties": (
+        {},
         {
-            "properties": {
-                "xlabel": "The xlabel",
-                "ylabel": "The ylabel",
-                "title": "The title",
-            }
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
         },
         ["ParallelCoordinates_properties"],
     ),
@@ -72,15 +73,17 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
     """Test images created by ParallelCoordinates._plot against references."""
-    properties = kwargs.pop("properties", None)
-    ParallelCoordinates(dataset, classifier="x1", **kwargs).execute(
-        save=False, show=False, properties=properties
-    )
+    plot = ParallelCoordinates(dataset, classifier="x1", **kwargs)
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)

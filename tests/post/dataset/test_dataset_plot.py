@@ -22,6 +22,9 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.yvsx import YvsX
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from numpy import array
 
 
@@ -99,7 +102,7 @@ def test_setters(plot, attribute, value):
 
 def test_execute_properties(plot):
     """Check that properties are correctly used."""
-    plot._plot = lambda: []
+    plot._plot = lambda fig, axes: []
     plot.execute(save=False, show=False, properties={"xlabel": "foo"})
     assert plot.xlabel == "foo"
 
@@ -107,3 +110,37 @@ def test_execute_properties(plot):
         AttributeError, match=r"bar is not an attribute of DatasetPlot\."
     ):
         plot.execute(save=False, show=False, properties={"bar": "foo"})
+
+
+def test_get_figure_and_axes_from_existing_fig_and_axes(plot):
+    """Check that get_figure_and_axes using fig and axes returns fig and axes."""
+    fig, axes = plt.subplots()
+    fig_, axes_ = plot._get_figure_and_axes(fig, axes)
+    assert id(fig) == id(fig_)
+    assert id(axes) == id(axes_)
+
+
+def test_get_figure_and_axes_from_scratch(plot):
+    """Check that get_figure_and_axes without fig and axes returns new fig and axes."""
+    fig, axes = plot._get_figure_and_axes(None, None)
+    assert isinstance(fig, Figure)
+    assert isinstance(axes, Axes)
+
+
+def test_get_figure_and_axes_from_axes_only(plot):
+    """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
+    _, axes = plt.subplots()
+    with pytest.raises(
+        ValueError, match="The figure associated with the given axes is missing."
+    ):
+        plot._get_figure_and_axes(None, axes)
+
+
+def test_get_figure_and_axes_from_figure_only(plot):
+    """Check that get_figure_and_axes without axes and with fig raises a ValueError."""
+    fig, _ = plt.subplots()
+
+    with pytest.raises(
+        ValueError, match="The axes associated with the given figure are missing."
+    ):
+        plot._get_figure_and_axes(fig, None)
