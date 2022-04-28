@@ -38,13 +38,13 @@ to get or set the value of a given variable property.
 Lastly,
 an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import collections
 import logging
 import sys
 from copy import deepcopy
+from numbers import Number
 from typing import Any
 from typing import Dict
 from typing import Iterable
@@ -66,14 +66,17 @@ from numpy import empty
 from numpy import equal
 from numpy import finfo
 from numpy import float64
+from numpy import full
 from numpy import genfromtxt
 from numpy import hstack
 from numpy import inf
 from numpy import int32
+from numpy import isinf
 from numpy import isnan
 from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
+from numpy import nonzero
 from numpy import ones
 from numpy import ones_like
 from numpy import round_ as np_round
@@ -560,19 +563,19 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __is_integer(
-        value,  # type: ndarray
-    ):  # type: (...) -> bool
-        """Check that all values in an array are integers.
+        values: ndarray | Number,
+    ) -> ndarray:
+        """Check if each value is an integer.
 
         Args:
-            value: The array to be checked.
+            values: The array or number to be checked.
 
         Returns:
-            Whether all values in the array are integers.
+            Whether each of the given values is an integer.
         """
-        are_none = equal(value, None)
-        are_int = equal(mod(value.astype("f"), 1), 0)
-        return logical_or(are_none, are_int)
+        values = atleast_1d(values)
+
+        return array([isinf(x) or x is None or not mod(x, 1) for x in values])
 
     @staticmethod
     def __is_numeric(
@@ -627,7 +630,8 @@ class DesignSpace(collections.MutableMapping):
                 if the value is not numerizable,
                 if the value is nan
                 or if there is a component value which is not an integer
-                while the variable type is integer.
+                while the variable type is integer and ``allow_inf_int_bound``
+                is set to ``False``.
         """
         all_indices = set(range(len(value)))
         # OK if the variable value is one-dimensional
@@ -659,21 +663,22 @@ class DesignSpace(collections.MutableMapping):
 
         # Check if some components of an integer variable are not integer.
         if self.variables_types[name][0] == DesignVariableType.INTEGER.value:
-            indices = all_indices - set(list(where(self.__is_integer(value))[0]))
+            indices = all_indices - set(nonzero(self.__is_integer(value))[0])
             for idx in indices:
                 raise ValueError(
-                    "Component value {} of variable '{}' is not an integer "
+                    f"Component value {value[idx]} of variable '{name}'"
+                    " is not an integer "
                     "while variable is of type integer "
-                    "(index: {}).".format(value[idx], name, idx)
+                    f"(index: {idx})."
                 )
 
     def _add_bound(
         self,
-        name,  # type: str
-        size,  # type: int
-        bound,  # type: ndarray
-        is_lower=True,  # type: bool
-    ):  # type: (...) -> None
+        name: str,
+        size: int,
+        bound: ndarray | Number,
+        is_lower: bool = True,
+    ) -> None:
         """Add a lower or upper bound to a variable.
 
         Args:
@@ -688,39 +693,43 @@ class DesignSpace(collections.MutableMapping):
                 from the size of the variable.
         """
         self.__norm_data_is_computed = False
+
         if is_lower:
-            bound_dict = self._lower_bounds
+            bounds = self._lower_bounds
         else:
-            bound_dict = self._upper_bounds
-        infinity = inf * ones(size)
+            bounds = self._upper_bounds
+
         if bound is None:
+            infinity = full(size, inf)
             if is_lower:
-                bound_array = -infinity
+                bound_to_update = -infinity
             else:
-                bound_array = infinity
-            bound_dict.update({name: bound_array})
+                bound_to_update = infinity
+            bounds.update({name: bound_to_update})
             return
-        bound_array = atleast_1d(bound)
-        self._check_value(bound_array, name)
-        if hasattr(bound, "__iter__"):
-            # iterable structure
-            if len(bound_array) != size:
-                bound_str = "lower" if is_lower else "upper"
-                raise ValueError(
-                    "The {} bounds of '{}' should be of size {}.".format(
-                        bound_str, name, size
-                    )
-                )
-            if is_lower:
-                bound_array = where(equal(bound_array, None), -infinity, bound_array)
-            else:
-                bound_array = where(equal(bound_array, None), infinity, bound_array)
-            bound_dict.update({name: bound_array})
+
+        if is_lower:
+            infinity = -inf
         else:
+            infinity = inf
+
+        bound_to_update = atleast_1d(bound)
+        bound_to_update = where(
+            equal(bound_to_update, None), infinity, bound_to_update
+        ).astype(self.__FLOAT_DTYPE)
+
+        self._check_value(bound_to_update, name)
+
+        if isinstance(bound, Number):
             # scalar: same lower bound for all components
-            bound_array = bound * ones(size)
-            bound_dict.update({name: bound_array})
-        return
+            bound_to_update = bound * ones(size)
+        elif len(bound_to_update) != size:
+            bound_prefix = "lower" if is_lower else "upper"
+            raise ValueError(
+                f"The {bound_prefix} bounds of '{name}' should be of size {size}."
+            )
+
+        bounds.update({name: bound_to_update})
 
     def _check_variable_bounds(
         self,

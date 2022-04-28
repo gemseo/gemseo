@@ -1284,3 +1284,24 @@ def test_check_membership(
     else:
         with pytest.raises(error, match=re.escape(error_msg)):
             ds.check_membership(x_vect, variable_names)
+
+
+@pytest.mark.parametrize(
+    "l_b,expected_lb", [(-5, array([-5, -5])), (array([-5, -inf]), array([-5, -inf]))]
+)
+@pytest.mark.parametrize(
+    "u_b,expected_ub", [(5, array([5, 5])), (array([5, inf]), array([5, inf]))]
+)
+def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub):
+    """Check that integer variables can handle -/+ infinity bounds.
+
+    Args:
+        l_b: The lower bounds.
+        u_b: The upper bounds.
+        expected_ub: The expected upper bounds.
+        expected_lb: The expected lower bounds.
+    """
+    ds = DesignSpace()
+    ds.add_variable("x", 2, l_b=l_b, u_b=u_b, var_type=DesignVariableType.INTEGER)
+    assert array_equal(ds._lower_bounds["x"], expected_lb)
+    assert array_equal(ds._upper_bounds["x"], expected_ub)
