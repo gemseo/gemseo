@@ -124,4 +124,4 @@ def test_calibration(dataset, calibration_space, algo):
 
     calibration.maximize_objective = True
     calibration.execute({"algo": algo[0], algo[1]: n_samples})
-    assert calibration.optimal_criterion > f_opt
+    assert -calibration.optimal_criterion > f_opt

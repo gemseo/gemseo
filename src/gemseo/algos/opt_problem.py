@@ -69,6 +69,7 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -160,53 +161,100 @@ class OptimizationProblem(object):
     Lastly, :class:`.OptimizationProblem` automates the generation
     of finite differences or complex step wrappers on functions,
     when analytical gradient is not available.
-
-    Attributes:
-        nonproc_objective (MDOFunction): The non-processed objective function.
-        constraints (List(MDOFunction)): The constraints.
-        nonproc_constraints (List(MDOFunction)): The non-processed constraints.
-        observables (List(MDOFunction)): The observables.
-        new_iter_observables (List(MDOFunction)): The observables to be called
-            at each new iterate.
-        nonproc_observables (List(MDOFunction)): The non-processed observables.
-        nonproc_new_iter_observables (List(MDOFunction)): The non-processed observables
-            to be called at each new iterate.
-        minimize_objective (bool): If True, maximize the objective.
-        fd_step (float): The finite differences step.
-        pb_type (str): The type of optimization problem.
-        ineq_tolerance (float): The tolerance for the inequality constraints.
-        eq_tolerance (float): The tolerance for the equality constraints.
-        database (Database): The database to store the optimization problem data.
-        solution: The solution of the optimization problem.
-        design_space (DesignSpace): The design space on which the optimization problem
-            is solved.
-        stop_if_nan (bool): If True, the optimization stops when a function returns NaN.
-        preprocess_options (Dict): The options to pre-process the functions.
     """
 
-    LINEAR_PB = "linear"
-    NON_LINEAR_PB = "non-linear"
-    AVAILABLE_PB_TYPES = [LINEAR_PB, NON_LINEAR_PB]
+    nonproc_objective: MDOFunction
+    """The non-processed objective function."""
 
-    USER_GRAD = "user"
-    COMPLEX_STEP = "complex_step"
-    FINITE_DIFFERENCES = "finite_differences"
-    __DIFFERENTIATION_CLASSES = {
+    constraints: list[MDOFunction]
+    """The constraints."""
+
+    nonproc_constraints: list[MDOFunction]
+    """The non-processed constraints."""
+
+    observables: list[MDOFunction]
+    """The observables."""
+
+    new_iter_observables: list[MDOFunction]
+    """The observables to be called at each new iterate."""
+
+    nonproc_observables: list[MDOFunction]
+    """The non-processed observables."""
+
+    nonproc_new_iter_observables: list[MDOFunction]
+    """The non-processed observables to be called at each new iterate."""
+
+    minimize_objective: bool
+    """Whether to maximize the objective."""
+
+    fd_step: float
+    """The finite differences step."""
+
+    pb_type: str
+    """The type of optimization problem."""
+
+    ineq_tolerance: float
+    """The tolerance for the inequality constraints."""
+
+    eq_tolerance: float
+    """The tolerance for the equality constraints."""
+
+    database: Database
+    """The database to store the optimization problem data."""
+
+    solution: OptimizationResult
+    """The solution of the optimization problem."""
+
+    design_space: DesignSpace
+    """The design space on which the optimization problem is solved."""
+
+    stop_if_nan: bool
+    """Whether the optimization stops when a function returns ``NaN``."""
+
+    preprocess_options: dict
+    """The options to pre-process the functions."""
+
+    use_standardized_objective: bool
+    """Whether to use standardized objective for logging and post-processing.
+
+    The standardized objective corresponds to the original one
+    expressed as a cost function to minimize.
+    A :class:`.DriverLib` works with this standardized objective
+    and the :class:`.Database` stores its values.
+    However, for convenience,
+    it may be more relevant to log the expression
+    and the values of the original objective.
+    """
+
+    LINEAR_PB: Final[str] = "linear"
+    NON_LINEAR_PB: Final[str] = "non-linear"
+    AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
+
+    USER_GRAD: Final[str] = "user"
+    COMPLEX_STEP: Final[str] = "complex_step"
+    FINITE_DIFFERENCES: Final[str] = "finite_differences"
+    __DIFFERENTIATION_CLASSES: ClassVar[str] = {
         COMPLEX_STEP: ComplexStep,
         FINITE_DIFFERENCES: FirstOrderFD,
     }
-    NO_DERIVATIVES = "no_derivatives"
-    DIFFERENTIATION_METHODS = [
+    NO_DERIVATIVES: Final[str] = "no_derivatives"
+    DIFFERENTIATION_METHODS: ClassVar[str] = [
         USER_GRAD,
         COMPLEX_STEP,
         FINITE_DIFFERENCES,
         NO_DERIVATIVES,
     ]
-    DESIGN_VAR_NAMES = "x_names"
-    DESIGN_VAR_SIZE = "x_size"
-    DESIGN_SPACE_ATTRS = ["u_bounds", "l_bounds", "x_0", DESIGN_VAR_NAMES, "dimension"]
-    FUNCTIONS_ATTRS = ["objective", "constraints"]
-    OPTIM_DESCRIPTION = [
+    DESIGN_VAR_NAMES: Final[str] = "x_names"
+    DESIGN_VAR_SIZE: Final[str] = "x_size"
+    DESIGN_SPACE_ATTRS: Final[str] = [
+        "u_bounds",
+        "l_bounds",
+        "x_0",
+        DESIGN_VAR_NAMES,
+        "dimension",
+    ]
+    FUNCTIONS_ATTRS: ClassVar[str] = ["objective", "constraints"]
+    OPTIM_DESCRIPTION: ClassVar[str] = [
         "minimize_objective",
         "fd_step",
         "differentiation_method",
@@ -215,18 +263,18 @@ class OptimizationProblem(object):
         "eq_tolerance",
     ]
 
-    OPT_DESCR_GROUP = "opt_description"
-    DESIGN_SPACE_GROUP = "design_space"
-    OBJECTIVE_GROUP = "objective"
-    SOLUTION_GROUP = "solution"
-    CONSTRAINTS_GROUP = "constraints"
-    OBSERVABLES_GROUP = "observables"
+    OPT_DESCR_GROUP: Final[str] = "opt_description"
+    DESIGN_SPACE_GROUP: Final[str] = "design_space"
+    OBJECTIVE_GROUP: Final[str] = "objective"
+    SOLUTION_GROUP: Final[str] = "solution"
+    CONSTRAINTS_GROUP: Final[str] = "constraints"
+    OBSERVABLES_GROUP: Final[str] = "observables"
 
     activate_bound_check: ClassVar[bool] = True
     """Whether to check if a point is in the design space before calling functions."""
 
-    HDF5_FORMAT = "hdf5"
-    GGOBI_FORMAT = "ggobi"
+    HDF5_FORMAT: Final[str] = "hdf5"
+    GGOBI_FORMAT: Final[str] = "ggobi"
 
     def __init__(
         self,
@@ -236,6 +284,7 @@ class OptimizationProblem(object):
         differentiation_method=USER_GRAD,  # type: str
         fd_step=1e-7,  # type: float
         parallel_differentiation=False,  # type: bool
+        use_standardized_objective=True,  # type: bool
         **parallel_differentiation_options,  # type: Union[int,bool]
     ):  # type: (...) -> None
         # noqa: D205, D212, D415
@@ -250,6 +299,8 @@ class OptimizationProblem(object):
                 to the functions of the optimization problem.
             fd_step: The step to be used by the step-based differentiation methods.
             parallel_differentiation: Whether to approximate the derivatives in parallel.
+            use_standardized_objective: Whether to use standardized objective
+                for logging and post-processing.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
         """
@@ -270,6 +321,7 @@ class OptimizationProblem(object):
         self.eq_tolerance = 1e-2
         self.max_iter = None
         self.current_iter = 0
+        self.use_standardized_objective = use_standardized_objective
         self.__functions_are_preprocessed = False
         if isinstance(input_database, Database):
             self.database = input_database
@@ -1546,14 +1598,20 @@ class OptimizationProblem(object):
         msg = MultiLineString()
         msg.add("Optimization problem:")
         msg.indent()
+
         # objective representation
-        minimize_str = "Minimize: "
-        n_char = len(minimize_str)
-        objective_repr = repr(self.objective)
-        obj_repr_lines = [line for line in objective_repr.split("\n") if line]
-        msg.add(minimize_str + obj_repr_lines[0])
-        for line in obj_repr_lines[1:]:
-            msg.add(" " * n_char + line)
+        if self.minimize_objective or self.use_standardized_objective:
+            optimize_verb = "Minimize "
+            start = 0
+        else:
+            optimize_verb = "Maximize "
+            start = 1
+
+        objective_function = [line for line in repr(self.objective).split("\n") if line]
+        msg.add(optimize_verb + objective_function[0][start:])
+        for line in objective_function[1:]:
+            msg.add(" " * len(optimize_verb) + line)
+
         # variables representation
         msg.add("With respect to: {}", pretty_repr(self.design_space.variables_names))
         if self.has_constraints():

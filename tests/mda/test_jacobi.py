@@ -140,4 +140,4 @@ def test_parallel_doe(generate_parallel_doe_data):
             and n_samples.
     """
     obj = generate_parallel_doe_data("MDAJacobi", 7)
-    assert isclose(array([obj]), array([608.175]), atol=1e-3)
+    assert isclose(array([-obj]), array([608.175]), atol=1e-3)

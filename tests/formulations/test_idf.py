@@ -115,7 +115,7 @@ def build_and_run_idf_scenario_with_constraints(
 
     obj_opt = scenario.optimization_result.f_opt
     is_feasible = scenario.optimization_result.is_feasible
-    return obj_opt, is_feasible
+    return -obj_opt, is_feasible
 
 
 def test_build_func_from_disc():

@@ -95,4 +95,4 @@ def test_parallel_doe(generate_parallel_doe_data):
             a parallel DOE scenario for a particular `main_mda_class`.
     """
     obj = generate_parallel_doe_data("GSNewtonMDA")
-    assert np.isclose(np.array([obj]), np.array([608.175]), atol=1e-3)
+    assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)
