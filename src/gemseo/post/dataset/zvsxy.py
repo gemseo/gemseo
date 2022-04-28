@@ -30,8 +30,8 @@ from __future__ import annotations
 from typing import Iterable
 from typing import Sequence
 
-import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -86,7 +86,11 @@ class ZvsXY(DatasetPlot):
             levels=levels,
         )
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         other_datasets = self._param.other_datasets
         x = self._param.x
         y = self._param.y
@@ -105,8 +109,8 @@ class ZvsXY(DatasetPlot):
         y_data = self.dataset[y][:, y_comp]
         z_data = self.dataset[z][:, z_comp]
 
-        fig = plt.figure()
-        axes = fig.add_subplot(1, 1, 1)
+        fig, axes = self._get_figure_and_axes(fig, axes)
+
         grid = mtri.Triangulation(x_data, y_data)
 
         levels = self._param.levels
@@ -145,5 +149,5 @@ class ZvsXY(DatasetPlot):
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title)
 
-        fig.colorbar(tcf)
+        fig.colorbar(tcf, ax=axes)
         return [fig]

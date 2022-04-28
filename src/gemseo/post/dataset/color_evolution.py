@@ -23,7 +23,7 @@ from __future__ import annotations
 import logging
 from typing import Iterable
 
-from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import arange
 
@@ -72,7 +72,11 @@ class ColorEvolution(DatasetPlot):
             options=options_,
         )
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         variables = self._param.variables or self.dataset.variables
         data = self.dataset.get_data_by_names(variables, False).T
 
@@ -82,11 +86,10 @@ class ColorEvolution(DatasetPlot):
         else:
             norm = None
 
-        fig, axes = plt.subplots()
-        colormap = self.colormap
+        fig, axes = self._get_figure_and_axes(fig=fig, axes=axes)
         img_ = axes.imshow(
             data,
-            cmap=colormap,
+            cmap=self.colormap,
             norm=norm,
             alpha=self._param.opacity,
             **self._param.options,

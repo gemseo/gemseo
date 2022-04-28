@@ -50,10 +50,9 @@ arguments
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import radviz
 
@@ -75,7 +74,11 @@ class Radar(DatasetPlot):
         """
         super().__init__(dataset, classifier=classifier)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -92,8 +95,9 @@ class Radar(DatasetPlot):
                     dataframe.loc[dataframe[column] == key, column] = value
 
         dataframe.columns = self._get_variables_names(dataframe)
-        radviz(dataframe, label)
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.title(self.title)
-        return [plt.gcf()]
+        fig, axes = self._get_figure_and_axes(fig, axes)
+        radviz(dataframe, label, ax=axes)
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        axes.set_title(self.title)
+        return [fig]

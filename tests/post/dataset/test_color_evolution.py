@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.color_evolution import ColorEvolution
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -40,18 +41,17 @@ def dataset():
 
 
 TEST_PARAMETERS = {
-    "default": ({}, ["ColorEvolution"]),
-    "with_variables": ({"variables": ["x1", "x3"]}, ["ColorEvolution_variables"]),
-    "with_log": ({"use_log": True}, ["ColorEvolution_log"]),
-    "with_opacity": ({"opacity": 1.0}, ["ColorEvolution_opacity"]),
+    "default": ({}, {}, ["ColorEvolution"]),
+    "with_variables": ({"variables": ["x1", "x3"]}, {}, ["ColorEvolution_variables"]),
+    "with_log": ({"use_log": True}, {}, ["ColorEvolution_log"]),
+    "with_opacity": ({"opacity": 1.0}, {}, ["ColorEvolution_opacity"]),
     "with_properties": (
+        {},
         {
-            "properties": {
-                "colormap": "seismic",
-                "xlabel": "The xlabel",
-                "ylabel": "The ylabel",
-                "title": "The title",
-            }
+            "colormap": "seismic",
+            "xlabel": "The xlabel",
+            "ylabel": "The ylabel",
+            "title": "The title",
         },
         ["ColorEvolution_properties"],
     ),
@@ -59,15 +59,17 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
     """Test images created by ColorEvolution._plot against references."""
-    properties = kwargs.pop("properties", None)
-    ColorEvolution(dataset, **kwargs).execute(
-        save=False, show=False, properties=properties
-    )
+    plot = ColorEvolution(dataset, **kwargs)
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, properties=properties, fig=fig, axes=axes)

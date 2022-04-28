@@ -26,6 +26,7 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -49,30 +50,36 @@ def dataset():
 # - the kwargs to be passed to RadarChart._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["RadarChart"]),
-    "with_display_zero": ({"display_zero": False}, ["RadarChart_without_zero"]),
-    "with_connect": ({"connect": True}, ["RadarChart_connect"]),
-    "with_radial_ticks": ({"radial_ticks": True}, ["RadarChart_radial_ticks"]),
-    "with_n_levels": ({"n_levels": 3}, ["RadarChart_n_levels"]),
+    "default": ({}, {}, ["RadarChart"]),
+    "with_display_zero": ({"display_zero": False}, {}, ["RadarChart_without_zero"]),
+    "with_connect": ({"connect": True}, {}, ["RadarChart_connect"]),
+    "with_radial_ticks": ({"radial_ticks": True}, {}, ["RadarChart_radial_ticks"]),
+    "with_n_levels": ({"n_levels": 3}, {}, ["RadarChart_n_levels"]),
     "with_properties": (
-        {
-            "properties": {
-                "title": "The title",
-            }
-        },
+        {},
+        {"title": "The title"},
         ["RadarChart_properties"],
     ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"])
-def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
+def test_plot(
+    kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
+):
     """Test images created by RadarChart._plot against references."""
-    properties = kwargs.pop("properties", None)
-    RadarChart(dataset, **kwargs).execute(save=False, show=False, properties=properties)
+    plot = RadarChart(dataset, **kwargs)
+    if fig_and_axes:
+        fig = plt.figure(figsize=plot.figsize)
+        axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
+    else:
+        fig, axes = (None, None)
+
+    plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)

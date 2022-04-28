@@ -52,7 +52,8 @@ from __future__ import annotations
 
 from typing import Sequence
 
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -100,7 +101,11 @@ class ScatterMatrix(DatasetPlot):
             plot_upper=plot_upper,
         )
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         variable_names = self._param.variable_names
         classifier = self._param.classifier
         kde = self._param.kde
@@ -131,39 +136,41 @@ class ScatterMatrix(DatasetPlot):
             dataframe = dataframe.drop(labels=variable_name, axis=1)
 
         dataframe.columns = self._get_variables_names(dataframe)
-        axes = scatter_matrix(
+        fig, axes = self._get_figure_and_axes(fig, axes, self.figsize)
+        sub_axes = scatter_matrix(
             dataframe,
             diagonal=diagonal,
             s=size,
             marker=marker,
             figsize=self.figsize,
+            ax=axes,
             **kwargs,
         )
 
-        n_cols = axes.shape[0]
+        n_cols = sub_axes.shape[0]
         if not (self._param.plot_lower and self._param.plot_upper):
             for i in range(n_cols):
                 for j in range(n_cols):
-                    axes[i, j].get_xaxis().set_visible(False)
-                    axes[i, j].get_yaxis().set_visible(False)
+                    sub_axes[i, j].get_xaxis().set_visible(False)
+                    sub_axes[i, j].get_yaxis().set_visible(False)
 
         if not self._param.plot_lower:
             for i in range(n_cols):
                 for j in range(i):
-                    axes[i, j].set_visible(False)
+                    sub_axes[i, j].set_visible(False)
 
             for i in range(n_cols):
-                axes[i, i].get_xaxis().set_visible(True)
-                axes[i, i].get_yaxis().set_visible(True)
+                sub_axes[i, i].get_xaxis().set_visible(True)
+                sub_axes[i, i].get_yaxis().set_visible(True)
 
         if not self._param.plot_upper:
             for i in range(n_cols):
                 for j in range(i + 1, n_cols):
-                    axes[i, j].set_visible(False)
+                    sub_axes[i, j].set_visible(False)
 
             for i in range(n_cols):
-                axes[-1, i].get_xaxis().set_visible(True)
-                axes[i, 0].get_yaxis().set_visible(True)
+                sub_axes[-1, i].get_xaxis().set_visible(True)
+                sub_axes[i, 0].get_yaxis().set_visible(True)
 
         plt.suptitle(self.title)
-        return [plt.gcf()]
+        return [fig]

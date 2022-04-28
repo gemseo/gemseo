@@ -24,10 +24,9 @@ A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of p
 whose values are stored in a :class:`.Dataset`. The user can select the style of line or
 markers, as well as the color.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -54,7 +53,11 @@ class YvsX(DatasetPlot):
         """
         super().__init__(dataset, x=x, y=y, x_comp=x_comp, y_comp=y_comp)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         x = self._param.x
         x_comp = self._param.x_comp
         y = self._param.y
@@ -64,8 +67,7 @@ class YvsX(DatasetPlot):
         x_data = self.dataset[x][:, x_comp]
         y_data = self.dataset[y][:, y_comp]
 
-        fig = plt.figure()
-        axes = fig.add_subplot(1, 1, 1)
+        fig, axes = self._get_figure_and_axes(fig, axes)
         axes.plot(x_data, y_data, style, color=color)
 
         if self.dataset.sizes[x] == 1:

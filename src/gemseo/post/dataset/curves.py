@@ -25,13 +25,12 @@ A :class:`.Curves` plot represents samples of a functional variable
 and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
 and the mesh as a metadata.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Optional
 from typing import Sequence
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -57,7 +56,11 @@ class Curves(DatasetPlot):
         """
         super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         def lines_gen():
             """Linestyle generator."""
             yield "-"
@@ -78,18 +81,18 @@ class Curves(DatasetPlot):
 
         data = (output.T, self.linestyle, self.color, samples)
         mesh = self._param.mesh
+
+        fig, axes = self._get_figure_and_axes(fig, axes)
         for output, line_style, color, sample in zip(*data):
-            plt.plot(
+            axes.plot(
                 self.dataset.metadata[mesh],
                 output,
                 linestyle=line_style,
                 color=color,
                 label=self.dataset.row_names[sample],
             )
-        plt.xlabel(self.xlabel or mesh)
-        plt.ylabel(self.ylabel or f"{variable}({mesh})")
-        plt.title(self.title)
-        plt.legend(loc=self.legend_location)
-        fig = plt.gcf()
-        fig.set_size_inches(*self.figsize)
+        axes.set_xlabel(self.xlabel or mesh)
+        axes.set_ylabel(self.ylabel or f"{variable}({mesh})")
+        axes.set_title(self.title)
+        axes.legend(loc=self.legend_location)
         return [fig]

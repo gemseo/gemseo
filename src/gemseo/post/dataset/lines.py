@@ -22,13 +22,12 @@
 
 A :class:`.Lines` plot represents variables vs samples using lines.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Optional
 from typing import Sequence
 
-import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from gemseo.core.dataset import Dataset
@@ -49,7 +48,11 @@ class Lines(DatasetPlot):
         """
         super().__init__(dataset, variables=variables)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         x_data = range(len(self.dataset))
         variables = self._param.variables
         if variables is None:
@@ -58,20 +61,20 @@ class Lines(DatasetPlot):
         else:
             y_data = self.dataset[variables]
 
-        plt.figure(figsize=self.figsize)
         self._set_color(len(variables))
         self._set_linestyle(len(variables), "-")
+
+        fig, axes = self._get_figure_and_axes(fig, axes)
         for index, (name, value) in enumerate(y_data.items()):
-            plt.plot(
+            axes.plot(
                 x_data,
                 value,
                 linestyle=self.linestyle[index],
                 color=self.color[index],
                 label=name,
             )
-
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.title(self.title)
-        plt.legend(loc=self.legend_location)
-        return [plt.gcf()]
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        axes.set_title(self.title)
+        axes.legend(loc=self.legend_location)
+        return [fig]

@@ -55,10 +55,10 @@ by means of the :code:`classifier` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from pandas.plotting import andrews_curves
 
@@ -80,7 +80,11 @@ class AndrewsCurves(DatasetPlot):
         """
         super().__init__(dataset, classifier=classifier)
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         classifier = self._param.classifier
         if classifier not in self.dataset.variables:
             raise ValueError(
@@ -90,13 +94,14 @@ class AndrewsCurves(DatasetPlot):
 
         dataframe = self.dataset.export_to_dataframe()
         label, varname = self._get_label(classifier)
+        fig, axes = self._get_figure_and_axes(fig, axes)
         if self.dataset.strings_encoding[label]:
             for comp, codes in self.dataset.strings_encoding[label].items():
                 column = (self.dataset.get_group(label), label, str(comp))
                 for key, value in codes.items():
                     dataframe.loc[dataframe[column] == key, column] = value
-        andrews_curves(dataframe, varname)
+        andrews_curves(dataframe, varname, ax=axes)
         plt.xlabel(self.xlabel)
         plt.ylabel(self.ylabel)
         plt.title(self.title)
-        return [plt.gcf()]
+        return [fig]

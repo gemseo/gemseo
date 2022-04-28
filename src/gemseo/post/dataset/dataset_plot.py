@@ -33,6 +33,7 @@ from __future__ import annotations
 from collections import namedtuple
 from numbers import Number
 from typing import Any
+from typing import Final
 from typing import Iterable
 from typing import List
 from typing import Mapping
@@ -43,6 +44,7 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+from matplotlib.axes import Axes
 from numpy import linspace
 
 from gemseo.utils.file_path_manager import FilePathManager
@@ -62,17 +64,16 @@ DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]
 
 
 class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
-    """Abstract class for plotting a dataset.
+    """Abstract class for plotting a dataset."""
 
-    Attributes:
-        dataset (Dataset): The dataset to be plotted.
-    """
+    dataset: Dataset
+    """The dataset to be plotted."""
 
-    COLOR = "color"
-    COLORMAP = "colormap"
-    FIGSIZE_X = "figsize_x"
-    FIGSIZE_Y = "figsize_y"
-    LINESTYLE = "linestyle"
+    COLOR: Final[str] = "color"
+    COLORMAP: Final[str] = "colormap"
+    FIGSIZE_X: Final[str] = "figsize_x"
+    FIGSIZE_Y: Final[str] = "figsize_y"
+    LINESTYLE: Final[str] = "linestyle"
 
     def __init__(
         self,
@@ -108,7 +109,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__rmax = None
         self.__line_style = None
         self.__color = None
-        self.__figsize = (8, 8)
+        self.__figsize = (6.4, 4.8)
         self.__colormap = "rainbow"
         self.__legend_location = "best"
         default_name = FilePathManager.to_snake_case(self.__class__.__name__)
@@ -308,7 +309,9 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         file_name=None,  # type: Optional[str]
         file_format=None,  # type: Optional[str]
         properties=None,  # type: Optional[Mapping[str,DatasetPlotPropertyType]]
-        **plot_options,  # type: Union[str,int,float,bool,Sequence[str]]
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+        **plot_options,
     ):  # type: (...) -> List[Figure]
         """Execute the post processing.
 
@@ -326,6 +329,10 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
             properties: The general properties of a :class:`.DatasetPlot`.
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
             **plot_options: The options of the current class
                 inheriting from :class:`.DatasetPlot`.
 
@@ -352,13 +359,15 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             file_name=file_name,
             file_extension=file_format,
         )
-        return self._run(save, show, file_path, **plot_options)
+        return self._run(save, show, file_path, fig, axes, **plot_options)
 
     def _run(
         self,
         save,  # type:bool
         show,  # type: bool
         file_path,  # type: Path
+        fig: None | Figure,
+        axes: None | Axes,
         **plot_options,
     ):  # type: (...)-> List[Figure]
         """Create the post processing and save or display it.
@@ -367,6 +376,10 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             save: If True, save the plot on the disk.
             show: If True, display the plot.
             file_path: The file path.
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
             **plot_options: The options of the current class
                 inheriting from :class:`.DatasetPlot`.
 
@@ -376,7 +389,9 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         if plot_options:
             self._param = self._param._replace(**plot_options)
 
-        figures = self._plot()
+        figures = self._plot(fig=fig, axes=axes)
+        if fig or axes:
+            return []
 
         for index, sub_figure in enumerate(figures):
             if save:
@@ -391,8 +406,6 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             else:
                 fig_file_path = None
 
-            sub_figure.tight_layout()
-
             save_show_figure(
                 sub_figure,
                 show,
@@ -401,8 +414,18 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
         return figures
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         """Define the way as the dataset is plotted.
+
+        Args:
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
 
         Returns:
             The figures.
@@ -524,3 +547,35 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self, names_to_labels  # type: Mapping[str,str]
     ):  # type: (...) -> None
         self.__names_to_labels = names_to_labels
+
+    def _get_figure_and_axes(
+        self,
+        fig: Figure | None,
+        axes: Axes | None,
+        figsize: tuple[float, float] | None = None,
+    ) -> tuple[Figure, Axes]:
+        """Return the figure and axes to plot the data.
+
+        Args:
+            fig: The figure to plot the data.
+                If ``None``, create a new one.
+            axes: The axes to plot the data.
+                If ``None``, create new ones.
+            figsize: The width and height of the figure in inches.
+                If ``None``, use the default ``figsize``.
+
+        Returns:
+            The figure and axis to plot the data.
+        """
+        if fig is None:
+            if axes is not None:
+                raise ValueError(
+                    "The figure associated with the given axes is missing."
+                )
+
+            return plt.subplots(figsize=figsize or self.figsize)
+
+        if axes is None:
+            raise ValueError("The axes associated with the given figure are missing.")
+
+        return fig, axes

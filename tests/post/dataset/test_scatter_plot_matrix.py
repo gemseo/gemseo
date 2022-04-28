@@ -27,6 +27,7 @@ import re
 import pytest
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.utils.py23_compat import PY2
+from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 
 from .test_andrews_curves import dataset  # noqa: F401
@@ -40,38 +41,42 @@ pytestmark = pytest.mark.skipif(
 # - the kwargs to be passed to ScatterMatrix._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, ["ScatterMatrix"]),
-    "with_kde": ({"kde": True}, ["ScatterMatrix_kde"]),
-    "with_size": ({"size": 50}, ["ScatterMatrix_size"]),
-    "with_marker": ({"marker": "+"}, ["ScatterMatrix_marker"]),
-    "with_classifier": ({"classifier": "c"}, ["ScatterMatrix_classifier"]),
-    "with_names": ({"variable_names": ["x", "y"]}, ["ScatterMatrix_names"]),
-    "with_upper": ({"plot_lower": False}, ["ScatterMatrix_lower"]),
-    "with_lower": ({"plot_upper": False}, ["ScatterMatrix_upper"]),
+    "default": ({}, {}, ["ScatterMatrix"]),
+    "with_kde": ({"kde": True}, {}, ["ScatterMatrix_kde"]),
+    "with_size": ({"size": 50}, {}, ["ScatterMatrix_size"]),
+    "with_marker": ({"marker": "+"}, {}, ["ScatterMatrix_marker"]),
+    "with_classifier": ({"classifier": "c"}, {}, ["ScatterMatrix_classifier"]),
+    "with_names": ({"variable_names": ["x", "y"]}, {}, ["ScatterMatrix_names"]),
+    "with_upper": ({"plot_lower": False}, {}, ["ScatterMatrix_lower"]),
+    "with_lower": ({"plot_upper": False}, {}, ["ScatterMatrix_upper"]),
     "with_properties": (
-        {
-            "properties": {
-                "title": "The title",
-            }
-        },
+        {},
+        {"title": "The title"},
         ["ScatterMatrix_properties"],
     ),
 }
 
 
 @pytest.mark.parametrize(
-    "kwargs, baseline_images",
+    "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
+@pytest.mark.parametrize("fig_and_axes", [False, True])
 @image_comparison(None, extensions=["png"], tol=0.025)
-def test_plot(dataset, kwargs, baseline_images, pyplot_close_all):  # noqa: F811
+def test_plot(
+    dataset,  # noqa: F811
+    kwargs,
+    properties,
+    baseline_images,
+    pyplot_close_all,
+    fig_and_axes,
+):
     """Test images created by ScatterMatrix._plot against references."""
-    properties = kwargs.pop("properties", None)
-    ScatterMatrix(dataset, **kwargs).execute(
-        save=False, show=False, properties=properties
-    )
+    plot = ScatterMatrix(dataset, **kwargs)
+    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    plot.execute(save=False, show=False, properties=properties, fig=fig, axes=axes)
 
 
 def test_plot_error(dataset):  # noqa: F811

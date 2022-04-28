@@ -19,10 +19,12 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a radar chart from a :class:`.Dataset`. """
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy import linspace
 from numpy import pi
@@ -62,12 +64,19 @@ class RadarChart(DatasetPlot):
             scientific_notation=scientific_notation,
         )
 
-    def _plot(self) -> list[Figure]:
+    def _plot(
+        self,
+        fig: None | Figure = None,
+        axes: None | Axes = None,
+    ) -> list[Figure]:
         linestyle = "-o" if self._param.connect else "o"
-        fig = plt.figure(figsize=self.figsize)
-        axe = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
-        axe.grid(True, color="k", linewidth=0.3, linestyle=":")
-        axe.tick_params(labelsize=self.font_size)
+
+        if not fig or not axes:
+            fig = plt.figure(figsize=self.figsize)
+            axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
+
+        axes.grid(True, color="k", linewidth=0.3, linestyle=":")
+        axes.tick_params(labelsize=self.font_size)
 
         all_data, _, sizes = self.dataset.get_all_data(False, False)
         variables_names = self.dataset.columns_names
@@ -98,7 +107,7 @@ class RadarChart(DatasetPlot):
             name = series_names[index]
             data = data.tolist()
             data.append(data[0])
-            axe.plot(
+            axes.plot(
                 theta,
                 data,
                 self.linestyle[name],
@@ -111,7 +120,7 @@ class RadarChart(DatasetPlot):
             circle = plt.Circle(
                 (0, 0),
                 abs(self.rmin),
-                transform=axe.transData._b,
+                transform=axes.transData._b,
                 fill=False,
                 edgecolor="black",
                 linewidth=1,
@@ -120,12 +129,12 @@ class RadarChart(DatasetPlot):
             plt.gca().add_artist(circle)
 
         theta_degree = rad2deg(theta[:-1])
-        axe.set_thetagrids(theta_degree, variables_names)
+        axes.set_thetagrids(theta_degree, variables_names)
         if self._param.radial_ticks:
             labels = []
-            for label, angle in zip(axe.get_xticklabels(), theta_degree):
+            for label, angle in zip(axes.get_xticklabels(), theta_degree):
                 x, y = label.get_position()
-                lab = axe.text(
+                lab = axes.text(
                     x,
                     y,
                     label.get_text(),
@@ -142,26 +151,26 @@ class RadarChart(DatasetPlot):
                 lab.set_rotation(angle)
                 labels.append(lab)
 
-            axe.set_xticklabels([])
+            axes.set_xticklabels([])
 
-        axe.set_rlim([self.rmin, self.rmax])
+        axes.set_rlim([self.rmin, self.rmax])
         rticks = linspace(self.rmin, self.rmax, self._param.n_levels)
         if self._param.scientific_notation:
             rticks_labels = ["{:.2e}".format(value) for value in rticks]
         else:
             rticks_labels = rticks
 
-        axe.set_rticks(rticks)
-        axe.set_yticklabels(rticks_labels)
-        axe.legend(
+        axes.set_rticks(rticks)
+        axes.set_yticklabels(rticks_labels)
+        axes.legend(
             loc="upper left", fontsize=self.font_size, bbox_to_anchor=(1.05, 1.0)
         )
-        axe.set_title(self.title, fontsize=self.font_size * 1.2)
-        box = axe.get_position()
-        axe.set_position(
+        axes.set_title(self.title, fontsize=self.font_size * 1.2)
+        box = axes.get_position()
+        axes.set_position(
             [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9]
         )
-        axe.legend(
+        axes.legend(
             loc="upper center",
             bbox_to_anchor=(0.5, -0.05),
             ncol=5,
