@@ -267,7 +267,10 @@ class DriverLib(AlgoLib):
 
         if value is not None:
             # if maximization problem: take the opposite
-            if not self.problem.minimize_objective:
+            if (
+                not self.problem.minimize_objective
+                and not self.problem.use_standardized_objective
+            ):
                 value = -value
 
             self.__progress_bar.set_postfix(refresh=False, obj=value)
@@ -507,7 +510,11 @@ class DriverLib(AlgoLib):
         x_0 = problem.database.get_x_by_iter(0)
         # compute the best feasible or infeasible point
         f_opt, x_opt, is_feas, c_opt, c_opt_grad = problem.get_optimum()
-        if f_opt is not None and not problem.minimize_objective:
+        if (
+            f_opt is not None
+            and not problem.minimize_objective
+            and not problem.use_standardized_objective
+        ):
             f_opt = -f_opt
 
         if x_opt is None:

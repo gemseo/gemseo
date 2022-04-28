@@ -241,7 +241,7 @@ def test_log_convergence():
 )
 @pytest.mark.parametrize(
     "mda_class,expected_obj",
-    [("MDAQuasiNewton", 591.35), ("MDANewtonRaphson", 608.175)],
+    [("MDAQuasiNewton", -591.35), ("MDANewtonRaphson", -608.175)],
 )
 def test_parallel_doe(mda_class, expected_obj, generate_parallel_doe_data):
     """Test the execution of Newton methods in parallel.

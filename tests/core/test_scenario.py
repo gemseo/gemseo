@@ -33,6 +33,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
@@ -562,3 +563,42 @@ def test_complex_step(complex_step_scenario, normalize_design_space):
     )
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
+
+
+@pytest.fixture
+def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
+    """The sinus discipline and its design space."""
+    discipline = AnalyticDiscipline({"y": "sin(2*pi*x)"})
+    design_space = DesignSpace()
+    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
+    return discipline, design_space
+
+
+@pytest.mark.parametrize(
+    "maximize,standardize,expr,val",
+    [
+        (False, False, "Minimize y(x)", -1.0),
+        (False, True, "Minimize y(x)", -1.0),
+        (True, False, "Maximize y(x)", 1.0),
+        (True, True, "Minimize -y(x)", -1.0),
+    ],
+)
+def test_use_standardized_objective(
+    sinus_use_case, maximize, standardize, expr, val, caplog
+):
+    """Check that the setter use_standardized_objective works correctly."""
+    discipline, design_space = sinus_use_case
+    scenario = MDOScenario(
+        [discipline],
+        formulation="MDF",
+        objective_name="y",
+        maximize_objective=maximize,
+        design_space=design_space,
+    )
+    assert scenario.use_standardized_objective
+    scenario.use_standardized_objective = standardize
+    assert scenario.use_standardized_objective is standardize
+    scenario.execute({"algo": "SLSQP", "max_iter": 10})
+    assert expr in caplog.text
+    assert f"Objective value = {val}" in caplog.text
+    assert f"obj={int(val)}" in caplog.text

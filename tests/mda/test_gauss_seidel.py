@@ -156,4 +156,4 @@ def test_parallel_doe(generate_parallel_doe_data):
             a parallel DOE scenario for a particular `main_mda_class`.
     """
     obj = generate_parallel_doe_data("MDAGaussSeidel")
-    assert isclose(array([obj]), array([608.185]), atol=1e-3)
+    assert isclose(array([-obj]), array([608.185]), atol=1e-3)

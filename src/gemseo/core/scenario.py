@@ -156,6 +156,16 @@ class Scenario(MDODiscipline):
         self.clear_history_before_run = False
 
     @property
+    def use_standardized_objective(self) -> bool:
+        """Whether to use the standardized :attr:`.OptimizationProblem.objective` for
+        logging and post-processing."""
+        return self.formulation.opt_problem.use_standardized_objective
+
+    @use_standardized_objective.setter
+    def use_standardized_objective(self, value: bool) -> None:
+        self.formulation.opt_problem.use_standardized_objective = value
+
+    @property
     def post_factory(self):  # type: (...) -> Optional[PostFactory]
         """The factory of post-processors."""
         if self.__post_factory is None:

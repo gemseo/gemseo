@@ -85,7 +85,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         )
 
         # do not set a tolerance below 1e-4
-        assert 2000.0 < obj < 5000.0
+        assert 2000.0 < -obj < 5000.0
 
     def test_expected_workflow(self):
         """"""
