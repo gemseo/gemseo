@@ -111,7 +111,6 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     ):  # type: (...) -> None
         super(DOELibrary, self)._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
-        LOGGER.info("%s", problem)
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
@@ -126,7 +125,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             for sample in self.untransformed_samples:
                 self.problem.database.store(sample, {}, add_iter=True)
 
-        self.init_iter_observer(len(self.samples), "DOE sampling")
+        self.init_iter_observer(len(self.samples), " ")
         self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options):

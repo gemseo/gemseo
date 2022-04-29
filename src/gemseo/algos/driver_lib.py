@@ -66,6 +66,7 @@ from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
+from gemseo.utils.string_tools import MultiLineString
 
 DriverLibOptionType = Union[str, float, int, bool, List[str], ndarray]
 LOGGER = logging.getLogger(__name__)
@@ -241,6 +242,7 @@ class DriverLib(AlgoLib):
                 total=self.__max_iter,
                 desc=self.__message,
                 ascii=False,
+                bar_format="... {percentage:3.0f}%|{bar}{r_bar}",
                 file=TqdmToLogger(),
             )
         else:
@@ -327,6 +329,15 @@ class DriverLib(AlgoLib):
                 see the associated JSON file.
         """
         self._max_time = options.get(self.MAX_TIME, 0.0)
+        LOGGER.info("%s", problem)
+        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
+            log = MultiLineString()
+            log.indent()
+            log.add("over the design space:")
+            for line in str(problem.design_space).split("\n")[1:]:
+                log.add(line)
+            LOGGER.info("%s", log)
+        LOGGER.info("Solving optimization problem with algorithm %s:", algo_name)
 
     def _post_run(self, problem, algo_name, result, **options):  # pylint: disable=W0613
         """To be overridden by subclasses Specific method to be executed just after _run
@@ -337,12 +348,24 @@ class DriverLib(AlgoLib):
         :param result: result of the run such as an OptimizationResult
         :param options: the options dict for the algorithm, see associated JSON file
         """
-        LOGGER.info("%s", result)
+        opt_result_str = result._strings
+        LOGGER.info("%s", opt_result_str[0])
+        if result.constraints_values:
+            if result.is_feasible:
+                LOGGER.info("%s", opt_result_str[1])
+            else:
+                LOGGER.warning("%s", opt_result_str[1])
+        LOGGER.info("%s", opt_result_str[2])
         problem.solution = result
         if result.x_opt is not None:
             problem.design_space.set_current_x(result)
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-            LOGGER.info("%s", problem.design_space)
+            log = MultiLineString()
+            log.indent()
+            log.indent()
+            for line in str(problem.design_space).split("\n"):
+                log.add(line)
+            LOGGER.info("%s", log)
 
     def _check_integer_handling(
         self,

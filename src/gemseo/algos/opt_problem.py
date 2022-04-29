@@ -1600,10 +1600,10 @@ class OptimizationProblem(object):
 
         # objective representation
         if self.minimize_objective or self.use_standardized_objective:
-            optimize_verb = "Minimize "
+            optimize_verb = "minimize "
             start = 0
         else:
-            optimize_verb = "Maximize "
+            optimize_verb = "maximize "
             start = 1
 
         objective_function = [line for line in repr(self.objective).split("\n") if line]
@@ -1612,9 +1612,11 @@ class OptimizationProblem(object):
             msg.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        msg.add("With respect to: {}", pretty_repr(self.design_space.variables_names))
+        msg.add(
+            "with respect to {}", pretty_repr(sorted(self.design_space.variables_names))
+        )
         if self.has_constraints():
-            msg.add("Subject to constraints:")
+            msg.add("subject to constraints:")
             msg.indent()
             for constraints in self.get_ineq_constraints():
                 constraints = [cstr for cstr in str(constraints).split("\n") if cstr]

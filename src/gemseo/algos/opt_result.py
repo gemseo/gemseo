@@ -89,32 +89,57 @@ class OptimizationResult:
         msg = MultiLineString()
         msg.add("Optimization result:")
         msg.indent()
-        msg.add(f"Design variables: {self.x_opt}")
-        msg.add(f"Objective function: {self.f_opt}")
-        msg.add(f"Feasible solution: {self.is_feasible}")
+        msg.add("Design variables: {}", self.x_opt)
+        msg.add("Objective function: {}", self.f_opt)
+        msg.add("Feasible solution: {}", self.is_feasible)
         return str(msg)
 
-    def __str__(self) -> str:
+    @property
+    def _strings(self) -> list[MultiLineString]:
+        """The 3 multi-line strings used by __str__ and for logging.
+
+        The second one can be logged with either an INFO or a WARNING level according to
+        the feasibility of the solution.
+        """
+        strings = []
         msg = MultiLineString()
         msg.add("Optimization result:")
-        msg.add(f"Objective value = {self.f_opt}")
-        not_ = "" if self.is_feasible else "not "
-        msg.add(f"The result is {not_}feasible.")
-        msg.add(f"Status: {self.status}")
-        msg.add(f"Optimizer message: {self.message}")
+        msg.indent()
+        msg.add("Optimizer info:")
+        msg.indent()
+        msg.add("Status: {}", self.status)
+        msg.add("Message: {}", self.message)
         if self.n_obj_call is not None:
             msg.add(
-                "Number of calls to the objective function "
-                f"by the optimizer: {self.n_obj_call}"
+                "Number of calls to the objective function by the optimizer: {}",
+                self.n_obj_call,
             )
+        msg.dedent()
+        msg.add("Solution:")
+        msg.indent()
+        strings.append(msg)
+        msg = MultiLineString()
+        if self.constraints_values:
+            not_ = "" if self.is_feasible else "not "
+            msg.indent()
+            msg.indent()
+            msg.add("The solution is {}feasible.", not_)
+        strings.append(msg)
 
+        msg = MultiLineString()
+        msg.indent()
+        msg.indent()
+        msg.add("Objective: {}", self.f_opt)
         if self.constraints_values and len(self.constraints_values) < 20:
-            msg.add("Constraints values:")
+            msg.add("Constraints:")
             msg.indent()
             for name, value in sorted(self.constraints_values.items()):
-                msg.add(f"{name} = {value}")
+                msg.add("{} = {}", name, value)
+        strings.append(msg)
+        return strings
 
-        return str(msg)
+    def __str__(self) -> str:
+        return str(self._strings[0] + self._strings[1] + self._strings[2])
 
     def to_dict(self) -> dict[str, Value]:
         """Convert the optimization result to a dictionary.
