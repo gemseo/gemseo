@@ -33,7 +33,6 @@ from __future__ import annotations
 from collections import namedtuple
 from numbers import Number
 from typing import Any
-from typing import Final
 from typing import Iterable
 from typing import List
 from typing import Mapping
@@ -50,6 +49,7 @@ from numpy import linspace
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.python_compatibility import Final
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset

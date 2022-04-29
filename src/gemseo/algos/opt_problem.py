@@ -58,8 +58,7 @@ various getters and setters are available,
 as well as methods to export the :class:`.Database`
 to an HDF file or to a :class:`.Dataset` for future post-processing.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
@@ -69,7 +68,6 @@ from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
-from typing import Final
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -116,6 +114,7 @@ from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.py23_compat import PY3
 from gemseo.utils.py23_compat import string_array
 from gemseo.utils.py23_compat import string_types
+from gemseo.utils.python_compatibility import Final
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
 
