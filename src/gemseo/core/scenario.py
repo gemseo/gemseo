@@ -467,8 +467,7 @@ class Scenario(MDODiscipline):
         msg.add(self.name)
         msg.indent()
         msg.add("Disciplines: {}", pretty_repr(self.disciplines, delimiter=" "))
-        msg.add("MDOFormulation: {}", self.formulation.__class__.__name__)
-        msg.add("Algorithm: {}", self.local_data.get(self.ALGO))
+        msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 
     def get_disciplines_statuses(self):  # type: (...) -> Dict[str,str]

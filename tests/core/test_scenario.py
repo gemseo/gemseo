@@ -373,8 +373,7 @@ def test_repr_str(idf_scenario):
         "MDOScenario",
         "   Disciplines: "
         "SobieskiPropulsion SobieskiAerodynamics SobieskiMission SobieskiStructure",
-        "   MDOFormulation: IDF",
-        "   Algorithm: None",
+        "   MDO formulation: IDF",
     ]
     assert repr(idf_scenario) == "\n".join(expected)
 
@@ -576,10 +575,10 @@ def sinus_use_case() -> tuple[AnalyticDiscipline, DesignSpace]:
 @pytest.mark.parametrize(
     "maximize,standardize,expr,val",
     [
-        (False, False, "Minimize y(x)", -1.0),
-        (False, True, "Minimize y(x)", -1.0),
-        (True, False, "Maximize y(x)", 1.0),
-        (True, True, "Minimize -y(x)", -1.0),
+        (False, False, "minimize y(x)", -1.0),
+        (False, True, "minimize y(x)", -1.0),
+        (True, False, "maximize y(x)", 1.0),
+        (True, True, "minimize -y(x)", -1.0),
     ],
 )
 def test_use_standardized_objective(
@@ -599,5 +598,5 @@ def test_use_standardized_objective(
     assert scenario.use_standardized_objective is standardize
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
     assert expr in caplog.text
-    assert f"Objective value = {val}" in caplog.text
+    assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text

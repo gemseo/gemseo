@@ -40,8 +40,11 @@ class MyDriver(DriverLib):
 @pytest.fixture(scope="module")
 def optimization_problem():
     """A mock optimization problem."""
+    design_space = mock.Mock()
+    design_space.dimension = 2
     problem = mock.Mock()
     problem.dimension = 2
+    problem.design_space = design_space
     return problem
 
 
@@ -116,10 +119,10 @@ def test_new_iteration_callback_xvect(caplog):
     test_driver = DriverLib()
     test_driver.problem = problem
     test_driver._max_time = 0
-    test_driver.init_iter_observer(max_iter=2, message="Toto")
+    test_driver.init_iter_observer(max_iter=2, message="")
     test_driver.new_iteration_callback()
 
-    assert "Toto" in caplog.text
+    assert "...   0%|" in caplog.text
 
 
 @pytest.mark.parametrize("activate_progress_bar", [False, True])

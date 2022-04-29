@@ -169,10 +169,7 @@ class OptimizationLibrary(DriverLib):
         self._xtol_rel = options.get(self.X_TOL_REL, 0.0)
         self._xtol_abs = options.get(self.X_TOL_ABS, 0.0)
         self._stop_crit_n_x = options.get(self.STOP_CRIT_NX, 3)
-        LOGGER.info("%s", problem)
-        if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
-            LOGGER.info("%s", problem.design_space)
-        self.init_iter_observer(max_iter, "Optimization")
+        self.init_iter_observer(max_iter, " ")
         problem.add_callback(self.new_iteration_callback)
         eval_jac = self.is_algo_requires_grad(algo_name)
         normalize = options.get(self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS)
