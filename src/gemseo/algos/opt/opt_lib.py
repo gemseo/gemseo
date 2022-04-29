@@ -20,21 +20,43 @@
 #        :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Optimization library wrappers base class."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Optional
 
 from numpy import ndarray
 
+from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
+from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
 from gemseo.algos.stop_criteria import XtolReached
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class OptimizationAlgorithmDescription(DriverDescription):
+    """The description of an optimization algorithm."""
+
+    handle_equality_constraints: bool = False
+    """Whether the optimization algorithm handles equality constraints."""
+
+    handle_inequality_constraints: bool = False
+    """Whether the optimization algorithm handles inequality constraints."""
+
+    handle_multiobjective: bool = False
+    """Whether the optimization algorithm handles multiple objectives."""
+
+    positive_constraints: bool = False
+    """Whether the optimization algorithm requires positive constraints."""
+
+    problem_type: str = OptimizationProblem.NON_LINEAR_PB
+    """The type of problem (see :attr:`.OptimizationProblem.AVAILABLE_PB_TYPES`)."""
 
 
 class OptimizationLibrary(DriverLib):
@@ -63,22 +85,24 @@ class OptimizationLibrary(DriverLib):
         self._xtol_abs = 0.0
         self._stop_crit_n_x = 3
 
-    def __algorithm_handles(self, algo_name, cstr_type):
-        """Returns True if the algorithms handles cstr_type constraints.
+    def __algorithm_handles(self, algo_name: str, eq_constraint: bool):
+        """Check if the algorithm handles equality or inequality constraints.
 
-        :param algo_name : the name of the algo_name
-        :returns: True or False
+        Args:
+            algo_name: The name of the algorithm.
+            eq_constraint: Whether the constraints are equality ones.
+
+        Returns:
+            Whether the algorithm handles the passed type of constraints.
         """
         if algo_name not in self.lib_dict:
             raise KeyError(
-                "Algorithm "
-                + str(algo_name)
-                + " not in library "
-                + self.__class__.__name__
+                f"Algorithm {algo_name} not in library {self.__class__.__name__}."
             )
-        if cstr_type in self.lib_dict[algo_name]:
-            return self.lib_dict[algo_name][cstr_type]
-        return False
+        if eq_constraint:
+            return self.lib_dict[algo_name].handle_equality_constraints
+        else:
+            return self.lib_dict[algo_name].handle_inequality_constraints
 
     def algorithm_handles_eqcstr(self, algo_name):
         """Returns True if the algorithms handles equality constraints.
@@ -86,7 +110,7 @@ class OptimizationLibrary(DriverLib):
         :param algo_name: the name of the algorithm
         :returns: True or False
         """
-        return self.__algorithm_handles(algo_name, self.HANDLE_EQ_CONS)
+        return self.__algorithm_handles(algo_name, True)
 
     def algorithm_handles_ineqcstr(self, algo_name):
         """Returns True if the algorithms handles inequality constraints.
@@ -94,7 +118,7 @@ class OptimizationLibrary(DriverLib):
         :param algo_name: the name of the algorithm
         :returns: True or False
         """
-        return self.__algorithm_handles(algo_name, self.HANDLE_INEQ_CONS)
+        return self.__algorithm_handles(algo_name, False)
 
     def is_algo_requires_positive_cstr(self, algo_name):
         """Returns True if the algorithm requires positive constraints False otherwise.
@@ -103,10 +127,7 @@ class OptimizationLibrary(DriverLib):
         :returns: True if constraints must be positive
         :rtype: bool
         """
-        loc_dict = self.lib_dict[algo_name]
-        if self.POSITIVE_CONSTRAINTS in loc_dict:
-            return loc_dict[self.POSITIVE_CONSTRAINTS]
-        return False
+        return self.lib_dict[algo_name].positive_constraints
 
     def _check_constraints_handling(self, algo_name, problem):
         """Check if problem and algorithm are consistent for constraints handling."""
@@ -115,14 +136,14 @@ class OptimizationLibrary(DriverLib):
         ):
             raise ValueError(
                 "Requested optimization algorithm "
-                + "%s can not handle equality constraints" % self.algo_name
+                "%s can not handle equality constraints." % algo_name
             )
         if problem.has_ineq_constraints() and not self.algorithm_handles_ineqcstr(
             algo_name
         ):
             raise ValueError(
                 "Requested optimization algorithm "
-                + " %s can not handle inequality constraints" % algo_name
+                "%s can not handle inequality constraints." % algo_name
             )
 
     def get_right_sign_constraints(self):
@@ -162,7 +183,7 @@ class OptimizationLibrary(DriverLib):
         ):
             max_iter = options[self.OPTIONS_MAP[self.MAX_ITER]]
         else:
-            raise ValueError("Could not determine the maximum number of iterations")
+            raise ValueError("Could not determine the maximum number of iterations.")
 
         self._ftol_rel = options.get(self.F_TOL_REL, 0.0)
         self._ftol_abs = options.get(self.F_TOL_ABS, 0.0)
@@ -185,22 +206,19 @@ class OptimizationLibrary(DriverLib):
         :param algo_dict: the algorithm characteristics
         :param problem: the opt_problem to be solved
         """
-        if problem.has_eq_constraints() and (
-            (OptimizationLibrary.HANDLE_EQ_CONS not in algo_dict)
-            or not algo_dict[OptimizationLibrary.HANDLE_EQ_CONS]
+        if problem.has_eq_constraints() and not algo_dict.handle_equality_constraints:
+            return False
+
+        if (
+            problem.has_ineq_constraints()
+            and not algo_dict.handle_inequality_constraints
         ):
             return False
-        if problem.has_ineq_constraints() and (
-            (OptimizationLibrary.HANDLE_INEQ_CONS not in algo_dict)
-            or not algo_dict[OptimizationLibrary.HANDLE_INEQ_CONS]
+
+        if (
+            problem.pb_type == problem.NON_LINEAR_PB
+            and algo_dict.problem_type == problem.LINEAR_PB
         ):
-            return False
-        non_lin = problem.pb_type == problem.NON_LINEAR_PB
-        lin_alg = (
-            OptimizationLibrary.PROBLEM_TYPE in algo_dict
-            and algo_dict[OptimizationLibrary.PROBLEM_TYPE] == problem.LINEAR_PB
-        )
-        if non_lin and lin_alg:
             return False
 
         return True

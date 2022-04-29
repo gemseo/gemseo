@@ -22,11 +22,11 @@
 DOE library base class wrapper
 ******************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import traceback
+from dataclasses import dataclass
 from multiprocessing import current_process
 from typing import Dict
 from typing import Iterable
@@ -42,6 +42,7 @@ from numpy import savetxt
 from scipy.spatial import distance
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.parallel_execution import ParallelExecution
@@ -53,10 +54,29 @@ DOELibraryOptionType = Union[str, float, int, bool, List[str], ndarray]
 DOELibraryOutputType = Tuple[Dict[str, Union[float, ndarray]], Dict[str, ndarray]]
 
 
+@dataclass
+class DOEAlgorithmDescription(DriverDescription):
+    """The description of a DOE algorithm."""
+
+    handle_integer_variables: bool = True
+
+    minimum_dimension: int = 1
+    """The minimum dimension of the parameter space."""
+
+
 class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class to use for DOE library link See DriverLib."""
 
-    MIN_DIMS = "min_dims"
+    samples: ndarray | None
+    """The samples of the inputs."""
+
+    seed: int
+    """The seed to be used for replicability reasons.
+
+    It increments with each generation of samples
+    so that repeating the generation of sets of :math:`N` leads to different sets.
+    """
+
     DESIGN_ALGO_NAME = "Design algorithm"
     SAMPLES_TAG = "samples"
     PHIP_CRITERIA = "phi^p"

@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -34,10 +35,18 @@ from numpy import ndarray
 from numpy import real
 from scipy import optimize
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class SciPyAlgorithmAlgorithm(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the SciPy library."""
+
+    lib: str = "SciPy"
 
 
 class ScipyOpt(OptimizationLibrary):
@@ -71,47 +80,37 @@ class ScipyOpt(OptimizationLibrary):
         super(ScipyOpt, self).__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
         self.lib_dict = {
-            "SLSQP": {
-                self.ALGORITHM_NAME: "SLSQP",
-                self.DESCRIPTION: (
+            "SLSQP": SciPyAlgorithmAlgorithm(
+                algorithm_name="SLSQP",
+                description=(
                     "Sequential Least-Squares Quadratic Programming (SLSQP) "
                     "implemented in the SciPy library"
                 ),
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "SLSQP",
-                self.REQUIRE_GRAD: True,
-                self.POSITIVE_CONSTRAINTS: True,
-                self.WEBSITE: f"{doc}optimize.minimize-slsqp.html",
-            },
-            "L-BFGS-B": {
-                self.ALGORITHM_NAME: "L-BFGS-B",
-                self.DESCRIPTION: (
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name="SLSQP",
+                require_grad=True,
+                positive_constraints=True,
+                website=f"{doc}optimize.minimize-slsqp.html",
+            ),
+            "L-BFGS-B": SciPyAlgorithmAlgorithm(
+                algorithm_name="L-BFGS-B",
+                description=(
                     "Limited-memory BFGS algorithm implemented in SciPy library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "L-BFGS-B",
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: f"{doc}generated/scipy.optimize.fmin_l_bfgs_b.html",
-            },
-            "TNC": {
-                self.ALGORITHM_NAME: "TNC",
-                self.DESCRIPTION: (
+                internal_algo_name="L-BFGS-B",
+                require_grad=True,
+                website=f"{doc}generated/scipy.optimize.fmin_l_bfgs_b.html",
+            ),
+            "TNC": SciPyAlgorithmAlgorithm(
+                algorithm_name="TNC",
+                description=(
                     "Truncated Newton (TNC) algorithm implemented in SciPy library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "TNC",
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: f"{doc}optimize.minimize-tnc.html",
-            },
+                internal_algo_name="TNC",
+                require_grad=True,
+                website=f"{doc}optimize.minimize-tnc.html",
+            ),
         }
 
     def _get_options(

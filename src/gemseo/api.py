@@ -1928,16 +1928,16 @@ def get_algorithm_features(
         )
 
     driver = factory.create(algorithm_name)
-    features = driver.lib_dict[algorithm_name]
+    algo_description = driver.lib_dict[algorithm_name]
     return AlgorithmFeatures(
-        algorithm_name=features.get(driver.ALGORITHM_NAME, algorithm_name),
-        library_name=driver.LIBRARY_NAME,
-        handle_equality_constraints=features.get(driver.HANDLE_EQ_CONS, False),
-        handle_inequality_constraints=features.get(driver.HANDLE_INEQ_CONS, False),
+        algorithm_name=algo_description.algorithm_name,
+        library_name=algo_description.lib,
+        handle_equality_constraints=algo_description.handle_equality_constraints,
+        handle_inequality_constraints=algo_description.handle_inequality_constraints,
         handle_float_variables=True,
-        handle_integer_variables=features.get(driver.HANDLE_INTEGER_VARIABLES, False),
-        handle_multiobjective=features.get(driver.HANDLE_MULTIOBJECTIVE, False),
-        require_gradient=features.get(driver.REQUIRE_GRAD, False),
+        handle_integer_variables=algo_description.handle_integer_variables,
+        handle_multiobjective=algo_description.handle_multiobjective,
+        require_gradient=algo_description.require_grad,
     )
 
 

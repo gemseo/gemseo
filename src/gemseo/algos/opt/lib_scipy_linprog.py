@@ -18,6 +18,7 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
+from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -28,11 +29,21 @@ from scipy.optimize import linprog
 from scipy.optimize import OptimizeResult
 
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
-from gemseo.utils.py23_compat import PY2
+
+
+@dataclass
+class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of a linear optimization algorithm from the SciPy library."""
+
+    problem_type: str = OptimizationProblem.LINEAR_PB
+    handle_equality_constraints: bool = True
+    handle_inequality_constraints: bool = True
+    lib: str = "SciPy"
 
 
 class ScipyLinprog(OptimizationLibrary):
@@ -64,51 +75,34 @@ class ScipyLinprog(OptimizationLibrary):
         doc = "https://docs.scipy.org/doc/scipy/reference/"
 
         self.lib_dict = {
-            "LINEAR_INTERIOR_POINT": {
-                self.ALGORITHM_NAME: "Linear interior point",
-                self.DESCRIPTION: (
+            "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Linear interior point",
+                description=(
                     "Linear programming by the interior-point"
                     " method implemented in the SciPy library"
                 ),
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "interior-point",
-                self.WEBSITE: f"{doc}optimize.linprog-interior-point.html",
-            },
-            ScipyLinprog.REVISED_SIMPLEX: {
-                self.ALGORITHM_NAME: "Revised simplex",
-                self.DESCRIPTION: (
+                internal_algo_name="interior-point",
+                website=f"{doc}optimize.linprog-interior-point.html",
+            ),
+            ScipyLinprog.REVISED_SIMPLEX: ScipyLinProgAlgorithmDescription(
+                algorithm_name="Revised simplex",
+                description=(
                     "Linear programming by a two-phase revised"
                     " simplex algorithm implemented in the SciPy library"
                 ),
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "revised simplex",
-                self.WEBSITE: f"{doc}optimize.linprog-revised_simplex.html",
-            },
-            "SIMPLEX": {
-                self.ALGORITHM_NAME: "Simplex",
-                self.DESCRIPTION: (
+                internal_algo_name="revised simplex",
+                website=f"{doc}optimize.linprog-revised_simplex.html",
+            ),
+            "SIMPLEX": ScipyLinProgAlgorithmDescription(
+                algorithm_name="Simplex",
+                description=(
                     "Linear programming by the two-phase simplex"
                     " algorithm implemented in the SciPy library"
                 ),
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "simplex",
-                self.WEBSITE: f"{doc}optimize.linprog-simplex.html",
-            },
+                internal_algo_name="simplex",
+                website=f"{doc}optimize.linprog-simplex.html",
+            ),
         }
-        if PY2:
-            # The "revised simplex" algorithm is not available in Python 2.
-            # Indeed this feature appeared in SciPy 1.3.0 which requires Python 3.5+.
-            # https://docs.scipy.org/doc/scipy-1.3.0/reference/release.1.3.0.html
-            del self.lib_dict["REVISED_SIMPLEX"]
-        common_items = {
-            self.PROBLEM_TYPE: OptimizationProblem.LINEAR_PB,
-            self.POSITIVE_CONSTRAINTS: False,
-            self.HANDLE_EQ_CONS: True,
-            self.HANDLE_INEQ_CONS: True,
-            self.HANDLE_INTEGER_VARIABLES: False,
-        }
-        for algo_dict in self.lib_dict.values():
-            algo_dict.update(common_items)
 
     def _get_options(
         self,

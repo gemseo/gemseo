@@ -23,6 +23,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 from typing import Dict
 from typing import Mapping
@@ -38,11 +39,19 @@ from numpy import real
 from scipy import optimize
 from scipy.optimize import NonlinearConstraint
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.utils.py23_compat import PY2
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of a global optimization algorithm from the SciPy library."""
+
+    lib: str = "SciPy"
 
 
 class ScipyGlobalOpt(OptimizationLibrary):
@@ -67,50 +76,40 @@ class ScipyGlobalOpt(OptimizationLibrary):
         super(ScipyGlobalOpt, self).__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
         self.lib_dict = {
-            "DUAL_ANNEALING": {
-                self.ALGORITHM_NAME: "Dual annealing",
-                self.DESCRIPTION: "Dual annealing",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: True,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "dual_annealing",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: f"{doc}scipy.optimize.dual_annealing.html",
-            },
-            "SHGO": {
-                self.ALGORITHM_NAME: "SHGO",
-                self.DESCRIPTION: "Simplicial homology global optimization",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: True,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "shgo",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: True,
-                self.WEBSITE: f"{doc}scipy.optimize.shgo.html",
-            },
-            "DIFFERENTIAL_EVOLUTION": {
-                self.ALGORITHM_NAME: "Differential evolution",
-                self.DESCRIPTION: "Differential Evolution algorithm",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: True,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "differential_evolution",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: f"{doc}scipy.optimize.differential_evolution.html",
-            },
+            "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
+                algorithm_name="Dual annealing",
+                description="Dual annealing",
+                handle_integer_variables=True,
+                internal_algo_name="dual_annealing",
+                website=f"{doc}scipy.optimize.dual_annealing.html",
+            ),
+            "SHGO": SciPyGlobalAlgorithmDescription(
+                algorithm_name="SHGO",
+                description="Simplicial homology global optimization",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                handle_integer_variables=True,
+                internal_algo_name="shgo",
+                positive_constraints=True,
+                website=f"{doc}scipy.optimize.shgo.html",
+            ),
+            "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
+                algorithm_name="Differential evolution",
+                description="Differential Evolution algorithm",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                handle_integer_variables=True,
+                internal_algo_name="differential_evolution",
+                website=f"{doc}scipy.optimize.differential_evolution.html",
+            ),
         }
         # maximum function calls option passed to the algorithm
         self.max_func_calls = 1000000000
         scipy_version_ok = LooseVersion(scipy.__version__) >= LooseVersion("1.4.0")
         if PY2 or not scipy_version_ok:
             for algo in ["DIFFERENTIAL_EVOLUTION", "SHGO"]:
-                self.lib_dict[algo][self.HANDLE_EQ_CONS] = False
-                self.lib_dict[algo][self.HANDLE_INEQ_CONS] = False
+                self.lib_dict[algo].handle_equality_constraints = False
+                self.lib_dict[algo].handle_inequality_constraints = False
             # Causes overflow due to py2
             self.max_func_calls = 1000000
 

@@ -37,6 +37,7 @@ from numpy import atleast_2d
 from numpy import loadtxt
 from numpy import ndarray
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.py23_compat import Path
 
@@ -86,12 +87,12 @@ class CustomDOE(DOELibrary):
                 "or as a sequence of sequences of numbers."
             )
         }
-        self.lib_dict[name] = {
-            DOELibrary.LIB: name,
-            DOELibrary.INTERNAL_NAME: name,
-            DOELibrary.DESCRIPTION: desc[name],
-            DOELibrary.HANDLE_INTEGER_VARIABLES: True,
-        }
+        self.lib_dict[name] = DOEAlgorithmDescription(
+            algorithm_name=name,
+            description=desc[name],
+            internal_algo_name=name,
+            lib=name,
+        )
 
     def _get_options(
         self,
