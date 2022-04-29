@@ -10,9 +10,6 @@ variables:
   TEST_ALL_ENVS:
     value: "false"
     description: "Whether to run the tox tests for all python versions and all platforms."
-  TEST_ANACONDA_ENV_FILE:
-    value: "false"
-    description: "Whether to run the tox tests for the anaconda env file."
   MATLAB_PYTHON_WRAPPER_WINDOWS:
       value: ""
       description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
@@ -144,9 +141,9 @@ base-windows:
     # For selecting from gitlab UI.
     - if: '$TEST_ALL_ENVS == "false"'
       when: never
-    # Run for commits pushed on the master branch.
-    - if: '$CI_COMMIT_BRANCH != "master"'
-      when: never
+    # Always run for commits pushed on the master branch.
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      when: always
     - !reference [.tests, rules]
   parallel:
     matrix:
