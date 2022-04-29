@@ -31,6 +31,7 @@ from numpy import hstack
 from numpy import linspace
 from numpy import ndarray
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
@@ -47,12 +48,12 @@ class DiagonalDOE(DOELibrary):
     def __init__(self):  # type: (...) -> None
         super(DiagonalDOE, self).__init__()
         for algo, description in self.__ALGO_DESC.items():
-            self.lib_dict[algo] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo,
-                DOELibrary.DESCRIPTION: description,
-                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
-            }
+            self.lib_dict[algo] = DOEAlgorithmDescription(
+                algorithm_name=algo,
+                description=description,
+                internal_algo_name=algo,
+                lib="GEMSEO",
+            )
 
     def _get_options(
         self,

@@ -18,8 +18,11 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base wrapper for all linear solvers."""
+from __future__ import annotations
+
 import logging
 import pickle
+from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
 from typing import Optional
@@ -31,25 +34,33 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import spilu
 
 from gemseo.algos.algo_lib import AlgoLib
+from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 LOGGER = logging.getLogger(__name__)
 
 
+@dataclass
+class LinearSolverDescription(AlgorithmDescription):
+    """The description of a linear solver."""
+
+    lhs_must_be_symmetric: bool = False
+    """Whether the left-hand side matrix must be symmetric."""
+
+    lhs_must_be_positive_definite: bool = False
+    """Whether the left-hand side matrix must be positive definite."""
+
+    lhs_must_be_linear_operator: bool = False
+    """Whether the left-hand side matrix must be a linear operator."""
+
+
 class LinearSolverLib(AlgoLib):
-    """Abstract class for libraries of linear solvers.
-
-    Attributes:
-        XXX how about backup_path or file_path?
-        save_fpath (str): The path to the file to save the problem when
-            it is not converged and the attribute save_when_fail is True.
-    """
-
-    LHS_MUST_BE_SYMMETRIC = "LHS_symmetric"
-    LHS_MUST_BE_POSITIVE_DEFINITE = "LHS_positive_definite"
-    LHS_CAN_BE_LINEAR_OPERATOR = "LHS_linear_operator"
+    """Abstract class for libraries of linear solvers."""
 
     SAVE_WHEN_FAIL = "save_when_fail"
+
+    save_fpath: str | None
+    """The file path to save the linear problem."""
 
     def __init__(self):  # type: (...) -> None
         super(LinearSolverLib, self).__init__()
@@ -110,19 +121,13 @@ class LinearSolverLib(AlgoLib):
         Returns:
             Whether the algorithm suits.
         """
-        if not problem.is_symmetric and algo_dict.get(
-            LinearSolverLib.LHS_MUST_BE_SYMMETRIC, False
-        ):
+        if not problem.is_symmetric and algo_dict.lhs_must_be_symmetric:
             return False
 
-        if not problem.is_positive_def and algo_dict.get(
-            LinearSolverLib.LHS_MUST_BE_POSITIVE_DEFINITE, False
-        ):
+        if not problem.is_positive_def and algo_dict.lhs_must_be_positive_definite:
             return False
 
-        if problem.is_lhs_linear_operator and not algo_dict.get(
-            LinearSolverLib.LHS_CAN_BE_LINEAR_OPERATOR, False
-        ):
+        if problem.is_lhs_linear_operator and not algo_dict.lhs_must_be_linear_operator:
             return False
 
         return True

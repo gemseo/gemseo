@@ -42,6 +42,7 @@ from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import qmr
 from scipy.sparse.linalg import splu
 
+from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 
 LOGGER = logging.getLogger(__name__)
@@ -98,17 +99,15 @@ class ScipyLinalgAlgos(LinearSolverLib):
             "DEFAULT": self._run_default_solver,
         }
         self.lib_dict = {
-            name: self.get_default_properties(name) for name in self.methods_map.keys()
+            name: self.get_default_properties(name) for name in self.methods_map
         }
-        self.lib_dict["DEFAULT"]["description"] = (
+        self.lib_dict["DEFAULT"].description = (
             "This starts by LGMRES, but if it fails, "
             "switches to GMRES, then direct method super LU factorization."
         )
 
     @classmethod
-    def get_default_properties(
-        cls, algo_name  # type: str
-    ):  # type: (...) -> Dict[str, Union[bool,str]]
+    def get_default_properties(cls, algo_name: str) -> LinearSolverDescription:
         """Return the properties of the algorithm.
 
         It states if it requires symmetric,
@@ -120,14 +119,14 @@ class ScipyLinalgAlgos(LinearSolverLib):
         Returns:
             The properties of the solver.
         """
-        return {
-            cls.LHS_MUST_BE_POSITIVE_DEFINITE: False,
-            cls.LHS_MUST_BE_SYMMETRIC: False,
-            cls.LHS_CAN_BE_LINEAR_OPERATOR: True,
-            cls.INTERNAL_NAME: algo_name,
-            "description": "Linear solver implemented in the SciPy library.",
-            "website": cls.__WEBSITE.format(algo_name),
-        }
+        return LinearSolverDescription(
+            algorithm_name=algo_name,
+            description="Linear solver implemented in the SciPy library.",
+            internal_algo_name=algo_name,
+            lhs_must_be_linear_operator=True,
+            lib="SciPy",
+            website=cls.__WEBSITE.format(algo_name),
+        )
 
     def _get_options(
         self,

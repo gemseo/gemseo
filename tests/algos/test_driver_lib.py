@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 from unittest import mock
 
 import pytest
+from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import configure_logger
@@ -87,13 +88,11 @@ def test_require_grad():
         def __init__(self):
             super(MyDriver, self).__init__()
             self.lib_dict = {
-                "SLSQP": {
-                    DriverLib.INTERNAL_NAME: "SLSQP",
-                    DriverLib.REQUIRE_GRAD: True,
-                    DriverLib.POSITIVE_CONSTRAINTS: True,
-                    DriverLib.HANDLE_EQ_CONS: True,
-                    DriverLib.HANDLE_INEQ_CONS: True,
-                }
+                "SLSQP": DriverDescription(
+                    algorithm_name="SLSQP",
+                    internal_algo_name="SLSQP",
+                    require_grad=True,
+                )
             }
 
     with pytest.raises(ValueError, match="Algorithm toto is not available."):

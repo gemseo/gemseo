@@ -40,6 +40,7 @@ from numpy import min as np_min
 from numpy import ndarray
 from packaging import version
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.utils.string_tools import MultiLineString
 
@@ -130,13 +131,14 @@ class OpenTURNS(DOELibrary):
         super(OpenTURNS, self).__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
-            self.lib_dict[algo_name] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo_name,
-                DOELibrary.DESCRIPTION: algo_value[0],
-                DOELibrary.WEBSITE: self.__OT_WEBPAGE.format(algo_value[1]),
-                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
-            }
+            self.lib_dict[algo_name] = DOEAlgorithmDescription(
+                algorithm_name=algo_name,
+                description=algo_value[0],
+                handle_integer_variables=True,
+                internal_algo_name=algo_name,
+                lib=self.__class__.__name__,
+                website=self.__OT_WEBPAGE.format(algo_value[1]),
+            )
 
     def _get_options(
         self,

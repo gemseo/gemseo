@@ -23,6 +23,7 @@ from __future__ import division
 
 import logging
 import os
+from dataclasses import dataclass
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -33,6 +34,7 @@ from numpy import isfinite
 from numpy import ndarray
 from numpy import real
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.utils.py23_compat import PY2
@@ -60,6 +62,14 @@ OptionType = Optional[Union[str, int, float, bool, ndarray]]
 LOGGER = logging.getLogger(__name__)
 
 
+@dataclass
+class PDFOAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the PDFO library."""
+
+    lib: str = "PDFO"
+    website: str = "https://www.pdfo.net/"
+
+
 class PDFOOpt(OptimizationLibrary):
     """PDFO optimization library interface.
 
@@ -85,42 +95,25 @@ class PDFOOpt(OptimizationLibrary):
         - does it handle inequality constraints
         """
         super(PDFOOpt, self).__init__()
-        doc = "https://www.pdfo.net/"
         self.lib_dict = {
-            "PDFO_COBYLA": {
-                self.ALGORITHM_NAME: "COBYLA",
-                self.DESCRIPTION: "Constrained Optimization By Linear Approximations ",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "cobyla",
-                self.POSITIVE_CONSTRAINTS: True,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: doc,
-            },
-            "PDFO_BOBYQA": {
-                self.ALGORITHM_NAME: "BOBYQA",
-                self.DESCRIPTION: "Bound Optimization By Quadratic Approximation",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.REQUIRE_GRAD: False,
-                self.INTERNAL_NAME: "bobyqa",
-                self.WEBSITE: doc,
-            },
-            "PDFO_NEWUOA": {
-                self.ALGORITHM_NAME: "NEWUOA",
-                self.DESCRIPTION: "NEWUOA",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "newuoa",
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: doc,
-            },
+            "PDFO_COBYLA": PDFOAlgorithmDescription(
+                algorithm_name="COBYLA",
+                description="Constrained Optimization By Linear Approximations ",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name="cobyla",
+                positive_constraints=True,
+            ),
+            "PDFO_BOBYQA": PDFOAlgorithmDescription(
+                algorithm_name="BOBYQA",
+                description="Bound Optimization By Quadratic Approximation",
+                internal_algo_name="bobyqa",
+            ),
+            "PDFO_NEWUOA": PDFOAlgorithmDescription(
+                algorithm_name="NEWUOA",
+                description="NEWUOA",
+                internal_algo_name="newuoa",
+            ),
         }
         self.name = "PDFO"
 

@@ -35,6 +35,7 @@ from numpy import ndarray
 from numpy.random import RandomState
 from numpy.random import seed as set_seed
 
+from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.utils.py23_compat import PY3
@@ -109,16 +110,16 @@ class PyDOE(DOELibrary):
     def __init__(self):  # type: (...) -> None
         super(PyDOE, self).__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
-            self.lib_dict[algo] = {
-                DOELibrary.LIB: self.__class__.__name__,
-                DOELibrary.INTERNAL_NAME: algo,
-                DOELibrary.DESCRIPTION: self.DESC_LIST[idx],
-                DOELibrary.WEBSITE: self.WEB_LIST[idx],
-                DOELibrary.HANDLE_INTEGER_VARIABLES: True,
-            }
+            self.lib_dict[algo] = DOEAlgorithmDescription(
+                algorithm_name=algo,
+                description=self.DESC_LIST[idx],
+                internal_algo_name=algo,
+                lib=self.__class__.__name__,
+                website=self.WEB_LIST[idx],
+            )
 
-        self.lib_dict["bbdesign"][DOELibrary.MIN_DIMS] = 3
-        self.lib_dict["ccdesign"][DOELibrary.MIN_DIMS] = 2
+        self.lib_dict["bbdesign"].minimum_dimension = 3
+        self.lib_dict["ccdesign"].minimum_dimension = 2
 
     def _get_options(
         self,
@@ -297,7 +298,4 @@ class PyDOE(DOELibrary):
         Returns:
             Whether the algorithm is suited to the problem.
         """
-        if DOELibrary.MIN_DIMS in algo_charact:
-            if problem.dimension < algo_charact[DOELibrary.MIN_DIMS]:
-                return False
-        return True
+        return problem.dimension >= algo_charact.minimum_dimension

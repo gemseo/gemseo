@@ -34,12 +34,12 @@ as relevant as possible in order to reach as soon as possible the optimum.
 These families are implemented in :class:`.DOELibrary`
 and :class:`.OptimizationLibrary`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import io
 import logging
 import string
+from dataclasses import dataclass
 from time import time
 from typing import Callable
 from typing import ClassVar
@@ -56,6 +56,7 @@ from tqdm.utils import _unicode
 from tqdm.utils import disp_len
 
 from gemseo.algos.algo_lib import AlgoLib
+from gemseo.algos.algo_lib import AlgorithmDescription
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
@@ -80,6 +81,17 @@ class TqdmToLogger(io.StringIO):
         buf = buf.strip(string.whitespace)
         if buf:
             LOGGER.info(buf)
+
+
+@dataclass
+class DriverDescription(AlgorithmDescription):
+    """The description of a driver."""
+
+    handle_integer_variables: bool = False
+    """Whether the optimization algorithm handles integer variables."""
+
+    require_grad: bool = False
+    """Whether the optimization algorithm requires the gradient."""
 
 
 class ProgressBar(tqdm.tqdm):
@@ -176,10 +188,6 @@ class DriverLib(AlgoLib):
         FINITE_DIFF_METHOD,
     ]
 
-    REQUIRE_GRAD = "require_grad"
-    HANDLE_EQ_CONS = "handle_equality_constraints"
-    HANDLE_INEQ_CONS = "handle_inequality_constraints"
-    POSITIVE_CONSTRAINTS = "positive_constraints"
     INEQ_TOLERANCE = "ineq_tolerance"
     EQ_TOLERANCE = "eq_tolerance"
     MAX_TIME = "max_time"
@@ -188,8 +196,6 @@ class DriverLib(AlgoLib):
     _NORMALIZE_DS = True
     ROUND_INTS_OPTION = "round_ints"
     EVAL_OBS_JAC_OPTION = "eval_obs_jac"
-    WEBSITE = "website"
-    DESCRIPTION = "description"
     MAX_DS_SIZE_PRINT = 40
 
     _ACTIVATE_PROGRESS_BAR_OPTION_NAME = "activate_progress_bar"
@@ -197,9 +203,6 @@ class DriverLib(AlgoLib):
 
     activate_progress_bar: ClassVar[bool] = True
     """Whether to activate the progress bar in the optimization log."""
-
-    HANDLE_INTEGER_VARIABLES = "handle_integer_variables"
-    HANDLE_MULTIOBJECTIVE = "handle_multiobjective"
 
     def __init__(self):
         # Library settings and check
@@ -387,11 +390,9 @@ class DriverLib(AlgoLib):
                 the algo does not handle integer variables and the
                 design space includes at least one integer variable.
         """
-        algo_properties = self.lib_dict[self.algo_name]
-
-        if design_space.has_integer_variables() and (
-            (DriverLib.HANDLE_INTEGER_VARIABLES not in algo_properties)
-            or not algo_properties[DriverLib.HANDLE_INTEGER_VARIABLES]
+        if (
+            design_space.has_integer_variables()
+            and not self.lib_dict[self.algo_name].handle_integer_variables
         ):
             if not force_execution:
                 raise ValueError(
@@ -452,7 +453,7 @@ class DriverLib(AlgoLib):
             self.__activate_progress_bar = activate_progress_bar
 
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
 
         problem.check()
         problem.preprocess_functions(
@@ -579,11 +580,10 @@ class DriverLib(AlgoLib):
 
         :param algo_name: name of the algorithm
         """
-        lib_alg = self.lib_dict.get(algo_name, None)
-        if lib_alg is None:
-            raise ValueError("Algorithm {} is not available.".format(algo_name))
+        if algo_name not in self.lib_dict:
+            raise ValueError(f"Algorithm {algo_name} is not available.")
 
-        return lib_alg.get(self.REQUIRE_GRAD, False)
+        return self.lib_dict[algo_name].require_grad
 
     def get_x0_and_bounds_vects(self, normalize_ds):
         """Gets x0, bounds, normalized or not depending on algo options, all as numpy

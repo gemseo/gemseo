@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -36,6 +37,7 @@ from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import ndarray
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import TerminationCriterion
@@ -48,6 +50,13 @@ NLoptOptionsType = Union[bool, int, float]
 
 class NloptRoundOffException(Exception):
     """NLopt roundoff error."""
+
+
+@dataclass
+class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the NLopt library."""
+
+    lib: str = "NLopt"
 
 
 class Nlopt(OptimizationLibrary):
@@ -127,101 +136,79 @@ class Nlopt(OptimizationLibrary):
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
         self.lib_dict = {
-            "NLOPT_MMA": {
-                self.ALGORITHM_NAME: "MMA",
-                self.DESCRIPTION: (
+            "NLOPT_MMA": NLoptAlgorithmDescription(
+                algorithm_name="MMA",
+                description=(
                     "Method of Moving Asymptotes (MMA)"
                     "implemented in the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: nlopt.LD_MMA,
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
-            },
-            "NLOPT_COBYLA": {
-                self.ALGORITHM_NAME: "COBYLA",
-                self.DESCRIPTION: (
+                handle_inequality_constraints=True,
+                internal_algo_name=nlopt.LD_MMA,
+                require_grad=True,
+                website=f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
+            ),
+            "NLOPT_COBYLA": NLoptAlgorithmDescription(
+                algorithm_name="COBYLA",
+                description=(
                     "Constrained Optimization BY Linear "
                     "Approximations (COBYLA) implemented "
                     "in the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.REQUIRE_GRAD: False,
-                self.INTERNAL_NAME: nlopt.LN_COBYLA,
-                self.WEBSITE: (
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=nlopt.LN_COBYLA,
+                website=(
                     f"{nlopt_doc}#cobyla-constrained-optimization-by-linear-"
                     "approximations"
                 ),
-            },
-            "NLOPT_SLSQP": {
-                self.ALGORITHM_NAME: "SLSQP",
-                self.DESCRIPTION: (
+            ),
+            "NLOPT_SLSQP": NLoptAlgorithmDescription(
+                algorithm_name="SLSQP",
+                description=(
                     "Sequential Least-Squares Quadratic "
                     "Programming (SLSQP) implemented in "
                     "the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: nlopt.LD_SLSQP,
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: f"{nlopt_doc}#slsqp",
-            },
-            "NLOPT_BOBYQA": {
-                self.ALGORITHM_NAME: "BOBYQA",
-                self.DESCRIPTION: (
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=nlopt.LD_SLSQP,
+                require_grad=True,
+                website=f"{nlopt_doc}#slsqp",
+            ),
+            "NLOPT_BOBYQA": NLoptAlgorithmDescription(
+                algorithm_name="BOBYQA",
+                description=(
                     "Bound Optimization BY Quadratic "
                     "Approximation (BOBYQA) implemented "
                     "in the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: nlopt.LN_BOBYQA,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: f"{nlopt_doc}#bobyqa",
-            },
-            "NLOPT_BFGS": {
-                self.ALGORITHM_NAME: "BFGS",
-                self.DESCRIPTION: (
+                internal_algo_name=nlopt.LN_BOBYQA,
+                website=f"{nlopt_doc}#bobyqa",
+            ),
+            "NLOPT_BFGS": NLoptAlgorithmDescription(
+                algorithm_name="BFGS",
+                description=(
                     "Broyden-Fletcher-Goldfarb-Shanno method "
                     "(BFGS) implemented in the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: nlopt.LD_LBFGS,
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: f"{nlopt_doc}#low-storage-bfgs",
-            },
+                internal_algo_name=nlopt.LD_LBFGS,
+                require_grad=True,
+                website=f"{nlopt_doc}#low-storage-bfgs",
+            ),
             # Does not work on Rastrigin => banned
             #             'NLOPT_ESCH': { Does not work on Rastrigin
             #                 self.INTERNAL_NAME: nlopt.GN_ESCH,
             #                 self.REQUIRE_GRAD: False,
             #                 self.HANDLE_EQ_CONS: False,
             #                 self.HANDLE_INEQ_CONS: False},
-            "NLOPT_NEWUOA": {
-                self.ALGORITHM_NAME: "NEWUOA",
-                self.DESCRIPTION: (
+            "NLOPT_NEWUOA": NLoptAlgorithmDescription(
+                algorithm_name="NEWUOA",
+                description=(
                     "NEWUOA + bound constraints implemented in the NLOPT library"
                 ),
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: nlopt.LN_NEWUOA_BOUND,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: f"{nlopt_doc}#newuoa-bound-constraints",
-            },
+                internal_algo_name=nlopt.LN_NEWUOA_BOUND,
+                website=f"{nlopt_doc}#newuoa-bound-constraints",
+            ),
             # Does not work on Rastrigin => banned
             #             'NLOPT_ISRES': {
             #                 self.INTERNAL_NAME: nlopt.GN_ISRES,
@@ -229,8 +216,6 @@ class Nlopt(OptimizationLibrary):
             #                 self.HANDLE_EQ_CONS: True,
             #                 self.HANDLE_INEQ_CONS: True}
         }
-        for key in self.lib_dict:
-            self.lib_dict[key][self.LIB] = self.__class__.__name__
 
     def _get_options(
         self,
@@ -348,7 +333,7 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.lib_dict[self.algo_name][self.REQUIRE_GRAD]:
+            if self.lib_dict[self.algo_name].require_grad:
                 if grad.size > 0:
                     cstr_jac = jac(xn_vect)
                     grad[:] = atleast_2d(cstr_jac)[

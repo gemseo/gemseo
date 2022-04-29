@@ -22,6 +22,7 @@
 from __future__ import unicode_literals
 
 import sys
+from dataclasses import dataclass
 from typing import Any
 from typing import Dict
 from typing import List
@@ -35,6 +36,7 @@ from da import p7core
 from numpy import ndarray
 
 from gemseo.algos.opt.core.pseven_problem_adapter import PSevenProblem
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -46,6 +48,14 @@ from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 from gemseo.utils.py23_compat import Path
+
+
+@dataclass
+class PSevenAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the NLopt library."""
+
+    lib: str = "NLopt"
+    website: str = "https://datadvance.net/product/pseven/manual/"
 
 
 class PSevenOpt(OptimizationLibrary):
@@ -94,122 +104,70 @@ class PSevenOpt(OptimizationLibrary):
     __SQ2P = "S2P"
     __LOCAL_METHODS = (__FD, __MOM, __NCG, __NLS, __POWELL, __QP, __SQP, __SQ2P)
 
-    __WEBSITE = "https://datadvance.net/product/pseven/manual/"
-
     def __init__(self):  # type: (...) -> None # noqa: D107
         super(PSevenOpt, self).__init__()
         self.lib_dict = {
-            "PSEVEN": {
-                self.ALGORITHM_NAME: "PSEVEN",
-                self.DESCRIPTION: "pSeven's Generic Tool for Optimization (GTOpt).",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: True,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "pSeven",
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_FD": {
-                self.ALGORITHM_NAME: "Feasible direction",
-                self.DESCRIPTION: "pSeven's feasible direction method.",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__FD,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_MOM": {
-                self.ALGORITHM_NAME: "MOM",
-                self.DESCRIPTION: "pSeven's method of multipliers.",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__MOM,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_NCG": {
-                self.ALGORITHM_NAME: "NCG",
-                self.DESCRIPTION: "pSeven's nonlinear conjugate gradient method.",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__NCG,
-                self.REQUIRE_GRAD: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_NLS": {
-                self.ALGORITHM_NAME: "NLS",
-                self.DESCRIPTION: "pSeven's nonlinear simplex method.",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.REQUIRE_GRAD: False,
-                self.INTERNAL_NAME: self.__NLS,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_POWELL": {
-                self.ALGORITHM_NAME: "POWELL",
-                self.DESCRIPTION: "pSeven's Powell conjugate direction method.",
-                self.HANDLE_EQ_CONS: False,
-                self.HANDLE_INEQ_CONS: False,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__POWELL,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_QP": {
-                self.ALGORITHM_NAME: "QP",
-                self.DESCRIPTION: "pSeven's quadratic programming method.",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__QP,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_SQP": {
-                self.ALGORITHM_NAME: "SQP",
-                self.DESCRIPTION: "pSeven's sequential quadratic programming method.",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__SQP,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
-            "PSEVEN_SQ2P": {
-                self.ALGORITHM_NAME: "SQ2P",
-                self.DESCRIPTION: (
+            "PSEVEN": PSevenAlgorithmDescription(
+                algorithm_name="PSEVEN",
+                description="pSeven's Generic Tool for Optimization (GTOpt).",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                handle_integer_variables=True,
+                internal_algo_name="pSeven",
+            ),
+            "PSEVEN_FD": PSevenAlgorithmDescription(
+                algorithm_name="Feasible direction",
+                description="pSeven's feasible direction method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=self.__FD,
+            ),
+            "PSEVEN_MOM": PSevenAlgorithmDescription(
+                algorithm_name="MOM",
+                description="pSeven's method of multipliers.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=self.__MOM,
+            ),
+            "PSEVEN_NCG": PSevenAlgorithmDescription(
+                algorithm_name="NCG",
+                description="pSeven's nonlinear conjugate gradient method.",
+                internal_algo_name=self.__NCG,
+            ),
+            "PSEVEN_NLS": PSevenAlgorithmDescription(
+                algorithm_name="NLS",
+                description="pSeven's nonlinear simplex method.",
+                internal_algo_name=self.__NLS,
+            ),
+            "PSEVEN_POWELL": PSevenAlgorithmDescription(
+                algorithm_name="POWELL",
+                description="pSeven's Powell conjugate direction method.",
+                internal_algo_name=self.__POWELL,
+            ),
+            "PSEVEN_QP": PSevenAlgorithmDescription(
+                algorithm_name="QP",
+                description="pSeven's quadratic programming method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=self.__QP,
+            ),
+            "PSEVEN_SQP": PSevenAlgorithmDescription(
+                algorithm_name="SQP",
+                description="pSeven's sequential quadratic programming method.",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=self.__SQP,
+            ),
+            "PSEVEN_SQ2P": PSevenAlgorithmDescription(
+                algorithm_name="SQ2P",
+                description=(
                     "pSeven's sequential quadratic constrained quadratic "
                     "programming method."
                 ),
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: self.__SQ2P,
-                self.POSITIVE_CONSTRAINTS: False,
-                self.REQUIRE_GRAD: False,
-                self.WEBSITE: self.__WEBSITE,
-            },
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name=self.__SQ2P,
+            ),
         }
 
     def _get_options(
@@ -391,7 +349,7 @@ class PSevenOpt(OptimizationLibrary):
     ):  # type: (...) -> None
         """Get the pSeven techniques from the options."""
         techniques_list = list()
-        internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
 
         if internal_algo_name in self.__LOCAL_METHODS:
             techniques_list.append(internal_algo_name)

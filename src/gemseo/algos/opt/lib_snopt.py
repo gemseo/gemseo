@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -48,6 +49,7 @@ from numpy import where
 from numpy import zeros
 from optimize.snopt7 import SNOPT_solver
 
+from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
 
@@ -63,6 +65,13 @@ SnOptPreprocessType = Tuple[
     ndarray,
     int,
 ]
+
+
+@dataclass
+class SNOPTAlgorithmDescription(OptimizationAlgorithmDescription):
+    """The description of an optimization algorithm from the SNOPT library."""
+
+    lib: str = "SNOPT"
 
 
 class SnOpt(OptimizationLibrary):
@@ -125,17 +134,15 @@ class SnOpt(OptimizationLibrary):
         self.__n_ineq_constraints = 0
         self.__n_eq_constraints = 0
         self.lib_dict = {
-            "SNOPTB": {
-                self.ALGORITHM_NAME: "SNOPT",
-                self.DESCRIPTION: "Sparse Nonlinear OPTimizer (SNOPT)",
-                self.HANDLE_EQ_CONS: True,
-                self.HANDLE_INEQ_CONS: True,
-                self.HANDLE_INTEGER_VARIABLES: False,
-                self.HANDLE_MULTIOBJECTIVE: False,
-                self.INTERNAL_NAME: "SNOPTB",
-                self.REQUIRE_GRAD: True,
-                self.WEBSITE: "https://ccom.ucsd.edu/~optimizers",
-            }
+            "SNOPTB": SNOPTAlgorithmDescription(
+                algorithm_name="SNOPT",
+                description="Sparse Nonlinear OPTimizer (SNOPT)",
+                handle_equality_constraints=True,
+                handle_inequality_constraints=True,
+                internal_algo_name="SNOPTB",
+                require_grad=True,
+                website="https://ccom.ucsd.edu/~optimizers",
+            )
         }
 
     def _get_options(

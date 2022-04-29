@@ -23,23 +23,45 @@ from __future__ import annotations
 
 import inspect
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import List
 from typing import Mapping
 from typing import MutableMapping
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
+    """The description of an algorithm."""
+
+    algorithm_name: str
+    """The name of the algorithm in |g|."""
+
+    internal_algo_name: str
+    """The name of the algorithm in the wrapped library."""
+
+    lib: str = ""
+    """The name of the wrapped library."""
+
+    description: str = ""
+    """A description of the algorithm."""
+
+    website: str = ""
+    """The website of the wrapped library or algorithm."""
 
 
 class AlgoLib(object):
@@ -55,26 +77,31 @@ class AlgoLib(object):
     To integrate an optimization package, inherit from this class
     and put your module in gemseo.algos.doe or gemseo.algo.opt,
     or gemseo.algos.linear_solver packages.
-
-    Attributes:
-        lib_dict (Dict[str, Dict[str, Union[str, bool]]]): The properties
-            of the algorithm in terms
-            of requirements on the properties of the problem to
-            be solved.
-        algo_name (str): The name of the algorithm used currently.
-        internal_algo_name (str): The name of the algorithm used currently
-            as defined in the used library.
-        problem (Any): The problem to be solved.
     """
 
-    LIB = "lib"
-    INTERNAL_NAME = "internal_algo_name"
-    OPTIONS_DIR = "options"
-    OPTIONS_MAP = {}
-    PROBLEM_TYPE = "problem_type"
+    lib_dict: dict[str, AlgorithmDescription]
+    """The description of the algorithms contained in the library."""
 
-    ALGORITHM_NAME: Final[str] = "algorithm_name"
-    """The label for the name of an algorithm."""
+    algo_name: str | None
+    """The name of the algorithm used currently."""
+
+    internal_algo_name: str | None
+    """The internal name of the algorithm used currently.
+
+    It typically corresponds to the name of the algorithm in the wrapped library if any.
+    """
+
+    problem: Any | None
+    """The problem to be solved."""
+
+    opt_grammar: JSONGrammar | None
+    """The grammar defining the options of the current algorithm."""
+
+    OPTIONS_DIR: Final[str] = "options"
+    """The name of the directory containing the files of the grammars of the options."""
+
+    OPTIONS_MAP: dict[str, str] = {}
+    """The names of the options in |g| mapping to those in the wrapped library."""
 
     LIBRARY_NAME: ClassVar[str | None] = None
     """The name of the interfaced library."""
@@ -271,7 +298,7 @@ class AlgoLib(object):
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name][self.INTERNAL_NAME]
+        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
         problem.check()
 
         self._pre_run(problem, self.algo_name, **options)
@@ -343,11 +370,8 @@ class AlgoLib(object):
             )
 
         # Check that the algorithm is suited to the problem
-        algo_dict = self.lib_dict[self.algo_name]
-        if not self.is_algorithm_suited(algo_dict, problem):
-            raise ValueError(
-                "Algorithm {} is not adapted to the problem.".format(algo_name)
-            )
+        if not self.is_algorithm_suited(self.lib_dict[self.algo_name], problem):
+            raise ValueError(f"Algorithm {algo_name} is not adapted to the problem.")
 
     @staticmethod
     def is_algorithm_suited(
