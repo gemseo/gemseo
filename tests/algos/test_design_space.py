@@ -162,7 +162,7 @@ def test_add_variable_with_upper_bounds_lower_than_lower_ones(design_space):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The bounds of variable 'varname'[1] are not valid: [0.]!<[1.]."
+            "The bounds of variable 'varname'[1] are not valid: [1.]!<[0.]."
         ),
     ):
         design_space.add_variable(
@@ -640,9 +640,9 @@ def test_current_x():
 
     with pytest.raises(
         ValueError,
-        match=re.escape("The bounds of variable 'error'[0] are not valid: [0.]!<[1.]."),
+        match=re.escape("The bounds of variable 'error'[0] are not valid: [1.]!<[0.]."),
     ):
-        design_space.add_variable("error", l_b=1.0, u_b=0)
+        design_space.add_variable("error", l_b=1.0, u_b=0.0)
 
     design_space = DesignSpace()
     design_space.add_variable(

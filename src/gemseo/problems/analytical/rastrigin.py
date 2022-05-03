@@ -31,7 +31,7 @@ from cmath import pi
 from cmath import sin
 
 from numpy import array
-from numpy import ones
+from numpy import full
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
@@ -81,7 +81,7 @@ class Rastrigin(OptimizationProblem):
         """
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
-        design_space.set_current_x(0.01 * ones(2))
+        design_space.set_current_x(full(2, 0.01))
         super(Rastrigin, self).__init__(design_space)
         expr = "20 + sum(x[i]**2 - 10*cos(2pi*x[i]))"
         self.objective = MDOFunction(

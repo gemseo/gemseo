@@ -49,7 +49,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from numpy import ones
+from numpy import full
 from numpy import where
 from numpy import zeros
 
@@ -89,10 +89,7 @@ class ScalableModel(object):
         :return: default inputs.
         :rtype: dict
         """
-        default_inputs = {}
-        for name in self.inputs_names:
-            default_inputs[name] = 0.5 * ones(self.sizes[name])
-        return default_inputs
+        return {name: full(self.sizes[name], 0.5) for name in self.inputs_names}
 
     def scalable_function(self, input_value=None):
         """Evaluate the scalable function.

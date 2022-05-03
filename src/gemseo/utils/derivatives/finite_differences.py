@@ -32,8 +32,8 @@ from typing import Union
 
 from numpy import argmax
 from numpy import finfo
+from numpy import full
 from numpy import ndarray
-from numpy import ones
 from numpy import tile
 from numpy import where
 from numpy import zeros
@@ -98,7 +98,7 @@ class FirstOrderFD(GradientApproximator):
             step = self.step
 
         if not isinstance(step, ndarray):
-            step *= ones(n_perturbations)
+            step = full(n_perturbations, step)
 
         def func_noargs(
             f_input_values,  # type: ndarray
@@ -145,7 +145,7 @@ class FirstOrderFD(GradientApproximator):
             step = self.step
 
         if not isinstance(step, ndarray):
-            step *= ones(n_perturbations)
+            step = full(n_perturbations, step)
 
         gradient = []
         initial_output = self.f_pointer(input_values, **kwargs)
@@ -237,7 +237,7 @@ class FirstOrderFD(GradientApproximator):
         n_dim = len(x_vect)
         x_p_arr, _ = self.generate_perturbations(n_dim, x_vect)
         x_m_arr, _ = self.generate_perturbations(n_dim, x_vect, step=-self.step)
-        opt_steps = self.step * ones(n_dim)
+        opt_steps = full(n_dim, self.step)
         errors = zeros(n_dim)
         comp_step = self._get_opt_step
         if self._parallel:

@@ -53,6 +53,7 @@ import os
 from copy import deepcopy
 
 from numpy import array
+from numpy import full
 from numpy import ones
 from numpy import random
 from numpy import where
@@ -344,20 +345,31 @@ class ScalableProblem(object):
         :param str formulation: MDO formulation (default: 'DisciplinaryOpt')
         """
         design_space = create_design_space()
-        for varname in self.design_variables:
-            size = self.scaled_sizes[varname]
-            l_b = zeros(size)
-            u_b = ones(size)
-            value = 0.5 + zeros(size)
-            design_space.add_variable(varname, size, "float", l_b, u_b, value)
+        for name in self.design_variables:
+            size = self.scaled_sizes[name]
+            design_space.add_variable(
+                name,
+                size=size,
+                var_type="float",
+                l_b=zeros(size),
+                u_b=ones(size),
+                value=full(size, 0.5),
+            )
+
         if formulation == "IDF":
             coupling_structure = MDOCouplingStructure(disciplines)
             all_couplings = set(coupling_structure.get_all_couplings())
-            for varname in all_couplings:
-                size = self.scaled_sizes[varname]
+            for name in all_couplings:
+                size = self.scaled_sizes[name]
                 design_space.add_variable(
-                    varname, size, "float", zeros(size), ones(size), 0.5 + zeros(size)
+                    name,
+                    size=size,
+                    var_type="float",
+                    l_b=zeros(size),
+                    u_b=ones(size),
+                    value=full(size, 0.5),
                 )
+
         return design_space
 
     def __get_equilibrium(self, mda_name="MDAJacobi", **options):

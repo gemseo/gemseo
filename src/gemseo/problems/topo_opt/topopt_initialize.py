@@ -25,6 +25,7 @@ from numpy import arange
 from numpy import concatenate
 from numpy import dot
 from numpy import fix
+from numpy import full
 from numpy import kron
 from numpy import logical_and
 from numpy import ones
@@ -136,7 +137,7 @@ def initialize_design_space_and_discipline_to(
     else:
         msg = "The examples covered by this function are MBB, L-Shape and Short_Cantilever."
         raise NotImplementedError(msg)
-    initial_point = vf0 * ones((n_x * n_y,))
+    initial_point = full((n_x * n_y,), vf0)
     initial_point[emptyelts] = 0
     initial_point[fullelts] = 1
     ds = DesignSpace()
