@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -23,9 +22,6 @@
 Create a discipline from an external executable
 ===============================================
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import os
 import subprocess
 
@@ -93,7 +89,7 @@ def write_file(data, file_path):
 
 class ShellExecutableDiscipline(MDODiscipline):
     def __init__(self):
-        super(ShellExecutableDiscipline, self).__init__("ShellDisc")
+        super().__init__("ShellDisc")
         self.input_grammar.initialize_from_data_names(["a", "b"])
         self.output_grammar.initialize_from_data_names(["c"])
         self.default_inputs = {"a": array([1.0]), "b": array([2.0])}

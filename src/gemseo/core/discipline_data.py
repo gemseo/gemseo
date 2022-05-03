@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -16,15 +15,14 @@
 # Contributors:
 # Antoine DECHAUME
 """Provide a dict-like class for storing disciplines data."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
+from collections import abc
 from typing import Any
+from typing import Generator
 from typing import MutableMapping
 
 import pandas as pd
-
-from gemseo.utils.py23_compat import abc
 
 
 class DisciplineData(abc.MutableMapping):
@@ -109,23 +107,19 @@ class DisciplineData(abc.MutableMapping):
     """The character used to separate the shared dict key from the column of a
     pandas DataFrame."""
 
-    def __init__(
-        self, data  # type: MutableMapping[str, Any]
-    ):  # type (...) -> None
+    def __init__(self, data: MutableMapping[str, Any]) -> None:
         """
         Args:
             data: A dict-like object or a :class:`DisciplineData` object.
         """
         if isinstance(data, self.__class__):
             # By construction, data's keys shall have been already checked.
-            self.__data = getattr(data, "_{}__data".format(self.__class__.__name__))
+            self.__data = getattr(data, f"_{self.__class__.__name__}__data")
         else:
             self.__data = data
             self.__check_keys(*data)
 
-    def __getitem__(
-        self, key  # type: str
-    ):  # type (...) -> Any
+    def __getitem__(self, key: str) -> Any:
         if key in self.__data:
             value = self.__data[key]
             if isinstance(value, MutableMapping):
@@ -141,9 +135,9 @@ class DisciplineData(abc.MutableMapping):
 
     def __setitem__(
         self,
-        key,  # type: str
-        value,  # type: Any
-    ):  # type (...) -> None
+        key: str,
+        value: Any,
+    ) -> None:
         if self.SEPARATOR not in key:
             self.__data[key] = value
             return
@@ -165,9 +159,7 @@ class DisciplineData(abc.MutableMapping):
 
         self.__data[df_key][column] = value
 
-    def __delitem__(
-        self, key  # type: str
-    ):  # type (...) -> None
+    def __delitem__(self, key: str) -> None:
         if key in self.__data:
             del self.__data[key]
         elif self.SEPARATOR in key:
@@ -176,7 +168,7 @@ class DisciplineData(abc.MutableMapping):
         else:
             raise KeyError(key)
 
-    def __iter__(self):  # type (...) -> Generator[str, None, None]
+    def __iter__(self) -> Generator[str, None, None]:
         for key, value in self.__data.items():
             if isinstance(value, pd.DataFrame):
                 prefix = key + self.SEPARATOR
@@ -185,7 +177,7 @@ class DisciplineData(abc.MutableMapping):
             else:
                 yield key
 
-    def __len__(self):  # type (...) -> int
+    def __len__(self) -> int:
         length = 0
         for value in self.__data.values():
             if isinstance(value, pd.DataFrame):
@@ -194,10 +186,10 @@ class DisciplineData(abc.MutableMapping):
                 length += 1
         return length
 
-    def __repr__(self):  # type (...) -> str
+    def __repr__(self) -> str:
         return repr(self.__data)
 
-    def copy(self):  # type (...) -> DisciplineData
+    def copy(self) -> DisciplineData:
         """Create a shallow copy.
 
         Returns:
@@ -205,9 +197,7 @@ class DisciplineData(abc.MutableMapping):
         """
         return self.__class__(self.__data.copy())
 
-    def __check_keys(
-        self, *keys  # type: str
-    ):  # type (...) -> None
+    def __check_keys(self, *keys: str) -> None:
         """Verify that keys do not contain the separator.
 
         Args:
@@ -218,5 +208,5 @@ class DisciplineData(abc.MutableMapping):
         """
         for key in keys:
             if self.SEPARATOR in key:
-                msg = "{} shall not contain {}".format(key, self.SEPARATOR)
+                msg = f"{key} shall not contain {self.SEPARATOR}"
                 raise KeyError(msg)

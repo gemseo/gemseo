@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 Decorators to lock and protect critical code sections
 *****************************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import functools
 

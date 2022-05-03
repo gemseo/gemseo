@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,7 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted normal distribution."""
-from typing import Tuple
+from __future__ import annotations
 
 import openturns as ot
 from numpy import array
@@ -46,27 +45,26 @@ class NormalToleranceInterval(ToleranceInterval):
 
     def __init__(
         self,
-        size,  # type: int
-        mean,  # type: float
-        std,  # type: float
-    ):  # type:(...) -> None
-        # noqa: D205 D212 D415
-        """
+        size: int,
+        mean: float,
+        std: float,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             mean: The estimation of the mean of the normal distribution.
             std: The estimation of the standard deviation of the normal distribution.
         """
-        super(NormalToleranceInterval, self).__init__(size)
+        super().__init__(size)
         self.__mean = mean
         self.__std = std
 
     def _compute(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-        side,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Tuple[ndarray,ndarray]
+        coverage: float,
+        alpha: float,
+        size: int,
+        side: ToleranceIntervalSide,
+    ) -> tuple[ndarray, ndarray]:
         if side in [
             ToleranceIntervalSide.UPPER,
             ToleranceIntervalSide.LOWER,

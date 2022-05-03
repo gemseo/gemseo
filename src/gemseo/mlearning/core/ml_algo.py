@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -94,21 +93,19 @@ to be carefully tuned in order to maximize the generalization power of the model
    :mod:`~gemseo.mlearning.core.calibration`
    :mod:`~gemseo.mlearning.core.selection`
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
-from typing import Dict
 from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-import six
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
@@ -116,8 +113,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.mlearning.transform.transformer import TransformerFactory
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import xrange
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_repr
 
@@ -163,10 +158,10 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             data: The learning dataset.
@@ -198,7 +193,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         self.algo = None
         self.sizes = deepcopy(self.learning_set.sizes)
         self._trained = False
-        self._learning_samples_indices = xrange(len(self.learning_set))
+        self._learning_samples_indices = range(len(self.learning_set))
         transformer_keys = set(self.transformer)
         for group in self.learning_set.groups:
             names = self.learning_set.get_names(group)
@@ -211,15 +206,15 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def __create_transformer(
-        transformer,  # type: TransformerType
-    ):  # type: (...) -> Transformer
+        transformer: TransformerType,
+    ) -> Transformer:
         if isinstance(transformer, Transformer):
             return transformer.duplicate()
 
         if isinstance(transformer, tuple):
             return TransformerFactory().create(transformer[0], **transformer[1])
 
-        if isinstance(transformer, six.string_types):
+        if isinstance(transformer, str):
             return TransformerFactory().create(transformer)
 
         raise ValueError(
@@ -229,27 +224,27 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
             "or str."
         )
 
-    class DataFormatters(object):
+    class DataFormatters:
         """Decorators for the internal MLAlgo methods.
 
         :noindex:
         """
 
     @property
-    def is_trained(self):  # type: (...) -> bool
+    def is_trained(self) -> bool:
         """Return whether the algorithm is trained."""
         return self._trained
 
     @property
-    def learning_samples_indices(self):  # type: (...) -> Sequence[int]
+    def learning_samples_indices(self) -> Sequence[int]:
         """The indices of the learning samples used for the training."""
         return self._learning_samples_indices
 
     def learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        fit_transformers=True,  # type: bool
-    ):  # type: (...) -> None
+        samples: Sequence[int] | None = None,
+        fit_transformers: bool = True,
+    ) -> None:
         """Train the machine learning algorithm from the learning dataset.
 
         Args:
@@ -264,9 +259,9 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-        fit_transformers,  # type: bool
-    ):  # type: (...) -> None
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         """Define the indices of the learning samples.
 
         Args:
@@ -276,7 +271,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
         msg.indent()
@@ -290,10 +285,10 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def save(
         self,
-        directory=None,  # type: Optional[str]
-        path=".",  # type: Union[str,Path]
-        save_learning_set=False,  # type: bool
-    ):  # type: (...) -> str
+        directory: str | None = None,
+        path: str | Path = ".",
+        save_learning_set: bool = False,
+    ) -> str:
         """Save the machine learning algorithm.
 
         Args:
@@ -326,8 +321,8 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def _save_algo(
         self,
-        directory,  # type: Path
-    ):  # type: (...) -> None
+        directory: Path,
+    ) -> None:
         """Save the interfaced machine learning algorithm.
 
         Args:
@@ -339,8 +334,8 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
 
     def load_algo(
         self,
-        directory,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        directory: str | Path,
+    ) -> None:
         """Load a machine learning algorithm from a directory.
 
         Args:
@@ -350,7 +345,7 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         with (Path(directory) / "algo.pkl").open("rb") as handle:
             self.algo = pickle.load(handle)
 
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
         """Return the objects to save.
 
         Returns:

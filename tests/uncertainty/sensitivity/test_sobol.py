@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from os import remove
 
 import pytest
@@ -58,9 +54,9 @@ def test_sobol(tmp_path):
     sobol.main_method = "total"
     assert sobol.main_method == sobol._TOTAL_METHOD
     assert sobol.main_indices == total_order
-    assert set(["y"]) == set(first_order.keys())
+    assert {"y"} == set(first_order.keys())
     assert len(first_order["y"]) == 1
-    assert set(["y"]) == set(total_order.keys())
+    assert {"y"} == set(total_order.keys())
     assert len(total_order["y"]) == 1
     for name in varnames:
         assert len(first_order["y"][0][name]) == 1
@@ -73,7 +69,7 @@ def test_sobol(tmp_path):
         sobol.compute_indices(algo="foo")
 
     intervals = sobol.get_intervals()
-    assert set(["y"]) == set(intervals.keys())
+    assert {"y"} == set(intervals.keys())
     assert len(intervals["y"]) == 1
     for name in varnames:
         assert intervals["y"][0][name].shape == (2,)
@@ -117,8 +113,8 @@ def test_sobol_outputs(tmp_path):
 
     sobol = SobolAnalysis(discipline, space, 100)
     sobol.compute_indices()
-    assert set(["y1", "y2"]) == set(sobol.main_indices.keys())
+    assert {"y1", "y2"} == set(sobol.main_indices.keys())
 
     sobol = SobolAnalysis(discipline, space, 100)
     sobol.compute_indices("y1")
-    assert set(["y1"]) == set(sobol.main_indices.keys())
+    assert {"y1"} == set(sobol.main_indices.keys())

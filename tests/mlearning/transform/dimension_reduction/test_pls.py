@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,9 +19,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test partial least square regression."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import Tuple
 
 import pytest
@@ -36,7 +32,7 @@ N_FEATURES = 8
 
 
 @pytest.fixture
-def data():  # type: (...) -> Tuple[ndarray,ndarray]
+def data() -> Tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = rand(N_SAMPLES, N_FEATURES)
     output_data = npsum(input_data, 1)[:, None]

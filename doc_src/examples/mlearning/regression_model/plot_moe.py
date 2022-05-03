@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,9 +25,6 @@ Mixture of experts
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
@@ -108,7 +104,7 @@ for value in [input_value, another_input_value]:
     print("Prediction:", model.predict(value))
     print("Local model predictions:")
     for cls in range(model.n_clusters):
-        print("Local model {}: {}".format(cls, model.predict_local_model(value, cls)))
+        print(f"Local model {cls}: {model.predict_local_model(value, cls)}")
     print()
 
 ##############################################################################
@@ -178,5 +174,5 @@ for i in range(model.n_clusters):
         )
     )
     plt.colorbar()
-    plt.title("Local model {}".format(i))
+    plt.title(f"Local model {i}")
     plt.show()

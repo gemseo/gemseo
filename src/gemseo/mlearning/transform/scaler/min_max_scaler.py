@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -35,8 +34,7 @@ In the MinMax scaling method,
 the scaling operation linearly transforms the original variable :math:`z`
 such that the minimum of the original data corresponds to 0 and the maximum to 1.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import ndarray
 
@@ -49,23 +47,23 @@ class MinMaxScaler(Scaler):
 
     def __init__(
         self,
-        name="MinMaxScaler",  # type: str
-        offset=0.0,  # type: float
-        coefficient=1.0,  # type: float
-    ):  # type:(...) -> None
+        name: str = "MinMaxScaler",
+        offset: float = 0.0,
+        coefficient: float = 1.0,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
         """
-        super(MinMaxScaler, self).__init__(name, offset, coefficient)
+        super().__init__(name, offset, coefficient)
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         l_b = data.min(0)
         u_b = data.max(0)
         self.offset = -l_b / (u_b - l_b)

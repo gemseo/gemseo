@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +16,8 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization volume fraction."""
-from typing import Optional
+from __future__ import annotations
+
 from typing import Sequence
 
 from numpy import array
@@ -39,12 +39,12 @@ class VolumeFraction(MDODiscipline):
 
     def __init__(
         self,
-        n_x=100,  # type: int
-        n_y=100,  # type: int
-        empty_elements=None,  # type: Optional[Sequence[int]]
-        full_elements=None,  # type: Optional[Sequence[int]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None # noqa: D205,D212,D415
+        n_x: int = 100,
+        n_y: int = 100,
+        empty_elements: Sequence[int] | None = None,
+        full_elements: Sequence[int] | None = None,
+        name: str | None = None,
+    ) -> None:  # noqa: D205,D212,D415
         """
         Args:
             n_x: The number of elements in the x-direction.
@@ -56,14 +56,14 @@ class VolumeFraction(MDODiscipline):
             name: The name of the discipline.
                 If None, use the class name.
         """
-        super(VolumeFraction, self).__init__(name=name)
+        super().__init__(name=name)
         self.n_x = n_x
         self.n_y = n_y
         self.input_grammar.initialize_from_data_names(["rho"])
         self.output_grammar.initialize_from_data_names(["volume fraction"])
-        self.default_inputs = {"rho": ones((n_x * n_y))}
+        self.default_inputs = {"rho": ones(n_x * n_y)}
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         rho = self.get_inputs_by_name("rho")
         self.local_data["volume fraction"] = array([mean(rho.ravel())])
         self._is_linearized = True

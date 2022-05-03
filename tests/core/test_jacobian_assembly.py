@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import json
 import os
 import unittest
@@ -103,7 +99,7 @@ class TestJacobianAssembly(unittest.TestCase):
     @staticmethod
     def __compare_mda_jac_ref(comp_jac):
         """Compare a given Jacobian with reference Jacobian in file."""
-        with open(os.path.join(DIRNAME, "mda_grad_sob.json"), "r") as inf:
+        with open(os.path.join(DIRNAME, "mda_grad_sob.json")) as inf:
             refjac = json.load(inf)
             for ykey, jac_dict in refjac.items():
                 if ykey not in comp_jac:

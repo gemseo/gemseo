@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory to create disciplines."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
 from os.path import dirname
@@ -32,7 +30,7 @@ from gemseo.core.factory import Factory
 from gemseo.core.json_grammar import JSONGrammar
 
 
-class DisciplinesFactory(object):
+class DisciplinesFactory:
     """The **DisciplinesFactory** is used to create :class:`.MDODiscipline` objects.
 
     Three types of directories are scanned

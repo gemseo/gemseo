@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +18,11 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """HDF5 file singleton used by the HDF5 cache."""
+from __future__ import annotations
+
 from genericpath import exists
+from pathlib import Path
 from typing import ClassVar
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 import h5py
 from numpy import append
@@ -31,22 +30,16 @@ from numpy import bytes_
 from numpy import ndarray
 from numpy import unicode_
 from numpy.core.multiarray import array
-from six import PY2
-from six import with_metaclass
 
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import Data
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import long
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import string_array
-from gemseo.utils.py23_compat import string_dtype
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 
-class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
+class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     """Singleton to access a HDF file.
 
     Used for multithreaded/multiprocessing access with a lock.
@@ -74,8 +67,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def __init__(
         self,
-        hdf_file_path,  # type: str
-    ):  # type: (...) -> None
+        hdf_file_path: str,
+    ) -> None:
         """
         Args:
             hdf_file_path: The path to the HDF file.
@@ -87,12 +80,12 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def write_data(
         self,
-        data,  # type: Data
-        group,  # type: str
-        index,  # type: int
-        hdf_node_path,  # type: str
-        h5_open_file=None,  # type: Optional[h5py.File]
-    ):  # type: (...) -> None
+        data: Data,
+        group: str,
+        index: int,
+        hdf_node_path: str,
+        h5_open_file: h5py.File | None = None,
+    ) -> None:
         """Cache input data to avoid re-evaluation.
 
         Args:
@@ -123,19 +116,19 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         try:
             # Write hash if needed
             if entry.get(self.HASH_TAG) is None:
-                data_hash = string_array([hash_data_dict(data)])
+                data_hash = array([hash_data_dict(data)], dtype="bytes")
                 entry.create_dataset(self.HASH_TAG, data=data_hash)
 
             for name, value in data.items():
                 value = data.get(name)
                 if value is not None:
                     if value.dtype.type is unicode_:
-                        group.create_dataset(name, data=data.astype(string_dtype))
+                        group.create_dataset(name, data=data.astype("bytes"))
                     else:
                         group.create_dataset(name, data=to_real(value))
 
         # IOError and RuntimeError are for python 2.7
-        except (RuntimeError, IOError, ValueError):
+        except (RuntimeError, OSError, ValueError):
             h5_file.close()
             raise RuntimeError(
                 "Failed to cache dataset %s.%s.%s in file: %s",
@@ -150,11 +143,11 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def read_data(
         self,
-        index,  # type: int
-        group,  # type: str
-        hdf_node_path,  # type: str
-        h5_open_file=None,  # type: Optional[h5py.File]
-    ):  # type: (...) -> Union[Optional[Data],Optional[int]]
+        index: int,
+        group: str,
+        hdf_node_path: str,
+        h5_open_file: h5py.File | None = None,
+    ) -> Data | None | int | None:
         """Read the data for given index and group.
 
         Args:
@@ -183,17 +176,12 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         data = {key: array(val) for key, val in entry[group].items()}
         if group == self._INPUTS_GROUP:
             hash_ = entry[self.HASH_TAG]
-            hash_ = long(array(hash_)[0])
+            hash_ = int(array(hash_)[0])
         else:
             hash_ = None
 
         if h5_open_file is None:
             h5_file.close()
-        ##########################################
-        # Python  key.encode("ascii")
-        ##########################################
-        if PY2:
-            data = {name.encode("ascii"): value for name, value in data.items()}
 
         for name, value in data.items():
             if value.dtype.type is bytes_:
@@ -203,11 +191,11 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     @staticmethod
     def _has_group(
-        index,  # type: int
-        group,  # type: str
-        hdf_node_path,  # type: str
-        h5_open_file,  # type: h5py.File
-    ):  # type: (...) -> bool
+        index: int,
+        group: str,
+        hdf_node_path: str,
+        h5_open_file: h5py.File,
+    ) -> bool:
         """
         Args:
             hdf_node_path: The name of the HDF group where the entries are stored.
@@ -226,10 +214,10 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def has_group(
         self,
-        index,  # type: int
-        group,  # type: str
-        hdf_node_path,  # type: str
-    ):  # type: (...) -> bool
+        index: int,
+        group: str,
+        hdf_node_path: str,
+    ) -> bool:
         """Check if an entry has data corresponding to a given group.
 
         Args:
@@ -245,9 +233,9 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def read_hashes(
         self,
-        hashes_to_indices,  # type: Dict[str,ndarray]
-        hdf_node_path,  # type: str
-    ):  # type: (...) -> int
+        hashes_to_indices: dict[str, ndarray],
+        hdf_node_path: str,
+    ) -> int:
         """Read the hashes in the HDF file.
 
         Args:
@@ -271,7 +259,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
             for index, entry in root.items():
                 index = int(index)
-                hash_ = long(array(entry[self.HASH_TAG])[0])
+                hash_ = int(array(entry[self.HASH_TAG])[0])
                 indices = hashes_to_indices.get(hash_)
 
                 if indices is None:
@@ -285,8 +273,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
 
     def clear(
         self,
-        hdf_node_path,  # type: str
-    ):  # type: (...) -> None
+        hdf_node_path: str,
+    ) -> None:
         """
         Args:
             hdf_node_path: The name of the HDF group to clear.
@@ -294,7 +282,7 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
         with h5py.File(self.hdf_file_path, "a") as h5file:
             del h5file[hdf_node_path]
 
-    def __check_file_format_version(self):  # type: (...) -> None
+    def __check_file_format_version(self) -> None:
         """Make sure the file can be handled.
 
         Raises
@@ -333,8 +321,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     @classmethod
     def __set_file_format_version(
         cls,
-        h5_file,  # type: h5py.File
-    ):  # type: (...) -> None
+        h5_file: h5py.File,
+    ) -> None:
         """Change the version of an HDF5 file to :attr:`.FILE_FORMAT_VERSION`.
 
         Args:
@@ -345,8 +333,8 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
     @classmethod
     def update_file_format(
         cls,
-        hdf_file_path,  # type: Union[str, Path]
-    ):  # type: (...) -> None
+        hdf_file_path: str | Path,
+    ) -> None:
         """Update the format of a HDF5 file.
 
         |g| 3.2.0 added a :attr:`.HDF5FileSingleton.FILE_FORMAT_VERSION`
@@ -367,5 +355,5 @@ class HDF5FileSingleton(with_metaclass(SingleInstancePerFileAttribute, object)):
                 for sample_value in value.values():
                     data = sample_value[cls._INPUTS_GROUP]
                     data = {key: array(val) for key, val in data.items()}
-                    data_hash = string_array([hash_data_dict(data)])
+                    data_hash = array([hash_data_dict(data)], dtype="bytes")
                     sample_value[cls.HASH_TAG][0] = data_hash

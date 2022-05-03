@@ -22,10 +22,7 @@ from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Tuple
-from typing import Union
 
 import requests
 import sphinx.ext.autodoc.typehints
@@ -149,7 +146,7 @@ master_doc = "contents"
 # General information about the project.
 project = "GEMSEO"
 
-copyright = "{}, IRT Saint Exupéry".format(datetime.datetime.now().year)
+copyright = f"{datetime.datetime.now().year}, IRT Saint Exupéry"
 
 release = version("gemseo")
 version = release
@@ -204,7 +201,7 @@ if "PLANTUML_DIR" in os.environ:
 else:
     plantuml_dir = "/opt/plantuml/"
 
-plantuml = "java -jar {}/plantuml.jar".format(plantuml_dir)
+plantuml = f"java -jar {plantuml_dir}/plantuml.jar"
 plantuml_output_format = "png"
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
@@ -236,8 +233,8 @@ html_context = dict()
 
 
 def __filter_versions(
-    rtd_versions,  # type: Iterable[Mapping[str,Union[str,Mapping[str,str]]]]
-):  # type: (...) -> List[Tuple[str,str]]
+    rtd_versions: Iterable[Mapping[str, str | Mapping[str, str]]],
+) -> list[tuple[str, str]]:
     """Select the active versions with a version number.
 
     A version number follows the semantic versioning: MAJOR.MINOR.PATCH.

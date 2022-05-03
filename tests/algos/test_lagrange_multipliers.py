@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,10 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -30,7 +27,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.derivatives_approx import comp_best_step
-from gemseo.utils.py23_compat import Path
 from numpy import array
 
 
@@ -49,7 +45,7 @@ NLOPT_OPTIONS = {
 
 
 @pytest.fixture
-def problem():  # type: (...) -> Power2
+def problem() -> Power2:
     """The Power2 optimization problem."""
     return Power2()
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,18 +20,13 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A discipline running a scenario."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import copy
 from copy import deepcopy
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 
 from numpy import atleast_1d
 from numpy import zeros
@@ -79,19 +73,18 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def __init__(
         self,
-        scenario,  # type: Scenario
-        inputs_list,  # type: Sequence[str]
-        outputs_list,  # type: Sequence[str]
-        reset_x0_before_opt=False,  # type: bool
-        set_x0_before_opt=False,  # type: bool
-        set_bounds_before_opt=False,  # type: bool
-        cache_type=MDODiscipline.SIMPLE_CACHE,  # type: str
-        output_multipliers=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        scenario: Scenario,
+        inputs_list: Sequence[str],
+        outputs_list: Sequence[str],
+        reset_x0_before_opt: bool = False,
+        set_x0_before_opt: bool = False,
+        set_bounds_before_opt: bool = False,
+        cache_type: str = MDODiscipline.SIMPLE_CACHE,
+        output_multipliers: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        name: str | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             scenario: The scenario to adapt.
             inputs_list: The inputs to overload at sub-scenario execution.
@@ -121,10 +114,8 @@ class MDOScenarioAdapter(MDODiscipline):
         self._outputs_list = outputs_list
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
-        name = name or "{}_adapter".format(scenario.name)
-        super(MDOScenarioAdapter, self).__init__(
-            name, cache_type=cache_type, grammar_type=grammar_type
-        )
+        name = name or f"{scenario.name}_adapter"
+        super().__init__(name, cache_type=cache_type, grammar_type=grammar_type)
 
         self._update_grammars()
         self._dv_in_names = None
@@ -158,7 +149,7 @@ class MDOScenarioAdapter(MDODiscipline):
 
         self.post_optimal_analysis = None
 
-    def _update_grammars(self):  # type: (...) -> None
+    def _update_grammars(self) -> None:
         """Update the input and output grammars.
 
         Raises:
@@ -226,7 +217,7 @@ class MDOScenarioAdapter(MDODiscipline):
         if self._output_multipliers:
             self._add_output_multipliers()
 
-    def _add_output_multipliers(self):  # type: (...) -> None
+    def _add_output_multipliers(self) -> None:
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
         base_dict = dict()
@@ -260,9 +251,9 @@ class MDOScenarioAdapter(MDODiscipline):
 
     @staticmethod
     def get_bnd_mult_name(
-        variable_name,  # type: str
-        is_upper,  # type:bool
-    ):  # type: (...) -> str
+        variable_name: str,
+        is_upper: bool,
+    ) -> str:
         """Return the name of the lower bound-constraint multiplier of a variable.
 
         Args:
@@ -280,8 +271,8 @@ class MDOScenarioAdapter(MDODiscipline):
 
     @staticmethod
     def get_cstr_mult_name(
-        constraint_name,  # type: str
-    ):  # type: (...) ->str
+        constraint_name: str,
+    ) -> str:
         """Return the name of the multiplier of a constraint.
 
         Args:
@@ -292,12 +283,12 @@ class MDOScenarioAdapter(MDODiscipline):
         """
         return constraint_name + MDOScenarioAdapter.MULTIPLIER_SUFFIX
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         self._pre_run()
         self.scenario.execute()
         self._post_run()
 
-    def _pre_run(self):  # type: (...) -> None
+    def _pre_run(self) -> None:
         """Pre-run the scenario."""
         formulation = self.scenario.formulation
         design_space = formulation.opt_problem.design_space
@@ -335,13 +326,13 @@ class MDOScenarioAdapter(MDODiscipline):
                 upper_bound = self.local_data[name + upper_suffix]
                 design_space.set_upper_bound(name, upper_bound)
 
-    def _reset_optimization_problem(self):  # type: (...) -> None
+    def _reset_optimization_problem(self) -> None:
         """Reset the optimization problem."""
         self.scenario.formulation.opt_problem.reset(
             design_space=self._reset_x0_before_opt, database=False, preprocessing=False
         )
 
-    def _post_run(self):  # type: (...) -> None
+    def _post_run(self) -> None:
         """Post-process the scenario."""
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
@@ -370,7 +361,7 @@ class MDOScenarioAdapter(MDODiscipline):
         if self._output_multipliers:
             self._compute_lagrange_multipliers()
 
-    def _retrieve_top_level_outputs(self):  # type: (...) -> None
+    def _retrieve_top_level_outputs(self) -> None:
         """Retrieve the top-level outputs.
 
         This methods overwrites the adapter outputs with the top-level discipline
@@ -388,7 +379,7 @@ class MDOScenarioAdapter(MDODiscipline):
             if out_ds is not None:
                 self.local_data[outdata] = out_ds
 
-    def _compute_lagrange_multipliers(self):  # type: (...) -> None
+    def _compute_lagrange_multipliers(self) -> None:
         """Compute the Lagrange multipliers for the optimal solution of the scenario.
 
         This methods stores the multipliers in the local data.
@@ -426,21 +417,19 @@ class MDOScenarioAdapter(MDODiscipline):
             }
         )
 
-    def get_expected_workflow(self):  # type: (...) -> LoopExecSequence
-        # noqa: D102
+    def get_expected_workflow(self) -> LoopExecSequence:  # noqa: D102
         return self.scenario.get_expected_workflow()
 
-    def get_expected_dataflow(
+    def get_expected_dataflow(  # noqa: D102
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
-        # noqa: D102
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.scenario.get_expected_dataflow()
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
         """Compute the Jacobian of the adapted scenario outputs.
 
         The Jacobian is stored as a dictionary of numpy arrays:
@@ -525,10 +514,10 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def _compute_auxiliary_jacobians(
         self,
-        inputs,  # type: Iterable[str]
-        func_names=None,  # type: Optional[Iterable[str]]
-        use_threading=True,  # type: bool
-    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
+        inputs: Iterable[str],
+        func_names: Iterable[str] | None = None,
+        use_threading: bool = True,
+    ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobians of the optimization functions.
 
         Args:
@@ -586,8 +575,8 @@ class MDOScenarioAdapter(MDODiscipline):
 
     def add_outputs(
         self,
-        outputs_names,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        outputs_names: Iterable[str],
+    ) -> None:
         """Add outputs to the scenario adapter.
 
         Args:
@@ -603,7 +592,7 @@ class MDOScenarioAdapter(MDODiscipline):
 class MDOObjScenarioAdapter(MDOScenarioAdapter):
     """A scenario adapter overwriting the local data with the optimal objective."""
 
-    def _retrieve_top_level_outputs(self):  # type: (...) -> None
+    def _retrieve_top_level_outputs(self) -> None:
         formulation = self.scenario.formulation
         opt_problem = formulation.opt_problem
         top_level_disciplines = formulation.get_top_level_disc()
@@ -633,9 +622,9 @@ class MDOObjScenarioAdapter(MDOScenarioAdapter):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
         MDOScenarioAdapter._compute_jacobian(self, inputs, outputs)
         # The gradient of the objective function cannot be computed by the
         # disciplines, but the gradients of the constraints can.

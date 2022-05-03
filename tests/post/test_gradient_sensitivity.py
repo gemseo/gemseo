@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,8 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -29,8 +27,6 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 from numpy import empty
@@ -188,7 +184,6 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
     assert expected_jac.all() == actual_jac["y"].all()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "scale_gradients,baseline_images",
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],

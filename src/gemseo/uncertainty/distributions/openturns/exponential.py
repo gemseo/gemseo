@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,10 +21,7 @@
 
 This class inherits from :class:`.OTDistribution`.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Optional
+from __future__ import annotations
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
@@ -44,17 +40,16 @@ class OTExponentialDistribution(OTDistribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        rate=1.0,  # type: float
-        loc=0.0,  # type: float
-        dimension=1,  # type: int
-        transformation=None,  # type: Optional[str]
-        lower_bound=None,  # type: Optional[float]
-        upper_bound=None,  # type: Optional[float]
-        threshold=0.5,  # type: float
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        rate: float = 1.0,
+        loc: float = 0.0,
+        dimension: int = 1,
+        transformation: str | None = None,
+        lower_bound: float | None = None,
+        upper_bound: float | None = None,
+        threshold: float = 0.5,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the exponential random variable.
             rate: The rate of the exponential random variable.
@@ -70,7 +65,7 @@ class OTExponentialDistribution(OTDistribution):
             threshold: A threshold in [0,1].
         """
         standard_parameters = {self._RATE: rate, self._LOC: loc}
-        super(OTExponentialDistribution, self).__init__(
+        super().__init__(
             variable,
             "Exponential",
             (rate, loc),

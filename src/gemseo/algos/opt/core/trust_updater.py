@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,8 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoît Pauwels - refactoring
 """Updates a trust parameter according to a decreases' ratio."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -33,8 +31,8 @@ from numpy import multiply
 LOGGER = logging.getLogger(__name__)
 
 
-class TrustUpdater(object):
-    """Updates the trust parameter."""
+class TrustUpdater:
+    """Updater of the trust parameter."""
 
     def __init__(self, thresholds=None, multipliers=None, bound=None):
         """Initializer.
@@ -87,7 +85,7 @@ class PenaltyUpdater(TrustUpdater):
         :type multipliers: tuple
         :param bound: lower bound for the penalty parameter
         """
-        super(PenaltyUpdater, self).__init__(thresholds, multipliers, bound)
+        super().__init__(thresholds, multipliers, bound)
         self._check()
 
     def _check(self):
@@ -168,7 +166,7 @@ class RadiusUpdater(TrustUpdater):
         :type multipliers: tuple
         :param bound: lower bound for the region radius
         """
-        super(RadiusUpdater, self).__init__(thresholds, multipliers, bound)
+        super().__init__(thresholds, multipliers, bound)
         self._check()
 
     def _check(self):
@@ -230,8 +228,8 @@ class RadiusUpdater(TrustUpdater):
         return new_radius, success
 
 
-class BoundsUpdater(object):
-    """Updates trust bounds, i.e. trust ball w.r.t.
+class BoundsUpdater:
+    """Updater of the trust bounds, i.e. trust ball w.r.t.
 
     the infinity norm.
     """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -30,10 +29,11 @@ The MDA of the generated disciplines will always converge because all the output
 are in [0, 1] if the inputs are in [0, 1].
 The analytic Jacobian is provided.
 """
+from __future__ import annotations
+
 import string
 from itertools import islice
 from itertools import permutations
-from typing import List
 
 from numpy import arange
 from numpy import array
@@ -92,8 +92,8 @@ LETTERS = array(list(string.ascii_uppercase))
 
 
 def _get_disc_names(
-    nb_of_names,  # type: int
-):  # type: (...) -> List[str]
+    nb_of_names: int,
+) -> list[str]:
     """Generate names from alphabet characters combinations.
 
     For a given number of names, generates combinations of the characters.
@@ -113,14 +113,14 @@ def _get_disc_names(
 
 
 def create_disciplines_from_sizes(
-    nb_of_disc,  # type: int
-    nb_of_total_disc_io,  # type: int
-    nb_of_disc_inputs=1,  # type: int
-    nb_of_disc_outputs=1,  # type: int
-    inputs_size=1,  # type: int
-    outputs_size=1,  # type: int
-    grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-):  # type: (...) -> List[LinearDiscipline]
+    nb_of_disc: int,
+    nb_of_total_disc_io: int,
+    nb_of_disc_inputs: int = 1,
+    nb_of_disc_outputs: int = 1,
+    inputs_size: int = 1,
+    outputs_size: int = 1,
+    grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+) -> list[LinearDiscipline]:
     """Generate a :class:`.LinearDiscipline` according to a specification.
 
     The names of the disciplines will be automatic combinations of capital letters.
@@ -186,10 +186,10 @@ def create_disciplines_from_sizes(
 
 def create_disciplines_from_desc(
     disc_descriptions,  # Sequence[Tuple[str,Sequence[str],Sequence[str]]]
-    inputs_size=1,  # type: int
-    outputs_size=1,  # type: int
-    grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-):  # type: (...) -> List[LinearDiscipline]
+    inputs_size: int = 1,
+    outputs_size: int = 1,
+    grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+) -> list[LinearDiscipline]:
     """Generate :class:`.LinearDiscipline` classes according to a specification.
 
     The specification is as follows:

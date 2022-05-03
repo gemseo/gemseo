@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -29,7 +28,7 @@ def execute(infile=None, outfile=None):
     infile = infile or parser.parse_args().i
     outfile = outfile or parser.parse_args().o
 
-    with open(infile, "r") as input_f:
+    with open(infile) as input_f:
         data = json.load(input_f)
 
     with open(outfile, "w") as fout:

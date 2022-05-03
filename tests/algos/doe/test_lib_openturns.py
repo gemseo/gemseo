@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 20 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
 from typing import Any
 from typing import Dict
@@ -114,10 +110,8 @@ def test_check_stratified_options():
     with pytest.raises(
         KeyError,
         match=re.escape(
-            (
-                "Missing parameter 'levels', "
-                "tuple of normalized levels in [0,1] you need in your design."
-            )
+            "Missing parameter 'levels', "
+            "tuple of normalized levels in [0,1] you need in your design."
         ),
     ):
         lib._OpenTURNS__check_stratified_options(dimension, options)
@@ -199,10 +193,10 @@ def test_algos(algo_name, dim, n_samples, options):
 
 
 def get_expected_nsamples(
-    algo,  # type: str
-    dim,  # type: int
-    n_samples=None,  # type:Optional[int]
-):  # type: (...) -> int
+    algo: str,
+    dim: int,
+    n_samples: Optional[int] = None,
+) -> int:
     """Returns the expected number of samples.
 
     This number depends on the dimension of the problem.
@@ -244,9 +238,9 @@ def get_expected_nsamples(
 
 
 def get_options(
-    algo_name,  # type: str
-    dim,  # type: int
-):  # type: (...) -> Dict[str,Any]
+    algo_name: str,
+    dim: int,
+) -> Dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:

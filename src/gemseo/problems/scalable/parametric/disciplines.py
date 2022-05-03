@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable disciplines from Tedford and Martins (2010)
 ****************************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -92,7 +90,7 @@ class TMMainDiscipline(TMDiscipline):
         :param dict default_inputs: default inputs
         """
         self.model = TMMainModel(c_constraint, default_inputs)
-        super(TMMainDiscipline, self).__init__(self.model.name)
+        super().__init__(self.model.name)
         self.input_grammar.initialize_from_data_names(self.model.inputs_names)
         self.output_grammar.initialize_from_data_names(self.model.outputs_names)
         self.default_inputs = default_inputs
@@ -165,7 +163,7 @@ class TMSubDiscipline(TMDiscipline):
         :param dict default_inputs: default inputs
         """
         self.model = TMSubModel(index, c_shared, c_local, c_coupling, default_inputs)
-        super(TMSubDiscipline, self).__init__(name=self.model.name)
+        super().__init__(name=self.model.name)
         self.input_grammar.initialize_from_data_names(self.model.inputs_names)
         self.output_grammar.initialize_from_data_names(self.model.outputs_names)
         self.default_inputs = default_inputs

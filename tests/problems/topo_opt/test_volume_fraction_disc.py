@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,7 +25,7 @@ THRESHOLD = 1e-10
 
 
 @pytest.fixture(scope="module")
-def volume_fraction():  # type: (...) -> VolumeFraction
+def volume_fraction() -> VolumeFraction:
     """A volume fraction discipline."""
     return VolumeFraction(n_x=10, n_y=10)
 

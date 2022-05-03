@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -146,25 +145,18 @@ Surrogates
 API functions
 *************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import re
 from collections import namedtuple
 from typing import Any
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 from numpy import ndarray
-from six import string_types
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
@@ -192,7 +184,7 @@ if TYPE_CHECKING:
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from the API.
@@ -205,14 +197,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 def generate_n2_plot(
-    disciplines,  # type: Sequence[MDODiscipline]
-    file_path="n2.pdf",  # type: Union[str,Path]
-    show_data_names=True,  # type: bool
-    save=True,  # type: bool
-    show=False,  # type: bool
-    figsize=(15.0, 10.0),  # type: Tuple[float, float]
-    open_browser=False,  # type: bool
-):  # type: (...) -> None
+    disciplines: Sequence[MDODiscipline],
+    file_path: str | Path = "n2.pdf",
+    show_data_names: bool = True,
+    save: bool = True,
+    show: bool = False,
+    figsize: tuple[float, float] = (15.0, 10.0),
+    open_browser: bool = False,
+) -> None:
     """Generate a N2 plot from disciplines.
 
     Args:
@@ -246,10 +238,10 @@ def generate_n2_plot(
 
 
 def generate_coupling_graph(
-    disciplines,  # type: Sequence[MDODiscipline]
-    file_path="coupling_graph.pdf",  # type: Union[str,Path]
-    full=True,  # type: bool
-):  # type: (...) -> None
+    disciplines: Sequence[MDODiscipline],
+    file_path: str | Path = "coupling_graph.pdf",
+    full: bool = True,
+) -> None:
     """Generate a graph of the couplings between disciplines.
 
     Args:
@@ -277,7 +269,7 @@ def generate_coupling_graph(
         coupling_structure.graph.export_reduced_graph(file_path)
 
 
-def get_available_formulations():  # type: (...) -> List[str]
+def get_available_formulations() -> list[str]:
     """Return the names of the available formulations.
 
     Returns:
@@ -301,7 +293,7 @@ def get_available_formulations():  # type: (...) -> List[str]
     return MDOFormulationsFactory().formulations
 
 
-def get_available_opt_algorithms():  # type: (...) -> List[str]
+def get_available_opt_algorithms() -> list[str]:
     """Return the names of the available optimization algorithms.
 
     Returns:
@@ -324,7 +316,7 @@ def get_available_opt_algorithms():  # type: (...) -> List[str]
     return OptimizersFactory().algorithms
 
 
-def get_available_doe_algorithms():  # type: (...) -> List[str]
+def get_available_doe_algorithms() -> list[str]:
     """Return the names of the available design of experiments (DOEs) algorithms.
 
     Returns:
@@ -347,7 +339,7 @@ def get_available_doe_algorithms():  # type: (...) -> List[str]
     return DOEFactory().algorithms
 
 
-def get_available_surrogates():  # type: (...) -> List[str]
+def get_available_surrogates() -> list[str]:
     """Return the names of the available surrogate disciplines.
 
     Returns:
@@ -369,7 +361,7 @@ def get_available_surrogates():  # type: (...) -> List[str]
     return get_regression_models()
 
 
-def get_available_disciplines():  # type: (...) -> List[str]
+def get_available_disciplines() -> list[str]:
     """Return the names of the available disciplines.
 
     Returns:
@@ -403,10 +395,10 @@ def get_available_disciplines():  # type: (...) -> List[str]
 
 
 def get_surrogate_options_schema(
-    surrogate_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    surrogate_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the available options for a surrogate discipline.
 
     Args:
@@ -434,10 +426,10 @@ def get_surrogate_options_schema(
 
 
 def get_algorithm_options_schema(
-    algorithm_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    algorithm_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of an algorithm.
 
     Args:
@@ -473,14 +465,14 @@ def get_algorithm_options_schema(
             opts_gram = algo_lib.init_options_grammar(algorithm_name)
             schema = _get_schema(opts_gram, output_json, pretty_print)
             return schema
-    raise ValueError("Algorithm named {} is not available.".format(algorithm_name))
+    raise ValueError(f"Algorithm named {algorithm_name} is not available.")
 
 
 def get_discipline_inputs_schema(
-    discipline,  # type: MDODiscipline
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline: MDODiscipline,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the inputs of a discipline.
 
     Args:
@@ -510,10 +502,10 @@ def get_discipline_inputs_schema(
 
 
 def get_discipline_outputs_schema(
-    discipline,  # type: MDODiscipline
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline: MDODiscipline,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the outputs of a discipline.
 
     Args:
@@ -542,7 +534,7 @@ def get_discipline_outputs_schema(
     return _get_schema(discipline.output_grammar, output_json, pretty_print)
 
 
-def get_available_post_processings():  # type: (...) -> List[str]
+def get_available_post_processings() -> list[str]:
     """Return the names of the available optimization post-processings.
 
     Returns:
@@ -568,10 +560,10 @@ def get_available_post_processings():  # type: (...) -> List[str]
 
 
 def get_post_processing_options_schema(
-    post_proc_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    post_proc_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a post-processing.
 
     Args:
@@ -602,10 +594,10 @@ def get_post_processing_options_schema(
 
 
 def get_formulation_options_schema(
-    formulation_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    formulation_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a formulation.
 
     Args:
@@ -637,11 +629,11 @@ def get_formulation_options_schema(
 
 
 def get_formulation_sub_options_schema(
-    formulation_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-    **formulation_options,  # type: Any
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    formulation_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+    **formulation_options: Any,
+) -> str | dict[str, Any]:
     """Return the schema of the sub-options of a formulation.
 
     Args:
@@ -677,9 +669,9 @@ def get_formulation_sub_options_schema(
 
 
 def get_formulations_sub_options_defaults(
-    formulation_name,  # type: str
-    **formulation_options,  # type: Any
-):  # type: (...) -> Dict[str,Any]
+    formulation_name: str,
+    **formulation_options: Any,
+) -> dict[str, Any]:
     """Return the default values of the sub-options of a formulation.
 
     Args:
@@ -713,8 +705,8 @@ def get_formulations_sub_options_defaults(
 
 
 def get_formulations_options_defaults(
-    formulation_name,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    formulation_name: str,
+) -> dict[str, Any]:
     """Return the default values of the options of a formulation.
 
     Args:
@@ -748,10 +740,10 @@ def get_formulations_options_defaults(
 
 
 def get_discipline_options_schema(
-    discipline_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    discipline_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of a discipline.
 
     Args:
@@ -784,10 +776,10 @@ def get_discipline_options_schema(
 
 
 def get_scenario_options_schema(
-    scenario_type,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    scenario_type: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a scenario.
 
     Args:
@@ -813,16 +805,16 @@ def get_scenario_options_schema(
     get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
-        raise ValueError("Unknown scenario type {}".format(scenario_type))
+        raise ValueError(f"Unknown scenario type {scenario_type}")
     scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
     return get_discipline_options_schema(scenario_class, output_json, pretty_print)
 
 
 def get_scenario_inputs_schema(
-    scenario,  # type: Scenario
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    scenario: Scenario,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the inputs of a scenario.
 
     Args:
@@ -856,8 +848,8 @@ def get_scenario_inputs_schema(
 
 
 def get_discipline_options_defaults(
-    discipline_name,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    discipline_name: str,
+) -> dict[str, Any]:
     """Return the default values of the options of a discipline.
 
     Args:
@@ -914,7 +906,7 @@ def get_scenario_differentiation_modes():
 get_scenario_differenciation_modes = get_scenario_differentiation_modes
 
 
-def get_available_scenario_types():  # type: (...) -> List[str]
+def get_available_scenario_types() -> list[str]:
     """Return the names of the available scenario types.
 
     Returns:
@@ -937,10 +929,10 @@ def get_available_scenario_types():  # type: (...) -> List[str]
 
 
 def _get_schema(
-    json_grammar,  # type: Optional[JSONGrammar]
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Optional[Union[str,Dict[str,Any]]]
+    json_grammar: JSONGrammar | None,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any] | None:
     """Return the schema of a JSON grammar.
 
     Args:
@@ -990,7 +982,7 @@ def _get_schema(
     return dict_schema
 
 
-def get_available_mdas():  # type: (...) -> List[str]
+def get_available_mdas() -> list[str]:
     """Return the names of the available multidisciplinary analyses (MDAs).
 
     Returns:
@@ -1012,10 +1004,10 @@ def get_available_mdas():  # type: (...) -> List[str]
 
 
 def get_mda_options_schema(
-    mda_name,  # type: str
-    output_json=False,  # type: bool
-    pretty_print=False,  # type: bool
-):  # type: (...) -> Union[str,Dict[str,Any]]
+    mda_name: str,
+    output_json: bool = False,
+    pretty_print: bool = False,
+) -> str | dict[str, Any]:
     """Return the schema of the options of a multidisciplinary analysis (MDA).
 
     Args:
@@ -1044,16 +1036,16 @@ def get_mda_options_schema(
 
 
 def create_scenario(
-    disciplines,  # type: Sequence[MDODiscipline]
-    formulation,  # type: str
-    objective_name,  # type: str
-    design_space,  # type: Union[DesignSpace,str,Path]
-    name=None,  # type: Optional[str]
-    scenario_type="MDO",  # type: str
-    grammar_type="JSONGrammar",  # type: str
-    maximize_objective=False,  # type: bool
-    **options,  # type: Any
-):  # type: (...) -> Scenario
+    disciplines: Sequence[MDODiscipline],
+    formulation: str,
+    objective_name: str,
+    design_space: DesignSpace | str | Path,
+    name: str | None = None,
+    scenario_type: str = "MDO",
+    grammar_type: str = "JSONGrammar",
+    maximize_objective: bool = False,
+    **options: Any,
+) -> Scenario:
     """Initialize a scenario.
 
     Args:
@@ -1096,7 +1088,7 @@ def create_scenario(
     if not isinstance(disciplines, list):
         disciplines = [disciplines]
 
-    if isinstance(design_space, (string_types, Path)):
+    if isinstance(design_space, (str, Path)):
         design_space = read_design_space(design_space)
 
     if scenario_type == "MDO":
@@ -1124,18 +1116,18 @@ def create_scenario(
         )
 
     raise ValueError(
-        "Unknown scenario type: {}, use one of : 'MDO' or 'DOE'.".format(scenario_type)
+        f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
     )
 
 
 def configure_logger(
-    logger_name=None,  # type: Optional[str]
-    level=logging.INFO,  # type: int
-    date_format="%H:%M:%S",  # type: str
-    message_format="%(levelname)8s - %(asctime)s: %(message)s",  # type: str
-    filename=None,  # type: Optional[Union[str,Path]]
-    filemode="a",  # type: str
-):  # type: (...) -> Logger
+    logger_name: str | None = None,
+    level: int = logging.INFO,
+    date_format: str = "%H:%M:%S",
+    message_format: str = "%(levelname)8s - %(asctime)s: %(message)s",
+    filename: str | Path | None = None,
+    filemode: str = "a",
+) -> Logger:
     """Configure |g| logging.
 
     Args:
@@ -1182,8 +1174,8 @@ def configure_logger(
 
 
 def create_discipline(
-    discipline_name,  # type: Union[str,Iterable[str]]
-    **options,  # type: Any
+    discipline_name: str | Iterable[str],
+    **options: Any,
 ):
     """Instantiate one or more disciplines.
 
@@ -1217,15 +1209,15 @@ def create_discipline(
     from gemseo.problems.disciplines_factory import DisciplinesFactory
 
     factory = DisciplinesFactory()
-    if isinstance(discipline_name, string_types):
+    if isinstance(discipline_name, str):
         return factory.create(discipline_name, **options)
 
     return [factory.create(d_name, **options) for d_name in discipline_name]
 
 
 def import_discipline(
-    file_path,  # type: Union[str,Path]
-):  # type: (...) -> MDODiscipline
+    file_path: str | Path,
+) -> MDODiscipline:
     """Import a discipline from a pickle file.
 
     Args:
@@ -1250,11 +1242,11 @@ def import_discipline(
 
 
 def create_scalable(
-    name,  # type: str
-    data,  # type: Dataset
-    sizes=None,  # type: Mapping[str,int]
-    **parameters,  # type: Any
-):  # type: (...) -> ScalableDiscipline
+    name: str,
+    data: Dataset,
+    sizes: Mapping[str, int] = None,
+    **parameters: Any,
+) -> ScalableDiscipline:
     """Create a scalable discipline from a dataset.
 
     Args:
@@ -1274,15 +1266,15 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate,  # type: Union[str,MLRegressionAlgo]
-    data=None,  # type: Optional[Dataset]
-    transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[TransformerType]
-    disc_name=None,  # type: Optional[str]
-    default_inputs=None,  # type: Optional[Dict[str,ndarray]]
-    input_names=None,  # type: Optional[Iterable[str]]
-    output_names=None,  # type: Optional[Iterable[str]]
-    **parameters,  # type: Any
-):  # type: (...) -> SurrogateDiscipline
+    surrogate: str | MLRegressionAlgo,
+    data: Dataset | None = None,
+    transformer: TransformerType | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+    disc_name: str | None = None,
+    default_inputs: dict[str, ndarray] | None = None,
+    input_names: Iterable[str] | None = None,
+    output_names: Iterable[str] | None = None,
+    **parameters: Any,
+) -> SurrogateDiscipline:
     """Create a surrogate discipline, either from a dataset or a regression model.
 
     Args:
@@ -1332,10 +1324,10 @@ def create_surrogate(
 
 
 def create_mda(
-    mda_name,  # type: str
-    disciplines,  # type: Sequence[MDODiscipline]
-    **options,  # type: Any
-):  # type: (...) -> MDA
+    mda_name: str,
+    disciplines: Sequence[MDODiscipline],
+    **options: Any,
+) -> MDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
@@ -1370,10 +1362,10 @@ def create_mda(
 
 
 def execute_post(
-    to_post_proc,  # type:Union[Scenario,OptimizationProblem,str,Path]
-    post_name,  # type: str
-    **options,  # type: Any
-):  # type: (...) -> Dict[str,Figure]
+    to_post_proc: Scenario | OptimizationProblem | str | Path,
+    post_name: str,
+    **options: Any,
+) -> dict[str, Figure]:
     """Post-process a result.
 
     Args:
@@ -1411,19 +1403,19 @@ def execute_post(
         opt_problem = to_post_proc.formulation.opt_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
-    elif isinstance(to_post_proc, string_types):
+    elif isinstance(to_post_proc, str):
         opt_problem = OptimizationProblem.import_hdf(to_post_proc)
     else:
-        raise TypeError("Cannot post process type: {}".format(type(to_post_proc)))
+        raise TypeError(f"Cannot post process type: {type(to_post_proc)}")
     return PostFactory().execute(opt_problem, post_name, **options)
 
 
 def execute_algo(
-    opt_problem,  # type: OptimizationProblem
-    algo_name,  # type: str
-    algo_type="opt",  # type: str
-    **options,  # type: Any
-):  # type: (...) -> OptimizationResult
+    opt_problem: OptimizationProblem,
+    algo_name: str,
+    algo_type: str = "opt",
+    **options: Any,
+) -> OptimizationResult:
     """Solve an optimization problem.
 
     Args:
@@ -1462,17 +1454,15 @@ def execute_algo(
 
         factory = DOEFactory()
     else:
-        raise ValueError(
-            "Unknown algo type: {}, please use 'doe' or 'opt' !".format(algo_type)
-        )
+        raise ValueError(f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !")
 
     return factory.execute(opt_problem, algo_name, **options)
 
 
 def monitor_scenario(
-    scenario,  # type: Scenario
+    scenario: Scenario,
     observer,
-):  # type: (...) -> None
+) -> None:
     """Add an observer to a scenario.
 
     The observer must have an ``update`` method
@@ -1498,7 +1488,7 @@ def monitor_scenario(
     monitor.add_observer(observer)
 
 
-def print_configuration():  # type: (...) -> None
+def print_configuration() -> None:
     """Print the current configuration.
 
     The log message contains the successfully loaded modules
@@ -1535,9 +1525,9 @@ def print_configuration():  # type: (...) -> None
 
 
 def read_design_space(
-    file_path,  # type: Union[str,Path]
-    header=None,  # type: Optional[str]
-):  # type: (...) -> DesignSpace
+    file_path: str | Path,
+    header: str | None = None,
+) -> DesignSpace:
     """Read a design space from a file.
 
     Args:
@@ -1578,13 +1568,13 @@ def read_design_space(
 
 
 def export_design_space(
-    design_space,  # type: DesignSpace
-    output_file,  # type: Union[str,Path],
-    export_hdf=False,  # type: bool
-    fields=None,  # type: Optional[Sequence[str]]
-    header_char="",  # type: str
-    **table_options,  # type: Any
-):  # type: (...) -> None
+    design_space: DesignSpace,
+    output_file: str | Path,
+    export_hdf: bool = False,
+    fields: Sequence[str] | None = None,
+    header_char: str = "",
+    **table_options: Any,
+) -> None:
     """Save a design space to a text or HDF file.
 
     Args:
@@ -1617,7 +1607,7 @@ def export_design_space(
         design_space.export_to_txt(output_file, fields, header_char, **table_options)
 
 
-def create_design_space():  # type: (...) -> DesignSpace
+def create_design_space() -> DesignSpace:
     """Create an empty design space.
 
     Returns:
@@ -1648,7 +1638,7 @@ def create_design_space():  # type: (...) -> DesignSpace
     return DesignSpace()
 
 
-def create_parameter_space():  # type: (...) -> ParameterSpace
+def create_parameter_space() -> ParameterSpace:
     """Create an empty parameter space.
 
     Returns:
@@ -1659,7 +1649,7 @@ def create_parameter_space():  # type: (...) -> ParameterSpace
     return ParameterSpace()
 
 
-def get_available_caches():  # type: (...) -> List[str]
+def get_available_caches() -> list[str]:
     """Return the names of the available caches.
 
     Returns:
@@ -1682,10 +1672,10 @@ def get_available_caches():  # type: (...) -> List[str]
 
 
 def create_cache(
-    cache_type,  # type: str
-    name=None,  # type: Optional[str]
-    **options,  # type: Any
-):  # type: (...) -> AbstractCache
+    cache_type: str,
+    name: str | None = None,
+    **options: Any,
+) -> AbstractCache:
     """Return a cache.
 
     Args:
@@ -1725,16 +1715,16 @@ def create_cache(
 
 
 def create_dataset(
-    name,  # type: str
-    data,  # type: Union[ndarray,str,Path]
-    variables=None,  # type: Optional[List[str]]
-    sizes=None,  # type: Optional[Dict[str,int]]
-    groups=None,  # type: Optional[Dict[str,str]]
-    by_group=True,  # type: bool
-    delimiter=",",  # type: str
-    header=True,  # type: bool
-    default_name=None,  # type: Optional[str]
-):  # type: (...) -> Dataset
+    name: str,
+    data: ndarray | str | Path,
+    variables: list[str] | None = None,
+    sizes: dict[str, int] | None = None,
+    groups: dict[str, str] | None = None,
+    by_group: bool = True,
+    delimiter: str = ",",
+    header: bool = True,
+    default_name: str | None = None,
+) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 
     Args:
@@ -1783,9 +1773,9 @@ def create_dataset(
 
 
 def load_dataset(
-    dataset,  # type: str
-    **options,  # type: Any
-):  # type: (...) -> Dataset
+    dataset: str,
+    **options: Any,
+) -> Dataset:
     """Instantiate a dataset.
 
     Typically, benchmark datasets can be found in :mod:`gemseo.core.dataset`.
@@ -1806,12 +1796,12 @@ def load_dataset(
 
 
 def compute_doe(
-    variables_space,  # type: DesignSpace
-    algo_name,  # type: str
-    size=None,  # type: Optional[int]
-    unit_sampling=False,  # type: bool
-    **options,  # type: DOELibraryOptionType
-):  # type: (...) -> ndarray
+    variables_space: DesignSpace,
+    algo_name: str,
+    size: int | None = None,
+    unit_sampling: bool = False,
+    **options: DOELibraryOptionType,
+) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
     Args:
@@ -1845,7 +1835,7 @@ def compute_doe(
     )
 
 
-def _log_settings():  # type: (...) -> None
+def _log_settings() -> None:
     from gemseo.algos.driver_lib import DriverLib
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
@@ -1906,8 +1896,8 @@ AlgorithmFeatures = namedtuple(
 
 
 def get_algorithm_features(
-    algorithm_name,  # type: str
-):  # type: (...) -> AlgorithmFeatures
+    algorithm_name: str,
+) -> AlgorithmFeatures:
     """Return the features of an optimization algorithm.
 
     Args:
@@ -1942,14 +1932,14 @@ def get_algorithm_features(
 
 
 def configure(
-    activate_discipline_counters=False,  # type: bool
-    activate_function_counters=False,  # type: bool
-    activate_progress_bar=False,  # type: bool
-    activate_discipline_cache=False,  # type: bool
-    check_input_data=False,  # type: bool
-    check_output_data=False,  # type: bool
-    check_desvars_bounds=False,  # type: bool
-):  # type: (...) -> None
+    activate_discipline_counters: bool = False,
+    activate_function_counters: bool = False,
+    activate_progress_bar: bool = False,
+    activate_discipline_cache: bool = False,
+    check_input_data: bool = False,
+    check_output_data: bool = False,
+    check_desvars_bounds: bool = False,
+) -> None:
     """Update the configuration of |g| if needed.
 
     This could be useful to speed up calculations in presence of cheap disciplines

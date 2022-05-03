@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.factory import MLAlgoFactory
@@ -31,7 +27,7 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
@@ -44,28 +40,26 @@ def test_constructor():
     """Test factory constructor."""
     factory = MLAlgoFactory()
     # plugins may add classes
-    assert set(factory.models) <= set(
-        [
-            "GaussianMixture",
-            "GaussianProcessRegression",
-            "KMeans",
-            "KNNClassifier",
-            "LinearRegression",
-            "MLClassificationAlgo",
-            "MLClusteringAlgo",
-            "MLPredictiveClusteringAlgo",
-            "MLRegressionAlgo",
-            "MLSupervisedAlgo",
-            "MLUnsupervisedAlgo",
-            "MixtureOfExperts",
-            "PCERegression",
-            "PolynomialRegression",
-            "RBFRegression",
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "SVMClassifier",
-        ]
-    )
+    assert set(factory.models) <= {
+        "GaussianMixture",
+        "GaussianProcessRegression",
+        "KMeans",
+        "KNNClassifier",
+        "LinearRegression",
+        "MLClassificationAlgo",
+        "MLClusteringAlgo",
+        "MLPredictiveClusteringAlgo",
+        "MLRegressionAlgo",
+        "MLSupervisedAlgo",
+        "MLUnsupervisedAlgo",
+        "MixtureOfExperts",
+        "PCERegression",
+        "PolynomialRegression",
+        "RBFRegression",
+        "RandomForestClassifier",
+        "RandomForestRegressor",
+        "SVMClassifier",
+    }
 
 
 def test_create(dataset):

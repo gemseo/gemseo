@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,22 +18,14 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class AndrewsCurves plotting samples as curves."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
-from gemseo.utils.py23_compat import PY2
-from gemseo.utils.py23_compat import PY3
 from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
-pytestmark = [
-    pytest.mark.skipif(PY2, reason="image comparison does not work with python 2"),
-    pytest.mark.xfail(PY3, reason="fail with Python3 and coverage"),
-]
+pytestmark = [pytest.mark.xfail(reason="fail with Python3 and coverage")]
 
 
 @pytest.fixture(scope="module")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,9 +25,6 @@ Formulation
 In this example, we will discover the different functions of the API
 related to MDO formulations: their names, their options and their sub-options.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import get_available_formulations
 from gemseo.api import get_formulation_options_schema

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,16 +19,12 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic display of optimization history: functions and x."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import sys
 from typing import Iterable
-from typing import List
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 
 import matplotlib.gridspec as gridspec
 import pylab
@@ -86,20 +81,20 @@ class OptHistoryView(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(OptHistoryView, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.cmap = PARULA  # "viridis"  # "jet"
         self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
         self.eq_cstr_cmap = "seismic"  # "seismic" "PRGn_r"
 
     def _plot(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-        obj_min=None,  # type: Optional[float]
-        obj_max=None,  # type: Optional[float]
-        obj_relative=False,  # type: bool
-    ):  # type: (...) -> None
+        variables_names: Sequence[str] | None = None,
+        obj_min: float | None = None,
+        obj_max: float | None = None,
+        obj_relative: bool = False,
+    ) -> None:
         """
         Args:
             variables_names: The names of the variables to display.
@@ -145,9 +140,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _plot_cstr_history(
         self,
-        cstr_names,  # type: Sequence[str]
-        cstr_type,  # type: str
-    ):  # type: (...) -> None
+        cstr_names: Sequence[str],
+        cstr_type: str,
+    ) -> None:
         """Create the plot for (in)equality constraints.
 
         Args:
@@ -164,9 +159,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _get_history(
         self,
-        function_name,  # type: str
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,int]
+        function_name: str,
+        variables_names: Sequence[str],
+    ) -> tuple[ndarray, ndarray, int]:
         """Access the optimization history of a function and the design variables at
         which it was computed.
 
@@ -199,8 +194,8 @@ class OptHistoryView(OptPostProcessor):
 
     def _get_constraints(
         self,
-        cstr_names,  # type: Iterable[str]
-    ):  # type: (...) -> Tuple[ndarray,List[ndarray]]
+        cstr_names: Iterable[str],
+    ) -> tuple[ndarray, list[ndarray]]:
         """Extract a history of constraints.
 
         Args:
@@ -231,9 +226,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _normalize_x_hist(
         self,
-        x_history,  # type: ndarray
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> ndarray
+        x_history: ndarray,
+        variables_names: Sequence[str],
+    ) -> ndarray:
         """Normalize the design variables history.
 
         Args:
@@ -253,9 +248,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_variables_plot(
         self,
-        x_history,  # type: ndarray
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        x_history: ndarray,
+        variables_names: Sequence[str],
+    ) -> None:
         """Create the design variables plot.
 
         Args:
@@ -292,7 +287,7 @@ class OptHistoryView(OptPostProcessor):
                 name += " (0)"
             y_labels.append(name)
             for i in range(1, size):
-                y_labels.append("({})".format(i))
+                y_labels.append(f"({i})")
 
         ax1.set_yticks(arange(n_variables))
         ax1.set_yticklabels(y_labels)
@@ -313,12 +308,12 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_obj_plot(
         self,
-        obj_history,  # type: ndarray
-        n_iter,  # type: int
-        obj_min=None,  # type: Optional[float]
-        obj_max=None,  # type: Optional[float]
-        obj_relative=False,  # type: bool
-    ):  # type: (...) -> None
+        obj_history: ndarray,
+        n_iter: int,
+        obj_min: float | None = None,
+        obj_max: float | None = None,
+        obj_relative: bool = False,
+    ) -> None:
         """Creates the design variables plot.
 
         Args:
@@ -386,8 +381,8 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_x_star_plot(
         self,
-        x_history,  # type: ndarray
-        n_iter,  # type:int
+        x_history: ndarray,
+        n_iter: int,
     ):
         """Create the design variables plot.
 
@@ -433,9 +428,9 @@ class OptHistoryView(OptPostProcessor):
 
     @staticmethod
     def _cstr_number(
-        cstr_names,  # type: Sequence[str]
-        cstr_history,  # type: ndarray
-    ):  # type: (...) -> int
+        cstr_names: Sequence[str],
+        cstr_history: ndarray,
+    ) -> int:
         """Compute the total scalar constraints number.
 
         Args:
@@ -456,10 +451,10 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_cstr_plot(
         self,
-        cstr_history,  # type: ndarray
-        cstr_type,  # type: str
-        cstr_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        cstr_history: ndarray,
+        cstr_type: str,
+        cstr_names: Sequence[str],
+    ) -> None:
         """Create the constraints plot: 1 line per constraint component.
 
         Args:
@@ -517,16 +512,16 @@ class OptHistoryView(OptPostProcessor):
 
         fig = self._build_cstr_fig(cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels)
 
-        self._add_figure(fig, "{}_constraints".format(cstr_type))
+        self._add_figure(fig, f"{cstr_type}_constraints")
 
     def _build_cstr_fig(
         self,
-        cstr_matrix,  # type: ndarray
-        cstr_type,  # type: str
-        vmax,  # type: float
-        n_cstr,  # type: int
-        cstr_labels,  # type: Sequence[str]
-    ):  # type: (...) -> Figure
+        cstr_matrix: ndarray,
+        cstr_type: str,
+        vmax: float,
+        n_cstr: int,
+        cstr_labels: Sequence[str],
+    ) -> Figure:
         """Build the constraints figure.
 
         Args:
@@ -613,9 +608,9 @@ class OptHistoryView(OptPostProcessor):
 
     def _create_hessian_approx_plot(
         self,
-        history,  # type: Database
-        obj_name,  # type: str
-    ):  # type: (...) -> None
+        history: Database,
+        obj_name: str,
+    ) -> None:
         """Create the plot of the Hessian approximation.
 
         Args:

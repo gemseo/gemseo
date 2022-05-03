@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -96,17 +95,13 @@ The GPR model relies on the GaussianProcessRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Callable
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Tuple
-from typing import Union
 
 import openturns
 from numpy import atleast_2d
@@ -134,17 +129,17 @@ class GaussianProcessRegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        kernel=None,  # type: Optional[openturns.CovarianceModel]
-        bounds=None,  # type: Optional[Union[__Bounds, Mapping[str, __Bounds]]]
-        alpha=1e-10,  # type: Union[float,ndarray]
-        optimizer="fmin_l_bfgs_b",  # type: Union[str,Callable]
-        n_restarts_optimizer=10,  # type: int
-        random_state=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        kernel: openturns.CovarianceModel | None = None,
+        bounds: __Bounds | Mapping[str, __Bounds] | None = None,
+        alpha: float | ndarray = 1e-10,
+        optimizer: str | Callable = "fmin_l_bfgs_b",
+        n_restarts_optimizer: int = 10,
+        random_state: int | None = None,
+    ) -> None:
         """
         Args:
             kernel: The kernel function. If None, use a ``Matern(2.5)``.
@@ -161,7 +156,7 @@ class GaussianProcessRegression(MLRegressionAlgo):
                 If None, the random number generator is the RandomState instance
                 used by `numpy.random`.
         """
-        super(GaussianProcessRegression, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -198,8 +193,8 @@ class GaussianProcessRegression(MLRegressionAlgo):
 
     def __compute_parameter_length_scale_bounds(
         self,
-        bounds,  # type: Optional[Union[__Bounds, Mapping[str, __Bounds]]]
-    ):  # type: (...) -> List[Tuple[float, float]]
+        bounds: __Bounds | Mapping[str, __Bounds] | None,
+    ) -> list[tuple[float, float]]:
         """Return the lower and upper bounds for the parameter length scales.
 
         Args:
@@ -228,22 +223,22 @@ class GaussianProcessRegression(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         output_pred = self.algo.predict(input_data, False)
         return output_pred
 
     def predict_std(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> ndarray
+        input_data: DataType,
+    ) -> ndarray:
         """Predict the standard deviation from input data.
 
         The user can specify these input data either as a NumPy array,

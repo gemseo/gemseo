@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -89,14 +88,11 @@ The classifier relies on the KNeighborsClassifier class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import ndarray
 from numpy import stack
@@ -117,18 +113,18 @@ class KNNClassifier(MLClassificationAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        n_neighbors=5,  # type: int
-        **parameters,  # type: Union[int,str]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        n_neighbors: int = 5,
+        **parameters: int | str,
+    ) -> None:
         """
         Args:
             n_neighbors: The number of neighbors.
         """
-        super(KNNClassifier, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -140,17 +136,17 @@ class KNNClassifier(MLClassificationAlgo):
 
     def _fit(
         self,
-        input_data,  # type:ndarray
-        output_data,  # type:ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         if output_data.shape[1] == 1:
             output_data = output_data.ravel()
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data,  # type:ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         output_data = self.algo.predict(input_data).astype(int)
         if len(output_data.shape) == 1:
             output_data = output_data[:, None]
@@ -158,8 +154,8 @@ class KNNClassifier(MLClassificationAlgo):
 
     def _predict_proba_soft(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         probas = self.algo.predict_proba(input_data)
         if len(probas[0].shape) == 1:
             probas = probas[..., None]

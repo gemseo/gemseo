@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,12 +19,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quadratic approximations of functions from the optimization history."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from math import ceil
-from typing import Optional
 
 import numpy as np
 import pylab
@@ -58,16 +55,16 @@ class QuadApprox(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(QuadApprox, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.grad_opt = None
 
     def _plot(
         self,
-        function,  # type: str
-        func_index=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        function: str,
+        func_index: int | None = None,
+    ) -> None:
         """Build the plot and save it.
 
         Args:
@@ -85,9 +82,9 @@ class QuadApprox(OptPostProcessor):
 
     def __build_approx(
         self,
-        function,  # type: str
-        func_index,  # type: int
-    ):  # type: (...) -> ndarray
+        function: str,
+        func_index: int,
+    ) -> ndarray:
         """Build the approximation.
 
         Args:
@@ -114,9 +111,9 @@ class QuadApprox(OptPostProcessor):
     @classmethod
     def __plot_hessian(
         cls,
-        hessian,  # type: ndarray
-        function,  # type: str
-    ):  # type: (...) -> Figure
+        hessian: ndarray,
+        function: str,
+    ) -> Figure:
         """Plot the Hessian of the function.
 
         Args:
@@ -155,11 +152,11 @@ class QuadApprox(OptPostProcessor):
 
     @staticmethod
     def unnormalize_vector(
-        xn_array,  # type: ndarray
-        ivar,  # type: int
-        lower_bounds,  # type: ndarray
-        upper_bounds,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        xn_array: ndarray,
+        ivar: int,
+        lower_bounds: ndarray,
+        upper_bounds: ndarray,
+    ) -> ndarray:
         """Unormalize a variable with respect to bounds.
 
         Args:
@@ -177,8 +174,8 @@ class QuadApprox(OptPostProcessor):
 
     def __plot_variations(
         self,
-        hessian,  # type: ndarray
-    ):  # type: (...) -> Figure
+        hessian: ndarray,
+    ) -> Figure:
         """Plot the variation plot of the function w.r.t. all variables.
 
         Args:

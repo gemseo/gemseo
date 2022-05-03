@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction consistency constraint subclass to support formulations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -47,9 +45,9 @@ class ConsistencyCstr(MDOFunction):
 
     def __init__(
         self,
-        output_couplings,  # type: Sequence[str]
-        formulation,  # type: MDOFormulation
-    ):  # type: (...) -> None
+        output_couplings: Sequence[str],
+        formulation: MDOFormulation,
+    ) -> None:
         """
         Args:
             output_couplings: The names of the output couplings.
@@ -73,9 +71,9 @@ class ConsistencyCstr(MDOFunction):
 
         expr = ""
         for out_c in self.__output_couplings:
-            expr += "{0}({1}) - {0}\n".format(out_c, ", ".join(self.__dv_names_of_disc))
+            expr += f"{out_c}({', '.join(self.__dv_names_of_disc)}) - {out_c}\n"
 
-        super(ConsistencyCstr, self).__init__(
+        super().__init__(
             self._coupl_min_x,
             self.__coupl_func.name,
             args=self.__dv_names_of_disc,
@@ -87,8 +85,8 @@ class ConsistencyCstr(MDOFunction):
 
     def _coupl_min_x(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the consistency constraints.
 
         Args:
@@ -106,8 +104,8 @@ class ConsistencyCstr(MDOFunction):
 
     def _coupl_min_x_jac(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the gradient of the consistency constraints.
 
         Args:

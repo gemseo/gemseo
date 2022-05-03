@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable problem - Models
 *************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -46,7 +44,7 @@ from .variables import X_SHARED_NAME
 LOGGER = logging.getLogger(__name__)
 
 
-class TMMainModel(object):
+class TMMainModel:
 
     r"""The main discipline from the scalable problem introduced by Tedford
     and Martins (2010) takes the  local design parameters
@@ -154,7 +152,7 @@ class TMMainModel(object):
         return jacobian
 
 
-class TMSubModel(object):
+class TMSubModel:
 
     r"""A sub-discipline from the scalable problem introduced by
     Tedford and Martins (2010) takes local design parameters :math:`x_i`
@@ -185,7 +183,7 @@ class TMSubModel(object):
         :param dict(ndarray) c_coupling: weights for the coupling parameters.
         :param dict(ndarray) default_inputs: default inputs
         """
-        self.name = "SubModel_{}".format(index)
+        self.name = f"SubModel_{index}"
         self.index = index
         self.c_shared = c_shared
         self.c_local = c_local

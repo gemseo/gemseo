@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,10 +17,8 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
+from pathlib import Path
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -30,7 +27,6 @@ from gemseo.api import execute_algo
 from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.utils.py23_compat import Path
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 

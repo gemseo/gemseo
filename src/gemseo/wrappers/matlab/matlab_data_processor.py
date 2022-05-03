@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -34,8 +33,10 @@ The class and functions in this module enables to
 manipulate data from and toward the Matlab workspace.
 It also enables to read and write Matlab data file (.mat).
 """
+from __future__ import annotations
+
+from pathlib import Path
 from typing import Mapping
-from typing import Union
 
 import matlab
 import scipy.io
@@ -44,7 +45,6 @@ from numpy import iscomplexobj
 from numpy import ndarray
 
 from gemseo.core.data_processor import DataProcessor
-from gemseo.utils.py23_compat import Path
 
 
 class MatlabDataProcessor(DataProcessor):
@@ -69,8 +69,8 @@ class MatlabDataProcessor(DataProcessor):
     """
 
     def pre_process_data(
-        self, data  # type: Mapping[str, ndarray]
-    ):  # type: (...) -> Mapping[str, matlab.double]
+        self, data: Mapping[str, ndarray]
+    ) -> Mapping[str, matlab.double]:
         """Transform data from GEMSEO to Matlab.
 
         The function takes a dict of ndarray and return
@@ -93,8 +93,8 @@ class MatlabDataProcessor(DataProcessor):
         return processed_data
 
     def post_process_data(
-        self, data  # type: Mapping[str, matlab.double]
-    ):  # type: (...) -> Mapping[str, ndarray]
+        self, data: Mapping[str, matlab.double]
+    ) -> Mapping[str, ndarray]:
         """Transform the output data from Matlab to GEMSEO.
 
         Args:
@@ -115,8 +115,8 @@ class MatlabDataProcessor(DataProcessor):
 
 
 def load_matlab_file(
-    file_path,  # type: Union[str, Path]
-):  # type: (...) -> Mapping[str, matlab.double]
+    file_path: str | Path,
+) -> Mapping[str, matlab.double]:
     """Read .mat file and convert it to usable format for Matlab.
 
     Args:
@@ -135,11 +135,11 @@ def load_matlab_file(
 
 
 def save_matlab_file(
-    dict_to_save,  # type: dict
-    file_path="output_dict",  # type: Union[str, Path]
-    *args,  # type: bool
-    **kwargs,  # type: bool
-):  # type: (...) -> None
+    dict_to_save: dict,
+    file_path: str | Path = "output_dict",
+    *args: bool,
+    **kwargs: bool,
+) -> None:
     """Create a .mat file from dict of ndarray.
 
     Args:
@@ -164,9 +164,7 @@ def save_matlab_file(
     scipy.io.savemat(file_name=str(file_path), mdict=saved_dict, *args, **kwargs)
 
 
-def array2double(
-    data_array,  # type: ndarray
-):  # type (..) -> matlab.double
+def array2double(data_array: ndarray) -> matlab.double:
     """Turn a ndarray into a matlab.double.
 
     Args:
@@ -183,8 +181,8 @@ def array2double(
 
 
 def double2array(
-    matlab_double,  # type: matlab.double
-):  # type: (...) -> ndarray
+    matlab_double: matlab.double,
+) -> ndarray:
     """Turn a matlab double into ndarray.
 
     Args:
@@ -213,8 +211,8 @@ def double2array(
 
 
 def convert_array_from_matlab(
-    data,  # type: Mapping[str, matlab.double]
-):  # type: (...) -> Mapping[str, ndarray]
+    data: Mapping[str, matlab.double],
+) -> Mapping[str, ndarray]:
     """Convert dict of matlab.output to dict of ndarray.
 
     Args:
@@ -231,8 +229,8 @@ def convert_array_from_matlab(
 
 
 def convert_array_to_matlab(
-    data,  # type: Mapping[str, ndarray]
-):  # type: (...) -> Mapping[str, matlab.double]
+    data: Mapping[str, ndarray],
+) -> Mapping[str, matlab.double]:
     """Convert gems dict of ndarray to dict of matlab.double.
 
     Args:

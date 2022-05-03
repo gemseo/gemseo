@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,11 +16,9 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import random
 from functools import partial
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -29,8 +26,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 
 PARENT_PATH = Path(__file__).parent
@@ -110,7 +105,6 @@ def test_correlations_func_name_error(factory):
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "func_names,baseline_images",
     [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
@@ -145,7 +139,6 @@ def test_correlations_func_names(
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @image_comparison(baseline_images=["modified_sellar"], extensions=["png"])
 def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
     """Test that the function names sorting.

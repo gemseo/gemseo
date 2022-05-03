@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,31 +18,23 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PyDOE algorithms wrapper."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
+import pyDOE2 as pyDOE
 from numpy import array
 from numpy import ndarray
 from numpy.random import RandomState
-from numpy.random import seed as set_seed
 
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.utils.py23_compat import PY3
-
-if PY3:
-    import pyDOE2 as pyDOE
-else:
-    import pyDOE
 
 OptionType = Optional[
     Union[str, int, float, bool, Sequence[int], Tuple[int, int], ndarray]
@@ -107,8 +98,8 @@ class PyDOE(DOELibrary):
     CENTER_CC_KEYWORD = "center_cc"
     LIBRARY_NAME = "PyDOE"
 
-    def __init__(self):  # type: (...) -> None
-        super(PyDOE, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
             self.lib_dict[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
@@ -123,21 +114,21 @@ class PyDOE(DOELibrary):
 
     def _get_options(
         self,
-        alpha="orthogonal",  # type: str
-        face="faced",  # type: str
-        criterion=None,  # type: Optional[str]
-        iterations=5,  # type: int
-        eval_jac=False,  # type: bool
-        center_bb=None,  # type: Optional[int]
-        center_cc=None,  # type: Optional[Tuple[int, int]]
-        n_samples=None,  # type: Optional[int]
-        levels=None,  # type: Optional[Sequence[int]]
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        seed=1,  # type: int
-        max_time=0,  # type: float
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
+        alpha: str = "orthogonal",
+        face: str = "faced",
+        criterion: str | None = None,
+        iterations: int = 5,
+        eval_jac: bool = False,
+        center_bb: int | None = None,
+        center_cc: tuple[int, int] | None = None,
+        n_samples: int | None = None,
+        levels: Sequence[int] | None = None,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        seed: int = 1,
+        max_time: float = 0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Set the options.
 
         Args:
@@ -192,8 +183,8 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def __translate(
-        result,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        result: ndarray,
+    ) -> ndarray:
         """Translate the DOE design variables to [0,1].
 
         Args:
@@ -204,9 +195,7 @@ class PyDOE(DOELibrary):
         """
         return (result + 1.0) * 0.5
 
-    def _generate_samples(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+    def _generate_samples(self, **options: OptionType) -> ndarray:
         """Generate the samples for the DOE.
 
         Args:
@@ -218,17 +207,13 @@ class PyDOE(DOELibrary):
         """
         self.seed += 1
         if self.algo_name == self.PYDOE_LHS:
-            seed = options.get(self.SEED, self.seed)
-            lhs_kwargs = {
-                "samples": options["n_samples"],
-                "criterion": options.get(self.CRITERION_KEYWORD),
-                "iterations": options.get(self.ITERATION_KEYWORD),
-            }
-            if PY3:
-                lhs_kwargs["random_state"] = RandomState(seed)
-            else:
-                set_seed(seed)
-            return pyDOE.lhs(options[self.DIMENSION], **lhs_kwargs)
+            return pyDOE.lhs(
+                options[self.DIMENSION],
+                random_state=RandomState(options.get(self.SEED, self.seed)),
+                samples=options["n_samples"],
+                criterion=options.get(self.CRITERION_KEYWORD),
+                iterations=options.get(self.ITERATION_KEYWORD),
+            )
 
         if self.algo_name == self.PYDOE_CCDESIGN:
             return self.__translate(
@@ -264,9 +249,7 @@ class PyDOE(DOELibrary):
         if self.algo_name == self.PYDOE_PBDESIGN:
             return self.__translate(pyDOE.pbdesign(options[self.DIMENSION]))
 
-    def _generate_fullfact_from_levels(
-        self, levels  # type: Union[int, Sequence[int]]
-    ):  # type: (...) -> ndarray
+    def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> ndarray:
         doe = pyDOE.fullfact(levels)
 
         # Because pyDOE return the DOE where the values of levels are integers from 0 to
@@ -285,9 +268,9 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def is_algorithm_suited(
-        algo_charact,  # type: Mapping[str, DOELibrary.DOELibraryOptionType]
-        problem,  # type: OptimizationProblem
-    ):  # type: (...) -> bool
+        algo_charact: Mapping[str, DOELibrary.DOELibraryOptionType],
+        problem: OptimizationProblem,
+    ) -> bool:
         """Check if the algorithm is suited to the problem according to its
         characteristics.
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,14 +22,11 @@
 The concept of error measure is implemented with the :class:`.MLErrorMeasure` class and
 proposes different evaluation methods.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import arange
 from numpy import delete as npdelete
@@ -47,9 +43,9 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLSupervisedAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLSupervisedAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for supervised learning.
@@ -58,9 +54,9 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         self._train_algo(samples)
         return self._compute_measure(
             self.algo.output_data,
@@ -70,10 +66,10 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         self._train_algo(samples)
         return self._compute_measure(
             test_data.get_data_by_names(self.algo.output_names, False),
@@ -85,12 +81,12 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
@@ -114,11 +110,11 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        seed=None,  # type: Optional[None]
-    ):  # type: (...) -> Union[float,ndarray]
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: None | None = None,
+    ) -> float | ndarray:
         samples = self._assure_samples(samples)
         self._train_algo(samples)
         n_samples = samples.size
@@ -150,10 +146,10 @@ class MLErrorMeasure(MLQualityMeasure):
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> NoReturn:
         """Compute the quality measure.
 
         Args:

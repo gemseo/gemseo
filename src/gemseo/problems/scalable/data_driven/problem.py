@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -45,8 +44,7 @@ on the problem dimension.
 .. seealso:: :class:`.MDODiscipline`, :class:`.ScalableDiscipline`
    and :class:`.Scenario`
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import os
@@ -73,7 +71,7 @@ from gemseo.utils.string_tools import MultiLineString
 LOGGER = logging.getLogger(__name__)
 
 
-class ScalableProblem(object):
+class ScalableProblem:
     """Scalable problem."""
 
     def __init__(
@@ -137,9 +135,7 @@ class ScalableProblem(object):
         eq_constraints = None
         if self.eq_constraints is not None:
             eq_constraints = ", ".join(self.eq_constraints)
-        sizes = [
-            name + " ({})".format(size) for name, size in self.scaled_sizes.items()
-        ]
+        sizes = [name + f" ({size})" for name, size in self.scaled_sizes.items()]
         sizes = ", ".join(sizes)
         optimize = "maximize" if self.maximize_objective else "minimize"
         msg = MultiLineString()

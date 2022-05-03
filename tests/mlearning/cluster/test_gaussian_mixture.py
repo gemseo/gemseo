@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test Gaussian Mixture clustering model."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import List
 from typing import Tuple
 
@@ -30,7 +26,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_clustering_model
 from gemseo.mlearning.cluster.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
-from gemseo.utils.py23_compat import long
 from numpy import allclose
 from numpy import array
 from numpy import integer
@@ -63,7 +58,7 @@ VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
 @pytest.fixture
-def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
+def samples() -> Tuple[ndarray, ndarray, List[int]]:
     """The description of the samples used to generate the learning dataset.
 
     It consists of three clusters from normal distributions.
@@ -77,7 +72,7 @@ def samples():  # type: (...) -> Tuple[ndarray,ndarray,List[int]]
 
 
 @pytest.fixture
-def dataset(samples):  # type: (...) -> Dataset
+def dataset(samples) -> Dataset:
     """The dataset used to train the GaussianMixture.
 
     It consists of three clusters from normal distributions.
@@ -107,7 +102,7 @@ def dataset(samples):  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> GaussianMixture
+def model(dataset) -> GaussianMixture:
     """A trained GaussianMixture."""
     n_components = 3
     gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
@@ -116,7 +111,7 @@ def model(dataset):  # type: (...) -> GaussianMixture
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> GaussianMixture
+def model_with_transform(dataset) -> GaussianMixture:
     """A trained GaussianMixture with parameters scaling."""
     n_components = 3
     transformer = {"parameters": MinMaxScaler()}
@@ -161,7 +156,7 @@ def test_predict(model):
     """Test prediction."""
     prediction = model.predict(VALUE)
     predictions = model.predict(VALUES)
-    assert isinstance(prediction, (int, long, integer))
+    assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]
@@ -173,7 +168,7 @@ def test_predict_with_transform(model_with_transform):
     """Test prediction."""
     prediction = model_with_transform.predict(VALUE)
     predictions = model_with_transform.predict(VALUES)
-    assert isinstance(prediction, (int, long, integer))
+    assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
     assert predictions[0] != predictions[1]

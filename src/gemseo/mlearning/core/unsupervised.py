@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -27,13 +26,11 @@ where the data has no notion of input or output.
 This concept is implemented through the :class:`.MLUnsupervisedAlgo` class,
 which inherits from the :class:`.MLAlgo` class.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
 
 from numpy import hstack
@@ -59,26 +56,26 @@ class MLUnsupervisedAlgo(MLAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        var_names=None,  # type: Optional[Iterable[str]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             var_names: The names of the variables.
                 If None, consider all variables mentioned in the learning dataset.
         """
-        super(MLUnsupervisedAlgo, self).__init__(
+        super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
         self.var_names = var_names or data.variables
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-        fit_transformers,  # type: bool
-    ):  # type: (...) -> None
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         if set(self.var_names) == set(self.learning_set.variables):
             data = []
             for group in self.learning_set.groups:
@@ -103,8 +100,8 @@ class MLUnsupervisedAlgo(MLAlgo):
 
     def _fit(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Fit model on data.
 
         Args:

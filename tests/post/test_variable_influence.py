@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,8 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -26,7 +24,6 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import Path
 from numpy import repeat
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"

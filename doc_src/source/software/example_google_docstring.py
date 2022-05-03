@@ -104,8 +104,7 @@ def example_generator(
         >>> print([i for i in example_generator(4)])
         [0, 1, 2, 3]
     """
-    for i in range(n):
-        yield i
+    yield from range(n)
 
 
 class ExampleClass:

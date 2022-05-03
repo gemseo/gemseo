@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,9 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite element analysis (FEA) for 2D topology optimization problems."""
-from typing import Optional
+from __future__ import annotations
+
 from typing import Sequence
-from typing import Union
 
 import scipy
 from numpy import arange
@@ -45,16 +44,16 @@ class FininiteElementAnalysis(MDODiscipline):
 
     def __init__(
         self,
-        nu=0.3,  # type: float
-        n_x=100,  # type: int
-        n_y=100,  # type: int
-        f_node=101 * 101 - 1,  # type: Union[int, Sequence[int]]
-        f_direction=1,  # type: Union[int, Sequence[int]]
-        f_amplitude=-1,  # type: Union[int, Sequence[int]]
-        fixed_nodes=None,  # type: Optional[Union[int, Sequence[int]]]
-        fixed_dir=None,  # type: Optional[Union[int, Sequence[int]]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        nu: float = 0.3,
+        n_x: int = 100,
+        n_y: int = 100,
+        f_node: int | Sequence[int] = 101 * 101 - 1,
+        f_direction: int | Sequence[int] = 1,
+        f_amplitude: int | Sequence[int] = -1,
+        fixed_nodes: int | Sequence[int] | None = None,
+        fixed_dir: int | Sequence[int] | None = None,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             nu: The material Poisson's ratio.
@@ -71,7 +70,7 @@ class FininiteElementAnalysis(MDODiscipline):
                 If None, use the class name.
         """
 
-        super(FininiteElementAnalysis, self).__init__(name=name)
+        super().__init__(name=name)
         if fixed_nodes is None:
             fixed_nodes = tile(arange(101), 2)
         if fixed_dir is None:
@@ -98,7 +97,7 @@ class FininiteElementAnalysis(MDODiscipline):
         self.output_grammar.initialize_from_data_names(["compliance"])
         self.default_inputs = {"E": ones(self.N_elements)}
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         em = self.get_inputs_by_name("E")
         sk = ((self.KE.flatten()[newaxis]).T * em).flatten(order="F")
         k_mat = scipy.sparse.coo_matrix(
@@ -123,7 +122,7 @@ class FininiteElementAnalysis(MDODiscipline):
         self.jac["compliance"] = {}
         self.jac["compliance"]["E"] = atleast_2d(-ce)
 
-    def prepare_fea(self):  # type: (...) -> None
+    def prepare_fea(self) -> None:
         """Prepare the Finite Element Analysis."""
         self.KE = self.compute_elementary_stiffeness_matrix()
 
@@ -158,7 +157,7 @@ class FininiteElementAnalysis(MDODiscipline):
 
     def compute_elementary_stiffeness_matrix(
         self,
-    ):  # type: (...) -> None # noqa: D205,D212,D415
+    ) -> None:  # noqa: D205,D212,D415
         """Compute the elementary stiffness matrix of 1x1 quadrilateral elements."""
         em = 1.0
         k = array(

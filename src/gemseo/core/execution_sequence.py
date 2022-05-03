@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,14 +21,12 @@
 Abstraction for workflow
 ************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from uuid import uuid4
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +36,7 @@ STATUS_PENDING = MDODiscipline.STATUS_PENDING
 STATUS_RUNNING = MDODiscipline.STATUS_RUNNING
 
 
-class ExecutionSequence(object):
+class ExecutionSequence:
     """A base class for execution sequences.
 
     The execution sequence structure is introduced to reflect the main workflow
@@ -52,10 +49,8 @@ class ExecutionSequence(object):
     END_STR = "]"
 
     def __init__(self, sequence=None):  # pylint: disable=unused-argument
-        # use an OrderedDict to get disc_to_uuids lists ordered regarding
-        # a discipline repetitive appearance: useful for testing and debug
         self.uuid = str(uuid4())
-        self.uuid_to_disc = OrderedDict()
+        self.uuid_to_disc = {}
         self.disc_to_uuids = {}
         self._status = None
         self._enabled = False
@@ -147,7 +142,7 @@ class AtomicExecSequence(ExecutionSequence):
     """An execution sequence to represent the single execution of a given discipline."""
 
     def __init__(self, discipline=None):
-        super(AtomicExecSequence, self).__init__(discipline)
+        super().__init__(discipline)
         if not isinstance(discipline, MDODiscipline):
             raise Exception(
                 "Atomic sequence shall be a discipline"
@@ -186,12 +181,12 @@ class AtomicExecSequence(ExecutionSequence):
     def enable(self):
         """Subscribe to status changes of the discipline (notified via
         update_status())"""
-        super(AtomicExecSequence, self).enable()
+        super().enable()
         self.discipline.add_status_observer(self)
 
     def disable(self):
         """Unsubscribe from receiving status changes of the discipline."""
-        super(AtomicExecSequence, self).disable()
+        super().disable()
         self.discipline.remove_status_observer(self)
 
     def get_state_dict(self):
@@ -244,7 +239,7 @@ class CompositeExecSequence(ExecutionSequence):
     END_STR = "'"
 
     def __init__(self, sequence=None):
-        super(CompositeExecSequence, self).__init__(sequence)
+        super().__init__(sequence)
         self.sequence_list = []
         self.disciplines = []
 
@@ -283,7 +278,7 @@ class CompositeExecSequence(ExecutionSequence):
 
     def disable(self):
         """Unsubscribe subsequences from receiving status changes of disciplines."""
-        super(CompositeExecSequence, self).disable()
+        super().disable()
         for seq in self.sequence_list:
             seq.disable()
 
@@ -334,7 +329,7 @@ class ExtendableExecSequence(CompositeExecSequence):
     """
 
     def __init__(self, sequence=None):
-        super(ExtendableExecSequence, self).__init__(sequence)
+        super().__init__(sequence)
         if sequence is not None:
             self.extend(sequence)
 
@@ -435,7 +430,7 @@ class SerialExecSequence(ExtendableExecSequence):
     END_STR = "]"
 
     def __init__(self, sequence=None):
-        super(SerialExecSequence, self).__init__(sequence)
+        super().__init__(sequence)
         self.exec_index = None
 
     def _accept(self, visitor):
@@ -447,7 +442,7 @@ class SerialExecSequence(ExtendableExecSequence):
 
     def enable(self):
         """Activate first child execution sequence."""
-        super(SerialExecSequence, self).enable()
+        super().enable()
         self.exec_index = 0
         if self.sequence_list:
             self.sequence_list[self.exec_index].enable()
@@ -485,7 +480,7 @@ class ParallelExecSequence(ExtendableExecSequence):
 
     def enable(self):
         """Activate all child execution sequences."""
-        super(ParallelExecSequence, self).enable()
+        super().enable()
         for seq in self.sequence_list:
             seq.enable()
 
@@ -528,7 +523,7 @@ class LoopExecSequence(CompositeExecSequence):
                 + str(type(sequence))
                 + " instead !"
             )
-        super(LoopExecSequence, self).__init__()
+        super().__init__()
         self.sequence_list = [control, sequence]
         self.atom_controller = control
         self.atom_controller.parent = self
@@ -548,7 +543,7 @@ class LoopExecSequence(CompositeExecSequence):
 
     def enable(self):
         """Active controller execution sequence."""
-        super(LoopExecSequence, self).enable()
+        super().enable()
         self.atom_controller.enable()
         self.iteration_count = 0
 
@@ -574,7 +569,7 @@ class LoopExecSequence(CompositeExecSequence):
             self.status = STATUS_FAILED
 
 
-class ExecutionSequenceFactory(object):
+class ExecutionSequenceFactory:
     """A factory class for ExecutionSequence objects.
 
     Allow to create AtomicExecutionSequence, SerialExecutionSequence,

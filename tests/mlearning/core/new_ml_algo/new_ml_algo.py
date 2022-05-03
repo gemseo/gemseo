@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,7 +21,7 @@ class NewMLAlgo(MLAlgo):
     LIBRARY = "NewLibrary"
 
     def learn(self, samples=None):
-        super(NewMLAlgo, self).learn(samples=samples)
+        super().learn(samples=samples)
         self._trained = True
 
     def _learn(self, indices, fit_transformers):

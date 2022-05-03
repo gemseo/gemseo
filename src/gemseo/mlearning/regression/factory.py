@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,8 +23,7 @@ This module contains a factory to instantiate a :class:`.MLRegressionAlgo` from 
 class name. It also provides the available regression models and allows testing if a
 regression model type is available.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -46,6 +44,6 @@ class RegressionModelFactory(MLAlgoFactory):
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self):  # type: (...) ->  None
-        super(RegressionModelFactory, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.factory = Factory(MLRegressionAlgo, ("gemseo.mlearning.regression",))

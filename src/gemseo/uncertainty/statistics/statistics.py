@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -89,16 +88,11 @@ for the different variables:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Dict
 from typing import Iterable
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
@@ -127,11 +121,11 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        dataset,  # type: Dataset,
-        variables_names=None,  # type: Optional[Iterable[str]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None # noqa: D205,D212,D415
-        """
+        dataset: Dataset,
+        variables_names: Iterable[str] | None = None,
+        name: str | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             dataset: A dataset.
             variables_names: The variables of interest.
@@ -140,16 +134,16 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
                 Default: use the concatenation of the class and dataset names.
         """
         class_name = self.__class__.__name__
-        default_name = "{}_{}".format(class_name, dataset.name)
+        default_name = f"{class_name}_{dataset.name}"
         self.name = name or default_name
-        msg = "Create {}, a {} library.".format(self.name, class_name)
+        msg = f"Create {self.name}, a {class_name} library."
         LOGGER.info(msg)
         self.dataset = dataset.get_all_data(by_group=False, as_dict=True)
         self.n_samples = dataset.n_samples
         self.names = variables_names or dataset.variables
         self.n_variables = dataset.n_variables
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
@@ -160,10 +154,10 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_tolerance_interval(
         self,
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]# noqa: D102
+        coverage: float,
+        confidence: float = 0.95,
+        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
+    ) -> dict[str, tuple[ndarray, ndarray]]:  # noqa: D102
         r"""Compute a tolerance interval :math:`\text{TI}[X]`.
 
         This coverage level is the minimum percentage of belonging to the TI.
@@ -186,7 +180,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["tolerance_interval"] = "TI"
 
-    def compute_a_value(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_a_value(self) -> dict[str, ndarray]:
         r"""Compute the A-value :math:`\text{Aval}[X]`.
 
         Returns:
@@ -200,7 +194,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["a_value"] = "Aval"
 
-    def compute_b_value(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_b_value(self) -> dict[str, ndarray]:
         r"""Compute the B-value :math:`\text{Bval}[X]`.
 
         Returns:
@@ -214,7 +208,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["b_value"] = "Bval"
 
-    def compute_maximum(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_maximum(self) -> dict[str, ndarray]:
         r"""Compute the maximum :math:`\text{Max}[X]`.
 
         Returns:
@@ -224,7 +218,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["maximum"] = "Max"
 
-    def compute_mean(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_mean(self) -> dict[str, ndarray]:
         r"""Compute the mean :math:`\mathbb{E}[X]`.
 
         Returns:
@@ -236,8 +230,8 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_mean_std(
         self,
-        std_factor,  # type: float
-    ):  # type: (...) -> Dict[str,ndarray]
+        std_factor: float,
+    ) -> dict[str, ndarray]:
         r"""Compute a margin :math:`\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]`.
 
         Args:
@@ -256,7 +250,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
     SYMBOLS["mean_std"] = "E_StD"
     SYMBOLS["margin"] = "Margin"
 
-    def compute_minimum(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_minimum(self) -> dict[str, ndarray]:
         r"""Compute the :math:`\text{Min}[X]`.
 
         Returns:
@@ -266,7 +260,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["minimum"] = "Min"
 
-    def compute_median(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_median(self) -> dict[str, ndarray]:
         r"""Compute the median :math:`\text{Med}[X]`.
 
         Returns:
@@ -279,8 +273,8 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_percentile(
         self,
-        order,  # type: int
-    ):  # type: (...) -> Dict[str,ndarray]
+        order: int,
+    ) -> dict[str, ndarray]:
         r"""Compute the n-th percentile :math:`\text{p}[X; n]`.
 
         Args:
@@ -302,9 +296,9 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_probability(
         self,
-        thresh,  # type: float
-        greater=True,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]
+        thresh: float,
+        greater: bool = True,
+    ) -> dict[str, ndarray]:
         r"""Compute the probability related to a threshold.
 
         Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
@@ -326,8 +320,8 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_quantile(
         self,
-        prob,  # type:float
-    ):  # type: (...) -> Dict[str,ndarray]
+        prob: float,
+    ) -> dict[str, ndarray]:
         r"""Compute the quantile :math:`\mathbb{Q}[X; \alpha]` related to a probability.
 
         Args:
@@ -342,8 +336,8 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_quartile(
         self,
-        order,  # type:int
-    ):  # type: (...) -> Dict[str,ndarray]
+        order: int,
+    ) -> dict[str, ndarray]:
         r"""Compute the n-th quartile :math:`q[X; n]`.
 
         Args:
@@ -361,7 +355,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["quartile"] = "q"
 
-    def compute_range(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_range(self) -> dict[str, ndarray]:
         r"""Compute the range :math:`R[X]`.
 
         Returns:
@@ -371,7 +365,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["range"] = "R"
 
-    def compute_standard_deviation(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_standard_deviation(self) -> dict[str, ndarray]:
         r"""Compute the standard deviation :math:`\mathbb{S}[X]`.
 
         Returns:
@@ -381,7 +375,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     SYMBOLS["standard_deviation"] = "StD"
 
-    def compute_variance(self):  # type: (...) -> Dict[str,ndarray]
+    def compute_variance(self) -> dict[str, ndarray]:
         r"""Compute the variance :math:`\mathbb{V}[X]`.
 
         Returns:
@@ -393,8 +387,8 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_moment(
         self,
-        order,  # type:int
-    ):  # type: (...) -> Dict[str,ndarray]
+        order: int,
+    ) -> dict[str, ndarray]:
         r"""Compute the n-th moment :math:`M[X; n]`.
 
         Args:
@@ -410,11 +404,11 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
     @classmethod
     def compute_expression(
         cls,
-        variable_name,  # type:str
-        statistic_name,  # type:str
-        show_name=False,  # type:bool
-        **options,  # type: Union[bool,float,int]
-    ):  # type: (...) -> str
+        variable_name: str,
+        statistic_name: str,
+        show_name: bool = False,
+        **options: bool | float | int,
+    ) -> str:
         """Return the expression of a statistical function applied to a variable.
 
         E.g. "P[X >= 1.0]" for the probability that X exceeds 1.0.

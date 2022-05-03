@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest import mock  # noqa: F401
 
 import pytest
@@ -27,7 +23,6 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
@@ -54,7 +49,6 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),
@@ -147,7 +141,6 @@ def test_pareto_incorrect_objective_names():
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS_BINHKORN.values(),
@@ -183,7 +176,6 @@ def test_pareto_binhkorn(
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @image_comparison(["binh_korn_design_variable"], extensions=["png"])
 def test_pareto_binhkorn_design_variable(
     tmp_wd,
@@ -209,7 +201,6 @@ def test_pareto_binhkorn_design_variable(
     post.figures
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with Python 2.")
 @image_comparison(["binh_korn_no_obj"], extensions=["png"])
 def test_pareto_binhkorn_no_obj(
     tmp_wd,

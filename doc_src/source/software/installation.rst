@@ -74,7 +74,7 @@ in an anaconda environment named *gemseo* for python 3.9 with
 
     conda create -c conda-forge -n gemseo python=3.9 gemseo
 
-You can change the python version to 3.6, 3.7 or 3.8.
+You can change the Python version to 3.7 or 3.8.
 
 Install from an archive
 ***********************
@@ -105,32 +105,6 @@ or the full features with:
 .. code-block:: console
 
     pip install git+https://gitlab.com/gemseo/dev/gemseo.git@develop#egg=gemseo[all]
-
-Install for Python 2.7
-**********************
-
-Download :download:`this file <../../../environment-py2.yml>`
-and create an anaconda environment for |g| with
-
-.. code-block:: console
-
-    conda env create -f environment-py2.yml
-
-Then,
-activate this environment with:
-
-.. code-block:: console
-
-    conda activate gemseo
-
-and you can now proceed with the installation of |g| from Pypi,
-see :ref:`pypi`.
-
-You may leave the anaconda environment with
-
-.. code-block:: console
-
-    conda deactivate
 
 Test the installation
 *********************

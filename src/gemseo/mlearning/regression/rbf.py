@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -37,36 +36,27 @@ The RBF model relies on the Rbf class of the
 `scipy library
 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-import pickle
 from typing import Callable
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
 from typing import Union
 
-from numpy import array
 from numpy import average
 from numpy import exp
 from numpy import finfo
-from numpy import hstack
 from numpy import log
 from numpy import ndarray
 from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
-from six import string_types
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.core.supervised import SavedObjectType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY3
 
 LOGGER = logging.getLogger(__name__)
 
@@ -109,16 +99,16 @@ class RBFRegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        function=MULTIQUADRIC,  # type: Union[str, Callable[[float,float],float]]
-        der_function=None,  # type: Optional[Callable[[ndarray],ndarray]]
-        epsilon=None,  # type: Optional[float]
-        smooth=0.0,  # type: float
-        norm="euclidean",  # type: Union[str,Callable[[ndarray,ndarray],float]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        function: str | Callable[[float, float], float] = MULTIQUADRIC,
+        der_function: Callable[[ndarray], ndarray] | None = None,
+        epsilon: float | None = None,
+        smooth: float = 0.0,
+        norm: str | Callable[[ndarray, ndarray], float] = "euclidean",
+    ) -> None:
         r"""
         Args:
             function: The radial basis function taking a radius ``r`` as input,
@@ -165,9 +155,9 @@ class RBFRegression(MLRegressionAlgo):
                 scipy.spatial.distance.cdist.html>`_
                 or a function that computes the distance between two points.
         """
-        if isinstance(function, string_types):
+        if isinstance(function, str):
             function = str(function)
-        super(RBFRegression, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -180,7 +170,7 @@ class RBFRegression(MLRegressionAlgo):
         self.y_average = 0.0
         self.der_function = der_function
 
-    class RBFDerivatives(object):
+    class RBFDerivatives:
         r"""Derivatives of functions used in :class:`.RBFRegression`.
 
         For an RBF of the form :math:`f(r)`, :math:`r` scalar,
@@ -197,10 +187,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_multiquadric(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             r"""Compute derivative of  :math:`f(r) = \sqrt{r^2 + 1}` wrt :math:`x`.
 
             Args:
@@ -216,10 +206,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_inverse_multiquadric(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = 1/\sqrt{r^2 + 1}`.
 
@@ -236,10 +226,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_gaussian(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = \exp(-r^2)`.
 
@@ -256,10 +246,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_linear(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r`.
             If :math:`x=0`, return 0 (determined up to a tolerance).
@@ -282,10 +272,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_cubic(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^3`.
 
@@ -302,10 +292,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_quintic(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             """Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^5`.
 
@@ -322,10 +312,10 @@ class RBFRegression(MLRegressionAlgo):
         @classmethod
         def der_thin_plate(
             cls,
-            input_data,  # type: ndarray
-            norm_input_data,  # type: float
-            eps,  # type: float
-        ):  # type: (...) -> ndarray
+            input_data: ndarray,
+            norm_input_data: float,
+            eps: float,
+        ) -> ndarray:
             r"""Compute derivative w.r.t. :math:`x` of the function
             :math:`f(r) = r^2 \log(r)`.
             If :math:`x=0`, return 0 (determined up to a tolerance).
@@ -347,55 +337,37 @@ class RBFRegression(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
-        if PY3:
-            args = list(input_data.T) + [output_data]
-            self.algo = Rbf(
-                *args,
-                mode="N-D",
-                function=self.parameters["function"],
-                epsilon=self.parameters["epsilon"],
-                smooth=self.parameters["smooth"],
-                norm=self.parameters["norm"],
-            )
-        else:
-            self.algo = []
-            for output in range(output_data.shape[1]):
-                args = hstack([input_data, output_data[:, [output]]])
-                rbf = Rbf(
-                    *args.T,
-                    function=self.parameters["function"],
-                    epsilon=self.parameters["epsilon"],
-                    smooth=self.parameters["smooth"],
-                    norm=self.parameters["norm"],
-                )
-                self.algo.append(rbf)
+        args = list(input_data.T) + [output_data]
+        self.algo = Rbf(
+            *args,
+            mode="N-D",
+            function=self.parameters["function"],
+            epsilon=self.parameters["epsilon"],
+            smooth=self.parameters["smooth"],
+            norm=self.parameters["norm"],
+        )
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
-        if PY3:
-            output_data = self.algo(*input_data.T)
-            if len(output_data.shape) == 1:
-                output_data = output_data[:, None]  # n_outputs=1, rbf reduces
-            output_data = output_data + self.y_average
-        else:
-            output_data = [rbf(*input_data.T) for rbf in self.algo]
-            output_data = array(output_data).T + self.y_average
-        return output_data
+        input_data: ndarray,
+    ) -> ndarray:
+        output_data = self.algo(*input_data.T)
+        if len(output_data.shape) == 1:
+            output_data = output_data[:, None]  # n_outputs=1, rbf reduces
+        return output_data + self.y_average
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         self._check_available_jacobian()
         der_func = self.der_function or getattr(
-            self.RBFDerivatives, "der_{}".format(self.function)
+            self.RBFDerivatives, f"der_{self.function}"
         )
         #             predict_samples                        learn_samples
         # Dimensions : ( n_samples , n_outputs , n_inputs , n_learn_samples )
@@ -403,35 +375,23 @@ class RBFRegression(MLRegressionAlgo):
         # ref_points : (           ,           , n_inputs , n_learn_samples )
         # nodes      : (           , n_outputs ,          , n_learn_samples )
         # jacobians  : ( n_samples , n_outputs , n_inputs ,                 )
-        if PY3:
-            eps = self.algo.epsilon
-            ref_points = self.algo.xi[None, None]
-            nodes = self.algo.nodes.T[None, :, None]
-        else:
-            eps = [rbf.epsilon for rbf in self.algo]
-            eps = array(eps)[None, :, None, None]  # 1 epsilon for each output
-            ref_points = self.algo[0].xi  # same xi for all algos
-            nodes = array([rbf.nodes for rbf in self.algo])[None, :, None]
+        eps = self.algo.epsilon
+        ref_points = self.algo.xi[None, None]
+        nodes = self.algo.nodes.T[None, :, None]
         input_data = input_data[:, None, :, None]
         diffs = input_data - ref_points
         dists = norm(diffs, axis=2)[:, :, None]
         contributions = nodes * der_func(diffs, dists, eps=eps)
-        jacobians = contributions.sum(-1)
-        return jacobians
+        return contributions.sum(-1)
 
-    def _check_available_jacobian(self):  # type: (...) -> None
+    def _check_available_jacobian(self) -> None:
         """Check if the Jacobian is available for the given setup.
 
         Raises:
             NotImplementedError: Either if the Jacobian computation is not implemented
                 or if the derivative of the radial basis function is missing.
         """
-        if PY3:
-            norm_name = self.algo.norm
-        else:
-            norm_name = self.algo[0].norm
-
-        if norm_name != self.EUCLIDEAN:
+        if self.algo.norm != self.EUCLIDEAN:
             raise NotImplementedError(
                 "Jacobian is only implemented for Euclidean norm."
             )
@@ -442,57 +402,14 @@ class RBFRegression(MLRegressionAlgo):
                 "Add der_function in RBFRegression constructor."
             )
 
-    def _save_algo(
-        self,
-        directory,  # type: Path
-    ):  # type: (...) -> None
-        if PY3:
-            super(RBFRegression, self)._save_algo(directory)
-        else:
-            with (directory / "algo.pkl").open("wb") as handle:
-                pickled_rbf = pickle.Pickler(handle, protocol=2)
-                pickled_rbf_list = []
-                for rbf in self.algo:
-                    pickled_rbf_list.append({})
-                    for key in rbf.__dict__.keys():
-                        if key != "_function":
-                            pickled_rbf_list[-1][key] = rbf.__getattribute__(key)
-                pickled_rbf.dump(pickled_rbf_list)
-
-    def load_algo(
-        self,
-        directory,  # type: Union[str,Path]
-    ):  # type: (...) -> None
-        directory = Path(directory)
-        if PY3:
-            super(RBFRegression, self).load_algo(directory)
-        else:
-            self.algo = []
-            with (directory / "algo.pkl").open("rb") as handle:
-                unpickled_rbf = pickle.Unpickler(handle)
-                unpickled_rbf_list = unpickled_rbf.load()
-                for rbf in unpickled_rbf_list:
-                    algo_i = Rbf(
-                        array([1, 2, 3]),
-                        array([10, 20, 30]),
-                        array([100, 200, 300]),
-                        function=rbf["function"],
-                        epsilon=rbf["epsilon"],
-                        smooth=rbf["smooth"],
-                        norm=rbf["norm"],
-                    )
-                    for key, value in rbf.items():
-                        algo_i.__setattr__(key, value)
-                    self.algo.append(algo_i)
-
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
-        objects = super(RBFRegression, self)._get_objects_to_save()
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
+        objects = super()._get_objects_to_save()
         objects["y_average"] = self.y_average
         objects["der_function"] = self.der_function
         return objects
 
     @property
-    def function(self):  # type: (...) -> str
+    def function(self) -> str:
         """The name of the kernel function.
 
         The name is possibly different from self.parameters['function'], as it
@@ -501,8 +418,4 @@ class RBFRegression(MLRegressionAlgo):
         'inverse'              -> 'inverse_multiquadric'
         'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
         """
-        if PY3:
-            function = self.algo.function
-        else:
-            function = self.algo[0].function
-        return function
+        return self.algo.function

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,15 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """scipy.optimize optimization library wrapper."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Union
 
 from numpy import isfinite
 from numpy import ndarray
@@ -77,7 +72,7 @@ class ScipyOpt(OptimizationLibrary):
         - does it handle equality constraints
         - does it handle inequality constraints
         """
-        super(ScipyOpt, self).__init__()
+        super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
         self.lib_dict = {
             "SLSQP": SciPyAlgorithmAlgorithm(
@@ -115,31 +110,31 @@ class ScipyOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        max_iter=999,  # type: int
-        ftol_rel=1e-9,  # type: float
-        ftol_abs=1e-9,  # type: float
-        xtol_rel=1e-9,  # type: float
-        xtol_abs=1e-9,  # type: float
-        max_ls_step_size=0.0,  # type: float
-        max_ls_step_nb=20,  # type: int
-        max_fun_eval=999,  # type: int
-        max_time=0,  # type: float
-        pg_tol=1e-5,  # type: float
-        disp=0,  # type: int
-        maxCGit=-1,  # type: int # noqa: N803
-        eta=-1.0,  # type: float
-        factr=1e7,  # type: float
-        maxcor=20,  # type: int
-        normalize_design_space=True,  # type: int
-        eq_tolerance=1e-2,  # type: float
-        ineq_tolerance=1e-4,  # type: float
-        stepmx=0.0,  # type: float
-        minfev=0.0,  # type: float
-        scale=None,  # type: Optional[float]
-        rescale=-1,  # type: float
-        offset=None,  # type: Optional[float]
-        **kwargs,  # type: Any
-    ):  # type: (...) -> Dict[str, Any]
+        max_iter: int = 999,
+        ftol_rel: float = 1e-9,
+        ftol_abs: float = 1e-9,
+        xtol_rel: float = 1e-9,
+        xtol_abs: float = 1e-9,
+        max_ls_step_size: float = 0.0,
+        max_ls_step_nb: int = 20,
+        max_fun_eval: int = 999,
+        max_time: float = 0,
+        pg_tol: float = 1e-5,
+        disp: int = 0,
+        maxCGit: int = -1,  # noqa: N803
+        eta: float = -1.0,
+        factr: float = 1e7,
+        maxcor: int = 20,
+        normalize_design_space: int = True,
+        eq_tolerance: float = 1e-2,
+        ineq_tolerance: float = 1e-4,
+        stepmx: float = 0.0,
+        minfev: float = 0.0,
+        scale: float | None = None,
+        rescale: float = -1,
+        offset: float | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
@@ -217,9 +212,7 @@ class ScipyOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.
 
         Args:
@@ -238,8 +231,8 @@ class ScipyOpt(OptimizationLibrary):
         bounds = list(zip(l_b, u_b))
 
         def real_part_fun(
-            x,  # type: ndarray
-        ):  # type: (...) -> Union[int, float]
+            x: ndarray,
+        ) -> int | float:
             """Wrap the function and return the real part.
 
             Args:

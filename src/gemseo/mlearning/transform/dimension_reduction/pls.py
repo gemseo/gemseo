@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -28,12 +27,9 @@ This dimension reduction algorithm relies on the PLSRegression class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cross_decomposition.PLSRegression.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import NoReturn
-from typing import Optional
-from typing import Union
 
 from numpy import matmul
 from numpy import ndarray
@@ -51,22 +47,22 @@ class PLS(DimensionReduction):
 
     def __init__(
         self,
-        name="PLS",  # type: str
-        n_components=None,  # type: Optional[int]
-        **parameters,  # type: Union[float,int,bool]
-    ):  # type: (...) -> None
+        name: str = "PLS",
+        n_components: int | None = None,
+        **parameters: float | int | bool,
+    ) -> None:
         """
         Args:
             **parameters: The optional parameters for sklearn PCA constructor.
         """
-        super(PLS, self).__init__(name, n_components=n_components, **parameters)
+        super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
     def _fit(
         self,
-        data,  # type: ndarray
-        other_data,  # type: ndarray
-    ):  # type: (...) -> None
+        data: ndarray,
+        other_data: ndarray,
+    ) -> None:
         """Fit the transformer to the data.
 
         Args:
@@ -80,14 +76,14 @@ class PLS(DimensionReduction):
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.transform(data)
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         inv_data = matmul(data, self.algo.x_loadings_.T)
         inv_data *= self.algo.x_std_
         inv_data += self.algo.x_mean_
@@ -95,12 +91,12 @@ class PLS(DimensionReduction):
 
     def compute_jacobian(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         raise NotImplementedError
 
     def compute_jacobian_inverse(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         raise NotImplementedError

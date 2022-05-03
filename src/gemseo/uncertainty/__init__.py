@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -56,3 +55,4 @@ fitted from a :class:`.Dataset`.
     :class:`.EmpiricalStatistics`
     :class:`.ParametricStatistics`
 """
+from __future__ import annotations

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Factory base class."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import importlib
 import logging
@@ -28,17 +26,11 @@ import os
 import pkgutil
 import sys
 from typing import Any
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Type
-from typing import Union
 
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.py23_compat import importlib_metadata
-from gemseo.utils.py23_compat import PY3
+from gemseo.utils.python_compatibility import importlib_metadata
 from gemseo.utils.singleton import _Multiton
 from gemseo.utils.singleton import Multiton
 from gemseo.utils.source_parsing import get_default_options_values
@@ -96,9 +88,9 @@ class Factory(Multiton):
 
     def __init__(
         self,
-        base_class,  # type: Type[Any]
-        module_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        base_class: type[Any],
+        module_names: Iterable[str] | None = None,
+    ) -> None:
         # noqa: D205, D212, D405, D415
         """
         Args:
@@ -115,7 +107,7 @@ class Factory(Multiton):
 
         self.update()
 
-    def update(self):  # type: (...) -> None
+    def update(self) -> None:
         """Search for the classes that can be instantiated.
 
         The search is done in the following order:
@@ -141,14 +133,13 @@ class Factory(Multiton):
                 self.__import_modules_from(module_name)
                 module_names += [module_name]
 
-        if PY3:
-            # Import from the setuptools entry points.
-            for entry_point in importlib_metadata.entry_points().get(
-                self.PLUGIN_ENTRY_POINT, []
-            ):
-                module_name = entry_point.value
-                self.__import_modules_from(module_name)
-                module_names += [module_name]
+        # Import from the setuptools entry points.
+        for entry_point in importlib_metadata.entry_points().get(
+            self.PLUGIN_ENTRY_POINT, []
+        ):
+            module_name = entry_point.value
+            self.__import_modules_from(module_name)
+            module_names += [module_name]
 
         gems_path = os.environ.get(self.__GEMS_PATH)
         if gems_path is not None:
@@ -170,9 +161,7 @@ class Factory(Multiton):
             if self.__is_class_in_modules(module_names, cls):
                 self.__names_to_classes[name] = cls
 
-    def __log_import_failure(
-        self, pkg_name  # type: str
-    ):  # type: (...) -> None
+    def __log_import_failure(self, pkg_name: str) -> None:
         """Log import failures.
 
         Args:
@@ -181,9 +170,7 @@ class Factory(Multiton):
         LOGGER.debug("Failed to import package %s", pkg_name)
         self.failed_imports[pkg_name] = ""
 
-    def __import_modules_from_env_var(
-        self, env_variable  # type: str
-    ):  # type: (...) -> List[str]
+    def __import_modules_from_env_var(self, env_variable: str) -> list[str]:
         """Import the modules from the path given by an environment variable.
 
         Args:
@@ -215,9 +202,7 @@ class Factory(Multiton):
 
         return mod_names
 
-    def __import_modules_from(
-        self, pkg_name  # type: str
-    ):  # type: (...) -> None
+    def __import_modules_from(self, pkg_name: str) -> None:
         """Import all the modules from a package.
 
         Args:
@@ -238,9 +223,7 @@ class Factory(Multiton):
                 LOGGER.debug("Failed to import module: %s", mod_name, exc_info=True)
                 self.failed_imports[mod_name] = err
 
-    def __get_sub_classes(
-        self, cls  # type: Type[Any]
-    ):  # type: (...) -> Dict[str, Type[Any]]
+    def __get_sub_classes(self, cls: type[Any]) -> dict[str, type[Any]]:
         """Find all the sub classes of a class.
 
         The class names are unique,
@@ -262,9 +245,9 @@ class Factory(Multiton):
 
     @staticmethod
     def __is_class_in_modules(
-        module_names,  # type: str
-        cls,  # type: Type[Any]
-    ):  # type: (...) -> bool
+        module_names: str,
+        cls: type[Any],
+    ) -> bool:
         """Return whether a class belongs to given modules.
 
          Args:
@@ -280,7 +263,7 @@ class Factory(Multiton):
         return False
 
     @property
-    def classes(self):  # type: (...) -> List[str]
+    def classes(self) -> list[str]:
         """Return the available classes.
 
         Returns:
@@ -288,9 +271,7 @@ class Factory(Multiton):
         """
         return sorted(self.__names_to_classes.keys())
 
-    def is_available(
-        self, name  # type: str
-    ):  # type: (...) -> bool
+    def is_available(self, name: str) -> bool:
         """Return whether a class can be instantiated.
 
         Args:
@@ -301,9 +282,7 @@ class Factory(Multiton):
         """
         return name in self.__names_to_classes
 
-    def get_class(
-        self, name  # type: str
-    ):  # type: (...) -> Type[Any]
+    def get_class(self, name: str) -> type[Any]:
         """Return a class from its name.
 
         Args:
@@ -325,9 +304,9 @@ class Factory(Multiton):
 
     def create(
         self,
-        class_name,  # type: str
-        **options,  # type: Any
-    ):  # type: (...) -> Any
+        class_name: str,
+        **options: Any,
+    ) -> Any:
         """Return an instance of a class.
 
         Args:
@@ -349,9 +328,7 @@ class Factory(Multiton):
             )
             raise
 
-    def get_options_doc(
-        self, name  # type: str
-    ):  # type: (...) -> Dict[str, str]
+    def get_options_doc(self, name: str) -> dict[str, str]:
         """Return the constructor documentation of a class.
 
         Args:
@@ -364,8 +341,8 @@ class Factory(Multiton):
         return get_options_doc(cls.__init__)
 
     def get_default_options_values(
-        self, name  # type: str
-    ):  # type: (...) -> Dict[str, Union[str,int,float,bool]]
+        self, name: str
+    ) -> dict[str, str | int | float | bool]:
         """Return the constructor kwargs default values of a class.
 
         Args:
@@ -379,10 +356,10 @@ class Factory(Multiton):
 
     def get_options_grammar(
         self,
-        name,  # type: str
-        write_schema=False,  # type: bool
-        schema_file=None,  # type: Optional[str]
-    ):  # type: (...) -> JSONGrammar
+        name: str,
+        write_schema: bool = False,
+        schema_file: str | None = None,
+    ) -> JSONGrammar:
         """Return the options JSON grammar for a class.
 
         Attempt to generate a JSONGrammar
@@ -428,9 +405,9 @@ class Factory(Multiton):
 
     def get_sub_options_grammar(
         self,
-        name,  # type: str
-        **options,  # type: str
-    ):  # type: (...) -> JSONGrammar
+        name: str,
+        **options: str,
+    ) -> JSONGrammar:
         """Return the JSONGrammar of the sub options of a class.
 
         Args:
@@ -446,9 +423,9 @@ class Factory(Multiton):
 
     def get_default_sub_options_values(
         self,
-        name,  # type: str
-        **options,  # type: str
-    ):  # type: (...) -> JSONGrammar
+        name: str,
+        **options: str,
+    ) -> JSONGrammar:
         """Return the default values of the sub options of a class.
 
         Args:
@@ -466,10 +443,10 @@ class Factory(Multiton):
     def cache_clear():
         _Multiton.cache_clear()
 
-    def __str__(self):  # type: (...) -> str
-        return "Factory({})".format(self.__base_class.__name__)
+    def __str__(self) -> str:
+        return f"Factory({self.__base_class.__name__})"
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         # Display the successfully loaded modules and the failed imports with the reason
         table = PrettyTable(
             ["Module", "Is available ?", "Purpose or error message"],

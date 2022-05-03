@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,20 +17,16 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 from gemseo.core.factory import Factory
 from gemseo.core.formulation import MDOFormulation
-from gemseo.utils.py23_compat import importlib_metadata
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
+from gemseo.utils.python_compatibility import importlib_metadata
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -57,7 +52,7 @@ def test_print_configuration(tmp_path, reset_factory):
     formulations = ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
 
     for formulation in formulations:
-        pattern = "\\|\\s+{}\\s+\\|\\s+Yes\\s+\\|.+\\|".format(formulation)
+        pattern = f"\\|\\s+{formulation}\\s+\\|\\s+Yes\\s+\\|.+\\|"
         assert re.findall(pattern, repr(factory))
 
 
@@ -145,7 +140,7 @@ assert 'DummyBiLevel' in Factory(MDOFormulation).classes
 
     with pytest.raises(subprocess.CalledProcessError) as exc_info:
         subprocess.check_output(
-            "{} {}".format(sys.executable, module_path),
+            f"{sys.executable} {module_path}",
             shell=True,
             stderr=subprocess.STDOUT,
         )
@@ -174,7 +169,6 @@ def test_wanted_classes(monkeypatch, reset_factory):
     assert "DummyBiLevel" in Factory(MDOFormulation).classes
 
 
-@pytest.mark.skipif(PY2, reason="plugin entry points are not supported for Python 2")
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
     """Verify that the classes found are the expected ones."""
 

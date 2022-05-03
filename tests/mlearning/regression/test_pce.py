@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial chaos expansion regression module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
@@ -37,13 +33,13 @@ LEARNING_SIZE = 9
 
 
 @pytest.fixture
-def discipline():  # type: (...) -> AnalyticDiscipline
+def discipline() -> AnalyticDiscipline:
     """Discipline from R^2 to R^2."""
     return AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
 
 
 @pytest.fixture
-def dataset(discipline):  # type: (...) -> Dataset
+def dataset(discipline) -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
     design_space = DesignSpace()
@@ -55,7 +51,7 @@ def dataset(discipline):  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset, prob_space):  # type:(...) -> PCERegression
+def model(dataset, prob_space) -> PCERegression:
     """A trained LinearRegression."""
     pce = PCERegression(dataset, prob_space)
     pce.learn()
@@ -63,7 +59,7 @@ def model(dataset, prob_space):  # type:(...) -> PCERegression
 
 
 @pytest.fixture
-def prob_space():  # type: (...) -> ParameterSpace
+def prob_space() -> ParameterSpace:
     """A probability space describing the uncertain variables."""
     space = ParameterSpace()
     space.add_random_variable("x_1", "OTUniformDistribution")

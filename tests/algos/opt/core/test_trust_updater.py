@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests TrustUpdater."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest import TestCase
 
 from gemseo.algos.opt.core.trust_updater import BoundsUpdater

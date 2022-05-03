@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -29,14 +28,9 @@ from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
 from typing import Any
 from typing import ClassVar
-from typing import Dict
 from typing import Generator
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 from numpy import append
 from numpy import array
@@ -155,9 +149,9 @@ class AbstractCache(ABCMapping):
 
     def __init__(
         self,
-        tolerance=0.0,  # type: float
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        tolerance: float = 0.0,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             tolerance: The tolerance below which two input arrays are considered equal:
@@ -177,21 +171,21 @@ class AbstractCache(ABCMapping):
         self.__output_names = []
 
     @property
-    def input_names(self):  # type: (...) -> List[str]
+    def input_names(self) -> list[str]:
         """The names of the inputs of the last entry."""
         if not self.__input_names:
             self.__input_names = sorted(self.last_entry.inputs.keys())
         return self.__input_names
 
     @property
-    def output_names(self):  # type: (...) -> List[str]
+    def output_names(self) -> list[str]:
         """The names of the outputs of the last entry."""
         if not self.__output_names:
             self.__output_names = sorted(self.last_entry.outputs.keys())
         return self.__output_names
 
     @property
-    def names_to_sizes(self):  # type: (...) -> Dict[str,int]
+    def names_to_sizes(self) -> dict[str, int]:
         """The sizes of the variables of the last entry."""
         if not self.__names_to_sizes:
             last_entry = self.last_entry
@@ -204,7 +198,7 @@ class AbstractCache(ABCMapping):
 
         return self.__names_to_sizes
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         msg = MultiLineString()
         msg.add("Name: {}", self.name)
         msg.indent()
@@ -217,9 +211,9 @@ class AbstractCache(ABCMapping):
 
     def __setitem__(
         self,
-        input_data,  # type: Data
-        data,  # type: Tuple[Optional[OutputData], Optional[JacobianData]]
-    ):  # type: (...) -> None
+        input_data: Data,
+        data: tuple[OutputData | None, JacobianData | None],
+    ) -> None:
         output_data, jacobian_data = data
         if not output_data and not jacobian_data:
             LOGGER.warning(
@@ -235,16 +229,16 @@ class AbstractCache(ABCMapping):
     @abc.abstractmethod
     def __getitem__(
         self,
-        input_data,  # type: Data
-    ):  # type: (...) -> CacheEntry
+        input_data: Data,
+    ) -> CacheEntry:
         ...
 
     @abc.abstractmethod
     def cache_outputs(
         self,
-        input_data,  # type: Data
-        output_data,  # type: OutputData
-    ):  # type: (...) -> None
+        input_data: Data,
+        output_data: OutputData,
+    ) -> None:
         """Cache input and output data.
 
         Args:
@@ -256,9 +250,9 @@ class AbstractCache(ABCMapping):
     @abc.abstractmethod
     def cache_jacobian(
         self,
-        input_data,  # type: Data
-        jacobian_data,  # type: JacobianData
-    ):  # type: (...) -> None
+        input_data: Data,
+        jacobian_data: JacobianData,
+    ) -> None:
         """Cache the input and Jacobian data.
 
         Args:
@@ -267,7 +261,7 @@ class AbstractCache(ABCMapping):
         """
         ...
 
-    def clear(self):  # type: (...) -> None
+    def clear(self) -> None:
         """Clear the cache."""
         self.__input_names = []
         self.__output_names = []
@@ -275,7 +269,7 @@ class AbstractCache(ABCMapping):
 
     @property
     @abc.abstractmethod
-    def last_entry(self):  # type: (...) -> CacheEntry
+    def last_entry(self) -> CacheEntry:
         """The last cache entry."""
         ...
 
@@ -320,10 +314,10 @@ class AbstractFullCache(AbstractCache):
 
     def __init__(
         self,
-        tolerance=0.0,  # type: float
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
-        super(AbstractFullCache, self).__init__(tolerance, name)
+        tolerance: float = 0.0,
+        name: str | None = None,
+    ) -> None:
+        super().__init__(tolerance, name)
         self.lock_hashes = RLock()
         self._manager = Manager()
         self._hashes_to_indices = self._manager.dict()
@@ -332,7 +326,7 @@ class AbstractFullCache(AbstractCache):
         self.lock = self._set_lock()
 
     @abc.abstractmethod
-    def _set_lock(self):  # type: (...) -> RLock
+    def _set_lock(self) -> RLock:
         """Set a lock for multithreading.
 
         Either from an external object or internally by using RLock().
@@ -341,9 +335,9 @@ class AbstractFullCache(AbstractCache):
 
     def __ensure_input_data_exists(
         self,
-        input_data,  # type: Data
-        data_hash,  # type: int
-    ):  # type: (...) -> bool
+        input_data: Data,
+        data_hash: int,
+    ) -> bool:
         """Ensure ``input_data`` associated with ``data_hash`` exists.
 
         If ``input_data`` is cached,
@@ -390,8 +384,8 @@ class AbstractFullCache(AbstractCache):
 
     def _initialize_entry(
         self,
-        index,  # type: int
-    ):  # type: (...) -> None
+        index: int,
+    ) -> None:
         """Initialize an entry of the cache if needed.
 
         Args:
@@ -401,9 +395,9 @@ class AbstractFullCache(AbstractCache):
     @abc.abstractmethod
     def _has_group(
         self,
-        index,  # type: int
-        group,  # type: str
-    ):  # type: (...) -> bool
+        index: int,
+        group: str,
+    ) -> bool:
         """Check if an entry has data corresponding to a given group.
 
         Args:
@@ -418,10 +412,10 @@ class AbstractFullCache(AbstractCache):
     @abc.abstractmethod
     def _write_data(
         self,
-        values,  # type: Data
-        group,  # type: str
-        index,  # type: int
-    ):  # type: (...) -> None
+        values: Data,
+        group: str,
+        index: int,
+    ) -> None:
         """Write the data associated with an index and a group.
 
         Args:
@@ -436,9 +430,9 @@ class AbstractFullCache(AbstractCache):
 
     def _cache_inputs(
         self,
-        input_data,  # type: Data
-        group,  # type: str
-    ):  # type: (...) -> bool
+        input_data: Data,
+        group: str,
+    ) -> bool:
         """Cache input data and increment group if needed.
 
         Cache inputs and increment group if needed.
@@ -465,9 +459,9 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def cache_outputs(
         self,
-        input_data,  # type: Data
-        output_data,  # type: OutputData
-    ):  # type: (...) -> None
+        input_data: Data,
+        output_data: OutputData,
+    ) -> None:
         if self._cache_inputs(input_data, self._OUTPUTS_GROUP):
             # There is already an output data corresponding to this input data.
             return
@@ -481,9 +475,9 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def cache_jacobian(
         self,
-        input_data,  # type: Data
-        jacobian_data,  # type: JacobianData
-    ):  # type: (...) -> None
+        input_data: Data,
+        jacobian_data: JacobianData,
+    ) -> None:
         if self._cache_inputs(input_data, self._JACOBIAN_GROUP):
             # There is already a Jacobian data corresponding to this input data.
             return
@@ -499,15 +493,15 @@ class AbstractFullCache(AbstractCache):
         )
 
     @synchronized
-    def clear(self):  # type: (...) -> None
-        super(AbstractFullCache, self).clear()
+    def clear(self) -> None:
+        super().clear()
         self._hashes_to_indices = self._manager.dict()
         self._max_index.value = 0
         self._last_accessed_index.value = 0
 
     @property
     @synchronized
-    def last_entry(self):  # type: (...) -> CacheEntry
+    def last_entry(self) -> CacheEntry:
         if not self:
             return CacheEntry({}, {}, {})
 
@@ -518,16 +512,16 @@ class AbstractFullCache(AbstractCache):
         )
 
     @synchronized
-    def __len__(self):  # type: (...) -> int
+    def __len__(self) -> int:
         return self._max_index.value
 
     @abc.abstractmethod
     def _read_data(
         self,
-        index,  # type: int
-        group,  # type: str
+        index: int,
+        group: str,
         **options,
-    ):  # type: (...) -> Union[Data,JacobianData]
+    ) -> Data | JacobianData:
         """Read the data of an entry.
 
         Args:
@@ -543,8 +537,8 @@ class AbstractFullCache(AbstractCache):
     @synchronized_hashes
     def __has_hash(
         self,
-        data_hash,  # type: int
-    ):  # type: (...) -> int
+        data_hash: int,
+    ) -> int:
         """Get the indices corresponding to a data hash.
 
         Args:
@@ -557,9 +551,9 @@ class AbstractFullCache(AbstractCache):
 
     def _read_input_output_data(
         self,
-        indices,  # type: Iterable[int]
-        input_data,  # type: Data
-    ):  # type: (...) -> CacheEntry
+        indices: Iterable[int],
+        input_data: Data,
+    ) -> CacheEntry:
         """Read the output and Jacobian data for a given input data.
 
         Args:
@@ -582,8 +576,8 @@ class AbstractFullCache(AbstractCache):
     @synchronized
     def __getitem__(
         self,
-        input_data,  # type: Data
-    ):  # type: (...) -> CacheEntry
+        input_data: Data,
+    ) -> CacheEntry:
         if self.tolerance == 0.0:
             data_hash = hash_data_dict(input_data)
             indices = self.__has_hash(data_hash)
@@ -605,18 +599,18 @@ class AbstractFullCache(AbstractCache):
         return CacheEntry(input_data)
 
     @property
-    def _all_groups(self):  # type: (...) -> List[int]
+    def _all_groups(self) -> list[int]:
         """Sorted the indices of the entries."""
         return sorted(
             itertools.chain(*(v.tolist() for v in self._hashes_to_indices.values()))
         )
 
     @synchronized
-    def __iter__(self):  # type: (...) -> Generator[CacheEntry]
+    def __iter__(self) -> Generator[CacheEntry]:
         return self._all_data()
 
     @synchronized
-    def _all_data(self, **options):  # type: (...) -> Generator[CacheEntry]
+    def _all_data(self, **options) -> Generator[CacheEntry]:
         """Return an iterator of all data in the cache.
 
         Yields:
@@ -630,10 +624,10 @@ class AbstractFullCache(AbstractCache):
 
     def export_to_ggobi(
         self,
-        file_path,  # type: str
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        file_path: str,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+    ) -> None:
         """Export the cache to an XML file for ggobi tool.
 
         Args:
@@ -689,9 +683,7 @@ class AbstractFullCache(AbstractCache):
             if data_size == 1:
                 variables_names.append(data_name)
             else:
-                variables_names += [
-                    "{}_{}".format(data_name, i + 1) for i in range(data_size)
-                ]
+                variables_names += [f"{data_name}_{i + 1}" for i in range(data_size)]
 
         cache_as_array = vstack(
             concatenate(
@@ -707,8 +699,8 @@ class AbstractFullCache(AbstractCache):
 
     def update(
         self,
-        other_cache,  # type: AbstractFullCache
-    ):  # type: (...) -> None
+        other_cache: AbstractFullCache,
+    ) -> None:
         """Update from another cache.
 
         Args:
@@ -719,14 +711,14 @@ class AbstractFullCache(AbstractCache):
                 self[input_data] = (output_data, jacobian_data)
 
     @abc.abstractmethod
-    def _copy_empty_cache(self):  # type: (...) -> AbstractFullCache
+    def _copy_empty_cache(self) -> AbstractFullCache:
         """Copy a cache without its entries."""
         ...
 
     def __add__(
         self,
-        other_cache,  # type: AbstractFullCache
-    ):  # type: (...) -> AbstractFullCache
+        other_cache: AbstractFullCache,
+    ) -> AbstractFullCache:
         """Concatenate a cache to a copy of the current one.
 
         Args:
@@ -742,12 +734,12 @@ class AbstractFullCache(AbstractCache):
 
     def export_to_dataset(
         self,
-        name=None,  # type: Optional[str]
-        by_group=True,  # type: bool
-        categorize=True,  # type: bool
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> str
+        name: str | None = None,
+        by_group: bool = True,
+        categorize: bool = True,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+    ) -> str:
         """Build a :class:`.Dataset` from the cache.
 
         Args:
@@ -862,8 +854,8 @@ def hash_data_dict(
 
 
 def to_real(
-    data,  # type: ndarray
-):  # type: (...) -> ndarray
+    data: ndarray,
+) -> ndarray:
     """Convert a NumPy array to a float NumPy array.
 
     Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 A quadratic analytical problem
 ******************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -59,7 +57,7 @@ class Power2(OptimizationProblem):
         design_space = DesignSpace()
         design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0, value=initial_value)
 
-        super(Power2, self).__init__(design_space)
+        super().__init__(design_space)
         self.objective = MDOFunction(
             self.pow2,
             name="pow2",

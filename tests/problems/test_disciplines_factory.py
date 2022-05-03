@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,12 +17,10 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 import pytest
 from gemseo.problems.disciplines_factory import DisciplinesFactory
-from gemseo.utils.py23_compat import Path
 
 DATA = Path(__file__).parent / "data"
 
@@ -39,7 +36,7 @@ def test_init(monkeypatch, reset_factory):
     fact1.update()
     assert "DummyDisciplineIMP" in fact1.disciplines
 
-    gemseo_path = "{}:{}".format(DATA, DATA)
+    gemseo_path = f"{DATA}:{DATA}"
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
     fact1.update()
 

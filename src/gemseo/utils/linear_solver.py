@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 Linear solvers wrapper
 **********************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -35,7 +33,7 @@ from scipy.sparse.linalg import cgs
 LOGGER = logging.getLogger(__name__)
 
 
-class LinearSolver(object):
+class LinearSolver:
     """Solve a linear system Ax=b."""
 
     LGMRES = "lgmres"
@@ -120,13 +118,13 @@ class LinearSolver(object):
             diff = a_mat.dot(sol) - b_vec.T
             res = np.sqrt(np.sum(diff))
 
-            total_msg = "{} --- --- residual = {}".format(base_msg, res)
+            total_msg = f"{base_msg} --- --- residual = {res}"
             LOGGER.warning(total_msg)
-            total_msg = "{} --- --- info = {}".format(base_msg, info)
+            total_msg = f"{base_msg} --- --- info = {info}"
             LOGGER.warning(total_msg)
 
             if info < 0:
-                total_msg = "{} --- trying cgs method".format(base_msg)
+                total_msg = f"{base_msg} --- trying cgs method"
                 LOGGER.warning(total_msg)
 
                 sol, info = cgs(
@@ -135,9 +133,9 @@ class LinearSolver(object):
                 diff = a_mat.dot(sol) - b_vec.T
                 res = np.sqrt(np.sum(diff))
 
-                total_msg = "{} --- --- residual = {}".format(base_msg, res)
+                total_msg = f"{base_msg} --- --- residual = {res}"
                 LOGGER.warning(total_msg)
-                total_msg = "{} --- --- info = {}".format(base_msg, info)
+                total_msg = f"{base_msg} --- --- info = {info}"
                 LOGGER.warning(total_msg)
         elif info < 0:
             msg = "illegal input or breakdown"

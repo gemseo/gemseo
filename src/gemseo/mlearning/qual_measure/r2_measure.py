@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -38,14 +37,10 @@ where
 :math:`y` are the data points and
 :math:`\\bar{y}` is the mean of :math:`y`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
-from typing import List
 from typing import NoReturn
-from typing import Optional
-from typing import Union
 
 from numpy import delete as npdelete
 from numpy import mean
@@ -65,9 +60,9 @@ class R2Measure(MLErrorMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLRegressionAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLRegressionAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for regression.
@@ -76,21 +71,21 @@ class R2Measure(MLErrorMeasure):
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         multioutput = "raw_values" if multioutput else "uniform_average"
         return r2_score(outputs, predictions, multioutput=multioutput)
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[List[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
+        n_folds: int = 5,
+        samples: list[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
         folds, samples = self._compute_folds(samples, n_folds, randomize, seed)
 
         input_data = self.algo.input_data
@@ -117,9 +112,9 @@ class R2Measure(MLErrorMeasure):
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[List[int]]
-        multioutput=True,  # type: bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> NoReturn
+        n_replicates: int = 100,
+        samples: list[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> NoReturn:
         raise NotImplementedError

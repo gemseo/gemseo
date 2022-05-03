@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable problem - Design space
 *******************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import collections
 import logging
@@ -39,7 +37,7 @@ from .variables import X_SHARED_NAME
 LOGGER = logging.getLogger(__name__)
 
 
-class TMDesignSpace(object):
+class TMDesignSpace:
     """The design space for the scalable problem introduced by Tedford and Martins
     (2010) defines the lower and upper bounds of both local design parameters, shared
     design parameters and coupling variables, as well as default values.

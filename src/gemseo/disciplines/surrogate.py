@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,15 +18,11 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Surrogate discipline."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import ndarray
 
@@ -56,17 +51,16 @@ class SurrogateDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        surrogate,  # type: Union[str,MLRegressionAlgo]
-        data=None,  # type: Optional[Dataset]
-        transformer=MLRegressionAlgo.DEFAULT_TRANSFORMER,  # type: Optional[TransformerType]
-        disc_name=None,  # type: Optional[str]
-        default_inputs=None,  # type: Optional[Dict[str,ndarray]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        surrogate: str | MLRegressionAlgo,
+        data: Dataset | None = None,
+        transformer: TransformerType | None = MLRegressionAlgo.DEFAULT_TRANSFORMER,
+        disc_name: str | None = None,
+        default_inputs: dict[str, ndarray] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             surrogate: Either the class name
                 or the instance of the :class:`.MLRegressionAlgo`.
@@ -113,7 +107,7 @@ class SurrogateDiscipline(MDODiscipline):
                 output_names=output_names,
                 **parameters,
             )
-            name = "{}_{}".format(self.regression_model.ABBR, data.name)
+            name = f"{self.regression_model.ABBR}_{data.name}"
         disc_name = disc_name or name
         if not self.regression_model.is_trained:
             self.regression_model.learn()
@@ -125,11 +119,11 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
             LOGGER.info("%s", msg)
         if not name.startswith(self.regression_model.ABBR):
-            disc_name = "{}_{}".format(self.regression_model.ABBR, disc_name)
+            disc_name = f"{self.regression_model.ABBR}_{disc_name}"
         msg = MultiLineString()
         msg.add("Use the surrogate discipline: {}", disc_name)
         msg.indent()
-        super(SurrogateDiscipline, self).__init__(disc_name)
+        super().__init__(disc_name)
         self._initialize_grammars(input_names, output_names)
         msg.add("Inputs: {}", pretty_repr(self.get_input_data_names()))
         msg.add("Outputs: {}", pretty_repr(self.get_output_data_names()))
@@ -145,25 +139,25 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Jacobian: use finite differences")
         LOGGER.info("%s", msg)
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         model = self.regression_model.__class__.__name__
         data_name = self.regression_model.learning_set.name
         length = len(self.regression_model.learning_set)
         inputs = sorted(self.regression_model.input_names)
         outputs = sorted(self.regression_model.output_names)
         arguments = [
-            "name={}".format(self.name),
-            "algo={}".format(model),
-            "data={}".format(data_name),
-            "size={}".format(length),
-            "inputs=[{}]".format(pretty_repr(inputs)),
-            "outputs=[{}]".format(pretty_repr(outputs)),
-            "jacobian={}".format(self.linearization_mode),
+            f"name={self.name}",
+            f"algo={model}",
+            f"data={data_name}",
+            f"size={length}",
+            f"inputs=[{pretty_repr(inputs)}]",
+            f"outputs=[{pretty_repr(outputs)}]",
+            f"jacobian={self.linearization_mode}",
         ]
         msg = "SurrogateDiscipline({})".format(", ".join(arguments))
         return msg
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         data_name = self.regression_model.learning_set.name
         length = len(self.regression_model.learning_set)
         msg = MultiLineString()
@@ -180,9 +174,9 @@ class SurrogateDiscipline(MDODiscipline):
 
     def _initialize_grammars(
         self,
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+    ) -> None:
         """Initialize the input and output grammars from the regression model.
 
         Args:
@@ -200,8 +194,8 @@ class SurrogateDiscipline(MDODiscipline):
 
     def _set_default_inputs(
         self,
-        default_inputs=None,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        default_inputs: Mapping[str, ndarray] = None,
+    ) -> None:
         """Set the default values of the inputs.
 
         Args:
@@ -213,7 +207,7 @@ class SurrogateDiscipline(MDODiscipline):
         else:
             self.default_inputs = default_inputs
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         input_data = self.get_input_data()
         output_data = self.regression_model.predict(input_data)
         output_data = {key: val.flatten() for key, val in output_data.items()}
@@ -221,9 +215,9 @@ class SurrogateDiscipline(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]],
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         input_data = self.get_input_data()
         self._init_jacobian(inputs, outputs)
         self.jac = self.regression_model.predict_jacobian(input_data)

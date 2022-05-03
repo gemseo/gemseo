@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,12 +17,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Gauss Seidel algorithm for solving MDAs."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Any
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 
 from gemseo.core.chain import MDOChain
@@ -60,20 +57,20 @@ class MDAGaussSeidel(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        max_mda_iter=10,  # type: int
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        over_relax_factor=1.0,  # type: float
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        max_mda_iter: int = 10,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        over_relax_factor: float = 1.0,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         """
         Args:
             over_relax_factor: The relaxation coefficient,
@@ -82,7 +79,7 @@ class MDAGaussSeidel(MDA):
                 If ``over_relax_factor =1.``, it is deactivated.
         """
         self.chain = MDOChain(disciplines, grammar_type=grammar_type)
-        super(MDAGaussSeidel, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,

@@ -37,9 +37,6 @@
 The pretty table core
 *********************
 """
-from __future__ import ( division, 
-                        unicode_literals)
-
 import copy
 import math
 import random
@@ -48,10 +45,12 @@ import sys
 import textwrap
 import unicodedata
 
-
-from ._compact import (basestring_, escape, itermap, str_types, uni_chr,
-                       unicode_)
-
+from ._compact import basestring_
+from ._compact import escape
+from ._compact import itermap
+from ._compact import str_types
+from ._compact import uni_chr
+from ._compact import unicode_
 
 PY2 = sys.version_info.major == 2
 
@@ -2047,7 +2046,7 @@ def _char_block_width(char):
 
     """
     # Basic Latin, which is probably the most common case
-    # if char in xrange(0x0021, 0x007e):
+    # if char in range(0x0021, 0x007e):
     # if char >= 0x0021 and char <= 0x007e:
     if 0x0021 <= char <= 0x007e:
         return 1

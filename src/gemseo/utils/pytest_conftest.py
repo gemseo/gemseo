@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,18 +13,19 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Pytest helpers."""
+from __future__ import annotations
+
 import contextlib
 import os
 import sys
 import tempfile
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.testing.decorators
 import pytest
 
 from gemseo.core.factory import Factory
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 
 
 def __tmp_wd(tmp_path):
@@ -97,37 +97,6 @@ def reset_factory():
 
 
 # Backup before we monkey patch.
-if PY2:
-    # workaround to get image_comparison working
-    import matplotlib
-    from matplotlib.testing.conftest import (  # noqa: F401
-        mpl_image_comparison_parameters,
-    )
-
-    matplotlib._called_from_pytest = True
-
-    # monkey patch the _image_directories function that expects the tests directory
-    # layout of matplotlib
-    from matplotlib import cbook
-    from matplotlib.testing import decorators
-
-    # keep an alias to the old function to be overridden
-    _old_image_directories = decorators._image_directories
-
-    def _new_image_directories(func):
-        dir_paths = _old_image_directories(func)
-        # remove the parents directories
-        new_dir_paths = []
-        for path in dir_paths:
-            path_parts = list(Path(path).parts)
-            path_parts.pop(-2)
-            new_dir_paths += [str(Path(*path_parts))]
-        # create the good dir and leave the bad one
-        cbook.mkdirs(new_dir_paths[1])
-        return new_dir_paths
-
-    # hook in our function override
-    decorators._image_directories = _new_image_directories
 original_image_directories = matplotlib.testing.decorators._image_directories
 
 
@@ -142,9 +111,3 @@ if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
         return baseline_dir, result_dir
 
     matplotlib.testing.decorators._image_directories = _image_directories
-
-
-if PY2:
-    import backports.unittest_mock
-
-    backports.unittest_mock.install()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Some chains of SSBJ disciplines."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -36,11 +34,9 @@ class SobieskiChain(MDOChain):
     Order: structure, aerodynamics, propulsion and mission.
     """
 
-    def __init__(
-        self, dtype="float64"  # type: str
-    ):  # type: (...) -> None
+    def __init__(self, dtype: str = "float64") -> None:
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
         """
-        super(SobieskiChain, self).__init__(create_disciplines(dtype), "SobieskiChain")
+        super().__init__(create_disciplines(dtype), "SobieskiChain")

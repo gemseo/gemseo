@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A 1D Jameson sensor."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import abs as np_abs
 from numpy import amax
@@ -35,11 +33,11 @@ class JamesonSensor(Transformer):
 
     def __init__(
         self,
-        name="JamesonSensor",  # type: str
-        threshold=0.3,  # type:float
-        removing_part=0.01,  # type:float
-        dimension=1,  # type: int
-    ):  # type: (...) -> None
+        name: str = "JamesonSensor",
+        threshold: float = 0.3,
+        removing_part: float = 0.01,
+        dimension: int = 1,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
@@ -49,22 +47,22 @@ class JamesonSensor(Transformer):
                 remove in order to avoid leading and trailing edge effects.
             dimension: The dimension of the mesh.
         """
-        super(JamesonSensor, self).__init__(name)
+        super().__init__(name)
         self.threshold = threshold
         self.removing_part = removing_part
         self.dimension = dimension
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         self.threshold = self.threshold * amax(data)
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         mesh_size = data.shape[1] - 2
         min_mesh_size = int(mesh_size * self.removing_part)
         max_mesh_size = int(mesh_size * (1 - self.removing_part))

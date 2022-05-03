@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test F1 measure."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.knn import KNNClassifier
@@ -32,7 +28,7 @@ from numpy import array
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
@@ -43,7 +39,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def dataset_test():  # type: (...) -> Dataset
+def dataset_test() -> Dataset:
     """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)

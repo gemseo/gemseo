@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import unittest
 from os.path import exists
 from random import shuffle
@@ -40,7 +36,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
@@ -186,7 +181,6 @@ def test_strong_couplings_self_coupled():
     assert coupl == ["c1", "c2", "cs"]
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "show_data_names,descriptions,baseline_images",
     [
@@ -226,10 +220,10 @@ def test_n2_no_coupling(
             with matplotlib pyplot.
     """
     disciplines = [
-        AnalyticDiscipline(desc, name="discipline_{}".format(next(iter(desc))))
+        AnalyticDiscipline(desc, name=f"discipline_{next(iter(desc))}")
         for desc in descriptions
     ]
 
     MDOCouplingStructure(disciplines).plot_n2_chart(
-        "{}.png".format(baseline_images[0]), show_data_names, save=True, show=False
+        f"{baseline_images[0]}.png", show_data_names, save=True, show=False
     )

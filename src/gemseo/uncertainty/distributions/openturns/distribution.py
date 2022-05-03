@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -52,14 +51,11 @@ The constructor has also optional arguments:
   (`more details <http://openturns.github.io/openturns/latest/user_manual/
   _generated/openturns.TruncatedDistribution.html>`_).
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Callable
 from typing import Iterable
-from typing import List
-from typing import Optional
 
 import openturns as ots
 from numpy import array
@@ -99,18 +95,17 @@ class OTDistribution(Distribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        interfaced_distribution,  # type: str
-        parameters,  # type: ParametersType
-        dimension=1,  # type: int
-        standard_parameters=None,  # type: Optional[StandardParametersType]
-        transformation=None,  # type: Optional[str]
-        lower_bound=None,  # type: Optional[float]
-        upper_bound=None,  # type: Optional[float]
-        threshold=0.5,  # type: float
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        interfaced_distribution: str,
+        parameters: ParametersType,
+        dimension: int = 1,
+        standard_parameters: StandardParametersType | None = None,
+        transformation: str | None = None,
+        lower_bound: float | None = None,
+        upper_bound: float | None = None,
+        threshold: float = 0.5,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the random variable.
             interfaced_distribution: The name of the probability distribution,
@@ -129,7 +124,7 @@ class OTDistribution(Distribution):
                 If None, no upper truncation.
             threshold: A threshold in [0,1].
         """
-        super(OTDistribution, self).__init__(
+        super().__init__(
             variable,
             interfaced_distribution,
             parameters,
@@ -152,19 +147,17 @@ class OTDistribution(Distribution):
         msg.add("Transformation: {}", self.transformation)
         LOGGER.debug("%s", msg)
 
-    def compute_samples(
+    def compute_samples(  # noqa: D102
         self,
-        n_samples=1,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        n_samples: int = 1,
+    ) -> ndarray:
         sample = array(self.distribution.getSample(n_samples))
         return sample
 
-    def compute_cdf(
+    def compute_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         return array(
             [
                 self.marginals[index].computeCDF(ots.Point([value]))
@@ -172,11 +165,10 @@ class OTDistribution(Distribution):
             ]
         )
 
-    def compute_inverse_cdf(
+    def compute_inverse_cdf(  # noqa: D102
         self,
-        vector,  # type: Iterable[float]
-    ):  # noqa: D102
-        # type: (...) -> ndarray
+        vector: Iterable[float],
+    ) -> ndarray:
         return array(
             [
                 self.marginals[index].computeQuantile(value)[0]
@@ -184,15 +176,13 @@ class OTDistribution(Distribution):
             ]
         )
 
-    def _pdf(
+    def _pdf(  # noqa: D102
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:
         def pdf(
-            point,  # type: float
-        ):
-            # type: (...) -> float
+            point: float,
+        ) -> float:
             """Probability Density Function (PDF).
 
             Args:
@@ -207,13 +197,11 @@ class OTDistribution(Distribution):
 
     def _cdf(
         self,
-        index,  # type: int
-    ):  # noqa: D102
-        # type: (...) -> Callable
+        index: int,
+    ) -> Callable:  # noqa: D102
         def cdf(
-            level,  # type: float
-        ):
-            # type: (...) -> float
+            level: float,
+        ) -> float:
             """Cumulative Density Function (CDF).
 
             Args:
@@ -227,24 +215,22 @@ class OTDistribution(Distribution):
         return cdf
 
     @property
-    def mean(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def mean(self) -> ndarray:  # noqa: D102
         return array(self.distribution.getMean())
 
     @property
-    def standard_deviation(self):  # noqa: D102
-        # type: (...) -> ndarray
+    def standard_deviation(self) -> ndarray:  # noqa: D102
         return array(self.distribution.getStandardDeviation())
 
     def __create_distributions(
         self,
-        distribution,  # type: str
-        parameters,  # type:ParametersType
-        transformation,  # type: str
-        lower_bound,  # type:float
-        upper_bound,  # type:float
-        threshold,  # type:float
-    ):  # type: (...) -> List[ots.Distribution]
+        distribution: str,
+        parameters: ParametersType,
+        transformation: str,
+        lower_bound: float,
+        upper_bound: float,
+        threshold: float,
+    ) -> list[ots.Distribution]:
         """Instantiate an OpenTURNS distribution for each random variable component.
 
         Args:
@@ -264,9 +250,7 @@ class OTDistribution(Distribution):
         try:
             ot_dist = getattr(ots, distribution)
         except Exception:
-            raise ValueError(
-                "{} is an unknown OpenTURNS distribution.".format(distribution)
-            )
+            raise ValueError(f"{distribution} is an unknown OpenTURNS distribution.")
         try:
             ot_dist = [ot_dist(*parameters)] * self.dimension
         except Exception:
@@ -288,9 +272,9 @@ class OTDistribution(Distribution):
 
     def __transform_marginal_dist(
         self,
-        marginals,  # type: Iterable[ots.Distribution],
-        transformation,  # type: str
-    ):  # type: (...) -> List[ots.Distribution]
+        marginals: Iterable[ots.Distribution],
+        transformation: str,
+    ) -> list[ots.Distribution]:
         """Apply the standard transformations on the marginals.
 
         Examples of transformations: -, +, *, **, sin, exp, log, ...
@@ -311,17 +295,17 @@ class OTDistribution(Distribution):
             for marginal in marginals
         ]
         prev = self.transformation
-        transformation = transformation.replace(variable_name, "({})".format(prev))
+        transformation = transformation.replace(variable_name, f"({prev})")
         self.transformation = transformation
         return marginals
 
     def __truncate_marginal_dist(
         self,
-        distributions,  # type: Iterable[ots.Distribution]
-        lower_bound,  # type: float
-        upper_bound,  # type: float
-        threshold=0.5,  # type: float
-    ):  # type: (...) -> List[ots.Distribution]
+        distributions: Iterable[ots.Distribution],
+        lower_bound: float,
+        upper_bound: float,
+        threshold: float = 0.5,
+    ) -> list[ots.Distribution]:
         """Truncate the distribution of a random variable.
 
         Args:
@@ -342,17 +326,17 @@ class OTDistribution(Distribution):
             for index, dist in enumerate(distributions)
         ]
         prev = self.transformation
-        self.transformation = "Trunc({})".format(prev)
+        self.transformation = f"Trunc({prev})"
         return marginals
 
     def __truncate_distribution(
         self,
-        distributions,  # type: Iterable[ots.Distribution]
-        index,  # type: int
-        lower_bound,  # type: float
-        upper_bound,  # type: float
-        threshold=0.5,  # type: float
-    ):  # type: (...) -> List[ots.Distribution]
+        distributions: Iterable[ots.Distribution],
+        index: int,
+        lower_bound: float,
+        upper_bound: float,
+        threshold: float = 0.5,
+    ) -> list[ots.Distribution]:
         """Truncate a distribution with lower bound, upper bound or both.
 
         Args:
@@ -407,9 +391,7 @@ class OTDistribution(Distribution):
             )
         return distributions
 
-    def __set_bounds(
-        self, distributions  # type: Iterable[ots.Distribution]
-    ):  # type: (...) -> None
+    def __set_bounds(self, distributions: Iterable[ots.Distribution]) -> None:
         """Set the mathematical and numerical bounds (= support and range).
 
         Args:

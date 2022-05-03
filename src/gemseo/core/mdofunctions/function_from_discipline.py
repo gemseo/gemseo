@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,12 +20,10 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """The MDOFunction subclass to create a function from an MDODiscipline."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Iterable
-from typing import Optional
 from typing import Sequence
 from typing import TYPE_CHECKING
 
@@ -48,14 +45,14 @@ class FunctionFromDiscipline(MDOFunction):
 
     def __init__(
         self,
-        output_names,  # type: Sequence[str]
-        mdo_formulation,  # type: MDOFormulation
-        discipline=None,  # type: Optional[MDODiscipline]
-        top_level_disc=True,  # type:bool
-        x_names=None,  # type: Optional[Sequence[str]]
-        all_data_names=None,  # type:Optional[Iterable[str]]
-        differentiable=True,  # type: bool
-    ):  # type: (...) -> None
+        output_names: Sequence[str],
+        mdo_formulation: MDOFormulation,
+        discipline: MDODiscipline | None = None,
+        top_level_disc: bool = True,
+        x_names: Sequence[str] | None = None,
+        all_data_names: Iterable[str] | None = None,
+        differentiable: bool = True,
+    ) -> None:
         """
         Args:
             output_names: The names of the outputs.
@@ -97,7 +94,7 @@ class FunctionFromDiscipline(MDOFunction):
             self.__x_names, self.__output_names, differentiable=self.__differentiable
         )
 
-        super(FunctionFromDiscipline, self).__init__(
+        super().__init__(
             self._func,
             jac=self._func_jac,
             name=self.__out_x_func.name,
@@ -110,8 +107,8 @@ class FunctionFromDiscipline(MDOFunction):
 
     def _func(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the outputs.
 
         Args:
@@ -126,9 +123,7 @@ class FunctionFromDiscipline(MDOFunction):
             )
         return self.__out_x_func(x_vect[self.__x_mask])
 
-    def _func_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _func_jac(self, x_vect: ndarray) -> ndarray:
         """Compute the gradient of the outputs.
 
         Args:

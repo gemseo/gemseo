@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -27,9 +26,6 @@ In this example, we will see how to build a :class:`.Dataset` from objects
 of an :class:`.OptimizationProblem`.
 For that, we need to import this :class:`.Dataset` class:
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

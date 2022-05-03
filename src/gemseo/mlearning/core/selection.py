@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -45,16 +44,10 @@ using the class :class:`.MLAlgoCalibration`.
    :mod:`~gemseo.mlearning.core.ml_algo`
    :mod:`~gemseo.mlearning.core.calibration`
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from itertools import product
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Union
-
-from six import string_types
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -69,7 +62,7 @@ from gemseo.mlearning.qual_measure.quality_measure import (
 )
 
 
-class MLAlgoSelection(object):
+class MLAlgoSelection:
     """Machine learning algorithm selector.
 
     Attributes:
@@ -86,12 +79,12 @@ class MLAlgoSelection(object):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        measure,  # type: Union[str,MLQualityMeasure]
-        eval_method=MLQualityMeasure.LEARN,  # type: str
-        samples=None,  # type: Optional[Sequence[int]]
-        **measure_options,  # type:MeasureOptionType
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        measure: str | MLQualityMeasure,
+        eval_method: str = MLQualityMeasure.LEARN,
+        samples: Sequence[int] | None = None,
+        **measure_options: MeasureOptionType,
+    ) -> None:
         """
         Args:
             dataset: The learning dataset.
@@ -109,7 +102,7 @@ class MLAlgoSelection(object):
             ValueError: If the unsupported "multioutput" option is enabled.
         """
         self.dataset = dataset
-        if isinstance(measure, string_types):
+        if isinstance(measure, str):
             self.measure = MLQualityMeasureFactory().get_class(measure)
         else:
             self.measure = measure
@@ -130,11 +123,11 @@ class MLAlgoSelection(object):
 
     def add_candidate(
         self,
-        name,  # type:str
-        calib_space=None,  # type: Optional[DesignSpace]
-        calib_algo=None,  # type: Optional[ScenarioInputDataType]
+        name: str,
+        calib_space: DesignSpace | None = None,
+        calib_algo: ScenarioInputDataType | None = None,
         **option_lists,
-    ):  # type: (...) -> None
+    ) -> None:
         """Add a machine learning algorithm candidate.
 
         Args:
@@ -200,8 +193,8 @@ class MLAlgoSelection(object):
 
     def select(
         self,
-        return_quality=False,  # type:bool
-    ):  # type: (...) -> Union[MLAlgo,Tuple[MLAlgo,float]]
+        return_quality: bool = False,
+    ) -> MLAlgo | tuple[MLAlgo, float]:
         """Select the best model.
 
         The model is chosen through a grid search

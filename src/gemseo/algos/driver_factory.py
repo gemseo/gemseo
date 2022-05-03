@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,8 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstract factory to create drivers."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -30,7 +28,7 @@ from gemseo.core.factory import Factory
 LOGGER = logging.getLogger(__name__)
 
 
-class DriverFactory(object):
+class DriverFactory:
     """Base class for definition of optimization and/or DOE factory.
 
     Automates the creation of library interfaces given a name of the algorithm.

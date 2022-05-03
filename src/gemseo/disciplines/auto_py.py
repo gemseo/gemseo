@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,17 +18,15 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline interfacing a Python function."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import re
+from inspect import getfullargspec
 from inspect import getsource
 from typing import Callable
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 from typing import Union
 
@@ -40,7 +37,6 @@ from numpy import ndarray
 from gemseo.core.data_processor import DataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.py23_compat import getargspec
 
 LOGGER = logging.getLogger(__name__)
 
@@ -87,13 +83,12 @@ class AutoPyDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        py_func,  # type: Callable[[DataType, ..., DataType],DataType]
-        py_jac=None,  # type: Optional[Callable[[DataType, ..., DataType],ndarray]]
-        use_arrays=False,  # type: bool
-        write_schema=False,  # type: bool
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        py_func: Callable[[DataType, ..., DataType], DataType],
+        py_jac: Callable[[DataType, ..., DataType], ndarray] | None = None,
+        use_arrays: bool = False,
+        write_schema: bool = False,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             py_func: The Python function to compute the outputs from the inputs.
             py_jac: The Python function to compute the Jacobian from the inputs;
@@ -110,7 +105,7 @@ class AutoPyDiscipline(MDODiscipline):
         if not callable(py_func):
             raise TypeError("py_func must be callable.")
 
-        super(AutoPyDiscipline, self).__init__(
+        super().__init__(
             name=py_func.__name__,
             auto_detect_grammar_files=False,
             grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -120,7 +115,7 @@ class AutoPyDiscipline(MDODiscipline):
         self.use_arrays = use_arrays
         self.py_jac = py_jac
 
-        args_in = getargspec(py_func)[0]  # pylint: disable=deprecated-method
+        args_in = getfullargspec(py_func)[0]
         self.in_names = args_in
         self.input_grammar.initialize_from_data_names(self.in_names)
         self.out_names = self._get_return_spec(py_func)
@@ -140,7 +135,7 @@ class AutoPyDiscipline(MDODiscipline):
         self.default_inputs = to_arrays_dict(def_func)
         self.sizes = None
 
-    def _get_defaults(self):  # type: (...) -> Dict[str, DataType]
+    def _get_defaults(self) -> dict[str, DataType]:
         """Return the default values of the input variables when available.
 
         The values are read from the signature of the Python function.
@@ -148,9 +143,9 @@ class AutoPyDiscipline(MDODiscipline):
         Returns:
             The default values of the input variables.
         """
-        args, _, _, defaults = getargspec(
-            self.py_func
-        )  # pylint: disable=deprecated-method
+        full_arg_specs = getfullargspec(self.py_func)
+        args = full_arg_specs[0]
+        defaults = full_arg_specs[3]
         if defaults is None:
             return {}
 
@@ -167,11 +162,10 @@ class AutoPyDiscipline(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...)-> None
-        # noqa: D205 D212 D415
-        """
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Raises:
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
         """
@@ -190,8 +184,8 @@ class AutoPyDiscipline(MDODiscipline):
 
     @staticmethod
     def get_return_spec_fromstr(
-        return_line,  # type: str
-    ):  # type: (...) -> Optional[str]
+        return_line: str,
+    ) -> str | None:
         """Return the output specifications of a Python function.
 
         Args:
@@ -209,8 +203,8 @@ class AutoPyDiscipline(MDODiscipline):
 
     @staticmethod
     def _get_return_spec(
-        func,  # type: Callable
-    ):  # type: (...) -> Optional[str]
+        func: Callable,
+    ) -> str | None:
         """Return the output specifications of a Python function.
 
         Args:
@@ -252,21 +246,20 @@ class AutoDiscDataProcessor(DataProcessor):
 
     def __init__(
         self,
-        out_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        out_names: Sequence[str],
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             out_names: The names of the outputs.
         """
-        super(AutoDiscDataProcessor, self).__init__()
+        super().__init__()
         self.out_names = out_names
         self.one_output = len(out_names) == 1
 
     def pre_process_data(
         self,
-        data,  # type: Dict[str, DataType]
-    ):  # type: (...) -> Dict[str, DataType]
+        data: dict[str, DataType],
+    ) -> dict[str, DataType]:
         """Pre-process the input data.
 
         Execute a pre-processing of input data
@@ -289,8 +282,8 @@ class AutoDiscDataProcessor(DataProcessor):
 
     def post_process_data(
         self,
-        data,  # type: Dict[str, DataType]
-    ):  # type: (...) -> Dict[str, ndarray]
+        data: dict[str, DataType],
+    ) -> dict[str, ndarray]:
         """Post-process the output data.
 
         Execute a post-processing of the output data
@@ -312,8 +305,8 @@ class AutoDiscDataProcessor(DataProcessor):
 
 
 def to_arrays_dict(
-    in_dict,  # type: Mapping[str, DataType]
-):  # type: (...) -> Mapping[str, ndarray]
+    in_dict: Mapping[str, DataType],
+) -> Mapping[str, ndarray]:
     """Ensure that the values of a dictionary are NumPy arrays.
 
     Args:

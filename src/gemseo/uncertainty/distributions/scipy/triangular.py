@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 
 This class inherits from :class:`.SPDistribution`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
@@ -42,14 +40,13 @@ class SPTriangularDistribution(SPDistribution):
 
     def __init__(
         self,
-        variable,  # type: str
-        minimum=0.0,  # type: float
-        mode=0.5,  # type: float
-        maximum=1.0,  # type: float
-        dimension=1,  # type: int
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        minimum: float = 0.0,
+        mode: float = 0.5,
+        maximum: float = 1.0,
+        dimension: int = 1,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the triangular random variable.
             minimum: The minimum of the triangular random variable.
@@ -67,6 +64,4 @@ class SPTriangularDistribution(SPDistribution):
             self._MODE: mode,
             self._UPPER: maximum,
         }
-        super(SPTriangularDistribution, self).__init__(
-            variable, "triang", parameters, dimension, standard_parameters
-        )
+        super().__init__(variable, "triang", parameters, dimension, standard_parameters)

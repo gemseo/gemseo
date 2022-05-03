@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -31,8 +30,8 @@ from numpy import ones
 # Create the disciplines
 # ----------------------
 descriptions = {
-    "A": (["a{}".format(i) for i in range(500)], ["b"]),
-    "B": (["c"], ["a{}".format(i) for i in range(500)] + ["n"]),
+    "A": ([f"a{i}" for i in range(500)], ["b"]),
+    "B": (["c"], [f"a{i}" for i in range(500)] + ["n"]),
     "C": (["b", "d"], ["c", "e"]),
     "D": (["f"], ["d", "g"]),
     "E": (["e"], ["f", "h", "o"]),

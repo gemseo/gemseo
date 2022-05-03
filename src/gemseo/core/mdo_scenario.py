@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,12 +20,10 @@
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
 """A scenario whose driver is an optimization algorithm."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Optional
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -66,14 +63,14 @@ class MDOScenario(Scenario):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        formulation,  # type: str
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options,  # type: Any
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        formulation: str,
+        objective_name: str,
+        design_space: DesignSpace,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        **formulation_options: Any,
+    ) -> None:
         """
         Args:
             disciplines: The disciplines
@@ -91,7 +88,7 @@ class MDOScenario(Scenario):
                 to be passed to the :class:`.MDOFormulation`.
         """
         # This loads the right json grammars from class name
-        super(MDOScenario, self).__init__(
+        super().__init__(
             disciplines,
             formulation,
             objective_name,
@@ -101,7 +98,7 @@ class MDOScenario(Scenario):
             **formulation_options,
         )
 
-    def _run_algorithm(self):  # type: (...) -> OptimizationResult
+    def _run_algorithm(self) -> OptimizationResult:
         problem = self.formulation.opt_problem
         algo_name = self.local_data[self.ALGO]
         max_iter = self.local_data[self.MAX_ITER]
@@ -134,7 +131,7 @@ class MDOScenario(Scenario):
     def _init_algo_factory(self):
         self._algo_factory = OptimizersFactory()
 
-    def _update_grammar_input(self):  # type: (...) -> None
+    def _update_grammar_input(self) -> None:
         self.input_grammar.update_elements(
             algo=str, max_iter=int, algo_options=dict, python_typing=True
         )

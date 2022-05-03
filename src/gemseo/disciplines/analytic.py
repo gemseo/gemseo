@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,21 +18,16 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline based on analytic expressions."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import array
 from numpy import float64
 from numpy import heaviside
 from numpy import zeros
-from six import string_types
 from sympy import Expr
 from sympy import lambdify
 from sympy import Symbol
@@ -41,7 +35,6 @@ from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import PY2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -67,12 +60,11 @@ class AnalyticDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        expressions,  # type: Mapping[str,Union[str,Expr]]
-        name=None,  # type: Optional[str]
-        fast_evaluation=True,  # type: bool
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        expressions: Mapping[str, str | Expr],
+        name: str | None = None,
+        fast_evaluation: bool = True,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             expressions: The outputs expressed as functions of the inputs.
             name: The name of the discipline.
@@ -81,7 +73,7 @@ class AnalyticDiscipline(MDODiscipline):
                 in order to accelerate their numerical evaluation;
                 otherwise the expressions are evaluated with ``sympy.Expr.evalf``.
         """
-        super(AnalyticDiscipline, self).__init__(name)
+        super().__init__(name)
         self.expressions = expressions
         self.expr_symbols_dict = {}
         self.input_names = []
@@ -95,12 +87,12 @@ class AnalyticDiscipline(MDODiscipline):
         self._init_default_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _init_grammars(self):  # type: (...) -> None
+    def _init_grammars(self) -> None:
         """Initialize the input an output grammars from the expressions dictionary."""
         self.input_grammar.initialize_from_data_names(self.input_names)
         self.output_grammar.initialize_from_data_names(self.expressions.keys())
 
-    def _init_expressions(self):  # type: (...) -> None
+    def _init_expressions(self) -> None:
         """Parse the expressions of the functions and their derivatives.
 
         Get SymPy expressions from string expressions.
@@ -113,7 +105,7 @@ class AnalyticDiscipline(MDODiscipline):
             if isinstance(output_expression, Expr):
                 output_expression_to_derive = output_expression
                 real_input_symbols = self.__create_real_input_symbols(output_expression)
-            elif isinstance(output_expression, string_types):
+            elif isinstance(output_expression, str):
                 string_output_expression = output_expression
                 output_expression = parse_expr(string_output_expression)
                 real_input_symbols = self.__create_real_input_symbols(output_expression)
@@ -132,7 +124,7 @@ class AnalyticDiscipline(MDODiscipline):
             }
 
         self.input_names = sorted(
-            [input_symbol.name for input_symbol in set(all_real_input_symbols)]
+            input_symbol.name for input_symbol in set(all_real_input_symbols)
         )
 
         self.__real_symbols = {symbol.name: symbol for symbol in all_real_input_symbols}
@@ -140,9 +132,7 @@ class AnalyticDiscipline(MDODiscipline):
         if self._fast_evaluation:
             self._lambdify_expressions()
 
-    def __create_real_input_symbols(
-        self, expression  # type: Expr
-    ):  # type: (...) -> Dict[str, Symbol]
+    def __create_real_input_symbols(self, expression: Expr) -> dict[str, Symbol]:
         """Return the symbols used by a SymPy expression with real type.
 
         Args:
@@ -156,11 +146,9 @@ class AnalyticDiscipline(MDODiscipline):
             for symbol in expression.free_symbols
         }
 
-    def _lambdify_expressions(self):  # type: (...) -> None
+    def _lambdify_expressions(self) -> None:
         """Lambdify the SymPy expressions."""
         numpy_str = "numpy"
-        if PY2:
-            numpy_str = numpy_str.encode("ascii")
 
         modules = [numpy_str, {"Heaviside": lambda x: heaviside(x, 1)}]
         for output_name, output_expression in self._sympy_exprs.items():
@@ -179,14 +167,14 @@ class AnalyticDiscipline(MDODiscipline):
                 for input_symbol in input_symbols
             }
 
-    def _init_default_inputs(self):  # type: (...) -> None
+    def _init_default_inputs(self) -> None:
         """Initialize the default inputs of the discipline with zeros."""
         zeros_array = zeros(1)
         self.default_inputs = {
             input_name: zeros_array for input_name in self.get_input_data_names()
         }
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         output_data = {}
         # Do not pass useless tokens to the expr, this may
         # fail when tokens contains dots, or slow down the process
@@ -213,7 +201,7 @@ class AnalyticDiscipline(MDODiscipline):
 
         self.store_local_data(**output_data)
 
-    def __convert_input_values_to_float(self):  # type: (...) -> Dict[str, float]
+    def __convert_input_values_to_float(self) -> dict[str, float]:
         """Return the local data with float values."""
         return {
             input_name: float(self.local_data[input_name].real)
@@ -222,9 +210,9 @@ class AnalyticDiscipline(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         # otherwise there may be missing terms
         # if some formula have no dependency
         self._init_jacobian(inputs, outputs, with_zeros=True)

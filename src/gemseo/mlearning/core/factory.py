@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,26 +23,22 @@ This module contains a factory to instantiate a :class:`.MLAlgo` from its class 
 This factory also provides a list of available machine learning algorithms and allows
 testing if a machine learning algorithm is available.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
-from typing import List
-from typing import Optional
-from typing import Union
+from pathlib import Path
 
 from gemseo.core.dataset import Dataset
 from gemseo.core.factory import Factory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MLAlgoFactory(object):
+class MLAlgoFactory:
     """This factory instantiates a :class:`.MLAlgo` from its class name.
 
     The class can be either internal or external. In this second case, it can be either
@@ -53,14 +48,14 @@ class MLAlgoFactory(object):
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(MLAlgo, ("gemseo.mlearning",))
 
     def create(
         self,
-        ml_algo,  # type: str
-        **options,  # type: Optional[Union[Dataset,TransformerType,MLAlgoParameterType]]
-    ):  # type: (...) -> MLAlgo
+        ml_algo: str,
+        **options: Dataset | TransformerType | MLAlgoParameterType | None,
+    ) -> MLAlgo:
         """Create an instance of a machine learning algorithm.
 
         Args:
@@ -74,14 +69,14 @@ class MLAlgoFactory(object):
         return self.factory.create(ml_algo, **options)
 
     @property
-    def models(self):  # type: (...) -> List[str]
+    def models(self) -> list[str]:
         """The available machine learning algorithms."""
         return self.factory.classes
 
     def is_available(
         self,
-        ml_algo,  # type: str
-    ):  # type: (...) -> bool
+        ml_algo: str,
+    ) -> bool:
         """Check the availability of a machine learning algorithm.
 
         Args:
@@ -94,8 +89,8 @@ class MLAlgoFactory(object):
 
     def load(
         self,
-        directory,  # type:Union[str,Path]
-    ):  # type: (...) -> MLAlgo
+        directory: str | Path,
+    ) -> MLAlgo:
         """Load an instance of machine learning algorithm from the disk.
 
         Args:

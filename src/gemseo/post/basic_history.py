@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -40,8 +38,8 @@ class BasicHistory(OptPostProcessor):
 
     def _plot(
         self,
-        data_list,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        data_list: Sequence[str],
+    ) -> None:
         """
         Args:
             data_list: The names of the variables.

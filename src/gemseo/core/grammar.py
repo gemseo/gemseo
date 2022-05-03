@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -15,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Stub module for backward compatibility."""
 # TODO: to be deprecated
+from __future__ import annotations
+
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar  # noqa: F401
 from gemseo.core.grammars.errors import InvalidDataException  # noqa: F401
 from gemseo.core.grammars.simple_grammar import SimpleGrammar  # noqa: F401

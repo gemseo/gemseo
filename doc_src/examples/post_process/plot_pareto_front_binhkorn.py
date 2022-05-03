@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,8 +25,6 @@ Pareto front on Binh and Korn problem
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Binh and Korn multi-objective problem.
 """
-from __future__ import unicode_literals
-
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.api import configure_logger
 from gemseo.post.post_factory import PostFactory

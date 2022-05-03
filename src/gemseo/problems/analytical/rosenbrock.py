@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 The Rosenbrock analytic problem
 *******************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -90,14 +88,13 @@ class Rosenbrock(OptimizationProblem):
         else:
             design_space.set_current_x(initial_guess)
 
-        super(Rosenbrock, self).__init__(design_space)
-        expr = "sum(100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2"
+        super().__init__(design_space)
         self.objective = MDOFunction(
             rosen,
             name="rosen",
             f_type=MDOFunction.TYPE_OBJ,
             jac=rosen_der,
-            expr=expr,
+            expr="sum(100*(x[1:] - x[:-1]**2)**2 + (1 - x[:-1])**2",
             args=args,
         )
 
@@ -131,7 +128,7 @@ class RosenMF(MDODiscipline):
         :param dimension: problem dimension
         :type dimension: int
         """
-        super(RosenMF, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x": zeros(dimension), "fidelity": array([1.0])}
 
     def _run(self):

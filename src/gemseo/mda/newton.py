@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -27,18 +26,13 @@ Root finding methods include:
 Each of these methods is implemented by a class in this module.
 Both inherit from a common abstract cache.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import ndarray
 from numpy.linalg import norm
@@ -61,22 +55,22 @@ class MDARoot(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         self.tolerance = 1e-6
         self.max_mda_iter = 10
-        super(MDARoot, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -101,15 +95,15 @@ class MDARoot(MDA):
         #    self.parallel_execution = None
         # ==================================================================
 
-    def _initialize_grammars(self):  # type: (...) -> None
+    def _initialize_grammars(self) -> None:
         for disciplines in self.disciplines:
             self.input_grammar.update_from(disciplines.input_grammar)
             self.output_grammar.update_from(disciplines.output_grammar)
 
     def execute_all_disciplines(
         self,
-        input_local_data,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        input_local_data: Mapping[str, ndarray],
+    ) -> None:
         """Execute all self.disciplines.
 
         Args:
@@ -152,25 +146,25 @@ class MDANewtonRaphson(MDARoot):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        relax_factor=0.99,  # type: float
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        linear_solver="DEFAULT",  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type:bool
-        linear_solver_options=None,  # type: Mapping[str,Any]
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        relax_factor: float = 0.99,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        linear_solver: str = "DEFAULT",
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver_options: Mapping[str, Any] = None,
     ):
         """
         Args:
             relax_factor: The relaxation factor in the Newton step.
         """
-        super(MDANewtonRaphson, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -189,8 +183,8 @@ class MDANewtonRaphson(MDARoot):
 
     @staticmethod
     def __check_relax_factor(
-        relax_factor,  # type: float
-    ):  # type:(...) -> float
+        relax_factor: float,
+    ) -> float:
         """Check that the relaxation factor in the Newton step is in (0, 1].
 
         Args:
@@ -203,7 +197,7 @@ class MDANewtonRaphson(MDARoot):
             )
         return relax_factor
 
-    def _newton_step(self):  # type: (...) -> None
+    def _newton_step(self) -> None:
         """Execute the full Newton step.
 
         Compute the increment :math:`-[dR/dW]^{-1}.R` and run the disciplines.
@@ -223,7 +217,7 @@ class MDANewtonRaphson(MDARoot):
         self.reset_disciplines_statuses()
         self.execute_all_disciplines(exec_data)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         if self.warm_start:
             self._couplings_warm_start()
         # execute the disciplines
@@ -318,19 +312,19 @@ class MDAQuasiNewton(MDARoot):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        method=HYBRID,  # type: str
-        use_gradient=False,  # type: bool
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        method: str = HYBRID,
+        use_gradient: bool = False,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
     ):
         """
         Args:
@@ -341,7 +335,7 @@ class MDAQuasiNewton(MDARoot):
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """
-        super(MDAQuasiNewton, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -355,14 +349,14 @@ class MDAQuasiNewton(MDARoot):
             coupling_structure=coupling_structure,
         )
         if method not in self.QUASI_NEWTON_METHODS:
-            msg = "Method '{}' is not a valid quasi-Newton method.".format(method)
+            msg = f"Method '{method}' is not a valid quasi-Newton method."
             raise ValueError(msg)
         self.method = method
         self.use_gradient = use_gradient
         self.local_residual_history = []
         self.last_outputs = None  # used for computing the residual history
 
-    def _solver_options(self):  # type: (...) -> Dict[str,Union[float,int]]
+    def _solver_options(self) -> dict[str, float | int]:
         """Determine options for the solver, based on the resolution method."""
         options = {}
         if self.method in [
@@ -387,11 +381,11 @@ class MDAQuasiNewton(MDARoot):
             options["maxfev"] = self.max_mda_iter
         return options
 
-    def _methods_with_callback(self):  # type: (...) -> List[str]
+    def _methods_with_callback(self) -> list[str]:
         """Determine whether resolution method accepts a callback function."""
         return [self.BROYDEN1, self.BROYDEN2]
 
-    def _run(self):  # type: (...) -> Dict[str,ndarray]
+    def _run(self) -> dict[str, ndarray]:
         if self.warm_start:
             self._couplings_warm_start()
         self.reset_disciplines_statuses()
@@ -411,8 +405,8 @@ class MDAQuasiNewton(MDARoot):
         self.current_iter = 0
 
         def fun(
-            x_vect,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            x_vect: ndarray,
+        ) -> ndarray:
             """Evaluate all residuals, possibly in parallel.
 
             Args:
@@ -445,8 +439,8 @@ class MDAQuasiNewton(MDARoot):
             # linearize the residuals
 
             def jacobian(
-                x_vect,  # type: ndarray
-            ):  # type: (...) -> ndarray
+                x_vect: ndarray,
+            ) -> ndarray:
                 """Linearize all residuals.
 
                 Args:
@@ -486,9 +480,9 @@ class MDAQuasiNewton(MDARoot):
         if self.method in self._methods_with_callback():
 
             def callback(
-                y_k,  # type: ndarray
+                y_k: ndarray,
                 _,
-            ):  # type: (...) -> None
+            ) -> None:
                 """Store the current residual in the history.
 
                 Args:

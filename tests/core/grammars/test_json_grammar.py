@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,18 +17,14 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import logging
 from numbers import Number
+from pathlib import Path
 
 import pytest
 from gemseo.core.grammar import InvalidDataException
 from gemseo.core.grammar import SimpleGrammar
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from numpy import array
 from numpy import ndarray
 
@@ -259,11 +254,7 @@ def test_to_simple_grammar_array_number():
     grammar = JSONGrammar("number", schema_file=TEST_PATH / "grammar_test3.json")
     simp = grammar.to_simple_grammar()
 
-    if PY2:
-        # workaround for genson that uses unordered dict
-        assert set(simp.data_types) == {Number, ndarray, None}
-    else:
-        assert simp.data_types == [Number, ndarray, None]
+    assert simp.data_types == [Number, ndarray, None]
 
     simp.load_data({"X": 1, "Y": array([1.0]), "Z": 10})
     simp.load_data({"X": 1.0, "Y": array([1]), "Z": array([10])})

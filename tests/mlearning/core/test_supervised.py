@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,9 +19,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test supervised machine learning algorithm module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
 
 import pytest
@@ -43,7 +39,7 @@ from numpy.testing import assert_equal
 
 
 @pytest.fixture
-def io_dataset():  # type: (...) -> Dataset
+def io_dataset() -> Dataset:
     """The dataset used to train the supervised machine learning algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]

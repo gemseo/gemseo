@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
+from pathlib import Path
 from typing import Any
 from typing import Mapping
 from typing import Tuple
@@ -28,11 +25,11 @@ from typing import Union
 import numpy as np
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import HessianApproximation
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.utils.py23_compat import Path
 from numpy import array
 from numpy import multiply
 from numpy import ndarray
@@ -49,8 +46,8 @@ ROSENBROCK_2_LB_UB_PATH = Path(__file__).parent / "rosenbrock_2_lb_ub_opt_pb.h5"
 
 
 def build_history(
-    problem_path,  # type: Union[Path, str]
-):  # type: (...) -> Tuple[ndarray, OptimizationProblem.solution, OptimizationProblem]
+    problem_path: Union[Path, str],
+) -> Tuple[ndarray, OptimizationResult, OptimizationProblem]:
     """Get the history of a Rosenbrock problem from an hdf file path.
 
     Args:
@@ -66,12 +63,12 @@ def build_history(
 
 
 def compare_approximations(
-    h_ref,  # type: ndarray
-    approx_class,  # type: HessianApproximation
-    problem,  # type: OptimizationProblem
-    ermax=0.7,  # type: float
-    **kwargs,  # type: Mapping[str, Any]
-):  # type: (...) -> None
+    h_ref: ndarray,
+    approx_class: HessianApproximation,
+    problem: OptimizationProblem,
+    ermax: float = 0.7,
+    **kwargs: Mapping[str, Any],
+) -> None:
     """Check that the approximated hessian is close enough to the reference one.
 
     Args:
@@ -133,9 +130,9 @@ def test_scaling():
 
 
 def compute_error(
-    h_ref,  # type: ndarray
-    h_approx,  # type: ndarray
-):  # type: (...) -> float
+    h_ref: ndarray,
+    h_approx: ndarray,
+) -> float:
     """Compute the error of the approximation.
 
     Args:

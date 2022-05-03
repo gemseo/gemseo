@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space import DesignVariable
@@ -345,7 +341,7 @@ def test_evaluate_cdf_raising_errors():
 
 
 @pytest.fixture
-def io_dataset():  # type: (...) -> Dataset
+def io_dataset() -> Dataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
     outputs = arange(20).reshape(10, 2)

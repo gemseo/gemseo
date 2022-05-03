@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scatter plot matrix to display optimization history."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -28,13 +26,9 @@ from typing import Sequence
 from matplotlib import pyplot
 from numpy import any
 from pandas.core.frame import DataFrame
+from pandas.plotting import scatter_matrix
 
 from gemseo.post.opt_post_processor import OptPostProcessor
-
-try:
-    from pandas.tools.plotting import scatter_matrix
-except ImportError:
-    from pandas.plotting import scatter_matrix
 
 
 LOGGER = logging.getLogger(__name__)
@@ -50,9 +44,9 @@ class ScatterPlotMatrix(OptPostProcessor):
 
     def _plot(
         self,
-        variables_list,  # type: Sequence[str]
-        filter_non_feasible=False,  # type: bool
-    ):  # type: (...) -> None
+        variables_list: Sequence[str],
+        filter_non_feasible: bool = False,
+    ) -> None:
         """
         Args:
             variables_list: The functions names or design variables to plot.
@@ -87,9 +81,9 @@ class ScatterPlotMatrix(OptPostProcessor):
             design_variables = []
             for func in list(variables_list):
                 if func not in all_funcs and func not in all_dv_names:
-                    min_f = "-{}".format(func) == self.opt_problem.objective.name
+                    min_f = f"-{func}" == self.opt_problem.objective.name
                     if min_f and not self.opt_problem.minimize_objective:
-                        variables_list[variables_list.index(func)] = "-{}".format(func)
+                        variables_list[variables_list.index(func)] = f"-{func}"
                         variables_list.sort()
                     else:
                         msg = (

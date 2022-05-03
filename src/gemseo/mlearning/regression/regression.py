@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -60,15 +59,13 @@ the Jacobian prediction method of the regression algorithm should return the mat
 This concept is implemented through the :class:`.MLRegressionAlgo` class
 which inherits from the :class:`.MLSupervisedAlgo` class.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import collections
 from typing import Callable
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
-from typing import Optional
 
 from numpy import eye
 from numpy import matmul
@@ -99,13 +96,13 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
-        super(MLRegressionAlgo, self).__init__(
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -119,8 +116,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         @classmethod
         def format_dict_jacobian(
             cls,
-            predict_jac,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[DataType],DataType]
+            predict_jac: Callable[[ndarray], ndarray],
+        ) -> Callable[[DataType], DataType]:
             """Wrap an array-based function to make it callable with a dictionary of
             NumPy arrays.
 
@@ -183,8 +180,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
         @classmethod
         def transform_jacobian(
             cls,
-            predict_jac,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[ndarray],ndarray]
+            predict_jac: Callable[[ndarray], ndarray],
+        ) -> Callable[[ndarray], ndarray]:
             """Apply transformation to inputs and inverse transformation to outputs.
 
             Args:
@@ -255,8 +252,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def predict_raw(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Predict output data from input data.
 
         Args:
@@ -272,8 +269,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
     @DataFormatters.transform_jacobian
     def predict_jacobian(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> NoReturn
+        input_data: DataType,
+    ) -> NoReturn:
         """Predict the Jacobians of the regression model at input_data.
 
         The user can specify these input data either as a NumPy array,
@@ -300,8 +297,8 @@ class MLRegressionAlgo(MLSupervisedAlgo):
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        input_data: ndarray,
+    ) -> NoReturn:
         """Predict the Jacobian matrices of the regression model at input_data.
 
         Args:
@@ -314,4 +311,4 @@ class MLRegressionAlgo(MLSupervisedAlgo):
             NotImplementedError: When the method is called.
         """
         name = self.__class__.__name__
-        raise NotImplementedError("Derivatives are not available for {}".format(name))
+        raise NotImplementedError(f"Derivatives are not available for {name}.")

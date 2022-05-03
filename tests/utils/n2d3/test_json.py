@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,8 +13,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test the class N2JSON."""
-from __future__ import unicode_literals
-
 from json import loads
 
 import pytest
@@ -26,7 +23,7 @@ from numpy import ones
 
 
 @pytest.fixture(scope="module")
-def n2_json():  # type: (...) -> N2JSON
+def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
         ("D1", ["y21"], ["y12"]),
@@ -391,7 +388,7 @@ def test_default_group_template(name):
     Args:
         name: The name of the group.
     """
-    assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == "Group {}".format(name)
+    assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == f"Group {name}"
 
 
 def test_create_links(n2_json, expected_links):

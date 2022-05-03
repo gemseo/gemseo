@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,16 +18,13 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A function computing some outputs of a discipline from some inputs."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from numbers import Number
 from typing import Callable
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -54,11 +50,11 @@ class MakeFunction(MDOFunction):
 
     def __init__(
         self,
-        input_names,  # type: Iterable[str]
-        output_names,  # type: Iterable[str]
-        default_inputs,  # type: Optional[Mapping[str, ndarray]]
-        mdo_function,  # type: MDOFunctionGenerator
-    ):  # type: (...) -> None
+        input_names: Iterable[str],
+        output_names: Iterable[str],
+        default_inputs: Mapping[str, ndarray] | None,
+        mdo_function: MDOFunctionGenerator,
+    ) -> None:
         """
         Args:
             input_names: The names of the inputs.
@@ -80,7 +76,7 @@ class MakeFunction(MDOFunction):
         self.__input_size = 0
         self.__jacobian = None
         self.__discipline = self.__mdo_function.discipline
-        super(MakeFunction, self).__init__(
+        super().__init__(
             self._func,
             jac=self._func_jac,
             name="_".join(self.__output_names),
@@ -111,7 +107,7 @@ class MakeFunction(MDOFunction):
             start = self.__output_size
 
     @property
-    def _default_inputs(self):  # type: (...) -> Dict[str, ndarray]
+    def _default_inputs(self) -> dict[str, ndarray]:
         """The default values of the inputs of the function at execution time.
 
         They correspond to the default values of the discipline when calling this
@@ -123,9 +119,7 @@ class MakeFunction(MDOFunction):
 
         return default_inputs
 
-    def _func(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> OperandType
+    def _func(self, x_vect: ndarray) -> OperandType:
         """A function which executes a discipline for specific inputs and outputs.
 
         Args:
@@ -154,9 +148,7 @@ class MakeFunction(MDOFunction):
 
         return output_data
 
-    def _func_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _func_jac(self, x_vect: ndarray) -> ndarray:
         """A function which linearizes a discipline for specific inputs and outputs.
 
         Args:
@@ -192,8 +184,8 @@ class MakeFunction(MDOFunction):
 
     def __compute_input_data(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
+        x_vect: ndarray,
+    ) -> dict[str, ndarray]:
         """Return the input data of the underlying discipline.
 
         Args:

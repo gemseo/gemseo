@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for analytic MDODiscipline based on symbolic expressions."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 import sympy
 from gemseo.core.mdo_scenario import MDOScenario

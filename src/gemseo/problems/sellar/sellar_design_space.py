@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,10 +22,7 @@ Sellar, R., Batill, S., & Renaud, J. (1996). Response surface based, concurrent 
 optimization for multidisciplinary system design. In 34th aerospace sciences meeting and
 exhibit (p. 714).
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Tuple
+from __future__ import annotations
 
 from numpy import array
 from numpy import ndarray
@@ -59,13 +55,13 @@ class SellarDesignSpace(DesignSpace):
 
     def __init__(
         self,
-        dtype="complex128",  # type: str
-    ):  # type: (...) -> None
+        dtype: str = "complex128",
+    ) -> None:
         """
         Args:
             dtype: The type of the variables defined in the design space.
         """
-        super(SellarDesignSpace, self).__init__()
+        super().__init__()
 
         x_local, x_shared, y_1, y_2 = self.__get_initial_solution(dtype)
         self.add_variable(X_LOCAL, 1, l_b=0.0, u_b=10.0, value=x_local)
@@ -75,8 +71,8 @@ class SellarDesignSpace(DesignSpace):
 
     @staticmethod
     def __get_initial_solution(
-        dtype,  # type: str
-    ):  # type: (...) -> Tuple[ndarray]
+        dtype: str,
+    ) -> tuple[ndarray]:
         """Return an initial solution for the MDO problem.
 
         Args:

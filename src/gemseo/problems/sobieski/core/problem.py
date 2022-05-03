@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,21 +23,17 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """The Sobieski's SSBJ problem."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import cmath
 import logging
 import math
 import random
 from collections import namedtuple
+from pathlib import Path
 from random import uniform
-from typing import Dict
 from typing import Iterable
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 
 from numpy import array
 from numpy import complex128
@@ -46,7 +41,6 @@ from numpy import concatenate
 from numpy import float64
 from numpy import ndarray
 from numpy import ones
-from six import string_types
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.problems.sobieski.core.aerodynamics import SobieskiAerodynamics
@@ -54,7 +48,6 @@ from gemseo.problems.sobieski.core.mission import SobieskiMission
 from gemseo.problems.sobieski.core.propulsion import SobieskiPropulsion
 from gemseo.problems.sobieski.core.structure import SobieskiStructure
 from gemseo.problems.sobieski.core.utils import SobieskiBase
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -65,7 +58,7 @@ _Disciplines = namedtuple(
 )
 
 
-class SobieskiProblem(object):
+class SobieskiProblem:
     r"""The Sobieski's SSBJ problem.
 
     This problem seeks to maximize the range of a super-sonic business jet (SSBJ)
@@ -210,8 +203,8 @@ class SobieskiProblem(object):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
@@ -223,7 +216,7 @@ class SobieskiProblem(object):
             self.__math = math
             self.__dtype = float64
         else:
-            raise ValueError("Unknown dtype: {}.".format(dtype))
+            raise ValueError(f"Unknown dtype: {dtype}.")
 
         self.__base = SobieskiBase(dtype=self.__dtype)
 
@@ -259,39 +252,39 @@ class SobieskiProblem(object):
         }
 
     @property
-    def initial_design(self):  # type: (...) -> ndarray
+    def initial_design(self) -> ndarray:
         """The initial design :math:`x`."""
         return self.__base.initial_design.copy()
 
     @property
-    def constants(self):  # type: (...) -> ndarray
+    def constants(self) -> ndarray:
         """The constant vector."""
         return self.__base.constants
 
     @property
-    def aerodynamics(self):  # type: (...) -> SobieskiAerodynamics
+    def aerodynamics(self) -> SobieskiAerodynamics:
         """The aerodynamics discipline."""
         return self.disciplines.aerodynamics
 
     @property
-    def mission(self):  # type: (...) -> SobieskiMission
+    def mission(self) -> SobieskiMission:
         """The mission discipline."""
         return self.disciplines.mission
 
     @property
-    def propulsion(self):  # type: (...) -> SobieskiPropulsion
+    def propulsion(self) -> SobieskiPropulsion:
         """The propulsion discipline."""
         return self.disciplines.propulsion
 
     @property
-    def structure(self):  # type: (...) -> SobieskiStructure
+    def structure(self) -> SobieskiStructure:
         """The structure discipline."""
         return self.disciplines.structure
 
     def get_bounds_by_name(
         self,
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        variables_names: Sequence[str],
+    ) -> tuple[ndarray, ndarray]:
         """Return the lower and upper bounds of variables.
 
         Args:
@@ -305,9 +298,9 @@ class SobieskiProblem(object):
 
     def __set_indata(
         self,
-        design_vector,  # type: ndarray
-        names,  # type: Optional[Union[str, Iterable[str]]]
-    ):  # type: (...) -> Dict[str, ndarray]
+        design_vector: ndarray,
+        names: str | Iterable[str] | None,
+    ) -> dict[str, ndarray]:
         """Return the default values of some variables of the problem.
 
         Args:
@@ -349,7 +342,7 @@ class SobieskiProblem(object):
         if names is None:
             return names_to_default_values
 
-        if isinstance(names, string_types):
+        if isinstance(names, str):
             names = [names]
 
         return {
@@ -360,8 +353,8 @@ class SobieskiProblem(object):
 
     def get_default_inputs(
         self,
-        names=None,  # type: Optional[str, Iterable[str]]
-    ):  # type: (...) -> Dict[str, ndarray]
+        names: str | Iterable[str] | None = None,
+    ) -> dict[str, ndarray]:
         """Return the default variable values at the default initial point.
 
         Args:
@@ -375,8 +368,8 @@ class SobieskiProblem(object):
 
     def get_default_inputs_feasible(
         self,
-        names=None,  # type: Optional[str, Iterable[str]]
-    ):  # type: (...) -> Dict[str, ndarray]
+        names: str | Iterable[str] | None = None,
+    ) -> dict[str, ndarray]:
         """Return the default variable values at the default initial feasible point.
 
         Args:
@@ -390,8 +383,8 @@ class SobieskiProblem(object):
 
     def get_default_inputs_equilibrium(
         self,
-        names=None,  # type: Optional[str, Iterable[str]]
-    ):  # type: (...) -> Dict[str, ndarray]
+        names: str | Iterable[str] | None = None,
+    ) -> dict[str, ndarray]:
         """Return the default variable values at a multidisciplinary feasible point.
 
         The coupling variables are at the equilibrium,
@@ -444,9 +437,9 @@ class SobieskiProblem(object):
 
     def get_random_input(
         self,
-        names=None,  # type: Optional[Union[str, Iterable[str]]]
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> ndarray
+        names: str | Iterable[str] | None = None,
+        seed: int | None = None,
+    ) -> ndarray:
         """Return a randomized starting point related to some input variables.
 
         Args:
@@ -488,9 +481,7 @@ class SobieskiProblem(object):
 
         return names_to_random_values
 
-    def get_x0_feasible(
-        self, names=None  # type: Optional[Union[str, Iterable[str]]]
-    ):  # type: (...) -> ndarray
+    def get_x0_feasible(self, names: str | Iterable[str] | None = None) -> ndarray:
         """Return a feasible starting point related to some input variables.
 
         Args:
@@ -500,7 +491,7 @@ class SobieskiProblem(object):
         Returns:
             The feasible starting point.
         """
-        if isinstance(names, string_types):
+        if isinstance(names, str):
             names = [names]
 
         if names is None:
@@ -509,12 +500,12 @@ class SobieskiProblem(object):
         return concatenate([self.__names_to_feasible_values[name] for name in names])
 
     @property
-    def design_bounds(self):  # type: (...) -> Tuple[ndarray, ndarray]
+    def design_bounds(self) -> tuple[ndarray, ndarray]:
         """The lower and upper bounds of the design variables."""
         return self.__base.design_bounds
 
     @property
-    def optimum_design(self):  # type: (...) -> ndarray
+    def optimum_design(self) -> ndarray:
         """The optimal design vector found by Sobieski with BLISS."""
         return array(
             (0.38757, 0.75, 0.75, 0.15624, 0.06, 60000.0, 1.4, 2.5, 70.0, 1500.0),
@@ -522,17 +513,17 @@ class SobieskiProblem(object):
         )
 
     @property
-    def optimum_range(self):  # type: (...) -> ndarray
+    def optimum_range(self) -> ndarray:
         """The optimal range found by Sobieski with BLISS."""
         return array([3963.98], dtype=self.__dtype)
 
     def get_sobieski_constraints(
         self,
-        g_1,  # type: ndarray
-        g_2,  # type: ndarray
-        g_3,  # type: ndarray
-        true_cstr=False,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        g_1: ndarray,
+        g_2: ndarray,
+        g_3: ndarray,
+        true_cstr: ndarray = False,
+    ) -> ndarray:
         """Return either the value of the constraints or the distance to the thresholds.
 
         Args:
@@ -577,8 +568,8 @@ class SobieskiProblem(object):
 
     def normalize_inputs(
         self,
-        input_vector,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_vector: ndarray,
+    ) -> ndarray:
         """Normalize an input vector with respect to the variable bounds.
 
         Args:
@@ -592,8 +583,8 @@ class SobieskiProblem(object):
 
     def unnormalize_inputs(
         self,
-        input_vector,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_vector: ndarray,
+    ) -> ndarray:
         """Unnormalize an input vector with respect to the variable bounds.
 
         Args:
@@ -607,10 +598,10 @@ class SobieskiProblem(object):
 
     def __compute_mda(
         self,
-        design_vector,  # type: Tuple[ndarray]
-        true_cstr=False,  # type: bool
-        accuracy=1e-3,  # type: float
-    ):  # type: (...) -> Tuple[ndarray]
+        design_vector: tuple[ndarray],
+        true_cstr: bool = False,
+        accuracy: float = 1e-3,
+    ) -> tuple[ndarray]:
         """Compute the output variables at equilibrium with the Gauss-Seidel algorithm.
 
         Args:
@@ -713,9 +704,9 @@ class SobieskiProblem(object):
 
     def get_constraints(
         self,
-        design_vector,  # type: ndarray
-        true_cstr=False,  # type: bool
-    ):  # type: (...) -> Tuple[ndarray, ndarray, ndarray]
+        design_vector: ndarray,
+        true_cstr: bool = False,
+    ) -> tuple[ndarray, ndarray, ndarray]:
         """Compute all the constraints.
 
         Args:
@@ -732,7 +723,7 @@ class SobieskiProblem(object):
         return outputs[-3], outputs[-2], outputs[-1]
 
     @property
-    def design_space(self):  # type: (...) -> DesignSpace
+    def design_space(self) -> DesignSpace:
         """The design space."""
         if self.__design_space is None:
             input_file = Path(__file__).parent / "sobieski_design_space.txt"

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,8 +22,7 @@ GGOBI : interactive data visualization software
 
 Export data to the XML file format needed by GGOBI
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import os
 from xml.dom import minidom

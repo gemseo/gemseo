@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
 
 import pytest
@@ -60,8 +56,8 @@ def test_constructor(dataset):
     assert surr.linearization_mode == "auto"
     surr = SurrogateDiscipline("GaussianProcessRegression", dataset)
     assert surr.linearization_mode == "finite_differences"
-    assert set(["x_1", "x_2"]) == set(surr.get_input_data_names())
-    assert set(["y_1", "y_2"]) == set(surr.get_output_data_names())
+    assert {"x_1", "x_2"} == set(surr.get_input_data_names())
+    assert {"y_1", "y_2"} == set(surr.get_output_data_names())
 
 
 def test_constructor_from_algo(dataset):
@@ -69,8 +65,8 @@ def test_constructor_from_algo(dataset):
     algo.learn()
     surr = SurrogateDiscipline(algo)
     assert surr.linearization_mode == "auto"
-    assert set(["x_1", "x_2"]) == set(surr.get_input_data_names())
-    assert set(["y_1", "y_2"]) == set(surr.get_output_data_names())
+    assert {"x_1", "x_2"} == set(surr.get_input_data_names())
+    assert {"y_1", "y_2"} == set(surr.get_output_data_names())
 
 
 def test_repr(dataset):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,10 +16,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Damien Guenot - 28 avr. 2016
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
+from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -28,7 +25,6 @@ from typing import Optional
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.utils.py23_compat import Path
 from numpy import array
 
 from .utils import execute_problem
@@ -114,10 +110,10 @@ def test_wrong_arguments(options):
 
 
 def get_expected_nsamples(
-    algo,  # type: str
-    dim,  # type: int
-    n_samples=None,  # type:Optional[int]
-):  # type: (...) -> int
+    algo: str,
+    dim: int,
+    n_samples: Optional[int] = None,
+) -> int:
     """Returns the expected number of samples.
 
     This number depends on the dimension of the problem.
@@ -138,9 +134,9 @@ def get_expected_nsamples(
 
 
 def get_options(
-    algo_name,  # type: str
-    dim,  # type: int
-):  # type: (...) -> Dict[str,Any]
+    algo_name: str,
+    dim: int,
+) -> Dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:
@@ -151,7 +147,7 @@ def get_options(
         The options of the DOE algorithm.
     """
     options = {"n_samples": 13}
-    options["doe_file"] = str(Path(__file__).parent / "dim_{}.csv".format(dim))
+    options["doe_file"] = str(Path(__file__).parent / f"dim_{dim}.csv")
     options["dim"] = dim
     return options
 

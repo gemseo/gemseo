@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -50,9 +49,6 @@ This dataset can be used for either clustering purposes
 or classification ones.
 
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves

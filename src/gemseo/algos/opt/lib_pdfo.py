@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,13 +18,12 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """PDFO optimization library wrapper, see `PDFO website <https://www.pdfo.net/>`_."""
-from __future__ import division
+from __future__ import annotations
 
 import logging
 import os
 from dataclasses import dataclass
 from typing import Any
-from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -37,7 +35,6 @@ from numpy import real
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.utils.py23_compat import PY2
 
 # workaround to prevent dll error with xlwings from pypi with anaconda python:
 # backup the state of the environment variable CONDA_DLL_SEARCH_MODIFICATION_ENABLE
@@ -94,7 +91,7 @@ class PDFOOpt(OptimizationLibrary):
         - does it handle equality constraints
         - does it handle inequality constraints
         """
-        super(PDFOOpt, self).__init__()
+        super().__init__()
         self.lib_dict = {
             "PDFO_COBYLA": PDFOAlgorithmDescription(
                 algorithm_name="COBYLA",
@@ -119,24 +116,24 @@ class PDFOOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_rel=1e-12,  # type: float
-        ftol_abs=1e-12,  # type: float
-        xtol_rel=1e-12,  # type: float
-        xtol_abs=1e-12,  # type: float
-        max_time=0,  # type: float
-        rhobeg=0.5,  # type: float
-        rhoend=1e-6,  # type: float
-        max_iter=500,  # type: int
-        ftarget=-inf,  # type: float
-        scale=False,  # type: bool
-        quiet=True,  # type: bool
-        classical=False,  # type: bool
-        debug=False,  # type: bool
-        chkfunval=False,  # type: bool
-        ensure_bounds=True,  # type: bool
-        normalize_design_space=True,  # type: bool
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str, Any]
+        ftol_rel: float = 1e-12,
+        ftol_abs: float = 1e-12,
+        xtol_rel: float = 1e-12,
+        xtol_abs: float = 1e-12,
+        max_time: float = 0,
+        rhobeg: float = 0.5,
+        rhoend: float = 1e-6,
+        max_iter: int = 500,
+        ftarget: float = -inf,
+        scale: bool = False,
+        quiet: bool = True,
+        classical: bool = False,
+        debug: bool = False,
+        chkfunval: bool = False,
+        ensure_bounds: bool = True,
+        normalize_design_space: bool = True,
+        **kwargs: OptionType,
+    ) -> dict[str, Any]:
         r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
@@ -201,9 +198,7 @@ class PDFOOpt(OptimizationLibrary):
         )
         return popts
 
-    def _run(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: OptionType) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.
 
         Args:
@@ -227,8 +222,8 @@ class PDFOOpt(OptimizationLibrary):
         bounds = list(zip(l_b, u_b))
 
         def real_part_fun(
-            x,  # type: ndarray
-        ):  # type: (...) -> Union[int, float]
+            x: ndarray,
+        ) -> int | float:
             """Wrap the objective function and keep the real part.
 
             Args:
@@ -248,17 +243,11 @@ class PDFOOpt(OptimizationLibrary):
 
         cstr_scipy = []
         for cstr in constraints:
-            if PY2:
-                f_type = cstr.f_type.encode("ascii")
-            else:
-                f_type = cstr.f_type
+            c_scipy = {"type": cstr.f_type}
             if ensure_bounds:
-                c_scipy = {
-                    "type": f_type,
-                    "fun": self.ensure_bounds(cstr.func, normalize_ds),
-                }
+                c_scipy["fun"] = self.ensure_bounds(cstr.func, normalize_ds)
             else:
-                c_scipy = {"type": f_type, "fun": cstr.func}
+                c_scipy["fun"] = cstr.func
 
             cstr_scipy.append(c_scipy)
 

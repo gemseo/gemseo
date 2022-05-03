@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,19 +18,14 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Rules and checks for disciplines inputs/outputs validation."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 from typing import TYPE_CHECKING
-from typing import Union
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -39,7 +33,7 @@ if TYPE_CHECKING:
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray, zeros
 
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,9 +56,9 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        name,  # type: str
-        **kwargs,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        name: str,
+        **kwargs: str | Path,
+    ) -> None:
         """
         Args:
             name: The name to be given to the grammar.
@@ -72,20 +66,20 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         self.name = name
 
-    def __str__(self):  # type: (...) -> str
-        return "grammar name: {}".format(self.name)
+    def __str__(self) -> str:
+        return f"grammar name: {self.name}"
 
     def __contains__(
         self,
-        item,  # type: str
-    ):  # type: (...) -> bool
+        item: str,
+    ) -> bool:
         return self.is_data_name_existing(item)
 
     def load_data(
         self,
-        data,  # type: Mapping[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> Mapping[str,Any]
+        data: Mapping[str, Any],
+        raise_exception: bool = True,
+    ) -> Mapping[str, Any]:
         """Load elements values and check their consistency with the grammar.
 
         Args:
@@ -98,7 +92,7 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def get_data_names(self):  # type: (...) -> List[str]
+    def get_data_names(self) -> list[str]:
         """Return the names of the elements.
 
         Returns:
@@ -108,8 +102,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def update_from(
         self,
-        input_grammar,  # type: AbstractGrammar
-    ):  # type: (...) -> None
+        input_grammar: AbstractGrammar,
+    ) -> None:
         """Update the grammar with a second one.
 
         Add the new elements and update the existing ones.
@@ -119,9 +113,7 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def is_type_array(
-        self, data_name  # type: str
-    ):  # type: (...) -> bool
+    def is_type_array(self, data_name: str) -> bool:
         """Check if an element is an array.
 
         Args:
@@ -137,9 +129,9 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def update_from_if_not_in(
         self,
-        input_grammar,  # type: AbstractGrammar
-        exclude_grammar,  # type: AbstractGrammar
-    ):  # type: (...) -> None
+        input_grammar: AbstractGrammar,
+        exclude_grammar: AbstractGrammar,
+    ) -> None:
         """Add the elements from a second grammar that are not present in a third one.
 
         Args:
@@ -150,8 +142,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_data_name_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         """Check if the name of an element is present in the grammar.
 
         Args:
@@ -164,8 +156,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_all_data_names_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         """Check if the names of the elements are present in the grammar.
 
         Args:
@@ -176,11 +168,11 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def clear(self):  # type: (...) -> None
+    def clear(self) -> None:
         """Clear the grammar."""
         raise NotImplementedError()
 
-    def to_simple_grammar(self):  # type: (...) -> SimpleGrammar
+    def to_simple_grammar(self) -> SimpleGrammar:
         """Convert to the base :class:`.SimpleGrammar` type.
 
         Returns:
@@ -190,8 +182,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def initialize_from_data_names(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        data_names: Iterable[str],
+    ) -> None:
         """Initialize the grammar from the names of the elements and float type.
 
         Args:
@@ -203,8 +195,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def initialize_from_base_dict(
         self,
-        typical_data_dict,  # type: Dict[str,ndarray]
-    ):  # type: (...) -> None
+        typical_data_dict: dict[str, ndarray],
+    ) -> None:
         """Initialize the grammar with types and names from typical elements values.
 
         Args:
@@ -215,10 +207,10 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _get_update_error_msg(
-        grammar1,  # type: AbstractGrammar
-        grammar2,  # type: AbstractGrammar
-        grammar3=None,  # type: Optional[AbstractGrammar]
-    ):  # type: (...) -> str
+        grammar1: AbstractGrammar,
+        grammar2: AbstractGrammar,
+        grammar3: AbstractGrammar | None = None,
+    ) -> str:
         """Create a message for grammar update error.
 
         Args:
@@ -242,12 +234,12 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
                 grammar1.name,
                 grammar1.__class__.__name__,
             )
-        return "{}.".format(msg)
+        return f"{msg}."
 
     def restrict_to(
         self,
-        data_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        data_names: Sequence[str],
+    ) -> None:
         """Restrict the grammar to the given names.
 
         Args:
@@ -257,8 +249,8 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def remove_item(
         self,
-        item_name,  # type: str
-    ):  # type: (...) -> None
+        item_name: str,
+    ) -> None:
         """Remove an element.
 
         Args:
@@ -269,9 +261,7 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def get_type_from_python_type(
-        self, python_type  # type: type
-    ):  # type: (...) -> type
+    def get_type_from_python_type(self, python_type: type) -> type:
         """Return the grammar type that corresponds to a given Python type.
 
         Args:
@@ -284,9 +274,9 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
 
     def update_elements(
         self,
-        python_typing=False,  # type: bool
-        **elements,  # type: Mapping[str,type]
-    ):  # type: (...) -> None
+        python_typing: bool = False,
+        **elements: Mapping[str, type],
+    ) -> None:
         """Add or update elements from their names and types.
 
         Args:
@@ -301,9 +291,7 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def update_required_elements(
-        self, **elements  # type: Mapping[str, bool]
-    ):  # type: (...) -> None
+    def update_required_elements(self, **elements: Mapping[str, bool]) -> None:
         """Add or update the required elements in the grammar.
 
         Args:
@@ -315,9 +303,7 @@ class AbstractGrammar(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def is_required(
-        self, element_name  # type: str
-    ):  # type: (...) -> bool
+    def is_required(self, element_name: str) -> bool:
         """Check if an element is required in the grammar.
 
         Args:

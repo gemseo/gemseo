@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,9 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """CLI for |g| study."""
+from __future__ import annotations
+
 import argparse
-import sys
 from ast import literal_eval
 from os import getcwd
 from os import mkdir
@@ -66,10 +66,6 @@ def parse_args():
 
 def main():
     """Entry point."""
-    if sys.version_info < (3, 6):
-        sys.exit("study analysis only works for python 3.6+")
-        return
-
     args = parse_args()
 
     out_dir = args.out_dir

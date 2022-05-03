@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,10 +13,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """JSON schema handler."""
+from __future__ import annotations
+
+from collections import abc
+
 from genson import SchemaBuilder
 from genson.schema.strategies import Object
-
-from gemseo.utils.py23_compat import abc
 
 
 class _MergeRequiredStrategy(Object):
@@ -38,10 +39,10 @@ class _MergeRequiredStrategy(Object):
             schema: A schema to be added.
         """
         if "required" not in schema or self._required is None:
-            super(_MergeRequiredStrategy, self).add_schema(schema)
+            super().add_schema(schema)
         else:
             required = set(self._required)
-            super(_MergeRequiredStrategy, self).add_schema(schema)
+            super().add_schema(schema)
             self._required = required | set(schema["required"])
 
     def add_object(self, obj):
@@ -51,10 +52,10 @@ class _MergeRequiredStrategy(Object):
             obj: An object to be added.
         """
         if self._required is None:
-            super(_MergeRequiredStrategy, self).add_object(obj)
+            super().add_object(obj)
         else:
             required = set(self._required)
-            super(_MergeRequiredStrategy, self).add_object(obj)
+            super().add_object(obj)
             self._required = required | set(obj.keys())
 
 

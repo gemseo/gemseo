@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,15 +17,11 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Multi-disciplinary Design Feasible (MDF) formulation."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Sequence
-from typing import Tuple
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -54,14 +49,14 @@ class MDF(MDOFormulation):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        maximize_objective=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        main_mda_class="MDAChain",  # type: str
-        sub_mda_class="MDAJacobi",  # type: str
-        **mda_options,  # type: Any
+        disciplines: Sequence[MDODiscipline],
+        objective_name: str,
+        design_space: DesignSpace,
+        maximize_objective: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        main_mda_class: str = "MDAChain",
+        sub_mda_class: str = "MDAJacobi",
+        **mda_options: Any,
     ):
         """
         Args:
@@ -71,7 +66,7 @@ class MDF(MDOFormulation):
             sub_mda_class: The name of the class used for the sub-MDA.
             **mda_options: The options passed to the MDA at construction.
         """
-        super(MDF, self).__init__(
+        super().__init__(
             disciplines,
             objective_name,
             design_space,
@@ -85,15 +80,15 @@ class MDF(MDOFormulation):
         self._update_design_space()
         self._build_objective()
 
-    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
+    def get_top_level_disc(self) -> list[MDODiscipline]:
         return [self.mda]
 
     def _instantiate_mda(
         self,
-        main_mda_class="MDAChain",  # type: str
-        sub_mda_class="MDAJacobi",  # type: str
-        **mda_options,  # type:Any
-    ):  # type: (...) -> None
+        main_mda_class: str = "MDAChain",
+        sub_mda_class: str = "MDAJacobi",
+        **mda_options: Any,
+    ) -> None:
         """Create the MDA discipline.
 
         Args:
@@ -111,9 +106,7 @@ class MDF(MDOFormulation):
         )
 
     @classmethod
-    def get_sub_options_grammar(
-        cls, **options  # type: str
-    ):  # type: (...) -> JSONGrammar
+    def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
@@ -123,9 +116,7 @@ class MDF(MDOFormulation):
         return factory.get_options_grammar(main_mda)
 
     @classmethod
-    def get_default_sub_options_values(
-        cls, **options  # type:str
-    ):  # type: (...) -> Dict
+    def get_default_sub_options_values(cls, **options: str) -> dict:
         main_mda = options.get("main_mda_class")
         if main_mda is None:
             raise ValueError(
@@ -134,21 +125,21 @@ class MDF(MDOFormulation):
         factory = MDAFactory().factory
         return factory.get_default_options_values(main_mda)
 
-    def _build_objective(self):  # type: (...) -> None
+    def _build_objective(self) -> None:
         """Build the objective function from the MDA and the objective name."""
         self._build_objective_from_disc(self._objective_name, discipline=self.mda)
 
     def get_expected_workflow(
         self,
-    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
+    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         return self.mda.get_expected_workflow()
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.mda.get_expected_dataflow()
 
-    def _update_design_space(self):  # type: (...) -> None
+    def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
         self._set_defaultinputs_from_ds()
         # No couplings in design space (managed by MDA)
@@ -156,7 +147,7 @@ class MDF(MDOFormulation):
         # Cleanup
         self._remove_unused_variables()
 
-    def _remove_couplings_from_ds(self):  # type: (...) -> None
+    def _remove_couplings_from_ds(self) -> None:
         """Remove the coupling variables from the design space."""
         design_space = self.opt_problem.design_space
         for coupling in self.mda.all_couplings:

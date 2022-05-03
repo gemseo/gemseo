@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import unittest
 
 from gemseo.core.data_processor import ComplexDataProcessor
@@ -93,7 +89,7 @@ class TestDataProcessor(unittest.TestCase):
 
 class LocalDisc(MDODiscipline):
     def __init__(self):
-        super(LocalDisc, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["A", "B"])
         self.output_grammar.initialize_from_data_names(["O"])
 

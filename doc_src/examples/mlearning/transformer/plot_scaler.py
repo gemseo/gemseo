@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -25,9 +24,6 @@ Scaler example
 
 In this example, we will create a scaler to transform data.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -88,17 +87,12 @@ Additional ones are:
 - :meth:`.plot_criteria`:
   this method plots the criterion values for a given variable.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import os
-from typing import Dict
 from typing import Iterable
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 
 import matplotlib.pyplot as plt
 from numpy import array
@@ -182,15 +176,15 @@ class ParametricStatistics(Statistics):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        distributions,  # type: Sequence[str]
-        variables_names=None,  # type: Optional[Iterable[str]]
-        fitting_criterion="BIC",  # type: str
-        level=0.05,  # type: float
-        selection_criterion="best",  # type: str
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None  # noqa: D205,D212,D415
-        """
+        dataset: Dataset,
+        distributions: Sequence[str],
+        variables_names: Iterable[str] | None = None,
+        fitting_criterion: str = "BIC",
+        level: float = 0.05,
+        selection_criterion: str = "best",
+        name: str | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             distributions: The names of the distributions.
             fitting_criterion: The name of
@@ -206,7 +200,7 @@ class ParametricStatistics(Statistics):
                 to select a distribution from a list of candidates.
                 Either 'first' or 'best'.
         """
-        super(ParametricStatistics, self).__init__(dataset, variables_names, name)
+        super().__init__(dataset, variables_names, name)
         significance_tests = OTDistributionFitter.SIGNIFICANCE_TESTS
         self.fitting_criterion = fitting_criterion
         self.selection_criterion = selection_criterion
@@ -222,8 +216,8 @@ class ParametricStatistics(Statistics):
 
     def _build_distributions(
         self,
-        distributions,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        distributions: Sequence[str],
+    ) -> None:
         """Build distributions from distributions names.
 
         Args:
@@ -232,7 +226,7 @@ class ParametricStatistics(Statistics):
         self._all_distributions = self._fit_distributions(distributions)
         self.distributions = self._select_best_distributions(distributions)
 
-    def get_fitting_matrix(self):  # type: (...) -> str
+    def get_fitting_matrix(self) -> str:
         """Get the fitting matrix.
 
         This matrix contains goodness-of-fit measures
@@ -253,8 +247,8 @@ class ParametricStatistics(Statistics):
 
     def get_criteria(
         self,
-        variable,  # type:str
-    ):  # type: (...) -> Tuple[Dict[str,float],bool]
+        variable: str,
+    ) -> tuple[dict[str, float], bool]:
         """Get criteria for a given variable name and the different distributions.
 
         Args:
@@ -281,13 +275,13 @@ class ParametricStatistics(Statistics):
 
     def plot_criteria(
         self,
-        variable,  # type: str
-        title=None,  # type: Optional[str]
-        save=False,  # type:bool
-        show=True,  # type: bool
-        n_legend_cols=4,  # type: int
-        directory=".",  # type:str
-    ):  # type: (...) -> None
+        variable: str,
+        title: str | None = None,
+        save: bool = False,
+        show: bool = True,
+        n_legend_cols: int = 4,
+        directory: str = ".",
+    ) -> None:
         """Plot criteria for a given variable name.
 
         Args:
@@ -319,7 +313,7 @@ class ParametricStatistics(Statistics):
         plt.subplot(121)
         plt.bar(x_values, y_values, tick_label=labels, align="center")
         if is_p_value:
-            plt.ylabel("p-value from {} test".format(self.fitting_criterion))
+            plt.ylabel(f"p-value from {self.fitting_criterion} test")
             plt.axhline(self.level, color="r", linewidth=2.0)
         plt.grid(True, "both")
         plt.subplot(122)
@@ -354,8 +348,8 @@ class ParametricStatistics(Statistics):
         plt.close()
 
     def _select_best_distributions(
-        self, distributions_names  # type: Sequence[str]
-    ):  # type: (...) -> Dict[str,Dict[str,Union[str,OTDistribution]]]
+        self, distributions_names: Sequence[str]
+    ) -> dict[str, dict[str, str | OTDistribution]]:
         """Select the best distributions for the different variables.
 
         Args:
@@ -384,8 +378,8 @@ class ParametricStatistics(Statistics):
 
     def _fit_distributions(
         self,
-        distributions,  # type: Iterable[str]
-    ):  # type: (...) -> Dict[str,Dict[str,Dict[str,Union[OTDistribution,MeasureType]]]]
+        distributions: Iterable[str],
+    ) -> dict[str, dict[str, dict[str, OTDistribution | MeasureType]]]:
         """Fit different distributions for the different marginals.
 
         Args:
@@ -411,10 +405,10 @@ class ParametricStatistics(Statistics):
 
     def _fit_marginal_distributions(
         self,
-        variable,  # type: str
-        sample,  # type: ndarray
-        distributions,  # type: Iterable[str]
-    ):  # type: (...) -> Dict[str,Dict[str,Union[OTDistribution,MeasureType]]]
+        variable: str,
+        sample: ndarray,
+        distributions: Iterable[str],
+    ) -> dict[str, dict[str, OTDistribution | MeasureType]]:
         """Fit different distributions for a given dataset marginal.
 
         Args:
@@ -437,29 +431,29 @@ class ParametricStatistics(Statistics):
             result[distribution]["criterion"] = test_result
         return result
 
-    def compute_maximum(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {
             name: self.distributions[name]["value"].math_upper_bound
             for name in self.names
         }
         return result
 
-    def compute_mean(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: self.distributions[name]["value"].mean for name in self.names}
         return result
 
-    def compute_minimum(self):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {
             name: self.distributions[name]["value"].math_lower_bound
             for name in self.names
         }
         return result
 
-    def compute_probability(
+    def compute_probability(  # noqa: D102
         self,
-        thresh,  # type: float
-        greater=True,  # type: bool
-    ):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+        thresh: float,
+        greater: bool = True,
+    ) -> dict[str, ndarray]:
         dist = self.distributions
         if greater:
             result = {
@@ -473,13 +467,13 @@ class ParametricStatistics(Statistics):
             }
         return result
 
-    def compute_tolerance_interval(
+    def compute_tolerance_interval(  # noqa: D102
         self,
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Dict[str, Tuple[ndarray,ndarray]]
-        # noqa: D102 D205 D212 D415
+        coverage: float,
+        confidence: float = 0.95,
+        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
+    ) -> dict[str, tuple[ndarray, ndarray]]:
+
         if not 0.0 <= coverage <= 1.0:
             raise ValueError("The argument 'coverage' must be number in [0,1].")
         if not 0.0 <= confidence <= 1.0:
@@ -494,10 +488,10 @@ class ParametricStatistics(Statistics):
             limits[variable] = tolerance_interval.compute(coverage, confidence, side)
         return limits
 
-    def compute_quantile(
+    def compute_quantile(  # noqa: D102
         self,
-        prob,  # type:float
-    ):  # type: (...) -> Dict[str,ndarray] # noqa: D102
+        prob: float,
+    ) -> dict[str, ndarray]:
         prob = array([prob])
         result = {
             name: self.distributions[name]["value"].compute_inverse_cdf(prob)
@@ -505,33 +499,33 @@ class ParametricStatistics(Statistics):
         }
         return result
 
-    def compute_standard_deviation(
+    def compute_standard_deviation(  # noqa: D102
         self,
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    ) -> dict[str, ndarray]:
         result = {
             name: self.distributions[name]["value"].standard_deviation
             for name in self.names
         }
         return result
 
-    def compute_variance(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
         result = {
             name: self.distributions[name]["value"].standard_deviation ** 2
             for name in self.names
         }
         return result
 
-    def compute_moment(
+    def compute_moment(  # noqa: D102
         self,
-        order,  # type: int
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+        order: int,
+    ) -> dict[str, ndarray]:
         dist = self.distributions
         result = [
             dist[name]["value"].distribution.getMoment(order)[0] for name in self.names
         ]
         return result
 
-    def compute_range(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         result = {}
         for name in self.names:
             dist = self.distributions[name]["value"]

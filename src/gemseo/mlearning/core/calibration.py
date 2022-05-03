@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -50,13 +49,11 @@ and the machine learning algorithm.
 The inputs of this discipline are hyper-parameters of the machine learning algorithm
 while the output is the quality criterion.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
 from typing import Union
 
 from numpy import argmin
@@ -105,14 +102,14 @@ class MLAlgoAssessor(MDODiscipline):
 
     def __init__(
         self,
-        algo,  # type: str
-        dataset,  # type: Dataset
-        parameters,  # type: Iterable[str]
-        measure,  # type: MLQualityMeasure
-        measure_options=None,  # type: Optional[MeasureOptionsType]
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        **algo_options,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        algo: str,
+        dataset: Dataset,
+        parameters: Iterable[str],
+        measure: type[MLQualityMeasure],
+        measure_options: MeasureOptionsType | None = None,
+        transformer: Mapping[str, TransformerType] | None = None,
+        **algo_options: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             algo: The name of a machine learning algorithm.
@@ -139,7 +136,7 @@ class MLAlgoAssessor(MDODiscipline):
         Raises:
             ValueError: If the measure option "multioutput" is True.
         """
-        super(MLAlgoAssessor, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(parameters)
         self.output_grammar.initialize_from_data_names([self.CRITERION, self.LEARNING])
         self.algo = algo
@@ -154,7 +151,7 @@ class MLAlgoAssessor(MDODiscipline):
             raise ValueError("MLAlgoAssessor does not support multioutput.")
         self.measure_options[self.MULTIOUTPUT] = False
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run method.
 
         This method creates a new instance of the machine learning algorithm, from the
@@ -179,7 +176,7 @@ class MLAlgoAssessor(MDODiscipline):
         self.algos.append(algo)
 
 
-class MLAlgoCalibration(object):
+class MLAlgoCalibration:
     """Calibration of a machine learning algorithm.
 
     Attributes:
@@ -197,15 +194,15 @@ class MLAlgoCalibration(object):
 
     def __init__(
         self,
-        algo,  # type: str
-        dataset,  # type: Dataset
-        parameters,  # type: Iterable[str]
-        calibration_space,  # type: DesignSpace
-        measure,  # type: MLQualityMeasure
-        measure_options=None,  # type: Optional[MeasureOptionsType]
-        transformer=None,  # type: Optional[TransformerType]
-        **algo_options,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        algo: str,
+        dataset: Dataset,
+        parameters: Iterable[str],
+        calibration_space: DesignSpace,
+        measure: MLQualityMeasure,
+        measure_options: MeasureOptionsType | None = None,
+        transformer: TransformerType | None = None,
+        **algo_options: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             algo: The name of a machine learning algorithm.
@@ -240,8 +237,8 @@ class MLAlgoCalibration(object):
 
     def execute(
         self,
-        input_data,  # type: ScenarioInputDataType
-    ):  # type: (...) -> None
+        input_data: ScenarioInputDataType,
+    ) -> None:
         """Calibrate the machine learning algorithm from a driver.
 
         The driver can be either a DOE or an optimizer.
@@ -279,8 +276,8 @@ class MLAlgoCalibration(object):
 
     def get_history(
         self,
-        name,  # type: str
-    ):  # type: (...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the history of a variable.
 
         Args:
@@ -296,6 +293,6 @@ class MLAlgoCalibration(object):
                 return self.dataset.data[name]
 
     @property
-    def algos(self):  # type: (...) -> MLAlgo
+    def algos(self) -> MLAlgo:
         """The trained machine learning algorithms."""
         return self.scenario.disciplines[0].algos

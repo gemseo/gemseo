@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,9 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Linear equations problem."""
+from __future__ import annotations
+
 import logging
-from typing import Optional
-from typing import Union
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -32,8 +31,8 @@ from scipy.sparse.linalg import LinearOperator
 LOGGER = logging.getLogger(__name__)
 
 
-class LinearProblem(object):
-    """Represent the linear equations' system ``lhs.x = rhs``.
+class LinearProblem:
+    """Representation of the linear equations' system ``A.x = b``.
 
     It also contains the solution, and some properties of the system such as the symmetry
     or positive definiteness.
@@ -56,13 +55,13 @@ class LinearProblem(object):
 
     def __init__(
         self,
-        lhs,  # type: Union[ndarray, spmatrix, LinearOperator]
-        rhs=None,  # type: Optional[ndarray]
-        solution=None,  # type: Optional[ndarray]
-        is_symmetric=False,  # type : bool
-        is_positive_def=False,  # type : bool
-        is_converged=None,  # type : Optional[bool]
-    ):  # type: (...) -> None
+        lhs: ndarray | spmatrix | LinearOperator,
+        rhs: ndarray | None = None,
+        solution: ndarray | None = None,
+        is_symmetric=False,
+        is_positive_def=False,
+        is_converged=None,
+    ) -> None:
         """
         Args:
             lhs: The left-hand side (matrix or linear operator) of the problem.
@@ -93,10 +92,10 @@ class LinearProblem(object):
 
     def compute_residuals(
         self,
-        relative_residuals=True,  # type : bool
-        store=False,  # type : bool
-        current_x=None,  # type : Optional[ndarray]
-    ):  # type: (...) -> ndarray
+        relative_residuals=True,
+        store=False,
+        current_x=None,
+    ) -> ndarray:
         """Compute the L2 norm of the residuals of the problem.
 
         Args:
@@ -132,7 +131,7 @@ class LinearProblem(object):
 
         return res
 
-    def plot_residuals(self):  # type: (...) -> Figure
+    def plot_residuals(self) -> Figure:
         """Plot the residuals' convergence in log scale.
 
         Returns:
@@ -151,12 +150,12 @@ class LinearProblem(object):
         plt.plot(self.residuals_history, color="black", lw=2)
         ax1 = fig.gca()
         ax1.set_yscale("log")
-        ax1.set_title("Linear solver '{}' convergence".format(self.solver_name))
+        ax1.set_title(f"Linear solver '{self.solver_name}' convergence")
         ax1.set_ylabel("Residuals norm (log)")
         ax1.set_xlabel("Iterations")
         return fig
 
-    def check(self):  # type: (...) -> None
+    def check(self) -> None:
         """Check the consistency of the dimensions of the LHS and RHS.
 
         Raises:

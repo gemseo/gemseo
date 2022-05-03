@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,10 +18,8 @@
 #        :author: Matthias De Lozzo
 """Test the dataset module."""
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -31,7 +28,6 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.dataset import LOGICAL_OPERATORS
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 from numpy import allclose
 from numpy import arange
@@ -155,7 +151,7 @@ def test_remove(io_dataset):
 
 
 def test_logical_operators():
-    assert set(LOGICAL_OPERATORS.keys()) == set(["==", "<", "<=", ">", ">=", "!="])
+    assert set(LOGICAL_OPERATORS.keys()) == {"==", "<", "<=", ">", ">=", "!="}
     assert LOGICAL_OPERATORS["=="](1, 1)
     assert not LOGICAL_OPERATORS["=="](1, 2)
     assert LOGICAL_OPERATORS["!="](1, 2)
@@ -575,9 +571,7 @@ def test_export_to_dataset():
 def test_row_names(io_dataset):
     """Check row_names property and setter."""
     assert io_dataset.row_names == [str(val) for val in range(len(io_dataset))]
-    io_dataset.row_names = [
-        "sample_{}".format(index) for index in range(len(io_dataset))
-    ]
+    io_dataset.row_names = [f"sample_{index}" for index in range(len(io_dataset))]
     assert io_dataset.row_names == io_dataset.row_names
 
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,8 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #      :author: Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import create_discipline
@@ -41,9 +38,9 @@ from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(
-    formulation,  # type: str
-    grammar_type=DOEScenario.JSON_GRAMMAR_TYPE,  # type: str
-):  # type: (...) -> DOEScenario
+    formulation: str,
+    grammar_type: str = DOEScenario.JSON_GRAMMAR_TYPE,
+) -> DOEScenario:
     """Build the DOE scenario for SSBJ.
 
     Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """An MDOFunction subclass to support formulations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -42,11 +40,11 @@ class NormFunction(MDOFunction):
 
     def __init__(
         self,
-        orig_func,  # type: MDOFunction
-        normalize,  # type: bool
-        round_ints,  # type: bool
-        optimization_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
+        orig_func: MDOFunction,
+        normalize: bool,
+        round_ints: bool,
+        optimization_problem: OptimizationProblem,
+    ) -> None:
         """
         Args:
             orig_func: The original function.
@@ -70,7 +68,7 @@ class NormFunction(MDOFunction):
         self.__normalize_grad = design_space.normalize_grad
         self.__evaluate_orig_func = self.__orig_func.evaluate
 
-        super(NormFunction, self).__init__(
+        super().__init__(
             self._func,
             name=orig_func.name,
             jac=self._jac,
@@ -83,8 +81,8 @@ class NormFunction(MDOFunction):
 
     def _func(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the original function.
 
         Args:
@@ -101,8 +99,8 @@ class NormFunction(MDOFunction):
 
     def _jac(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the gradient of the original function.
 
         Args:
@@ -129,5 +127,5 @@ class NormFunction(MDOFunction):
         return g_u
 
     @property
-    def expects_normalized_inputs(self):  # type: (...) -> bool
+    def expects_normalized_inputs(self) -> bool:
         return self.__normalize

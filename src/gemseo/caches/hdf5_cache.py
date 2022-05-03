@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,15 +18,12 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store all the entries in a HDF file."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any
 from typing import Generator
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 import h5py
 
@@ -40,7 +36,6 @@ from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -51,11 +46,11 @@ class HDF5Cache(AbstractFullCache):
 
     def __init__(
         self,
-        hdf_file_path="cache.hdf5",  # type: Union[str, Path]
-        hdf_node_path="node",  # type: str
-        tolerance=0.0,  # type: float
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        hdf_file_path: str | Path = "cache.hdf5",
+        hdf_node_path: str = "node",
+        tolerance: float = 0.0,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             hdf_file_path: The path of the HDF file.
@@ -71,12 +66,12 @@ class HDF5Cache(AbstractFullCache):
         if not name:
             name = hdf_node_path
 
-        super(HDF5Cache, self).__init__(tolerance, name)
+        super().__init__(tolerance, name)
         self._read_hashes()
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         msg = MultiLineString()
-        msg.add(super(HDF5Cache, self).__str__())
+        msg.add(super().__str__())
         msg.indent()
         msg.add("HDF file path: {}", self.__hdf_file.hdf_file_path)
         msg.add("HDF node path: {}", self.__hdf_node_path)
@@ -94,7 +89,7 @@ class HDF5Cache(AbstractFullCache):
     def __setstate__(self, state):
         self.__init__(**state)
 
-    def _copy_empty_cache(self):  # type: (...) -> HDF5Cache
+    def _copy_empty_cache(self) -> HDF5Cache:
         file_path = Path(self.__hdf_file.hdf_file_path)
         return self.__class__(
             hdf_file_path=file_path.parent / ("new_" + file_path.name),
@@ -103,11 +98,11 @@ class HDF5Cache(AbstractFullCache):
             name=self.name,
         )
 
-    def _set_lock(self):  # type: (...) -> RLock
+    def _set_lock(self) -> RLock:
         return self.__hdf_file.lock
 
     @synchronized
-    def _read_hashes(self):  # type: (...) -> None
+    def _read_hashes(self) -> None:
         """Read the hashes dict in the HDF file."""
         max_index = self.__hdf_file.read_hashes(
             self._hashes_to_indices, self.__hdf_node_path
@@ -123,23 +118,23 @@ class HDF5Cache(AbstractFullCache):
 
     def _has_group(
         self,
-        index,  # type: int
-        group,  # type: str
-    ):  # type: (...) -> bool
+        index: int,
+        group: str,
+    ) -> bool:
         return self.__hdf_file.has_group(index, group, self.__hdf_node_path)
 
     @synchronized
-    def clear(self):  # type: (...) -> None
-        super(HDF5Cache, self).clear()
+    def clear(self) -> None:
+        super().clear()
         self.__hdf_file.clear(self.__hdf_node_path)
 
     def _read_data(
         self,
-        index,  # type: int
-        group,  # type: str
-        h5_open_file=None,  # type: Optional[h5py.File]
-        **options,  # type: Any
-    ):  # type: (...) -> Tuple[OutputData, JacobianData]
+        index: int,
+        group: str,
+        h5_open_file: h5py.File | None = None,
+        **options: Any,
+    ) -> tuple[OutputData, JacobianData]:
         """
         Args:
             h5_open_file: The opened HDF file.
@@ -157,10 +152,10 @@ class HDF5Cache(AbstractFullCache):
 
     def _write_data(
         self,
-        data,  # type: Data
-        group,  # type: str
-        index,  # type: int
-    ):  # type: (...) -> None
+        data: Data,
+        group: str,
+        index: int,
+    ) -> None:
         self.__hdf_file.write_data(
             data,
             group,
@@ -171,15 +166,14 @@ class HDF5Cache(AbstractFullCache):
     @synchronized
     def __iter__(
         self,
-    ):  # type: (...) -> Generator[CacheEntry]
+    ) -> Generator[CacheEntry]:
         with h5py.File(self.__hdf_file.hdf_file_path, "a") as h5_open_file:
-            for data in self._all_data(h5_open_file=h5_open_file):
-                yield data
+            yield from self._all_data(h5_open_file=h5_open_file)
 
     @staticmethod
     def update_file_format(
-        hdf_file_path,  # type: Union[str, Path]
-    ):  # type: (...) -> None
+        hdf_file_path: str | Path,
+    ) -> None:
         """Update the format of a HDF5 file.
 
         .. seealso:: :meth:`.HDF5FileSingleton.update_file_format`.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from os.path import dirname
 
 import pytest
@@ -27,7 +23,6 @@ from gemseo.utils.singleton import _Multiton
 from gemseo.utils.singleton import Multiton
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
-from six import with_metaclass
 
 
 class MultitonOneArg(Multiton):
@@ -70,9 +65,9 @@ def test_multiton_cache_clear():
 
 
 def test_sing_id():
-    class SingleId(with_metaclass(SingleInstancePerAttributeId, object)):
+    class SingleId(metaclass=SingleInstancePerAttributeId):
         def __init__(self, arg):
-            super(SingleId, self).__init__()
+            super().__init__()
             self.arg = arg
 
     a = SingleId(0)
@@ -81,9 +76,9 @@ def test_sing_id():
     assert a is b
     assert a is not c
 
-    class SingleIdFail(with_metaclass(SingleInstancePerAttributeId, object)):
+    class SingleIdFail(metaclass=SingleInstancePerAttributeId):
         def __init__(self):
-            super(SingleIdFail, self).__init__()
+            super().__init__()
 
     with pytest.raises(ValueError):
         SingleIdFail()
@@ -93,9 +88,9 @@ def test_sing_file():
 
     file_loc = __file__
 
-    class SingleFile(with_metaclass(SingleInstancePerFileAttribute, object)):
+    class SingleFile(metaclass=SingleInstancePerFileAttribute):
         def __init__(self, arg):
-            super(SingleFile, self).__init__()
+            super().__init__()
             self.arg = arg
 
     a = SingleFile(file_loc)
@@ -107,26 +102,26 @@ def test_sing_file():
     with pytest.raises(ValueError):
         SingleFile()
 
-    class SingleFileFail(with_metaclass(SingleInstancePerFileAttribute, object)):
+    class SingleFileFail(metaclass=SingleInstancePerFileAttribute):
         def __init__(self):
-            super(SingleFileFail, self).__init__()
+            super().__init__()
 
     with pytest.raises(ValueError):
         SingleFileFail()
 
 
 def test_id_collision_inst():
-    class SingleId1(with_metaclass(SingleInstancePerAttributeId, object)):
+    class SingleId1(metaclass=SingleInstancePerAttributeId):
         def __init__(self, arg):
-            super(SingleId1, self).__init__()
+            super().__init__()
             self.arg = arg
 
-    class SingleId2(with_metaclass(SingleInstancePerAttributeId, object)):
+    class SingleId2(metaclass=SingleInstancePerAttributeId):
         def __init__(self, arg):
-            super(SingleId2, self).__init__()
+            super().__init__()
             self.arg = arg
 
-    toto = type("TOTO")()
+    toto = ""
     s1 = SingleId1(toto)
     s2 = SingleId2(toto)
 
@@ -134,17 +129,17 @@ def test_id_collision_inst():
 
 
 def test_id_collision_file():
-    class SingleFId1(with_metaclass(SingleInstancePerFileAttribute, object)):
+    class SingleFId1(metaclass=SingleInstancePerFileAttribute):
         def __init__(self, arg):
-            super(SingleFId1, self).__init__()
+            super().__init__()
             self.arg = arg
 
-    class SingleFId2(with_metaclass(SingleInstancePerFileAttribute, object)):
+    class SingleFId2(metaclass=SingleInstancePerFileAttribute):
         def __init__(self, arg):
-            super(SingleFId2, self).__init__()
+            super().__init__()
             self.arg = arg
 
-    toto = type("TOTO2")()
+    toto = ""
     s1 = SingleFId1(toto)
     s2 = SingleFId2(toto)
 

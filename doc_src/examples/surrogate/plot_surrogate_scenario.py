@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -48,9 +47,6 @@ a text file using the :meth:`.Dataset.set_from_array` and
 Then, the surrogate discipline can be used as any other discipline in a
 :class:`.MDOScenario`, a :class:`.DOEScenario`, or a :class:`.MDA`.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
@@ -202,7 +198,7 @@ range_surrogate = create_surrogate("RBFRegression", mission_dataset)
 for i in range(5):
     lod = i * 2.0
     y_4_pred = range_surrogate.execute({"y_24": array([lod])})["y_4"]
-    print("Surrogate range (L/D = {}) = {}".format(lod, y_4_pred))
+    print(f"Surrogate range (L/D = {lod}) = {y_4_pred}")
 
 ##############################################################################
 # And we can build and execute an optimization scenario from it.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class SensitivityAnalysis."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
 
 import pytest
@@ -35,7 +31,6 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 from numpy import linspace
@@ -43,19 +38,15 @@ from numpy import pi
 from numpy import sin
 from numpy.testing import assert_array_equal
 
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
-
 
 @pytest.fixture
-def discipline():  # type: (...) -> AnalyticDiscipline
+def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
     return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
 @pytest.fixture
-def parameter_space():  # type: (...) -> ParameterSpace
+def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
     for name in ["x1", "x2", "x3"]:
@@ -67,7 +58,7 @@ class Ishigami1D(MDODiscipline):
     """A version of the Ishigami function indexed by a 1D variable."""
 
     def __init__(self):
-        super(Ishigami1D, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x1", "x2", "x3"])
         self.output_grammar.initialize_from_data_names(["out"])
 
@@ -129,13 +120,13 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
 
 
 @pytest.fixture
-def mock_sensitivity_analysis():  # type: (...) -> MockSensitivityAnalysis
+def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
     return MockSensitivityAnalysis()
 
 
 @pytest.fixture
-def second_mock_sensitivity_analysis():  # type: (...) -> SecondMockSensitivityAnalysis
+def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
     return SecondMockSensitivityAnalysis()
 
@@ -248,7 +239,7 @@ def test_convert_to_dataset(mock_sensitivity_analysis):
 
 
 @pytest.fixture(scope="module")
-def ishigami():  # type: (...) -> SobolAnalysis
+def ishigami() -> SobolAnalysis:
     """Return the Sobol' analysis for the Ishigami function."""
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:
@@ -293,18 +284,18 @@ TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
 
 
 TWO_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["2d_field_{}".format(i) for i in range(3)]),
+    "without_option": ({}, [f"2d_field_{i}" for i in range(3)]),
     "standardize": (
         {"standardize": True},
-        ["2d_field_standardize_{}".format(i) for i in range(3)],
+        [f"2d_field_standardize_{i}" for i in range(3)],
     ),
     "inputs": (
         {"inputs": ["x1", "x3"]},
-        ["2d_field_inputs_{}".format(i) for i in range(2)],
+        [f"2d_field_inputs_{i}" for i in range(2)],
     ),
     "inputs_standardize": (
         {"standardize": True, "inputs": ["x1", "x3"]},
-        ["2d_field_inputs_standardize_{}".format(i) for i in range(2)],
+        [f"2d_field_inputs_standardize_{i}" for i in range(2)],
     ),
 }
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -44,7 +43,6 @@ from time import time
 from typing import Callable
 from typing import ClassVar
 from typing import List
-from typing import Optional
 from typing import Union
 
 import tqdm
@@ -132,11 +130,11 @@ class ProgressBar(tqdm.tqdm):
             rate = rpd
             unit = "day"
 
-        return rate, " it/{}".format(unit)
+        return rate, f" it/{unit}"
 
     def status_printer(
-        self, file  # type: Union[io.TextIOWrapper, io.StringIO]
-    ):  # type: (...) -> Callable[[str], None]
+        self, file: io.TextIOWrapper | io.StringIO
+    ) -> Callable[[str], None]:
         """Overload the status_printer method to avoid the use of closures.
 
         Args:
@@ -206,7 +204,7 @@ class DriverLib(AlgoLib):
 
     def __init__(self):
         # Library settings and check
-        super(DriverLib, self).__init__()
+        super().__init__()
         self.__progress_bar = None
         self.__activate_progress_bar = self.activate_progress_bar
         self.__max_iter = 0
@@ -215,15 +213,15 @@ class DriverLib(AlgoLib):
         self._max_time = None
         self.__message = None
 
-    def deactivate_progress_bar(self):  # type: (...) -> None
+    def deactivate_progress_bar(self) -> None:
         """Deactivate the progress bar."""
         self.__progress_bar = None
 
     def init_iter_observer(
         self,
-        max_iter,  # type: int
-        message,  # type: str
-    ):  # type: (...) -> None
+        max_iter: int,
+        message: str,
+    ) -> None:
         """Initialize the iteration observer.
 
         It will handle the stopping criterion and the logging of the progress bar.
@@ -236,7 +234,7 @@ class DriverLib(AlgoLib):
             ValueError: If the `max_iter` is not greater than or equal to one.
         """
         if max_iter < 1:
-            raise ValueError("max_iter must be >=1, got {}".format(max_iter))
+            raise ValueError(f"max_iter must be >=1, got {max_iter}")
         self.__max_iter = max_iter
         self.__iter = 0
         self.__message = message
@@ -254,9 +252,7 @@ class DriverLib(AlgoLib):
         self._start_time = time()
         self.problem.max_iter = max_iter
 
-    def __set_progress_bar_objective_value(
-        self, x_vect  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+    def __set_progress_bar_objective_value(self, x_vect: ndarray | None) -> None:
         """Set the objective value in the progress bar.
 
         Args:
@@ -283,9 +279,7 @@ class DriverLib(AlgoLib):
         else:
             self.__progress_bar.update()
 
-    def new_iteration_callback(
-        self, x_vect=None  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """Callback called at each new iteration, i.e. every time a design vector that
         is not already in the database is proposed by the optimizer.
 
@@ -311,17 +305,17 @@ class DriverLib(AlgoLib):
         if self.__progress_bar is not None:
             self.__set_progress_bar_objective_value(x_vect)
 
-    def finalize_iter_observer(self):  # type: (...) -> None
+    def finalize_iter_observer(self) -> None:
         """Finalize the iteration observer."""
         if self.__progress_bar is not None:
             self.__progress_bar.close()
 
     def _pre_run(
         self,
-        problem,  # type: OptimizationProblem
-        algo_name,  # type: str
-        **options,  # type: DriverLibOptionType
-    ):  # type: (...) -> None
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: DriverLibOptionType,
+    ) -> None:
         """To be overridden by subclasses. Specific method to be executed just before
         _run method call.
 
@@ -372,9 +366,9 @@ class DriverLib(AlgoLib):
 
     def _check_integer_handling(
         self,
-        design_space,  # type: DesignSpace
-        force_execution,  # type: bool
-    ):  # type: (...) -> None
+        design_space: DesignSpace,
+        force_execution: bool,
+    ) -> None:
         """Check if the algo handles integer variables.
 
         The user may force the execution if needed, in this case a warning is logged.
@@ -409,12 +403,12 @@ class DriverLib(AlgoLib):
 
     def execute(
         self,
-        problem,  # type: OptimizationProblem
-        algo_name=None,  # type: Optional[str]
-        eval_obs_jac=False,  # type: bool
-        skip_int_check=False,  # type: bool
-        **options,  # type: DriverLibOptionType
-    ):  # type: (...) -> OptimizationResult
+        problem: OptimizationProblem,
+        algo_name: str | None = None,
+        eval_obs_jac: bool = False,
+        skip_int_check: bool = False,
+        **options: DriverLibOptionType,
+    ) -> OptimizationResult:
         """Execute the driver.
 
         Args:
@@ -512,7 +506,7 @@ class DriverLib(AlgoLib):
                 message = "Successive iterates of the objective function "
                 message += "are closer than ftol_rel or ftol_abs."
             elif isinstance(error, MaxTimeReached):
-                message = "Maximum time reached : {} seconds.".format(self._max_time)
+                message = f"Maximum time reached: {self._max_time} seconds."
             message += " GEMSEO Stopped the driver"
         else:
             message = error.args[0]

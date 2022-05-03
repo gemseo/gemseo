@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test silhouette measure."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.kmeans import KMeans
@@ -30,7 +26,7 @@ from numpy import arange
 
 
 @pytest.fixture
-def dataset():  # type: (...)-> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape((20, 3))
     dataset_ = Dataset()
@@ -39,7 +35,7 @@ def dataset():  # type: (...)-> Dataset
 
 
 @pytest.fixture
-def dataset_test():  # type: (...)-> Dataset
+def dataset_test() -> Dataset:
     """The dataset used to test the performance of the clustering algorithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
@@ -48,7 +44,7 @@ def dataset_test():  # type: (...)-> Dataset
 
 
 @pytest.fixture
-def measure(dataset):  # type: (...) -> SilhouetteMeasure
+def measure(dataset) -> SilhouetteMeasure:
     """A silhouette measure."""
     algo = KMeans(dataset, n_clusters=3)
     return SilhouetteMeasure(algo)

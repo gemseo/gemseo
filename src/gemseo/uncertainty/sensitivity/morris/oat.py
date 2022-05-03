@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -47,13 +46,11 @@ from an initial point
 From these elementary effects, we can compare their absolute values
 :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
 from typing import Mapping
-from typing import Tuple
 
 from numpy import maximum
 from numpy import minimum
@@ -72,11 +69,11 @@ class OATSensitivity(MDODiscipline):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: DesignSpace
-        step,  # type: float
-    ):  # type: (...) -> None # noqa: D107 D205 D212 D415
-        """
+        discipline: MDODiscipline,
+        parameter_space: DesignSpace,
+        step: float,
+    ) -> None:
+        """# noqa: D107 D205 D212 D415
         Args:
             discipline: A discipline.
             parameter_space: A parameter space.
@@ -87,7 +84,7 @@ class OATSensitivity(MDODiscipline):
             ValueError: If the relative variation step is lower than or equal to 0
                 or greater than or equal to 0.5.
         """
-        super(OATSensitivity, self).__init__()
+        super().__init__()
         inputs = parameter_space.variables_names
         self.input_grammar.initialize_from_data_names(inputs)
         outputs = [
@@ -108,8 +105,8 @@ class OATSensitivity(MDODiscipline):
 
     def __initialize_output_range(
         self,
-        data,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        data: Mapping[str, ndarray],
+    ) -> None:
         """Initialize the lower and upper bounds of the outputs from data.
 
         Args:
@@ -122,8 +119,8 @@ class OATSensitivity(MDODiscipline):
 
     def __update_output_range(
         self,
-        data,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        data: Mapping[str, ndarray],
+    ) -> None:
         """Update the lower and upper bounds of the outputs from data.
 
         Args:
@@ -135,7 +132,7 @@ class OATSensitivity(MDODiscipline):
             output_range[0] = minimum(output_value, output_range[0])
             output_range[1] = maximum(output_value, output_range[1])
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         inputs = self.get_input_data()
         self.discipline.execute(inputs)
         previous_data = self.discipline.local_data.copy()
@@ -158,8 +155,8 @@ class OATSensitivity(MDODiscipline):
 
     @staticmethod
     def get_io_names(
-        fd_name,  # type: str
-    ):  # type: (...) -> Tuple[str,str]
+        fd_name: str,
+    ) -> tuple[str, str]:
         """Get the output and input names from finite difference name.
 
         Args:
@@ -173,9 +170,9 @@ class OATSensitivity(MDODiscipline):
 
     def get_fd_name(
         self,
-        input_name,  # type: str
-        output_name,  # type: str
-    ):  # type: (...) -> str
+        input_name: str,
+        output_name: str,
+    ) -> str:
         """Return the output name associated to an input name.
 
         Args:
@@ -185,14 +182,14 @@ class OATSensitivity(MDODiscipline):
         Returns:
             The finite difference name.
         """
-        return "{}!{}!{}".format(self._PREFIX, output_name, input_name)
+        return f"{self._PREFIX}!{output_name}!{input_name}"
 
     def __update_inputs(
         self,
-        inputs,  # type: Mapping[str,ndarray]
-        input_name,  # type:str
-        step,  # type:float
-    ):  # type: (...) -> Mapping[str,ndarray]
+        inputs: Mapping[str, ndarray],
+        input_name: str,
+        step: float,
+    ) -> Mapping[str, ndarray]:
         """Update the input data from a finite difference step and an input name.
 
         Args:

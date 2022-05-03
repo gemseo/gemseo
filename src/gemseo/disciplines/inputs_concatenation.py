@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,7 +17,8 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The concatenation of several input variables into a single one."""
-from typing import Optional
+from __future__ import annotations
+
 from typing import Sequence
 
 from numpy import diag
@@ -26,7 +26,7 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import accumulate
+from gemseo.utils.python_compatibility import accumulate
 
 
 class ConcatenationDiscipline(MDODiscipline):
@@ -48,29 +48,28 @@ class ConcatenationDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        input_variables,  # type: Sequence[str]
-        output_variable,  # type: str
-    ):  # type: (...) -> None
-        # noqa: D205 D212 D415
-        """
+        input_variables: Sequence[str],
+        output_variable: str,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             input_variables: The input variables to concatenate.
             output_variable: The output variable name.
         """
-        super(ConcatenationDiscipline, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(input_variables)
         self.output_grammar.initialize_from_data_names([output_variable])
         self.__output_variable = output_variable
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run the discipline."""
         self.local_data[self.__output_variable] = self.get_inputs_asarray()
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
         """Compute the jacobian matrix.
 
         Args:

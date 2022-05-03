@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,8 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt.opt_factory import OptimizersFactory
@@ -28,8 +26,6 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
 from numpy import ones
@@ -114,7 +110,6 @@ def test_non_existent_var(tmp_wd):
         )
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "variables, baseline_images",
     [
@@ -201,7 +196,6 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
         assert Path(outf).exists()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "filter_non_feasible, baseline_images",
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],

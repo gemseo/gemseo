@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,10 +17,8 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -33,13 +30,11 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.auto_py import to_arrays_dict
-from gemseo.utils.py23_compat import Path
 from numpy import array
 from numpy import ones
 from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
-from six import PY2
 
 
 def create_ds(n):
@@ -92,7 +87,7 @@ def test_write_schema(tmp_wd):
     d1 = AutoPyDiscipline(f1, write_schema=True)
     d1.execute()
     for trailer in ["input", "output"]:
-        path = Path("f1_{}.json".format(trailer))
+        path = Path(f"f1_{trailer}.json")
         assert path.is_file()
 
 
@@ -116,14 +111,10 @@ def test_mda():
 def test_fail_wrongly_formatted_function():
     """Test that a wrongly formatted function cannot be used."""
     AutoPyDiscipline(f3)
-    if PY2:
-        msg = "(u'y', u'x') != (u'y',)."
-    else:
-        msg = "('y', 'x') != ('y',)."
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Inconsistent definition of return statements in function: " + msg
+            "Inconsistent definition of return statements in function: ('y', 'x') != ('y',)."
         ),
     ):
         AutoPyDiscipline(f4)

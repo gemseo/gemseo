@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -38,12 +37,12 @@ class YvsX(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        x,  # type: str
-        y,  # type: str
-        x_comp=0,  # type: int
-        y_comp=0,  # type: int
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        x: str,
+        y: str,
+        x_comp: int = 0,
+        y_comp: int = 0,
+    ) -> None:
         """
         Args:
             x: The name of the variable on the x-axis.

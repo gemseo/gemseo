@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,6 +17,8 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
 from gemseo.core.discipline import MDODiscipline
 
 
@@ -46,7 +47,7 @@ class FilteringDiscipline(MDODiscipline):
             Otherwise, remove them.
         """
         self.discipline = discipline
-        super(FilteringDiscipline, self).__init__(name=discipline.name)
+        super().__init__(name=discipline.name)
         original_inputs_names = discipline.get_input_data_names()
         original_outputs_names = discipline.get_output_data_names()
         if inputs_names is not None:

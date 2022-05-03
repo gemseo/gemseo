@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -40,11 +39,11 @@ which is composed of a :class:`.ScalableDiagonalApproximation`.
 With regard to the diagonal DOE, |g| proposes the
 :class:`.DiagonalDOE` class.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from numbers import Number
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -71,7 +70,6 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from gemseo.problems.scalable.data_driven.model import ScalableModel
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +130,7 @@ class ScalableDiagonalModel(ScalableModel):
             "seed": seed,
             "group_dep": group_dep,
         }
-        super(ScalableDiagonalModel, self).__init__(data, sizes, **parameters)
+        super().__init__(data, sizes, **parameters)
         self.t_scaled, self.f_scaled = self.__build_scalable_functions()
 
     def __build_dependencies(self):
@@ -491,7 +489,7 @@ class ScalableDiagonalModel(ScalableModel):
                 r_io_dep[dataname][varname][index, id_comp] = 1
 
 
-class ScalableDiagonalApproximation(object):
+class ScalableDiagonalApproximation:
     """Methodology that captures the trends of a physical problem, and extends it into a
     problem that has scalable input and outputs dimensions The original and the
     resulting scalable problem have the same interface:
@@ -510,7 +508,7 @@ class ScalableDiagonalApproximation(object):
         :param io_dependency: dependency between new inputs and new outputs.
         :type io_dependency: dict
         """
-        super(ScalableDiagonalApproximation, self).__init__()
+        super().__init__()
         self.sizes = sizes
         # dependency matrices
         self.output_dependency = output_dependency

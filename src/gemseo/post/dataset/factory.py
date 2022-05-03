@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,11 +25,9 @@ class can be internal to |g| or located in an external module whose path is prov
 the constructor. It also provides a list of available cache types and allows you to test
 if a cache type is available.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -42,18 +39,18 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 LOGGER = logging.getLogger(__name__)
 
 
-class DatasetPlotFactory(object):
+class DatasetPlotFactory:
     """This factory instantiates a :class:`.DatasetPlot` from its class name."""
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.factory = Factory(DatasetPlot, ("gemseo.post.dataset",))
 
     def create(
         self,
-        plot_name,  # type: str
-        dataset,  # type: Dataset
+        plot_name: str,
+        dataset: Dataset,
         **options,
-    ):  # type: (...) -> DatasetPlot
+    ) -> DatasetPlot:
         """Create a plot for dataset.
 
         Args:
@@ -67,14 +64,14 @@ class DatasetPlotFactory(object):
         return self.factory.create(plot_name, dataset=dataset, **options)
 
     @property
-    def plots(self):  # type: (...) -> List[str]
+    def plots(self) -> list[str]:
         """The available plot methods for dataset."""
         return self.factory.classes
 
     def is_available(
         self,
-        plot_name,  # type: str
-    ):  # type: (...) -> bool
+        plot_name: str,
+    ) -> bool:
         """Check the availability of a plot for dataset.
 
         Args:

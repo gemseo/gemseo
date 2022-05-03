@@ -3,20 +3,19 @@ exclude: ^src/gemseo/third_party
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.2.0
   hooks:
-  - id: trailing-whitespace
-  - id: end-of-file-fixer
-    exclude: (LICENSES/headers|tests/core/data/factory/.*\.json)
-  - id: check-yaml
-    # meta.yaml has jinja2 templates
-    # !reference is specific to gitlab
-    exclude: (meta.yaml|.gitlab-ci.yml)
-  - id: check-added-large-files
-  - id: check-json
-  - id: check-toml
-  - id: destroyed-symlinks
-  - id: check-symlinks
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+      exclude: (LICENSES/headers|tests/core/data/factory/.*\.json)
+    - id: check-yaml
+      # !reference is specific to gitlab
+      exclude: .gitlab-ci.yml
+    - id: check-added-large-files
+    - id: check-json
+    - id: check-toml
+    - id: destroyed-symlinks
+    - id: check-symlinks
 
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.9.0
@@ -26,13 +25,16 @@ repos:
     - id: rst-inline-touching-normal
 
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.0.1
+  rev: v3.1.0
   hooks:
     - id: reorder-python-imports
       name: reorder python imports inside src
       args: [
         --application-directories,
         src,
+        --py37-plus,
+        --add-import,
+        "from __future__ import annotations"
       ]
       files: ^src
     - id: reorder-python-imports
@@ -51,6 +53,12 @@ repos:
         "88",
       ]
 
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.32.0
+  hooks:
+    - id: pyupgrade
+      args: [--py37-plus]
+
 - repo: https://github.com/psf/black
   rev: 22.3.0
   hooks:
@@ -61,16 +69,14 @@ repos:
   hooks:
     - id: flake8
       additional_dependencies:
-        - flake8-bugbear==22.3.23
-        # 1.6.0 has a bug
-        # https://gitlab.com/pycqa/flake8-docstrings/-/issues/51
-        - flake8-docstrings==1.5.0
+        - flake8-bugbear==22.4.25
+        - flake8-docstrings==1.6.0
         - flake8-logging-format==0.6.0
         - flake8-print==4.0.0
         - pep8-naming==0.12.1
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.23.0
+  rev: v2.24.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
@@ -100,26 +106,3 @@ repos:
         - LICENSES/headers/CC-BY-SA-4.0.txt
         - --comment-style
         - ..|   |
-
-- repo: local
-  hooks:
-    - id: extract_req_in_from_setup_cfg
-      name: extract gemseo all and test requirements
-      language: python
-      pass_filenames: false
-      files: ^setup\.cfg$
-      entry: >
-        ./tools/extract_req_in_from_setup_cfg.py
-        --add-install-requires
-        --add-extras-require-key all
-        --add-extras-require-key test
-        requirements/gemseo.in
-    - id: extract_req_in_from_setup_cfg
-      name: extract test requirements
-      language: python
-      pass_filenames: false
-      files: ^setup\.cfg$
-      entry: >
-        ./tools/extract_req_in_from_setup_cfg.py
-        --add-extras-require-key test
-        requirements/test.in

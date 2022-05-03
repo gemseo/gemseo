@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,8 +16,7 @@
 Functional operations
 *********************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import delete
 from numpy import insert
@@ -35,10 +33,10 @@ class RestrictedFunction(MDOFunction):
 
     def __init__(
         self,
-        orig_function,  # type: MDOFunction
-        restriction_indices,  # type: ndarray
-        restriction_values,  # type: ndarray
-    ):  # type: (...) -> None
+        orig_function: MDOFunction,
+        restriction_indices: ndarray,
+        restriction_values: ndarray,
+    ) -> None:
         """
         Args:
             orig_function: The original function to restrict.
@@ -56,7 +54,7 @@ class RestrictedFunction(MDOFunction):
         self._restriction_indices = restriction_indices
         self._orig_function = orig_function
         name = str(orig_function.name) + "_restr"
-        super(RestrictedFunction, self).__init__(
+        super().__init__(
             self.__restricted_function,
             name,
             jac=self.__restricted_jac,
@@ -67,9 +65,7 @@ class RestrictedFunction(MDOFunction):
             outvars=orig_function.outvars,
         )
 
-    def __restricted_function(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction
+    def __restricted_function(self, x_vect: ndarray) -> MDOFunction:
         """Wrap the provided function in order to be given to the optimizer.
 
         Args:
@@ -81,9 +77,7 @@ class RestrictedFunction(MDOFunction):
         x_full = insert(x_vect, self._restriction_indices, self.restriction_values)
         return self._orig_function(x_full)
 
-    def __restricted_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction.jac
+    def __restricted_jac(self, x_vect: ndarray) -> MDOFunction.jac:
         """Wrap the provided Jacobian in order to be given to the optimizer.
 
         Args:
@@ -106,8 +100,8 @@ class LinearComposition(MDOFunction):
 
     def __init__(
         self,
-        orig_function,  # type: MDOFunction
-        interp_operator,  # type: ndarray
+        orig_function: MDOFunction,
+        interp_operator: ndarray,
     ):
         """Constructor.
 
@@ -119,7 +113,7 @@ class LinearComposition(MDOFunction):
         self._orig_function = orig_function
         self._interp_operator = interp_operator
         self._orig_function = orig_function
-        super(LinearComposition, self).__init__(
+        super().__init__(
             self._restricted_function,
             str(orig_function.name) + "_comp",
             jac=self._restricted_jac,
@@ -130,9 +124,7 @@ class LinearComposition(MDOFunction):
             outvars=orig_function.outvars,
         )
 
-    def _restricted_function(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction
+    def _restricted_function(self, x_vect: ndarray) -> MDOFunction:
         """Wrap the provided function in order to be given to the optimizer.
 
         Args:
@@ -144,9 +136,7 @@ class LinearComposition(MDOFunction):
         x_full = self._interp_operator.dot(x_vect)
         return self._orig_function(x_full)
 
-    def _restricted_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction.jac
+    def _restricted_jac(self, x_vect: ndarray) -> MDOFunction.jac:
         """Wrap the provided Jacobian in order to be given to the optimizer.
 
         Args:

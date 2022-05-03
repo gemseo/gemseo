@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable problem - Problem
 **************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -44,7 +42,7 @@ from .variables import X_SHARED_NAME
 LOGGER = logging.getLogger(__name__)
 
 
-class TMProblem(object):
+class TMProblem:
 
     """The scalable problem from Tedford and Martins, 2010, builds a list of strongly
     coupled models (:class:`.TMSubModel`) completed by a main model
@@ -160,15 +158,15 @@ class TMProblem(object):
         """String representation."""
         msg = ["Scalable problem"]
         for model in self.models:
-            msg.append(".... {}".format(model.name))
+            msg.append(f".... {model.name}")
             msg.append("........ Inputs:")
             for name in model.inputs_names:
                 size = model.inputs_sizes[name]
-                msg.append("............ {} ({})".format(name, size))
+                msg.append(f"............ {name} ({size})")
             msg.append("........ Outputs:")
             for name in model.outputs_names:
                 size = model.outputs_sizes[name]
-                msg.append("............ {} ({})".format(name, size))
+                msg.append(f"............ {name} ({size})")
         return "\n".join(msg)
 
     def get_default_inputs(self, names=None):

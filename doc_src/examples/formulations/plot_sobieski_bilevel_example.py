@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -22,9 +21,6 @@
 BiLevel-based MDO on the Sobieski SSBJ test case
 ================================================
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from copy import deepcopy
 
 from gemseo.api import configure_logger
@@ -161,4 +157,4 @@ system_scenario.post_process("OptHistoryView", show=False, save=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()
 for disc in [propu, aero, mission, struct]:
-    print("{}: {} calls.".format(disc.name, disc.n_calls))
+    print(f"{disc.name}: {disc.n_calls} calls.")

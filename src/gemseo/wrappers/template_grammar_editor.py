@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,8 +22,7 @@
 
 Run this file with no argument to open the GUI
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import sys
@@ -182,7 +180,7 @@ class QtTemplateEditor(QMainWindow):
         """Open the document for edition of the template."""
         filename, is_ok = self.__get_open_filename("Open File")
         if is_ok:
-            f_handler = open(filename, "r")
+            f_handler = open(filename)
             filedata = f_handler.read()
             self.q_text_e.setText(filedata)
             f_handler.close()

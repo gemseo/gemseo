@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,11 +17,9 @@
 #                           documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import logging
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -33,8 +30,6 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.third_party.prettytable.prettytable import PY2
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import array_equal
@@ -144,7 +139,7 @@ def test_add_variable_with_unnumerizable_value(design_space):
 @pytest.mark.parametrize("arg", ["l_b", "u_b", "value"])
 def test_add_variable_with_nan_value(design_space, arg):
     """Check that adding a variable with nan value raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'varname' is nan."):
+    with pytest.raises(ValueError, match="Value nan of variable 'varname' is NaN."):
         design_space.add_variable(name="varname", **{arg: float("nan")})
 
 
@@ -152,7 +147,7 @@ def test_add_variable_with_nan_value(design_space, arg):
 def test_add_variable_with_inconsistent_bound_size(design_space, arg, side):
     """Check that using bounds with inconsistent size raises an."""
     with pytest.raises(
-        ValueError, match="The {} bounds of 'varname' should be of size 3.".format(side)
+        ValueError, match=f"The {side} bounds of 'varname' should be of size 3."
     ):
         design_space.add_variable(name="varname", size=3, **{arg: [0.0, 0.0]})
 
@@ -265,16 +260,12 @@ def test_set_current_value_with_malformed_opt_arg(design_space):
 
 def test_set_current_value_with_malformed_current_x(design_space):
     """Check that setting the current value from a float raises an error."""
-    if PY2:
-        keyword = "type"
-    else:
-        keyword = "class"
     with pytest.raises(
         TypeError,
         match=(
             "The current point should be either an array, "
             "a dictionary of arrays or an optimization result; "
-            "got <{} 'float'> instead.".format(keyword)
+            "got <class 'float'> instead."
         ),
     ):
         design_space.set_current_x(1.0)
@@ -384,20 +375,8 @@ def test_active_bounds():
     assert ub_1["x"] == [False]
     assert not ub_1["z"][0]
 
-    if PY2:
-        keyword1 = "type"
-        keyword2 = "unicode"
-    else:
-        keyword1 = "class"
-        keyword2 = "str"
-
     with pytest.raises(
-        TypeError,
-        match=(
-            "Expected dict or array for x_vec argument; got <{} '{}'>.".format(
-                keyword1, keyword2
-            )
-        ),
+        TypeError, match="Expected dict or array for x_vec argument; got <class 'str'>."
     ):
         design_space.get_active_bounds("test")
 
@@ -433,7 +412,7 @@ def test_bounds(design_space, name, lower_bound, upper_bound):
 
 def test_bounds_set_lower_bound_with_nan(design_space):
     """Check that setting lower bound with nan raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is nan."):
+    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
         design_space.set_lower_bound("x6", float("nan"))
 
 
@@ -447,7 +426,7 @@ def test_bounds_set_lower_bound_with_inconsistent_size(design_space):
 
 def test_bounds_set_upper_bound_with_nan(design_space):
     """Check that setting upper bound with nan raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is nan."):
+    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
         design_space.set_upper_bound("x6", float("nan"))
 
 
@@ -461,7 +440,7 @@ def test_bounds_set_upper_bound_with_inconsistent_size(design_space):
 
 def test_bounds_check_value(design_space):
     """Check that a nan value is correctly handled as a nan and raises an error."""
-    with pytest.raises(ValueError, match="Value nan of variable 'x6' is nan."):
+    with pytest.raises(ValueError, match="Value nan of variable 'x6' is NaN."):
         design_space._check_value(array([float("nan")]), "x6")
 
 
@@ -695,12 +674,12 @@ def test_read_write(tmp_wd):
     ds = DesignSpace.read_from_txt(TEST_INFILE)
     assert not ds.has_current_x()
     for i in range(1, 9):
-        testfile = CURRENT_DIR / "design_space_fail_{}.txt".format(i)
+        testfile = CURRENT_DIR / f"design_space_fail_{i}.txt"
         with pytest.raises(ValueError):
             DesignSpace.read_from_txt(testfile)
 
     for i in range(1, 4):
-        testfile = CURRENT_DIR / "design_space_{}.txt".format(i)
+        testfile = CURRENT_DIR / f"design_space_{i}.txt"
         header = None
         if i == 2:
             header = ["name", "value", "lower_bound", "type", "upper_bound"]
@@ -974,8 +953,8 @@ def test_unnormalize_vect_logging(caplog):
     design_space.add_variable("y", 2, l_b=-3.0, u_b=4.0)  # bounded variable
     design_space.unnormalize_vect(array([2.0, -5.0, 6.0]))
     msg = "All components of the normalized vector should be between 0 and 1; "
-    msg += "lower bounds violated: {}; ".format(array([-5.0]))
-    msg += "upper bounds violated: {}.".format(array([6.0]))
+    msg += f"lower bounds violated: {array([-5.0])}; "
+    msg += f"upper bounds violated: {array([6.0])}."
     assert ("gemseo.algos.design_space", logging.WARNING, msg) in caplog.record_tuples
 
 

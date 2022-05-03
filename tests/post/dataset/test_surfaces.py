@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,21 +18,13 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class Surfaces plotting samples of a 2D variable with surfaces."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
 
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import array
-
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
 
 
 @pytest.fixture(scope="module")

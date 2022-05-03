@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -43,9 +42,6 @@ A from scratch example on the Sellar problem
 # -------
 # All the imports needed for the tutorials are performed here.
 # Note that some of the imports are related to the Python 2/3 compatibility.
-from __future__ import division
-from __future__ import unicode_literals
-
 from math import exp
 
 from gemseo.algos.design_space import DesignSpace
@@ -90,7 +86,7 @@ configure_logger()
 
 class SellarSystem(MDODiscipline):
     def __init__(self):
-        super(SellarSystem, self).__init__()
+        super().__init__()
         # Initialize the grammars to define inputs and outputs
         self.input_grammar.initialize_from_data_names(["x", "z", "y_1", "y_2"])
         self.output_grammar.initialize_from_data_names(["obj", "c_1", "c_2"])
@@ -120,7 +116,7 @@ class SellarSystem(MDODiscipline):
 
 class Sellar1(MDODiscipline):
     def __init__(self):
-        super(Sellar1, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x", "z", "y_2"])
         self.output_grammar.initialize_from_data_names(["y_1"])
         self.default_inputs = {
@@ -144,7 +140,7 @@ class Sellar1(MDODiscipline):
 
 class Sellar2(MDODiscipline):
     def __init__(self):
-        super(Sellar2, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["z", "y_1"])
         self.output_grammar.initialize_from_data_names(["y_2"])
         self.default_inputs = {

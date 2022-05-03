@@ -32,7 +32,7 @@ on the versions of its dependencies.
 Thus the versions of its dependencies cannot be pinned,
 but a range of compatible versions shall be defined.
 
-All the dependencies of |g| shall be defined in :file:`setup.cfg`,
+All the dependencies of |g| are defined in :file:`setup.cfg`,
 this files does not tell where the packages will be pulled from.
 The dependencies could be provided by the packages repositories
 `pypi`_, `anaconda`_ or `conda-forge`_.
@@ -42,17 +42,19 @@ a set of packages versions common to several platforms
 and python versions is tricky and challenging.
 This kind of work is mostly done by trials and errors.
 
-As opposed to the dependencies of |g|,
-the development dependencies shall be fully controlled.
-Thus their versions are pinned
+Dependencies for development
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The dependencies used for development shall be fully controlled
 so all developers are provided
 with reproducible and working environments.
 The dependencies shall be updated
 at least once in a while (couple months)
-to benefit from packages improvements and bug fixes.
+to benefit from packages improvements,
+security and bug fixes.
 
 The dependencies update is done with `pip-tools`_
-and from input requirements files.
+and eventually from input requirements files.
 These input requirements files contain
 the minimum pinning requirements
 and are intended to be modified by maintainers.
@@ -60,16 +62,6 @@ The `pip-tools`_ package provides the :command:`pip-compile`
 which can process an input requirements file
 to produce a fully pinned requirements file.
 The actual call to `pip-tools`_ is done via ``tox`` (see below).
-
-To reduce maintenance and complexity,
-our testing environments shall have the same packages providers
-for all the platforms and all the python versions.
-Furthermore it shall be identical to
-the references end-user environments
-under the same constraints.
-
-When a dependency is changed,
-:file:`setup.cfg` shall always be modified.
 
 .. warning::
 
@@ -89,39 +81,29 @@ To add or constrain them,
 if needed,
 change the contents of the ``test`` key in the
 ``[options.extras_require]`` section
-of :file:`setup.cfg`,
-then execute:
+of :file:`setup.cfg`.
+
+Update the actual test requirements used by ``tox`` with:
 
 .. code-block:: shell
 
-    tox -e check
+    tox -e update-deps-test-pyX
 
-This will call a pre-commit hook that will update
-:file:`requirements/test.in`.
-Using a tool prevents human copy/paste errors.
-
-Update the actual test requirements with:
-
-.. code-block:: shell
-
-    tox -e update-deps-test
-    tox -e update-deps-test-py27
-
-.. note::
-
-   To reduce discrepancy among the environments,
-   :file:`requirements/test.txt`,
-   produced from :file:`requirements/test.in`,
-   shall be working for all the python 3 testing environments.
+for all the supported Python versions ``X``, e.g. ``tox -e update-deps-test-py39``.
 
 Other dependencies
 ~~~~~~~~~~~~~~~~~~
 
 We have the following input requirements files:
 
-- doc.in: for building the documentation.
 - dist.in: for creating the distribution.
 - check.in: for checking the source files.
+
+To add or constrain the dependencies for the documentation,
+if needed,
+change the contents of the ``doc`` key in the
+``[options.extras_require]`` section
+of :file:`setup.cfg`.
 
 To update them:
 
@@ -138,9 +120,9 @@ Run
 
 .. code-block:: shell
 
-   tox -e pyX-pypi
+   tox -e pypi-pyX
 
-For all the supported Python versions ``X``.
+for all the supported Python versions ``X``, e.g. ``tox -e pypi-py39``.
 
 Testing conda-forge packages
 ----------------------------
@@ -149,19 +131,9 @@ Run
 
 .. code-block:: shell
 
-   tox -e pyX-conda-forge
+   tox -e conda-forge-pyX
 
-For all the supported Python versions ``X``.
-
-Testing anaconda environment file
----------------------------------
-
-Run
-
-.. code-block:: shell
-
-   tox -e anaconda-env-file
-
+for all the supported Python versions ``X``, e.g. ``tox -e conda-forge-py39``.
 
 Updating the changelog
 ----------------------
@@ -190,7 +162,7 @@ Making a new release
 #. Build the docs for this branch on rtd, check the version and changelog.
 #. Merge to master.
 #. Tag.
-#. Run :command:`tox -e create-dist` to create the distribution archives.
+#. Run :command:`tox -e dist` to create the distribution archives.
 #. Run :command:`twine upload dist/* -u <your login>` to upload to pypi.org.
 #. Test the pypi packages.
 #. Update the recipe for conda-forge once the update bot sends the PR.

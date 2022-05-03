@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import os
 import unittest
 from os.path import dirname
@@ -40,7 +36,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import string_types
 
 DIRNAME = dirname(__file__)
 HDF_CACHE_PATH = join(DIRNAME, "dataset.hdf5")
@@ -248,7 +243,7 @@ class ScalableProblem(unittest.TestCase):
         attrs = self.scalable_disciplines[0].get_attributes_to_serialize()
         assert len(attrs) > 5
         for attr in attrs:
-            assert isinstance(attr, string_types)
+            assert isinstance(attr, str)
 
     def test_group_dep(self):
         hdf_node_path = ScalableProblem.original_disciplines[3].name

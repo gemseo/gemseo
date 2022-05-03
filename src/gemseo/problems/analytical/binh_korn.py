@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -35,11 +34,9 @@ This module implements the Binh and Korn multi-objective problem:
    & 0 \leq y \leq 3.0
    \end{aligned}
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Tuple
 
 from numpy import array
 from numpy import ndarray
@@ -59,9 +56,7 @@ class BinhKorn(OptimizationProblem):
     the :class:`.DesignSpace`, the objective function and the constraints.
     """
 
-    def __init__(
-        self, initial_values=(1.0, 1.0)  # type: Tuple[float, float]
-    ):
+    def __init__(self, initial_values: tuple[float, float] = (1.0, 1.0)):
         """
         Args:
             initial_values: Initial value of the design variables.
@@ -70,7 +65,7 @@ class BinhKorn(OptimizationProblem):
         design_space.add_variable("x", 1, l_b=0.0, u_b=5.0, value=initial_values[0])
         design_space.add_variable("y", 1, l_b=0.0, u_b=3.0, value=initial_values[1])
 
-        super(BinhKorn, self).__init__(design_space)
+        super().__init__(design_space)
         self.objective = MDOFunction(
             self.__compute_binhkorn,
             name="compute_binhkorn",
@@ -101,8 +96,8 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_binhkorn(
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the objective of analytical function.
 
         Args:
@@ -118,8 +113,8 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint1(
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the first constraint function.
 
         Args:
@@ -132,8 +127,8 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint2(
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the first constraint function.
 
         Args:
@@ -146,8 +141,8 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_binhkorn_jac(
-        x_dv,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_dv: ndarray,
+    ) -> ndarray:
         """Compute the gradient of objective.
 
         Args:
@@ -166,7 +161,7 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint1_jac(
-        x_dv,  # type: ndarray
+        x_dv: ndarray,
     ):  # (...) -> ndarray
         """Compute the first inequality constraint jacobian.
 
@@ -184,7 +179,7 @@ class BinhKorn(OptimizationProblem):
 
     @staticmethod
     def __compute_ineq_constraint2_jac(
-        x_dv,  # type: ndarray
+        x_dv: ndarray,
     ):  # (...) -> ndarray
         """Compute the second inequality constraint jacobian.
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -35,10 +34,7 @@ The mean squared error (MSE) is defined by
 
 where :math:`\\hat{y}` are the predictions and :math:`y` are the data points.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Union
+from __future__ import annotations
 
 from numpy import ndarray
 from sklearn.metrics import mean_squared_error
@@ -52,9 +48,9 @@ class MSEMeasure(MLErrorMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLRegressionAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLRegressionAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for regression.
@@ -63,9 +59,9 @@ class MSEMeasure(MLErrorMeasure):
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         multioutput = "raw_values" if multioutput else "uniform_average"
         return mean_squared_error(outputs, predictions, multioutput=multioutput)

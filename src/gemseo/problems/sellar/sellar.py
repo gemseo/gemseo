@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -76,15 +75,11 @@ constraints and objective:
   this :class:`.MDODiscipline` computes both objective and constraints
   from :math:`y_1`, :math:`y_2`, :math:`x_{local}` and :math:`x_{shared,2}`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from cmath import exp
 from cmath import sqrt
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
 
 from numpy import array
 from numpy import atleast_2d
@@ -107,8 +102,8 @@ R_2 = "r_2"
 
 
 def get_inputs(
-    names=None,  # type: Optional[Iterable[str]]
-):  # type: (...) -> Dict[str,ndarray]
+    names: Iterable[str] | None = None,
+) -> dict[str, ndarray]:
     """Generate an initial solution for the MDO problem.
 
     Args:
@@ -131,12 +126,12 @@ def get_inputs(
 class SellarSystem(MDODiscipline):
     """The discipline to compute the objective and constraints of the Sellar problem."""
 
-    def __init__(self):  # type: (...) -> None
-        super(SellarSystem, self).__init__(auto_detect_grammar_files=True)
+    def __init__(self) -> None:
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(
             [X_LOCAL, X_SHARED, Y_1, Y_2]
         )
@@ -147,11 +142,11 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_obj(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_local: ndarray,
+        x_shared: ndarray,
+        y_1: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the objective :math:`obj`.
 
         Args:
@@ -167,8 +162,8 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_c_1(
-        y_1,  # type: ndarray
-    ):  # type: (...) -> float
+        y_1: ndarray,
+    ) -> float:
         """Evaluate the constraint :math:`c_1`.
 
         Args:
@@ -181,8 +176,8 @@ class SellarSystem(MDODiscipline):
 
     @staticmethod
     def compute_c_2(
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the constraint :math:`c_2`.
 
         Args:
@@ -195,9 +190,9 @@ class SellarSystem(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         x_local, _, y_1, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_1, Y_2])
         self.jac[C_1][Y_1] = atleast_2d(array([-2.0 * y_1]))
@@ -213,8 +208,8 @@ class Sellar1(MDODiscipline):
 
     def __init__(
         self,
-        residual_form=False,  # type: bool
-    ):  # type: (...) -> None
+        residual_form: bool = False,
+    ) -> None:
         """
         Args:
             residual_form: If True,
@@ -222,7 +217,7 @@ class Sellar1(MDODiscipline):
                 not the coupling variables.
         """
         self.residual_form = residual_form
-        super(Sellar1, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         if residual_form:
             self.residual_variables = [R_1]
@@ -234,12 +229,12 @@ class Sellar1(MDODiscipline):
 
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
-    def get_attributes_to_serialize(self):  # type: (...) -> List[str]
-        base_d = super(Sellar1, self).get_attributes_to_serialize()
+    def get_attributes_to_serialize(self) -> list[str]:
+        base_d = super().get_attributes_to_serialize()
         base_d.append("residual_form")
         return base_d
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
         if self.residual_form:
@@ -257,10 +252,10 @@ class Sellar1(MDODiscipline):
 
     @staticmethod
     def compute_y_1(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_local: ndarray,
+        x_shared: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the first coupling equation in functional form.
 
         Args:
@@ -275,11 +270,11 @@ class Sellar1(MDODiscipline):
 
     @staticmethod
     def compute_r_1(
-        x_local,  # type: ndarray
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_local: ndarray,
+        x_shared: ndarray,
+        y_1: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the first coupling equation in residual form.
 
         Args:
@@ -295,9 +290,9 @@ class Sellar1(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         x_local, x_shared, y_2 = self.get_inputs_by_name([X_LOCAL, X_SHARED, Y_2])
 
@@ -322,8 +317,8 @@ class Sellar2(MDODiscipline):
 
     def __init__(
         self,
-        residual_form=False,  # type: bool
-    ):  # type: (...) -> None
+        residual_form: bool = False,
+    ) -> None:
         """
         Args:
             residual_form: If True,
@@ -331,7 +326,7 @@ class Sellar2(MDODiscipline):
                 not the coupling variables.
         """
         self.residual_form = residual_form
-        super(Sellar2, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         if residual_form:
             self.residual_variables = [R_2]
@@ -342,11 +337,11 @@ class Sellar2(MDODiscipline):
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
     def get_attributes_to_serialize(self):
-        base_d = super(Sellar2, self).get_attributes_to_serialize()
+        base_d = super().get_attributes_to_serialize()
         base_d.append("residual_form")
         return base_d
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x_shared, y_1 = self.get_inputs_by_name([X_SHARED, Y_1])
 
         if self.residual_form:
@@ -360,9 +355,9 @@ class Sellar2(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._init_jacobian(inputs, outputs, with_zeros=True)
         y_1 = self.get_inputs_by_name(Y_1)
         self.jac[Y_2] = {}
@@ -384,9 +379,9 @@ class Sellar2(MDODiscipline):
 
     @staticmethod
     def compute_y_2(
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-    ):  # type: (...) -> float
+        x_shared: ndarray,
+        y_1: ndarray,
+    ) -> float:
         """Evaluate the second coupling equation in functional form.
 
         Args:
@@ -407,10 +402,10 @@ class Sellar2(MDODiscipline):
 
     @staticmethod
     def compute_r_2(
-        x_shared,  # type: ndarray
-        y_1,  # type: ndarray
-        y_2,  # type: ndarray
-    ):  # type: (...) -> float
+        x_shared: ndarray,
+        y_1: ndarray,
+        y_2: ndarray,
+    ) -> float:
         """Evaluate the second coupling equation in residual form.
 
         Args:

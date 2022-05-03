@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import json
 import unittest
 from copy import deepcopy
@@ -268,13 +264,13 @@ class TestXDSMizer(unittest.TestCase):
         #         import shutil
         #         shutil.copyfile(fname, ref_filepath)
         self.assertTrue(exists(ref_filepath), ref_filepath + " not found!")
-        with open(ref_filepath, "r") as ref_file:
+        with open(ref_filepath) as ref_file:
             xdsm_str = ref_file.read()
         expected = json.loads(xdsm_str)
 
         new_filepath = fname
         assert exists(new_filepath)
-        with open(new_filepath, "r") as new_file:
+        with open(new_filepath) as new_file:
             xdsm_str = new_file.read()
         xdsm_json = json.loads(xdsm_str)
         self._assert_xdsm_equal(expected, xdsm_json)

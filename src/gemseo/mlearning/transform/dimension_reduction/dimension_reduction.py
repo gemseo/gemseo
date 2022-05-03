@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,12 +25,9 @@ The :class:`.DimensionReduction` class implements the concept of dimension reduc
 
    :mod:`~gemseo.mlearning.transform.dimension_reduction.pca`
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import NoReturn
-from typing import Optional
-from typing import Union
 
 from numpy import ndarray
 
@@ -44,10 +40,10 @@ class DimensionReduction(Transformer):
 
     def __init__(
         self,
-        name="DimensionReduction",  # type: str
-        n_components=None,  # type: Optional[int]
-        **parameters,  # type: Optional[Union[float,int,str,bool]]
-    ):  # type: (...) -> None
+        name: str = "DimensionReduction",
+        n_components: int | None = None,
+        **parameters: float | int | str | bool | None,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
@@ -57,15 +53,13 @@ class DimensionReduction(Transformer):
                 typically ``min(n_samples, n_features)``.
             **parameters: The parameters of the transformer.
         """
-        super(DimensionReduction, self).__init__(
-            name, n_components=n_components, **parameters
-        )
+        super().__init__(name, n_components=n_components, **parameters)
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> NoReturn:
         """Fit the transformer to the data.
 
         Args:
@@ -74,6 +68,6 @@ class DimensionReduction(Transformer):
         raise NotImplementedError
 
     @property
-    def n_components(self):  # type: (...) -> int
+    def n_components(self) -> int:
         """The number of components."""
         return self.parameters["n_components"]

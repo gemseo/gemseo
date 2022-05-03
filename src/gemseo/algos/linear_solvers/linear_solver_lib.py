@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -25,7 +24,6 @@ import pickle
 from dataclasses import dataclass
 from typing import Any
 from typing import Mapping
-from typing import Optional
 from uuid import uuid4
 
 from numpy import ndarray
@@ -62,16 +60,16 @@ class LinearSolverLib(AlgoLib):
     save_fpath: str | None
     """The file path to save the linear problem."""
 
-    def __init__(self):  # type: (...) -> None
-        super(LinearSolverLib, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.save_fpath = None
 
     def solve(
         self,
-        linear_problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options,  # type: Any
-    ):  # type: (...) -> Any
+        linear_problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> Any:
         """Solve the linear system.
 
         Args:
@@ -86,9 +84,9 @@ class LinearSolverLib(AlgoLib):
 
     def _build_ilu_preconditioner(
         self,
-        lhs,  # type: ndarray
-        dtype=None,  # type: Optional[str]
-    ):  # type: (...) -> LinearOperator
+        lhs: ndarray,
+        dtype: str | None = None,
+    ) -> LinearOperator:
         """Construct a preconditioner using an incomplete LU factorization.
 
         Args:
@@ -103,15 +101,15 @@ class LinearSolverLib(AlgoLib):
         return LinearOperator(lhs.shape, ilu.solve, dtype=dtype)
 
     @property
-    def solution(self):  # type: (...) -> ndarray
+    def solution(self) -> ndarray:
         """The solution of the problem."""
         return self.problem.solution
 
     @staticmethod
     def is_algorithm_suited(
-        algo_dict,  # type: Mapping[str, bool]
-        problem,  # type: LinearProblem
-    ):  # type: (...) -> bool
+        algo_dict: Mapping[str, bool],
+        problem: LinearProblem,
+    ) -> bool:
         """Check if the algorithm is suited to the problem according to algo_dict.
 
         Args:
@@ -134,10 +132,10 @@ class LinearSolverLib(AlgoLib):
 
     def _pre_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        **options,  # type: Any
-    ):  # type: (...) -> None
+        problem: LinearProblem,
+        algo_name: str,
+        **options: Any,
+    ) -> None:
         """Set the solver options and name in the problem attributes.
 
         Args:
@@ -150,11 +148,11 @@ class LinearSolverLib(AlgoLib):
 
     def _post_run(
         self,
-        problem,  # type: LinearProblem
-        algo_name,  # type: str
-        result,  # type: ndarray
-        **options,  # type: Any
-    ):  # type: (...) -> None # noqa: D107
+        problem: LinearProblem,
+        algo_name: str,
+        result: ndarray,
+        **options: Any,
+    ) -> None:  # noqa: D107
         """Save the LinearProblem to the disk when required.
 
         If the save_when_fail option is True, save the LinearProblem to the disk when
@@ -168,7 +166,7 @@ class LinearSolverLib(AlgoLib):
         """
         if options.get(self.SAVE_WHEN_FAIL, False):
             if not self.problem.is_converged:
-                f_path = "linear_system_{}.pck".format(uuid4())
+                f_path = f"linear_system_{uuid4()}.pck"
                 pickle.dump(self.problem, open(f_path, "wb"))
                 LOGGER.warning(
                     "Linear solver failed, saving problem to file: %s", f_path

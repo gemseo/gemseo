@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,14 +17,14 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for optimization history post-processing."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import inspect
 from os.path import abspath
 from os.path import dirname
 from os.path import exists
 from os.path import join
+from pathlib import Path
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -44,8 +43,6 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import OrderedDict
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.source_parsing import get_options_doc
 
 OptPostProcessorOptionType = Union[int, float, str, bool, Sequence[str]]
@@ -69,8 +66,8 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
+        opt_problem: OptimizationProblem,
+    ) -> None:
         """
         Args:
             opt_problem: The optimization problem to be post-processed.
@@ -92,9 +89,9 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         name = cls_name + "_options"
         f_class = inspect.getfile(self.__class__)
         comp_dir = abspath(dirname(f_class))
-        schema_file = join(comp_dir, "{}.json".format(name))
+        schema_file = join(comp_dir, f"{name}.json")
         if not exists(schema_file):
-            schema_file = join(comp_dir, "options", "{}.json".format(name))
+            schema_file = join(comp_dir, "options", f"{name}.json")
         if not exists(schema_file):
             raise ValueError(
                 "Options grammar for optimization post-processor does not exist, "
@@ -118,24 +115,24 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         default_file_name = FilePathManager.to_snake_case(self.__class__.__name__)
         self.__file_path_manager = FilePathManager(FileType.FIGURE, default_file_name)
         self.__output_files = []
-        self.__figures = OrderedDict()
+        self.__figures = {}
         self.__nameless_figure_counter = 0
 
     @property
-    def figures(self):  # type: (...) -> Dict[str,Figure]
+    def figures(self) -> dict[str, Figure]:
         """The Matplotlib figures indexed by a name, or the nameless figure counter."""
         return self.__figures
 
     @property
-    def output_files(self):  # type: (...) -> List[str]
+    def output_files(self) -> list[str]:
         """The paths to the output files."""
         return self.__output_files
 
     def _add_figure(
         self,
-        figure,  # type: Figure
-        file_name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        figure: Figure,
+        file_name: str | None = None,
+    ) -> None:
         """Add a figure.
 
         Args:
@@ -151,15 +148,15 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-        fig_size=None,  # type: Optional[Tuple[float, float]]
-        **options,  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> Dict[str,Figure]
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+        fig_size: tuple[float, float] | None = None,
+        **options: OptPostProcessorOptionType,
+    ) -> dict[str, Figure]:
         """Post-process the optimization problem.
 
         Args:
@@ -231,9 +228,7 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         )
         return self.__figures
 
-    def check_options(
-        self, **options  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> None
+    def check_options(self, **options: OptPostProcessorOptionType) -> None:
         """Check the options of the post-processor.
 
         Args:
@@ -252,15 +247,15 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
 
     def _run(
         self,
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Path]
-        directory_path=None,  # type: Optional[Path]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-        fig_size=None,  # type: Optional[Tuple[float, float]]
-        **options,  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> Dict[str,Figure]
+        save: bool = True,
+        show: bool = False,
+        file_path: Path | None = None,
+        directory_path: Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+        fig_size: tuple[float, float] | None = None,
+        **options: OptPostProcessorOptionType,
+    ) -> dict[str, Figure]:
         """Run the post-processor.
 
         Args:
@@ -312,9 +307,7 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
 
         return self.__figures
 
-    def _plot(
-        self, **options  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> None
+    def _plot(self, **options: OptPostProcessorOptionType) -> None:
         """Create the figures.
 
         Args:
@@ -322,9 +315,7 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def _generate_x_names(
-        self, variables=None  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> List[str]
+    def _generate_x_names(self, variables: Iterable[str] | None = None) -> list[str]:
         """Create the design variables names for the plot.
 
         Args:
@@ -344,5 +335,5 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
                 x_names.append(d_v)
             else:
                 for k in range(dv_size):
-                    x_names.append("{}_{}".format(d_v, k))
+                    x_names.append(f"{d_v}_{k}")
         return x_names

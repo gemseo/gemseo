@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,10 +18,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
+from pathlib import Path
 
 import pytest
 from gemseo.core.dataset import Dataset
@@ -30,8 +27,6 @@ from gemseo.mlearning.cluster.kmeans import KMeans
 from gemseo.mlearning.core.factory import MLAlgoFactory
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.transform.scaler.scaler import Scaler
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import xrange
 from numpy import arange
 from numpy import array
 from numpy import array_equal
@@ -40,7 +35,7 @@ from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
@@ -63,13 +58,13 @@ def test_constructor(dataset):
 def test_learning_samples(dataset):
     algo = NewMLAlgo(dataset)
     algo.learn()
-    assert list(algo.learning_samples_indices) == list(xrange(len(dataset)))
+    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
     algo = NewMLAlgo(dataset)
     algo.learn(samples=[0, 1])
     assert algo.learning_samples_indices == [0, 1]
 
 
-@pytest.mark.parametrize("samples", [xrange(10), [1, 2]])
+@pytest.mark.parametrize("samples", [range(10), [1, 2]])
 @pytest.mark.parametrize("trained", [False, True])
 def test_str(dataset, samples, trained):
     """Test string representation."""
@@ -78,7 +73,7 @@ def test_str(dataset, samples, trained):
     ml_algo._trained = trained
     expected = "\n".join(["NewMLAlgo()", "   based on the NewLibrary library"])
     if ml_algo.is_trained:
-        expected += "\n   built from {} learning samples".format(len(samples))
+        expected += f"\n   built from {len(samples)} learning samples"
     assert str(ml_algo) == expected
 
 

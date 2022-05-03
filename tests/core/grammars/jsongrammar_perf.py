@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -47,7 +46,7 @@ DEFAULT_ARGS = dict(
 ALPHABET = np.array(list(string.ascii_uppercase))
 
 
-def generate_bench_many_io():  # type: (...) -> JSONGrammar
+def generate_bench_many_io() -> JSONGrammar:
     """Create a JSON grammar.
 
     Returns:
@@ -181,7 +180,7 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
         # inst.input_grammar.load_data(inst.default_inputs)
 
     def __str__(self):
-        return "{}-{}".format(self.class_.__name__, self.nb_of_disc)
+        return f"{self.class_.__name__}-{self.nb_of_disc}"
 
 
 if __name__ == "__main__":
@@ -198,7 +197,7 @@ if __name__ == "__main__":
     # add arguments for our discipline benchmark parameters
     for name, value in DEFAULT_ARGS.items():
         parser.add_argument(
-            "--{}".format(name),
+            f"--{name}",
             default=value,
             type=type(value),
             help="default = %(default)s",

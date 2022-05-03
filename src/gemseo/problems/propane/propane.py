@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -93,8 +92,7 @@ and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from cmath import sqrt
 from os.path import dirname
@@ -133,7 +131,7 @@ class PropaneReaction(MDODiscipline):
     """
 
     def __init__(self):
-        super(PropaneReaction, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {
             "x_shared": ones(4, dtype=complex128),
             "y_1": ones(2, dtype=complex128),
@@ -238,7 +236,7 @@ class PropaneComb1(MDODiscipline):
     governing equations."""
 
     def __init__(self):
-        super(PropaneComb1, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
@@ -277,7 +275,7 @@ class PropaneComb2(MDODiscipline):
     governing equations."""
 
     def __init__(self):
-        super(PropaneComb2, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
@@ -319,7 +317,7 @@ class PropaneComb3(MDODiscipline):
     """This discipline is characterized by three governing equations."""
 
     def __init__(self):
-        super(PropaneComb3, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = {"x_shared": ones(4, dtype=complex128)}
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 

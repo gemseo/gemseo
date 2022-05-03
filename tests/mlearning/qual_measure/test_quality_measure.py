@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test quality measure module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest.mock import Mock
 
 import pytest
@@ -42,7 +38,7 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture(scope="module")
-def measure(dataset):  # type: (...) -> MLQualityMeasure
+def measure(dataset) -> MLQualityMeasure:
     """The quality measure related to a trained machine learning algorithm."""
     return MLQualityMeasure(MLAlgo(dataset))
 
@@ -115,7 +111,7 @@ def test_randomize_cv(algo_with_three_samples, samples, n_folds, randomize):
     folds, final_samples = measure._compute_folds(samples, n_folds, randomize, None)
     assert len(folds) == n_folds
     assert set.union(*(set(fold) for fold in folds)) == set(final_samples)
-    assert sum([len(fold) == 0 for fold in folds]) == 0
+    assert sum(len(fold) == 0 for fold in folds) == 0
 
     if samples is None:
         assert set(final_samples) == {0, 1, 2, 3, 4}

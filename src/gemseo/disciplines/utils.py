@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,11 +13,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """A set of functions to handle disciplines."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Iterable
-from typing import List
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -26,9 +23,9 @@ if TYPE_CHECKING:
 
 
 def __get_all_disciplines(
-    disciplines,  # type: Iterable[MDODiscipline]
-    skip_scenarios,  # type: bool
-):  # type: (...) -> List[MDODiscipline]
+    disciplines: Iterable[MDODiscipline],
+    skip_scenarios: bool,
+) -> list[MDODiscipline]:
     """Return the non-scenario disciplines or also the disciplines of the scenario ones.
 
     Args:
@@ -53,9 +50,9 @@ def __get_all_disciplines(
 
 
 def get_all_inputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    skip_scenarios=True,  # type: bool
-):  # type: (...) -> List[str]
+    disciplines: Iterable[MDODiscipline],
+    skip_scenarios: bool = True,
+) -> list[str]:
     """Return all the input names of the disciplines.
 
     Args:
@@ -79,9 +76,9 @@ def get_all_inputs(
 
 
 def get_all_outputs(
-    disciplines,  # type: Iterable[MDODiscipline]
-    skip_scenarios=True,  # type: bool
-):  # type: (...) -> List[str]
+    disciplines: Iterable[MDODiscipline],
+    skip_scenarios: bool = True,
+) -> list[str]:
     """Return all the output names of the disciplines.
 
     Args:

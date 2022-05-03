@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -39,9 +38,6 @@
 # First, we will import all the classes and functions needed for the tutorials.
 # The first imports (__future__ and future) enable to run the tutorial
 # using either a Python 2 or a Python 3 interpreter.
-from __future__ import division
-from __future__ import unicode_literals
-
 from math import exp
 
 from gemseo.api import configure_logger

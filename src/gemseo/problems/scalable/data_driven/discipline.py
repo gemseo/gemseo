@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -51,8 +50,7 @@ The user only needs to provide:
 The :class:`.ScalableModel` parameters can also be filled in,
 otherwise the model uses default values.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -78,7 +76,7 @@ class ScalableDiscipline(MDODiscipline):
         """
         create = ScalableModelFactory().create
         self.scalable_model = create(name, data=data, sizes=sizes, **parameters)
-        super(ScalableDiscipline, self).__init__(self.scalable_model.name)
+        super().__init__(self.scalable_model.name)
         self.initialize_grammars(data)
         self.default_inputs = self.scalable_model.default_inputs
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY

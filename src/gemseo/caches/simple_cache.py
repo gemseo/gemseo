@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,14 +18,12 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store only one entry."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
 from typing import Generator
 from typing import Iterable
-from typing import Optional
 
 from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
@@ -48,10 +45,10 @@ class SimpleCache(AbstractCache):
 
     def __init__(
         self,
-        tolerance=0.0,  # type: float
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
-        super(SimpleCache, self).__init__(tolerance, name)
+        tolerance: float = 0.0,
+        name: str | None = None,
+    ) -> None:
+        super().__init__(tolerance, name)
         self.__input_data_for_outputs = {}
         self.__output_data = {}
         self.__input_data_for_jacobian = {}
@@ -59,8 +56,8 @@ class SimpleCache(AbstractCache):
         self.__last_input_data = {}
         self.__penultimate_input_data = {}
 
-    def clear(self):  # type: (...) -> None
-        super(SimpleCache, self).clear()
+    def clear(self) -> None:
+        super().clear()
         self.__input_data_for_outputs = {}
         self.__output_data = {}
         self.__input_data_for_jacobian = {}
@@ -68,20 +65,20 @@ class SimpleCache(AbstractCache):
         self.__last_input_data = {}
         self.__penultimate_input_data = {}
 
-    def __iter__(self):  # type: (...) -> Generator[CacheEntry]
+    def __iter__(self) -> Generator[CacheEntry]:
         if self.__penultimate_input_data:
             yield self.__penultimate_input_data
 
         yield self.last_entry
 
-    def __len__(self):  # type: (...) -> int
+    def __len__(self) -> int:
         return bool(self.__penultimate_input_data) + bool(self.__last_input_data)
 
     def __create_input_cache(
         self,
-        input_data,  # type: Data
-        output_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> Data
+        input_data: Data,
+        output_names: Iterable[str] | None = None,
+    ) -> Data:
         """Create the input data.
 
         Args:
@@ -110,9 +107,9 @@ class SimpleCache(AbstractCache):
 
     def __is_cached(
         self,
-        cached_input_data,  # type: Data
-        input_data,  # type: Data
-    ):  # type: (...) -> bool
+        cached_input_data: Data,
+        input_data: Data,
+    ) -> bool:
         """Check if an input data is cached.
 
         Args:
@@ -137,16 +134,16 @@ class SimpleCache(AbstractCache):
 
     def cache_outputs(
         self,
-        input_data,  # type: Data
-        output_data,  # type: OutputData
-    ):  # type: (...) -> None
+        input_data: Data,
+        output_data: OutputData,
+    ) -> None:
         self.__input_data_for_outputs = self.__create_input_cache(input_data)
         self.__output_data = deepcopy_dict_of_arrays(output_data)
 
     def __getitem__(
         self,
-        input_data,  # type: Data
-    ):  # type: (...) -> CacheEntry
+        input_data: Data,
+    ) -> CacheEntry:
         output_data, jacobian_data = {}, {}
         if self.__is_cached(self.__input_data_for_outputs, input_data):
             output_data = self.__output_data
@@ -158,16 +155,16 @@ class SimpleCache(AbstractCache):
 
     def cache_jacobian(
         self,
-        input_data,  # type: Data
-        jacobian_data,  # type: JacobianData
-    ):  # type: (...) -> None
+        input_data: Data,
+        jacobian_data: JacobianData,
+    ) -> None:
         self.__input_data_for_jacobian = self.__create_input_cache(input_data)
         self.__jacobian_data = jacobian_data
 
     def __retrieve_entry(
         self,
-        cached_input_data,  # type: Data
-    ):  # type: (...) -> CacheEntry
+        cached_input_data: Data,
+    ) -> CacheEntry:
         """Return the cache entry corresponding to a cached input data.
 
         Args:
@@ -190,10 +187,10 @@ class SimpleCache(AbstractCache):
         return CacheEntry(input_data, output_data, jacobian_data)
 
     @property
-    def penultimate_entry(self):  # type: (...) -> CacheEntry
+    def penultimate_entry(self) -> CacheEntry:
         """The penultimate cache entry."""
         return self.__retrieve_entry(self.__penultimate_input_data)
 
     @property
-    def last_entry(self):  # type: (...) -> CacheEntry
+    def last_entry(self) -> CacheEntry:
         return self.__retrieve_entry(self.__last_input_data)

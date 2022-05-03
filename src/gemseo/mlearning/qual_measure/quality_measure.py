@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,11 +21,9 @@
 from __future__ import annotations
 
 from typing import ClassVar
-from typing import List
 from typing import NoReturn
 from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -92,9 +89,9 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        algo,  # type: MLAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm.
@@ -110,10 +107,10 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate(
         self,
-        method=LEARN,  # type: str
-        samples=None,  # type: Optional[Sequence[int]]
-        **options,  # type: Optional[OptionType]
-    ):  # type: (...) -> Union[float,ndarray]
+        method: str = LEARN,
+        samples: Sequence[int] | None = None,
+        **options: OptionType | None,
+    ) -> float | ndarray:
         """Evaluate the quality measure.
 
         Args:
@@ -138,9 +135,9 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> NoReturn:
         """Evaluate the quality measure from the learning dataset.
 
         Args:
@@ -156,10 +153,10 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> NoReturn:
         """Evaluate the quality measure using a test dataset.
 
         Args:
@@ -176,9 +173,9 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_loo(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         """Evaluate the quality measure using the leave-one-out technique.
 
         Args:
@@ -198,12 +195,12 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type: bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> NoReturn
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> NoReturn:
         """Evaluate the quality measure using the k-folds technique.
 
         Args:
@@ -224,11 +221,11 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> NoReturn
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> NoReturn:
         """Evaluate the quality measure using the bootstrap technique.
 
         Args:
@@ -249,9 +246,9 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
     @classmethod
     def is_better(
         cls,
-        val1,  # type: float
-        val2,  # type: float
-    ):  # type: (...) -> bool
+        val1: float,
+        val2: float,
+    ) -> bool:
         """Compare the quality between two values.
 
         This methods returns ``True`` if the first one is better than the second one.
@@ -275,8 +272,8 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def _assure_samples(
         self,
-        samples,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> ndarray
+        samples: Sequence[int] | None,
+    ) -> ndarray:
         """Return the indices of the samples.
 
         Args:
@@ -293,11 +290,11 @@ class MLQualityMeasure(metaclass=GoogleDocstringInheritanceMeta):
 
     def _compute_folds(
         self,
-        samples,  # type: Optional[Sequence[int]]
-        n_folds,  # type: int
-        randomize,  # type: bool
-        seed,  # type: Optional[int]
-    ):  # type: (...) -> Tuple[List[ndarray],ndarray]
+        samples: Sequence[int] | None,
+        n_folds: int,
+        randomize: bool,
+        seed: int | None,
+    ) -> tuple[list[ndarray], ndarray]:
         """Split the samples into folds.
 
         E.g. [0, 1, 2, 3, 4, 5] can be split into 3 folds: [0, 1], [2, 3] and [4, 5].
@@ -352,6 +349,4 @@ class MLQualityMeasureFactory(Factory):
     """A factory of :class:`.MLQualityMeasure`."""
 
     def __init__(self):
-        super(MLQualityMeasureFactory, self).__init__(
-            MLQualityMeasure, ("gemseo.mlearning.qual_measure",)
-        )
+        super().__init__(MLQualityMeasure, ("gemseo.mlearning.qual_measure",))

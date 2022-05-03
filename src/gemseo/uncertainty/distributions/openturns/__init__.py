@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -63,3 +62,4 @@ The class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from :code:`numpy.array` data,
 based on the OpenTURNS capabilities.
 """
+from __future__ import annotations

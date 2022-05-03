@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,8 +19,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Box plots to quantify optimum robustness."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from math import sqrt
@@ -54,8 +52,8 @@ class Robustness(OptPostProcessor):
 
     def _plot(
         self,
-        stddev=0.01,  # type: float
-    ):  # type: (...) -> None
+        stddev: float = 0.01,
+    ) -> None:
         """
         Args:
             stddev: The standard deviation of the inputs as fraction of x bounds.
@@ -64,8 +62,8 @@ class Robustness(OptPostProcessor):
 
     def __boxplot(
         self,
-        stddev=0.01,  # type: float
-    ):  # type: (...) -> Figure
+        stddev: float = 0.01,
+    ) -> Figure:
         """Plot the Hessian of the function.
 
         Args:

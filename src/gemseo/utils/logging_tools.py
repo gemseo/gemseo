@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,11 +21,13 @@
 Logging tools
 =============
 """
+from __future__ import annotations
+
 import logging
 import types
 
 
-class MultiLineHandlerMixin(object):
+class MultiLineHandlerMixin:
     """Stateless mixin class to override logging handlers behavior."""
 
     @staticmethod
@@ -45,7 +46,7 @@ class MultiLineHandlerMixin(object):
         old_msg = record.msg
         for line in message.split("\n"):
             record.msg = line
-            super(MultiLineHandlerMixin, self).emit(record)
+            super().emit(record)
         # restore genuine getMessage and raw message for other handlers
         record.getMessage = types.MethodType(logging.LogRecord.getMessage, record)
         record.msg = old_msg

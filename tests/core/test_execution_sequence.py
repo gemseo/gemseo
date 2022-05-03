@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                         documentation
 #        :author: Francois Gallard, Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import unittest
 from copy import deepcopy
 
@@ -254,7 +250,7 @@ class TestExecSequence(unittest.TestCase):
         self.assertEqual(self.status_of(seq, d1, 1), MDODiscipline.STATUS_DONE)
 
     def test_visitor_pattern(self):
-        class Visitor(object):
+        class Visitor:
             def __init__(self):
                 self.result = []
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                         documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import unittest
 
 from gemseo.core.discipline import MDODiscipline
@@ -28,7 +24,7 @@ from gemseo.core.execution_sequence import SerialExecSequence
 from gemseo.core.monitoring import Monitoring
 
 
-class FakeScenario(object):
+class FakeScenario:
     def __init__(self, disc1, disc2):
         self.disc1 = disc1
         self.disc2 = disc2
@@ -58,7 +54,7 @@ class TestMonitoring(unittest.TestCase):
     def test_singleton(self):
         self.info = None
 
-        class Observer2(object):
+        class Observer2:
             def update(self, atom):
                 self.info = atom
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,9 +25,6 @@ DesignSpace creation and manipulation
 In this example, we will see how to create and how to manipulate an instance of
 :class:`.DesignSpace`.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from numpy import array

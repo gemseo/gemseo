@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,7 +20,6 @@ from __future__ import annotations
 
 import re
 import unittest
-from typing import Optional
 from typing import Sequence
 
 import pytest
@@ -49,9 +47,9 @@ from numpy.testing import assert_equal
 
 
 def build_mdo_scenario(
-    formulation,  # type: str
-    grammar_type=MDOScenario.JSON_GRAMMAR_TYPE,  # type: str
-):  # type: (...) -> MDOScenario
+    formulation: str,
+    grammar_type: str = MDOScenario.JSON_GRAMMAR_TYPE,
+) -> MDOScenario:
     """Build the scenario for SSBJ.
 
     Args:
@@ -389,8 +387,8 @@ def test_xdsm_filename(tmp_path, idf_scenario):
 
 @pytest.mark.parametrize("observables", [["y_12"], ["y_23"]])
 def test_add_observable(
-    mdf_scenario,  # type: MDOScenario
-    observables,  # type: Sequence[str]
+    mdf_scenario: MDOScenario,
+    observables: Sequence[str],
 ):
     """Test adding observables from discipline outputs.
 
@@ -405,7 +403,7 @@ def test_add_observable(
 
 
 def test_add_observable_not_available(
-    mdf_scenario,  # type: MDOScenario
+    mdf_scenario: MDOScenario,
 ):
     """Test adding an observable which is not available in any discipline.
 
@@ -501,12 +499,12 @@ def test_get_execution_metrics(mdf_scenario):
 
 
 def mocked_export_to_dataset(
-    name=None,  # type: Optional[str]
-    by_group=True,  # type: bool
-    categorize=True,  # type: bool
-    opt_naming=True,  # type: bool
-    export_gradients=False,  # type: bool
-):  # type: (...) -> Dataset
+    name: str | None = None,
+    by_group: bool = True,
+    categorize: bool = True,
+    opt_naming: bool = True,
+    export_gradients: bool = False,
+) -> Dataset:
     """A mock for OptimizationProblem.export_to_dataset."""
     return (
         name,
