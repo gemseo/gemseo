@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The API for uncertainty quantification and management."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Iterable
-from typing import List
-from typing import Optional
 from typing import Sequence
 
 from gemseo.algos.parameter_space import ParameterSpace
@@ -35,7 +31,7 @@ from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis  # noqa:
 from gemseo.uncertainty.statistics.statistics import Statistics
 
 
-def get_available_distributions():  # type: (...) -> List[str]
+def get_available_distributions() -> list[str]:
     """Get the available distributions."""
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
@@ -44,11 +40,11 @@ def get_available_distributions():  # type: (...) -> List[str]
 
 
 def create_distribution(
-    variable,  # type: str
-    distribution_name,  # type: str,
-    dimension=1,  # type: int
+    variable: str,
+    distribution_name: str,
+    dimension: int = 1,
     **options,
-):  # type: (...) -> Distribution
+) -> Distribution:
     """Create a distribution.
 
     Args:
@@ -81,7 +77,7 @@ def create_distribution(
     )
 
 
-def get_available_sensitivity_analyses():  # type: (...) -> List[str]
+def get_available_sensitivity_analyses() -> list[str]:
     """Get the available sensitivity analyses."""
     from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
@@ -90,14 +86,14 @@ def get_available_sensitivity_analyses():  # type: (...) -> List[str]
 
 
 def create_statistics(
-    dataset,  # type: Dataset
-    variables_names=None,  # type: Optional[Iterable[str]]
-    tested_distributions=None,  # type: Optional[Sequence[str]]
-    fitting_criterion="BIC",  # type: str
+    dataset: Dataset,
+    variables_names: Iterable[str] | None = None,
+    tested_distributions: Sequence[str] | None = None,
+    fitting_criterion: str = "BIC",
     selection_criterion="best",
-    level=0.05,  # type: float
-    name=None,  # type: Optional[str]
-):  # type: (...) -> Statistics
+    level: float = 0.05,
+    name: str | None = None,
+) -> Statistics:
     """Create a statistics toolbox, either parametric or empirical.
 
     If parametric, the toolbox selects a distribution from candidates,
@@ -182,11 +178,11 @@ def create_statistics(
 
 
 def create_sensitivity_analysis(
-    analysis,  # type: str
-    discipline,  # type: MDODiscipline
-    parameter_space,  # type: ParameterSpace
+    analysis: str,
+    discipline: MDODiscipline,
+    parameter_space: ParameterSpace,
     **options,
-):  # type: (...) -> SensitivityAnalysis
+) -> SensitivityAnalysis:
     """Create the sensitivity analysis.
 
     Args:

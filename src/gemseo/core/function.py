@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,6 +18,8 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Legacy module with the MDOFunction classes."""
+from __future__ import annotations
+
 from gemseo.core.mdofunctions.function_generator import (  # noqa: F401
     MDOFunctionGenerator,
 )

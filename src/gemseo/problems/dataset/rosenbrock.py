@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -38,8 +37,7 @@ design of experiments.
 `More information about the Rosenbrock function
 <https://en.wikipedia.org/wiki/Rosenbrock_function>`_
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import hstack
 from numpy import linspace
@@ -69,7 +67,7 @@ class RosenbrockDataset(Dataset):
             variables. Default: True.
         :parma bool opt_naming: use an optimization naming. Default: True.
         """
-        super(RosenbrockDataset, self).__init__(name, by_group)
+        super().__init__(name, by_group)
         root_n_samples = int(n_samples**0.5)
         x_i = linspace(-2.0, 2.0, root_n_samples)
         x_i, y_i = meshgrid(x_i, x_i)

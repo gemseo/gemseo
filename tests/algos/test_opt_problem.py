@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2022 Airbus SAS
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
@@ -18,10 +17,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from functools import partial
+from pathlib import Path
 from typing import Dict
 from typing import Tuple
 from unittest import mock
@@ -46,7 +43,6 @@ from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import Path
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
@@ -66,7 +62,7 @@ FAIL_HDF = DIRNAME / "fail2.hdf5"
 
 
 @pytest.fixture
-def pow2_problem():  # type: (...) -> OptimizationProblem
+def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
     x_0 = np.ones(3)
@@ -471,23 +467,23 @@ def test_preprocess_functions():
 
     # Store the initial functions identities
     obj_id = id(problem.objective)
-    cstr_id = set([id(cstr) for cstr in problem.constraints])
-    obs_id = set([id(obs) for obs in problem.observables])
+    cstr_id = {id(cstr) for cstr in problem.constraints}
+    obs_id = {id(obs) for obs in problem.observables}
 
     problem.preprocess_functions(normalize=False, round_ints=False)
 
     # Check that the non-preprocessed functions are the original ones
     assert id(problem.nonproc_objective) == obj_id
-    assert set([id(cstr) for cstr in problem.nonproc_constraints]) == cstr_id
-    assert set([id(obs) for obs in problem.nonproc_observables]) == obs_id
+    assert {id(cstr) for cstr in problem.nonproc_constraints} == cstr_id
+    assert {id(obs) for obs in problem.nonproc_observables} == obs_id
 
     # Check that the current problem functions are NOT the original ones
     assert id(problem.objective) != obj_id
-    assert set([id(cstr) for cstr in problem.constraints]).isdisjoint(cstr_id)
-    assert set([id(obs) for obs in problem.observables]).isdisjoint(obs_id)
+    assert {id(cstr) for cstr in problem.constraints}.isdisjoint(cstr_id)
+    assert {id(obs) for obs in problem.observables}.isdisjoint(obs_id)
 
-    nonproc_constraints = set([repr(cstr) for cstr in problem.nonproc_constraints])
-    constraints = set([repr(cstr) for cstr in problem.constraints])
+    nonproc_constraints = {repr(cstr) for cstr in problem.nonproc_constraints}
+    constraints = {repr(cstr) for cstr in problem.constraints}
     assert nonproc_constraints == constraints
 
 
@@ -838,7 +834,7 @@ def test_undefined_differentiation_method():
 
 
 @pytest.fixture
-def problem():  # type: (...) -> OptimizationProblem
+def problem() -> OptimizationProblem:
     """A simple optimization problem :math:`max_x x`."""
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0, u_b=1, value=0.5)
@@ -945,7 +941,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog):
 
 
 @pytest.fixture(scope="module")
-def constrained_problem():  # type: (...) -> OptimizationProblem
+def constrained_problem() -> OptimizationProblem:
     """A constrained optimisation problem with multidimensional constraints."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, value=1.0)
@@ -992,8 +988,8 @@ def test_get_scalar_constraints_names(constrained_problem):
     scalar_names = constrained_problem.get_scalar_constraints_names()
     assert set(scalar_names) == {
         "g",
-        "h{}0".format(DesignSpace.SEP),
-        "h{}1".format(DesignSpace.SEP),
+        f"h{DesignSpace.SEP}0",
+        f"h{DesignSpace.SEP}1",
     }
 
 
@@ -1028,7 +1024,7 @@ def test_approximated_jacobian_wrt_uncertain_variables():
 
 
 @pytest.fixture
-def rosenbrock_lhs():  # type: (...) -> Tuple[Rosenbrock,Dict[str,ndarray]]
+def rosenbrock_lhs() -> Tuple[Rosenbrock, Dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))
@@ -1174,7 +1170,7 @@ def test_get_function_dimension_unknown(constrained_problem):
 
 
 @pytest.fixture()
-def design_space():  # type: (...) -> mock.Mock
+def design_space() -> mock.Mock:
     """A design space."""
     design_space = mock.Mock()
     design_space.get_current_x = mock.Mock()
@@ -1182,7 +1178,7 @@ def design_space():  # type: (...) -> mock.Mock
 
 
 @pytest.fixture()
-def function():  # type: (...) -> mock.Mock
+def function() -> mock.Mock:
     """A function."""
     function = mock.MagicMock(return_value=1.0)
     function.name = "f"
@@ -1342,8 +1338,8 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd):
 
     # Check the set of observables.
     # Assuming that two functions are equal if they have the same name.
-    exp_obs_names = set([obs.name for obs in pow2_problem.observables])
-    imp_obs_names = set([obs.name for obs in imp_pb.observables])
+    exp_obs_names = {obs.name for obs in pow2_problem.observables}
+    imp_obs_names = {obs.name for obs in imp_pb.observables}
     assert exp_obs_names == imp_obs_names
 
 
@@ -1385,7 +1381,7 @@ def problem_with_complex_value() -> OptimizationProblem:
     """A problem using a design space with a float variable whose value is complex."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space.set_current_x(({"x": array([1.0 + 0j])}))
+    design_space.set_current_x({"x": array([1.0 + 0j])})
     return OptimizationProblem(design_space)
 
 

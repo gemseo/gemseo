@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,16 +18,15 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The design space of the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def create_design_space(
-    dtype,  # type: str
-):  # type: (...) -> DesignSpace
+    dtype: str,
+) -> DesignSpace:
     """Create the design space for the Sobieski's SSBJ use case.
 
     Args:

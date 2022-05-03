@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -41,10 +40,10 @@ of the true problem.
    that satisfies this budget, or even saves us time. Thus, it is important
    to carefully define these cost functions.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -56,8 +55,6 @@ from numpy import poly1d
 from numpy import polyfit
 
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import string_types
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -69,7 +66,7 @@ POST_DIRECTORY = Path("visualization")
 POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
 
 
-class PostScalabilityStudy(object):
+class PostScalabilityStudy:
 
     """The PostScalabilityStudy class aims to post-process a list of scalability results
     stored in a directory."""
@@ -120,7 +117,7 @@ class PostScalabilityStudy(object):
         """
         self.unit_cost = cost_unit
         description = self.descriptions["original_exec_time"].split(" (")[0]
-        description = "{} ({})".format(description, cost_unit)
+        description = f"{description} ({cost_unit})"
         self.descriptions["original_exec_time"] = description
 
     def labelize_exec_time(self, description):
@@ -184,10 +181,8 @@ class PostScalabilityStudy(object):
         """
         if not self.descriptions.get(keyword):
             keywords = ", ".join(list(self.descriptions.keys()))
-            raise ValueError(
-                "The keyword {} is not in the list: {}".format(keyword, keywords)
-            )
-        if not isinstance(description, string_types):
+            raise ValueError(f"The keyword {keyword} is not in the list: {keywords}")
+        if not isinstance(description, str):
             raise TypeError(
                 'The argument "description" must be '
                 "of type string, "
@@ -198,12 +193,10 @@ class PostScalabilityStudy(object):
     def __load_results(self):
         """Load results from the results directory of the study path."""
         if not self.study_directory.is_dir():
-            raise ValueError(
-                'Directory "{}" does not exist.'.format(self.study_directory)
-            )
+            raise ValueError(f'Directory "{self.study_directory}" does not exist.')
         directory = self.study_directory / RESULTS_DIRECTORY
         if not directory.is_dir():
-            raise ValueError('Directory "{}" does not exist.'.format(directory))
+            raise ValueError(f'Directory "{directory}" does not exist.')
         filenames = [
             filename.name for filename in directory.iterdir() if filename.is_file()
         ]
@@ -216,7 +209,7 @@ class PostScalabilityStudy(object):
             result.load(self.study_directory)
             results.append(result)
         if not results:
-            raise ValueError("Directory {} is empty.".format(directory))
+            raise ValueError(f"Directory {directory} is empty.")
         return results
 
     def plot(

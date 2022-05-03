@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 A factory to execute DOE algorithms from their class names
 **********************************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from gemseo.algos.doe.doe_lib import DOELibrary
 from gemseo.algos.driver_factory import DriverFactory
@@ -34,4 +32,4 @@ class DOEFactory(DriverFactory):
 
     def __init__(self):
         """Test and import optimization library if it is available."""
-        super(DOEFactory, self).__init__(DOELibrary, "gemseo.algos.doe")
+        super().__init__(DOELibrary, "gemseo.algos.doe")

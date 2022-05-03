@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,13 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from pathlib import Path
+
 import numpy as np
 import pytest
 
 # skip if matlab API is not found
 matlab = pytest.importorskip("matlab")
 
-from gemseo.utils.py23_compat import Path  # noqa: E402
 from gemseo.wrappers.matlab.engine import get_matlab_engine  # noqa: E402
 
 from .matlab_files import MATLAB_FILES_DIR_PATH  # noqa: E402

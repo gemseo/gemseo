@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,10 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A scenario whose driver is a design of experiments."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Optional
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -56,14 +53,14 @@ class DOEScenario(Scenario):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        formulation,  # type: str
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **formulation_options,  # type: Any
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        formulation: str,
+        objective_name: str,
+        design_space: DesignSpace,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        **formulation_options: Any,
+    ) -> None:
         """
         Args:
             disciplines: The disciplines
@@ -81,7 +78,7 @@ class DOEScenario(Scenario):
                 to be passed to the :class:`.MDOFormulation`.
         """
         # This loads the right json grammars from class name
-        super(DOEScenario, self).__init__(
+        super().__init__(
             disciplines,
             formulation,
             objective_name,
@@ -94,10 +91,10 @@ class DOEScenario(Scenario):
         self.default_inputs = {self.EVAL_JAC: False, self.ALGO: "lhs"}
         self.__samples = None
 
-    def _init_algo_factory(self):  # type: (...) -> None
+    def _init_algo_factory(self) -> None:
         self._algo_factory = DOEFactory()
 
-    def _run_algorithm(self):  # type: (...) -> None
+    def _run_algorithm(self) -> None:
         self.seed += 1
 
         algo_name = self.local_data[self.ALGO]
@@ -134,7 +131,7 @@ class DOEScenario(Scenario):
 
         return self.optimization_result
 
-    def _update_grammar_input(self):  # type: (...) -> None
+    def _update_grammar_input(self) -> None:
         self.input_grammar.update_elements(
             algo=str, n_samples=int, algo_options=dict, python_typing=True
         )
@@ -144,12 +141,12 @@ class DOEScenario(Scenario):
 
     def export_to_dataset(
         self,
-        name=None,  # type: Optional[str]
-        by_group=True,  # type: bool
-        categorize=True,  # type: bool
-        opt_naming=True,  # type: bool
-        export_gradients=False,  # type: bool
-    ):  # type: (...) -> Dataset
+        name: str | None = None,
+        by_group: bool = True,
+        categorize: bool = True,
+        opt_naming: bool = True,
+        export_gradients: bool = False,
+    ) -> Dataset:
         return self.formulation.opt_problem.export_to_dataset(
             name=name,
             by_group=by_group,

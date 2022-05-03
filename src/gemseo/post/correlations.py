@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,15 +18,12 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Correlations in the optimization database."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import List
-from typing import Optional
+from re import fullmatch
 from typing import Sequence
-from typing import Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
@@ -38,7 +34,6 @@ from numpy import atleast_2d
 from numpy import ndarray
 
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import fullmatch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,11 +51,11 @@ class Correlations(OptPostProcessor):
 
     def _plot(
         self,
-        func_names=None,  # type: Optional[Sequence[str]]
-        coeff_limit=0.95,  # type: float
-        n_plots_x=5,  # type: int
-        n_plots_y=5,  # type: int
-    ):  # type: (...) -> None
+        func_names: Sequence[str] | None = None,
+        coeff_limit: float = 0.95,
+        n_plots_x: int = 5,
+        n_plots_y: int = 5,
+    ) -> None:
         """
         Args:
             func_names: The function names subset
@@ -141,17 +136,17 @@ class Correlations(OptPostProcessor):
 
     def __create_sub_correlation_plot(
         self,
-        i_ind,  # type: int
-        j_ind,  # type: int
-        corr_coeff,  # type: ndarray
-        fig,  # type: Figure
-        spec,  # type: gridspec
-        plot_index,  # type: int
-        n_plot_v,  # type: int
-        n_plot_h,  # type: int
-        values_array,  # type: ndarray
-        variables_names,  # type: Sequence[str]
-    ):  # type: (...)-> None
+        i_ind: int,
+        j_ind: int,
+        corr_coeff: ndarray,
+        fig: Figure,
+        spec: gridspec,
+        plot_index: int,
+        n_plot_v: int,
+        n_plot_h: int,
+        values_array: ndarray,
+        variables_names: Sequence[str],
+    ) -> None:
         """Create a correlation plot.
 
         Args:
@@ -184,13 +179,11 @@ class Correlations(OptPostProcessor):
         ax1.xaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
         ax1.set_ylabel(variables_names[j_ind], fontsize=10)
         ax1.tick_params(labelsize=10)
-        ax1.set_title("R={:.5f}".format(corr_coeff), fontsize=12)
+        ax1.set_title(f"R={corr_coeff:.5f}", fontsize=12)
         ax1.grid()
 
     @classmethod
-    def __compute_correlations(
-        cls, values_array  # type: ndarray
-    ):  # type: (...)-> ndarray
+    def __compute_correlations(cls, values_array: ndarray) -> ndarray:
         """Compute correlations.
 
         Args:
@@ -204,9 +197,9 @@ class Correlations(OptPostProcessor):
 
     def __sort_variables_names(
         self,
-        variables_names,  # type: Sequence[str]
-        func_names,  # type: Sequence[str]
-    ):  # type: (...)-> List[str]
+        variables_names: Sequence[str],
+        func_names: Sequence[str],
+    ) -> list[str]:
         """Sort the expanded variable names using func_names as the pattern.
 
         In addition to sorting the expanded variable names, this method
@@ -222,14 +215,13 @@ class Correlations(OptPostProcessor):
         """
         variables_names.sort(key=partial(self.func_order, func_names))
         x_names = self._generate_x_names()
-
         return variables_names[: -len(x_names)] + x_names
 
     @staticmethod
     def func_order(
-        func_names,  # type: Sequence[str]
-        x,  # type: str
-    ):  # type: (...) -> Tuple[int, str]
+        func_names: Sequence[str],
+        x: str,
+    ) -> tuple[int, str]:
         """Key function to sort function components.
 
         Args:
@@ -242,7 +234,7 @@ class Correlations(OptPostProcessor):
         """
 
         for i, func_name in enumerate(func_names):
-            if fullmatch(r"{}(_\d+)?".format(func_name), x):
+            if fullmatch(rf"{func_name}(_\d+)?", x):
                 return (i, x.replace(func_name, ""))
 
         return (len(func_names) + 1, x)

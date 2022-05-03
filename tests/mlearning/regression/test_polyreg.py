@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial regression module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -88,7 +84,7 @@ def dataset():
 
 
 @pytest.fixture
-def dataset_from_cache():  # type: (...) -> Dataset
+def dataset_from_cache() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline(
         {
@@ -108,7 +104,7 @@ def dataset_from_cache():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> PolynomialRegression
+def model(dataset) -> PolynomialRegression:
     """A trained PolynomialRegression."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE)
     polyreg.learn()
@@ -116,7 +112,7 @@ def model(dataset):  # type: (...) -> PolynomialRegression
 
 
 @pytest.fixture
-def model_without_intercept(dataset):  # type: (...) -> PolynomialRegression
+def model_without_intercept(dataset) -> PolynomialRegression:
     """A trained PolynomialRegression without intercept fitting."""
     polyreg = PolynomialRegression(dataset, degree=DEGREE, fit_intercept=False)
     polyreg.learn()

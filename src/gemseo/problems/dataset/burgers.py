@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -47,8 +46,7 @@ while each feature corresponds to a given spatial point :math:`x`.
 `More information about Burgers' equation
 <https://en.wikipedia.org/wiki/Burgers%27_equation>`_
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import exp
 from numpy import hstack
@@ -62,7 +60,7 @@ from gemseo.core.discipline import MDODiscipline
 
 class BurgersDiscipline(MDODiscipline):
     def __init__(self):
-        super(BurgersDiscipline, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x", "z"])
         self.output_grammar.initialize_from_data_names(["f", "g"])
 
@@ -91,7 +89,7 @@ class BurgersDataset(Dataset):
             variables. Default: True.
         :parma bool opt_naming: use an optimization naming. Default: True.
         """
-        super(BurgersDataset, self).__init__(name, by_group)
+        super().__init__(name, by_group)
 
         time = linspace(0, 2, n_samples)[:, None]
         space = linspace(0, 2 * pi, n_x)[None, :]

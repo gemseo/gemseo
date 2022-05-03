@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,14 +13,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Test helpers."""
-from __future__ import unicode_literals
-
 from functools import partial
 from typing import List
 
 import pytest
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
+from gemseo.core.discipline import MDODiscipline
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
@@ -29,9 +27,9 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def generate_parallel_doe(
-    main_mda_class,  # type: str
-    n_samples=4,  # type: int
-):  # type: (...) -> float
+    main_mda_class: str,
+    n_samples: int = 4,
+) -> float:
     """Execute a parallel DOE with a custom `main_mda_class`.
 
     Args:
@@ -81,7 +79,7 @@ def generate_parallel_doe_data():
 
 
 @pytest.fixture
-def sellar_disciplines():  # type: (...)-> List[Sellar1,Sellar2,SellarSystem]
+def sellar_disciplines() -> List[MDODiscipline]:
     """The disciplines of the Sellar problem.
 
     Returns:

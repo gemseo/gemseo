@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,15 +20,11 @@
 
 Can be both sequential or parallel execution processes.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
 from typing import Sequence
 
 from numpy import dot
@@ -63,10 +58,10 @@ class MDOChain(MDODiscipline):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+    ) -> None:
         # noqa: D205 D212 D415
         """
         Args:
@@ -76,7 +71,7 @@ class MDOChain(MDODiscipline):
             grammar_type: The type of grammar to use for inputs and outputs declaration,
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
         """
-        super(MDOChain, self).__init__(name, grammar_type=grammar_type)
+        super().__init__(name, grammar_type=grammar_type)
         self.disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
@@ -84,8 +79,8 @@ class MDOChain(MDODiscipline):
 
     def set_disciplines_statuses(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         """Set the sub-disciplines statuses.
 
         Args:
@@ -95,7 +90,7 @@ class MDOChain(MDODiscipline):
             discipline.status = status
             discipline.set_disciplines_statuses(status)
 
-    def initialize_grammars(self):  # type: (...) -> None
+    def initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
         self.input_grammar.clear()
         self.output_grammar.clear()
@@ -105,7 +100,7 @@ class MDOChain(MDODiscipline):
             )
             self.output_grammar.update_from(discipline.output_grammar)
 
-    def _update_default_inputs(self):  # type: (...) -> None
+    def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""
         self_inputs = self.get_input_data_names()
         for discipline in self.disciplines:
@@ -113,15 +108,15 @@ class MDOChain(MDODiscipline):
                 if input_name in self_inputs:
                     self.default_inputs[input_name] = input_value
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         for discipline in self.disciplines:
             self.local_data.update(discipline.execute(self.local_data))
 
     def reverse_chain_rule(
         self,
-        chain_outputs,  # type: Iterable[str]
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> None
+        chain_outputs: Iterable[str],
+        discipline: MDODiscipline,
+    ) -> None:
         """Chain the derivatives with a new discipline in the chain in reverse mode.
 
         Perform chain ruling:
@@ -192,9 +187,9 @@ class MDOChain(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         # Initializes self jac with copy of last discipline (reverse mode)
         last_discipline = self.disciplines[-1]
         # TODO : only linearize wrt needed inputs/inputs
@@ -229,8 +224,8 @@ class MDOChain(MDODiscipline):
 
     @staticmethod
     def copy_jacs(
-        jac_dict,  # type: Dict[str,Dict[str, ndarray]]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        jac_dict: dict[str, dict[str, ndarray]],
+    ) -> dict[str, dict[str, ndarray]]:
         """Deepcopy a Jacobian dictionary.
 
         Args:
@@ -252,18 +247,18 @@ class MDOChain(MDODiscipline):
                 jacobian_copy[output_name] = output_jacobian.copy()
         return jacobian_copy
 
-    def reset_statuses_for_run(self):  # type: (...) -> None  # noqa: D102
-        super(MDOChain, self).reset_statuses_for_run()
+    def reset_statuses_for_run(self) -> None:  # noqa: D102
+        super().reset_statuses_for_run()
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def get_expected_workflow(self):  # type: (...) -> None  # noqa: D102
+    def get_expected_workflow(self) -> None:  # noqa: D102
         sequence = ExecutionSequenceFactory.serial()
         for discipline in self.disciplines:
             sequence.extend(discipline.get_expected_workflow())
         return sequence
 
-    def get_expected_dataflow(self):  # type: (...) -> None  # noqa: D102
+    def get_expected_dataflow(self) -> None:  # noqa: D102
         disciplines = list(set(self.disciplines))
         graph = DependencyGraph(disciplines)
         disciplines_couplings = graph.get_disciplines_couplings()
@@ -276,9 +271,9 @@ class MDOChain(MDODiscipline):
 
     def _set_cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
-        super(MDOChain, self)._set_cache_tol(cache_tol)
+        cache_tol: float,
+    ) -> None:
+        super()._set_cache_tol(cache_tol)
         for discipline in self.disciplines:
             discipline.cache_tol = cache_tol or 0.0
 
@@ -288,12 +283,12 @@ class MDOParallelChain(MDODiscipline):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        use_threading=True,  # type: bool
-        n_processes=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        use_threading: bool = True,
+        n_processes: int | None = None,
+    ) -> None:
         # noqa: D205 D212 D415
         """
         Args:
@@ -315,7 +310,7 @@ class MDOParallelChain(MDODiscipline):
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
         """
-        super(MDOParallelChain, self).__init__(name, grammar_type=grammar_type)
+        super().__init__(name, grammar_type=grammar_type)
         self.disciplines = disciplines
         self.initialize_grammars()
         self.default_inputs = {}
@@ -332,7 +327,7 @@ class MDOParallelChain(MDODiscipline):
         )
         self.parallel_lin = parallel_linearization
 
-    def initialize_grammars(self):  # type: (...) -> None
+    def initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
         self.input_grammar.clear()
         self.output_grammar.clear()
@@ -340,7 +335,7 @@ class MDOParallelChain(MDODiscipline):
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
-    def _update_default_inputs(self):  # type: (...) -> None
+    def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""
         input_names = self.get_input_data_names()
         for disc in self.disciplines:
@@ -348,7 +343,7 @@ class MDOParallelChain(MDODiscipline):
                 if disc_input_name in input_names:
                     self.default_inputs[disc_input_name] = disc_input_value
 
-    def _get_inputs_list(self):  # type: (...) -> List[Dict[str,ndarray]]
+    def _get_inputs_list(self) -> list[dict[str, ndarray]]:
         """Return copies of the input data, one per discipline.
 
         Returns:
@@ -360,7 +355,7 @@ class MDOParallelChain(MDODiscipline):
         # to be independent here
         return [deepcopy(self.local_data) for _ in range(len(self.disciplines))]
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         input_data_copies = self._get_inputs_list()
         self.parallel_execution.execute(input_data_copies)
 
@@ -374,9 +369,9 @@ class MDOParallelChain(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self._set_disciplines_diff_outputs(outputs)
         self._set_disciplines_diff_inputs(inputs)
         input_data_copies = self._get_inputs_list()
@@ -394,16 +389,16 @@ class MDOParallelChain(MDODiscipline):
 
     def add_differentiated_inputs(
         self,
-        inputs=None,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] = None,
+    ) -> None:
         # noqa: D102
         MDODiscipline.add_differentiated_inputs(self, inputs)
         self._set_disciplines_diff_inputs(inputs)
 
     def _set_disciplines_diff_inputs(
         self,
-        inputs,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        inputs: Iterable[str],
+    ) -> None:
         """Add the inputs to the right sub discipline's differentiated inputs.
 
         Args:
@@ -417,15 +412,13 @@ class MDOParallelChain(MDODiscipline):
 
     def add_differentiated_outputs(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         # noqa: D102
         MDODiscipline.add_differentiated_outputs(self, outputs)
         self._set_disciplines_diff_outputs(outputs)
 
-    def _set_disciplines_diff_outputs(
-        self, outputs  # type: Iterable[str]
-    ):  # type: (...) -> None
+    def _set_disciplines_diff_outputs(self, outputs: Iterable[str]) -> None:
         """Add the outputs to the right-sub discipline's differentiated outputs.
 
         Args:
@@ -437,25 +430,25 @@ class MDOParallelChain(MDODiscipline):
             if outputs_set:
                 discipline.add_differentiated_outputs(list(outputs_set))
 
-    def reset_statuses_for_run(self):  # type: (...) -> None  # noqa: D102
-        super(MDOParallelChain, self).reset_statuses_for_run()
+    def reset_statuses_for_run(self) -> None:  # noqa: D102
+        super().reset_statuses_for_run()
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def get_expected_workflow(self):  # type: (...) -> None  # noqa: D102
+    def get_expected_workflow(self) -> None:  # noqa: D102
         sequence = ExecutionSequenceFactory.parallel()
         for discipline in self.disciplines:
             sequence.extend(discipline.get_expected_workflow())
         return sequence
 
-    def get_expected_dataflow(self):  # type: (...) -> None  # noqa: D102
+    def get_expected_dataflow(self) -> None:  # noqa: D102
         return []
 
     def _set_cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
-        super(MDOParallelChain, self)._set_cache_tol(cache_tol)
+        cache_tol: float,
+    ) -> None:
+        super()._set_cache_tol(cache_tol)
         for discipline in self.disciplines:
             discipline.cache_tol = cache_tol or 0.0
 
@@ -465,13 +458,13 @@ class MDOAdditiveChain(MDOParallelChain):
 
     def __init__(
         self,
-        disciplines,  # type: Iterable[MDODiscipline]
-        outputs_to_sum,  # type: Iterable[str]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        use_threading=True,  # type: bool
-        n_processes=None,  # type: Optional[int]
-    ):  # type: (...) -> None
+        disciplines: Iterable[MDODiscipline],
+        outputs_to_sum: Iterable[str],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        use_threading: bool = True,
+        n_processes: int | None = None,
+    ) -> None:
         # noqa: D205 D212 D415
         """
         Args:
@@ -496,12 +489,10 @@ class MDOAdditiveChain(MDOParallelChain):
             ``n_processes`` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
         """
-        super(MDOAdditiveChain, self).__init__(
-            disciplines, name, grammar_type, use_threading, n_processes
-        )
+        super().__init__(disciplines, name, grammar_type, use_threading, n_processes)
         self._outputs_to_sum = outputs_to_sum
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         # Run the disciplines in parallel
         MDOParallelChain._run(self)
 
@@ -518,9 +509,9 @@ class MDOAdditiveChain(MDOParallelChain):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         # Differentiate the disciplines in parallel
         MDOParallelChain._compute_jacobian(self, inputs, outputs)
 

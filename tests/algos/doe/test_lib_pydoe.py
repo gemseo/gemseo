@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #      :author: Damien Guenot - 20 avr. 2016
 #      :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -55,7 +51,7 @@ def test_export_samples(tmp_wd):
     doe_library = execute_problem(
         DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
     )
-    doe_file_name = "test_{}.csv".format(algo_name)
+    doe_file_name = f"test_{algo_name}.csv"
     doe_library.export_samples(doe_output_file=doe_file_name)
     file_samples = loadtxt(doe_file_name, delimiter=",")
     assert array_equal(doe_library.samples, file_samples)
@@ -111,9 +107,7 @@ def test_lhs_maximin():
 )
 def test_algo_with_unknown_options(algo_name, options):
     """Check that exceptions are raised when unknown options are passed to an algo."""
-    with pytest.raises(
-        ValueError, match="Invalid options for algorithm {}".format(algo_name)
-    ):
+    with pytest.raises(ValueError, match=f"Invalid options for algorithm {algo_name}"):
         execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=3, **options)
 
 
@@ -189,10 +183,10 @@ def test_integer_lhs():
 
 
 def get_expected_nsamples(
-    algo,  # type: str
-    dim,  # type: int
-    n_samples=None,  # type:Optional[int]
-):  # type: (...) -> int
+    algo: str,
+    dim: int,
+    n_samples: Optional[int] = None,
+) -> int:
     """Returns the expected number of samples.
 
     This number depends on the dimension of the problem.
@@ -225,9 +219,9 @@ def get_expected_nsamples(
 
 
 def get_options(
-    algo_name,  # type: str
-    dim,  # type: int
-):  # type: (...) -> Dict[str,Any]
+    algo_name: str,
+    dim: int,
+) -> Dict[str, Any]:
     """Returns the options of the algorithms.
 
     Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -32,7 +31,6 @@ from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import MutableMapping
-from typing import Optional
 from typing import Tuple
 from typing import Union
 
@@ -93,7 +91,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(self):
         """Constructor Abstract class."""
-        super(DOELibrary, self).__init__()
+        super().__init__()
         self.samples = None
         self.seed = 0
 
@@ -125,11 +123,11 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def _pre_run(
         self,
-        problem,  # type: OptimizationProblem
-        algo_name,  # type: str
-        **options,  # type: DOELibraryOptionType
-    ):  # type: (...) -> None
-        super(DOELibrary, self)._pre_run(problem, algo_name, **options)
+        problem: OptimizationProblem,
+        algo_name: str,
+        **options: DOELibraryOptionType,
+    ) -> None:
+        super()._pre_run(problem, algo_name, **options)
         problem.stop_if_nan = False
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
@@ -183,9 +181,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     def _generate_fullfact(
         self,
         dimension,
-        n_samples=None,  # type: Optional[int]
-        levels=None,  # type: Optional[Union[int, Iterable[int]]]
-    ):  # type: (...) -> ndarray
+        n_samples: int | None = None,
+        levels: int | Iterable[int] | None = None,
+    ) -> ndarray:
         """Generate a full-factorial DOE.
 
         Generate a full-factorial DOE based on either the number of samples,
@@ -235,9 +233,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
         return self._generate_fullfact_from_levels(levels)
 
-    def _generate_fullfact_from_levels(
-        self, levels  # Iterable[int]
-    ):  # type: (...) -> ndarray
+    def _generate_fullfact_from_levels(self, levels) -> ndarray:  # Iterable[int]
         """Generate the full-factorial DOE from levels per input direction.
 
         Args:
@@ -281,9 +277,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
             raise RuntimeError("Samples are None, execute method before export.")
         savetxt(doe_output_file, self.samples, delimiter=",")
 
-    def _worker(
-        self, sample  # type: ndarray
-    ):  # type: (...) -> DOELibraryOutputType
+    def _worker(self, sample: ndarray) -> DOELibraryOutputType:
         """Wrap the evaluation of the functions for parallel execution.
 
         Args:
@@ -304,9 +298,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def evaluate_samples(
         self,
-        eval_jac=False,  # type: bool
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
     ):
         """Evaluate all the functions of the optimization problem at the samples.
 
@@ -332,9 +326,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 database.store(sample, {}, add_iter=True)
 
             def store_callback(
-                index,  # type: int
-                outputs,  # type: DOELibraryOutputType
-            ):  # type: (...) -> None
+                index: int,
+                outputs: DOELibraryOutputType,
+            ) -> None:
                 """Store the outputs in the database.
 
                 Args:
@@ -404,11 +398,11 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_doe(
         self,
-        variables_space,  # type: DesignSpace
-        size=None,  # type: Optional[int]
-        unit_sampling=False,  # type: bool
-        **options,  # type: DOELibraryOptionType
-    ):  # type: (...) -> ndarray
+        variables_space: DesignSpace,
+        size: int | None = None,
+        unit_sampling: bool = False,
+        **options: DOELibraryOptionType,
+    ) -> ndarray:
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
@@ -433,10 +427,10 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def __get_algorithm_options(
         self,
-        options,  # type: MutableMapping[str, DOELibraryOptionType]
-        size,  # type: Optional[int]
-        dimension,  # type: int
-    ):  # type: (...) -> Dict[str,DOELibraryOptionType]
+        options: MutableMapping[str, DOELibraryOptionType],
+        size: int | None,
+        dimension: int,
+    ) -> dict[str, DOELibraryOptionType]:
         """Return the algorithm options from initial ones.
 
         Args:

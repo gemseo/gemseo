@@ -347,7 +347,7 @@ Engine name: ``matlab_engine_name``
 When building a MATLAB discipline, the MATLAB Python API launches
 a MATLAB workspace that will be used in order to execute
 the MATLAB function that is wrapped.
-MATLAB workspace handling is done through the :class:`.__MatlabEngine` class.
+MATLAB workspace handling is done through the :class:`.MatlabEngine` class.
 Since this class is private, it cannot be imported directly form the module.
 An instance of this class is rather obtained through
 the function :func:`.get_matlab_engine` which acts like a singleton.
@@ -358,7 +358,7 @@ in a unique MATLAB workspace.
 This is indeed what a MATLAB user do when working
 with MATLAB: run MATLAB once and execute any function inside the same environment.
 
-The uniqueness of the :class:`.__MatlabEngine` instance depends
+The uniqueness of the :class:`.MatlabEngine` instance depends
 more precisely on the workspace name that is passed to the function :func:`.get_matlab_engine`:
 when getting two engines, if the names are the same then the instance is unique, otherwise they are not.
 Let's see the following simple example with three engines, two based on the same name and

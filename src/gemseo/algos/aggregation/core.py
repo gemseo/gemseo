@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,13 +17,10 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Constraints aggregation core functions."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from math import log
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import argmax as np_argmax
 from numpy import array
@@ -39,11 +35,11 @@ from numpy import zeros
 
 
 def ks_agg(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> float
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> float:
     """Transform a vector of equalities into a Kreisselmeier–Steinhauser function.
 
     Kreisselmeier G, Steinhauser R (1983)
@@ -87,12 +83,12 @@ def ks_agg(
 
 
 def ks_agg_jac_v(
-    orig_val,  # type: ndarray
-    orig_jac,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    orig_jac: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Aggregate inequality constraints.
 
     Jacobian vector product of the constraints aggregation method for inequality
@@ -125,11 +121,11 @@ def ks_agg_jac_v(
 
 
 def ks_agg_jac(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Transform a vector of equalities into a scalar equivalent constraint.
 
     Jacobian of the Constraints aggregation method for inequality constraints.
@@ -160,11 +156,11 @@ def ks_agg_jac(
 
 
 def iks_agg(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> float
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> float:
     """Aggregate IKS Constraints for inequality constraints.
 
     See :cite:`kennedy2015improved`.
@@ -192,12 +188,12 @@ def iks_agg(
 
 
 def iks_agg_jac_v(
-    orig_val,  # type: ndarray
-    orig_jac,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    orig_jac: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Aggregate inequality constraints.
 
     Jacobian vector product of the IKS Constraints aggregation method for inequality
@@ -246,11 +242,11 @@ def iks_agg_jac_v(
 
 
 def iks_agg_jac(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Jacobian of the IKS Constraints aggregation method for inequality constraints.
 
     Kennedy, Graeme J., and Jason E. Hicken.
@@ -290,10 +286,10 @@ def iks_agg_jac(
 
 
 def __filter_jac(
-    orig_jac,  # type: ndarray
-    full_size,  # type: int
-    indices,  # type: Sequence[int]
-):  # type: (...) -> ndarray
+    orig_jac: ndarray,
+    full_size: int,
+    indices: Sequence[int],
+) -> ndarray:
     """Filters the Jacobian according to the indices.
 
     Args:
@@ -313,10 +309,10 @@ def __filter_jac(
 
 
 def sum_square_agg(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Args:
@@ -335,11 +331,11 @@ def sum_square_agg(
 
 
 def sum_square_agg_jac_v(
-    orig_val,  # type: ndarray
-    orig_jac,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    orig_jac: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Jacobian vector product of the constraints aggregation method for equality
@@ -364,10 +360,10 @@ def sum_square_agg_jac_v(
 
 
 def sum_square_agg_jac(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Jacobian of the constraints aggregation method for equality constraints.
@@ -391,10 +387,10 @@ def sum_square_agg_jac(
 
 
 def max_agg(
-    orig_val,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> float
+    orig_val: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> float:
     """Transform a vector of equalities into a max of all values.
 
     Constraints aggregation method for inequality constraints.
@@ -415,11 +411,11 @@ def max_agg(
 
 
 def max_agg_jac_v(
-    orig_val,  # type: ndarray
-    orig_jac,  # type: ndarray
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> ndarray
+    orig_val: ndarray,
+    orig_jac: ndarray,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> ndarray:
     """Transform a vector of equalities into the max of all the values.
 
     Jacobian vector product of the max constraints aggregation method for inequality

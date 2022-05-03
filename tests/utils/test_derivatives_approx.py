@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from copy import deepcopy
 from math import cos
 from math import exp
@@ -224,7 +220,7 @@ def test_load_and_dump(tmp_wd):
 
 class ToyDiscipline(MDODiscipline):
     def __init__(self, dtype=float64):
-        super(ToyDiscipline, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x1", "x2"])
         self.output_grammar.initialize_from_data_names(["y1", "y2"])
         self.default_inputs = {

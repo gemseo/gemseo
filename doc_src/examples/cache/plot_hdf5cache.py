@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -25,9 +24,6 @@ HDF5 cache
 
 In this example, we will see how to use :class:`.HDF5Cache`.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.caches.hdf5_cache import HDF5Cache
 from numpy import array

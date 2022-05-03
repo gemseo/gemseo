@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,16 +17,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Jacobi algorithm for solving MDAs."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
 from multiprocessing import cpu_count
 from typing import Any
-from typing import Dict
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 
 from numpy import atleast_2d
@@ -80,22 +76,22 @@ class MDAJacobi(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        name=None,  # type: Optional[str]
-        n_processes=N_CPUS,  # type: int
-        acceleration=M2D_ACCELERATION,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        use_threading=True,  # type: bool
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        name: str | None = None,
+        n_processes: int = N_CPUS,
+        acceleration: str = M2D_ACCELERATION,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        use_threading: bool = True,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         """
         Args:
             n_processes: The maximum number of processors on which to run.
@@ -113,7 +109,7 @@ class MDAJacobi(MDA):
                 you shall use multiprocessing.
         """
         self.n_processes = n_processes
-        super(MDAJacobi, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -140,7 +136,7 @@ class MDAJacobi(MDA):
             exceptions_to_re_raise=(ValueError,),
         )
 
-    def _compute_input_couplings(self):  # type: (...) -> None
+    def _compute_input_couplings(self) -> None:
         """Compute all the coupling variables that are inputs of the MDA.
 
         This must be overloaded here because the Jacobi algorithm induces a delay
@@ -151,7 +147,7 @@ class MDAJacobi(MDA):
         if len(self.coupling_structure.strongly_coupled_disciplines()) == len(
             self.disciplines
         ):
-            return super(MDAJacobi, self)._compute_input_couplings()
+            return super()._compute_input_couplings()
 
         inputs = self.get_input_data_names()
         strong_cpl = self.coupling_structure.get_all_couplings()
@@ -159,8 +155,8 @@ class MDAJacobi(MDA):
 
     def execute_all_disciplines(
         self,
-        input_local_data,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        input_local_data: Mapping[str, ndarray],
+    ) -> None:
         """Execute all the disciplines.
 
         Args:
@@ -179,13 +175,13 @@ class MDAJacobi(MDA):
         for data in outputs:
             self.local_data.update(data)
 
-    def get_expected_workflow(self):  # type: (...) ->LoopExecSequence
+    def get_expected_workflow(self) -> LoopExecSequence:
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)
         if self.n_processes > 1:
             sub_workflow = ExecutionSequenceFactory.parallel(self.disciplines)
         return ExecutionSequenceFactory.loop(self, sub_workflow)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Execute all disciplines in a loop until outputs converge.
 
         Stops when:
@@ -233,9 +229,9 @@ class MDAJacobi(MDA):
 
     def _compute_nex_iterate(
         self,
-        current_couplings,  # type: ndarray
-        new_couplings,  # type: ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
+        current_couplings: ndarray,
+        new_couplings: ndarray,
+    ) -> dict[str, ndarray]:
         """Compute the next iterate given the evaluation of the couplings.
 
         Eventually compute the convergence acceleration term
@@ -286,10 +282,10 @@ class MDAJacobi(MDA):
 
     @staticmethod
     def _minimize_2md(
-        dxn,  # type:ndarray
-        dxn_1,  # type:ndarray
-        dxn_2,  # type:ndarray
-    ):  # type: (...) -> ndarray
+        dxn: ndarray,
+        dxn_1: ndarray,
+        dxn_2: ndarray,
+    ) -> ndarray:
         """Compute the next iterate according to the m2d method.
 
         Minimize the sub-problem in the d-2 method.
@@ -312,11 +308,11 @@ class MDAJacobi(MDA):
 
     @staticmethod
     def _compute_secant_acc(
-        dxn,  # type: ndarray
-        dxn_1,  # type: ndarray
-        cgn,  # type: ndarray
-        cgn_1,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        dxn: ndarray,
+        dxn_1: ndarray,
+        cgn: ndarray,
+        cgn_1: ndarray,
+    ) -> ndarray:
         """Compute the next iterate according to the secant method.
 
         From the paper:
@@ -339,13 +335,13 @@ class MDAJacobi(MDA):
 
     def _compute_m2d_acc(
         self,
-        dxn,  # type: ndarray
-        dxn_1,  # type: ndarray
-        dxn_2,  # type: ndarray
-        g_n,  # type: ndarray
-        gn_1,  # type: ndarray
-        gn_2,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        dxn: ndarray,
+        dxn_1: ndarray,
+        dxn_2: ndarray,
+        g_n: ndarray,
+        gn_1: ndarray,
+        gn_2: ndarray,
+    ) -> ndarray:
         """Compute the 2-delta acceleration.
 
         From the paper:

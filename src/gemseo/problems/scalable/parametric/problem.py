@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable problem
 ================
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -118,7 +116,7 @@ class TMScalableProblem(TMProblem):
         :return: instance of the design space
         :rtype: DesignSpace
         """
-        d_s = super(TMScalableProblem, self).get_design_space()
+        d_s = super().get_design_space()
         design_space = ParameterSpace()
         for name in d_s.names:
             size = d_s.sizes[name]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -34,14 +33,11 @@ which inherits from the :class:`.MLUnsupervisedAlgo` class,
 and through the :class:`.MLPredictiveClusteringAlgo` class
 which inherits from :class:`.MLClusteringAlgo`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
 from typing import Union
 
@@ -74,12 +70,12 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     def __init__(
         self,
-        data,  # type:Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        var_names=None,  # type: Optional[Iterable[str]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
-        super(MLClusteringAlgo, self).__init__(
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
+        super().__init__(
             data, transformer=transformer, var_names=var_names, **parameters
         )
         self.labels = None
@@ -87,16 +83,16 @@ class MLClusteringAlgo(MLUnsupervisedAlgo):
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-        fit_transformers,  # type: bool
-    ):  # type: (...) -> None
-        super(MLClusteringAlgo, self)._learn(indices, fit_transformers=fit_transformers)
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
+        super()._learn(indices, fit_transformers=fit_transformers)
         if self.labels is None:
             raise ValueError("self._fit() shall assign labels.")
         self.n_clusters = unique(self.labels).shape[0]
 
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
-        objects = super(MLClusteringAlgo, self)._get_objects_to_save()
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
+        objects = super()._get_objects_to_save()
         objects["labels"] = self.labels
         objects["n_clusters"] = self.n_clusters
         return objects
@@ -113,8 +109,8 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def predict(
         self,
-        data,  # type: DataType
-    ):  # type: (...) -> Union[int,ndarray]
+        data: DataType,
+    ) -> int | ndarray:
         """Predict the clusters from the input data.
 
         The user can specify these input data either as a NumPy array,
@@ -152,8 +148,8 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def _predict(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Predict the clusters from input data.
 
         Args:
@@ -166,9 +162,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def predict_proba(
         self,
-        data,  # type: DataType
-        hard=True,  # type: bool
-    ):  # type: (...)-> ndarray
+        data: DataType,
+        hard: bool = True,
+    ) -> ndarray:
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specified these input data either as a numpy array,
@@ -204,9 +200,9 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def _predict_proba(
         self,
-        data,  # type: ndarray
-        hard=True,  # type: bool
-    ):  # type: (...)-> ndarray
+        data: ndarray,
+        hard: bool = True,
+    ) -> ndarray:
         """Predict the probability of belonging to each cluster.
 
         Args:
@@ -225,8 +221,8 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def _predict_proba_hard(
         self,
-        data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Return 1 if the data belongs to a cluster, 0 otherwise.
 
         Args:
@@ -244,8 +240,8 @@ class MLPredictiveClusteringAlgo(MLClusteringAlgo):
 
     def _predict_proba_soft(
         self,
-        data,  # type: ndarray
-    ):  # type: (...)-> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Predict the probability of belonging to each cluster.
 
         Args:

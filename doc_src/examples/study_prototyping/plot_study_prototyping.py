@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -22,9 +21,6 @@
 Generate an N2 and XDSM from an Excel description of the MDO problem
 ====================================================================
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from os import mkdir
 from os.path import exists
 from os.path import join

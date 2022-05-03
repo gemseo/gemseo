@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,17 +18,14 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Wrapper for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Mapping
 from typing import MutableMapping
-from typing import Optional
-from typing import Union
 
 import numpy
 from da import p7core
@@ -47,7 +43,6 @@ from gemseo.algos.stop_criteria import MaxTimeReached
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
-from gemseo.utils.py23_compat import Path
 
 
 @dataclass
@@ -104,8 +99,8 @@ class PSevenOpt(OptimizationLibrary):
     __SQ2P = "S2P"
     __LOCAL_METHODS = (__FD, __MOM, __NCG, __NLS, __POWELL, __QP, __SQP, __SQ2P)
 
-    def __init__(self):  # type: (...) -> None # noqa: D107
-        super(PSevenOpt, self).__init__()
+    def __init__(self) -> None:  # noqa: D107
+        super().__init__()
         self.lib_dict = {
             "PSEVEN": PSevenAlgorithmDescription(
                 algorithm_name="PSEVEN",
@@ -172,46 +167,46 @@ class PSevenOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        max_iter=99,  # type: int
-        evaluation_cost_type=None,  # type: Optional[Union[str, Mapping[str, str]]]
-        expensive_evaluations=None,  # type: Optional[Mapping[str, int]]
-        sample_x=None,  # type: Optional[Union[List[float], List[ndarray]]]
-        sample_f=None,  # type: Optional[Union[List[float], List[ndarray]]]
-        sample_c=None,  # type: Optional[Union[List[float], List[ndarray]]]
-        constraints_smoothness="Auto",  # type: str
-        global_phase_intensity="Auto",  # type: Union[str, float]
-        max_expensive_func_iter=0,  # type: int
-        max_func_iter=0,  # type: int
-        objectives_smoothness="Auto",  # type: str
-        deterministic="Auto",  # type: Union[str, bool]
-        log_level="Error",  # type: str
-        verbose_log=False,  # type: bool
-        max_threads=0,  # type: int
-        seed=100,  # type: int
-        time_limit=0,  # type: int
-        max_batch_size=0,  # type: int
-        detect_nan_clusters=True,  # type: bool
-        diff_scheme="Auto",  # type: str
-        diff_type="Auto",  # type: str
-        diff_step=1.1920929e-06,  # type: float
-        ensure_feasibility=False,  # type: bool
-        local_search="Disabled",  # type: str
-        restore_analytic_func="Auto",  # type: Union[str, bool]
-        responses_scalability=1,  # type: int
-        globalization_method=None,  # type: Optional[str]
-        surrogate_based=None,  # type: Optional[bool]
-        use_gradient=True,  # type: bool
-        ftol_abs=1e-14,  # type: float
-        xtol_abs=1e-14,  # type: float
-        ftol_rel=1e-8,  # type: float
-        xtol_rel=1e-8,  # type: float
-        stop_crit_n_x=3,  # type: int
-        normalize_design_space=True,  # type: bool
-        eq_tolerance=1e-2,  # type: float
-        ineq_tolerance=1e-4,  # type: float
-        log_path=None,  # type: Optional[str]
-        **kwargs,  # type: Any
-    ):  # type: (...) -> Dict
+        max_iter: int = 99,
+        evaluation_cost_type: str | Mapping[str, str] | None = None,
+        expensive_evaluations: Mapping[str, int] | None = None,
+        sample_x: list[float] | list[ndarray] | None = None,
+        sample_f: list[float] | list[ndarray] | None = None,
+        sample_c: list[float] | list[ndarray] | None = None,
+        constraints_smoothness: str = "Auto",
+        global_phase_intensity: str | float = "Auto",
+        max_expensive_func_iter: int = 0,
+        max_func_iter: int = 0,
+        objectives_smoothness: str = "Auto",
+        deterministic: str | bool = "Auto",
+        log_level: str = "Error",
+        verbose_log: bool = False,
+        max_threads: int = 0,
+        seed: int = 100,
+        time_limit: int = 0,
+        max_batch_size: int = 0,
+        detect_nan_clusters: bool = True,
+        diff_scheme: str = "Auto",
+        diff_type: str = "Auto",
+        diff_step: float = 1.1920929e-06,
+        ensure_feasibility: bool = False,
+        local_search: str = "Disabled",
+        restore_analytic_func: str | bool = "Auto",
+        responses_scalability: int = 1,
+        globalization_method: str | None = None,
+        surrogate_based: bool | None = None,
+        use_gradient: bool = True,
+        ftol_abs: float = 1e-14,
+        xtol_abs: float = 1e-14,
+        ftol_rel: float = 1e-8,
+        xtol_rel: float = 1e-8,
+        stop_crit_n_x: int = 3,
+        normalize_design_space: bool = True,
+        eq_tolerance: float = 1e-2,
+        ineq_tolerance: float = 1e-4,
+        log_path: str | None = None,
+        **kwargs: Any,
+    ) -> dict:
         """Set the default options values.
 
         Args:
@@ -345,8 +340,8 @@ class PSevenOpt(OptimizationLibrary):
 
     def __set_pseven_techniques(
         self,
-        options,  # type: MutableMapping[str, Any]
-    ):  # type: (...) -> None
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Get the pSeven techniques from the options."""
         techniques_list = list()
         internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
@@ -365,9 +360,7 @@ class PSevenOpt(OptimizationLibrary):
         if techniques_list:
             options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.
 
         Args:
@@ -455,9 +448,9 @@ class PSevenOpt(OptimizationLibrary):
 
     def __get_samples(
         self,
-        options,  # type: MutableMapping[str, Any]
-        normalize_design_space,  # type: bool
-    ):  # type: (...) -> Dict[str, ndarray]
+        options: MutableMapping[str, Any],
+        normalize_design_space: bool,
+    ) -> dict[str, ndarray]:
         """Get the pSeven initial samples.
 
         Args:
@@ -484,7 +477,7 @@ class PSevenOpt(OptimizationLibrary):
 
         return samples
 
-    def __check_functions(self):  # type: (...) -> None
+    def __check_functions(self) -> None:
         """Check that the algorithm is consistent with the problem functions.
 
         Raises:
@@ -502,7 +495,7 @@ class PSevenOpt(OptimizationLibrary):
         ]:
             if not self.problem.constraints:
                 raise RuntimeError(
-                    "{} requires at least one constraint".format(self.algo_name)
+                    f"{self.algo_name} requires at least one constraint."
                 )
 
         if self.internal_algo_name == self.__QP:

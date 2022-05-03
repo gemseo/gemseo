@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -16,8 +15,7 @@
 # Contributors:
 # Matthias De Lozzo
 # Antoine DECHAUME
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Mapping
 
@@ -29,10 +27,10 @@ from gemseo.utils.data_conversion import flatten_nested_dict
 
 
 def compare_dict_of_arrays(
-    dict_of_arrays,  # type: Mapping[str,ndarray]
-    other_dict_of_arrays,  # type: Mapping[str,ndarray]
-    tolerance=0.0,  # type: float
-):  # type: (...) -> bool
+    dict_of_arrays: Mapping[str, ndarray],
+    other_dict_of_arrays: Mapping[str, ndarray],
+    tolerance: float = 0.0,
+) -> bool:
     """Check if two dictionaries of NumPy arrays are equal.
 
     These dictionaries can be nested.
@@ -58,7 +56,7 @@ def compare_dict_of_arrays(
             return False
 
         if tolerance:
-            if norm((dict_of_arrays[key] - value)) > tolerance * (1.0 + norm(value)):
+            if norm(dict_of_arrays[key] - value) > tolerance * (1.0 + norm(value)):
                 return False
         else:
             if not array_equal(dict_of_arrays[key], value):

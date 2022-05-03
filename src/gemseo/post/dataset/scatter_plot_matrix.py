@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -55,14 +54,10 @@ from typing import Sequence
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from pandas.plotting import scatter_matrix
 
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-try:
-    from pandas.plotting import scatter_matrix
-except ImportError:
-    from pandas import scatter_matrix
 
 
 class ScatterMatrix(DatasetPlot):

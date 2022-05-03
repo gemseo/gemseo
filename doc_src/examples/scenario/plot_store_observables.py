@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -42,9 +41,6 @@ Store observables
 # -------
 # All the imports needed for the tutorials are performed here.
 # Note that some of the imports are related to the Python 2/3 compatibility.
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline

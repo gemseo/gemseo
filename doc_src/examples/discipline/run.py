@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -28,6 +27,6 @@ c = a**2 + b**2
 print("Done.")
 print("Computed output: c = a**2+b**2 = ", c)
 with open("outputs.txt", mode="w") as out_file:
-    out_file.write("c={}".format(c))
+    out_file.write(f"c={c}")
 
 print("Wrote output file 'outputs.txt'")

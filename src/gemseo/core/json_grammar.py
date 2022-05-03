@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -15,4 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Stub module for backward compatibility."""
 # TODO: to be deprecated
+from __future__ import annotations
+
 from gemseo.core.grammars.json_grammar import JSONGrammar  # noqa: F401

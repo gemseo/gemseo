@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +16,7 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization density filter."""
-from typing import Optional
+from __future__ import annotations
 
 from numpy import array
 from numpy import atleast_2d
@@ -45,11 +44,11 @@ class DensityFilter(MDODiscipline):
 
     def __init__(
         self,
-        n_x=100,  # type: int
-        n_y=100,  # type: int
-        min_member_size=1.5,  # type: float
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None # noqa: D205,D212,D415
+        n_x: int = 100,
+        n_y: int = 100,
+        min_member_size: float = 1.5,
+        name: str | None = None,
+    ) -> None:  # noqa: D205,D212,D415
         """
         Args:
             n_x: The number of elements in the x-direction.
@@ -58,7 +57,7 @@ class DensityFilter(MDODiscipline):
             name: The name of the discipline.
                 If None, use the class name.
         """
-        super(DensityFilter, self).__init__(name=name)
+        super().__init__(name=name)
         self.n_x = n_x
         self.n_y = n_y
         self.min_member_size = min_member_size
@@ -68,14 +67,14 @@ class DensityFilter(MDODiscipline):
         self.output_grammar.initialize_from_data_names(["xPhys"])
         self.default_inputs = {"x": ones((n_x * n_y,))}
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         x = self.get_inputs_by_name("x")[:, None]
         self.local_data["xPhys"] = array(self.filter_matrix * x).flatten()
         self._is_linearized = True
         self._init_jacobian(with_zeros=True)
         self.jac["xPhys"] = {"x": atleast_2d(array(self.filter_matrix))}
 
-    def _create_filter_matrix(self):  # type: (...) -> None
+    def _create_filter_matrix(self) -> None:
         """Create the filter matrix."""
         # Filter: Build (and assemble) the index+data vectors for the coo matrix format
         n_filter = int(

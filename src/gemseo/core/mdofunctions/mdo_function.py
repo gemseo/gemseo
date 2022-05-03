@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class to describe a function."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from multiprocessing import Value
@@ -29,14 +27,10 @@ from operator import mul
 from operator import truediv
 from typing import Callable
 from typing import ClassVar
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
 from typing import Sized
-from typing import Tuple
 from typing import Union
 
 from numpy import abs as np_abs
@@ -58,7 +52,6 @@ from numpy import zeros
 from numpy import zeros_like
 from numpy.linalg import multi_dot
 from numpy.linalg import norm
-from six import string_types
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
@@ -71,7 +64,7 @@ OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MDOFunction(object):
+class MDOFunction:
     """The standard definition of an array-based function with algebraic operations.
 
     :class:`.MDOFunction` is the key class
@@ -145,42 +138,42 @@ class MDOFunction(object):
             If None, the default string representation is used.
     """
 
-    TYPE_OBJ = "obj"  # type: str
+    TYPE_OBJ: str = "obj"
     """The type of function for objective."""
 
-    TYPE_EQ = "eq"  # type: str
+    TYPE_EQ: str = "eq"
     """The type of function for equality constraint."""
 
-    TYPE_INEQ = "ineq"  # type: str
+    TYPE_INEQ: str = "ineq"
     """The type of function for inequality constraint."""
 
-    TYPE_OBS = "obs"  # type: str
+    TYPE_OBS: str = "obs"
     """The type of function for observable."""
 
-    AVAILABLE_TYPES = [TYPE_OBJ, TYPE_EQ, TYPE_INEQ, TYPE_OBS]  # type: List[str]
+    AVAILABLE_TYPES: list[str] = [TYPE_OBJ, TYPE_EQ, TYPE_INEQ, TYPE_OBS]
     """The available types of function."""
 
-    DICT_REPR_ATTR = [
+    DICT_REPR_ATTR: list[str] = [
         "name",
         "f_type",
         "expr",
         "args",
         "dim",
         "special_repr",
-    ]  # type: List[str]
+    ]
     """The names of the attributes to be serialized."""
 
-    DEFAULT_ARGS_BASE = "x"  # type: str
+    DEFAULT_ARGS_BASE: str = "x"
     """The default name base for the inputs."""
 
-    INDEX_PREFIX = "!"  # type: str
-    """The character used to separate a name base and a prefix, e.g. `"x!1`."""
+    INDEX_PREFIX: str = "!"
+    """The character used to separate a name base and a prefix, e.g. ``"x!1``."""
 
-    COEFF_FORMAT_1D = "{:.2e}"  # type: str
+    COEFF_FORMAT_1D: str = "{:.2e}"
     """The format to be applied to a number when represented in a vector."""
     # ensure that coefficients strings have same length
 
-    COEFF_FORMAT_ND = "{: .2e}"  # type: str
+    COEFF_FORMAT_ND: str = "{: .2e}"
     """The format to be applied to a number when represented in a matrix."""
     # ensure that coefficients strings have same length
 
@@ -191,17 +184,17 @@ class MDOFunction(object):
 
     def __init__(
         self,
-        func,  # type: Optional[Callable[[ndarray],ndarray]]
-        name,  # type: str
-        f_type=None,  # type: Optional[str]
-        jac=None,  # type: Optional[Callable[[ndarray],ndarray]]
-        expr=None,  # type: Optional[str]
-        args=None,  # type: Optional[Sequence[str]]
-        dim=None,  # type: Optional[int]
-        outvars=None,  # type: Optional[Sequence[str]]
-        force_real=False,  # type: bool
-        special_repr=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        func: Callable[[ndarray], ndarray] | None,
+        name: str,
+        f_type: str | None = None,
+        jac: Callable[[ndarray], ndarray] | None = None,
+        expr: str | None = None,
+        args: Sequence[str] | None = None,
+        dim: int | None = None,
+        outvars: Sequence[str] | None = None,
+        force_real: bool = False,
+        special_repr: str | None = None,
+    ) -> None:
         """
         Args:
             func: The original function to be actually called.
@@ -224,7 +217,7 @@ class MDOFunction(object):
             special_repr: Overload the default string representation of the function.
                 If None, use the default string representation.
         """
-        super(MDOFunction, self).__init__()
+        super().__init__()
         if self.activate_counters:
             self._n_calls = Value("i", 0)
         else:
@@ -253,7 +246,7 @@ class MDOFunction(object):
         self.special_repr = special_repr
 
     @property
-    def n_calls(self):  # type: (...) -> int
+    def n_calls(self) -> int:
         """The number of times the function has been evaluated.
 
         This count is both multiprocess- and multithread-safe, thanks to the locking
@@ -265,8 +258,8 @@ class MDOFunction(object):
     @n_calls.setter
     def n_calls(
         self,
-        value,  # type: int
-    ):  # type: (...) -> None
+        value: int,
+    ) -> None:
         if not self.activate_counters:
             raise RuntimeError("The function counters are disabled.")
 
@@ -274,14 +267,14 @@ class MDOFunction(object):
             self._n_calls.value = value
 
     @property
-    def func(self):  # type: (...) -> Callable[[ndarray],ndarray]
+    def func(self) -> Callable[[ndarray], ndarray]:
         """The function to be evaluated from a given input vector."""
         return self.__counted_f
 
     def __counted_f(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the function and store the result in :attr:`.MDOFunction.last_eval`.
 
         This evaluation is both multiprocess- and multithread-safe,
@@ -303,8 +296,8 @@ class MDOFunction(object):
     @func.setter
     def func(
         self,
-        f_pointer,  # type: Callable[[ndarray],ndarray]
-    ):  # type: (...) -> None
+        f_pointer: Callable[[ndarray], ndarray],
+    ) -> None:
         if self.activate_counters:
             self._n_calls.value = 0
 
@@ -312,8 +305,8 @@ class MDOFunction(object):
 
     def __call__(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the function.
 
         This method can cast the result to real value
@@ -329,8 +322,8 @@ class MDOFunction(object):
 
     def evaluate(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Evaluate the function and store the dimension of the output space.
 
         Args:
@@ -355,7 +348,7 @@ class MDOFunction(object):
         return val
 
     @property
-    def name(self):  # type: (...) -> str
+    def name(self) -> str:
         """The name of the function.
 
         Raises:
@@ -366,16 +359,16 @@ class MDOFunction(object):
     @name.setter
     def name(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
-        if name is not None and not isinstance(name, string_types):
+        name: str,
+    ) -> None:
+        if name is not None and not isinstance(name, str):
             raise TypeError(
-                "MDOFunction name must be a string; got {} instead.".format(type(name))
+                f"MDOFunction name must be a string; got {type(name)} instead."
             )
         self._name = name
 
     @property
-    def f_type(self):  # type: (...) -> str
+    def f_type(self) -> str:
         """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`.
 
         Raises:
@@ -386,8 +379,8 @@ class MDOFunction(object):
     @f_type.setter
     def f_type(
         self,
-        f_type,  # type: str
-    ):  # type: (...) -> None
+        f_type: str,
+    ) -> None:
         if f_type is not None and f_type not in self.AVAILABLE_TYPES:
             raise ValueError(
                 "MDOFunction type must be among {}; got {} instead.".format(
@@ -397,7 +390,7 @@ class MDOFunction(object):
         self._f_type = f_type
 
     @property
-    def jac(self):  # type: (...) -> Callable[[ndarray],ndarray]
+    def jac(self) -> Callable[[ndarray], ndarray]:
         """The Jacobian function to be evaluated from a given input vector.
 
         Raises:
@@ -408,23 +401,23 @@ class MDOFunction(object):
     @jac.setter
     def jac(
         self,
-        jac,  # type: Callable[[ndarray],ndarray]
-    ):  # type: (...) -> None
+        jac: Callable[[ndarray], ndarray],
+    ) -> None:
         if jac is not None:
             if not callable(jac):
                 raise TypeError("Jacobian function must be callable.")
         self._jac = jac
 
     @property
-    def args(self):  # type: (...) -> Sequence[str]
+    def args(self) -> Sequence[str]:
         """The names of the inputs of the function."""
         return self._args
 
     @args.setter
     def args(
         self,
-        args,  # type: Optional[Union[Iterable[str],ndarray]]
-    ):  # type: (...) -> None
+        args: Iterable[str] | ndarray | None,
+    ) -> None:
         if args is not None:
             if isinstance(args, ndarray):
                 self._args = args.tolist()
@@ -434,7 +427,7 @@ class MDOFunction(object):
             self._args = None
 
     @property
-    def expr(self):  # type: (...) -> str
+    def expr(self) -> str:
         """The expression of the function, e.g. `"2*x"`.
 
         Raises:
@@ -445,16 +438,14 @@ class MDOFunction(object):
     @expr.setter
     def expr(
         self,
-        expr,  # type: str
-    ):  # type: (...) -> None
-        if expr is not None and not isinstance(expr, string_types):
-            raise TypeError(
-                "Expression must be a string; got {} instead.".format(type(expr))
-            )
+        expr: str,
+    ) -> None:
+        if expr is not None and not isinstance(expr, str):
+            raise TypeError(f"Expression must be a string; got {type(expr)} instead.")
         self._expr = expr
 
     @property
-    def dim(self):  # type: (...) -> int
+    def dim(self) -> int:
         """The dimension of the output space of the function.
 
         Raises:
@@ -465,24 +456,24 @@ class MDOFunction(object):
     @dim.setter
     def dim(
         self,
-        dim,  # type: int
-    ):  # type: (...) -> None
+        dim: int,
+    ) -> None:
         if dim is not None and not int(dim) == dim:
             raise TypeError(
-                "The dimension must be an integer; got {} instead.".format(type(int))
+                f"The dimension must be an integer; got {type(int)} instead."
             )
         self._dim = dim
 
     @property
-    def outvars(self):  # type: (...) -> Sequence[str]
+    def outvars(self) -> Sequence[str]:
         """The names of the outputs of the function."""
         return self._outvars
 
     @outvars.setter
     def outvars(
         self,
-        outvars,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        outvars: Sequence[str],
+    ) -> None:
         if outvars is not None:
             if isinstance(outvars, ndarray):
                 self._outvars = outvars.tolist()
@@ -491,7 +482,7 @@ class MDOFunction(object):
         else:
             self._outvars = None
 
-    def is_constraint(self):  # type: (...) -> bool
+    def is_constraint(self) -> bool:
         """Check if the function is a constraint.
 
         The type of a constraint function is either 'eq' or 'ineq'.
@@ -501,16 +492,16 @@ class MDOFunction(object):
         """
         return self.f_type in [self.TYPE_EQ, self.TYPE_INEQ]
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         return self.special_repr or self.default_repr
 
     @property
-    def default_repr(self):  # type: (...) -> str
+    def default_repr(self) -> str:
         """The default string representation of the function."""
         str_repr = self.name
         if self.has_args():
             arguments = ", ".join(self.args)
-            str_repr += "({})".format(arguments)
+            str_repr += f"({arguments})"
 
         if self.has_expr():
             str_repr += " = "
@@ -523,7 +514,7 @@ class MDOFunction(object):
                 str_repr += "\n" + " " * n_char + repre
         return str_repr
 
-    def has_jac(self):  # type: (...) -> bool
+    def has_jac(self) -> bool:
         """Check if the function has an implemented Jacobian function.
 
         Returns:
@@ -533,7 +524,7 @@ class MDOFunction(object):
             self._jac, NotImplementedCallable
         )
 
-    def has_dim(self):  # type: (...) -> bool
+    def has_dim(self) -> bool:
         """Check if the dimension of the output space of the function is defined.
 
         Returns:
@@ -541,7 +532,7 @@ class MDOFunction(object):
         """
         return self.dim is not None
 
-    def has_outvars(self):  # type: (...) -> bool
+    def has_outvars(self) -> bool:
         """Check if the outputs of the function have names.
 
         Returns:
@@ -549,7 +540,7 @@ class MDOFunction(object):
         """
         return self.outvars is not None
 
-    def has_expr(self):  # type: (...) -> bool
+    def has_expr(self) -> bool:
         """Check if the function has an expression.
 
         Returns:
@@ -557,7 +548,7 @@ class MDOFunction(object):
         """
         return self.expr is not None
 
-    def has_args(self):  # type: (...) -> bool
+    def has_args(self) -> bool:
         """Check if the inputs of the function have names.
 
         Returns:
@@ -565,7 +556,7 @@ class MDOFunction(object):
         """
         return self.args is not None
 
-    def has_f_type(self):  # type: (...) -> bool
+    def has_f_type(self) -> bool:
         """Check if the function has a type.
 
         Returns:
@@ -573,9 +564,7 @@ class MDOFunction(object):
         """
         return self.f_type is not None
 
-    def __add__(
-        self, other_f  # type: MDOFunction
-    ):  # type: (...) -> MDOFunction
+    def __add__(self, other_f: MDOFunction) -> MDOFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
@@ -591,9 +580,7 @@ class MDOFunction(object):
             other_f, operator=add, operator_repr="+", mdo_function=self
         )
 
-    def __sub__(
-        self, other_f  # type: MDOFunction
-    ):  # type: (...) -> MDOFunction
+    def __sub__(self, other_f: MDOFunction) -> MDOFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation
@@ -609,9 +596,7 @@ class MDOFunction(object):
             other_f, operator=subtract, operator_repr="-", mdo_function=self
         )
 
-    def _min_pt(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _min_pt(self, x_vect: ndarray) -> ndarray:
         """Evaluate the function and return its opposite value.
 
         Args:
@@ -622,9 +607,7 @@ class MDOFunction(object):
         """
         return -self(x_vect)
 
-    def _min_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _min_jac(self, x_vect: ndarray) -> ndarray:
         """Evaluate the Jacobian function and return its opposite value.
 
         Args:
@@ -635,7 +618,7 @@ class MDOFunction(object):
         """
         return -self.jac(x_vect)  # pylint: disable=E1102
 
-    def __neg__(self):  # type: (...) -> MDOFunction
+    def __neg__(self) -> MDOFunction:
         """Operator defining the opposite of the function.
 
         This operator supports automatic differentiation
@@ -645,7 +628,7 @@ class MDOFunction(object):
             The opposite of the function.
         """
 
-        min_name = "-{}".format(self.name)
+        min_name = f"-{self.name}"
         min_self = MDOFunction(
             self._min_pt,
             min_name,
@@ -696,10 +679,10 @@ class MDOFunction(object):
 
     @staticmethod
     def _compute_operation_expression(
-        operand_1,  # type: str
-        operator,  # type: str
-        operand_2,  # type: Union[str,float,int]
-    ):  # type: (...)->str
+        operand_1: str,
+        operator: str,
+        operand_2: str | float | int,
+    ) -> str:
         """Return the string expression of an operation between two operands.
 
         Args:
@@ -710,11 +693,9 @@ class MDOFunction(object):
         Returns:
             The string expression of the sum of the operands.
         """
-        return "{} {} {}".format(operand_1, operator, operand_2)
+        return f"{operand_1} {operator} {operand_2}"
 
-    def offset(
-        self, value  # type: Union[ndarray, Number]
-    ):  # type: (...) -> MDOFunction
+    def offset(self, value: ndarray | Number) -> MDOFunction:
         """Add an offset value to the function.
 
         Args:
@@ -727,14 +708,14 @@ class MDOFunction(object):
 
     def restrict(
         self,
-        frozen_indexes,  # type: ndarray
-        frozen_values,  # type: ndarray
-        input_dim,  # type: int
-        name=None,  # type: Optional[str]
-        f_type=None,  # type: Optional[str]
-        expr=None,  # type: Optional[str]
-        args=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> MDOFunction
+        frozen_indexes: ndarray,
+        frozen_values: ndarray,
+        input_dim: int,
+        name: str | None = None,
+        f_type: str | None = None,
+        expr: str | None = None,
+        args: Sequence[str] | None = None,
+    ) -> MDOFunction:
         r"""Return a restriction of the function
 
         :math:`\newcommand{\frozeninds}{I}\newcommand{\xfrozen}{\hat{x}}\newcommand{
@@ -774,11 +755,11 @@ class MDOFunction(object):
 
     def linear_approximation(
         self,
-        x_vect,  # type: ndarray
-        name=None,  # type: Optional[str]
-        f_type=None,  # type: Optional[str]
-        args=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> MDOLinearFunction
+        x_vect: ndarray,
+        name: str | None = None,
+        f_type: str | None = None,
+        args: Sequence[str] | None = None,
+    ) -> MDOLinearFunction:
         r"""Compute a first-order Taylor polynomial of the function.
 
         :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
@@ -831,10 +812,10 @@ class MDOFunction(object):
 
     def convex_linear_approx(
         self,
-        x_vect,  # type: ndarray
-        approx_indexes=None,  # type: Optional[ndarray]
-        sign_threshold=1e-9,  # type: float
-    ):  # type: (...) -> MDOFunction
+        x_vect: ndarray,
+        approx_indexes: ndarray | None = None,
+        sign_threshold: float = 1e-9,
+    ) -> MDOFunction:
         r"""Compute a convex linearization of the function.
 
         :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
@@ -889,10 +870,10 @@ class MDOFunction(object):
 
     def quadratic_approx(
         self,
-        x_vect,  # type: ndarray
-        hessian_approx,  # type: ndarray
-        args=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) ->MDOQuadraticFunction
+        x_vect: ndarray,
+        hessian_approx: ndarray,
+        args: Sequence[str] | None = None,
+    ) -> MDOQuadraticFunction:
         r"""Build a quadratic approximation of the function at a given point.
 
         The function must be scalar-valued.
@@ -959,7 +940,7 @@ class MDOFunction(object):
             quad_coeffs=quad_coeffs,
             linear_coeffs=linear_coeffs,
             value_at_zero=zero_coeff,
-            name="{}_quadratized".format(self.name),
+            name=f"{self.name}_quadratized",
             args=args if args else self.args,
         )
 
@@ -967,11 +948,11 @@ class MDOFunction(object):
 
     def check_grad(
         self,
-        x_vect,  # type: ndarray
-        method="FirstOrderFD",  # type: str
-        step=1e-6,  # type: float
-        error_max=1e-8,  # type: float
-    ):  # type: (...) -> None
+        x_vect: ndarray,
+        method: str = "FirstOrderFD",
+        step: float = 1e-6,
+        error_max: float = 1e-8,
+    ) -> None:
         """Check the gradients of the function.
 
         Args:
@@ -1019,14 +1000,14 @@ class MDOFunction(object):
             LOGGER.error("Error =\n%s", str(self.filt_0(anal_grad - apprx_grad)))
             LOGGER.error("Analytic jacobian=\n%s", str(self.filt_0(anal_grad)))
             LOGGER.error("Approximate step gradient=\n%s", str(self.filt_0(apprx_grad)))
-            raise ValueError("Function jacobian is wrong {}.".format(self))
+            raise ValueError(f"Function jacobian is wrong {self}.")
 
     @staticmethod
     def rel_err(
-        a_vect,  # type: ndarray
-        b_vect,  # type: ndarray
-        error_max,  # type: float
-    ):  # type: (...) -> float
+        a_vect: ndarray,
+        b_vect: ndarray,
+        error_max: float,
+    ) -> float:
         """Compute the 2-norm of the difference between two vectors.
 
         Normalize it with the 2-norm of the reference vector
@@ -1048,9 +1029,9 @@ class MDOFunction(object):
 
     @staticmethod
     def filt_0(
-        arr,  # type: ndarray
-        floor_value=1e-6,  # type: float
-    ):  # type: (...) -> ndarray
+        arr: ndarray,
+        floor_value: float = 1e-6,
+    ) -> ndarray:
         """Set the non-significant components of a vector to zero.
 
         The component of a vector is non-significant
@@ -1066,7 +1047,7 @@ class MDOFunction(object):
         """
         return where(np_abs(arr) < floor_value, 0.0, arr)
 
-    def get_data_dict_repr(self):  # type: (...) -> Dict[str,Union[str,int,List[str]]]
+    def get_data_dict_repr(self) -> dict[str, str | int | list[str]]:
         """Create a dictionary representation of the function.
 
         This is used for serialization.
@@ -1084,7 +1065,7 @@ class MDOFunction(object):
         return repr_dict
 
     @staticmethod
-    def init_from_dict_repr(**kwargs):  # type: (...) -> MDOFunction
+    def init_from_dict_repr(**kwargs) -> MDOFunction:
         """Initialize a new function.
 
         This is typically used for deserialization.
@@ -1110,12 +1091,12 @@ class MDOFunction(object):
 
     def set_pt_from_database(
         self,
-        database,  # type: Database
-        design_space,  # type: DesignSpace
-        normalize=False,  # type: bool
-        jac=True,  # type: bool
-        x_tolerance=1e-10,  # type: float
-    ):  # type: (...) -> None
+        database: Database,
+        design_space: DesignSpace,
+        normalize: bool = False,
+        jac: bool = True,
+        x_tolerance: float = 1e-10,
+    ) -> None:
         """Set the original function and Jacobian function from a database.
 
         For a given input vector,
@@ -1136,9 +1117,9 @@ class MDOFunction(object):
 
     @staticmethod
     def generate_args(
-        input_dim,  # type: int
-        args=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> Sequence[str]
+        input_dim: int,
+        args: Sequence[str] | None = None,
+    ) -> Sequence[str]:
         """Generate the names of the inputs of the function.
 
         Args:
@@ -1172,9 +1153,9 @@ class MDOFunction(object):
 
     @staticmethod
     def _generate_args(
-        args_base,  # type: str
-        input_dim,  # type: int
-    ):  # type: (...) -> List[str]
+        args_base: str,
+        input_dim: int,
+    ) -> list[str]:
         """Generate the names of the inputs from a base name and their indices.
 
         Args:
@@ -1189,10 +1170,10 @@ class MDOFunction(object):
 
     @staticmethod
     def concatenate(
-        functions,  # type: Iterable[MDOFunction]
-        name,  # type: str
-        f_type=None,  # type: Optional[str]
-    ):  # type: (...) -> MDOFunction
+        functions: Iterable[MDOFunction],
+        name: str,
+        f_type: str | None = None,
+    ) -> MDOFunction:
         """Concatenate functions.
 
         Args:
@@ -1207,13 +1188,11 @@ class MDOFunction(object):
         return Concatenate(functions, name, f_type)
 
     @property
-    def expects_normalized_inputs(self):  # type: (...) -> bool
+    def expects_normalized_inputs(self) -> bool:
         """Whether the functions expect normalized inputs or not."""
         return False
 
-    def get_indexed_name(
-        self, index  # type: int
-    ):  # type: (...) -> str
+    def get_indexed_name(self, index: int) -> str:
         """Return the name of function component.
 
         Args:
@@ -1222,13 +1201,13 @@ class MDOFunction(object):
         Returns:
             The name of the function component.
         """
-        return "{}{}{}".format(self.name, DesignSpace.SEP, index)
+        return f"{self.name}{DesignSpace.SEP}{index}"
 
 
-class NotImplementedCallable(object):
+class NotImplementedCallable:
     """A not implemented callable object."""
 
-    def __call__(self, *args, **kwargs):  # type: (...) -> NoReturn
+    def __call__(self, *args, **kwargs) -> NoReturn:
         """
         Raises:
             NotImplementedError: At each evaluation.
@@ -1244,11 +1223,11 @@ class ApplyOperator(MDOFunction):
 
     def __init__(
         self,
-        other,  # type: Union[MDOFunction, Number]
-        operator,  # type: MDOFunction
-        operator_repr,  # type: str
-        mdo_function,  # type: MDOFunction
-    ):  # type: (...) -> None
+        other: MDOFunction | Number,
+        operator: MDOFunction,
+        operator_repr: str,
+        mdo_function: MDOFunction,
+    ) -> None:
         """Apply an operator to the function and another function.
 
         This operator supports automatic differentiation
@@ -1306,7 +1285,7 @@ class ApplyOperator(MDOFunction):
             else:
                 f_type = None
 
-            super(ApplyOperator, self).__init__(
+            super().__init__(
                 self._add_f_pt,
                 add_name,
                 jac=jac,
@@ -1329,7 +1308,7 @@ class ApplyOperator(MDOFunction):
             else:
                 expr = None
 
-            super(ApplyOperator, self).__init__(
+            super().__init__(
                 self._add_f_pt,
                 add_name,
                 jac=self.__mdo_function.jac,
@@ -1340,9 +1319,7 @@ class ApplyOperator(MDOFunction):
                 outvars=self.__mdo_function.outvars,
             )
 
-    def _add_f_pt(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction
+    def _add_f_pt(self, x_vect: ndarray) -> MDOFunction:
         """Evaluate the function and apply the operator to the value of its outputs.
 
         Args:
@@ -1359,9 +1336,7 @@ class ApplyOperator(MDOFunction):
             otherval = self.__other(x_vect)
             return self.__operator(selfval, otherval)
 
-    def _add_jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> MDOFunction
+    def _add_jac(self, x_vect: ndarray) -> MDOFunction:
         """Define the Jacobian of the addition function.
 
         Args:
@@ -1380,9 +1355,9 @@ class Concatenate(MDOFunction):
 
     def __init__(
         self,
-        functions,  # type: Iterable[MDOFunction]
-        name,  # type: str
-        f_type=None,  # type: Optional[str]
+        functions: Iterable[MDOFunction],
+        name: str,
+        f_type: str | None = None,
     ):
         """
         Args:
@@ -1395,14 +1370,14 @@ class Concatenate(MDOFunction):
         self.__name = name
         self.__f_type = f_type
 
-        dim = sum([func.dim for func in self.__functions])
+        dim = sum(func.dim for func in self.__functions)
         outvars_list = [func.outvars for func in self.__functions]
         if None in outvars_list:
             outvars = None
         else:
             outvars = [out_var for outvars in outvars_list for out_var in outvars]
 
-        super(Concatenate, self).__init__(
+        super().__init__(
             self._concat_func,
             self.__name,
             self.__f_type,
@@ -1413,8 +1388,8 @@ class Concatenate(MDOFunction):
 
     def _concat_func(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Concatenate the values of the outputs of the functions.
 
         Args:
@@ -1427,8 +1402,8 @@ class Concatenate(MDOFunction):
 
     def _concat_jac(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Concatenate the outputs of the Jacobian functions.
 
         Args:
@@ -1448,10 +1423,10 @@ class MultiplyOperator(MDOFunction):
 
     def __init__(
         self,
-        other,  # type: Union[MDOFunction, Number]
-        mdo_function,  # type: MDOFunction
-        inverse=False,  # type: bool
-    ):  # type: (...) -> None
+        other: MDOFunction | Number,
+        mdo_function: MDOFunction,
+        inverse: bool = False,
+    ) -> None:
         """Operator defining the multiplication of the function and another operand.
 
         This operator supports automatic differentiation
@@ -1505,7 +1480,7 @@ class MultiplyOperator(MDOFunction):
         else:
             expr = None
 
-        super(MultiplyOperator, self).__init__(
+        super().__init__(
             self._func,
             out_name,
             expr=expr,
@@ -1516,9 +1491,7 @@ class MultiplyOperator(MDOFunction):
             outvars=self.__mdo_function.outvars,
         )
 
-    def _func(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _func(self, x_vect: ndarray) -> ndarray:
         """Evaluate the function and multiply its output value.
 
         Args:
@@ -1534,9 +1507,7 @@ class MultiplyOperator(MDOFunction):
 
         return self.__operator(self.__mdo_function(x_vect), second_operand)
 
-    def _jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _jac(self, x_vect: ndarray) -> ndarray:
         """Evaluate both functions and multiply their output values.
 
         Args:
@@ -1571,9 +1542,9 @@ class Offset(MDOFunction):
 
     def __init__(
         self,
-        value,  # type: Union[ndarray, Number]
-        mdo_function,  # type: MDOFunction
-    ):  # type: (...) -> None
+        value: ndarray | Number,
+        mdo_function: MDOFunction,
+    ) -> None:
         """
         Args:
             value: The offset value.
@@ -1605,7 +1576,7 @@ class Offset(MDOFunction):
             expr, operator, operand_2
         )
 
-        super(Offset, self).__init__(
+        super().__init__(
             self._wrapped_function,
             name=name,
             f_type=self.__mdo_function.f_type,
@@ -1616,9 +1587,7 @@ class Offset(MDOFunction):
             outvars=self.__mdo_function.outvars,
         )
 
-    def _wrapped_function(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _wrapped_function(self, x_vect: ndarray) -> ndarray:
         """Wrap the function to be given to the optimizer.
 
         Args:
@@ -1635,15 +1604,15 @@ class FunctionRestriction(MDOFunction):
 
     def __init__(
         self,
-        frozen_indexes,  # type: ndarray
-        frozen_values,  # type: ndarray
-        input_dim,  # type: int
-        mdo_function,  # type: MDOFunction
-        name=None,  # type: Optional[str]
-        f_type=None,  # type: Optional[str]
-        expr=None,  # type: Optional[str]
-        args=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        frozen_indexes: ndarray,
+        frozen_values: ndarray,
+        input_dim: int,
+        mdo_function: MDOFunction,
+        name: str | None = None,
+        f_type: str | None = None,
+        expr: str | None = None,
+        args: Sequence[str] | None = None,
+    ) -> None:
         """
         Args:
             frozen_indexes: The indexes of the inputs that will be frozen
@@ -1689,14 +1658,14 @@ class FunctionRestriction(MDOFunction):
                 self.__mdo_function.name, "_".join(self.__args)
             )
         elif name is None:
-            self.__name = "{}_restriction".format(self.__mdo_function.name)
+            self.__name = f"{self.__mdo_function.name}_restriction"
 
         if self.__mdo_function.has_jac():
             jac = self._jac
         else:
             jac = self.__mdo_function.jac
 
-        super(FunctionRestriction, self).__init__(
+        super().__init__(
             self._func,
             self.__name,
             self.__f_type,
@@ -1708,9 +1677,7 @@ class FunctionRestriction(MDOFunction):
             force_real=self.__mdo_function.force_real,
         )
 
-    def __extend_subvect(
-        self, x_subvect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __extend_subvect(self, x_subvect: ndarray) -> ndarray:
         """Extend an input vector of the restriction with the frozen values.
 
         Args:
@@ -1724,9 +1691,7 @@ class FunctionRestriction(MDOFunction):
         x_vect[self.__frozen_indexes] = self.__frozen_values
         return x_vect
 
-    def _func(
-        self, x_subvect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _func(self, x_subvect: ndarray) -> ndarray:
         """Evaluate the restriction.
 
         Args:
@@ -1739,9 +1704,7 @@ class FunctionRestriction(MDOFunction):
         value = self.__mdo_function.evaluate(x_vect)
         return value
 
-    def _jac(
-        self, x_subvect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _jac(self, x_subvect: ndarray) -> ndarray:
         """Compute the Jacobian matrix of the restriction.
 
         Args:
@@ -1784,11 +1747,11 @@ class MDOLinearFunction(MDOFunction):
 
     def __init__(
         self,
-        coefficients,  # type: ndarray
-        name,  # type: str
-        f_type=None,  # type: Optional[str]
-        args=None,  # type: Optional[Sequence[str]]
-        value_at_zero=0.0,  # type: Union[ndarray,Number]
+        coefficients: ndarray,
+        name: str,
+        f_type: str | None = None,
+        args: Sequence[str] | None = None,
+        value_at_zero: ndarray | Number = 0.0,
     ):
         """
         Args:
@@ -1814,7 +1777,7 @@ class MDOLinearFunction(MDOFunction):
         else:
             expr = self._generate_nd_expr(new_args)
 
-        super(MDOLinearFunction, self).__init__(
+        super().__init__(
             self.__fun,
             name,
             f_type=f_type,
@@ -1825,9 +1788,7 @@ class MDOLinearFunction(MDOFunction):
             outvars=[name],
         )
 
-    def __fun(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __fun(self, x_vect: ndarray) -> ndarray:
         """Return the linear combination with an offset:
 
         sum_{i=1}^n a_i * x_i + b
@@ -1854,7 +1815,7 @@ class MDOLinearFunction(MDOFunction):
         return jac
 
     @property
-    def coefficients(self):  # type: (...) -> ndarray
+    def coefficients(self) -> ndarray:
         """The coefficients of the linear function.
 
         This is the matrix :math:`A` in the expression :math:`y=Ax+b`.
@@ -1868,8 +1829,8 @@ class MDOLinearFunction(MDOFunction):
     @coefficients.setter
     def coefficients(
         self,
-        coefficients,  # type: Union[Number,ndarray]
-    ):  # type: (...) -> None
+        coefficients: Number | ndarray,
+    ) -> None:
         if isinstance(coefficients, Number):
             self._coefficients = atleast_2d(coefficients)
         elif isinstance(coefficients, ndarray) and len(coefficients.shape) == 2:
@@ -1883,7 +1844,7 @@ class MDOLinearFunction(MDOFunction):
             )
 
     @property
-    def value_at_zero(self):  # type: (...) -> ndarray
+    def value_at_zero(self) -> ndarray:
         """The value of the function at zero.
 
         This is the vector :math:`b` in the expression :math:`y=Ax+b`.
@@ -1896,8 +1857,8 @@ class MDOLinearFunction(MDOFunction):
     @value_at_zero.setter
     def value_at_zero(
         self,
-        value_at_zero,  # type: Union[Number,ndarray]
-    ):  # type: (...) -> None
+        value_at_zero: Number | ndarray,
+    ) -> None:
         output_dim = self.coefficients.shape[0]  # N.B. the coefficients must be set
         if isinstance(value_at_zero, ndarray) and value_at_zero.size == output_dim:
             self._value_at_zero = value_at_zero.reshape(output_dim)
@@ -1908,8 +1869,8 @@ class MDOLinearFunction(MDOFunction):
 
     def _generate_1d_expr(
         self,
-        args,  # type: Sequence[str]
-    ):  # type: (...)-> str
+        args: Sequence[str],
+    ) -> str:
         """Generate the literal expression of the linear function in scalar form.
 
         Args:
@@ -1954,8 +1915,8 @@ class MDOLinearFunction(MDOFunction):
 
     def _generate_nd_expr(
         self,
-        args,  # type: Sequence[str]
-    ):  # type: (...)-> str
+        args: Sequence[str],
+    ) -> str:
         """Generate the literal expression of the linear function in matrix form.
 
         Args:
@@ -1964,7 +1925,7 @@ class MDOLinearFunction(MDOFunction):
         Returns:
             The literal expression of the linear function in matrix form.
         """
-        max_args_len = max([len(arg) for arg in args])
+        max_args_len = max(len(arg) for arg in args)
         out_dim, in_dim = self._coefficients.shape
         expr = ""
         for i in range(max(out_dim, in_dim)):
@@ -1981,7 +1942,7 @@ class MDOLinearFunction(MDOFunction):
                 expr += " " + " ".join([" " * 3] * in_dim) + " "
             # vector line
             if i < in_dim:
-                expr += "[{}]".format(args[i])
+                expr += f"[{args[i]}]"
             else:
                 expr += " " * (max_args_len + 2)
             # sign
@@ -1996,7 +1957,7 @@ class MDOLinearFunction(MDOFunction):
                 )
         return expr
 
-    def __neg__(self):  # type: (...) -> MDOLinearFunction
+    def __neg__(self) -> MDOLinearFunction:
         return MDOLinearFunction(
             -self._coefficients,
             "-" + self.name,
@@ -2007,8 +1968,8 @@ class MDOLinearFunction(MDOFunction):
 
     def offset(
         self,
-        value,  # type: Union[Number,ndarray]
-    ):  # type: (...) -> MDOLinearFunction
+        value: Number | ndarray,
+    ) -> MDOLinearFunction:
         return MDOLinearFunction(
             self._coefficients,
             self.name,
@@ -2019,9 +1980,9 @@ class MDOLinearFunction(MDOFunction):
 
     def restrict(
         self,
-        frozen_indexes,  # type: ndarray
-        frozen_values,  # type: ndarray
-    ):  # type: (...) -> MDOLinearFunction
+        frozen_indexes: ndarray,
+        frozen_values: ndarray,
+    ) -> MDOLinearFunction:
         """Build a restriction of the linear function.
 
         Args:
@@ -2066,11 +2027,11 @@ class ConvexLinearApprox(MDOFunction):
 
     def __init__(
         self,
-        x_vect,  # type: ndarray
-        mdo_function,  # type: MDOFunction
-        approx_indexes=None,  # type: Optional[ndarray]
-        sign_threshold=1e-9,  # type: float
-    ):  # type: (...) -> MDOFunction
+        x_vect: ndarray,
+        mdo_function: MDOFunction,
+        approx_indexes: ndarray | None = None,
+        sign_threshold: float = 1e-9,
+    ) -> MDOFunction:
         """
         Args:
             x_vect: The input vector at which to build the convex linearization.
@@ -2118,9 +2079,9 @@ class ConvexLinearApprox(MDOFunction):
             self.__x_vect[self.__approx_indexes] ** 2,
         )
 
-        super(ConvexLinearApprox, self).__init__(
+        super().__init__(
             self._convex_lin_func,
-            "{}_convex_lin".format(self.__mdo_function.name),
+            f"{self.__mdo_function.name}_convex_lin",
             self.__mdo_function.f_type,
             self._convex_lin_jac,
             args=None,
@@ -2131,8 +2092,8 @@ class ConvexLinearApprox(MDOFunction):
 
     def __get_steps(
         self,
-        x_new,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray,ndarray]
+        x_new: ndarray,
+    ) -> tuple[ndarray, ndarray]:
         """Return the steps on the direct and reciprocal variables.
 
         Args:
@@ -2150,8 +2111,8 @@ class ConvexLinearApprox(MDOFunction):
 
     def _convex_lin_func(
         self,
-        x_new,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_new: ndarray,
+    ) -> ndarray:
         """Return the value of the convex linearization function.
 
         Args:
@@ -2173,8 +2134,8 @@ class ConvexLinearApprox(MDOFunction):
 
     def _convex_lin_jac(
         self,
-        x_new,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_new: ndarray,
+    ) -> ndarray:
         """Return the Jacobian matrix of the convex linearization function.
 
         Args:
@@ -2214,12 +2175,12 @@ class MDOQuadraticFunction(MDOFunction):
 
     def __init__(
         self,
-        quad_coeffs,  # type: ndarray
-        name,  # type: str
-        f_type=None,  # type: Optional[str]
-        args=None,  # type: Sequence[str]
-        linear_coeffs=None,  # type: Optional[ndarray]
-        value_at_zero=None,  # type: Optional[float]
+        quad_coeffs: ndarray,
+        name: str,
+        f_type: str | None = None,
+        args: Sequence[str] = None,
+        linear_coeffs: ndarray | None = None,
+        value_at_zero: float | None = None,
     ):
         """
         Args:
@@ -2243,7 +2204,7 @@ class MDOQuadraticFunction(MDOFunction):
         # Build the first-order term
         if linear_coeffs is not None:
             self._linear_part = MDOLinearFunction(
-                linear_coeffs, "{}_lin".format(name), args=new_args
+                linear_coeffs, f"{name}_lin", args=new_args
             )
             self.linear_coeffs = self._linear_part.coefficients
         self._value_at_zero = value_at_zero
@@ -2252,13 +2213,11 @@ class MDOQuadraticFunction(MDOFunction):
         expr = self.build_expression(
             self._quad_coeffs, new_args, self._linear_coeffs, self._value_at_zero
         )
-        super(MDOQuadraticFunction, self).__init__(
+        super().__init__(
             self.__func, name, f_type, self.__grad, expr, args=new_args, dim=1
         )
 
-    def __func(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __func(self, x_vect: ndarray) -> ndarray:
         """Compute the output of the quadratic function.
 
         Args:
@@ -2274,9 +2233,7 @@ class MDOQuadraticFunction(MDOFunction):
             value += self._value_at_zero
         return value
 
-    def __grad(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __grad(self, x_vect: ndarray) -> ndarray:
         """Compute the gradient of the quadratic function.
 
         Args:
@@ -2291,7 +2248,7 @@ class MDOQuadraticFunction(MDOFunction):
         return gradient
 
     @property
-    def quad_coeffs(self):  # type: (...) -> ndarray
+    def quad_coeffs(self) -> ndarray:
         """The second-order coefficients of the function.
 
         Raises:
@@ -2303,8 +2260,8 @@ class MDOQuadraticFunction(MDOFunction):
     @quad_coeffs.setter
     def quad_coeffs(
         self,
-        coefficients,  # type: ndarray
-    ):  # type: (...) -> None
+        coefficients: ndarray,
+    ) -> None:
         # Check the second-order coefficients
         if (
             not isinstance(coefficients, ndarray)
@@ -2319,7 +2276,7 @@ class MDOQuadraticFunction(MDOFunction):
         self._input_dim = self._quad_coeffs.shape[0]
 
     @property
-    def linear_coeffs(self):  # type: (...) -> ndarray
+    def linear_coeffs(self) -> ndarray:
         """The first-order coefficients of the function.
 
         Raises:
@@ -2333,8 +2290,8 @@ class MDOQuadraticFunction(MDOFunction):
     @linear_coeffs.setter
     def linear_coeffs(
         self,
-        coefficients,  # type: ndarray
-    ):  # type: (...) -> None
+        coefficients: ndarray,
+    ) -> None:
         if coefficients.size != self._input_dim:
             raise ValueError(
                 "The number of first-order coefficients must be equal "
@@ -2344,10 +2301,10 @@ class MDOQuadraticFunction(MDOFunction):
 
     @staticmethod
     def build_expression(
-        quad_coeffs,  # type: ndarray
-        args,  # type: Sequence[str]
-        linear_coeffs=None,  # type: Optional[linear_coeffs]
-        value_at_zero=None,  # type: Optional[float]
+        quad_coeffs: ndarray,
+        args: Sequence[str],
+        linear_coeffs: linear_coeffs | None = None,
+        value_at_zero: float | None = None,
     ):
         """Build the expression of the quadratic function.
 
@@ -2368,11 +2325,11 @@ class MDOQuadraticFunction(MDOFunction):
             arg = args[index]
             # Second-order expression
             line = quad_coeffs[index, :].tolist()
-            expr += "[{}]".format(arg)
+            expr += f"[{arg}]"
             expr += transpose_str if index == 0 else " "
             quad_coeffs_str = (MDOFunction.COEFF_FORMAT_ND.format(val) for val in line)
             expr += "[{}]".format(" ".join(quad_coeffs_str))
-            expr += "[{}]".format(arg)
+            expr += f"[{arg}]"
             # First-order expression
             if (
                 linear_coeffs is not None
@@ -2383,7 +2340,7 @@ class MDOQuadraticFunction(MDOFunction):
                     MDOFunction.COEFF_FORMAT_ND.format(linear_coeffs[0, index])
                 )
                 expr += transpose_str if index == 0 else " "
-                expr += "[{}]".format(arg)
+                expr += f"[{arg}]"
             # Zero-order expression
             if value_at_zero is not None and value_at_zero != 0.0 and index == 0:
                 sign_str = "+" if value_at_zero > 0.0 else "-"
@@ -2400,12 +2357,12 @@ class SetPtFromDatabase(MDOFunction):
 
     def __init__(
         self,
-        database,  # type: Database
-        design_space,  # type: DesignSpace
-        mdo_function,  # type: MDOFunction
-        normalize=False,  # type: bool
-        jac=True,  # type: bool
-        x_tolerance=1e-10,  # type: float
+        database: Database,
+        design_space: DesignSpace,
+        mdo_function: MDOFunction,
+        normalize: bool = False,
+        jac: bool = True,
+        x_tolerance: float = 1e-10,
     ):
         """
         Args:
@@ -2432,9 +2389,9 @@ class SetPtFromDatabase(MDOFunction):
 
     def __read_in_db(
         self,
-        x_n,  # type: ndarray
-        fname,  # type: str
-    ):  # type: (...) -> ndarray
+        x_n: ndarray,
+        fname: str,
+    ) -> ndarray:
         """Read the value of a function in the database for a given input value.
 
         Args:
@@ -2462,8 +2419,8 @@ class SetPtFromDatabase(MDOFunction):
 
     def _f_from_db(
         self,
-        x_n,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_n: ndarray,
+    ) -> ndarray:
         """Evaluate the function from the database.
 
         Args:
@@ -2476,8 +2433,8 @@ class SetPtFromDatabase(MDOFunction):
 
     def _j_from_db(
         self,
-        x_n,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_n: ndarray,
+    ) -> ndarray:
         """Evaluate the Jacobian function from the database.
 
         Args:
@@ -2486,8 +2443,8 @@ class SetPtFromDatabase(MDOFunction):
         Returns:
             The value of the Jacobian function read in the database.
         """
-        return self.__read_in_db(x_n, "@{}".format(self.__name))
+        return self.__read_in_db(x_n, f"@{self.__name}")
 
     @property
-    def expects_normalized_inputs(self):  # type: (...) -> bool
+    def expects_normalized_inputs(self) -> bool:
         return self.__normalize

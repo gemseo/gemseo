@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,11 +23,9 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Mission discipline for the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 
 from numpy import array
 from numpy import ndarray
@@ -44,9 +41,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     @staticmethod
     def __compute_weight_ratio(
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Compute the weight ratio from the Breguet formula.
 
         Args:
@@ -60,9 +57,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dweightratio_dwt(
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Derive the weight ratio with respect to the total weight.
 
         Args:
@@ -77,9 +74,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dweightratio_dwf(
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Derive the weight ratio with respect to the fuel weight.
 
         Args:
@@ -94,9 +91,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __compute_dlnweightratio_dwt(
         self,
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Derive the logarithm of the weight ratio with respect to the total weight.
 
         Args:
@@ -113,9 +110,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __compute_dlnweightratio_dwf(
         self,
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Derive the logarithm of the weight ratio with respect to the fuel weight.
 
         Args:
@@ -132,13 +129,13 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __compute_range(
         self,
-        altitude,  # type:float
-        mach,  # type:float
-        w_t,  # type:float
-        w_f,  # type:float
-        cl_cd,  # type:float
-        sfc,  # type:float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        w_t: float,
+        w_f: float,
+        cl_cd: float,
+        sfc: float,
+    ) -> float:
         """Compute the range from the Breguet formula.
 
         Args:
@@ -159,13 +156,13 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __compute_drange_dtotalweight(
         self,
-        mach,  # type:float
-        w_t,  # type:float
-        w_f,  # type:float
-        cl_cd,  # type:float
-        sfc,  # type: float
-        sqrt_theta,  # type: float
-    ):  # type: (...) -> float
+        mach: float,
+        w_t: float,
+        w_f: float,
+        cl_cd: float,
+        sfc: float,
+        sqrt_theta: float,
+    ) -> float:
         """Derive the range with respect to the total weight.
 
         Args:
@@ -190,13 +187,13 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __compute_drange_dfuelweight(
         self,
-        mach,  # type:float
-        w_t,  # type: float
-        w_f,  # type: float
-        cl_cd,  # type: float
-        sfc,  # type: float
-        sqrt_theta,  # type: float
-    ):  # type: (...) -> float
+        mach: float,
+        w_t: float,
+        w_f: float,
+        cl_cd: float,
+        sfc: float,
+        sqrt_theta: float,
+    ) -> float:
         """Derive the range with respect to the fuel weight.
 
         Args:
@@ -219,9 +216,7 @@ class SobieskiMission(SobieskiDiscipline):
             * self.__compute_dlnweightratio_dwf(w_t, w_f)
         )
 
-    def __compute_dtheta_dh(
-        self, altitude  # type: float
-    ):  # type: (...) -> float
+    def __compute_dtheta_dh(self, altitude: float) -> float:
         """Derive the square root of the air temperature wrt the altitude.
 
         Args:
@@ -235,9 +230,7 @@ class SobieskiMission(SobieskiDiscipline):
         else:
             return 0.0
 
-    def __compute_sqrt_theta(
-        self, altitude  # type: float
-    ):  # type: (...) -> float
+    def __compute_sqrt_theta(self, altitude: float) -> float:
         """Compute the square root of the air temperature.
 
         Args:
@@ -253,11 +246,11 @@ class SobieskiMission(SobieskiDiscipline):
 
     def execute(
         self,
-        x_shared,  # type: ndarray
-        y_14,  # type: ndarray
-        y_24,  # type: ndarray
-        y_34,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_shared: ndarray,
+        y_14: ndarray,
+        y_24: ndarray,
+        y_34: ndarray,
+    ) -> ndarray:
         """Compute the range.
 
         Args:
@@ -275,13 +268,13 @@ class SobieskiMission(SobieskiDiscipline):
 
     def _execute(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        w_t,  # type: float
-        w_f,  # type: float
-        cl_cd,  # type: float
-        sfc,  # type: float
-    ):  # type: (...) -> ndarray
+        altitude: float,
+        mach: float,
+        w_t: float,
+        w_f: float,
+        cl_cd: float,
+        sfc: float,
+    ) -> ndarray:
         """Compute the range.
 
         Args:
@@ -300,7 +293,7 @@ class SobieskiMission(SobieskiDiscipline):
             dtype=self.dtype,
         )
 
-    def __initialize_jacobian(self):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+    def __initialize_jacobian(self) -> dict[str, dict[str, ndarray]]:
         """Initialize the Jacobian.
 
         Returns:
@@ -315,11 +308,11 @@ class SobieskiMission(SobieskiDiscipline):
 
     def linearize(
         self,
-        x_shared,  # type: ndarray
-        y_14,  # type: ndarray
-        y_24,  # type: ndarray
-        y_34,  # type: ndarray
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        x_shared: ndarray,
+        y_14: ndarray,
+        y_24: ndarray,
+        y_34: ndarray,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the discipline with respect to its inputs.
 
         Args:
@@ -337,13 +330,13 @@ class SobieskiMission(SobieskiDiscipline):
 
     def _linearize(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        w_t,  # type: float
-        w_f,  # type: float
-        cl_cd,  # type: float
-        sfc,  # type: float
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        altitude: float,
+        mach: float,
+        w_t: float,
+        w_f: float,
+        cl_cd: float,
+        sfc: float,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the discipline with respect to its inputs.
 
         Args:

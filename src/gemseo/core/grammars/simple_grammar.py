@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,23 +13,21 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Most basic grammar implementation."""
+from __future__ import annotations
+
 import logging
+from collections import abc
 from collections import defaultdict
+from pathlib import Path
 from typing import Any
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import ndarray
-from six import text_type
 
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.utils.py23_compat import abc
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -42,11 +39,11 @@ class SimpleGrammar(AbstractGrammar):
 
     def __init__(
         self,
-        name,  # type: str
-        names_to_types=None,  # type: Optional[Mapping[str,type]]
-        required_names=None,  # type: Optional[Mapping[str,bool]]
-        **kwargs,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        name: str,
+        names_to_types: Mapping[str, type] | None = None,
+        required_names: Mapping[str, bool] | None = None,
+        **kwargs: str | Path,
+    ) -> None:
         """
         Args:
             name: The grammar name.
@@ -57,7 +54,7 @@ class SimpleGrammar(AbstractGrammar):
                 bound to whether the data name is required. If None,
                 all data names are required.
         """
-        super(SimpleGrammar, self).__init__(name)
+        super().__init__(name)
         if names_to_types is None:
             self._names_to_types = {}
         else:
@@ -74,49 +71,41 @@ class SimpleGrammar(AbstractGrammar):
             self._required_names.update(required_names)
 
     @property
-    def data_names_keyset(self):  # type: (...) -> Iterable[str]
+    def data_names_keyset(self) -> Iterable[str]:
         """The data names of the grammar as dict_keys."""
         return self._names_to_types.keys()
 
-    def is_required(
-        self, element_name  # type: str
-    ):  # type: (...) -> bool
+    def is_required(self, element_name: str) -> bool:
 
         self._required_names.default_factory = None
 
         try:
             return self._required_names[element_name]
         except KeyError:
-            raise ValueError("Element {} is not in the grammar.".format(element_name))
+            raise ValueError(f"Element {element_name} is not in the grammar.")
         finally:
             self._required_names.default_factory = self._default_callable
 
-    def update_required_elements(
-        self, **elements  # type: Mapping[str, bool]
-    ):  # type: (...) -> None
+    def update_required_elements(self, **elements: Mapping[str, bool]) -> None:
 
         for element_name, element_value in elements.items():
             if element_name not in self._names_to_types:
-                raise KeyError(
-                    "Data named {} is not in the grammar.".format(element_name)
-                )
+                raise KeyError(f"Data named {element_name} is not in the grammar.")
             if not isinstance(element_value, bool):
-                raise TypeError(
-                    "Boolean is required for element {}.".format(element_name)
-                )
+                raise TypeError(f"Boolean is required for element {element_name}.")
         self._required_names.update(elements)
 
     @property
-    def data_names(self):  # type: (...) -> List[str]
+    def data_names(self) -> list[str]:
         """The names of the elements."""
         return list(self._names_to_types.keys())
 
     @property
-    def data_types(self):  # type: (...) -> List[type]
+    def data_types(self) -> list[type]:
         """The types of the elements."""
         return list(self._names_to_types.values())
 
-    def _check_types(self):  # type: (...) -> None
+    def _check_types(self) -> None:
         """Check that the elements names to types mapping contains only acceptable type
         specifications, ie, are a type or None.
 
@@ -132,20 +121,18 @@ class SimpleGrammar(AbstractGrammar):
                     ).format(obj, obj_name, self.name)
                 )
 
-    def get_type_from_python_type(
-        self, python_type  # type: type
-    ):  # type: (...) -> type
+    def get_type_from_python_type(self, python_type: type) -> type:
 
         if python_type == str:
-            return text_type
+            return str
         else:
             return python_type
 
     def update_elements(
         self,
-        python_typing=False,  # type: bool
-        **elements,  # type: Mapping[str,type]
-    ):  # type: (...) -> None
+        python_typing: bool = False,
+        **elements: Mapping[str, type],
+    ) -> None:
 
         if python_typing:
             for element_name, element_value in elements.items():
@@ -161,17 +148,17 @@ class SimpleGrammar(AbstractGrammar):
 
     def load_data(
         self,
-        data,  # type: Mapping[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> Mapping[str,Any]
+        data: Mapping[str, Any],
+        raise_exception: bool = True,
+    ) -> Mapping[str, Any]:
         self.check(data, raise_exception)
         return data
 
     def check(
         self,
-        data,  # type: Mapping[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None
+        data: Mapping[str, Any],
+        raise_exception: bool = True,
+    ) -> None:
         """Check the consistency (name and type) of elements with the grammar.
 
         Args:
@@ -192,7 +179,7 @@ class SimpleGrammar(AbstractGrammar):
             failed = True
             LOGGER.error("Grammar data is not a mapping, in %s.", self.name)
             if raise_exception:
-                raise InvalidDataException("Invalid data in: {}.".format(self.name))
+                raise InvalidDataException(f"Invalid data in: {self.name}.")
 
         error_message = MultiLineString()
         error_message.add("Invalid data in {}", self.name)
@@ -224,19 +211,19 @@ class SimpleGrammar(AbstractGrammar):
 
     def initialize_from_base_dict(
         self,
-        typical_data_dict,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        typical_data_dict: Mapping[str, Any],
+    ) -> None:
         self.update_elements(
             **{name: type(value) for name, value in typical_data_dict.items()}
         )
 
-    def get_data_names(self):  # type: (...) -> List[str]
+    def get_data_names(self) -> list[str]:
         return self.data_names
 
     def is_all_data_names_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         get = self._names_to_types.get
         for name in data_names:
             if get(name) is None:
@@ -245,8 +232,8 @@ class SimpleGrammar(AbstractGrammar):
 
     def _update_field(
         self,
-        data_name,  # type: str
-        data_type,  # type: type
+        data_name: str,
+        data_type: type,
     ):
         """Update the grammar elements from an element name and an element type.
 
@@ -264,8 +251,8 @@ class SimpleGrammar(AbstractGrammar):
 
     def get_type_of_data_named(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> str
+        data_name: str,
+    ) -> str:
         """Return the element type associated to an element name.
 
         Args:
@@ -278,33 +265,31 @@ class SimpleGrammar(AbstractGrammar):
             ValueError: If the name does not correspond to an element name.
         """
         if data_name not in self._names_to_types:
-            raise ValueError("Unknown data named: {}.".format(data_name))
+            raise ValueError(f"Unknown data named: {data_name}.")
         return self._names_to_types[data_name]
 
-    def is_type_array(
-        self, data_name  # type: str
-    ):  # type: (...) -> bool
+    def is_type_array(self, data_name: str) -> bool:
         element_type = self.get_type_of_data_named(data_name)
         return issubclass(element_type, ndarray)
 
     def restrict_to(
         self,
-        data_names,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        data_names: Sequence[str],
+    ) -> None:
         for element_name in self.data_names:
             if element_name not in data_names:
                 del self._names_to_types[element_name]
 
     def remove_item(
         self,
-        item_name,  # type: str
-    ):  # type: (...) -> None
+        item_name: str,
+    ) -> None:
         del self._names_to_types[item_name]
 
     def update_from(
         self,
-        input_grammar,  # type: AbstractGrammar
-    ):  # type: (...) -> None
+        input_grammar: AbstractGrammar,
+    ) -> None:
         """
         Raises:
             TypeError: If the passed grammar is not an :class:`.AbstractGrammar`.
@@ -318,9 +303,9 @@ class SimpleGrammar(AbstractGrammar):
 
     def update_from_if_not_in(
         self,
-        input_grammar,  # type: AbstractGrammar
-        exclude_grammar,  # type: AbstractGrammar
-    ):  # type: (...) -> None
+        input_grammar: AbstractGrammar,
+        exclude_grammar: AbstractGrammar,
+    ) -> None:
         """
         Raises:
             TypeError: If a passed grammar is not an :class:`.AbstractGrammar`.
@@ -351,12 +336,12 @@ class SimpleGrammar(AbstractGrammar):
 
     def is_data_name_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         return data_name in self._names_to_types
 
-    def clear(self):  # type: (...) -> None
+    def clear(self) -> None:
         self._names_to_types = {}
 
-    def to_simple_grammar(self):  # type: (...) -> SimpleGrammar
+    def to_simple_grammar(self) -> SimpleGrammar:
         return self

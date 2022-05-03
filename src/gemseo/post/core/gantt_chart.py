@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,10 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a gantt chart with processes execution time data."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
-from typing import Optional
+from pathlib import Path
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 
 import matplotlib.pyplot as plt
 
@@ -32,20 +29,19 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
 
 DEFAULT_NAME = "gantt_chart"
 
 
 def create_gantt_chart(
-    file_path=DEFAULT_NAME,  # type: Union[str, Path]
-    save=True,  # type: bool
-    show=False,  # type: bool
-    file_extension=None,  # type: Optional[str]
-    figure_size=(15, 10),  # type: Tuple[int,int]
-    font_size=12,  # type: int
-    disc_names=None,  # type: Optional[Sequence[str]]
-):  # type: (...) -> plt.Figure
+    file_path: str | Path = DEFAULT_NAME,
+    save: bool = True,
+    show: bool = False,
+    file_extension: str | None = None,
+    figure_size: tuple[int, int] = (15, 10),
+    font_size: int = 12,
+    disc_names: Sequence[str] | None = None,
+) -> plt.Figure:
     """Generate a gantt chart with processes execution time data.
 
     The disciplines names are used as labels and plotted on rows.
@@ -85,9 +81,7 @@ def create_gantt_chart(
     else:
         missing = list(set(disc_names) - set(time_stamps.keys()))
         if missing:
-            raise ValueError(
-                "The disciplines: {}, have no time stamps!".format(missing)
-            )
+            raise ValueError(f"The disciplines: {missing}, have no time stamps.")
 
     ax.set_ylim(5, 10 * len(disc_names) + 15)
     ax.set_yticklabels(disc_names)
@@ -97,7 +91,7 @@ def create_gantt_chart(
     ax.grid(True)
 
     # Minimum time as a reference
-    min_t = min((stamps[0][0] for stamps in time_stamps.values()))
+    min_t = min(stamps[0][0] for stamps in time_stamps.values())
 
     # Blue for execution, red for linearization
     colors = {False: "tab:blue", True: "tab:red"}

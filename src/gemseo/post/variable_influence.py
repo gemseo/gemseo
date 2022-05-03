@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,10 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the partial sensitivity of the functions."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Mapping
-from typing import Tuple
 
 from matplotlib import pyplot
 from matplotlib.figure import Figure
@@ -37,7 +34,6 @@ from numpy import savetxt
 from numpy import stack
 
 from gemseo.post.opt_post_processor import OptPostProcessor
-from gemseo.utils.py23_compat import PY2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,11 +54,11 @@ class VariableInfluence(OptPostProcessor):
 
     def _plot(
         self,
-        quantile=0.99,  # type: float
-        absolute_value=False,  # type: bool
-        log_scale=False,  # type: bool
-        save_var_files=False,  # type: bool
-    ):  # type: (...) -> None
+        quantile: float = 0.99,
+        absolute_value: bool = False,
+        log_scale: bool = False,
+        save_var_files: bool = False,
+    ) -> None:
         """
         Args:
             quantile: Between 0 and  1, the proportion of the total
@@ -98,7 +94,7 @@ class VariableInfluence(OptPostProcessor):
                         sens *= delta_corr
                         if absolute_value:
                             sens = absolute(sens)
-                        sens_dict["{}_{}".format(func, i)] = sens
+                        sens_dict[f"{func}_{i}"] = sens
 
         fig = self.__generate_subplots(sens_dict, quantile, log_scale, save_var_files)
 
@@ -106,11 +102,11 @@ class VariableInfluence(OptPostProcessor):
 
     def __get_quantile(
         self,
-        sensor,  # type: ndarray
-        func,  # type: str
-        quant=0.99,  # type: float
-        save_var_files=False,  # type: bool
-    ):  # type: (...)-> Tuple[int, float]
+        sensor: ndarray,
+        func: str,
+        quant: float = 0.99,
+        save_var_files: bool = False,
+    ) -> tuple[int, float]:
         """Get the number of variables that explain a quantile fraction of the
         variation.
 
@@ -145,32 +141,25 @@ class VariableInfluence(OptPostProcessor):
             names = self.opt_problem.design_space.variables_names
             sizes = self.opt_problem.design_space.variables_sizes
             ll_of_names = array(
-                [
-                    ["{}${}".format(name, i) for i in range(sizes[name])]
-                    for name in names
-                ]
+                [[f"{name}${i}" for i in range(sizes[name])] for name in names]
             )
             flaten_names = array([name for sublist in ll_of_names for name in sublist])
             kept_names = flaten_names[kept_vars]
-            var_names_file = "{}_influ_vars.csv".format(func)
+            var_names_file = f"{func}_influ_vars.csv"
             data = stack((kept_names, kept_vars)).T
-            if PY2:
-                fmt = "%s".encode("ascii")
-            else:
-                fmt = "%s"
             savetxt(
-                var_names_file, data, fmt=fmt, delimiter=" ; ", header="name ; index"
+                var_names_file, data, fmt="%s", delimiter=" ; ", header="name ; index"
             )
             self.output_files.append(var_names_file)
         return tresh_ind, abs_sens[tresh_ind - 1]
 
     def __generate_subplots(
         self,
-        sens_dict,  # type: Mapping[str, ndarray]
-        quantile=0.99,  # type: float
-        log_scale=False,  # type: bool
-        save_var_files=False,  # type: bool
-    ):  # type: (...)-> Figure
+        sens_dict: Mapping[str, ndarray],
+        quantile: float = 0.99,
+        log_scale: bool = False,
+        save_var_files: bool = False,
+    ) -> Figure:
         """Generate the gradients subplots from the data.
 
         Args:

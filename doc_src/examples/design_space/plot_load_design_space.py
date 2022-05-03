@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,9 +25,6 @@ DesignSpace import and export from disk
 In this example, we will see how to read, filter, and export a design space
 from the disk.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import export_design_space
 from gemseo.api import read_design_space

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -25,9 +24,6 @@ MDAChain
 A smart MDA that solves only strongly coupled disciplines
 and then executes the weakly coupled ones
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_mda
@@ -65,9 +61,9 @@ def display_result(res, mda_name):
 
     # names of the output variables
     output_names = ["y_1", "y_2", "y_3", "y_4", "g_1", "g_2", "g_3"]
-    for output_var in output_names:
+    for output_name in output_names:
         print(
-            "{}, output variable {}: {}".format(mda_name, output_var, res[output_var]),
+            f"{mda_name}, output variable {output_name}: {res[output_name]}",
         )
 
 

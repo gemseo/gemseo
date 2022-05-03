@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,6 +17,8 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """Build matrices from linear constraints for solvers."""
+from __future__ import annotations
+
 from numpy import hstack
 from numpy import isfinite
 from numpy import vstack
@@ -54,7 +55,7 @@ def build_constraints_matrices(constraints, constraint_type):
     for cstr in cstr_list:
         if not isinstance(cstr, MDOLinearFunction):
             raise TypeError(
-                'Constraint "{}" is not an MDOLinearFunction'.format(cstr.name)
+                f'The constraint "{cstr.name}" is not an MDOLinearFunction.'
             )
 
     # Build the constraints matrices

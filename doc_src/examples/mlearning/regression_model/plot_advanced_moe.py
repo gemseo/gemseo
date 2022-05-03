@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -23,11 +22,6 @@
 Advanced mixture of experts
 ===========================
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
 from gemseo.mlearning.qual_measure.f1_measure import F1Measure

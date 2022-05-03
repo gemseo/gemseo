@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,20 +17,15 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for all Multi-disciplinary Design Analyses (MDA).."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from multiprocessing import cpu_count
+from pathlib import Path
 from typing import Any
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Set
-from typing import Tuple
-from typing import Union
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -46,7 +40,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,19 +75,19 @@ class MDA(MDODiscipline):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        max_mda_iter=10,  # type: int
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        max_mda_iter: int = 10,
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         """
         Args:
             disciplines: The disciplines from which to compute the MDA.
@@ -121,7 +114,7 @@ class MDA(MDODiscipline):
             linear_solver: The name of the linear solver.
             linear_solver_options: The options passed to the linear solver factory.
         """
-        super(MDA, self).__init__(name, grammar_type=grammar_type)
+        super().__init__(name, grammar_type=grammar_type)
         self.tolerance = tolerance
         self.linear_solver = linear_solver
         self.linear_solver_tolerance = linear_solver_tolerance
@@ -156,7 +149,7 @@ class MDA(MDODiscipline):
         self._check_couplings_types()
         self._log_convergence = log_convergence
 
-    def _initialize_grammars(self):  # type: (...) -> None
+    def _initialize_grammars(self) -> None:
         """Define all the inputs and outputs of the MDA.
 
         Add all the outputs of all the disciplines to the outputs.
@@ -166,18 +159,18 @@ class MDA(MDODiscipline):
             self.output_grammar.update_from(discipline.output_grammar)
 
     @property
-    def log_convergence(self):  # type: (...) -> bool
+    def log_convergence(self) -> bool:
         """Whether to log the MDA convergence."""
         return self._log_convergence
 
     @log_convergence.setter
     def log_convergence(
         self,
-        value,  # type: bool
-    ):  # type: (...) -> None
+        value: bool,
+    ) -> None:
         self._log_convergence = value
 
-    def __check_linear_solver_options(self):  # type: (...) -> None
+    def __check_linear_solver_options(self) -> None:
         """Check the linear solver options.
 
         The linear solver tolerance cannot be set
@@ -194,7 +187,7 @@ class MDA(MDODiscipline):
             )
             raise ValueError(msg)
 
-    def _check_consistency(self):  # type: (...) -> None
+    def _check_consistency(self) -> None:
         """Check if there are not more than one equation per variable.
 
         For instance if a strong coupling is not also a self coupling.
@@ -241,23 +234,21 @@ class MDA(MDODiscipline):
                 all_outs[out] = disc
 
         if multiple_outs:
-            raise ValueError(
-                "Outputs are defined multiple times: {}.".format(multiple_outs)
-            )
+            raise ValueError(f"Outputs are defined multiple times: {multiple_outs}.")
 
-    def _compute_input_couplings(self):  # type: (...) -> None
+    def _compute_input_couplings(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
         input_couplings = set(self.strong_couplings) & set(self.get_input_data_names())
         self._input_couplings = list(input_couplings)
 
-    def _current_input_couplings(self):  # type: (...) -> ndarray
+    def _current_input_couplings(self) -> ndarray:
         """Return the current values of the input coupling variables."""
         input_couplings = list(iter(self.get_outputs_by_name(self._input_couplings)))
         if not input_couplings:
             return array([])
         return concatenate(input_couplings)
 
-    def _current_strong_couplings(self):  # type: (...) -> ndarray
+    def _current_strong_couplings(self) -> ndarray:
         """Return the current values of the strong coupling variables."""
         couplings = list(iter(self.get_outputs_by_name(self.strong_couplings)))
         if not couplings:
@@ -266,8 +257,8 @@ class MDA(MDODiscipline):
 
     def _retrieve_diff_inouts(
         self,
-        force_all=False,  # type: bool
-    ):  # type: (...) -> Tuple[Union[Set[str],List[str]],Union[Set[str],List[str]]]
+        force_all: bool = False,
+    ) -> tuple[set[str] | list[str], set[str] | list[str]]:
         """Return the names of the inputs and outputs involved in the differentiation.
 
         Args:
@@ -294,7 +285,7 @@ class MDA(MDODiscipline):
 
         return MDODiscipline._retrieve_diff_inouts(self, False)
 
-    def _couplings_warm_start(self):  # type: (...) -> None
+    def _couplings_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
         cached_outputs = self.cache.last_entry.outputs
         if not cached_outputs:
@@ -304,7 +295,7 @@ class MDA(MDODiscipline):
             if input_value is not None:
                 self.local_data[input_name] = input_value
 
-    def _set_default_inputs(self):  # type: (...) -> None
+    def _set_default_inputs(self) -> None:
         """Set the default input values of the MDA from the disciplines ones."""
         self.default_inputs = {}
         mda_input_names = self.get_input_data_names()
@@ -315,7 +306,7 @@ class MDA(MDODiscipline):
                         input_name
                     ]
 
-    def _check_couplings_types(self):  # type: (...) -> None
+    def _check_couplings_types(self) -> None:
         """Check that the coupling variables are of type array in the grammars.
 
         Raises:
@@ -332,25 +323,25 @@ class MDA(MDODiscipline):
         not_arrays = sorted(set(not_arrays))
         if not_arrays:
             raise ValueError(
-                "The coupling variables {} must be of type array.".format(not_arrays)
+                f"The coupling variables {not_arrays} must be of type array."
             )
 
-    def reset_disciplines_statuses(self):  # type: (...) -> None
+    def reset_disciplines_statuses(self) -> None:
         """Reset all the statuses of the disciplines."""
         for discipline in self.disciplines:
             discipline.reset_statuses_for_run()
 
-    def reset_statuses_for_run(self):  # type: (...) -> None
+    def reset_statuses_for_run(self) -> None:
         MDODiscipline.reset_statuses_for_run(self)
         self.reset_disciplines_statuses()
 
-    def get_expected_workflow(self):  # type: (...) ->LoopExecSequence
+    def get_expected_workflow(self) -> LoopExecSequence:
         disc_exec_seq = ExecutionSequenceFactory.serial(self.disciplines)
         return ExecutionSequenceFactory.loop(self, disc_exec_seq)
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         all_disc = [self]
         all_disc.extend(self.disciplines)
         graph = DependencyGraph(all_disc)
@@ -359,9 +350,9 @@ class MDA(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         # Do not re execute disciplines if inputs error is beyond self tol
         # Apply a safety factor on this (mda is a loop, inputs
         # of first discipline
@@ -388,13 +379,13 @@ class MDA(MDODiscipline):
     # fixed point methods
     def _compute_residual(
         self,
-        current_couplings,  # type: ndarray
-        new_couplings,  # type: ndarray
-        current_iter,  # type: int
-        first=False,  # type: bool
-        store_it=True,  # type: bool
-        log_normed_residual=False,  # type: bool
-    ):  # type: (...) -> ndarray
+        current_couplings: ndarray,
+        new_couplings: ndarray,
+        current_iter: int,
+        first: bool = False,
+        store_it: bool = True,
+        log_normed_residual: bool = False,
+    ) -> ndarray:
         """Compute the residual on the inputs of the MDA.
 
         Args:
@@ -421,7 +412,7 @@ class MDA(MDODiscipline):
             LOGGER.info(
                 "%s running... Normed residual = %s (iter. %s)",
                 self.name,
-                "{:.2e}".format(self.normed_residual),
+                f"{self.normed_residual:.2e}",
                 current_iter,
             )
 
@@ -431,27 +422,27 @@ class MDA(MDODiscipline):
 
     def check_jacobian(
         self,
-        input_data=None,  # type: Optional[Mapping[str,ndarray]]
-        derr_approx=FINITE_DIFFERENCES,  # type: str
-        step=1e-7,  # type: float
-        threshold=1e-8,  # type: float
-        linearization_mode="auto",  # type: str
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-        parallel=False,  # type: bool
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0,  # type: int
-        auto_set_step=False,  # type: bool
-        plot_result=False,  # type: bool
-        file_path="jacobian_errors.pdf",  # type: Union[str,Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: float
-        figsize_y=10,  # type: float
+        input_data: Mapping[str, ndarray] | None = None,
+        derr_approx: str = FINITE_DIFFERENCES,
+        step: float = 1e-7,
+        threshold: float = 1e-8,
+        linearization_mode: str = "auto",
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+        parallel: bool = False,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: int = 0,
+        auto_set_step: bool = False,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        figsize_x: float = 10,
+        figsize_y: float = 10,
         reference_jacobian_path=None,
         save_reference_jacobian=False,
         indices=None,
-    ):  # type: (...) -> bool
+    ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
         If `reference_jacobian_path` is not `None`
@@ -534,7 +525,7 @@ class MDA(MDODiscipline):
             if str_cpl in outputs:
                 outputs.remove(str_cpl)
 
-        return super(MDA, self).check_jacobian(
+        return super().check_jacobian(
             input_data=input_data,
             derr_approx=derr_approx,
             step=step,
@@ -559,8 +550,8 @@ class MDA(MDODiscipline):
 
     def _warn_convergence_criteria(
         self,
-        current_iter,  # type: int
-    ):  # type: (...) -> Tuple[bool,bool]
+        current_iter: int,
+    ) -> tuple[bool, bool]:
         """Log a warning if max_iter is reached and if max residuals is above tolerance.
 
         Args:
@@ -583,8 +574,8 @@ class MDA(MDODiscipline):
 
     def _termination(
         self,
-        current_iter,  # type: int
-    ):  # type: (...) -> bool
+        current_iter: int,
+    ) -> bool:
         """Termination criterion.
 
         Args:
@@ -600,8 +591,8 @@ class MDA(MDODiscipline):
 
     def _set_cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
+        cache_tol: float,
+    ) -> None:
         """Set to the cache input tolerance.
 
         To be overloaded by subclasses.
@@ -609,19 +600,19 @@ class MDA(MDODiscipline):
         Args:
             cache_tol: The cache tolerance.
         """
-        super(MDA, self)._set_cache_tol(cache_tol)
+        super()._set_cache_tol(cache_tol)
         for disc in self.disciplines:
             disc.cache_tol = cache_tol or 0.0
 
     def plot_residual_history(
         self,
-        show=False,  # type: bool
-        save=True,  # type: bool
-        n_iterations=None,  # type: Optional[int]
-        logscale=None,  # type: Optional[Tuple[int,int]]
-        filename=None,  # type: Optional[str]
-        figsize=(50.0, 10.0),  # type: Tuple[float,float]
-    ):  # type: (...) -> None
+        show: bool = False,
+        save: bool = True,
+        n_iterations: int | None = None,
+        logscale: tuple[int, int] | None = None,
+        filename: str | None = None,
+        figsize: tuple[float, float] = (50.0, 10.0),
+    ) -> None:
         """Generate a plot of the residual history.
 
         All residuals are stored in the history;
@@ -655,7 +646,7 @@ class MDA(MDODiscipline):
         )
         fig_ax.plot(residual, linestyle="-", c="k", zorder=1)
         fig_ax.axhline(y=self.tolerance, c="blue", linewidth=0.5, zorder=0)
-        fig_ax.set_title("{}: residual plot".format(self.name))
+        fig_ax.set_title(f"{self.name}: residual plot")
 
         if n_iterations is None:
             n_iterations = len(self.residual_history)
@@ -670,7 +661,7 @@ class MDA(MDODiscipline):
 
         if save:
             if filename is None:
-                filename = "{}_residual_history.pdf".format(self.name)
+                filename = f"{self.name}_residual_history.pdf"
             plt.savefig(filename, bbox_inches="tight")
 
         if show:

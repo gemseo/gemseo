@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -25,9 +24,6 @@ thus converted to surrogate disciplines. The Jacobians are checked over differen
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
@@ -131,7 +127,7 @@ def _get_dataset_name(dataset_description):
     params=DATASETS_DESCRIPTIONS,
     ids=map(_get_dataset_name, DATASETS_DESCRIPTIONS),
 )
-def dataset(request):  # type: (...) -> Dataset
+def dataset(request) -> Dataset:
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
     return dataset_factory(*request.param)
 

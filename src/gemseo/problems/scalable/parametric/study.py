@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable study
 ==============
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import os
@@ -76,7 +74,7 @@ COEFF_DIR = "coefficients"
 OPTIM_DIR = "opthistoryview"
 
 
-class TMParamSS(object):
+class TMParamSS:
 
     """This scalable parametric study realizes scalable studies with different scaling
     strategies.
@@ -139,10 +137,7 @@ class TMParamSS(object):
         assert isinstance(n_coupling, (int, list))
 
         n_lists = sum(
-            [
-                1 if isinstance(val, list) else 0
-                for val in (n_shared, n_local, n_coupling)
-            ]
+            1 if isinstance(val, list) else 0 for val in (n_shared, n_local, n_coupling)
         )
         if n_lists > 1:
             msg = "At most 1 value among (n_shared,n_local,n_coupling) can be a list !"
@@ -310,7 +305,7 @@ class TMParamSS(object):
             )
 
 
-class TMParamSSPost(object):
+class TMParamSSPost:
 
     """This class is dedicated to the post-treatment of TMParamSS results."""
 
@@ -371,7 +366,7 @@ class TMParamSSPost(object):
             plt.show()
 
 
-class TMScalableStudy(object):
+class TMScalableStudy:
 
     """This scalable study creates a scalable MDO problem from Tedford and Martins, 2010
     and compares its resolution according to different MDO formulations."""
@@ -428,7 +423,7 @@ class TMScalableStudy(object):
         self.formulation_options = {"MDF": {"sub_mda_class": "MDAGaussSeidel"}}
         self.formulation_options["MDF"].update(MDA_TOLERANCE)
         self.disc_names = ["scenario", "mda", "mdo_chain", "sub_mda"]
-        tmp = sorted([disc.name for disc in self.problem.disciplines])
+        tmp = sorted(disc.name for disc in self.problem.disciplines)
         self.disc_names += tmp
         self.active_probability = active_probability
         self.feasibility_level = feasibility_level
@@ -587,15 +582,15 @@ class TMScalableStudy(object):
         """
         msg = [
             "Scalable study",
-            ".... {} disciplines".format(self.n_disciplines),
-            ".... {} shared design parameters".format(self.n_shared),
-            ".... {} local design parameters per discipline".format(self.n_local),
-            ".... {} coupling variables per discipline".format(self.n_coupling),
+            f".... {self.n_disciplines} disciplines",
+            f".... {self.n_shared} shared design parameters",
+            f".... {self.n_local} local design parameters per discipline",
+            f".... {self.n_coupling} coupling variables per discipline",
         ]
         if self.formulations:
             msg.append("MDO formulations")
         for formulation in self.formulations:
-            msg.append(".... {}".format(formulation))
+            msg.append(f".... {formulation}")
             for discipline in self.problem.disciplines:
                 msg.append(self.__elementary_str(formulation, discipline.name))
             if "mda" in self.exec_time[formulation]:

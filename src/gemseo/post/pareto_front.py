@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,14 +18,10 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A Pareto Front."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 
 from numpy import full
 from numpy import ndarray
@@ -56,10 +51,10 @@ class ParetoFront(OptPostProcessor):
 
     def _plot(
         self,
-        objectives=None,  # type: Optional[Sequence[str]]
-        objectives_labels=None,  # type: Optional[Sequence[str]]
-        show_non_feasible=True,  # type: bool
-    ):  # type: (...) -> None
+        objectives: Sequence[str] | None = None,
+        objectives_labels: Sequence[str] | None = None,
+        show_non_feasible: bool = True,
+    ) -> None:
         """
         Args:
             objectives: The functions names or design variables to plot.
@@ -104,10 +99,10 @@ class ParetoFront(OptPostProcessor):
 
     def __compute_names_and_values(
         self,
-        all_dv_names,  # type: Sequence[str]
-        all_funcs,  # type: Sequence[str]
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[ndarray,List[str]]
+        all_dv_names: Sequence[str],
+        all_funcs: Sequence[str],
+        objectives: Sequence[str],
+    ) -> tuple[ndarray, list[str]]:
         """Compute the names and values of the objective and design variables.
 
         Args:
@@ -155,11 +150,11 @@ class ParetoFront(OptPostProcessor):
 
     def __check_objective_name(
         self,
-        all_dv_names,  # type: Sequence[str]
-        all_funcs,  # type: Sequence[str]
-        func,  # type: str
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        all_dv_names: Sequence[str],
+        all_funcs: Sequence[str],
+        func: str,
+        objectives: Sequence[str],
+    ) -> None:
         """Check that the objective name is valid.
 
         Args:
@@ -187,10 +182,10 @@ class ParetoFront(OptPostProcessor):
 
     def __move_objective_to_design_variable(
         self,
-        design_variables,  # type: Sequence[str]
-        func,  # type: str
-        objectives,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        design_variables: Sequence[str],
+        func: str,
+        objectives: Sequence[str],
+    ) -> None:
         """Move an objective to a design variable.
 
         If the given function is a design variable,
@@ -205,9 +200,7 @@ class ParetoFront(OptPostProcessor):
             objectives.remove(func)
             design_variables.append(func)
 
-    def __compute_non_feasible_samples(
-        self, sample_values  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __compute_non_feasible_samples(self, sample_values: ndarray) -> ndarray:
         """Compute the non-feasible indexes.
 
         Args:

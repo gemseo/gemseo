@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,15 +21,14 @@ from typing import Mapping
 import pandas as pd
 import pytest
 from gemseo.core.discipline_data import DisciplineData
-from gemseo.utils.py23_compat import PY2
 from numpy.testing import assert_array_equal
 
 
 def to_df_key(
-    key1,  # type: str
-    key2,  # type: str
-):  # type (...) -> str
-    return "{}{}{}".format(key1, DisciplineData.SEPARATOR, key2)
+    key1: str,
+    key2: str,
+) -> str:
+    return f"{key1}{DisciplineData.SEPARATOR}{key2}"
 
 
 def test_copy():
@@ -54,9 +52,9 @@ def test_copy():
 
 
 def assert_getitem(
-    d,  # type: Mapping[str, Any]
-    df,  # type: pd.DataFrame
-):  # type (...) -> None
+    d: Mapping[str, Any],
+    df: pd.DataFrame,
+) -> None:
     assert d["x"].equals(df)
     assert_array_equal(d[to_df_key("x", "a")], df["a"])
     assert d["y"] == 0
@@ -99,10 +97,7 @@ def test_iter():
 
     ref_keys = (to_df_key("x", "0"), to_df_key("x", "1"), "y")
 
-    if PY2:
-        assert set(d) == set(ref_keys)
-    else:
-        assert tuple(d) == ref_keys
+    assert tuple(d) == ref_keys
 
 
 def test_delitem():

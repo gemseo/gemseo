@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,11 +17,9 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import json
 import re
+from pathlib import Path
 
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -82,17 +79,15 @@ from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 from numpy import array
 from numpy import cos
 from numpy import linspace
 from numpy import pi as np_pi
 from numpy import sin
-from six import string_types
 
 
-class Observer(object):
+class Observer:
     def __init__(self):
         self.status_changes = 0
 
@@ -235,9 +230,7 @@ def test_execute_post(tmp_wd):
     scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
     execute_post(scenario, "OptHistoryView", save=True, show=False)
-    with pytest.raises(
-        TypeError, match="Cannot post process type: {}".format(type(1234))
-    ):
+    with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
         execute_post(1234, "OptHistoryView")
 
 
@@ -528,7 +521,7 @@ def test_get_discipline_inputs_schema(tmp_wd):
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
-    assert isinstance(schema_str, string_types)
+    assert isinstance(schema_str, str)
     get_discipline_inputs_schema(mission, False, pretty_print=True)
 
 
@@ -544,7 +537,7 @@ def test_get_discipline_outputs_schema(tmp_wd):
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)
-    assert isinstance(schema_str, string_types)
+    assert isinstance(schema_str, str)
     get_discipline_outputs_schema(mission, False, pretty_print=True)
 
 
@@ -556,7 +549,7 @@ def test_get_scenario_differenciation_modes(tmp_wd):
     """
     modes = get_scenario_differentiation_modes()
     for mode in modes:
-        assert isinstance(mode, string_types)
+        assert isinstance(mode, str)
 
 
 def test_get_post_processing_options_schema(tmp_wd):
@@ -710,7 +703,7 @@ def test_get_available_caches(tmp_wd):
     """
     caches = get_available_caches()
     # plugins may add classes
-    assert set(caches) <= set(["HDF5Cache", "MemoryFullCache", "SimpleCache"])
+    assert set(caches) <= {"HDF5Cache", "MemoryFullCache", "SimpleCache"}
 
 
 def test_load_dataset(tmp_wd):

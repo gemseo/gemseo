@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,14 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """SNOPT optimization library wrapper."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -131,7 +128,7 @@ class SnOpt(OptimizationLibrary):
             * does it handle equality constraints,
             * does it handle inequality constraints.
         """
-        super(SnOpt, self).__init__()
+        super().__init__()
         self.__n_ineq_constraints = 0
         self.__n_eq_constraints = 0
         self.lib_dict = {
@@ -148,15 +145,15 @@ class SnOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_rel=1e-9,  # type: float
-        ftol_abs=1e-9,  # type: float
-        xtol_rel=1e-9,  # type: float
-        xtol_abs=1e-9,  # type: float
-        max_time=0,  # type: float
-        max_iter=999,  # type: int # pylint: disable=W0221
-        normalize_design_space=True,  # type: bool
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str, Any]
+        ftol_rel: float = 1e-9,
+        ftol_abs: float = 1e-9,
+        xtol_rel: float = 1e-9,
+        xtol_abs: float = 1e-9,
+        max_time: float = 0,
+        max_iter: int = 999,  # pylint: disable=W0221
+        normalize_design_space: bool = True,
+        **kwargs: OptionType,
+    ) -> dict[str, Any]:
         """Set the options.
 
         Args:
@@ -190,9 +187,9 @@ class SnOpt(OptimizationLibrary):
 
     @staticmethod
     def __eval_func(
-        func,  # type: Callable[[ndarray], ndarray]
-        xn_vect,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+        func: Callable[[ndarray], ndarray],
+        xn_vect: ndarray,
+    ) -> tuple[ndarray, int]:
         """Evaluate a function at the given points.
 
         Try to call it, if it fails, return a -1 status.
@@ -217,11 +214,11 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     def cb_opt_objective_snoptb(
         self,
-        mode,  # type: int
-        nn_obj,  # type: int
-        xn_vect,  # type: ndarray
-        n_state=0,  # type: int
-    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        mode: int,
+        nn_obj: int,
+        xn_vect: ndarray,
+        n_state: int = 0,
+    ) -> tuple[int, ndarray, ndarray]:
         r"""Evaluate the objective function and gradient.
 
         Use the snOpt conventions for mode and status
@@ -271,9 +268,7 @@ class SnOpt(OptimizationLibrary):
                 status = -1
         return status, obj_f, obj_df
 
-    def __snoptb_create_c(
-        self, xn_vect  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+    def __snoptb_create_c(self, xn_vect: ndarray) -> tuple[ndarray, int]:
         """Return the evaluation of the constraints at the design vector.
 
         Args:
@@ -297,9 +292,7 @@ class SnOpt(OptimizationLibrary):
             cstr = hstack((cstr, c_val))
         return cstr, 1
 
-    def __snoptb_create_dc(
-        self, xn_vect  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, int]
+    def __snoptb_create_dc(self, xn_vect: ndarray) -> tuple[ndarray, int]:
         """Evaluate the constraints gradient at the design vector xn_vect.
 
         Args:
@@ -337,13 +330,13 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     def cb_opt_constraints_snoptb(
         self,
-        mode,  # type: int
-        nn_con,  # type: int
-        nn_jac,  # type: int
-        ne_jac,  # type: int
-        xn_vect,  # type: ndarray
-        n_state,  # type: int
-    ):  # type: (...) -> Tuple[int, ndarray, ndarray]
+        mode: int,
+        nn_con: int,
+        nn_jac: int,
+        ne_jac: int,
+        xn_vect: ndarray,
+        n_state: int,
+    ) -> tuple[int, ndarray, ndarray]:
         """Evaluate the constraint functions and their gradient.
 
         Use the snOpt conventions (from
@@ -401,13 +394,13 @@ class SnOpt(OptimizationLibrary):
     # about unused arguments
     @staticmethod
     def cb_snopt_dummy_func(
-        mode,  # type: int
-        nn_con,  # type: int
-        nn_jac,  # type: int
-        ne_jac,  # type: int
-        xn_vect,  # type: ndarray
-        n_state,  # type: int
-    ):  # type: (...) -> float
+        mode: int,
+        nn_con: int,
+        nn_jac: int,
+        ne_jac: int,
+        xn_vect: ndarray,
+        n_state: int,
+    ) -> float:
         """Return a dummy output for unconstrained problems.
 
         Args:
@@ -438,8 +431,8 @@ class SnOpt(OptimizationLibrary):
         return 1.0
 
     def __preprocess_snopt_constraints(
-        self, names  # type: ndarray(dtype=np_str)
-    ):  # type: (...) -> SnOptPreprocessType
+        self, names: ndarray(dtype=np_str)
+    ) -> SnOptPreprocessType:
         """Set the snopt parameters according to the constraints.
 
         Args:
@@ -478,9 +471,7 @@ class SnOpt(OptimizationLibrary):
             funcon = self.cb_opt_constraints_snoptb
         return funcon, blc, buc, names, n_constraints
 
-    def _run(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: OptionType) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,15 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
 """NLopt library wrapper."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import Optional
 from typing import Union
 
 import nlopt
@@ -131,8 +127,8 @@ class Nlopt(OptimizationLibrary):
 
     LIBRARY_NAME = "NLopt"
 
-    def __init__(self):  # type: (...) -> None
-        super(Nlopt, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
         self.lib_dict = {
@@ -219,20 +215,20 @@ class Nlopt(OptimizationLibrary):
 
     def _get_options(
         self,
-        ftol_abs=1e-14,  # type: float  # pylint: disable=W0221
-        xtol_abs=1e-14,  # type: float
-        max_time=0.0,  # type: float
-        max_iter=999,  # type: int
-        ftol_rel=1e-8,  # type: float
-        xtol_rel=1e-8,  # type: float
-        ctol_abs=1e-6,  # type: float
-        stopval=None,  # type: Optional[float]
-        normalize_design_space=True,  # type: bool
-        eq_tolerance=1e-2,  # type: float
-        ineq_tolerance=1e-4,  # type: float
-        init_step=0.25,  # type: float
-        **kwargs,  # type: Any
-    ):  # type: (...) -> Dict[str, NLoptOptionsType]
+        ftol_abs: float = 1e-14,  # pylint: disable=W0221
+        xtol_abs: float = 1e-14,
+        max_time: float = 0.0,
+        max_iter: int = 999,
+        ftol_rel: float = 1e-8,
+        xtol_rel: float = 1e-8,
+        ctol_abs: float = 1e-6,
+        stopval: float | None = None,
+        normalize_design_space: bool = True,
+        eq_tolerance: float = 1e-2,
+        ineq_tolerance: float = 1e-4,
+        init_step: float = 0.25,
+        **kwargs: Any,
+    ) -> dict[str, NLoptOptionsType]:
         r"""Retrieve the options of the Nlopt library.
 
         Args:
@@ -281,9 +277,9 @@ class Nlopt(OptimizationLibrary):
 
     def __opt_objective_grad_nlopt(
         self,
-        xn_vect,  # type: ndarray
-        grad,  # type: ndarray
-    ):  # type: (...) -> float
+        xn_vect: ndarray,
+        grad: ndarray,
+    ) -> float:
         """Evaluate the objective and gradient functions for NLopt.
 
         Args:
@@ -300,10 +296,10 @@ class Nlopt(OptimizationLibrary):
 
     def __make_constraint(
         self,
-        func,  # type: Callable[[ndarray], ndarray]
-        jac,  # type: Callable[[ndarray], ndarray]
-        index_cstr,  # type: int
-    ):  # type: (...) -> Callable[[ndarray, ndarray], ndarray]
+        func: Callable[[ndarray], ndarray],
+        jac: Callable[[ndarray], ndarray],
+        index_cstr: int,
+    ) -> Callable[[ndarray, ndarray], ndarray]:
         """Build NLopt-like constraints.
 
         No vector functions are allowed. The database will avoid
@@ -319,9 +315,9 @@ class Nlopt(OptimizationLibrary):
         """
 
         def cstr_fun_grad(
-            xn_vect,  # type: ndarray
-            grad,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            xn_vect: ndarray,
+            grad: ndarray,
+        ) -> ndarray:
             """Define the function to be given as a pointer to the optimizer.
 
             Used to compute constraints and constraints gradients if required.
@@ -345,9 +341,9 @@ class Nlopt(OptimizationLibrary):
 
     def __add_constraints(
         self,
-        nlopt_problem,  # type: nlopt.opt
-        ctol=0.0,  # type: float
-    ):  # type: (...) -> None
+        nlopt_problem: nlopt.opt,
+        ctol: float = 0.0,
+    ) -> None:
         """Add all the constraints to the optimization problem.
 
         Args:
@@ -368,9 +364,9 @@ class Nlopt(OptimizationLibrary):
 
     def __set_prob_options(
         self,
-        nlopt_problem,  # type: nlopt.opt
-        **opt_options,  # type: Any
-    ):  # type: (...) -> nlopt.opt
+        nlopt_problem: nlopt.opt,
+        **opt_options: Any,
+    ) -> nlopt.opt:
         """Set the options for the NLopt algorithm.
 
         Args:
@@ -395,9 +391,7 @@ class Nlopt(OptimizationLibrary):
 
         return nlopt_problem
 
-    def _run(
-        self, **options  # type: NLoptOptionsType
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: NLoptOptionsType) -> OptimizationResult:
         """Run the algorithm.
 
         Args:

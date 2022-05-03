@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -69,14 +68,11 @@ This clustering algorithm relies on the KMeans class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.cluster.KMeans.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import finfo
 from numpy import ndarray
@@ -99,13 +95,13 @@ class KMeans(MLPredictiveClusteringAlgo):
 
     def __init__(
         self,
-        data,  # type:Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        var_names=None,  # type: Optional[Iterable[str]]
-        n_clusters=5,  # type: int
-        random_state=0,  # type: Optional[int]
-        **parameters,  # type: Optional[Union[int,float,bool,str]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        var_names: Iterable[str] | None = None,
+        n_clusters: int = 5,
+        random_state: int | None = 0,
+        **parameters: int | float | bool | str | None,
+    ) -> None:
         """
         Args:
             n_clusters: The number of clusters of the K-means algorithm.
@@ -113,7 +109,7 @@ class KMeans(MLPredictiveClusteringAlgo):
                 If not None,
                 the integer is used to make the initialization deterministic.
         """
-        super(KMeans, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             var_names=var_names,
@@ -125,20 +121,20 @@ class KMeans(MLPredictiveClusteringAlgo):
 
     def _fit(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> None
+        data: ndarray,
+    ) -> None:
         self.labels = self.algo.fit_predict(data)
 
     def _predict(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.predict(data)
 
     def _predict_proba_soft(
         self,
-        data,  # type: ndarray
-    ):  # type: (...)-> ndarray
+        data: ndarray,
+    ) -> ndarray:
         centers = self.algo.cluster_centers_
         distances = norm(data[:, None] - centers, axis=2)
         inverse_distances = 1 / (distances + self.EPS)

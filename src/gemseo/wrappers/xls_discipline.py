@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,25 +18,21 @@
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Excel based discipline."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import atexit
 import os
 import shutil
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Union
 from uuid import uuid4
 
 from numpy import array
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import Path
 
 if sys.platform == "win32":
     import pythoncom
@@ -72,11 +67,11 @@ class XLSDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        xls_file_path,  # type: Union[Path, str]
-        macro_name="execute",  # type: Optional[str]
-        copy_xls_at_setstate=False,  # type: bool
-        recreate_book_at_run=False,  # type: bool
-    ):  # type: (...) -> None
+        xls_file_path: Path | str,
+        macro_name: str | None = "execute",
+        copy_xls_at_setstate: bool = False,
+        recreate_book_at_run: bool = False,
+    ) -> None:
         """Initialize xls file path and macro.
 
         Inputs must be specified in the "Inputs" sheet, in the following
@@ -136,7 +131,7 @@ class XLSDiscipline(MDODiscipline):
         """
         if xlwings is None:
             raise ImportError("cannot import xlwings")
-        super(XLSDiscipline, self).__init__()
+        super().__init__()
         self._xls_file_path = Path(xls_file_path)
         self._xls_app = None
         self.macro_name = macro_name
@@ -167,9 +162,7 @@ class XLSDiscipline(MDODiscipline):
             self._book = None
             self._xls_app = None
 
-    def __create_book(
-        self, quit_xls_at_exit=True  # type: bool
-    ):  # type: (...) -> None
+    def __create_book(self, quit_xls_at_exit: bool = True) -> None:
         """Create a book with xlwings.
 
         Args:
@@ -212,10 +205,8 @@ class XLSDiscipline(MDODiscipline):
     def __del__(self):
         self.__reset_xls_objects()
 
-    def __setstate__(
-        self, state  # type: Mapping[str, Any]
-    ):  # type: (...) -> None
-        super(XLSDiscipline, self).__setstate__(state)
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        super().__setstate__(state)
         # If the book is recreated at _run, there is no need to create one for each
         # process.
         if self._copy_xls_at_setstate and not self._recreate_book_at_run:
@@ -229,9 +220,9 @@ class XLSDiscipline(MDODiscipline):
 
     def __read_sheet_col(
         self,
-        sheet_name,  # type: str
-        column=0,  # type: int
-    ):  # type: (...) -> List[List[str], List[str], List[float], List[float]]
+        sheet_name: str,
+        column: int = 0,
+    ) -> list[list[str], list[str], list[float], list[float]]:
         """Read a specific column of the sheet.
 
         Args:
@@ -251,14 +242,14 @@ class XLSDiscipline(MDODiscipline):
             value = sht[i, column].value
         return values
 
-    def _init_grammars(self):  # type: (...) -> None
+    def _init_grammars(self) -> None:
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
         self.input_names = self.__read_sheet_col("Inputs", 0)
         self.output_names = self.__read_sheet_col("Outputs", 0)
         self.input_grammar.initialize_from_data_names(self.input_names)
         self.output_grammar.initialize_from_data_names(self.output_names)
 
-    def _init_defaults(self):  # type: (...) -> None
+    def _init_defaults(self) -> None:
         """Initialize the default input values.
 
         Raises:
@@ -275,15 +266,13 @@ class XLSDiscipline(MDODiscipline):
 
         self.default_inputs = {k: array([v]) for k, v in zip(self.input_names, inputs)}
 
-    def __write_inputs(
-        self, input_data  # type: Mapping[str, float]
-    ):  # type: (...) -> None
+    def __write_inputs(self, input_data: Mapping[str, float]) -> None:
         """Write the inputs values to the Inputs sheet."""
         sht = self._book.sheets["Inputs"]
         for i, key in enumerate(self.input_names):
             sht[i, 1].value = input_data[key][0]
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run the discipline.
 
         Eventually calls the execute macro.
@@ -311,7 +300,7 @@ class XLSDiscipline(MDODiscipline):
                 self._xls_app.api.Application.Run(self.macro_name)
             except Exception as err:
                 macro_name = self.macro_name
-                msg = "Failed to run '{}' macro: {}.".format(macro_name, err)
+                msg = f"Failed to run '{macro_name}' macro: {err}."
                 raise RuntimeError(msg)
         out_vals = self.__read_sheet_col("Outputs", 1)
         if len(out_vals) != len(self.output_names):

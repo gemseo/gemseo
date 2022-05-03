@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,13 +23,9 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Propulsion discipline for the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
-from typing import Optional
-from typing import Tuple
 
 from numpy import append
 from numpy import array
@@ -50,10 +45,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
     ESF_LOWER_LIMIT = 0.5
     TEMPERATURE_LIMIT = 1.02
 
-    def __init__(
-        self, sobieski_base  # type: SobieskiBase
-    ):  # type: (...) -> None
-        super(SobieskiPropulsion, self).__init__(sobieski_base)
+    def __init__(self, sobieski_base: SobieskiBase) -> None:
+        super().__init__(sobieski_base)
         # Surface fit to engine deck with least square method
         # Polynomial coefficients for SFC computation
         self.__ao_coeff = zeros(1, dtype=self.dtype)
@@ -95,8 +88,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dim_throttle(
         self,
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        adim_throttle: float,
+    ) -> float:
         """Compute a dimensioned throttle from an adimensioned one.
 
         Args:
@@ -109,10 +102,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_sfc(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Compute the specific fuel consumption (SFC).
 
         Args:
@@ -139,9 +132,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_throttle_ua(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+    ) -> float:
         """Compute the throttle upper limit.
 
         Args:
@@ -162,10 +155,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_throttle_constraint(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Compute the throttle constraint.
 
         Args:
@@ -182,9 +175,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dthrconst_dthrottle(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+    ) -> float:
         """Derive the throttle constraint with respect to the throttle.
 
         Args:
@@ -198,10 +191,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dthrcons_dh(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the throttle constraint with respect to the altitude.
 
         Args:
@@ -223,10 +216,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dthrconst_dmach(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the throttle constraint with respect to the Mach number.
 
         Args:
@@ -248,9 +241,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_esf(
         self,
-        drag,  # type:float
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        drag: float,
+        adim_throttle: float,
+    ) -> float:
         """Compute the engine scale factor.
 
         Args:
@@ -262,9 +255,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         """
         return drag / (3.0 * self.__compute_dim_throttle(adim_throttle))
 
-    def __compute_desf_ddrag(
-        self, adim_throttle  # type: float
-    ):  # type: (...) -> float
+    def __compute_desf_ddrag(self, adim_throttle: float) -> float:
         """Derive the engine scale factor (ESF) with respect to the drag coefficient.
 
         Args:
@@ -277,9 +268,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_desf_dthrottle(
         self,
-        drag,  # type:float
-        adim_throttle,  # type:float
-    ):  # type: (...) -> float
+        drag: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the engine scale factor with respect to the throttle.
 
         Args:
@@ -294,10 +285,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_temp(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        throttle,  # type: float
-    ):  # type: (...) -> ndarray
+        altitude: float,
+        mach: float,
+        throttle: float,
+    ) -> ndarray:
         """Compute the engine temperature.
 
         Args:
@@ -321,9 +312,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_engine_weight(
         self,
-        esf,  # type: float
-        c_3=None,  # type: Optional[float]
-    ):  # type: (...) -> float
+        esf: float,
+        c_3: float | None = None,
+    ) -> float:
         """Compute the engine weight.
 
         Args:
@@ -339,12 +330,12 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def execute(
         self,
-        x_shared,  # type: ndarray
-        y_23,  # type: ndarray
-        x_3,  # type: ndarray
-        true_cstr=False,  # type: bool
-        c_3=None,  # type: Optional[float]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        x_shared: ndarray,
+        y_23: ndarray,
+        x_3: ndarray,
+        true_cstr: bool = False,
+        c_3: float | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the fuel consumption, engine weight and engine scale factor.
 
         Args:
@@ -386,13 +377,13 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def _execute(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        throttle,  # type: float
-        drag,  # type: float
-        true_cstr=False,  # type: bool
-        ref_weight=None,  # type: Optional[float]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        altitude: float,
+        mach: float,
+        throttle: float,
+        drag: float,
+        true_cstr: bool = False,
+        ref_weight: float | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the fuel consumption, engine weight and engine scale factor.
 
         Args:
@@ -454,10 +445,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dengineweight_dvar(
         self,
-        esf,  # type: float
-        desf_dx,  # type: ndarray
-        c_3=None,  # type: Optional[float]
-    ):  # type: (...) -> float
+        esf: float,
+        desf_dx: ndarray,
+        c_3: float | None = None,
+    ) -> float:
         """Derive the engine weight with respect to an input variable ``x``.
 
         Args:
@@ -474,10 +465,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dsfc_dthrottle(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the specific fuel consumption constraint with respect to the throttle.
 
         Args:
@@ -497,10 +488,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dsfc_dh(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the specific fuel consumption constraint with respect to the altitude.
 
         Args:
@@ -520,10 +511,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __compute_dsfc_dmach(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        adim_throttle,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        adim_throttle: float,
+    ) -> float:
         """Derive the specific fuel consumption constraint wrt the Mach number.
 
         Args:
@@ -541,9 +532,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
             + 2 * self.__compute_dim_throttle(adim_throttle) * self.sfc_coeff[6]
         )
 
-    def __dadimthrottle_dthrottle(
-        self, adim_throttle  # type: float
-    ):  # type: (...) -> float
+    def __dadimthrottle_dthrottle(self, adim_throttle: float) -> float:
         """Derive the adimensioned throttle with respect to the throttle.
 
         Args:
@@ -554,9 +543,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.throttle_initial, adim_throttle)
 
-    def __compute_dadimh_dh(
-        self, altitude  # type: float
-    ):  # type: (...) -> float
+    def __compute_dadimh_dh(self, altitude: float) -> float:
         """Derive the adimensioned throttle with respect to the altitude.
 
         Args:
@@ -567,9 +554,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.h_initial, altitude)
 
-    def __compute_dadimmach_dmach(
-        self, mach  # type: float
-    ):  # type: (...) -> float
+    def __compute_dadimmach_dmach(self, mach: float) -> float:
         """Derive the adimensioned throttle with respect to the Mach number.
 
         Args:
@@ -581,8 +566,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
         return self.base.derive_normalization(self.mach_initial, mach)
 
     def __initialize_jacobian(
-        self, true_cstr=False  # type: bool
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        self, true_cstr: bool = False
+    ) -> dict[str, dict[str, ndarray]]:
         """Initialize the Jacobian structure.
 
         Args:
@@ -614,12 +599,12 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def linearize(
         self,
-        x_shared,  # type: ndarray
-        y_23,  # type: ndarray
-        x_3,  # type: ndarray
-        true_cstr=False,  # type: bool
-        c_3=None,  # type: Optional[float]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        x_shared: ndarray,
+        y_23: ndarray,
+        x_3: ndarray,
+        true_cstr: bool = False,
+        c_3: float | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the fuel consumption, engine weight and engine scale factor.
 
         Args:
@@ -653,13 +638,13 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def _linearize(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        throttle,  # type: float
-        drag,  # type: float
-        true_cstr=False,  # type: bool
-        ref_weight=None,  # type: Optional[float]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        altitude: float,
+        mach: float,
+        throttle: float,
+        drag: float,
+        true_cstr: bool = False,
+        ref_weight: float | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the fuel consumption, engine weight and engine scale factor.
 
         Args:
@@ -810,7 +795,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
     @staticmethod
     def __set_coupling_jacobian(
         jacobian,
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+    ) -> dict[str, dict[str, ndarray]]:
         """Set Jacobian of the coupling variables."""
         jacobian["y_31"]["x_3"] = jacobian["y_3"]["x_3"][1:2, :]
         jacobian["y_31"]["x_shared"] = jacobian["y_3"]["x_shared"][1:2, :]

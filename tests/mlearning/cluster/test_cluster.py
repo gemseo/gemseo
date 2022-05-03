@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,9 +19,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning clustering algorithm module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
@@ -32,7 +28,7 @@ from numpy import zeros
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -23,9 +22,6 @@
 Scenario
 ========
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
@@ -129,7 +125,7 @@ print(get_scenario_differentiation_modes())
 # positions in the MDO formulation.
 
 
-class Observer(object):
+class Observer:
     """Observer."""
 
     def update(self, atom):

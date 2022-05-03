@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,19 +18,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base class for all formulations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Dict
 from typing import Iterable
-from typing import List
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -43,7 +36,6 @@ if TYPE_CHECKING:
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange, copy, empty, in1d, ndarray, where, zeros
-from six import string_types
 
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.mdofunctions.function_from_discipline import FunctionFromDiscipline
@@ -76,13 +68,13 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
-        maximize_objective=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        **options,  # type: Any
-    ):  # type: (...) -> None # pylint: disable=W0613
+        disciplines: Sequence[MDODiscipline],
+        objective_name: str,
+        design_space: DesignSpace,
+        maximize_objective: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        **options: Any,
+    ) -> None:  # pylint: disable=W0613
         """
         Args:
             disciplines: The disciplines.
@@ -102,19 +94,19 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         self.__grammar_type = grammar_type
 
     @property
-    def _grammar_type(self):  # type: (...) -> str
+    def _grammar_type(self) -> str:
         """The type of the input and output grammars."""
         return self.__grammar_type
 
     @property
-    def design_space(self):  # type: (...) -> DesignSpace
+    def design_space(self) -> DesignSpace:
         """The design space on which the formulation is applied."""
         return self.opt_problem.design_space
 
     @staticmethod
     def check_disciplines(
-        disciplines,  # type: Any
-    ):  # type: (...) -> None
+        disciplines: Any,
+    ) -> None:
         """Check that the disciplines are provided as a list.
 
         Args:
@@ -125,9 +117,9 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _check_add_cstr_input(
-        output_name,  # type: str,
-        constraint_type,  # type:str
-    ):  # type: (...) -> List[str]
+        output_name: str,
+        constraint_type: str,
+    ) -> list[str]:
         """Check the output name and constraint type passed to :meth:`.add_constraint`.
 
         Args:
@@ -151,12 +143,12 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def add_constraint(
         self,
-        output_name,  # type: str
-        constraint_type=MDOFunction.TYPE_EQ,  # type: str
-        constraint_name=None,  # type: Optional[str]
-        value=None,  # type: Optional[float]
-        positive=False,  # type: bool
-    ):  # type: (...) -> None
+        output_name: str,
+        constraint_type: str = MDOFunction.TYPE_EQ,
+        constraint_name: str | None = None,
+        value: float | None = None,
+        positive: bool = False,
+    ) -> None:
         """Add a user constraint.
 
         A user constraint is a design constraint
@@ -188,10 +180,10 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def add_observable(
         self,
-        output_names,  # type: Union[str,Sequence[str]]
-        observable_name=None,  # type: Optional[str]
-        discipline=None,  # type: Optional[MDODiscipline]
-    ):  # type: (...) -> None
+        output_names: str | Sequence[str],
+        observable_name: str | None = None,
+        discipline: MDODiscipline | None = None,
+    ) -> None:
         """Add an observable to the optimization problem.
 
         The repartition strategy of the observable is defined in the formulation class.
@@ -202,7 +194,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             discipline: The discipline computing the observed outputs.
                 If None, the discipline is detected from inner disciplines.
         """
-        if isinstance(output_names, string_types):
+        if isinstance(output_names, str):
             output_names = [output_names]
         obs_fun = FunctionFromDiscipline(
             output_names, self, top_level_disc=True, discipline=discipline
@@ -212,7 +204,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         obs_fun.f_type = MDOFunction.TYPE_OBS
         self.opt_problem.add_observable(obs_fun)
 
-    def get_top_level_disc(self):  # type: (...) -> List[MDODiscipline]
+    def get_top_level_disc(self) -> list[MDODiscipline]:
         """Return the disciplines which inputs are required to run the scenario.
 
         A formulation seeks to
@@ -231,9 +223,9 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _get_mask_from_datanames(
-        all_data_names,  # type: ndarray
-        masked_data_names,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        all_data_names: ndarray,
+        masked_data_names: ndarray,
+    ) -> ndarray:
         """Get a mask of all_data_names for masked_data_names.
 
         This mask is an array of the size of all_data_names
@@ -251,9 +243,9 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_generator_from(
         self,
-        output_names,  # type: Iterable[str]
-        top_level_disc=False,  # type: bool
-    ):  # type: (...) -> MDOFunctionGenerator
+        output_names: Iterable[str],
+        top_level_disc: bool = False,
+    ) -> MDOFunctionGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the outputs.
 
         Find a discipline which computes all the provided outputs
@@ -280,9 +272,9 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_generator_with_inputs(
         self,
-        input_names,  # type: Iterable[str]
-        top_level_disc=False,  # type: bool
-    ):  # type: (...) -> MDOFunctionGenerator
+        input_names: Iterable[str],
+        top_level_disc: bool = False,
+    ) -> MDOFunctionGenerator:
         """Create a generator of :class:`.MDOFunction` from the names of the inputs.
 
         Find a discipline which has all the provided inputs
@@ -309,8 +301,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_dv_length(
         self,
-        variable_name,  # type: str
-    ):  # type: (...) -> int
+        variable_name: str,
+    ) -> int:
         """Retrieve the length of a variable.
 
         This method relies on the size declared in the design space.
@@ -325,8 +317,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_dv_indices(
         self,
-        all_data_names,  # type: Iterable[str]
-    ):  # type: (...) -> Tuple[Dict[str,Tuple[int,int,int]],int]
+        all_data_names: Iterable[str],
+    ) -> tuple[dict[str, tuple[int, int, int]], int]:
         """Get the indices of the sub vectors which compose the design variables vector.
 
         Args:
@@ -352,11 +344,11 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def unmask_x_swap_order(
         self,
-        masking_data_names,  # type: Iterable[str]
-        x_masked,  # type: ndarray
-        all_data_names=None,  # type: Optional[Iterable[str]]
-        x_full=None,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        masking_data_names: Iterable[str],
+        x_masked: ndarray,
+        all_data_names: Iterable[str] | None = None,
+        x_full: ndarray = None,
+    ) -> ndarray:
         """Unmask a vector from a subset of names, with respect to a set of names.
 
         This method eventually swaps the order of the values
@@ -380,7 +372,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             all_data_names = self.get_optim_variables_names()
         indices = self._get_dv_indices(all_data_names)
         variables_sizes = self.opt_problem.design_space.variables_sizes
-        total_size = sum((variables_sizes[var] for var in all_data_names))
+        total_size = sum(variables_sizes[var] for var in all_data_names)
         if x_full is None:
             x_unmask = zeros(total_size, dtype=x_masked.dtype)
         else:
@@ -402,10 +394,10 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def mask_x_swap_order(
         self,
-        masking_data_names,  # type: Iterable[str]
-        x_vect,  # type: ndarray
-        all_data_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> ndarray
+        masking_data_names: Iterable[str],
+        x_vect: ndarray,
+        all_data_names: Iterable[str] | None = None,
+    ) -> ndarray:
         """Mask a vector from a subset of names, with respect to a set of names.
 
         This method eventually swaps the order of the values
@@ -428,9 +420,9 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_x_mask_x_swap_order(
         self,
-        masking_data_names,  # type: Iterable[str]
-        all_data_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> ndarray
+        masking_data_names: Iterable[str],
+        all_data_names: Iterable[str] | None = None,
+    ) -> ndarray:
         """Mask a vector from a subset of names, with respect to a set of names.
 
         This method eventually swaps the order of the values
@@ -454,7 +446,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             all_data_names = design_space.variables_names
 
         variables_sizes = design_space.variables_sizes
-        total_size = sum((variables_sizes[var] for var in masking_data_names))
+        total_size = sum(variables_sizes[var] for var in masking_data_names)
         indices = self._get_dv_indices(all_data_names)
         x_mask = empty(total_size, dtype="int")
         i_masked_min = i_masked_max = 0
@@ -473,18 +465,18 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             )
         return x_mask
 
-    def _remove_unused_variables(self):  # type: (...) -> None
+    def _remove_unused_variables(self) -> None:
         """Remove variables in the design space that are not discipline inputs."""
         design_space = self.opt_problem.design_space
         disciplines = self.get_top_level_disc()
-        all_inputs = set(
+        all_inputs = {
             var for disc in disciplines for var in disc.get_input_data_names()
-        )
+        }
         for name in set(design_space.variables_names):
             if name not in all_inputs:
                 design_space.remove_variable(name)
 
-    def _remove_sub_scenario_dv_from_ds(self):  # type: (...) -> None
+    def _remove_sub_scenario_dv_from_ds(self) -> None:
         """Remove the sub scenarios design variables from the design space."""
         for scenario in self.get_sub_scenarios():
             loc_vars = scenario.design_space.variables_names
@@ -494,10 +486,10 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def _build_objective_from_disc(
         self,
-        objective_name,  # type: str
-        discipline=None,  # type: Optional[MDODiscipline]
-        top_level_disc=True,  # type: bool
-    ):  # type: (...) -> None
+        objective_name: str,
+        discipline: MDODiscipline | None = None,
+        top_level_disc: bool = True,
+    ) -> None:
         """Build the objective function from the discipline able to compute it.
 
         Args:
@@ -506,7 +498,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 If None, the discipline is detected from the inner disciplines.
             top_level_disc: If True, search the discipline among the top level ones.
         """
-        if isinstance(objective_name, string_types):
+        if isinstance(objective_name, str):
             objective_name = [objective_name]
         obj_mdo_fun = FunctionFromDiscipline(
             objective_name, self, discipline, top_level_disc
@@ -516,7 +508,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         if self._maximize_objective:
             self.opt_problem.change_objective_sign()
 
-    def get_optim_variables_names(self):  # type: (...) -> List[str]
+    def get_optim_variables_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.
 
         This is different from the design variable names provided by the user,
@@ -530,8 +522,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_x_names_of_disc(
         self,
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> List[str]
+        discipline: MDODiscipline,
+    ) -> list[str]:
         """Get the design variables names of a given discipline.
 
         Args:
@@ -544,7 +536,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         input_names = discipline.get_input_data_names()
         return [name for name in optim_variables_names if name in input_names]
 
-    def get_sub_disciplines(self):  # type: (...) ->List[MDODiscipline]
+    def get_sub_disciplines(self) -> list[MDODiscipline]:
         """Accessor to the sub-disciplines.
 
         This method lists the sub scenarios' disciplines.
@@ -555,8 +547,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         sub_disc = []
 
         def add_to_sub(
-            disc_list,  # type:Iterable[MDODiscipline]
-        ):  # type: (...) -> None
+            disc_list: Iterable[MDODiscipline],
+        ) -> None:
             """Add the disciplines of the sub-scenarios if not already added it.
 
             Args:
@@ -574,7 +566,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
         return sub_disc
 
-    def get_sub_scenarios(self):  # type: (...) -> List[Scenario]
+    def get_sub_scenarios(self) -> list[Scenario]:
         """List the disciplines that are actually scenarios.
 
         Returns:
@@ -582,7 +574,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         """
         return [disc for disc in self.disciplines if disc.is_scenario()]
 
-    def _set_defaultinputs_from_ds(self):  # type: (...) -> None
+    def _set_defaultinputs_from_ds(self) -> None:
         """Initialize the top level disciplines from the design space."""
         if not self.opt_problem.design_space.has_current_x():
             return
@@ -594,7 +586,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_expected_workflow(
         self,
-    ):  # type: (...) -> List[ExecutionSequence,Tuple[ExecutionSequence]]
+    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
         """Get the expected sequence of execution of the disciplines.
 
         This method is used for the XDSM representation
@@ -618,7 +610,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         """Get the expected data exchange sequence.
 
         This method is used for the XDSM representation
@@ -633,8 +625,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     @classmethod
     def get_default_sub_options_values(
-        cls, **options  # type:str
-    ):  # type: (...) -> Dict  # pylint: disable=W0613
+        cls, **options: str
+    ) -> dict:  # pylint: disable=W0613
         """Get the default values of the sub-options of the formulation.
 
         When some options of the formulation depend on higher level options,
@@ -650,8 +642,8 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
 
     @classmethod
     def get_sub_options_grammar(
-        cls, **options  # type: str
-    ):  # type: (...) -> JSONGrammar # pylint: disable=W0613
+        cls, **options: str
+    ) -> JSONGrammar:  # pylint: disable=W0613
         """Get the sub-options grammar.
 
         When some options of the formulation depend on higher level options,

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,16 +17,14 @@
 #       :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Provide routines for XDSM and tikz."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
+
+from pathlib import Path
 
 from pyxdsm.XDSM import XDSM
 
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import string_types
 
-
-class XDSMToPDFConverter(object):
+class XDSMToPDFConverter:
     """Convert an XDSM to a PDF file with tikz and latex."""
 
     def __init__(self):  # noqa: D107
@@ -84,13 +81,13 @@ class XDSMToPDFConverter(object):
         systems = []
         last_node = None
         for idx, system in enumerate(workflow):
-            if isinstance(system, string_types):
+            if isinstance(system, str):
                 # system is a node
                 systems.append(system)
                 last_node = system
             elif isinstance(system, list):
                 # system is a group of nodes
-                if isinstance(system[0], string_types):
+                if isinstance(system[0], str):
                     # system[0] is a node
                     if last_node is not None:
                         self.__xdsm.add_process([last_node, system[0]], arrow=True)
@@ -120,7 +117,7 @@ class XDSMToPDFConverter(object):
         """
         prev_node = "undefined"
         for node in nodes:
-            if isinstance(node, string_types):
+            if isinstance(node, str):
                 current = following
                 following = current + 1
                 end = current
@@ -186,7 +183,7 @@ class XDSMToPDFConverter(object):
             node_replaced = node["name"]
             escaped_characters = ["_", "$", "&", "{", "}", "%"]
             for char in escaped_characters:
-                node_replaced = node_replaced.replace(char, r"\{}".format(char))
+                node_replaced = node_replaced.replace(char, rf"\{char}")
             name = name + node_replaced
 
             self.__xdsm.add_system(node["id"], node_type, r"\text{" + name + "}")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,22 +18,14 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ScatterMatrix plotting variables versus themselves."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
 
 import pytest
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.utils.py23_compat import PY2
 from matplotlib import pyplot as plt
 from matplotlib.testing.decorators import image_comparison
 
 from .test_andrews_curves import dataset  # noqa: F401
-
-pytestmark = pytest.mark.skipif(
-    PY2, reason="image comparison does not work with python 2"
-)
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:

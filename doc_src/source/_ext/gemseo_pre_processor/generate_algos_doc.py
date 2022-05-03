@@ -263,7 +263,7 @@ class AlgoOptionsDoc:
             template_file_name = self.template
 
         if output_file_name is None:
-            output_file_name = "{}_algos.rst".format(self.algo_type)
+            output_file_name = f"{self.algo_type}_algos.rst"
 
         template = self.ENV.get_template(template_file_name)
         doc = template.render(
@@ -285,7 +285,7 @@ class AlgoOptionsDoc:
         method: Callable[[Any], Any],
     ) -> Dict[str, Dict[str, str]]:
         types = re.findall(
-            "([\**\w]+).*#\s*type\s*:\s*([\[\w,\]]+)",  # noqa: W605
+            r"([\**\w]+).*#\s*type\s*:\s*([\[\w,\]]+)",
             inspect.getsource(method),
         )
         sig = inspect.signature(method)
@@ -317,7 +317,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         template: Optional[str] = None,
     ) -> None:
 
-        super(DriverOptionsDoc, self).__init__(
+        super().__init__(
             algo_type,
             long_algo_type,
             algo_factory,
@@ -404,7 +404,7 @@ class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
         algo_factory: Union[Any, Factory],
         template: Optional[str] = None,
     ) -> None:
-        super(OptPostProcessorAlgoOptionsDoc, self).__init__(
+        super().__init__(
             algo_type,
             long_algo_type,
             algo_factory,
@@ -431,7 +431,7 @@ class InitOptionsDoc(AlgoOptionsDoc):
         algo_factory: Union[Any, Factory],
         template: Optional[str] = None,
     ) -> None:
-        super(InitOptionsDoc, self).__init__(
+        super().__init__(
             algo_type,
             long_algo_type,
             algo_factory,

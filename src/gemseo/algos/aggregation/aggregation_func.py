@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,15 +20,12 @@
 
 Transform a constraint vector into one scalar equivalent or quasi equivalent constraint.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from functools import wraps
 from typing import Any
 from typing import Callable
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import ndarray
 
@@ -45,8 +41,8 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 
 
 def check_constraint_type(
-    function_type,  # type: str
-):  # type: (...) -> Callable[[Callable[[Any], Any]], Callable[[Any], Any]]
+    function_type: str,
+) -> Callable[[Callable[[Any], Any]], Callable[[Any], Any]]:
     """Decorate a function to check whether it is of the expected type.
 
     Args:
@@ -57,8 +53,8 @@ def check_constraint_type(
     """
 
     def decorator(
-        func,  # type: Callable[[Any], Any]
-    ):  # type: (...) -> Callable[[Any], Any]
+        func: Callable[[Any], Any],
+    ) -> Callable[[Any], Any]:
         """Decorator to check the aggregation function type.
 
         Args:
@@ -70,9 +66,9 @@ def check_constraint_type(
 
         @wraps(func)
         def function_wrapper(
-            *args,  # type: Any
-            **kwargs,  # type: Any
-        ):  # type: (...) -> Any
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
             """Check that ``func`` has the type `function_type``.
 
             Args:
@@ -103,10 +99,10 @@ def check_constraint_type(
 
 @check_constraint_type("eq")
 def aggregate_sum_square(
-    constr_fct,  # type: MDOFunction
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> MDOFunction
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Args:
@@ -131,18 +127,18 @@ def aggregate_sum_square(
         constr_fct,
         compute,
         compute_jac,
-        "sum²_{}".format(constr_fct.name),
-        "sum({}**2)".format(constr_fct.expr),
+        f"sum²_{constr_fct.name}",
+        f"sum({constr_fct.expr}**2)",
         "sum_sq_cstr",
     )
 
 
 @check_constraint_type("ineq")
 def aggregate_max(
-    constr_fct,  # type: MDOFunction
-    indices=None,  # type: Optional[Sequence[int]]
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> MDOFunction
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
     """Transform a vector of equalities into a max of all values.
 
     Args:
@@ -168,18 +164,18 @@ def aggregate_max(
         compute,
         compute_jac,
         "max_" + constr_fct.name,
-        "max({})".format(constr_fct.expr),
+        f"max({constr_fct.expr})",
         "max_cstr",
     )
 
 
 @check_constraint_type("ineq")
 def aggregate_iks(
-    constr_fct,  # type: MDOFunction
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> MDOFunction
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
     """Constraints aggregation method for inequality constraints.
 
     See :cite:`kennedy2015improved`.
@@ -207,19 +203,19 @@ def aggregate_iks(
         constr_fct,
         compute,
         compute_jac,
-        "IKS({})".format(constr_fct.name),
-        "IKS({})".format(constr_fct.expr),
+        f"IKS({constr_fct.name})",
+        f"IKS({constr_fct.expr})",
         "IKS",
     )
 
 
 @check_constraint_type("ineq")
 def aggregate_ks(
-    constr_fct,  # type: MDOFunction
-    indices=None,  # type: Optional[Sequence[int]]
-    rho=1e2,  # type: float
-    scale=1.0,  # type: Union[float, ndarray]
-):  # type: (...) -> MDOFunction
+    constr_fct: MDOFunction,
+    indices: Sequence[int] | None = None,
+    rho: float = 1e2,
+    scale: float | ndarray = 1.0,
+) -> MDOFunction:
     """Aggregate constraints for inequality constraints.
 
     See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
@@ -247,20 +243,20 @@ def aggregate_ks(
         constr_fct,
         compute,
         compute_jac,
-        "KS({})".format(constr_fct.name),
-        "KS({})".format(constr_fct.expr),
+        f"KS({constr_fct.name})",
+        f"KS({constr_fct.expr})",
         "KS",
     )
 
 
 def _create_mdofunc(
-    constr_fct,  # type: MDOFunction
-    compute_fct,  # type: Callable[[ndarray], ndarray]
-    compute_jac_fct,  # type: Callable[[ndarray], ndarray]
-    new_name,  # type: str
-    new_expr,  # type: str
-    new_output_names,  # type: Sequence[str]
-):  # type: (...) -> MDOFunction
+    constr_fct: MDOFunction,
+    compute_fct: Callable[[ndarray], ndarray],
+    compute_jac_fct: Callable[[ndarray], ndarray],
+    new_name: str,
+    new_expr: str,
+    new_output_names: Sequence[str],
+) -> MDOFunction:
     """Create an aggregated MDOFunction from a constraint function.
 
     Args:

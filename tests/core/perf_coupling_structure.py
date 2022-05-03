@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -96,7 +95,7 @@ class ComputeGraphBenchmarkee(BaseBenchmarkee):
         _compute_graph(self.nodes)
 
     def __str__(self):
-        return "_compute_graph-{}".format(self.file_path.stem)
+        return f"_compute_graph-{self.file_path.stem}"
 
 
 if __name__ == "__main__":

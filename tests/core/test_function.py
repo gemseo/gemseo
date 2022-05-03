@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                       initial documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import math
 import unittest
 from operator import mul
@@ -310,7 +306,7 @@ class TestMdofunction(unittest.TestCase):
     def test_quadratic_approximation(self):
         """Test the second-order polynomial of a function."""
         dim = 3
-        args = ("x_{}".format(i) for i in range(dim))
+        args = (f"x_{i}" for i in range(dim))
         function = MDOFunction(
             lambda x: 0.5 * norm(x) ** 2, "f", jac=lambda x: x, args=args
         )

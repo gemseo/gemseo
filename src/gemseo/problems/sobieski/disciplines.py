@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,17 +18,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The disciplines of the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import time
 from numbers import Number
 from typing import Any
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import array
 
@@ -52,13 +47,13 @@ class SobieskiDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
         """
-        super(SobieskiDiscipline, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.dtype = dtype
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
         self.default_inputs = self.sobieski_problem.get_default_inputs(
@@ -68,12 +63,12 @@ class SobieskiDiscipline(MDODiscipline):
 
     def __setstate__(
         self,
-        state_dict,  # type: Mapping[str, Any]
-    ):  # type: (...) -> None
-        super(SobieskiDiscipline, self).__setstate__(state_dict)
+        state_dict: Mapping[str, Any],
+    ) -> None:
+        super().__setstate__(state_dict)
         self.sobieski_problem = SobieskiProblem(self.dtype)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         raise NotImplementedError()
 
 
@@ -93,19 +88,19 @@ class SobieskiMission(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-        enable_delay=False,  # type: Union[bool,float]
-    ):  # type: (...) -> None
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+        enable_delay: bool | float = False,
+    ) -> None:
         """
         Args:
             enable_delay: If ``True``, wait one second before computation.
                 If a positive number, wait the corresponding number of seconds.
                 If ``False``, compute directly.
         """
-        super(SobieskiMission, self).__init__(dtype=dtype)
+        super().__init__(dtype=dtype)
         self.enable_delay = enable_delay
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         if self.enable_delay:
             if isinstance(self.enable_delay, Number):
                 time.sleep(self.enable_delay)
@@ -119,9 +114,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["y_14", "y_24", "y_34", "x_shared"]
         y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.mission.linearize(x_shared, y_14, y_24, y_34)
@@ -132,14 +127,14 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiStructure, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.default_inputs["c_0"] = array([self.sobieski_problem.constants[0]])
         self.default_inputs["c_1"] = array([self.sobieski_problem.constants[1]])
         self.default_inputs["c_2"] = array([self.sobieski_problem.constants[2]])
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         data_names = ["x_1", "y_21", "y_31", "x_shared", "c_0", "c_1", "c_2"]
         x_1, y_21, y_31, x_shared, c_0, c_1, c_2 = self.get_inputs_by_name(data_names)
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
@@ -149,9 +144,9 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_1", "y_21", "y_31", "x_shared", "c_2"]
         x_1, y_21, y_31, x_shared, c_2 = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.structure.linearize(
@@ -164,12 +159,12 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiAerodynamics, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.default_inputs["c_4"] = array([self.sobieski_problem.constants[4]])
 
-    def _run(self):  # type: (...)-> None
+    def _run(self) -> None:
         data_names = ["x_2", "y_12", "y_32", "x_shared", "c_4"]
         x_2, y_12, y_32, x_shared, c_4 = self.get_inputs_by_name(data_names)
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
@@ -179,9 +174,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_2", "y_12", "y_32", "x_shared", "c_4"]
         x_2, y_12, y_32, x_shared, c_4 = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.aerodynamics.linearize(
@@ -194,12 +189,12 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiPropulsion, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.default_inputs["c_3"] = array([self.sobieski_problem.constants[3]])
 
-    def _run(self):  # type: (...)-> None
+    def _run(self) -> None:
         data_names = ["x_3", "y_23", "x_shared", "c_3"]
 
         x_3, y_23, x_shared, c_3 = self.get_inputs_by_name(data_names)
@@ -210,9 +205,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_3", "y_23", "x_shared", "c_3"]
         x_3, y_23, x_shared, c_3 = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.propulsion.linearize(
@@ -221,8 +216,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
 
 def create_disciplines(
-    dtype,  # type: str
-):  # type: (...) -> List[SobieskiDiscipline]
+    dtype: str,
+) -> list[SobieskiDiscipline]:
     """Instantiate the structure, aerodynamics, propulsion and mission disciplines.
 
     Args:

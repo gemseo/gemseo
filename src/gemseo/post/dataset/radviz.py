@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -65,9 +64,9 @@ class Radar(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        classifier,  # type: str
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        classifier: str,
+    ) -> None:
         """
         Args:
             classifier: The name of the variable to group the data.

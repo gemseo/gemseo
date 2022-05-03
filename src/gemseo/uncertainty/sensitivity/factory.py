@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +18,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
@@ -33,7 +30,7 @@ from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 LOGGER = logging.getLogger(__name__)
 
 
-class SensitivityAnalysisFactory(object):
+class SensitivityAnalysisFactory:
     """Factory to build instances of :class:`.SensitivityAnalysis`.
 
     At initialization, this factory scans the following modules
@@ -77,16 +74,16 @@ class SensitivityAnalysisFactory(object):
         >>> indices = analysis.compute_indices()
     """
 
-    def __init__(self):  # type: (...) -> None  # noqa: D107
+    def __init__(self) -> None:  # noqa: D107
         self.factory = Factory(SensitivityAnalysis, ("gemseo.uncertainty.sensitivity",))
 
     def create(
         self,
-        sensitivity_analysis,  # type:str
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: DesignSpace
+        sensitivity_analysis: str,
+        discipline: MDODiscipline,
+        parameter_space: DesignSpace,
         **options,
-    ):  # type:  (...) -> SensitivityAnalysis
+    ) -> SensitivityAnalysis:
         """Create the sensitivity analysis.
 
         Args:
@@ -107,14 +104,14 @@ class SensitivityAnalysisFactory(object):
         )
 
     @property
-    def available_sensitivity_analyses(self):  # type: (...)-> List[str]
+    def available_sensitivity_analyses(self) -> list[str]:
         """The available classes for sensitivity analysis."""
         return self.factory.classes
 
     def is_available(
         self,
-        sensitivity_analysis,  # type: str
-    ):  # type: (...) -> bool
+        sensitivity_analysis: str,
+    ) -> bool:
         """Check the availability of a SensitivityAnalysis child.
 
         Args:

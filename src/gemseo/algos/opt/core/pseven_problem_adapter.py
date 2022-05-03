@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,9 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An adapter from `.OptimizationProblem` to a pSeven ProblemGeneric."""
-from typing import Dict
-from typing import List
+from __future__ import annotations
+
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 from da import p7core
 from numpy import array
@@ -50,14 +46,14 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __init__(
         self,
-        problem,  # type: OptimizationProblem
-        evaluation_cost_type=None,  # type: Optional[Union[str, Mapping[str, str]]]
-        expensive_evaluations=None,  # type: Optional[Mapping[str, int]]
-        lower_bounds=None,  # type: Optional[ndarray]
-        upper_bounds=None,  # type: Optional[ndarray]
-        initial_point=None,  # type: Optional[ndarray]
-        use_gradient=True,  # type: bool
-    ):  # type: (...) -> None
+        problem: OptimizationProblem,
+        evaluation_cost_type: str | Mapping[str, str] | None = None,
+        expensive_evaluations: Mapping[str, int] | None = None,
+        lower_bounds: ndarray | None = None,
+        upper_bounds: ndarray | None = None,
+        initial_point: ndarray | None = None,
+        use_gradient: bool = True,
+    ) -> None:
         # noqa:D205,D212,D415
         """
         Args:
@@ -115,13 +111,13 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         else:
             self.__initial_point = full(design_space.dimension, None)
 
-    def prepare_problem(self):  # type: (...) -> None
+    def prepare_problem(self) -> None:
         """Initialize the problem for pSeven."""
         self.__add_variables()
         self.__add_objectives()
         self.__add_constraints()
 
-    def __add_variables(self):  # type: (...) -> None
+    def __add_variables(self) -> None:
         """Add the design variables to the pSeven problem."""
         design_space = self.__problem.design_space
         for var_name in design_space.variables_names:
@@ -137,7 +133,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
                 hints = {"@GT/VariableType": pseven_type}
                 self.add_variable(bounds, initial_guess, indexed_names[index], hints)
 
-    def __add_objectives(self):  # type: (...) -> None
+    def __add_objectives(self) -> None:
         """Add the objectives to the pSeven problem."""
         objective = self.__problem.objective
         hints = self.__get_p7_function_hints(objective)
@@ -154,7 +150,7 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
         if self.__use_gradient and objective.has_jac():
             self.enable_objectives_gradient()
 
-    def __add_constraints(self):  # type: (...) -> None
+    def __add_constraints(self) -> None:
         """Add the constraints to the pSeven problem."""
         problem = self.__problem
 
@@ -179,9 +175,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __get_p7_variable_type(
         self,
-        variable_name,  # type: str
-        index,  # type: int
-    ):  # type: (...) -> str
+        variable_name: str,
+        index: int,
+    ) -> str:
         """Return the pSeven variable type associated with a design variable component.
 
         Args:
@@ -199,14 +195,14 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
             return "Continuous"
         if var_type == DesignSpace.INTEGER.value:
             return "Integer"
-        raise TypeError("Unsupported design variable type: {}".format(var_type))
+        raise TypeError(f"Unsupported design variable type: {var_type}.")
         # TODO: For future reference, pSeven also supports discrete and categorical
         #  variables.
 
     def __get_p7_function_hints(
         self,
-        function,  # type: MDOFunction
-    ):  # type: (...) -> Dict[str, Union[str, int]]
+        function: MDOFunction,
+    ) -> dict[str, str | int]:
         """Return the pSeven hints associated with a function.
 
         Args:
@@ -226,8 +222,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     @staticmethod
     def __get_p7_linearity_type(
-        function,  # type: MDOFunction
-    ):  # type: (...) -> str
+        function: MDOFunction,
+    ) -> str:
         """Return the pSeven linearity type of a function.
 
         Args:
@@ -244,8 +240,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __get_p7_constraint_bounds(
         self,
-        constraint,  # type: MDOFunction
-    ):  # type: (...) -> Tuple[Optional[float], float]
+        constraint: MDOFunction,
+    ) -> tuple[float | None, float]:
         """Return the pSeven bounds associated with a constraint.
 
         Args:
@@ -269,9 +265,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def evaluate(
         self,
-        queryx,  # type: ndarray
-        querymask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[List[float]], List[ndarray]]
+        queryx: ndarray,
+        querymask: ndarray,
+    ) -> tuple[list[list[float]], list[ndarray]]:
         """Compute the values of the objectives and the constraints for pSeven.
 
         Args:
@@ -315,9 +311,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_objectives(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         obj_dim = self.__problem.get_function_dimension(self.__problem.objective.name)
 
         if True in mask[:obj_dim]:
@@ -331,9 +327,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_constraints(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         constraints = list()
         output_mask = list()
         n_inds = 0
@@ -352,9 +348,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_objectives_gradients(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         if not self.__use_gradient or not self.__problem.objective.has_jac():
             return [], array([])
 
@@ -373,9 +369,9 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
     def __compute_constraints_gradients(
         self,
-        x_vec,  # type: ndarray
-        mask,  # type: ndarray
-    ):  # type: (...) -> Tuple[List[float], ndarray]
+        x_vec: ndarray,
+        mask: ndarray,
+    ) -> tuple[list[float], ndarray]:
         constr_grads = list()
         output_mask = list()
 

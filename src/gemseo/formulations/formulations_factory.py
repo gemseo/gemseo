@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +18,9 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a formulation or check its availability."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List
 from typing import Sequence
 
 from gemseo.algos.design_space import DesignSpace
@@ -34,10 +31,10 @@ from gemseo.core.formulation import MDOFormulation
 LOGGER = logging.getLogger(__name__)
 
 
-class MDOFormulationsFactory(object):
+class MDOFormulationsFactory:
     """MDO Formulations factory to create the formulation from a name or a class."""
 
-    def __init__(self):  # type:(...) -> None
+    def __init__(self) -> None:
         """Scan the directories to search for subclasses of :class:`.MDOFormulation`.
 
         Searches in "GEMSEO_PATH" and gemseo.formulations
@@ -46,12 +43,12 @@ class MDOFormulationsFactory(object):
 
     def create(
         self,
-        formulation_name,  # type:str
-        disciplines,  # type: Sequence[MDODiscipline]
-        objective_name,  # type: str
-        design_space,  # type: DesignSpace
+        formulation_name: str,
+        disciplines: Sequence[MDODiscipline],
+        objective_name: str,
+        design_space: DesignSpace,
         **options,
-    ):  # type: (...) -> MDOFormulation
+    ) -> MDOFormulation:
         """Create a formulation.
 
         Args:
@@ -70,14 +67,14 @@ class MDOFormulationsFactory(object):
         )
 
     @property
-    def formulations(self):  # type:(...) ->List[str]
+    def formulations(self) -> list[str]:
         """The available formulations."""
         return self.factory.classes
 
     def is_available(
         self,
-        formulation_name,  # type:str
-    ):  # type: (...) -> bool
+        formulation_name: str,
+    ) -> bool:
         """Check the availability of a formulation.
 
         Args:

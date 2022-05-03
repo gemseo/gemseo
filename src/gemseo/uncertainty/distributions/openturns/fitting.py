@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -100,12 +99,10 @@ associated with the criterion and a criterion selection:
 - 'first': Select the first distribution for which the criterion is
   greater (or lower, depending on the criterion) than the level.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Callable
-from typing import List
 from typing import Mapping
 from typing import Sequence
 from typing import Tuple
@@ -115,14 +112,13 @@ import openturns as ots
 from numpy import ndarray
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.utils.py23_compat import string_types
 
 LOGGER = logging.getLogger(__name__)
 
 MeasureType = Union[Tuple[bool, Mapping[str, float]], float]
 
 
-class OTDistributionFitter(object):
+class OTDistributionFitter:
     """Fit a probabilistic distribution from a data array.
 
     Attributes:
@@ -151,11 +147,10 @@ class OTDistributionFitter(object):
 
     def __init__(
         self,
-        variable,  # type: str
-        data,  # type: ndarray
-    ):  # noqa: D205,D212,D415
-        # type: (...) -> None
-        """
+        variable: str,
+        data: ndarray,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             variable: The name of the variable.
             data: A data array.
@@ -169,9 +164,8 @@ class OTDistributionFitter(object):
 
     def _get_factory(
         self,
-        distribution,  # type: str
-    ):
-        # type: (...) -> ots.DistributionFactory
+        distribution: str,
+    ) -> ots.DistributionFactory:
         """Get the distribution factory.
 
         Args:
@@ -192,9 +186,8 @@ class OTDistributionFitter(object):
 
     def _get_fitting_test(
         self,
-        criterion,  # type: str
-    ):
-        # type: (...) -> Callable
+        criterion: str,
+    ) -> Callable:
         """Get the fitting test.
 
         Args:
@@ -215,9 +208,8 @@ class OTDistributionFitter(object):
 
     def fit(
         self,
-        distribution,  # type: str
-    ):
-        # type: (...) -> OTDistribution
+        distribution: str,
+    ) -> OTDistribution:
         """Fit a distribution.
 
         Args:
@@ -234,11 +226,10 @@ class OTDistributionFitter(object):
 
     def compute_measure(
         self,
-        distribution,  # type: Union[OTDistribution, str]
-        criterion,  # type: str
-        level=0.05,  # type: float
-    ):
-        # type: (...) -> MeasureType
+        distribution: OTDistribution | str,
+        criterion: str,
+        level: float = 0.05,
+    ) -> MeasureType:
         """Measure the goodness-of-fit of a distribution to data.
 
         Args:
@@ -252,7 +243,7 @@ class OTDistributionFitter(object):
         Returns:
             The goodness-of-fit measure.
         """
-        if isinstance(distribution, string_types):
+        if isinstance(distribution, str):
             distribution = self.fit(distribution)
         if distribution.dimension > 1:
             raise TypeError("A 1D distribution is required.")
@@ -272,12 +263,11 @@ class OTDistributionFitter(object):
 
     def select(
         self,
-        distributions,  # type: Union[Sequence[str], Sequence[OTDistribution]]
-        fitting_criterion,  # type: str
-        level=0.05,  # type: float
-        selection_criterion="best",  # type: str
-    ):
-        # type: (...) -> OTDistribution
+        distributions: Sequence[str] | Sequence[OTDistribution],
+        fitting_criterion: str,
+        level: float = 0.05,
+        selection_criterion: str = "best",
+    ) -> OTDistribution:
         """Select the best distribution from a list of candidates.
 
         Args:
@@ -295,7 +285,7 @@ class OTDistributionFitter(object):
         """
         measures = []
         for index, distribution in enumerate(distributions):
-            if isinstance(distribution, string_types):
+            if isinstance(distribution, str):
                 distribution = self.fit(distribution)
             measures.append(
                 self.compute_measure(distribution, fitting_criterion, level)
@@ -309,12 +299,11 @@ class OTDistributionFitter(object):
     @classmethod
     def select_from_measures(
         cls,
-        measures,  # type: List[MeasureType]
-        fitting_criterion,  # type: str
-        level=0.05,  # type: float
-        selection_criterion="best",  # type: str
-    ):
-        # type: (...) -> int
+        measures: list[MeasureType],
+        fitting_criterion: str,
+        level: float = 0.05,
+        selection_criterion: str = "best",
+    ) -> int:
         """Select the best distribution from measures.
 
         Args:
@@ -333,7 +322,7 @@ class OTDistributionFitter(object):
         if fitting_criterion in cls.SIGNIFICANCE_TESTS:
             for index, _ in enumerate(measures):
                 measures[index] = measures[index][1]["p-value"]
-            if sum([p_value > level for p_value in measures]) == 0:
+            if sum(p_value > level for p_value in measures) == 0:
                 LOGGER.warning(
                     "All criteria values are lower than the significance level %s.",
                     level,
@@ -347,10 +336,10 @@ class OTDistributionFitter(object):
     @classmethod
     def __apply_first_strategy(
         cls,
-        measures,  # type: List[float]
-        fitting_criterion,  # type: str
-        level=0.05,  # type: float
-    ):  # type: (...) -> int
+        measures: list[float],
+        fitting_criterion: str,
+        level: float = 0.05,
+    ) -> int:
         """Select the best distribution from measures by applying the "first" strategy.
 
         Args:
@@ -378,10 +367,9 @@ class OTDistributionFitter(object):
     @classmethod
     def __find_opt_distribution(
         cls,
-        measures,  # type: List[float]
-        fitting_criterion,  # type: str
-    ):
-        # type: (...) -> int
+        measures: list[float],
+        fitting_criterion: str,
+    ) -> int:
         """Select the best distribution from measures by applying the "best" strategy.
 
         Args:
@@ -398,19 +386,16 @@ class OTDistributionFitter(object):
         return index
 
     @property
-    def available_distributions(self):
-        # type: (...) -> List[str]
+    def available_distributions(self) -> list[str]:
         """The available distributions."""
         return sorted(self._AVAILABLE_DISTRIBUTIONS.keys())
 
     @property
-    def available_criteria(self):
-        # type: (...) -> List[str]
+    def available_criteria(self) -> list[str]:
         """The available goodness-of-fit criteria."""
         return sorted(self._AVAILABLE_FITTING_TESTS.keys())
 
     @property
-    def available_significance_tests(self):
-        # type: (...) -> List[str]
+    def available_significance_tests(self) -> list[str]:
         """The significance tests."""
         return sorted(self.SIGNIFICANCE_TESTS)

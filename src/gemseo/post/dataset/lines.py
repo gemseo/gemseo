@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,7 +23,6 @@ A :class:`.Lines` plot represents variables vs samples using lines.
 """
 from __future__ import annotations
 
-from typing import Optional
 from typing import Sequence
 
 from matplotlib.axes import Axes
@@ -39,9 +37,9 @@ class Lines(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        variables=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        variables: Sequence[str] | None = None,
+    ) -> None:
         """
         Args:
             variables: The names of the variables to plot.

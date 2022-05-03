@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,6 +18,7 @@
 #        :author:  Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import faulthandler
+from pathlib import Path
 from typing import Generator
 from typing import Tuple
 
@@ -27,7 +27,6 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.utils.py23_compat import Path
 from gemseo.wrappers.xls_discipline import XLSDiscipline
 from numpy import array
 from numpy import exp

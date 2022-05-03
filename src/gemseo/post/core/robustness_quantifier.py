@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Quantification of robustness of the optimum to variables perturbations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import numpy as np
 from numpy.random import multivariate_normal
@@ -30,7 +28,7 @@ from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 
-class RobustnessQuantifier(object):
+class RobustnessQuantifier:
     """classdocs."""
 
     AVAILABLE_APPROXIMATIONS = ["BFGS", "SR1", "LEAST_SQUARES"]

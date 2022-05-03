@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm selection module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
@@ -35,7 +31,7 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -49,11 +48,11 @@ or classification ones.
 <https://en.wikipedia.org/wiki/Iris_flower_data_set>`_
 
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
+
+from pathlib import Path
 
 from gemseo.core.dataset import Dataset
-from gemseo.utils.py23_compat import Path
 
 
 class IrisDataset(Dataset):
@@ -61,7 +60,7 @@ class IrisDataset(Dataset):
 
     def __init__(self, name="Iris", by_group=True, as_io=False):
         """Constructor."""
-        super(IrisDataset, self).__init__(name, by_group)
+        super().__init__(name, by_group)
         file_path = Path(__file__).parent / "iris.data"
         variables = [
             "sepal_length",

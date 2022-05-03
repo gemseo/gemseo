@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,12 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Francois Gallard
 """Design of experiments from custom data."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import ClassVar
-from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Sequence
@@ -39,7 +37,6 @@ from numpy import ndarray
 
 from gemseo.algos.doe.doe_lib import DOEAlgorithmDescription
 from gemseo.algos.doe.doe_lib import DOELibrary
-from gemseo.utils.py23_compat import Path
 
 OptionType = Optional[Union[str, int, float, bool, List[str], Path, TextIO, ndarray]]
 
@@ -75,8 +72,8 @@ class CustomDOE(DOELibrary):
 
     LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self):  # type: (...) -> None
-        super(CustomDOE, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         name = self.__class__.__name__
         self.algo_name = name
 
@@ -96,17 +93,17 @@ class CustomDOE(DOELibrary):
 
     def _get_options(
         self,
-        doe_file=None,  # type: Optional[Union[str, Path, TextIO]]
-        samples=None,  # type: Optional[ndarray]
-        delimiter=",",  # type: Optional[str]
-        comments="#",  # type: Optional[Union[str,Sequence[str]]]
-        skiprows=0,  # type: int
-        max_time=0,  # type: float
-        eval_jac=False,  # type: bool
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str,OptionType]
+        doe_file: str | Path | TextIO | None = None,
+        samples: ndarray | None = None,
+        delimiter: str | None = ",",
+        comments: str | Sequence[str] | None = "#",
+        skiprows: int = 0,
+        max_time: float = 0,
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:
         """Set the options.
 
         Args:
@@ -145,11 +142,11 @@ class CustomDOE(DOELibrary):
 
     def read_file(
         self,
-        doe_file,  # type: Union[str, Path, TextIO]
-        delimiter=",",  # type: Optional[str]
-        comments="#",  # type: Optional[Union[str,Sequence[str]]]
-        skiprows=0,  # type: int
-    ):  # type: (...) -> ndarray
+        doe_file: str | Path | TextIO,
+        delimiter: str | None = ",",
+        comments: str | Sequence[str] | None = "#",
+        skiprows: int = 0,
+    ) -> ndarray:
         """Read a file containing several samples (one per line) and return them.
 
         Args:
@@ -184,9 +181,7 @@ class CustomDOE(DOELibrary):
 
         return samples
 
-    def _generate_samples(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+    def _generate_samples(self, **options: OptionType) -> ndarray:
         """
         Returns:
             The samples.

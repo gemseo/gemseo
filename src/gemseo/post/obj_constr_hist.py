@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,13 +17,10 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 
 import matplotlib.gridspec as gridspec
 import numpy as np
@@ -52,13 +48,13 @@ class ObjConstrHist(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
+        opt_problem: OptimizationProblem,
+    ) -> None:
         """
         Args:
             opt_problem: The optimization problem to be post-processed.
         """
-        super(ObjConstrHist, self).__init__(opt_problem)
+        super().__init__(opt_problem)
         self.opt_problem = opt_problem
         self.cmap = PARULA  # "viridis"  # "jet"
         self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
@@ -66,8 +62,8 @@ class ObjConstrHist(OptPostProcessor):
 
     def _plot(
         self,
-        constr_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        constr_names: Sequence[str] | None = None,
+    ) -> None:
         """Create the design variables plot.
 
         Args:
@@ -168,8 +164,8 @@ class ObjConstrHist(OptPostProcessor):
 
     def __get_history(
         self,
-        function_name,  # type: str
-    ):  # type: (...) -> Tuple[ndarray,ndarray,int]
+        function_name: str,
+    ) -> tuple[ndarray, ndarray, int]:
         """Access the optimization history of a function.
 
         Also the design variables at which it was computed.
@@ -191,8 +187,8 @@ class ObjConstrHist(OptPostProcessor):
 
     def __get_constraints(
         self,
-        constr_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray]
+        constr_names: Sequence[str] | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray]:
         """Return the constraints with formatted shape.
 
         Args:

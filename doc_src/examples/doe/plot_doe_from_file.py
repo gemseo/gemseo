@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -22,9 +21,6 @@
 Use a design of experiments from a file
 =======================================
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
@@ -42,7 +38,7 @@ design_space.add_variable("b", 1, design_space.INTEGER, 1, 10)
 #######################################################################################
 # We want to evaluate this discipline over this design space
 # by using the input samples defined in the file "doe.txt":
-f = open("doe.txt", "r")
+f = open("doe.txt")
 print(f.read())
 
 #######################################################################################

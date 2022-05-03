@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -30,8 +29,7 @@ of available scalable models
 and to check is a type of scalable model is available
 (see :meth:`.ScalableModelFactory.is_available` method)
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -41,7 +39,7 @@ from gemseo.problems.scalable.data_driven.model import ScalableModel
 LOGGER = logging.getLogger(__name__)
 
 
-class ScalableModelFactory(object):
+class ScalableModelFactory:
     """This factory instantiates a class:`.ScalableModel` from its class name.
 
     The class can be internal to |g| or located in an external module whose path is

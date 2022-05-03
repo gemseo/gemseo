@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -49,8 +48,8 @@ def input_data():
 
 
 def test_concatenation_discipline_execution(
-    concatenation_disc,  # type: ConcatenationDiscipline
-    input_data,  # type: Dict[str, ndarray]
+    concatenation_disc: ConcatenationDiscipline,
+    input_data: Dict[str, ndarray],
 ):
     """Execution of a Concatenation Discipline.
 
@@ -65,8 +64,8 @@ def test_concatenation_discipline_execution(
 
 
 def test_concatenation_discipline_linearization(
-    concatenation_disc,  # type: ConcatenationDiscipline
-    input_data,  # type: Dict[str, ndarray]
+    concatenation_disc: ConcatenationDiscipline,
+    input_data: Dict[str, ndarray],
 ):
     """Linearization of a Concatenation Discipline.
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -33,10 +32,7 @@ divided by the total number of *predicted* positives
 and :math:`\\mathit{recall}` is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Union
+from __future__ import annotations
 
 from numpy import ndarray
 from sklearn.metrics import f1_score
@@ -52,9 +48,9 @@ class F1Measure(MLErrorMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLClassificationAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLClassificationAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for classification.
@@ -63,10 +59,10 @@ class F1Measure(MLErrorMeasure):
 
     def _compute_measure(
         self,
-        outputs,  # type: ndarray
-        predictions,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        outputs: ndarray,
+        predictions: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         if multioutput:
             raise NotImplementedError("F1 is only defined for single target.")
         return f1_score(outputs, predictions, average="weighted")

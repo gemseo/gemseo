@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -28,11 +27,7 @@ This dimension reduction algorithm relies on the PCA class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.decomposition.PCA.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Optional
-from typing import Union
+from __future__ import annotations
 
 from numpy import ndarray
 from sklearn.decomposition import KernelPCA
@@ -48,11 +43,11 @@ class KPCA(DimensionReduction):
 
     def __init__(
         self,
-        name="KPCA",  # type: str
-        n_components=None,  # type: Optional[int]
-        fit_inverse_transform=True,  # type: bool
-        kernel="linear",  # type: str
-        **parameters,  # type: Optional[Union[float,int,str]]
+        name: str = "KPCA",
+        n_components: int | None = None,
+        fit_inverse_transform: bool = True,
+        kernel: str = "linear",
+        **parameters: float | int | str | None,
     ):
         """
         Args:
@@ -62,7 +57,7 @@ class KPCA(DimensionReduction):
                 either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.
             **parameters: The optional parameters for sklearn KPCA constructor.
         """
-        super(KPCA, self).__init__(name, n_components=n_components, **parameters)
+        super().__init__(name, n_components=n_components, **parameters)
         self.algo = KernelPCA(
             n_components,
             fit_inverse_transform=fit_inverse_transform,
@@ -72,20 +67,20 @@ class KPCA(DimensionReduction):
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         self.algo.fit(data)
         self.parameters["n_components"] = len(self.algo.eigenvalues_)
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.transform(data)
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         return self.algo.inverse_transform(data)

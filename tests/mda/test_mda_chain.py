@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,10 +17,8 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -36,7 +33,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.py23_compat import Path
 from numpy import array
 from numpy import isclose
 from numpy import ones

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -30,11 +29,9 @@ and possibly :meth:`.Transformer.inverse_transform` methods.
    :mod:`~gemseo.mlearning.transform.scaler.scaler`
    :mod:`~gemseo.mlearning.transform.dimension_reduction.dimension_reduction`
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import NoReturn
-from typing import Optional
 from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -57,9 +54,9 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        name="Transformer",  # type: str
-        **parameters,  # type: Optional[Union[float,int,str,bool]]
-    ):  # type: (...) -> None
+        name: str = "Transformer",
+        **parameters: float | int | str | bool | None,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
@@ -69,7 +66,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         self.parameters = parameters
         self.is_fitted = False
 
-    def duplicate(self):  # type: (...) -> Transformer
+    def duplicate(self) -> Transformer:
         """Duplicate the current object.
 
         Returns:
@@ -79,9 +76,9 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> NoReturn:
         """Fit the transformer to the data.
 
         Args:
@@ -92,9 +89,9 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> NoReturn:
         """Fit the transformer to the data.
 
         Args:
@@ -104,8 +101,8 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Transform the data.
 
         Args:
@@ -118,8 +115,8 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Perform an inverse transform on the data.
 
         Args:
@@ -132,9 +129,9 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def fit_transform(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> ndarray:
         """Fit the transformer to the data and transform the data.
 
         Args:
@@ -148,8 +145,8 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_jacobian(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Compute Jacobian of transformer.transform().
 
         Args:
@@ -162,8 +159,8 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
 
     def compute_jacobian_inverse(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+    ) -> NoReturn:
         """Compute Jacobian of the transformer.inverse_transform().
 
         Args:
@@ -174,14 +171,12 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         return self.__class__.__name__
 
 
 class TransformerFactory(Factory):
     """A factory of :class:`.Transformer`."""
 
-    def __init__(self):  # type: (...) -> None
-        super(TransformerFactory, self).__init__(
-            Transformer, ("gemseo.mlearning.transform",)
-        )
+    def __init__(self) -> None:
+        super().__init__(Transformer, ("gemseo.mlearning.transform",))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,7 +18,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted log-normal distribution."""
-from typing import Tuple
+from __future__ import annotations
 
 from numpy import exp
 from numpy import ndarray
@@ -44,13 +43,12 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
 
     def __init__(
         self,
-        size,  # type: int
-        mean,  # type: float
-        std,  # type: float
-        location,  # type: float
-    ):  # type:(...) -> None
-        # noqa: D205 D212 D415
-        """
+        size: int,
+        mean: float,
+        std: float,
+        location: float,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             mean: The estimation of the mean of the natural logarithm
                 of a log-normal distributed random variable.
@@ -58,17 +56,14 @@ class LogNormalToleranceInterval(NormalToleranceInterval):
                 of a log-normal distributed random variable.
             location: The estimation of the location of the log-normal distributed.
         """
-        super(LogNormalToleranceInterval, self).__init__(size, mean, std)
+        super().__init__(size, mean, std)
         self.__location = location
 
-    def compute(
+    def compute(  # noqa: D102
         self,
-        coverage,  # type: float
-        confidence=0.95,  # type: float
-        side=ToleranceIntervalSide.BOTH,  # type: ToleranceIntervalSide
-    ):  # type: (...) -> Tuple[ndarray,ndarray]
-        # noqa: D102
-        lower, upper = super(LogNormalToleranceInterval, self).compute(
-            coverage, confidence, side
-        )
+        coverage: float,
+        confidence: float = 0.95,
+        side: ToleranceIntervalSide = ToleranceIntervalSide.BOTH,
+    ) -> tuple[ndarray, ndarray]:
+        lower, upper = super().compute(coverage, confidence, side)
         return exp(lower) + self.__location, exp(upper) + self.__location

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,18 +18,13 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Driver library tests."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest import mock
 
 import pytest
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.api import configure_logger
 from gemseo.problems.analytical.power_2 import Power2
-from gemseo.utils.py23_compat import PY2
 from numpy import array
 
 
@@ -86,7 +80,7 @@ def test_require_grad():
 
     class MyDriver(DriverLib):
         def __init__(self):
-            super(MyDriver, self).__init__()
+            super().__init__()
             self.lib_dict = {
                 "SLSQP": DriverDescription(
                     algorithm_name="SLSQP",
@@ -107,8 +101,6 @@ def test_new_iteration_callback_xvect(caplog):
     Args:
         caplog: Fixture to access and control log capturing.
     """
-    if PY2:
-        configure_logger("GEMSEO")
     problem = Power2()
     problem.database.store(
         array([0.79499653, 0.20792012, 0.96630481]),

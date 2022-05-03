@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,13 +18,11 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Reproducer for issue #142."""
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.json_grammar import JSONGrammar
-from gemseo.utils.py23_compat import Path
 
 TEST_PATH = Path(__file__).parent / "data"
 
@@ -34,7 +31,7 @@ class _MyDisciplineA(MDODiscipline):
     """A test class."""
 
     def __init__(self):
-        super(_MyDisciplineA, self).__init__()
+        super().__init__()
         output_grammar_file = TEST_PATH / "grammar_test_bug142.json"
         output_grammar_json = JSONGrammar(name="X", schema_file=output_grammar_file)
         self.input_grammar.initialize_from_data_names(["A"])
@@ -45,7 +42,7 @@ class _MyDisciplineB(MDODiscipline):
     """A test class."""
 
     def __init__(self):
-        super(_MyDisciplineB, self).__init__()
+        super().__init__()
         input_grammar_file = TEST_PATH / "grammar_test_bug142.json"
         input_grammar_json = JSONGrammar(name="X", schema_file=input_grammar_file)
         self.input_grammar.update_from(input_grammar_json)

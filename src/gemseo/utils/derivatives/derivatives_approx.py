@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,22 +17,16 @@
 #       :author : Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Finite differences approximation."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import pickle
 from itertools import chain
 from multiprocessing import cpu_count
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
 
@@ -59,13 +52,13 @@ from gemseo.utils.data_conversion import (
     concatenate_dict_of_arrays_to_array,
     split_array_to_dict_of_arrays,
 )
-from gemseo.utils.py23_compat import Path, xrange
+from pathlib import Path
 
 EPSILON = finfo(float).eps
 LOGGER = logging.getLogger(__name__)
 
 
-class DisciplineJacApprox(object):
+class DisciplineJacApprox:
     """Approximates a discipline Jacobian using finite differences or Complex step."""
 
     COMPLEX_STEP = "complex_step"
@@ -75,13 +68,13 @@ class DisciplineJacApprox(object):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        approx_method=FINITE_DIFFERENCES,  # type: str
-        step=1e-7,  # type: float
-        parallel=False,  # type: bool
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0,  # type: float
+        discipline: MDODiscipline,
+        approx_method: str = FINITE_DIFFERENCES,
+        step: float = 1e-7,
+        parallel: bool = False,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0,
     ):
         """
         Args:
@@ -120,8 +113,8 @@ class DisciplineJacApprox(object):
 
     def _create_approximator(
         self,
-        outputs,  # type: Sequence[str]
-        inputs,  # type: Sequence[str]
+        outputs: Sequence[str],
+        inputs: Sequence[str],
     ):
         """Create the Jacobian approximation class.
 
@@ -137,7 +130,7 @@ class DisciplineJacApprox(object):
         )
         if self.approx_method not in [self.FINITE_DIFFERENCES, self.COMPLEX_STEP]:
             raise ValueError(
-                "Unknown Jacobian approximation method {}.".format(self.approx_method)
+                f"Unknown Jacobian approximation method {self.approx_method}."
             )
         factory = GradientApproximationFactory()
         self.approximator = factory.create(
@@ -150,11 +143,11 @@ class DisciplineJacApprox(object):
 
     def auto_set_step(
         self,
-        outputs,  # type: Sequence[str]
-        inputs,  # type: Sequence[str]
-        print_errors=True,  # type: bool
-        numerical_error=EPSILON,  # type: float
-    ):  # type: (...) -> ndarray
+        outputs: Sequence[str],
+        inputs: Sequence[str],
+        print_errors: bool = True,
+        numerical_error: float = EPSILON,
+    ) -> ndarray:
         r"""Compute the optimal step.
 
         Require a first evaluation of the perturbed functions values.
@@ -203,9 +196,9 @@ class DisciplineJacApprox(object):
 
     def _prepare_xvect(
         self,
-        inputs,  # type: Iterable[str]
-        data=None,  # type: Optional[Dict[str,ndarray]]
-    ):  # type: (...) -> ndarray
+        inputs: Iterable[str],
+        data: dict[str, ndarray] | None = None,
+    ) -> ndarray:
         """Convert an input data mapping into an input array.
 
         Args:
@@ -223,10 +216,10 @@ class DisciplineJacApprox(object):
 
     def compute_approx_jac(
         self,
-        outputs,  # type:Iterable[str]
-        inputs,  # type:Iterable[str]
-        x_indices=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> Dict[str,Dict[str,ndarray]]
+        outputs: Iterable[str],
+        inputs: Iterable[str],
+        x_indices: Sequence[int] | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
         Args:
@@ -265,20 +258,20 @@ class DisciplineJacApprox(object):
 
     def check_jacobian(
         self,
-        analytic_jacobian,  # type: Dict[str,Dict[str,ndarray]]
-        outputs,  # type: Iterable[str]
-        inputs,  # type: Iterable[str]
-        discipline,  # type: MDODiscipline
-        threshold=1e-8,  # type: float
-        plot_result=False,  # type: bool
-        file_path="jacobian_errors.pdf",  # type: Union[str,Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: int
-        figsize_y=10,  # type: int
-        reference_jacobian_path=None,  # type: Optional[Union[str,Path]]
-        save_reference_jacobian=False,  # type: bool
-        indices=None,  # type: Optional[Union[int,Sequence[int],slice,Ellipsis]]
-    ):  # type: (...) -> bool
+        analytic_jacobian: dict[str, dict[str, ndarray]],
+        outputs: Iterable[str],
+        inputs: Iterable[str],
+        discipline: MDODiscipline,
+        threshold: float = 1e-8,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        figsize_x: int = 10,
+        figsize_y: int = 10,
+        reference_jacobian_path: str | Path | None = None,
+        save_reference_jacobian: bool = False,
+        indices: int | Sequence[int] | slice | Ellipsis | None = None,
+    ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
         If `reference_jacobian_path` is not `None`
@@ -428,10 +421,10 @@ class DisciplineJacApprox(object):
 
     @staticmethod
     def _compute_variables_indices(
-        indices,  # type: Mapping[str,Union[int,Sequence[int],Ellipsis,slice]]
-        variables_names,  # type: Iterable[str]
-        variables_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> List[int]
+        indices: Mapping[str, int | Sequence[int] | Ellipsis | slice],
+        variables_names: Iterable[str],
+        variables_sizes: Mapping[str, int],
+    ) -> list[int]:
         """Return indices.
 
         Args:
@@ -478,9 +471,9 @@ class DisciplineJacApprox(object):
 
     @staticmethod
     def __format_jac_as_grad_dict(
-        computed_jac,  # type: Dict[str,Dict[str,ndarray]]
-        approx_jac,  # type: Dict[str,Dict[str,ndarray]]
-    ):  # type: (...) -> Tuple[Dict[str,ndarray],Dict[str,ndarray],List[str]]
+        computed_jac: dict[str, dict[str, ndarray]],
+        approx_jac: dict[str, dict[str, ndarray]],
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray], list[str]]:
         """Format the approximate Jacobian dictionaries as a dictionary of gradients.
 
         Args:
@@ -503,7 +496,7 @@ class DisciplineJacApprox(object):
                 x_names = [
                     inp + "_" + str(i + 1)
                     for inp in in_names
-                    for i in xrange(apprx_jac_dict[inp].shape[1])
+                    for i in range(apprx_jac_dict[inp].shape[1])
                 ]
 
             for in_data in in_names:
@@ -516,7 +509,7 @@ class DisciplineJacApprox(object):
                 approx_grad_dict[out_data] = approx_grad.flatten()
                 computed_grad_dict[out_data] = computed_grad.flatten()
             else:
-                for i in xrange(n_f):
+                for i in range(n_f):
                     out_name = out_data + "_" + str(i)
                     approx_grad_dict[out_name] = approx_grad[i, :]
                     computed_grad_dict[out_name] = computed_grad[i, :]
@@ -524,13 +517,13 @@ class DisciplineJacApprox(object):
 
     def plot_jac_errors(
         self,
-        computed_jac,  # type: ndarray
-        approx_jac,  # type: ndarray
-        file_path="jacobian_errors.pdf",  # type: Union[str,Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: float
-        figsize_y=10,  # type: float
-    ):  # type: (...) -> Figure
+        computed_jac: ndarray,
+        approx_jac: ndarray,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        figsize_x: float = 10,
+        figsize_y: float = 10,
+    ) -> Figure:
         """Generate a plot of the exact vs approximated Jacobian.
 
         Args:
@@ -607,12 +600,12 @@ class DisciplineJacApprox(object):
 
 
 def comp_best_step(
-    f_p,  # type: ndarray
-    f_x,  # type: ndarray
-    f_m,  # type: ndarray
-    step,  # type: float
-    epsilon_mach=EPSILON,  # type: float
-):  # type: (...) -> Tuple[Optional[ndarray],Optional[ndarray],float]
+    f_p: ndarray,
+    f_x: ndarray,
+    f_m: ndarray,
+    step: float,
+    epsilon_mach: float = EPSILON,
+) -> tuple[ndarray | None, ndarray | None, float]:
     r"""Compute the optimal step for finite differentiation.
 
     Applied to a forward first order finite differences gradient approximation.
@@ -655,9 +648,9 @@ def comp_best_step(
 
 
 def compute_truncature_error(
-    hess,  # type: ndarray
-    step,  # type: float
-):  # type: (...) -> ndarray
+    hess: ndarray,
+    step: float,
+) -> ndarray:
     r"""Estimate the truncation error.
 
     Defined for a first order finite differences scheme.
@@ -674,10 +667,10 @@ def compute_truncature_error(
 
 
 def compute_cancellation_error(
-    f_x,  # type: ndarray
-    step,  # type: float
+    f_x: ndarray,
+    step: float,
     epsilon_mach=EPSILON,
-):  # type: (...) -> ndarray
+) -> ndarray:
     r"""Estimate the cancellation error.
 
     This is the round-off when doing :math:`f(x+\\delta_x)-f(x)`.
@@ -696,11 +689,11 @@ def compute_cancellation_error(
 
 
 def approx_hess(
-    f_p,  # type:ndarray
-    f_x,  # type:ndarray
-    f_m,  # type:ndarray
-    step,  # type: float
-):  # type: (...) -> ndarray
+    f_p: ndarray,
+    f_x: ndarray,
+    f_m: ndarray,
+    step: float,
+) -> ndarray:
     r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
 
     Args:

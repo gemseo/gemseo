@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -13,9 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import List
 
 import pytest
@@ -28,7 +24,7 @@ from gemseo.disciplines.utils import get_all_outputs
 
 
 @pytest.fixture(scope="module")
-def disciplines_and_scenario():  # type: (...) -> List[MDODiscipline]
+def disciplines_and_scenario() -> List[MDODiscipline]:
     """Disciplines with a scenario."""
     disciplines = [
         AnalyticDiscipline({"y1": "x1"}, name="f1"),

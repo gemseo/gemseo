@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,6 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import unicode_literals
-
 import sys
 import unittest
 from timeit import default_timer as timer
@@ -51,7 +48,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-class CallableWorker(object):
+class CallableWorker:
     """Callable worker."""
 
     def __call__(self, counter):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test error measure module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
@@ -30,12 +26,11 @@ from gemseo.mlearning.qual_measure.r2_measure import R2Measure
 from gemseo.mlearning.regression.linreg import LinearRegression
 from gemseo.mlearning.regression.polyreg import PolynomialRegression
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
-from gemseo.utils.py23_compat import xrange
 from numpy import linspace
 
 
 @pytest.fixture
-def measure():  # type: (...) ->MLErrorMeasure
+def measure() -> MLErrorMeasure:
     """The error measure of a linear regression based on the Rosenbrock dataset."""
     dataset = RosenbrockDataset(opt_naming=False)
     algo = LinearRegression(dataset)
@@ -67,7 +62,7 @@ def test_resampling_based_measure(method):
     algo = PolynomialRegression(dataset, degree=2)
     measure = MSEMeasure(algo)
     measure.evaluate(method)
-    assert list(algo.learning_samples_indices) == list(xrange(len(dataset)))
+    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
 
 
 @pytest.fixture(scope="module")

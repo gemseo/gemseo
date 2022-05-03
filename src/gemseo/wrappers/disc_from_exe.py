@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Make a discipline from an executable."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import re
@@ -33,13 +31,9 @@ from multiprocessing import Manager
 from os import listdir
 from os import mkdir
 from os.path import join
-from typing import Dict
-from typing import List
+from pathlib import Path
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 from uuid import uuid1
 
 from numpy import array
@@ -49,13 +43,10 @@ from gemseo.core.data_processor import DataProcessor  # noqa: F401
 from gemseo.core.data_processor import FloatDataProcessor
 from gemseo.core.discipline import MDODiscipline
 from gemseo.utils.base_enum import BaseEnum
-from gemseo.utils.py23_compat import OrderedDict  # automatically dict from py36
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import xrange
 
 LOGGER = logging.getLogger(__name__)
 
-NUMERICS = [str(j) for j in xrange(10)]
+NUMERICS = [str(j) for j in range(10)]
 INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
 OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
 
@@ -136,19 +127,19 @@ class DiscFromExe(MDODiscipline):
 
     def __init__(
         self,
-        input_template,  # type: str
-        output_template,  # type: str
-        output_folder_basepath,  # type: str
-        executable_command,  # type: str
-        input_filename,  # type: str
-        output_filename,  # type: str
-        folders_iter=FoldersIter.NUMBERED,  # type: Union[str, FoldersIter]
-        name=None,  # type: Optional[str]
-        parse_outfile_method=Parsers.TEMPLATE_PARSER,  # type: Union[str, Parsers]
-        write_input_file_method=None,  # type: Optional[str]
-        parse_out_separator="=",  # type: str
-        use_shell=True,  # type: bool
-    ):  # type: (...) -> None
+        input_template: str,
+        output_template: str,
+        output_folder_basepath: str,
+        executable_command: str,
+        input_filename: str,
+        output_filename: str,
+        folders_iter: str | FoldersIter = FoldersIter.NUMBERED,
+        name: str | None = None,
+        parse_outfile_method: str | Parsers = Parsers.TEMPLATE_PARSER,
+        write_input_file_method: str | None = None,
+        parse_out_separator: str = "=",
+        use_shell: bool = True,
+    ) -> None:
         """
         Args:
             input_template: The path to the input file template.
@@ -196,7 +187,7 @@ class DiscFromExe(MDODiscipline):
         Raises:
             TypeError: If the provided write_input_file_method is not callable.
         """
-        super(DiscFromExe, self).__init__(name=name)
+        super().__init__(name=name)
         self.input_template = input_template
         self.output_template = output_template
         self.input_filename = input_filename
@@ -248,7 +239,7 @@ class DiscFromExe(MDODiscipline):
         self.__parse_templates_and_set_grammars()
 
     @property
-    def folders_iter(self):  # type: (...) -> FoldersIter
+    def folders_iter(self) -> FoldersIter:
         """The names of the new execution directories.
 
         The setter will check that the value provided for folder_iter is valid.
@@ -263,14 +254,14 @@ class DiscFromExe(MDODiscipline):
     @folders_iter.setter
     def folders_iter(
         self,
-        value,  # type: Union[str, FoldersIter]
-    ):  # type: (...) -> None
+        value: str | FoldersIter,
+    ) -> None:
         if value not in FoldersIter:
-            msg = "{} is not a valid folder_iter value.".format(value)
+            msg = f"{value} is not a valid folder_iter value."
             raise ValueError(msg)
         self.__folders_iter = FoldersIter.get_member_from_name(value)
 
-    def __check_basepath_on_windows(self):  # type: (...) -> None
+    def __check_basepath_on_windows(self) -> None:
         """Check that the basepath can be used.
 
         If the user use shell=True under Windows with a basepath
@@ -293,11 +284,11 @@ class DiscFromExe(MDODiscipline):
             )
             raise ValueError(msg)
 
-    def __parse_templates_and_set_grammars(self):  # type: (...) -> None
+    def __parse_templates_and_set_grammars(self) -> None:
         """Parse the templates and set the grammar of the discipline."""
-        with open(self.input_template, "r") as infile:
+        with open(self.input_template) as infile:
             self._in_lines = infile.readlines()
-        with open(self.output_template, "r") as outfile:
+        with open(self.output_template) as outfile:
             self._out_lines = outfile.readlines()
 
         self._in_dict, self._in_pos = parse_template(self._in_lines, True)
@@ -321,7 +312,7 @@ class DiscFromExe(MDODiscipline):
             k: array([literal_eval(v)]) for k, v in self._in_dict.items()
         }
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run the wrapper."""
         uuid = self.generate_uid()
 
@@ -348,7 +339,7 @@ class DiscFromExe(MDODiscipline):
         if err != 0:
             raise RuntimeError("Execution failed and returned error code : " + str(err))
         outfile = join(out_dir, self.output_filename)
-        with open(outfile, "r") as outfile:
+        with open(outfile) as outfile:
             out_lines = outfile.readlines()
 
         if len(out_lines) != len(self._out_lines):
@@ -360,7 +351,7 @@ class DiscFromExe(MDODiscipline):
         out_vals = self.parse_outfile(self._out_pos, out_lines)
         self.local_data.update(out_vals)
 
-    def generate_uid(self):  # type: (...) -> str
+    def generate_uid(self) -> str:
         """Generate a unique identifier for the execution directory.
 
         Generate a unique identifier for the current execution.
@@ -387,7 +378,7 @@ class DiscFromExe(MDODiscipline):
             )
             raise ValueError(msg)
 
-    def _list_out_dirs(self):  # type: (...) -> List[str]
+    def _list_out_dirs(self) -> list[str]:
         """Return the directories in the output folder path.
 
         Returns:
@@ -395,7 +386,7 @@ class DiscFromExe(MDODiscipline):
         """
         return listdir(self.output_folder_basepath)
 
-    def _get_max_outdir(self):  # type: (...) -> int
+    def _get_max_outdir(self) -> int:
         """Get the maximum current index of output folders.
 
         Returns:
@@ -404,13 +395,13 @@ class DiscFromExe(MDODiscipline):
         outs = list(self._list_out_dirs())
         if not outs:
             return 0
-        return max([literal_eval(n) for n in outs])
+        return max(literal_eval(n) for n in outs)
 
 
 def parse_template(
-    template_lines,  # type: Sequence[str]
-    grammar_is_input,  # type: bool
-):  # type: (...) -> Tuple[Dict[str, ndarray], Dict[str, Tuple[int]]]
+    template_lines: Sequence[str],
+    grammar_is_input: bool,
+) -> tuple[dict[str, ndarray], dict[str, tuple[int]]]:
     """Parse the input or output template.
 
     This function parses the input (or output) template.
@@ -439,8 +430,8 @@ def parse_template(
     pattern_re = INPUT_REGEX if grammar_is_input else OUTPUT_REGEX
 
     regex = re.compile(pattern_re)  # , re.MULTILINE
-    data_dict = OrderedDict()
-    pos_dict = OrderedDict()
+    data_dict = {}
+    pos_dict = {}
 
     for lineid, line in enumerate(template_lines):
         for match in regex.finditer(line):
@@ -464,12 +455,12 @@ def parse_template(
 
 
 def write_input_file(
-    input_file_path,  # type: str
-    data,  # type: Mapping[str, ndarray]
-    input_positions,  # type: Mapping[str, Tuple[int]]
-    input_lines,  # type: Sequence[str]
-    float_format="{:1.18g}",  # type: str
-):  # type: (...) -> None
+    input_file_path: str,
+    data: Mapping[str, ndarray],
+    input_positions: Mapping[str, tuple[int]],
+    input_lines: Sequence[str],
+    float_format: str = "{:1.18g}",
+) -> None:
     """Write the input file from the input data.
 
     Args:
@@ -497,9 +488,9 @@ def write_input_file(
 
 def parse_key_value_file(
     _,
-    out_lines,  # type: Sequence[str]
-    separator="=",  # type: str
-):  # type: (...) -> Dict[str, float]
+    out_lines: Sequence[str],
+    separator: str = "=",
+) -> dict[str, float]:
     """Parse the output file from the expected text positions.
 
     Args:
@@ -525,9 +516,9 @@ def parse_key_value_file(
 
 
 def parse_outfile(
-    output_positions,  # type: Mapping[str, Tuple[int]]
-    out_lines,  # type: Sequence[str]
-):  # type: (...) -> Dict[str, ndarray]
+    output_positions: Mapping[str, tuple[int]],
+    out_lines: Sequence[str],
+) -> dict[str, ndarray]:
     """Parse the output file from the expected text positions.
 
     Args:

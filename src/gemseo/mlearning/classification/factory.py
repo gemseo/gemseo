@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,8 +25,7 @@ from its class name.
 It also provides a list of available classification models
 and allows testing if a classification model type is available.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -48,8 +46,8 @@ class ClassificationModelFactory(MLAlgoFactory):
     starting with ``gemseo_`` and referenced in the ``PYTHONPATH`` environment variable.
     """
 
-    def __init__(self):  # type: (...) -> None
-        super(ClassificationModelFactory, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.factory = Factory(
             MLClassificationAlgo, ("gemseo.mlearning.classification",)
         )

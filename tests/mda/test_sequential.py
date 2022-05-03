@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,10 +17,8 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -32,7 +29,6 @@ from gemseo.mda.sequential_mda import GSNewtonMDA
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.problems.sellar.sellar import Y_1
 from gemseo.problems.sellar.sellar import Y_2
-from gemseo.utils.py23_compat import Path
 
 
 def test_sequential_mda_sellar(tmp_wd, sellar_disciplines):

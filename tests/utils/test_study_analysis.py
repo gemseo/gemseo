@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,10 +18,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import shutil
 import sys
+from pathlib import Path
 
 import pytest
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.study_analysis import StudyAnalysis
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
@@ -102,7 +101,7 @@ def test_none_inputs():
 
 @pytest.mark.parametrize("file_index", range(1, 19))
 def test_wrong_inputs(tmp_path, file_index):
-    fname = "disciplines_spec_fail{}.xlsx".format(file_index)
+    fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
         StudyAnalysis(INPUT_DIR / fname)
 

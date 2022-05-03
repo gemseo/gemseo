@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -48,9 +47,9 @@ from numpy import ndarray
 
 
 def check_jac_equals(
-    jac_1,  # type: Dict[str, ndarray]
-    jac_2,  # type: Dict[str, ndarray]
-):  # type: (...) -> bool
+    jac_1: Dict[str, ndarray],
+    jac_2: Dict[str, ndarray],
+) -> bool:
     """Check that two Jacobian matrices are equals.
 
     Args:
@@ -73,7 +72,7 @@ def check_jac_equals(
 
 
 @pytest.fixture
-def sobieski_chain():  # type: (...) -> Tuple[MDOChain, Dict[str, ndarray]]
+def sobieski_chain() -> Tuple[MDOChain, Dict[str, ndarray]]:
     """Build a Sobieski chain.
 
     Returns:
@@ -412,13 +411,13 @@ def test_linearize_errors():
 
     class LinDisc0(MDODiscipline):
         def __init__(self):
-            super(LinDisc0, self).__init__()
+            super().__init__()
 
     LinDisc0()._compute_jacobian()
 
     class LinDisc(MDODiscipline):
         def __init__(self):
-            super(LinDisc, self).__init__()
+            super().__init__()
             self.input_grammar.initialize_from_data_names(["x"])
             self.output_grammar.initialize_from_data_names(["y"])
 
@@ -500,7 +499,7 @@ def test_check_jacobian_2():
 
     class LinDisc(MDODiscipline):
         def __init__(self):
-            super(LinDisc, self).__init__()
+            super().__init__()
             self.input_grammar.initialize_from_data_names(["x"])
             self.output_grammar.initialize_from_data_names(["y"])
             self.default_inputs = {"x": x}

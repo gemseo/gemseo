@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,11 +17,11 @@
 #                           documentation
 #        :author: Benoit Pauwels
 """SciPy linear programming library wrapper."""
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import Optional
 
 from numpy import isfinite
 from scipy.optimize import linprog
@@ -71,7 +70,7 @@ class ScipyLinprog(OptimizationLibrary):
         Generate the library dictionary that contains the list of algorithms with their
         characteristics.
         """
-        super(ScipyLinprog, self).__init__()
+        super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
 
         self.lib_dict = {
@@ -106,16 +105,16 @@ class ScipyLinprog(OptimizationLibrary):
 
     def _get_options(
         self,
-        max_iter=999,  # type: int
-        autoscale=False,  # type: bool
-        presolve=True,  # type: bool
-        redundancy_removal=True,  # type: bool
-        callback=None,  # type: Optional[Callable[[OptimizeResult], Any]]
-        verbose=False,  # type: bool
-        normalize_design_space=True,  # type: bool
-        disp=False,  # type: bool
-        **kwargs,  # type: Any
-    ):  # type: (...) -> Dict[str, Any]
+        max_iter: int = 999,
+        autoscale: bool = False,
+        presolve: bool = True,
+        redundancy_removal: bool = True,
+        callback: Callable[[OptimizeResult], Any] | None = None,
+        verbose: bool = False,
+        normalize_design_space: bool = True,
+        disp: bool = False,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Retrieve the options of the library.
 
         Define the default values for the options using the keyword arguments.
@@ -155,9 +154,7 @@ class ScipyLinprog(OptimizationLibrary):
         )
         return options
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning API."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -70,7 +66,7 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the machine learning algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -83,7 +79,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,str]]
+def classification_data() -> Tuple[ndarray, List[str], Dict[str, str]]:
     """The dataset used to train the classification algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
@@ -95,7 +91,7 @@ def classification_data():  # type: (...) -> Tuple[ndarray,List[str],Dict[str,st
 
 
 @pytest.fixture
-def cluster_data():  # type:(...) -> Tuple[ndarray,List[str]]
+def cluster_data() -> Tuple[ndarray, List[str]]:
     """The dataset used to train the clustering algorithms."""
     data = array(
         [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]

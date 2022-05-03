@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -38,47 +37,47 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock  # noqa: E402
 
 
 @pytest.fixture(scope="module")
-def rosenbrock():  # type: (...) -> Rosenbrock
+def rosenbrock() -> Rosenbrock:
     """The Rosenbrock problem."""
     return Rosenbrock()
 
 
 @pytest.fixture(scope="module")
-def power2():  # type: (...) -> Power2
+def power2() -> Power2:
     """The Power2 problem."""
     return Power2()
 
 
 @pytest.fixture(scope="module")
-def p7_rosenbrock(rosenbrock):  # type: (...)-> PSevenProblem
+def p7_rosenbrock(rosenbrock) -> PSevenProblem:
     """The pSeven adapter for the Rosenbrock problem."""
     return PSevenProblem(rosenbrock)
 
 
 @pytest.fixture(scope="module")
-def p7_power2(power2):  # type: (...) -> PSevenProblem
+def p7_power2(power2) -> PSevenProblem:
     """The pSeven adapter for the Power2 problem."""
     return PSevenProblem(power2)
 
 
 @pytest.fixture
-def problem(rosenbrock, power2, request):  # type: (...) -> OptimizationProblem
+def problem(rosenbrock, power2, request) -> OptimizationProblem:
     """A Gemseo problem dispatched via request for generic parametrized tests."""
     if request.param == "Rosenbrock":
         return rosenbrock
     if request.param == "Power2":
         return power2
-    raise ValueError("Invalid problem name: {}".format(request.param))
+    raise ValueError(f"Invalid problem name: {request.param}")
 
 
 @pytest.fixture
-def p7_problem(p7_rosenbrock, p7_power2, request):  # type: (...) -> PSevenProblem
+def p7_problem(p7_rosenbrock, p7_power2, request) -> PSevenProblem:
     """A pSeven problem dispatched via request for generic parametrized tests."""
     if request.param == "Rosenbrock":
         return p7_rosenbrock
     if request.param == "Power2":
         return p7_power2
-    raise ValueError("Invalid problem name: {}".format(request.param))
+    raise ValueError(f"Invalid problem name: {request.param}")
 
 
 @pytest.mark.parametrize(

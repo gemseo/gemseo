@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,17 +16,13 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
+from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
-from gemseo.utils.py23_compat import Path
 from matplotlib.testing.decorators import image_comparison
-from six import PY2
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -50,7 +45,6 @@ TEST_PARAMETERS = {
 }
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,14 +13,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Services for handling file paths."""
+from __future__ import annotations
+
 import re
 from collections import namedtuple
 from enum import Enum
+from pathlib import Path
 from re import findall
-from typing import Optional
-from typing import Union
 
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 FileDefinition = namedtuple("FileDefinition", ["name", "extension"])
@@ -36,16 +35,16 @@ class FileType(Enum):
     WEBPAGE = FileDefinition("page", "html")
 
 
-class FilePathManager(object):
+class FilePathManager:
     """A factory of file paths for a given type of file and with default settings."""
 
     def __init__(
         self,
-        file_type,  # type: FileType
-        default_name=None,  # type: str
-        default_directory=None,  # type:Optional[Path]
-        default_extension=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        file_type: FileType,
+        default_name: str = None,
+        default_directory: Path | None = None,
+        default_extension: str | None = None,
+    ) -> None:
         """
         Args:
             file_type: The type of file,
@@ -72,7 +71,7 @@ class FilePathManager(object):
 
         self.__file_type = file_type.name
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         string = MultiLineString()
         string.add(self.__class__.__name__)
         string.indent()
@@ -84,11 +83,11 @@ class FilePathManager(object):
 
     def create_file_path(
         self,
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_extension=None,  # type: Optional[str]
-    ):  # type: (...) -> Path
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_extension: str | None = None,
+    ) -> Path:
         """Make a file path from a directory path, a file name and a file extension.
 
         Args:
@@ -106,7 +105,7 @@ class FilePathManager(object):
         Returns:
             The file path.
         """
-        suffix = ".{}".format(file_extension or self.__default_extension)
+        suffix = f".{file_extension or self.__default_extension}"
 
         if file_path is not None:
             file_path = Path(file_path)
@@ -125,8 +124,8 @@ class FilePathManager(object):
 
     @staticmethod
     def to_snake_case(
-        message,  # type: str
-    ):  # type: (...) -> str
+        message: str,
+    ) -> str:
         """Snake case a string.
 
         That means:
@@ -151,9 +150,9 @@ class FilePathManager(object):
     @classmethod
     def add_suffix(
         cls,
-        file_path,  # type: Path
-        suffix,  # type: str
-    ):  # type: (...) -> Path
+        file_path: Path,
+        suffix: str,
+    ) -> Path:
         """Add a suffix to an existing file path between the filename and the extension.
 
         E.g. `directory/filename_suffix.pdf`.
@@ -167,6 +166,6 @@ class FilePathManager(object):
             obtained from the file path.
         """
         extension = file_path.suffix
-        file_name = "{}_{}".format(str(file_path.stem), suffix)
+        file_name = f"{str(file_path.stem)}_{suffix}"
         directory_path = file_path.parent
         return (directory_path / file_name).with_suffix(extension)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Draw a radar chart from a :class:`.Dataset`. """
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -39,13 +36,13 @@ class RadarChart(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        display_zero=True,  # type: bool
-        connect=False,  # type: bool
-        radial_ticks=False,  # type: bool
-        n_levels=6,  # type: int
-        scientific_notation=True,  # type: bool
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        display_zero: bool = True,
+        connect: bool = False,
+        radial_ticks: bool = False,
+        n_levels: int = 6,
+        scientific_notation: bool = True,
+    ) -> None:
         """
         Args:
             display_zero: Whether to display the line where the output is equal to zero.
@@ -156,7 +153,7 @@ class RadarChart(DatasetPlot):
         axes.set_rlim([self.rmin, self.rmax])
         rticks = linspace(self.rmin, self.rmax, self._param.n_levels)
         if self._param.scientific_notation:
-            rticks_labels = ["{:.2e}".format(value) for value in rticks]
+            rticks_labels = [f"{value:.2e}" for value in rticks]
         else:
             rticks_labels = rticks
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -25,7 +24,7 @@ from ast import literal_eval
 
 def parse_cfgobj(infile):
     data = {}
-    with open(infile, "r") as inf:
+    with open(infile) as inf:
         for line in inf.readlines():
             if "=" in line:
                 spl = line.strip().split("=")

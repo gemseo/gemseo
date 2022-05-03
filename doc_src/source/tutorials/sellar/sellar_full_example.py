@@ -32,7 +32,7 @@ configure_logger()
 
 class SellarSystem(MDODiscipline):
     def __init__(self):
-        super(SellarSystem, self).__init__()
+        super().__init__()
         # Initialize the grammars to define inputs and outputs
         self.input_grammar.initialize_from_data_names(["x", "z", "y_0", "y_1"])
         self.output_grammar.initialize_from_data_names(["obj", "c_1", "c_2"])
@@ -54,7 +54,7 @@ class SellarSystem(MDODiscipline):
 
 class Sellar1(MDODiscipline):
     def __init__(self, residual_form=False):
-        super(Sellar1, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["x", "z", "y_1"])
         self.output_grammar.initialize_from_data_names(["y_0"])
 
@@ -70,7 +70,7 @@ class Sellar1(MDODiscipline):
 
 class Sellar2(MDODiscipline):
     def __init__(self, residual_form=False):
-        super(Sellar2, self).__init__()
+        super().__init__()
         self.input_grammar.initialize_from_data_names(["z", "y_0"])
         self.output_grammar.initialize_from_data_names(["y_1"])
 

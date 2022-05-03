@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A parallel coordinates plot of functions and x."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -47,10 +45,10 @@ class ParallelCoordinates(OptPostProcessor):
     @classmethod
     def parallel_coordinates(
         cls,
-        y_data,  # type: ndarray
-        x_names,  # type: Sequence[str]
-        color_criteria,  # type: Sequence[float]
-    ):  # type: (...) -> Figure
+        y_data: ndarray,
+        x_names: Sequence[str],
+        color_criteria: Sequence[float],
+    ) -> Figure:
         """Plot the parallel coordinates.
 
         Args:
@@ -83,9 +81,7 @@ class ParallelCoordinates(OptPostProcessor):
         main_ax.grid()
         return fig
 
-    def _plot(
-        self, **options  # type: OptPostProcessorOptionType
-    ):  # type: (...) -> None
+    def _plot(self, **options: OptPostProcessorOptionType) -> None:
 
         all_funcs = self.opt_problem.get_all_functions_names()
         design_variables = self.opt_problem.get_design_variable_names()

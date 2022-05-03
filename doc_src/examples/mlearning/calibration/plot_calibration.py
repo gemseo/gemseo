@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -22,9 +21,6 @@
 Calibration of a polynomial regression
 ======================================
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.algos.design_space import DesignSpace
 from gemseo.api import configure_logger
@@ -263,6 +259,6 @@ ax.set_title("Learning measure")
 plt.show()
 
 n_iterations = len(calibration.scenario.disciplines[0].cache)
-print("MSE with DOE: {} (100 evaluations)".format(f_opt))
-print("MSE with OPT: {} ({} evaluations)".format(f_opt2, n_iterations))
-print("MSE reduction:{}%".format(round((f_opt2 - f_opt) / f_opt * 100)))
+print(f"MSE with DOE: {f_opt} (100 evaluations)")
+print(f"MSE with OPT: {f_opt2} ({n_iterations} evaluations)")
+print(f"MSE reduction:{round((f_opt2 - f_opt) / f_opt * 100)}%")

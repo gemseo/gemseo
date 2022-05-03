@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -121,7 +120,7 @@ def test_create_disciplines_from_sizes(grammar_type):
 )
 def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind):
     """Test that the inputs consistency errors."""
-    with pytest.raises(ValueError, match="The number of disciplines {}".format(kind)):
+    with pytest.raises(ValueError, match=f"The number of disciplines {kind}"):
         create_disciplines_from_sizes(
             1,
             2,

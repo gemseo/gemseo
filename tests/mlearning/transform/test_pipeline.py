@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test transformer pipeline module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 from typing import List
 
 import pytest
@@ -36,13 +32,13 @@ from numpy import ndarray
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 
 
 @pytest.fixture
-def transformers():  # type: (...) -> List[Transformer]
+def transformers() -> List[Transformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 

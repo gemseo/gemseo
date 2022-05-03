@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Data conversion between discipline data check and _run()
 ********************************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 
@@ -33,7 +31,7 @@ from numpy import complex128
 LOGGER = logging.getLogger(__name__)
 
 
-class DataProcessor(object):
+class DataProcessor:
     """Abstract class for pre and post processing data of MDODisciplines.
 
     Executes a pre processing of input data after they are checked by
@@ -146,7 +144,7 @@ class NameMapping(DataProcessor):
             Grammar. The local key is the data provided to the _run
             method
         """
-        super(NameMapping, self).__init__()
+        super().__init__()
         self.mapping = mapping
         self.reverse_mapping = {
             local_key: global_key for global_key, local_key in mapping.items()

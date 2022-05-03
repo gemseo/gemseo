@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -49,8 +48,8 @@ def test_standard(discipline):
 
 def test_keep_in_keep_out(discipline):
     fdisc = FilteringDiscipline(discipline, inputs_names=["x1"], outputs_names=["y1"])
-    assert set(fdisc.get_input_data_names()) == set(["x1"])
-    assert set(fdisc.get_output_data_names()) == set(["y1"])
+    assert set(fdisc.get_input_data_names()) == {"x1"}
+    assert set(fdisc.get_output_data_names()) == {"y1"}
     fdisc.execute()
     for name in ["x2", "x3", "y2"]:
         assert name not in fdisc.local_data
@@ -64,8 +63,8 @@ def test_remove_in_keep_out(discipline):
     fdisc = FilteringDiscipline(
         discipline, inputs_names=["x1"], outputs_names=["y1"], keep_in=False
     )
-    assert set(fdisc.get_input_data_names()) == set(["x2", "x3"])
-    assert set(fdisc.get_output_data_names()) == set(["y1"])
+    assert set(fdisc.get_input_data_names()) == {"x2", "x3"}
+    assert set(fdisc.get_output_data_names()) == {"y1"}
     fdisc.execute()
     for name in ["x1", "y2"]:
         assert name not in fdisc.local_data
@@ -78,8 +77,8 @@ def test_keep_in_remove_out(discipline):
     fdisc = FilteringDiscipline(
         discipline, inputs_names=["x1"], outputs_names=["y1"], keep_out=False
     )
-    assert set(fdisc.get_input_data_names()) == set(["x1"])
-    assert set(fdisc.get_output_data_names()) == set(["y2"])
+    assert set(fdisc.get_input_data_names()) == {"x1"}
+    assert set(fdisc.get_output_data_names()) == {"y2"}
     fdisc.execute()
     for name in ["x2", "x3", "y1"]:
         assert name not in fdisc.local_data

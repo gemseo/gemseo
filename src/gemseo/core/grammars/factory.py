@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +18,9 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A factory to instantiate a derived class of :class:`.AbstractGrammar`."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import List
 
 from gemseo.core.factory import Factory
 from gemseo.core.grammars.abstract_grammar import AbstractGrammar
@@ -31,18 +28,18 @@ from gemseo.core.grammars.abstract_grammar import AbstractGrammar
 LOGGER = logging.getLogger(__name__)
 
 
-class GrammarFactory(object):
+class GrammarFactory:
     """A factory of :class:`.AbstractGrammar`."""
 
-    def __init__(self):  # type: (...) -> None
+    def __init__(self) -> None:
         self.__factory = Factory(AbstractGrammar, ("gemseo.core.grammars",))
 
     def create(
         self,
-        class_name,  # type: str
-        name,  # type: str
+        class_name: str,
+        name: str,
         **options,
-    ):  # type: (...) -> AbstractGrammar
+    ) -> AbstractGrammar:
         """Create a grammar.
 
         Args:
@@ -53,11 +50,11 @@ class GrammarFactory(object):
         return self.__factory.create(class_name, name=name, **options)
 
     @property
-    def grammars(self):  # type: (...) -> List[str]
+    def grammars(self) -> list[str]:
         """The sorted names of the available grammars."""
         return self.__factory.classes
 
-    def is_available(self, class_name):  # type: (...) -> bool
+    def is_available(self, class_name) -> bool:
         """Return whether a grammar class exists.
 
         Args:

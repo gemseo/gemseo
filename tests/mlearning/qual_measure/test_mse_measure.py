@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mean squared error measure."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -43,7 +39,7 @@ ATOL = 1e-12
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
@@ -54,7 +50,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def dataset_test():  # type: (...) -> Dataset
+def dataset_test() -> Dataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()

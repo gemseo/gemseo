@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,6 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Computation of tolerance intervals from a data-fitted uniform distribution."""
+from __future__ import annotations
+
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     ToleranceInterval,
 )
@@ -36,42 +37,41 @@ class UniformToleranceInterval(ToleranceInterval):
 
     def __init__(
         self,
-        size,  # type: int
-        minimum,  # type: float
-        maximum,  # type: float
-    ):  # type:(...) -> None
-        # noqa: D205 D212 D415
-        """
+        size: int,
+        minimum: float,
+        maximum: float,
+    ) -> None:
+        """# noqa: D205 D212 D415
         Args:
             minimum: The estimation of the lower bound of the uniform distribution.
             maximum: The estimation of the upper bound of the uniform distribution.
         """
-        super(UniformToleranceInterval, self).__init__(size)
+        super().__init__(size)
         self.__minimum = minimum
         self.__maximum = maximum
 
     def _compute_lower_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         return self.__compute_exponential_bound(1 - coverage, 1 - alpha, size)
 
     def _compute_upper_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         return self.__compute_exponential_bound(coverage, alpha, size)
 
     def __compute_exponential_bound(
         self,
-        coverage,  # type: float
-        alpha,  # type: float
-        size,  # type: int
-    ):  # type: (...) -> float
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> float:
         """Compute a bound of the tolerance interval for a uniform distribution.
 
         Args:

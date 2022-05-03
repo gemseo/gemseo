@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -25,9 +24,6 @@ Simple cache
 This example shows the manipulation of :class:`.SimpleCache` instances. This
 cache only stores the last inputs and outputs stored.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.caches.simple_cache import SimpleCache
 from numpy import array

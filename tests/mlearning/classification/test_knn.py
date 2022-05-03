@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test KNNClassifier."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
@@ -51,7 +47,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the KNNClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 3))
@@ -71,7 +67,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model_1d(dataset):  # type: (...) -> KNNClassifier
+def model_1d(dataset) -> KNNClassifier:
     """A trained KNNClassifier with y_1 as single output."""
     knn = KNNClassifier(dataset, output_names=["y_1"])
     knn.learn()
@@ -79,7 +75,7 @@ def model_1d(dataset):  # type: (...) -> KNNClassifier
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> KNNClassifier
+def model(dataset) -> KNNClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     knn = KNNClassifier(dataset)
     knn.learn()
@@ -87,7 +83,7 @@ def model(dataset):  # type: (...) -> KNNClassifier
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> KNNClassifier
+def model_with_transform(dataset) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
     knn = KNNClassifier(dataset, transformer={"inputs": MinMaxScaler()})
     knn.learn()

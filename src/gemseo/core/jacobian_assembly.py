@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Coupled derivatives calculations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from collections import defaultdict
 
@@ -53,7 +51,7 @@ def default_dict_factory():
     return defaultdict(none_factory)
 
 
-class JacobianAssembly(object):
+class JacobianAssembly:
     """Assembly of Jacobians.
 
     Typically, assemble discipline's Jacobians into a system Jacobian.
@@ -197,7 +195,7 @@ class JacobianAssembly(object):
                             break
             if variable not in self.sizes:
                 raise ValueError(
-                    "Failed to determine the size of input variable {}".format(variable)
+                    f"Failed to determine the size of input variable {variable}"
                 )
 
     @staticmethod
@@ -835,7 +833,7 @@ class JacobianAssembly(object):
         return filename
 
 
-class CoupledSystem(object):
+class CoupledSystem:
     """Compute coupled (total) derivatives of a system of residuals.
 
     Use several methods:

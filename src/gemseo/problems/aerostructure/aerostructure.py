@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -70,8 +69,7 @@ and
            \end{aligned}
            \right.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import array
 from numpy import atleast_2d
@@ -110,7 +108,7 @@ class Mission(MDODiscipline):
 
     def __init__(self, r_val=0.5, lift_val=0.5):
         """Constructor."""
-        super(Mission, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         self.r_val = r_val
@@ -197,7 +195,7 @@ class Aerodynamics(MDODiscipline):
     [drag, forces, lift] = f(sweep, thick_airfoils, displ)."""
 
     def __init__(self):
-        super(Aerodynamics, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
@@ -304,7 +302,7 @@ class Structure(MDODiscipline):
     """
 
     def __init__(self):
-        super(Structure, self).__init__(auto_detect_grammar_files=True)
+        super().__init__(auto_detect_grammar_files=True)
         self.default_inputs = get_inputs()
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 

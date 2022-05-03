@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 Aerostructure MDO problem's Design Space
 ****************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import numpy as np
 
@@ -47,7 +45,7 @@ class AerostructureDesignSpace(DesignSpace):
 
     def __init__(self):
         """Constructor."""
-        super(AerostructureDesignSpace, self).__init__()
+        super().__init__()
 
         # construct a dictionary with initial solution
         drag = np.array([340.0], dtype=np.complex128)

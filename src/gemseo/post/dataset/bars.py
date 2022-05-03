@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -36,9 +35,9 @@ class BarPlot(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        n_digits=1,  # type: int
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        n_digits: int = 1,
+    ) -> None:
         """
         Args:
             n_digits: The number of digits to print the different bar values.
@@ -93,7 +92,7 @@ class BarPlot(DatasetPlot):
                 else:
                     pos = -12
                 axes.annotate(
-                    "{}".format(round(height, self._param.n_digits)),
+                    f"{round(height, self._param.n_digits)}",
                     xy=(rect.get_x() + rect.get_width() / 2, height),
                     xytext=(0, pos),  # 3 points vertical offset
                     textcoords="offset points",

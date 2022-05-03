@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,31 +18,26 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of functions to convert data structures."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import collections
 from copy import deepcopy
 from typing import Any
-from typing import Dict
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
 
 from numpy import array
 from numpy import concatenate
 from numpy import ndarray
-from six import PY2
 
 STRING_SEPARATOR = "#&#"
 
 
 def concatenate_dict_of_arrays_to_array(
-    dict_of_arrays,  # type: Mapping[str,ndarray]
-    names,  # type: Iterable[str]
-):  # type: (...) -> ndarray
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str],
+) -> ndarray:
     """Concatenate some values of a dictionary of NumPy arrays.
 
     The concatenation is done according to the last dimension of the NumPy arrays.
@@ -69,95 +63,89 @@ def concatenate_dict_of_arrays_to_array(
     return concatenate([dict_of_arrays[key] for key in names], -1)
 
 
-if PY2:
+def split_array_to_dict_of_arrays(
+    array: ndarray,
+    names_to_sizes: Mapping[str, int],
+    *names: Iterable[str],
+    check_consistency: bool = False,
+) -> dict[str, ndarray]:
+    """Split a NumPy array into a dictionary of NumPy arrays.
 
-    def split_array_to_dict_of_arrays(
-        array,  # type: ndarray
-        names_to_sizes,  # type: Mapping[str,int]
-        *names,  # type: Iterable[str]
-        **kwargs,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]
-        """Split a NumPy array into a dictionary of NumPy arrays.
+    Example:
+        >>> result_1 = split_array_to_dict_of_arrays(
+        ...     array([1., 2., 3.]), {"x": 1, "y": 2}, ["x", "y"]
+        ... )
+        >>> print(result_1)
+        {'x': array([1.]), 'y': array([2., 3.])}
+        >>> result_2 = split_array_to_dict_of_arrays(
+        ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
+        ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
+        ...     ["y1", "y2"],
+        ...     ["x1", "x2"]
+        ... )
+        >>> print(result_2)
+        {
+            "y1": {"x1": array([[1.0]]), "x2": array([[2.0, 3.0]])},
+            "y2": {"x1": array([[4.0], [7.0]]), "x2": array([[5.0, 6.0], [8.0, 9.0]])},
+        }
 
-        Example:
-            >>> result_1 = split_array_to_dict_of_arrays(
-            ...     array([1., 2., 3.]), {"x": 1, "y": 2}, ["x", "y"]
-            ... )
-            >>> print(result_1)
-            {'x': array([1.]), 'y': array([2., 3.])}
-            >>> result_2 = split_array_to_dict_of_arrays(
-            ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
-            ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
-            ...     ["y1", "y2"],
-            ...     ["x1", "x2"]
-            ... )
-            >>> print(result_2)
-            {
-                "y1": {"x1": array([[1.0]]), "x2": array([[2.0, 3.0]])},
-                "y2": {"x1": array([[4.0], [7.0]]), "x2": array([[5.0, 6.0], [8.0, 9.0]])},
-            }
+    Args:
+        array: The NumPy array.
+        names_to_sizes: The sizes of the values related to names.
+        *names: The names related to the NumPy array dimensions,
+            starting from the last one;
+            in the second example (see ``result_2``),
+            the last dimension of ``array`` represents the variables ``["y1", "y2"]``
+            while the penultimate one represents the variables ``["x1", "x2"]``.
+        check_consistency: Whether to check the consistency of the sizes of ``*names``
+            with the ``array`` shape.
 
-        Args:
-            array: The NumPy array.
-            names_to_sizes: The sizes of the values related to names.
-            *names: The names related to the NumPy array dimensions,
-                starting from the last one;
-                in the second example (see ``result_2``),
-                the last dimension of ``array`` represents the variables ``["y1", "y2"]``
-                while the penultimate one represents the variables ``["x1", "x2"]``.
-            **kwargs: A Python 2 workaround to pass ``check_consistency``
-                with default value set to ``False``.
+    Returns:
+        A dictionary of NumPy arrays related to ``*names``.
 
-        Returns:
-            A dictionary of NumPy arrays related to ``*names``.
+    Raises:
+        ValueError: When ``check_consistency`` is ``True`` and
+            the sizes of the ``*names`` is inconsistent with the ``array`` shape.
+    """
+    dimension = -len(names)
+    if check_consistency:
+        variables_size = sum(names_to_sizes[name] for name in names[0])
+        array_dimension_size = array.shape[dimension]
+        if variables_size != array_dimension_size:
+            raise ValueError(
+                "The total size of the elements ({}) "
+                "and the size of the last dimension of the array ({}) "
+                "are different.".format(variables_size, array_dimension_size)
+            )
 
-        Raises:
-            ValueError: When ``check_consistency`` is ``True`` and
-                the sizes of the ``*names`` is inconsistent with the ``array`` shape.
-        """
-        dimension = -len(names)
-        check_consistency = kwargs.pop("check_consistency", False)
-        if check_consistency:
-            variables_size = sum([names_to_sizes[name] for name in names[0]])
-            array_dimension_size = array.shape[dimension]
-            if variables_size != array_dimension_size:
-                raise ValueError(
-                    "The total size of the elements ({}) "
-                    "and the size of the last dimension of the array ({}) "
-                    "are different.".format(variables_size, array_dimension_size)
-                )
+    result = {}
+    first_index = 0
+    for name in names[0]:
+        size = names_to_sizes[name]
+        indices = [slice(None)] * array.ndim
+        indices[dimension] = slice(first_index, first_index + size)
+        if dimension == -1:
+            result[name] = array[tuple(indices)]
+        else:
+            result[name] = split_array_to_dict_of_arrays(
+                array[tuple(indices)],
+                names_to_sizes,
+                *names[1:],
+                check_consistency=check_consistency,
+            )
 
-        result = {}
-        first_index = 0
-        for name in names[0]:
-            size = names_to_sizes[name]
-            indices = [slice(None)] * array.ndim
-            indices[dimension] = slice(first_index, first_index + size)
-            if dimension == -1:
-                result[name] = array[tuple(indices)]
-            else:
-                result[name] = split_array_to_dict_of_arrays(
-                    array[indices],
-                    names_to_sizes,
-                    *names[1:],
-                    check_consistency=check_consistency,
-                )
+        first_index += size
 
-            first_index += size
-
-        return result
-
-else:
-    from ._split_array_to_dict_of_arrays import split_array_to_dict_of_arrays
+    return result
 
 
 def update_dict_of_arrays_from_array(
-    dict_of_arrays,  # type: Mapping[str,ndarray]
-    names,  # type: Iterable[str]
-    array,  # type: ndarray
-    copy=True,  # type: bool
-    cast_complex=False,  # type: bool
-):  # type: (...) -> Mapping[str,ndarray]
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str],
+    array: ndarray,
+    copy: bool = True,
+    cast_complex: bool = False,
+) -> Mapping[str, ndarray]:
     """Update some values of a dictionary of NumPy arrays from a NumPy array.
 
     The order of the data in ``array`` follows the order of ``names``.
@@ -194,9 +182,7 @@ def update_dict_of_arrays_from_array(
               with the shapes of the values of ``dict_of_arrays``.
     """
     if not isinstance(array, ndarray):
-        raise TypeError(
-            "The array must be a NumPy one, got instead: {}.".format(type(array))
-        )
+        raise TypeError(f"The array must be a NumPy one, got instead: {type(array)}.")
 
     if copy:
         data = deepcopy(dict_of_arrays)
@@ -248,9 +234,9 @@ def update_dict_of_arrays_from_array(
 
 
 def deepcopy_dict_of_arrays(
-    dict_of_arrays,  # type: Mapping[str,ndarray]
-    names=None,  # type:Optional[Iterable[str]]
-):  # type: (...) -> Dict[str,ndarray]
+    dict_of_arrays: Mapping[str, ndarray],
+    names: Iterable[str] | None = None,
+) -> dict[str, ndarray]:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
@@ -288,9 +274,9 @@ def deepcopy_dict_of_arrays(
 
 
 def nest_flat_bilevel_dict(
-    flat_dict,  # type: Mapping[str,Any]
-    separator=STRING_SEPARATOR,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    flat_dict: Mapping[str, Any],
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
     Example:
@@ -306,8 +292,8 @@ def nest_flat_bilevel_dict(
         A nested dictionary.
     """
     keys = [key.split(separator) for key in flat_dict]
-    top_keys = set(key[0] for key in keys)
-    sub_keys = set(key[1] for key in keys)
+    top_keys = {key[0] for key in keys}
+    sub_keys = {key[1] for key in keys}
     nested_dict = {}
     for top_key in top_keys:
         top_value = nested_dict[top_key] = {}
@@ -319,10 +305,10 @@ def nest_flat_bilevel_dict(
 
 
 def nest_flat_dict(
-    flat_dict,  # type: Mapping[str,Any]
-    prefix="",  # type: str
-    separator=STRING_SEPARATOR,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    flat_dict: Mapping[str, Any],
+    prefix: str = "",
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
     """Nest a flat dictionary.
 
     Example:
@@ -349,11 +335,11 @@ def nest_flat_dict(
 
 
 def __nest_flat_mapping(
-    mapping,  # type: Mapping[str, Any]
-    key,  # type: str
-    value,  # type: Any
-    separator,  # type: str
-):  # type: (...) -> None
+    mapping: Mapping[str, Any],
+    key: str,
+    value: Any,
+    separator: str,
+) -> None:
     """Nest a flat mapping.
 
     Args:
@@ -373,9 +359,9 @@ def __nest_flat_mapping(
 
 
 def flatten_nested_bilevel_dict(
-    nested_dict,  # type: Mapping[str,Any]
-    separator=STRING_SEPARATOR,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    nested_dict: Mapping[str, Any],
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
     Example:
@@ -401,10 +387,10 @@ def flatten_nested_bilevel_dict(
 
 
 def flatten_nested_dict(
-    nested_dict,  # type: Mapping[str,Any]
-    prefix="",  # type: str
-    separator=STRING_SEPARATOR,  # type: str
-):  # type: (...) -> Dict[str,Any]
+    nested_dict: Mapping[str, Any],
+    prefix: str = "",
+    separator: str = STRING_SEPARATOR,
+) -> dict[str, Any]:
     """Flatten a nested dictionary.
 
     Example:
@@ -425,10 +411,10 @@ def flatten_nested_dict(
 
 
 def __flatten_nested_mapping(
-    nested_mapping,  # type: Mapping[str,Any]
-    parent_key,  # type: str
-    separator,  # type: str
-):  # type: (...) -> Generator[Tuple[str,Any],None,None]
+    nested_mapping: Mapping[str, Any],
+    parent_key: str,
+    separator: str,
+) -> Generator[tuple[str, Any], None, None]:
     """Flatten a nested mapping.
 
     Args:
@@ -447,10 +433,7 @@ def __flatten_nested_mapping(
             new_key = key
 
         if isinstance(value, collections.Mapping):
-            for item in flatten_nested_dict(
-                value, new_key, separator=separator
-            ).items():
-                yield item
+            yield from flatten_nested_dict(value, new_key, separator=separator).items()
         else:
             yield new_key, value
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -33,3 +32,4 @@ This package contains:
 Lastly, the class :class:`.OTDistributionFitter` offers the possibility
 to fit an :class:`.OTDistribution` from data based on OpenTURNS.
 """
+from __future__ import annotations

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario

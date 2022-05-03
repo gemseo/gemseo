@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -40,13 +39,10 @@ Notations:
 - :math:`B_k`: the approximation of the Hessian of :math:`f` at :math:`x_k`,
 - :math:`H_k`: the inverse of :math:`B_k`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Generator
-from typing import Optional
-from typing import Tuple
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
@@ -98,8 +94,8 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        history,  # type: Database
-    ):  # type: (...) -> None # noqa: E262, E261
+        history: Database,
+    ) -> None:  # noqa: E262, E261
         """
         Args:
             history: The optimization history
@@ -114,14 +110,14 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_x_grad_history(
         self,
-        funcname,  # type: str
-        first_iter=0,  # type: int
-        last_iter=0,  # type:int
-        at_most_niter=-1,  # type: int
-        func_index=None,  # type: Optional[int]
-        normalize_design_space=False,  # type: bool
-        design_space=None,  # type: Optional[DesignSpace]
-    ):  # type: (...) -> Tuple[ndarray, ndarray, int, int]
+        funcname: str,
+        first_iter: int = 0,
+        last_iter: int = 0,
+        at_most_niter: int = -1,
+        func_index: int | None = None,
+        normalize_design_space: bool = False,
+        design_space: DesignSpace | None = None,
+    ) -> tuple[ndarray, ndarray, int, int]:
         """Return the histories of the inputs and gradient.
 
         Args:
@@ -231,10 +227,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _normalize_x_g(
-        x_hist,  # type: ndarray
-        x_grad_hist,  # type: ndarray
-        design_space,  # type: DesignSpace
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        x_hist: ndarray,
+        x_grad_hist: ndarray,
+        design_space: DesignSpace,
+    ) -> tuple[ndarray, ndarray]:
         """Scale the design variables between 0 and 1 in the histories.
 
         Args:
@@ -264,10 +260,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def get_s_k_y_k(
-        x_hist,  # type: ndarray
-        x_grad_hist,  # type: ndarray
-        iteration,  # type: int
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        x_hist: ndarray,
+        x_grad_hist: ndarray,
+        iteration: int,
+    ) -> tuple[ndarray, ndarray]:
         r"""Compute the variation of the input variables and gradient from an iteration.
 
         The variations from the iteration :math:`k` are defined by:
@@ -302,9 +298,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def iterate_s_k_y_k(
-        x_hist,  # type: ndarray
-        x_grad_hist,  # type: ndarray
-    ):  # type: (...) -> Generator[Tuple[ndarray, ndarray]]
+        x_hist: ndarray,
+        x_grad_hist: ndarray,
+    ) -> Generator[tuple[ndarray, ndarray]]:
         r"""Compute the variations of the input variables and gradient.
 
         The variations from the iteration :math:`k` are defined by:
@@ -330,19 +326,19 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     def build_approximation(
         self,
-        funcname,  # type: str
-        save_diag=False,  # type: bool
-        first_iter=0,  # type: int
-        last_iter=-1,  # type: int
-        b_mat0=None,  # type: Optional[ndarray]
-        at_most_niter=-1,  # type: int
-        return_x_grad=False,  # type: bool
-        func_index=None,  # type: Optional[int]
-        save_matrix=False,  # type: bool
-        scaling=False,  # type: bool
-        normalize_design_space=False,  # type: bool
-        design_space=None,  # type: Optional[DesignSpace]
-    ):  # type: (...) -> Tuple[ndarray, ndarray, Optional[ndarray], Optional[ndarray]]
+        funcname: str,
+        save_diag: bool = False,
+        first_iter: int = 0,
+        last_iter: int = -1,
+        b_mat0: ndarray | None = None,
+        at_most_niter: int = -1,
+        return_x_grad: bool = False,
+        func_index: int | None = None,
+        save_matrix: bool = False,
+        scaling: bool = False,
+        normalize_design_space: bool = False,
+        design_space: DesignSpace | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray | None, ndarray | None]:
         # pylint: disable=W0221
         """Compute :math:`B`, the approximation of the Hessian matrix.
 
@@ -407,12 +403,12 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def compute_scaling(
-        hessk,  # type: ndarray
-        hessk_dsk,  # type: ndarray
-        dskt_hessk_dsk,  # type: ndarray
-        dyk,  # type: ndarray
-        dyt_dsk,  # type: ndarray
-    ):  # type: (...) -> Tuple[float, float]
+        hessk: ndarray,
+        hessk_dsk: ndarray,
+        dskt_hessk_dsk: ndarray,
+        dyk: ndarray,
+        dyt_dsk: ndarray,
+    ) -> tuple[float, float]:
         r"""Compute the scaling coefficients :math:`c_1` and :math:`c_2`.
 
         - :math:`c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
@@ -440,11 +436,11 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def iterate_approximation(
-        hessk,  # type: ndarray
-        dsk,  # type: ndarray
-        dyk,  # type: ndarray
-        scaling=False,  # type: bool
-    ):  # type: (...) -> None
+        hessk: ndarray,
+        dsk: ndarray,
+        dyk: ndarray,
+        scaling: bool = False,
+    ) -> None:
         r"""Update :math:`B` from iteration :math:`k` to iteration :math:`k+1`.
 
         Based on an iteration of the BFGS algorithm:
@@ -491,22 +487,22 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     def build_inverse_approximation(
         self,
-        funcname,  # type: str
-        save_diag=False,  # type: int
-        first_iter=0,  # type: int
-        last_iter=-1,  # type:  int
-        h_mat0=None,  # type: Optional[ndarray]
-        at_most_niter=-1,  # type: int
-        return_x_grad=False,  # type: bool
-        func_index=None,  # type: Optional[int]
-        save_matrix=False,  # type: bool
-        factorize=False,  # type: bool
-        scaling=False,  # type: bool
-        angle_tol=1e-5,  # type: float
-        step_tol=1e10,  # type:  float
-        normalize_design_space=False,  # type: bool
-        design_space=None,  # type: Optional[DesignSpace]
-    ):  # type: (...) -> Tuple[ndarray, ndarray, Optional[ndarray], Optional[ndarray]]
+        funcname: str,
+        save_diag: int = False,
+        first_iter: int = 0,
+        last_iter: int = -1,
+        h_mat0: ndarray | None = None,
+        at_most_niter: int = -1,
+        return_x_grad: bool = False,
+        func_index: int | None = None,
+        save_matrix: bool = False,
+        factorize: bool = False,
+        scaling: bool = False,
+        angle_tol: float = 1e-5,
+        step_tol: float = 1e10,
+        normalize_design_space: bool = False,
+        design_space: DesignSpace | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray | None, ndarray | None]:
         r"""Compute :math:`H`, the approximation of the inverse of the Hessian matrix.
 
         Args:
@@ -631,9 +627,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def compute_corrections(
-        x_hist,  # type: ndarray
-        x_grad_hist,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        x_hist: ndarray,
+        x_grad_hist: ndarray,
+    ) -> tuple[ndarray, ndarray]:
         """Compute the successive variations of both input variables and gradient.
 
         These variations are called *corrections*.
@@ -653,11 +649,11 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def rebuild_history(
-        x_corr,  # type: ndarray
-        x_0,  # type: ndarray
-        grad_corr,  # type: ndarray
-        g_0,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        x_corr: ndarray,
+        x_0: ndarray,
+        grad_corr: ndarray,
+        g_0: ndarray,
+    ) -> tuple[ndarray, ndarray]:
         """Compute the history from the corrections of input variables and gradient.
 
         A *correction* is the variation of a quantity between two successive iterations.
@@ -682,14 +678,14 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def iterate_inverse_approximation(
-        h_mat,  # type: ndarray
-        s_k,  # type: ndarray
-        y_k,  # type: ndarray
-        h_factor=None,  # type: Optional[ndarray]
-        b_mat=None,  # type: Optional[ndarray]
-        b_factor=None,  # type: Optional[ndarray]
-        factorize=False,  # type: bool
-        scaling=False,  # type: bool
+        h_mat: ndarray,
+        s_k: ndarray,
+        y_k: ndarray,
+        h_factor: ndarray | None = None,
+        b_mat: ndarray | None = None,
+        b_factor: ndarray | None = None,
+        factorize: bool = False,
+        scaling: bool = False,
     ):
         r"""Update :math:`H` and :math:`B` from step :math:`k` to step :math:`k+1`.
 
@@ -783,9 +779,9 @@ class BFGSApprox(HessianApproximation):
 
     @staticmethod
     def iterate_s_k_y_k(
-        x_hist,  # type: ndarray
-        x_grad_hist,  # type: ndarray
-    ):  # type: (...) -> Generator[Tuple[ndarray, ndarray]]
+        x_hist: ndarray,
+        x_grad_hist: ndarray,
+    ) -> Generator[tuple[ndarray, ndarray]]:
         for iteration in range(len(x_hist) - 1):
             input_diff, grad_diff = BFGSApprox.get_s_k_y_k(
                 x_hist, x_grad_hist, iteration
@@ -820,10 +816,10 @@ class SR1Approx(HessianApproximation):
 
     @staticmethod
     def iterate_approximation(
-        b_mat,  # type: ndarray
-        s_k,  # type: ndarray
-        y_k,  # type: ndarray
-        scaling=False,  # type: bool
+        b_mat: ndarray,
+        s_k: ndarray,
+        y_k: ndarray,
+        scaling: bool = False,
     ):
         residuals = y_k - multi_dot((b_mat, s_k))
         denominator = multi_dot((residuals.T, s_k))
@@ -841,18 +837,18 @@ class LSTSQApprox(HessianApproximation):
 
     def build_approximation(
         self,
-        funcname,  # type: str
-        save_diag=False,  # type: bool
-        first_iter=0,  # type: int
-        last_iter=-1,  # type: int
-        b_mat0=None,  # type: Optional[ndarray]
-        at_most_niter=-1,  # type: int
-        return_x_grad=False,  # type: bool
-        scaling=False,  # type: bool
-        func_index=-1,  # type: int
-        normalize_design_space=False,  # type: bool
-        design_space=None,  # type: Optional[DesignSpace]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,Optional[ndarray],Optional[ndarray]]
+        funcname: str,
+        save_diag: bool = False,
+        first_iter: int = 0,
+        last_iter: int = -1,
+        b_mat0: ndarray | None = None,
+        at_most_niter: int = -1,
+        return_x_grad: bool = False,
+        scaling: bool = False,
+        func_index: int = -1,
+        normalize_design_space: bool = False,
+        design_space: DesignSpace | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray | None, ndarray | None]:
         x_hist, grad_hist, n_iterations, input_dimension = self.get_x_grad_history(
             funcname,
             first_iter,
@@ -868,8 +864,8 @@ class LSTSQApprox(HessianApproximation):
         hessian_diagonal = []
 
         def y_to_b(
-            y_vars,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            y_vars: ndarray,
+        ) -> ndarray:
             """Reshape the approximation from vector to matrix.
 
             Args:
@@ -882,8 +878,8 @@ class LSTSQApprox(HessianApproximation):
             return y_mat + y_mat.T
 
         def compute_error(
-            y_vars,  # type: ndarray
-        ):  # type: (...) -> ndarray
+            y_vars: ndarray,
+        ) -> ndarray:
             """Create the least square function.
 
             Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,8 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - stacked data ; docstrings
-from __future__ import division
-from __future__ import unicode_literals
+from pathlib import Path
 
 import h5py
 import pytest
@@ -28,9 +26,6 @@ from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import OrderedDict
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from numpy import arange
 from numpy import array
 from numpy import ones
@@ -142,11 +137,7 @@ def test_set_wrong_item():
     with pytest.raises(TypeError, match=msg):
         database["1"] = "toto"
 
-    if PY2:
-        msg = "need more than 1 value to unpack"
-    else:
-        msg = "dictionary update sequence "
-
+    msg = "dictionary update sequence "
     with pytest.raises(ValueError, match=msg):
         database[array([1.0])] = "toto"
 
@@ -405,7 +396,7 @@ def test_add_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = OrderedDict()
+    values = {}
     values["f"] = 10
     values["g"] = array([1, 2])
     values["Iter"] = [3]
@@ -417,7 +408,7 @@ def test_add_hdf_output_dataset(h5_file):
     assert array(values_group["arr_10"]["2"]) == pytest.approx(array([3]))
     assert array(values_group["arr_10"]["3"]) == pytest.approx(array([[1, 2, 3]]))
 
-    values = OrderedDict()
+    values = {}
     values["i"] = array([1, 2])
     values["Iter"] = 1
     values["@j"] = array([[1, 2, 3]])
@@ -437,14 +428,14 @@ def test_get_missing_hdf_output_dataset(h5_file):
     values_group = h5_file.require_group("v")
     keys_group = h5_file.require_group("k")
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     database._add_hdf_output_dataset(10, keys_group, values_group, values)
 
     with pytest.raises(ValueError):
         database._get_missing_hdf_output_dataset(0, keys_group, values)
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     values["h"] = [10]
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
@@ -453,7 +444,7 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert new_values == {"h": [10]}
     assert idx_mapping == {"h": 2}
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     new_values, idx_mapping = database._get_missing_hdf_output_dataset(
         10, keys_group, values
@@ -461,7 +452,7 @@ def test_get_missing_hdf_output_dataset(h5_file):
     assert new_values == {}
     assert idx_mapping is None
 
-    values = OrderedDict({"f": 0.1})
+    values = {"f": 0.1}
     values["g"] = array([1, 2])
     values["h"] = [2, 3]
     values["i"] = 20
@@ -636,13 +627,7 @@ def test__str__database():
     database.store(x1, {"Rosenbrock": value1}, add_iter=False)
     database.store(x2, {"Rosenbrock": value2}, add_iter=False)
 
-    if PY2:
-        ref = (
-            "OrderedDict([([1. 2.], OrderedDict([(u'Rosenbrock', 100.0)])), "
-            "([3.  4.5], OrderedDict([(u'Rosenbrock', 2029.0)]))])"
-        )
-    else:
-        ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
+    ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
 
     assert database.__str__() == ref
 

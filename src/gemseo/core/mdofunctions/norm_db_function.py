@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
 """An MDOFunction subclass to support formulations."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -48,11 +46,11 @@ class NormDBFunction(MDOFunction):
 
     def __init__(
         self,
-        orig_func,  # type: MDOFunction
-        normalize,  # type: bool
-        is_observable,  # type: bool
-        optimization_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
+        orig_func: MDOFunction,
+        normalize: bool,
+        is_observable: bool,
+        optimization_problem: OptimizationProblem,
+    ) -> None:
         """
         Args:
             orig_func: The original function to be wrapped.
@@ -76,7 +74,7 @@ class NormDBFunction(MDOFunction):
         self.__jac_orig_func = orig_func.jac
         self.__is_max_iter_reached = self.__optimization_problem.is_max_iter_reached
 
-        super(NormDBFunction, self).__init__(
+        super().__init__(
             self._func,
             orig_func.name,
             jac=self._jac,
@@ -89,8 +87,8 @@ class NormDBFunction(MDOFunction):
 
     def _func(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+    ) -> ndarray:
         """Compute the function to be passed to the optimizer.
 
         Args:
@@ -106,7 +104,7 @@ class NormDBFunction(MDOFunction):
                 reached.
         """
         if np_any(np_isnan(x_vect)):
-            raise DesvarIsNan("Design Variables contain a NaN value: {}".format(x_vect))
+            raise DesvarIsNan(f"Design Variables contain a NaN value: {x_vect}")
         normalize = self.__normalize
         if normalize:
             xn_vect = x_vect
@@ -131,17 +129,13 @@ class NormDBFunction(MDOFunction):
             else:
                 value = self.__evaluate_orig_func(xu_vect)
             if self.__optimization_problem.stop_if_nan and np_any(np_isnan(value)):
-                raise FunctionIsNan(
-                    "The function {} is NaN for x={}".format(self.name, xu_vect)
-                )
+                raise FunctionIsNan(f"The function {self.name} is NaN for x={xu_vect}")
             # store (x, f(x)) in database
             database.store(hashed_xu, {self.name: value})
 
         return value
 
-    def _jac(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def _jac(self, x_vect: ndarray) -> ndarray:
         """Compute the gradient of the function to be passed to the optimizer.
 
         Args:
@@ -155,9 +149,7 @@ class NormDBFunction(MDOFunction):
                 If the evaluation of the jacobian results in a NaN value.
         """
         if np_any(np_isnan(x_vect)):
-            raise FunctionIsNan(
-                "Design Variables contain a NaN value: {}".format(x_vect)
-            )
+            raise FunctionIsNan(f"Design Variables contain a NaN value: {x_vect}")
         normalize = self.__normalize
         if normalize:
             xn_vect = x_vect
@@ -200,5 +192,5 @@ class NormDBFunction(MDOFunction):
             return jac_u.real
 
     @property
-    def expects_normalized_inputs(self):  # type: (...) -> bool
+    def expects_normalized_inputs(self) -> bool:
         return self.__normalize

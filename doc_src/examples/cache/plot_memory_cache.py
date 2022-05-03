@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -24,9 +23,6 @@ Memory full cache
 =================
 This example shows how to manipulate a :class:`.MemoryFullCache` object.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
 from numpy import array

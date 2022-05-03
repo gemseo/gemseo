@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,15 +23,12 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Sobieski's SSBJ base class."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import cmath
 import logging
 import math
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 
 from numpy import array
 from numpy import atleast_2d
@@ -42,7 +38,6 @@ from numpy import concatenate
 from numpy import dot
 from numpy import float64
 from numpy import ndarray
-from six import string_types
 
 LOGGER = logging.getLogger(__name__)
 
@@ -94,7 +89,7 @@ _NAMES_TO_BOUNDS = {
 }
 
 
-class SobieskiBase(object):
+class SobieskiBase:
     """Utilities for Sobieski's SSBJ use case."""
 
     DTYPE_COMPLEX = "complex128"
@@ -103,8 +98,8 @@ class SobieskiBase(object):
 
     def __init__(
         self,
-        dtype,  # type: str
-    ):  # type: (...) -> None
+        dtype: str,
+    ) -> None:
         """
         Args:
             dtype: The NumPy data type.
@@ -121,7 +116,7 @@ class SobieskiBase(object):
             self.math = cmath
             self.dtype = complex128
         else:
-            raise ValueError("Unknown dtype: {}.".format(dtype))
+            raise ValueError(f"Unknown dtype: {dtype}.")
 
         self.__constants = _CONSTANTS.astype(self.dtype)
         self.__coeff_mtrix = array(
@@ -150,25 +145,25 @@ class SobieskiBase(object):
         self.__initial_design = _DEFAULT_DESIGN.astype(self.dtype)
 
     @property
-    def initial_design(self):  # type: (...) -> ndarray
+    def initial_design(self) -> ndarray:
         """The initial design."""
         return self.__initial_design
 
     @property
-    def constants(self):  # type: (...) -> ndarray
+    def constants(self) -> ndarray:
         """The default constants."""
         return self.__constants
 
     @property
-    def design_bounds(self):  # type: (...) -> Tuple[ndarray,ndarray]
+    def design_bounds(self) -> tuple[ndarray, ndarray]:
         """The lower and upper bounds of the design variables."""
         return _DESIGN_BOUNDS[:, 0], _DESIGN_BOUNDS[:, 1]
 
     @classmethod
     def get_bounds_by_name(
         cls,
-        variables_names,  # type: Union[str,Sequence[str]]
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        variables_names: str | Sequence[str],
+    ) -> tuple[ndarray, ndarray]:
         """Return the bounds of the design and coupling variables.
 
         Args:
@@ -177,7 +172,7 @@ class SobieskiBase(object):
         Returns:
             The lower and upper bounds of these variables.
         """
-        if isinstance(variables_names, string_types):
+        if isinstance(variables_names, str):
             variables_names = [variables_names]
 
         bounds = atleast_2d(
@@ -190,9 +185,9 @@ class SobieskiBase(object):
 
     def __compute_mtx_shifted(
         self,
-        s_bound,  # type: ndarray
-        index,  # type: int
-    ):  # type: (...) -> None
+        s_bound: ndarray,
+        index: int,
+    ) -> None:
         """Compute a matrix of shifted values of the design variables.
 
         Args:
@@ -205,13 +200,13 @@ class SobieskiBase(object):
 
     def __compute_a(
         self,
-        mtx_shifted,  # type: ndarray
-        f_bound,  # type: ndarray
-        ao_coeff,  # type: ndarray
-        ai_coeff,  # type: ndarray
-        aij_coeff,  # type: ndarray
-        index,  # type: int
-    ):  # type: (...) -> None
+        mtx_shifted: ndarray,
+        f_bound: ndarray,
+        ao_coeff: ndarray,
+        ai_coeff: ndarray,
+        aij_coeff: ndarray,
+        index: int,
+    ) -> None:
         """Compute the interpolation terms.
 
         Args:
@@ -230,9 +225,9 @@ class SobieskiBase(object):
 
     def __update_aij(
         self,
-        aij_coeff,  # type: ndarray
-        imax,  # type: int
-    ):  # type: (...) -> ndarray
+        aij_coeff: ndarray,
+        imax: int,
+    ) -> ndarray:
         """Update the quadratic interpolation terms.
 
         Args:
@@ -251,12 +246,12 @@ class SobieskiBase(object):
 
     def __compute_fbound(
         self,
-        flag,  # type: ndarray
-        s_shifted,  # type: ndarray
-        a_coeff,  # type: ndarray
-        b_coeff,  # type: ndarray
-        index,  # type: int
-    ):  # type: (...) -> ndarray
+        flag: ndarray,
+        s_shifted: ndarray,
+        a_coeff: ndarray,
+        b_coeff: ndarray,
+        index: int,
+    ) -> ndarray:
         """Compute right-hand side of polynomial function system.
 
         Args:
@@ -292,9 +287,9 @@ class SobieskiBase(object):
 
     @staticmethod
     def _compute_normalization(
-        s_ref,  # type: ndarray
-        s_new,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        s_ref: ndarray,
+        s_new: ndarray,
+    ) -> ndarray:
         """Normalization of input variables for polynomial approximation.
 
         Args:
@@ -308,9 +303,9 @@ class SobieskiBase(object):
 
     @staticmethod
     def derive_normalization(
-        s_ref,  # type: Union[float, ndarray]
-        s_new,  # type: Union[float, ndarray]
-    ):  # type: (...) -> Union[float, ndarray]
+        s_ref: float | ndarray,
+        s_new: float | ndarray,
+    ) -> float | ndarray:
         """Derivation of normalization of input variables.
 
         For use of polynomial approximation.
@@ -332,14 +327,14 @@ class SobieskiBase(object):
 
     def derive_polynomial_approximation(
         self,
-        s_ref,  # type: ndarray
-        s_new,  # type: ndarray
-        flag,  # type: int
-        s_bound,  # type: ndarray
-        a0_coeff,  # type: ndarray
-        ai_coeff,  # type: ndarray
-        aij_coeff,  # type: ndarray
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray]
+        s_ref: ndarray,
+        s_new: ndarray,
+        flag: int,
+        s_bound: ndarray,
+        a0_coeff: ndarray,
+        ai_coeff: ndarray,
+        aij_coeff: ndarray,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray]:
         """Compute the polynomial coefficients for both evaluation and linearization.
 
         These coefficients characterize
@@ -387,14 +382,14 @@ class SobieskiBase(object):
 
     def compute_polynomial_approximation(
         self,
-        s_ref,  # type: ndarray
-        s_new,  # type: ndarray
-        flag,  # type: int
-        s_bound,  # type: ndarray
-        a0_coeff,  # type: ndarray
-        ai_coeff,  # type: ndarray
-        aij_coeff,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        s_ref: ndarray,
+        s_new: ndarray,
+        flag: int,
+        s_bound: ndarray,
+        a0_coeff: ndarray,
+        ai_coeff: ndarray,
+        aij_coeff: ndarray,
+    ) -> ndarray:
         """Compute the polynomial coefficients.
 
         These coefficients characterize
@@ -443,9 +438,9 @@ class SobieskiBase(object):
 
     def compute_half_span(
         self,
-        aspect_ratio,  # type: float
-        wing_surface_area,  # type: float
-    ):  # type: (...) -> float
+        aspect_ratio: float,
+        wing_surface_area: float,
+    ) -> float:
         """Compute the half-span from the wing surface and aspect ratio.
 
         Args:
@@ -459,10 +454,10 @@ class SobieskiBase(object):
 
     def compute_thickness(
         self,
-        aspect_ratio,  # type: float
-        thickness_to_chord_ratio,  # type: float
-        wing_surface_area,  # type: float
-    ):  # type: (...) -> float
+        aspect_ratio: float,
+        thickness_to_chord_ratio: float,
+        wing_surface_area: float,
+    ) -> float:
         """Compute a wing thickness.
 
         Args:
@@ -481,8 +476,8 @@ class SobieskiBase(object):
 
     @staticmethod
     def compute_aero_center(
-        wing_taper_ratio,  # type: float
-    ):  # type: (...) -> float
+        wing_taper_ratio: float,
+    ) -> float:
         """Computes the aerodynamic center.
 
         Args:
@@ -493,7 +488,7 @@ class SobieskiBase(object):
         """
         return (1.0 + 2.0 * wing_taper_ratio) / (3.0 * (1 + wing_taper_ratio))
 
-    def get_initial_values(self):  # type: (...) -> Tuple[float]
+    def get_initial_values(self) -> tuple[float]:
         """Return the initial values used by the polynomial functions.
 
         Returns:

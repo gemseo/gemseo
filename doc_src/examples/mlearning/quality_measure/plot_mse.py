@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -28,9 +27,6 @@ into two sets. We measure the quality of the regression by comparing the
 predictions with the output on the test set.
 
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import create_dataset
@@ -128,7 +124,7 @@ plt.show()
 ###############################################################################
 # Plot predictions
 # ----------------
-plt.plot(x_refined, y_refined, label="Prediction (x^{})".format(max_pow))
+plt.plot(x_refined, y_refined, label=f"Prediction (x^{max_pow})")
 plt.scatter(x[train], y[train], label="Train")
 plt.scatter(x[test], y[test], color="r", label="Test")
 plt.legend()
@@ -148,7 +144,7 @@ for power in powers:
 
     y_refined = model.predict({"x": x_refined[:, None]})["y"].flatten()
 
-    plt.plot(x_refined, y_refined, label="x^{}".format(power))
+    plt.plot(x_refined, y_refined, label=f"x^{power}")
 
 plt.scatter(x[train], y[train], label="Train")
 plt.scatter(x[test], y[test], color="r", label="Test")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,12 +18,10 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """OpenTURNS DOE algorithms."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
 from typing import MutableMapping
@@ -128,7 +125,7 @@ class OpenTURNS(DOELibrary):
     LIBRARY_NAME = "OpenTURNS"
 
     def __init__(self):
-        super(OpenTURNS, self).__init__()
+        super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
             self.lib_dict[algo_name] = DOEAlgorithmDescription(
@@ -142,20 +139,20 @@ class OpenTURNS(DOELibrary):
 
     def _get_options(
         self,
-        levels=None,  # type: Optional[int,Sequence[int]]
-        centers=None,  # type: Optional[Sequence[int]]
-        eval_jac=False,  # type: bool
-        n_samples=None,  # type: Optional[int]
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        criterion="C2",  # type: str
-        temperature="Geometric",  # type: str
-        annealing=True,  # type: bool
-        n_replicates=1000,  # type: int
-        seed=1,  # type: int
-        max_time=0,  # type: float
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str,OptionType]
+        levels: int | Sequence[int] | None = None,
+        centers: Sequence[int] | None = None,
+        eval_jac: bool = False,
+        n_samples: int | None = None,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        criterion: str = "C2",
+        temperature: str = "Geometric",
+        annealing: bool = True,
+        n_replicates: int = 1000,
+        seed: int = 1,
+        max_time: float = 0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:
         r"""Set the options.
 
         Args:
@@ -207,8 +204,8 @@ class OpenTURNS(DOELibrary):
 
     def __check_and_cast_levels(
         self,
-        options,  # type: MutableMapping[str,Any]
-    ):  # type: (...) -> None
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the options ``levels`` is properly defined and cast it to array.
 
         Args:
@@ -237,9 +234,9 @@ class OpenTURNS(DOELibrary):
 
     def __check_and_cast_centers(
         self,
-        dimension,  # type: int
-        options,  # type: MutableMapping[str,Any]
-    ):  # type: (...) -> None
+        dimension: int,
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the options ``centers`` is properly defined and cast it to array.
 
         Args:
@@ -270,11 +267,11 @@ class OpenTURNS(DOELibrary):
 
     def _generate_samples(
         self,
-        dimension,  # type: int
-        n_samples=None,  # type: Optional[int]
-        seed=None,  # type:  Optional[int]
-        **options,  # type: OptionType
-    ):  # type: (...) -> ndarray
+        dimension: int,
+        n_samples: int | None = None,
+        seed: int | None = None,
+        **options: OptionType,
+    ) -> ndarray:
         """Generate the samples.
 
         Args:
@@ -315,9 +312,9 @@ class OpenTURNS(DOELibrary):
 
     def __check_stratified_options(
         self,
-        dimension,  # type: int
-        options,  # type: MutableMapping[str,Any]
-    ):  # type: (...) -> None
+        dimension: int,
+        options: MutableMapping[str, Any],
+    ) -> None:
         """Check that the mandatory inputs for the composite design are set.
 
         Args:
@@ -340,9 +337,9 @@ class OpenTURNS(DOELibrary):
 
     def __generate_stratified(
         self,
-        dimension,  # type: int
-        options,  # type: Mapping[str,Any]
-    ):  # type: (...) -> ndarray
+        dimension: int,
+        options: Mapping[str, Any],
+    ) -> ndarray:
         """Generate a DOE using the composite DOE algorithm.
 
         Args:
@@ -367,10 +364,10 @@ class OpenTURNS(DOELibrary):
 
     def __generate_lhs(
         self,
-        n_samples,  # type: int
-        dimension,  # type: int
-        **options,  # type: OptionType
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+        **options: OptionType,
+    ) -> ndarray:
         """Generate a DOE using the LHS algorithm, possibly centered or optimized.
 
         Args:
@@ -414,8 +411,8 @@ class OpenTURNS(DOELibrary):
 
     @staticmethod
     def __compute_centered_lhs(
-        samples,  # type:ndarray
-    ):  # type:(...) -> ndarray
+        samples: ndarray,
+    ) -> ndarray:
         """Center the samples resulting from a Latin hypercube sampling.
 
         Args:
@@ -430,15 +427,15 @@ class OpenTURNS(DOELibrary):
 
     @staticmethod
     def __get_uniform_distribution(
-        dimension,  # type: int
-    ):  # type: (...) -> openturns.ComposedDistribution
+        dimension: int,
+    ) -> openturns.ComposedDistribution:
         return openturns.ComposedDistribution([openturns.Uniform(0.0, 1.0)] * dimension)
 
     def __generate_sobol(
         self,
-        n_samples,  # type: int
-        dimension,  # type: int
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+    ) -> ndarray:
         """Generate a DOE using a Sobol' sampling.
 
         Args:
@@ -456,8 +453,8 @@ class OpenTURNS(DOELibrary):
 
     def _generate_fullfact_from_levels(
         self,
-        levels,  # type: Iterable[int]
-    ):  # type: (...) -> ndarray
+        levels: Iterable[int],
+    ) -> ndarray:
         # This method relies on openturns.Box.
         # This latter assumes that the levels provided correspond to the intermediate
         # levels between lower and upper bounds, while GEMSEO includes these bounds
@@ -488,9 +485,9 @@ class OpenTURNS(DOELibrary):
 
     @staticmethod
     def __generate_random(
-        n_samples,  # type: int
-        dimension,  # type: int
-    ):  # type: (...) -> ndarray
+        n_samples: int,
+        dimension: int,
+    ) -> ndarray:
         """Generate a DOE using the random generator.
 
         Args:

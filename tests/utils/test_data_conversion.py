@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import re
 from typing import Dict
 from typing import List
@@ -41,7 +37,7 @@ from numpy import ndarray
 
 
 @pytest.fixture
-def dict_to_be_updated():  # type: (...) -> Dict[str, ndarray]
+def dict_to_be_updated() -> Dict[str, ndarray]:
     """A dictionary to be updated."""
     return {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])}
 
@@ -158,7 +154,7 @@ def xy_sizes():
 
 
 @pytest.fixture(scope="module")
-def xy_dict():  # type: (...) -> Dict[str,ndarray]
+def xy_dict() -> Dict[str, ndarray]:
     """The values of x and y."""
     return {"x": array([1.0]), "y": array([2.0, 3.0])}
 
@@ -166,7 +162,7 @@ def xy_dict():  # type: (...) -> Dict[str,ndarray]
 @pytest.fixture(params=[False, True])
 def possibly_nested_xy_dict(
     request,
-):  # type: (...) -> Dict[str,Union[ndarray,Dict[str,ndarray]]]
+) -> Dict[str, Union[ndarray, Dict[str, ndarray]]]:
     """A NumPy array with values for x and y."""
     if request.param:
         return {"x": {"x_1": array([1.0])}, "y": array([2.0, 3.0])}
@@ -175,7 +171,7 @@ def possibly_nested_xy_dict(
 
 
 @pytest.fixture(scope="module")
-def xy_array():  # type: (...) -> ndarray
+def xy_array() -> ndarray:
     """The values of x and y."""
     return array([1.0, 2.0, 3.0])
 
@@ -232,7 +228,7 @@ def test_split_array_to_dict_of_arrays_without_inconsistency_check(xy_array, y_s
 
 
 @pytest.fixture(scope="module")
-def list_grouped_xy_dict(xy_dict):  # type: (...) -> List[Dict[str,Dict[str,ndarray]]]
+def list_grouped_xy_dict(xy_dict) -> List[Dict[str, Dict[str, ndarray]]]:
     """A list of grouped data dictionaries."""
     return [
         {"g1": {"x": xy_dict["x"]}, "g2": {"y": xy_dict["y"]}},
@@ -241,7 +237,7 @@ def list_grouped_xy_dict(xy_dict):  # type: (...) -> List[Dict[str,Dict[str,ndar
 
 
 @pytest.fixture(scope="module")
-def list_xy_dict(xy_dict):  # type: (...) -> List[Dict[str,ndarray]]
+def list_xy_dict(xy_dict) -> List[Dict[str, ndarray]]:
     """A list of data dictionaries."""
     return [
         {"x": xy_dict["x"], "y": xy_dict["y"]},

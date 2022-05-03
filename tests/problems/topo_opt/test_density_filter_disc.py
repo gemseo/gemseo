@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -25,7 +24,7 @@ THRESHOLD = 1e-10
 
 
 @pytest.fixture(scope="module")
-def density_filter():  # type: (...) -> DensityFilter
+def density_filter() -> DensityFilter:
     """The density filter."""
     return DensityFilter(n_x=4, n_y=4)
 

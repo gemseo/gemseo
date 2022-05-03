@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -34,25 +33,20 @@ from multiprocessing.sharedctypes import Synchronized
 from timeit import default_timer as timer
 from typing import Any
 from typing import ClassVar
-from typing import Dict
 from typing import Generator
 from typing import Iterable
-from typing import List
+from typing import Mapping
 from typing import MutableMapping
 from typing import NoReturn
-from typing import Optional
-from typing import Tuple
-from typing import Type
 from typing import TYPE_CHECKING
-from typing import Union
 
-import six
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import concatenate
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
 
+from gemseo.core.cache import AbstractCache
 from gemseo.core.discipline_data import DisciplineData
 
 if TYPE_CHECKING:
@@ -63,7 +57,7 @@ from gemseo.core.grammar import AbstractGrammar, InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
 # TODO: remove try except when py2 is no longer supported
@@ -76,7 +70,7 @@ except ImportError:
 LOGGER = logging.getLogger(__name__)
 
 
-def default_dict_factory():  # type: (...) -> Dict
+def default_dict_factory() -> dict:
     """Instantiate a defaultdict(None) object."""
     return defaultdict(None)
 
@@ -199,14 +193,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        name=None,  # type: Optional[str]
-        input_grammar_file=None,  # type: Optional[Union[str, Path]]
-        output_grammar_file=None,  # type: Optional[Union[str, Path]]
-        auto_detect_grammar_files=False,  # type: bool
-        grammar_type=JSON_GRAMMAR_TYPE,  # type: str
-        cache_type=SIMPLE_CACHE,  # type: Optional[str]
-        cache_file_path=None,  # type: Optional[Union[str, Path]]
-    ):  # type: (...) -> None
+        name: str | None = None,
+        input_grammar_file: str | Path | None = None,
+        output_grammar_file: str | Path | None = None,
+        auto_detect_grammar_files: bool = False,
+        grammar_type: str = JSON_GRAMMAR_TYPE,
+        cache_type: str | None = SIMPLE_CACHE,
+        cache_file_path: str | Path | None = None,
+    ) -> None:
         """
         Args:
             name: The name of the discipline.
@@ -316,10 +310,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self._status_observers = []
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
@@ -329,30 +323,26 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         msg.add("Outputs: {}", pretty_repr(outputs))
         return str(msg)
 
-    def _init_shared_attrs(self):  # type: (...) -> None
+    def _init_shared_attrs(self) -> None:
         """Initialize the shared attributes in multiprocessing."""
         self._n_calls = Value("i", 0)
         self._exec_time = Value("d", 0.0)
         self._n_calls_linearize = Value("i", 0)
 
     @property
-    def local_data(self):  # type (...) -> Mapping[str, Any]
+    def local_data(self) -> Mapping[str, Any]:
         """The current input and output data."""
         return self._local_data
 
     @local_data.setter
-    def local_data(
-        self, data  # type: MutableMapping[str, Any]
-    ):  # type: (...) -> None
+    def local_data(self, data: MutableMapping[str, Any]) -> None:
         self.__set_local_data(data)
 
-    def __set_local_data(
-        self, data  # type: MutableMapping[str, Any]
-    ):  # type: (...) -> None
+    def __set_local_data(self, data: MutableMapping[str, Any]) -> None:
         self._local_data = DisciplineData(data)
 
     @property
-    def n_calls(self):  # type: (...) -> int | None
+    def n_calls(self) -> int | None:
         """The number of times the discipline was executed.
 
         This property is multiprocessing safe.
@@ -366,15 +356,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @n_calls.setter
     def n_calls(
         self,
-        value,  # type: int
-    ):  # type: (...) -> None
+        value: int,
+    ) -> None:
         if not self.activate_counters:
             raise RuntimeError("The discipline counters are disabled.")
 
         self._n_calls.value = value
 
     @property
-    def exec_time(self):  # type: (...) -> float | None
+    def exec_time(self) -> float | None:
         """The cumulated execution time of the discipline.
 
         This property is multiprocessing safe.
@@ -388,15 +378,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @exec_time.setter
     def exec_time(
         self,
-        value,  # type: float
-    ):  # type: (...) -> None
+        value: float,
+    ) -> None:
         if not self.activate_counters:
             raise RuntimeError("The discipline counters are disabled.")
 
         self._exec_time.value = value
 
     @property
-    def n_calls_linearize(self):  # type: (...) -> int | None
+    def n_calls_linearize(self) -> int | None:
         """The number of times the discipline was linearized.
 
         This property is multiprocessing safe.
@@ -410,24 +400,24 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @n_calls_linearize.setter
     def n_calls_linearize(
         self,
-        value,  # type: int
-    ):  # type: (...) -> None | NoReturn
+        value: int,
+    ) -> None | NoReturn:
         if not self.activate_counters:
             raise RuntimeError("The discipline counters are disabled.")
 
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self):  # type: (...) -> AbstractGrammar
+    def grammar_type(self) -> AbstractGrammar:
         """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
     def auto_get_grammar_file(
         self,
-        is_input=True,  # type: bool
-        name=None,  # type: Optional[str]
-        comp_dir=None,  # type: Optional[Union[str, Path]]
-    ):  # type: (...) -> str
+        is_input: bool = True,
+        name: str | None = None,
+        comp_dir: str | Path | None = None,
+    ) -> str:
         """Use a naming convention to associate a grammar file to the discipline.
 
         Search in the directory ``comp_dir`` for
@@ -467,7 +457,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def __get_grammar_file_path(
-        cls: Type, comp_dir: str | Path | None, in_or_out: str, name: str
+        cls: type, comp_dir: str | Path | None, in_or_out: str, name: str
     ) -> Path:
         """Return the grammar file path.
 
@@ -494,8 +484,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def add_differentiated_inputs(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+    ) -> None:
         """Add inputs against which to differentiate the outputs.
 
         This method updates :attr:`.MDODiscipline._differentiated_inputs` with ``inputs``.
@@ -523,8 +513,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def add_differentiated_outputs(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         """Add outputs to be differentiated.
 
         This method updates :attr:`.MDODiscipline._differentiated_outputs` with ``outputs``.
@@ -551,9 +541,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __create_new_cache(
         self,
-        class_name,  # type: str
-        **kwargs,  # type: Union[bool, float, str]
-    ):  # type (...) -> AbstractCache
+        class_name: str,
+        **kwargs: bool | float | str,
+    ) -> AbstractCache:
         """Create a cache object.
 
         Args:
@@ -577,12 +567,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def set_cache_policy(
         self,
-        cache_type=SIMPLE_CACHE,  # type: str
-        cache_tolerance=0.0,  # type: float
-        cache_hdf_file=None,  # type: Optional[Union[str, Path]]
-        cache_hdf_node_name=None,  # type: Optional[str]
-        is_memory_shared=True,  # type: bool
-    ):  # type: (...) -> None
+        cache_type: str = SIMPLE_CACHE,
+        cache_tolerance: float = 0.0,
+        cache_hdf_file: str | Path | None = None,
+        cache_hdf_node_name: str | None = None,
+        is_memory_shared: bool = True,
+    ) -> None:
         """Set the type of cache to use and the tolerance level.
 
         This method defines when the output data have to be cached
@@ -642,7 +632,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_sub_disciplines(
         self,
-    ):  # type: (...) -> List[MDODiscipline]  # pylint: disable=R0201
+    ) -> list[MDODiscipline]:  # pylint: disable=R0201
         """Return the sub-disciplines if any.
 
         Returns:
@@ -650,7 +640,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return []
 
-    def get_expected_workflow(self):  # type: (...) -> SerialExecSequence
+    def get_expected_workflow(self) -> SerialExecSequence:
         """Return the expected execution sequence.
 
         This method is used for the XDSM representation.
@@ -672,7 +662,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         """Return the expected data exchange sequence.
 
         This method is used for the XDSM representation.
@@ -690,10 +680,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _instantiate_grammars(
         self,
-        input_grammar_file,  # type: Optional[Union[str, Path]]
-        output_grammar_file,  # type: Optional[Union[str, Path]]
-        grammar_type=JSON_GRAMMAR_TYPE,  # type: str
-    ):  # type: (...) -> None
+        input_grammar_file: str | Path | None,
+        output_grammar_file: str | Path | None,
+        grammar_type: str = JSON_GRAMMAR_TYPE,
+    ) -> None:
         """Create the input and output grammars.
 
         Args:
@@ -711,16 +701,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         self.input_grammar = factory.create(
             grammar_type,
-            name="{}_input".format(self.name),
+            name=f"{self.name}_input",
             schema_file=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
-            name="{}_output".format(self.name),
+            name=f"{self.name}_output",
             schema_file=output_grammar_file,
         )
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Define the execution of the process, given that data has been checked.
 
         To be overloaded by subclasses.
@@ -729,8 +719,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _filter_inputs(
         self,
-        input_data=None,  # type: Optional[Dict[str, Any]]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Filter data with the discipline inputs and use the default values if missing.
 
         Args:
@@ -763,7 +753,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         return full_input_data
 
-    def _filter_local_data(self):  # type: (...) -> None
+    def _filter_local_data(self) -> None:
         """Filter the local data after execution.
 
         This method removes data that are neither inputs nor outputs.
@@ -774,7 +764,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             if key not in all_data_names:
                 del self._local_data[key]
 
-    def _check_status_before_run(self):  # type: (...) -> None
+    def _check_status_before_run(self) -> None:
         """Check the status of the discipline.
 
         Check the status of the discipline depending on
@@ -810,7 +800,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             elif self.status not in [self.STATUS_PENDING, self.STATUS_VIRTUAL]:
                 status_ok = False
         else:
-            raise ValueError("Unknown re_exec_policy: {}.".format(self.re_exec_policy))
+            raise ValueError(f"Unknown re_exec_policy: {self.re_exec_policy}.")
         if not status_ok:
             raise ValueError(
                 "Trying to run a discipline {} with status: {} "
@@ -821,9 +811,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __get_input_data_for_cache(
         self,
-        input_data,  # type: Dict[str, Any]
-        in_names,  # type: Iterable[str]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: dict[str, Any],
+        in_names: Iterable[str],
+    ) -> dict[str, Any]:
         """Prepare the input data for caching.
 
         Args:
@@ -847,8 +837,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        input_data=None,  # type:Optional[Dict[str, Any]]
-    ):  # type: (...) -> Dict[str, Any]
+        input_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Execute the discipline.
 
         This method executes the discipline:
@@ -957,10 +947,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __update_local_data_from_cache(
         self,
-        input_data,  # type: Dict[str, Any]
-        out_cached,  # type: Dict[str, Any]
-        out_jac,  # type: Dict[str, ndarray]
-    ):  # type: (...) -> None
+        input_data: dict[str, Any],
+        out_cached: dict[str, Any],
+        out_jac: dict[str, ndarray],
+    ) -> None:
         """Update the local data from the cache.
 
         Args:
@@ -981,21 +971,21 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.check_output_data()
         self._cache_was_loaded = True
 
-    def __increment_n_calls(self):  # type: (...) -> None
+    def __increment_n_calls(self) -> None:
         """Increment by 1 the number of executions.."""
         with self._n_calls.get_lock():
             self._n_calls.value += 1
 
-    def __increment_n_calls_lin(self):  # type: (...) -> None
+    def __increment_n_calls_lin(self) -> None:
         """Increment by 1 the number of linearizations."""
         with self._n_calls_linearize.get_lock():
             self._n_calls_linearize.value += 1
 
     def __increment_exec_time(
         self,
-        t_0,  # type: float
-        linearize=False,  # type: bool
-    ):  # type: (...) -> None
+        t_0: float,
+        linearize: bool = False,
+    ) -> None:
         """Increment the execution time of the discipline.
 
         The execution can be either an evaluation or a linearization.
@@ -1022,8 +1012,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _retrieve_diff_inouts(
         self,
-        force_all=False,  # type: bool
-    ):  # type: (...) -> Tuple[List[str], List[str]]
+        force_all: bool = False,
+    ) -> tuple[list[str], list[str]]:
         """Get the inputs and outputs used in the differentiation of the discipline.
 
         Args:
@@ -1045,7 +1035,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     _retreive_diff_inouts = _retrieve_diff_inouts
 
     @classmethod
-    def activate_time_stamps(cls):  # type: (...) -> None
+    def activate_time_stamps(cls) -> None:
         """Activate the time stamps.
 
         For storing start and end times of execution and linearizations.
@@ -1058,7 +1048,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             MDODiscipline.time_stamps = manager.dict()
 
     @classmethod
-    def deactivate_time_stamps(cls):  # type: (...) -> None
+    def deactivate_time_stamps(cls) -> None:
         """Deactivate the time stamps.
 
         For storing start and end times of execution and linearizations.
@@ -1068,10 +1058,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def linearize(
         self,
-        input_data=None,  # type: Optional[Dict[str, Any]]
-        force_all=False,  # type: bool
-        force_no_exec=False,  # type: bool
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        input_data: dict[str, Any] | None = None,
+        force_all: bool = False,
+        force_no_exec: bool = False,
+    ) -> dict[str, dict[str, ndarray]]:
         """Execute the linearized version of the code.
 
         Args:
@@ -1154,12 +1144,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type=FINITE_DIFFERENCES,  # type: str
-        jax_approx_step=1e-7,  # type: float
-        jac_approx_n_processes=1,  # type: int
-        jac_approx_use_threading=False,  # type: bool
-        jac_approx_wait_time=0,  # type: float
-    ):  # type: (...) -> None
+        jac_approx_type: str = FINITE_DIFFERENCES,
+        jax_approx_step: float = 1e-7,
+        jac_approx_n_processes: int = 1,
+        jac_approx_use_threading: bool = False,
+        jac_approx_wait_time: float = 0,
+    ) -> None:
         """Set the Jacobian approximation method.
 
         Sets the linearization mode to approx_method,
@@ -1195,11 +1185,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def set_optimal_fd_step(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        force_all=False,  # type: bool
-        print_errors=False,  # type: bool
-        numerical_error=EPSILON,  # type: float
+        outputs: Iterable[str] | None = None,
+        inputs: Iterable[str] | None = None,
+        force_all: bool = False,
+        print_errors: bool = False,
+        numerical_error: float = EPSILON,
     ):
         """Compute the optimal finite-difference step.
 
@@ -1257,7 +1247,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         return errors, steps
 
     @staticmethod
-    def __get_len(container):  # type: (...) -> int
+    def __get_len(container) -> int:
         """Measure the length of a container."""
         if container is None:
             return -1
@@ -1268,9 +1258,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _check_jacobian_shape(
         self,
-        inputs,  # type: Iterable[str]
-        outputs,  # type: Iterable[str]
-    ):  # type: (...) -> None
+        inputs: Iterable[str],
+        outputs: Iterable[str],
+    ) -> None:
         """Check that the Jacobian is a dictionary of dictionaries of 2D NumPy arrays.
 
         Args:
@@ -1286,7 +1276,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 When inputs are missing for an output in the Jacobian of the discipline.
         """
         if self.jac is None:
-            raise ValueError("The discipline {} was not linearized.".format(self.name))
+            raise ValueError(f"The discipline {self.name} was not linearized.")
         out_set = set(outputs)
         in_set = set(inputs)
         out_jac_set = set(self.jac.keys())
@@ -1333,7 +1323,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 output_jacobian[input_name] = input_output_jacobian.real
 
     @property
-    def cache_tol(self):  # type: (...) -> float
+    def cache_tol(self) -> float:
         """The cache input tolerance.
 
         This is the tolerance for equality of the inputs in the cache.
@@ -1345,28 +1335,24 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             ValueError: When the discipline does not have a cache.
         """
         if self.cache is None:
-            raise ValueError(
-                "The discipline {} does not have a cache.".format(self.name)
-            )
+            raise ValueError(f"The discipline {self.name} does not have a cache.")
 
         return self.cache.tolerance
 
     @cache_tol.setter
     def cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
+        cache_tol: float,
+    ) -> None:
         if self.cache is None:
-            raise ValueError(
-                "The discipline {} does not have a cache.".format(self.name)
-            )
+            raise ValueError(f"The discipline {self.name} does not have a cache.")
 
         self._set_cache_tol(cache_tol)
 
     def _set_cache_tol(
         self,
-        cache_tol,  # type: float
-    ):  # type: (...) -> None
+        cache_tol: float,
+    ) -> None:
         """Set to the cache input tolerance.
 
         To be overloaded by subclasses.
@@ -1377,7 +1363,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.cache.tolerance = cache_tol or 0.0
 
     @property
-    def default_inputs(self):  # type: (...) -> Dict[str, Any]
+    def default_inputs(self) -> dict[str, Any]:
         """The default inputs.
 
         Raises:
@@ -1386,9 +1372,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         return self._default_inputs
 
     @default_inputs.setter
-    def default_inputs(
-        self, default_inputs  # type: Dict[str,Any]
-    ):  # type: (...) -> None
+    def default_inputs(self, default_inputs: dict[str, Any]) -> None:
         if not isinstance(default_inputs, collections.Mapping):
             raise TypeError(
                 "MDODiscipline default_inputs must be of dict-like type, "
@@ -1396,16 +1380,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
         self.__set_default_inputs(default_inputs)
 
-    def __set_default_inputs(
-        self, data  # type: Dict[str, Any]
-    ):  # type: (...)-> None
+    def __set_default_inputs(self, data: dict[str, Any]) -> None:
         self._default_inputs = DisciplineData(data)
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         """Compute the Jacobian matrix.
 
         To be overloaded by subclasses, actual computation of the Jacobian matrix.
@@ -1421,11 +1403,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _init_jacobian(
         self,
-        inputs=None,  # type:Optional[Iterable[str]]
-        outputs=None,  # type:Optional[Iterable[str]]
-        with_zeros=False,  # type: bool
-        fill_missing_keys=False,  # type: bool
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+        with_zeros: bool = False,
+        fill_missing_keys: bool = False,
+    ) -> None:
         """Initialize the Jacobian dictionary of the form ``{input: {output: matrix}}``.
 
         Args:
@@ -1484,7 +1466,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                         jac_loc[in_n] = np_method((len(out_v), len(in_v)))
 
     @property
-    def linearization_mode(self):  # type: (...) -> str
+    def linearization_mode(self) -> str:
         """The linearization mode among :attr:`.MDODiscipline.AVAILABLE_MODES`.
 
         Raises:
@@ -1495,8 +1477,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @linearization_mode.setter
     def linearization_mode(
         self,
-        linearization_mode,  # type: str
-    ):  # type: (...) -> None
+        linearization_mode: str,
+    ) -> None:
         if linearization_mode not in self.AVAILABLE_MODES:
             msg = "Linearization mode '{}' is unknown; it must be one of {}."
             raise ValueError(msg.format(linearization_mode, self.AVAILABLE_MODES))
@@ -1508,26 +1490,26 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def check_jacobian(
         self,
-        input_data=None,  # type: Optional[Dict[str, ndarray]]
-        derr_approx=FINITE_DIFFERENCES,  # type: str
-        step=1e-7,  # type: float
-        threshold=1e-8,  # type: float
-        linearization_mode="auto",  # type: str
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-        parallel=False,  # type: bool
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0,  # type: float
-        auto_set_step=False,  # type: bool
-        plot_result=False,  # type: bool
-        file_path="jacobian_errors.pdf",  # type: Union[str, Path]
-        show=False,  # type: bool
-        figsize_x=10,  # type: float
-        figsize_y=10,  # type: float
-        reference_jacobian_path=None,  # type: Optional[str, Path]
-        save_reference_jacobian=False,  # type: bool
-        indices=None,  # type: Optional[Iterable[int]]
+        input_data: dict[str, ndarray] | None = None,
+        derr_approx: str = FINITE_DIFFERENCES,
+        step: float = 1e-7,
+        threshold: float = 1e-8,
+        linearization_mode: str = "auto",
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+        parallel: bool = False,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0,
+        auto_set_step: bool = False,
+        plot_result: bool = False,
+        file_path: str | Path = "jacobian_errors.pdf",
+        show: bool = False,
+        figsize_x: float = 10,
+        figsize_y: float = 10,
+        reference_jacobian_path: str | Path | None = None,
+        save_reference_jacobian: bool = False,
+        indices: Iterable[int] | None = None,
     ):
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -1638,14 +1620,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         )
 
     @property
-    def status(self):  # type: (...) -> str
+    def status(self) -> str:
         """The status of the discipline."""
         return self._status
 
     def _check_status(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         """Check the status according to possible statuses.
 
         Raises:
@@ -1658,12 +1640,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             self.STATUS_RUNNING,
             self.STATUS_FAILED,
         ]:
-            raise ValueError("Unknown status: {}.".format(status))
+            raise ValueError(f"Unknown status: {status}.")
 
     def set_disciplines_statuses(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         """Set the sub-disciplines statuses.
 
         To be implemented in subclasses.
@@ -1674,8 +1656,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_output_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         """Test if a variable is a discipline output.
 
         Args:
@@ -1688,8 +1670,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_all_outputs_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         """Test if several variables are discipline outputs.
 
         Args:
@@ -1702,8 +1684,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_all_inputs_existing(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> bool
+        data_names: Iterable[str],
+    ) -> bool:
         """Test if several variables are discipline inputs.
 
         Args:
@@ -1716,8 +1698,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def is_input_existing(
         self,
-        data_name,  # type: str
-    ):  # type: (...) -> bool
+        data_name: str,
+    ) -> bool:
         """Test if a variable is a discipline input.
 
         Args:
@@ -1730,8 +1712,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def _is_status_ok_for_run_again(
         self,
-        status,  # type: str
-    ):  # type: (...) -> bool
+        status: str,
+    ) -> bool:
         """Check if the discipline can be run again.
 
         Args:
@@ -1742,7 +1724,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return status not in [self.STATUS_RUNNING]
 
-    def reset_statuses_for_run(self):  # type: (...) -> None
+    def reset_statuses_for_run(self) -> None:
         """Set all the statuses to :attr:`.MDODiscipline.STATUS_PENDING`.
 
         Raises:
@@ -1759,16 +1741,16 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     @status.setter
     def status(
         self,
-        status,  # type: str
-    ):  # type: (...) -> None
+        status: str,
+    ) -> None:
         self._check_status(status)
         self._status = status
         self.notify_status_observers()
 
     def add_status_observer(
         self,
-        obs,  # type: Any
-    ):  # type: (...) -> None
+        obs: Any,
+    ) -> None:
         """Add an observer for the status.
 
         Add an observer for the status
@@ -1782,8 +1764,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def remove_status_observer(
         self,
-        obs,  # type: Any
-    ):  # type: (...) -> None
+        obs: Any,
+    ) -> None:
         """Remove an observer for the status.
 
         Args:
@@ -1792,14 +1774,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if obs in self._status_observers:
             self._status_observers.remove(obs)
 
-    def notify_status_observers(self):  # type: (...) -> None
+    def notify_status_observers(self) -> None:
         """Notify all status observers that the status has changed."""
         for obs in self._status_observers[:]:
             obs.update_status(self)
 
-    def store_local_data(
-        self, **kwargs  # type:Any
-    ):  # type: (...) -> None
+    def store_local_data(self, **kwargs: Any) -> None:
         """Store discipline data in local data.
 
         Args:
@@ -1809,9 +1789,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def check_input_data(
         self,
-        input_data,  # type: Dict[str,Any]
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None
+        input_data: dict[str, Any],
+        raise_exception: bool = True,
+    ) -> None:
         """Check the input data validity.
 
         Args:
@@ -1824,14 +1804,14 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid input data")
-                + " in discipline {}".format(self.name),
+                + f" in discipline {self.name}",
             )
             raise
 
     def check_output_data(
         self,
-        raise_exception=True,  # type: bool
-    ):  # type: (...) -> None
+        raise_exception: bool = True,
+    ) -> None:
         """Check the output data validity.
 
         Args:
@@ -1842,11 +1822,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
-                + " in discipline {}".format(self.name),
+                + f" in discipline {self.name}",
             )
             raise
 
-    def get_outputs_asarray(self):  # type: (...) -> ndarray
+    def get_outputs_asarray(self) -> ndarray:
         """Return the local input data as a large NumPy array.
 
         The order is the one of :meth:`.MDODiscipline.get_all_inputs`.
@@ -1856,7 +1836,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return concatenate(list(self.get_all_outputs()))
 
-    def get_inputs_asarray(self):  # type: (...) -> ndarray
+    def get_inputs_asarray(self) -> ndarray:
         """Return the local output data as a large NumPy array.
 
         The order is the one of :meth:`.MDODiscipline.get_all_outputs`.
@@ -1868,8 +1848,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_inputs_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> List[Any]
+        data_names: Iterable[str],
+    ) -> list[Any]:
         """Return the local data associated with input variables.
 
         Args:
@@ -1884,14 +1864,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no input named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no input named {err}.")
 
     def get_outputs_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> List[Any]
+        data_names: Iterable[str],
+    ) -> list[Any]:
         """Return the local data associated with output variables.
 
         Args:
@@ -1906,11 +1884,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no output named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no output named {err}.")
 
-    def get_input_data_names(self):  # type: (...) -> List[str]
+    def get_input_data_names(self) -> list[str]:
         """Return the names of the input variables.
 
         Returns:
@@ -1918,7 +1894,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.input_grammar.data_names
 
-    def get_output_data_names(self):  # type: (...) -> List[str]
+    def get_output_data_names(self) -> list[str]:
         """Return the names of the output variables.
 
         Returns:
@@ -1926,7 +1902,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.output_grammar.data_names
 
-    def get_input_output_data_names(self):  # type: (...) -> List[str]
+    def get_input_output_data_names(self) -> list[str]:
         """Return the names of the input and output variables.
 
         Returns:
@@ -1936,7 +1912,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         inpt = self.input_grammar.data_names
         return list(set(outpt) | set(inpt))
 
-    def get_all_inputs(self):  # type: (...) -> List[Any]
+    def get_all_inputs(self) -> list[Any]:
         """Return the local input data as a list.
 
         The order is given by :meth:`.MDODiscipline.get_input_data_names`.
@@ -1946,7 +1922,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.get_inputs_by_name(self.get_input_data_names())
 
-    def get_all_outputs(self):  # type: (...) -> List[Any]
+    def get_all_outputs(self) -> list[Any]:
         """Return the local output data as a list.
 
         The order is given by :meth:`.MDODiscipline.get_output_data_names`.
@@ -1956,30 +1932,26 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
-    def get_output_data(self):  # type: (...) -> Dict[str, Any]
+    def get_output_data(self) -> dict[str, Any]:
         """Return the local output data as a dictionary.
 
         Returns:
             The local output data.
         """
-        return dict(
-            (k, v) for k, v in self._local_data.items() if self.is_output_existing(k)
-        )
+        return {k: v for k, v in self._local_data.items() if self.is_output_existing(k)}
 
-    def get_input_data(self):  # type: (...) -> Dict[str, Any]
+    def get_input_data(self) -> dict[str, Any]:
         """Return the local input data as a dictionary.
 
         Returns:
             The local input data.
         """
-        return dict(
-            (k, v) for k, v in self._local_data.items() if self.is_input_existing(k)
-        )
+        return {k: v for k, v in self._local_data.items() if self.is_input_existing(k)}
 
     def serialize(
         self,
-        out_file,  # type: Union[str, Path]
-    ):  # type: (...) -> None
+        out_file: str | Path,
+    ) -> None:
         """Serialize the discipline and store it in a file.
 
         Args:
@@ -1992,8 +1964,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def deserialize(
-        in_file,  # type: Union[str, Path]
-    ):  # type: (...) -> MDODiscipline
+        in_file: str | Path,
+    ) -> MDODiscipline:
         """Deserialize a discipline from a file.
 
         Args:
@@ -2019,7 +1991,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # it is a function==> self is required
         return list(self._ATTR_TO_SERIALIZE)
 
-    def __getstate__(self):  # type: (...) -> Dict[str, Any]
+    def __getstate__(self) -> dict[str, Any]:
         """Used by pickle to define what to serialize.
 
         Returns:
@@ -2063,13 +2035,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def __setstate__(
         self,
-        state,  # type: Dict[str, Any]
-    ):  # type: (...) -> None
+        state: dict[str, Any],
+    ) -> None:
         self._init_shared_attrs()
         self._status_observers = []
         __dict__ = self.__dict__
         for key, val in state.items():
-            _key = "_{}".format(key)
+            _key = f"_{key}"
             if _key not in __dict__.keys():
                 __dict__[key] = val
             else:
@@ -2077,8 +2049,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_local_data_by_name(
         self,
-        data_names,  # type: Iterable[str]
-    ):  # type: (...) -> Generator[Any]
+        data_names: Iterable[str],
+    ) -> Generator[Any]:
         """Return the local data of the discipline associated with variables names.
 
         Args:
@@ -2093,20 +2065,18 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         try:
             return self.get_data_list_from_dict(data_names, self._local_data)
         except KeyError as err:
-            raise ValueError(
-                "Discipline {} has no local_data named {}.".format(self.name, err)
-            )
+            raise ValueError(f"Discipline {self.name} has no local_data named {err}.")
 
     @staticmethod
-    def is_scenario():  # type: (...) -> bool
+    def is_scenario() -> bool:
         """Whether the discipline is a scenario."""
         return False
 
     @staticmethod
     def get_data_list_from_dict(
-        keys,  # type: Union[str, Iterable]
-        data_dict,  # type: Dict[str, Any]
-    ):  # type: (...) -> Union[Any, Generator[Any]]
+        keys: str | Iterable,
+        data_dict: dict[str, Any],
+    ) -> Any | Generator[Any]:
         """Filter the dict from a list of keys or a single key.
 
         If keys is a string, then the method return the value associated to the
@@ -2121,6 +2091,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Either a data or a generator of data.
         """
-        if isinstance(keys, six.string_types):
+        if isinstance(keys, str):
             return data_dict[keys]
         return (data_dict[name] for name in keys)

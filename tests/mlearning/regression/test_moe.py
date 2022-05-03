@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test mixture of experts regression module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_regression_model
@@ -54,7 +50,7 @@ RTOL = 1e-5
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
     x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
@@ -75,7 +71,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> MixtureOfExperts
+def model(dataset) -> MixtureOfExperts:
     """A trained MixtureOfExperts."""
     moe = MixtureOfExperts(dataset)
     moe.set_clusterer("KMeans", n_clusters=2)
@@ -84,7 +80,7 @@ def model(dataset):  # type: (...) -> MixtureOfExperts
 
 
 @pytest.fixture
-def model_soft(dataset):  # type: (...) -> MixtureOfExperts
+def model_soft(dataset) -> MixtureOfExperts:
     """A trained MixtureOfExperts with soft classification."""
     moe = MixtureOfExperts(dataset, hard=False)
     moe.set_clusterer("KMeans", n_clusters=2)
@@ -93,7 +89,7 @@ def model_soft(dataset):  # type: (...) -> MixtureOfExperts
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> MixtureOfExperts
+def model_with_transform(dataset) -> MixtureOfExperts:
     """A trained MixtureOfExperts with inputs and outputs scaling."""
     moe = MixtureOfExperts(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}

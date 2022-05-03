@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,9 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An MDODiscipline to aggregates constraints using KS/IKS/Max methods."""
+from __future__ import annotations
+
 from typing import Any
-from typing import Optional
 from typing import Sequence
 
 from numpy import atleast_1d
@@ -52,12 +52,12 @@ class ConstrAggegationDisc(MDODiscipline):
 
     def __init__(
         self,
-        constr_data_names,  # type: Sequence[str]
-        method_name,  # type: str
-        name=None,  # type: Optional[str]
-        **meth_options,  # type: Any
-    ):  # type: (...) -> None # noqa: D205,D212,D415
-        """
+        constr_data_names: Sequence[str],
+        method_name: str,
+        name: str | None = None,
+        **meth_options: Any,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             constr_data_names: The names of the constraints to aggregate.
                 It shall be the output data of other disciplines.
@@ -69,24 +69,20 @@ class ConstrAggegationDisc(MDODiscipline):
             ValueError: If the method is not supported.
         """
         if method_name not in METHODS_MAP:
-            raise ValueError(
-                "Unsupported aggregation method named {}".format(method_name)
-            )
+            raise ValueError(f"Unsupported aggregation method named {method_name}.")
 
-        super(ConstrAggegationDisc, self).__init__(name)
+        super().__init__(name)
 
         self.__method_name = method_name
         self.__input_names = constr_data_names
         self.__meth_options = meth_options
-        self.__output_names = [
-            "{}_{}".format(self.__method_name, c) for c in constr_data_names
-        ]
+        self.__output_names = [f"{self.__method_name}_{c}" for c in constr_data_names]
         self.__out_sizes = {k: 1 for k in self.__output_names}
 
         self.input_grammar.initialize_from_data_names(self.__input_names)
         self.output_grammar.initialize_from_data_names(self.__output_names)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         c_data = concatenate_dict_of_arrays_to_array(
             self.local_data, self.__input_names
         )
@@ -100,9 +96,9 @@ class ConstrAggegationDisc(MDODiscipline):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
         c_data = concatenate_dict_of_arrays_to_array(
             self.local_data, self.__input_names
         )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -63,12 +62,12 @@ class ParallelCoordinates(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        classifier,  # type: str
-        lower=-inf,  # type: float
-        upper=inf,  # type: float
+        dataset: Dataset,
+        classifier: str,
+        lower: float = -inf,
+        upper: float = inf,
         **kwargs,
-    ):  # type: (...) -> None
+    ) -> None:
         """
         Args:
             classifier: The name of the variable to group the data.
@@ -102,8 +101,7 @@ class ParallelCoordinates(DatasetPlot):
             return lower < row[varname] < upper
 
         if lower != -inf or upper != inf:
-            cluster = "{} < {} < {}".format(lower, label, upper)
-            cluster = ("classifiers", cluster, "0")
+            cluster = ("classifiers", f"{lower} < {label} < {upper}", "0")
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
 
         fig, axes = self._get_figure_and_axes(fig, axes)

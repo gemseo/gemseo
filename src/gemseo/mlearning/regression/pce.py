@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -74,16 +73,11 @@ The PCE model relies on the FunctionalChaosAlgorithm class
 of the `openturns library <https://openturns.github.io/openturns/latest/user_manual/
 response_surface/_generated/openturns.FunctionalChaosAlgorithm.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 import openturns
 from numpy import all as np_all
@@ -134,18 +128,18 @@ class PCERegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        probability_space,  # type: ParameterSpace
-        discipline=None,  # type: Optional[MDODiscipline]
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        strategy=LS_STRATEGY,  # type: str
-        degree=2,  # type: int
-        n_quad=None,  # type: Optional[int]
-        stieltjes=True,  # type: bool
-        sparse_param=None,  # type: Optional[Mapping[str,Union[int,float]]]
-    ):  # type: (...) -> None
+        data: Dataset,
+        probability_space: ParameterSpace,
+        discipline: MDODiscipline | None = None,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        strategy: str = LS_STRATEGY,
+        degree: int = 2,
+        n_quad: int | None = None,
+        stieltjes: bool = True,
+        sparse_param: Mapping[str, int | float] | None = None,
+    ) -> None:
         """
         Args:
             probability_space: The probability space
@@ -184,7 +178,7 @@ class PCERegression(MLRegressionAlgo):
                 or if the strategy to compute the parameters of the PCE is unknown.
         """
         prob_space = probability_space
-        super(PCERegression, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -216,9 +210,7 @@ class PCERegression(MLRegressionAlgo):
 
         self._distributions = prob_space.distributions
         self._sparse_param = sparse_param or {}
-        self._input_dim = sum(
-            [dist.dimension for _, dist in self._distributions.items()]
-        )
+        self._input_dim = sum(dist.dimension for _, dist in self._distributions.items())
         self._strategy = strategy
         if self._strategy not in self.AVAILABLE_STRATEGIES:
             strategies = " ".join(self.AVAILABLE_STRATEGIES)
@@ -252,21 +244,21 @@ class PCERegression(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         self._proj_strategy = self._get_proj_strategy(input_data, output_data)
         weights = self._get_weights(input_data)
         self.algo = self._build_pce(input_data, weights, output_data)
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         return array(self.algo.getMetaModel()(input_data))
 
     @property
-    def first_sobol_indices(self):  # type: (...) -> Dict[str,ndarray]
+    def first_sobol_indices(self) -> dict[str, ndarray]:
         """The first Sobol' indices."""
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
@@ -277,7 +269,7 @@ class PCERegression(MLRegressionAlgo):
         return first_order
 
     @property
-    def total_sobol_indices(self):  # type: (...) -> Dict[str,ndarray]
+    def total_sobol_indices(self) -> dict[str, ndarray]:
         """The total Sobol' indices."""
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
@@ -289,10 +281,10 @@ class PCERegression(MLRegressionAlgo):
 
     def _build_pce(
         self,
-        input_data,  # type: ndarray
-        weights,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> openturns.FunctionalChaosResult
+        input_data: ndarray,
+        weights: ndarray,
+        output_data: ndarray,
+    ) -> openturns.FunctionalChaosResult:
         """Build the PCE with OpenTURNS.
 
         Args:
@@ -310,7 +302,7 @@ class PCERegression(MLRegressionAlgo):
         pce_algo.run()
         return pce_algo.getResult()
 
-    def _get_basis(self):  # type: (...) -> openturns.OrthogonalProductPolynomialFactory
+    def _get_basis(self) -> openturns.OrthogonalProductPolynomialFactory:
         """Return the orthogonal product polynomial factory for PCE construction.
 
         Returns:
@@ -337,7 +329,7 @@ class PCERegression(MLRegressionAlgo):
             )
         return basis
 
-    def _get_basis_size(self):  # type: (...) -> int
+    def _get_basis_size(self) -> int:
         """Return the basis size for PCE construction.
 
         Returns:
@@ -347,7 +339,7 @@ class PCERegression(MLRegressionAlgo):
 
     def _get_quadrature_points(
         self,
-    ):  # type: (...) -> Tuple[ndarray,ndarray,openturns.IntegrationStrategy]
+    ) -> tuple[ndarray, ndarray, openturns.IntegrationStrategy]:
         """Return the quadrature points for PCE construction.
 
         Returns:
@@ -409,7 +401,7 @@ class PCERegression(MLRegressionAlgo):
 
     def _get_trunc_strategy(
         self,
-    ):  # type: (...) -> openturns.AdaptiveStrategyImplementation
+    ) -> openturns.AdaptiveStrategyImplementation:
         """Return the truncation strategy for PCE construction.
 
         Returns:
@@ -438,9 +430,9 @@ class PCERegression(MLRegressionAlgo):
 
     def _get_proj_strategy(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> openturns.LeastSquaresStrategy
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> openturns.LeastSquaresStrategy:
         """Return the projection strategy for PCE construction.
 
         Args:
@@ -459,7 +451,7 @@ class PCERegression(MLRegressionAlgo):
             proj_strategy = LeastSquaresStrategy(input_data, output_data, app)
         return proj_strategy
 
-    def _get_ls_weights(self):  # type: (...) -> openturns.Point
+    def _get_ls_weights(self) -> openturns.Point:
         """Return LS weights for PCE construction.
 
         Returns:
@@ -470,8 +462,8 @@ class PCERegression(MLRegressionAlgo):
 
     def _get_quad_weights(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Return quadrature weights for PCE construction.
 
         Args:
@@ -490,8 +482,8 @@ class PCERegression(MLRegressionAlgo):
 
     def _get_weights(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Return the weights for PCE construction.
 
         Args:
@@ -505,8 +497,8 @@ class PCERegression(MLRegressionAlgo):
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         gradient = self.algo.getMetaModel().gradient
         input_size, output_size = self._reduced_dimensions
         jac = zeros((input_data.shape[0], output_size, input_size))

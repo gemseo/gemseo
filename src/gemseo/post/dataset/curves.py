@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -27,7 +26,6 @@ and the mesh as a metadata.
 """
 from __future__ import annotations
 
-from typing import Optional
 from typing import Sequence
 
 from matplotlib.axes import Axes
@@ -42,11 +40,11 @@ class Curves(DatasetPlot):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        mesh,  # type: str
-        variable,  # type: str
-        samples=None,  # type: Optional[Sequence[int]]
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        mesh: str,
+        variable: str,
+        samples: Sequence[int] | None = None,
+    ) -> None:
         """
         Args:
             mesh: The name of the dataset metadata corresponding to the mesh.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generation of the design space and disciplines of the topology optimization
 problems."""
-from typing import List
-from typing import Tuple
+from __future__ import annotations
 
 from numpy import arange
 from numpy import concatenate
@@ -43,15 +41,15 @@ from gemseo.problems.topo_opt.volume_fraction_disc import VolumeFraction
 
 
 def initialize_design_space_and_discipline_to(
-    problem,  # type: str
-    n_x,  # type: int
-    n_y,  # type: int
-    e0,  # type: float
-    nu,  # type: float
-    penalty,  # type: float
-    min_member_size,  # type: float
-    vf0,  # type: float
-):  # type: (...) -> Tuple[DesignSpace, List[MDODiscipline]]
+    problem: str,
+    n_x: int,
+    n_y: int,
+    e0: float,
+    nu: float,
+    penalty: float,
+    min_member_size: float,
+    vf0: float,
+) -> tuple[DesignSpace, list[MDODiscipline]]:
     """Initialize design space and disciplines for 2D topology optimization problems.
 
     Args:

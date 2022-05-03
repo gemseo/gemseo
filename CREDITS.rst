@@ -119,17 +119,11 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `snopt-python <https://github.com/snopt/snopt-python>`_
     MIT
 
-`six <https://github.com/benjaminp/six>`_
-    MIT
-
 `SymPy <https://www.sympy.org/>`_
     BSD 3-Clause
 
     .. image:: /_static/dependencies/sympy-logo.svg
         :target: https://www.sympy.org/
-
-`typing <https://github.com/python/typing>`_
-    Python Software License
 
 `typing-extensions <https://pypi.org/project/typing-extensions>`_
     Python Software License

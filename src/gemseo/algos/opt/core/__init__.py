@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,3 +16,4 @@
 
 Contains the source code of algorithms developed with |g|.
 """
+from __future__ import annotations

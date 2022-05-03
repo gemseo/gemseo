@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An advanced MDA splitting algorithm based on graphs."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from itertools import repeat
@@ -28,12 +26,8 @@ from os.path import join
 from os.path import split
 from typing import Any
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Union
 
 from gemseo.api import create_mda
 from gemseo.core.chain import MDOChain
@@ -68,22 +62,22 @@ class MDAChain(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        sub_mda_class="MDAJacobi",  # type: str
-        max_mda_iter=20,  # type: int
-        name=None,  # type: Optional[str]
-        n_processes=N_CPUS,  # type: int
-        chain_linearize=False,  # type: bool
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        use_lu_fact=False,  # type: bool
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
-        log_convergence=False,  # type: bool
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-        **sub_mda_options,  # type: Optional[Union[float, int, bool, str]]
+        disciplines: Sequence[MDODiscipline],
+        sub_mda_class: str = "MDAJacobi",
+        max_mda_iter: int = 20,
+        name: str | None = None,
+        n_processes: int = N_CPUS,
+        chain_linearize: bool = False,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        use_lu_fact: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        coupling_structure: MDOCouplingStructure | None = None,
+        sub_coupling_structures: Iterable[MDOCouplingStructure] | None = None,
+        log_convergence: bool = False,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+        **sub_mda_options: float | int | bool | str | None,
     ):
         """
         Args:
@@ -103,7 +97,7 @@ class MDAChain(MDA):
         self.sub_mda_list = []
 
         # compute execution sequence of the disciplines
-        super(MDAChain, self).__init__(
+        super().__init__(
             disciplines,
             max_mda_iter=max_mda_iter,
             name=name,
@@ -144,18 +138,18 @@ class MDAChain(MDA):
     @MDA.log_convergence.setter
     def log_convergence(
         self,
-        value,  # type: bool
-    ):  # type: (...) -> None
+        value: bool,
+    ) -> None:
         self._log_convergence = value
         for mda in self.sub_mda_list:
             mda.log_convergence = value
 
     def _create_mdo_chain(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        sub_mda_class="MDAJacobi",  # type: str
-        sub_coupling_structures=None,  # type: Optional[Iterable[MDOCouplingStructure]]
-        **sub_mda_options,  # type: Optional[Union[float,int,bool,str]]
+        disciplines: Sequence[MDODiscipline],
+        sub_mda_class: str = "MDAJacobi",
+        sub_coupling_structures: Iterable[MDOCouplingStructure] | None = None,
+        **sub_mda_options: float | int | bool | str | None,
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
 
@@ -221,7 +215,7 @@ class MDAChain(MDA):
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
         )
 
-    def _initialize_grammars(self):  # type: (...) -> None
+    def _initialize_grammars(self) -> None:
         """Define all inputs and outputs of the chain."""
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
@@ -235,9 +229,9 @@ class MDAChain(MDA):
         """
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
-        super(MDAChain, self)._check_consistency()
+        super()._check_consistency()
 
-    def _run(self):  # type -> None
+    def _run(self) -> None:
         if self.warm_start:
             self._couplings_warm_start()
         self.local_data = self.mdo_chain.execute(self.local_data)
@@ -245,9 +239,9 @@ class MDAChain(MDA):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Sequence[str]]
-        outputs=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        inputs: Sequence[str] | None = None,
+        outputs: Sequence[str] | None = None,
+    ) -> None:
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
             self.mdo_chain.add_differentiated_outputs(outputs)
@@ -256,34 +250,34 @@ class MDAChain(MDA):
             self.mdo_chain.linearize(last_cached)
             self.jac = self.mdo_chain.jac
         else:
-            super(MDAChain, self)._compute_jacobian(inputs, outputs)
+            super()._compute_jacobian(inputs, outputs)
 
     def add_differentiated_inputs(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        inputs: Iterable[str] | None = None,
+    ) -> None:
         MDA.add_differentiated_inputs(self, inputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_inputs(inputs)
 
     def add_differentiated_outputs(
         self,
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         MDA.add_differentiated_outputs(self, outputs=outputs)
         if self._chain_linearize:
             self.mdo_chain.add_differentiated_outputs(outputs)
 
     @property
-    def normed_residual(self):  # type: (...) -> float
+    def normed_residual(self) -> float:
         """The normed_residuals, computed from the sub-MDAs residuals."""
-        return sum((mda.normed_residual**2 for mda in self.sub_mda_list)) ** 0.5
+        return sum(mda.normed_residual**2 for mda in self.sub_mda_list) ** 0.5
 
     @normed_residual.setter
     def normed_residual(
         self,
-        normed_residual,  # type: float
-    ):  # type: (...) ->None
+        normed_residual: float,
+    ) -> None:
         """Set the normed_residual.
 
         Has no effect,
@@ -296,34 +290,34 @@ class MDAChain(MDA):
 
     def get_expected_dataflow(
         self,
-    ):  # type: (...) -> List[Tuple[MDODiscipline,MDODiscipline,List[str]]]
+    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
         return self.mdo_chain.get_expected_dataflow()
 
-    def get_expected_workflow(self):  # type: (...) ->SerialExecSequence
+    def get_expected_workflow(self) -> SerialExecSequence:
         exec_s = SerialExecSequence(self)
         workflow = self.mdo_chain.get_expected_workflow()
         exec_s.extend(workflow)
         return exec_s
 
-    def reset_statuses_for_run(self):  # type: (...) -> None
-        super(MDAChain, self).reset_statuses_for_run()
+    def reset_statuses_for_run(self) -> None:
+        super().reset_statuses_for_run()
         self.mdo_chain.reset_statuses_for_run()
 
     def plot_residual_history(
         self,
-        show=False,  # type: bool
-        save=True,  # type: bool
-        n_iterations=None,  # type: Optional[int]
-        logscale=None,  # type: Optional[Tuple[int,int]]
-        filename=None,  # type: Optional[str]
-        figsize=(50.0, 10.0),  # type: Tuple[float,float]
-    ):  # type: (...) -> None
+        show: bool = False,
+        save: bool = True,
+        n_iterations: int | None = None,
+        logscale: tuple[int, int] | None = None,
+        filename: str | None = None,
+        figsize: tuple[float, float] = (50.0, 10.0),
+    ) -> None:
         for sub_mda in self.sub_mda_list:
             if filename is not None:
                 s_filename = split(filename)
                 filename = join(
                     s_filename[0],
-                    "{}_{}".format(sub_mda.__class__.__name__, s_filename[1]),
+                    f"{sub_mda.__class__.__name__}_{s_filename[1]}",
                 )
             sub_mda.plot_residual_history(
                 show, save, n_iterations, logscale, filename, figsize

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test svmClassifier."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_classification_model
@@ -49,7 +45,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the SVMClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
     output_data = zeros((10, 1))
@@ -66,7 +62,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> SVMClassifier
+def model(dataset) -> SVMClassifier:
     """A trained SVMClassifier with two outputs, y_1 and y_2."""
     svm = SVMClassifier(dataset, probability=True)
     svm.learn()
@@ -74,7 +70,7 @@ def model(dataset):  # type: (...) -> SVMClassifier
 
 
 @pytest.fixture
-def model_with_transform(dataset):  # type: (...) -> SVMClassifier
+def model_with_transform(dataset) -> SVMClassifier:
     """A trained SVMClassifier using input scaling."""
     svm = SVMClassifier(
         dataset, transformer={"inputs": MinMaxScaler()}, probability=True

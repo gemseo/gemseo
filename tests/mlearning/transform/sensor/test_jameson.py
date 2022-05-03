@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
 from numpy import allclose
@@ -28,7 +24,7 @@ from numpy import ndarray
 
 
 @pytest.fixture
-def data():  # type: (...) -> ndarray
+def data() -> ndarray:
     """Test data."""
     return arange(300).reshape((3, 100))
 

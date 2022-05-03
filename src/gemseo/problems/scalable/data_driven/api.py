@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -49,8 +48,7 @@ based on scalable disciplines.
    of course, scalability results by means of a dedicated class:
    :class:`.ScalabilityResult`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from gemseo.problems.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.scalable.data_driven.study.process import ScalabilityStudy

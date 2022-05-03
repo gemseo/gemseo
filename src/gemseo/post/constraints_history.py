@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Sequence
@@ -49,17 +47,17 @@ class ConstraintsHistory(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(ConstraintsHistory, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.cmap = PARULA  # "viridis"  # "jet"
         self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
         self.eq_cstr_cmap = "seismic"  # "seismic" "PRGn_r"
 
     def _plot(
         self,
-        constraints_list,  # type: Sequence[str]
-    ):  # type: (...) -> None
+        constraints_list: Sequence[str],
+    ) -> None:
         """
         Args:
             constraints_list: The names of the constraints.

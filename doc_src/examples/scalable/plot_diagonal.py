@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -32,9 +31,6 @@ For that, we can use a 20-length :class:`.DiagonalDOE`
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scalable

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test random forest regression module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -39,7 +35,7 @@ INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache_policy(discipline.MEMORY_FULL_CACHE)
@@ -52,7 +48,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> RandomForestRegressor
+def model(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor."""
     random_forest = RandomForestRegressor(dataset)
     random_forest.learn()
@@ -60,7 +56,7 @@ def model(dataset):  # type: (...) -> RandomForestRegressor
 
 
 @pytest.fixture
-def model_1d_output(dataset):  # type: (...) -> RandomForestRegressor
+def model_1d_output(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor with only y_1 as outputs."""
     random_forest = RandomForestRegressor(dataset, output_names=["y_1"])
     random_forest.learn()

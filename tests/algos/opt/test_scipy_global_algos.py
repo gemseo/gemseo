@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #        :author: Matthias De Lozzo
-from __future__ import division
-from __future__ import unicode_literals
-
 from unittest.case import TestCase
 
 import pytest
@@ -28,7 +24,6 @@ from gemseo.algos.opt.lib_scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from gemseo.utils.py23_compat import PY2
 
 from tests.algos.opt.opt_lib_test_base import OptLibraryTestBase
 
@@ -50,16 +45,13 @@ class TestScipyGlobalOpt(TestCase):
 
 
 @pytest.fixture(scope="module")
-def pow2_database():  # type: (...) -> Database
+def pow2_database() -> Database:
     """The database resulting from the Power2 problem resolution."""
     problem = Power2()
     OptimizersFactory().execute(problem, "SHGO", max_iter=20)
     return problem.database
 
 
-@pytest.mark.skipif(
-    PY2, reason="SHGO does not handle general constraints in this scipy version."
-)
 @pytest.mark.parametrize("name", ["pow2", "ineq1", "ineq2", "eq"])
 def test_function_history_length(name, pow2_database):
     assert len(pow2_database.get_func_history(name)) == len(pow2_database)

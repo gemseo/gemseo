@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pytest
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 from numpy import diag
 from numpy import eye
@@ -70,7 +68,6 @@ def test_size_checks(lhs, rhs):
         problem.check()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @image_comparison(["residuals0"], extensions=["png"])
 def test_plot_residuals(tmp_wd, pyplot_close_all):
     """Tests the residuals plot creation."""

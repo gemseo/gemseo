@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,18 +16,12 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Wrappers for scipy's linear solvers."""
-from __future__ import division
-from __future__ import unicode_literals
+"""Wrappers for SciPy's linear solvers."""
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 from numpy import find_common_type
 from numpy import ndarray
@@ -88,8 +81,8 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     LIBRARY_NAME = "SciPy"
 
-    def __init__(self):  # type: (...) -> None
-        super(ScipyLinalgAlgos, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.methods_map = {
             "LGMRES": lgmres,
             "GMRES": gmres,
@@ -130,21 +123,21 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     def _get_options(
         self,
-        max_iter=1000,  # type: int
-        preconditioner=None,  # type: Optional[Union[ndarray, LinearOperator]]
-        tol=1e-12,  # type: float
-        atol=None,  # type: Optional[float]
-        x0=None,  # type: Optional[ndarray]
-        use_ilu_precond=True,  # type: bool
-        inner_m=30,  # type: int
-        outer_k=3,  # type: int
-        outer_v=None,  # type: Optional[List[Tuple]]
-        store_outer_av=True,  # type: bool
-        prepend_outer_v=False,  # type: bool
-        save_when_fail=False,  # type: bool
-        store_residuals=False,  # type: bool
-    ):  # type: (...) -> Dict[str, Any]
-        """Check the options and sets the default values.
+        max_iter: int = 1000,
+        preconditioner: ndarray | LinearOperator | None = None,
+        tol: float = 1e-12,
+        atol: float | None = None,
+        x0: ndarray | None = None,
+        use_ilu_precond: bool = True,
+        inner_m: int = 30,
+        outer_k: int = 3,
+        outer_v: list[tuple] | None = None,
+        store_outer_av: bool = True,
+        prepend_outer_v: bool = False,
+        save_when_fail: bool = False,
+        store_residuals: bool = False,
+    ) -> dict[str, Any]:
+        """Check the options and set the default values.
 
         See https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html
 
@@ -211,9 +204,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
             store_residuals=store_residuals,
         )
 
-    def _run(
-        self, **options  # type: Union[None, bool, int, float, ndarray]
-    ):  # type: (...) -> ndarray
+    def _run(self, **options: None | bool | int | float | ndarray) -> ndarray:
         """Run the algorithm.
 
         Args:
@@ -254,9 +245,7 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
         return self.problem.solution
 
-    def __store_residuals(
-        self, current_x  # type: ndarray
-    ):  # type: (...) -> ndarray
+    def __store_residuals(self, current_x: ndarray) -> ndarray:
         """Store the current iteration residuals.
 
         Args:
@@ -267,9 +256,9 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     def _check_solver_info(
         self,
-        info,  # type: int
-        options,  # type: Mapping[str, Any]
-    ):  # type: (...) -> bool
+        info: int,
+        options: Mapping[str, Any],
+    ) -> bool:
         """Check the info returned by the solver.
 
         Args:
@@ -308,10 +297,10 @@ class ScipyLinalgAlgos(LinearSolverLib):
 
     def _run_default_solver(
         self,
-        lhs,  # type: Union[ndarray, spmatrix, LinearOperator]
-        rhs,  # type: ndarray
-        **options,  # type: Any
-    ):  # type: (...) -> Tuple[ndarray, int]
+        lhs: ndarray | spmatrix | LinearOperator,
+        rhs: ndarray,
+        **options: Any,
+    ) -> tuple[ndarray, int]:
         """Run the default solver.
 
         This starts by LGMRES, but if it fails, switches to GMRES,

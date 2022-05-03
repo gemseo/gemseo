@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,13 +17,10 @@
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the constraints on a radar chart at a given database index."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Iterable
-from typing import Optional
-from typing import Union
 
 from numpy import vstack
 from numpy import zeros
@@ -44,10 +40,10 @@ class RadarChart(OptPostProcessor):
 
     def _plot(
         self,
-        constraints_list=None,  # type: Optional[Iterable[str]]
-        iteration=OPTIMUM,  # type: Union[int,RadarChart.OPTIMUM]
-        show_names_radially=False,  # type: bool
-    ):  # type: (...) -> None
+        constraints_list: Iterable[str] | None = None,
+        iteration: int | RadarChart.OPTIMUM = OPTIMUM,
+        show_names_radially: bool = False,
+    ) -> None:
         r"""
         Args:
             constraints_list: The names of the constraints.
@@ -118,7 +114,7 @@ class RadarChart(OptPostProcessor):
         radar = RadarChartPost(dataset)
         radar.linestyle = {"computed constraints": "-", "limit constraint": "--"}
         radar.color = {"computed constraints": "k", "limit constraint": "r"}
-        radar.title = "Constraints at iteration {}{}".format(iteration, title_suffix)
+        radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
         figures = radar.execute(
             save=False, show=False, display_zero=False, radial_ticks=show_names_radially

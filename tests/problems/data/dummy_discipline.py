@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -26,7 +25,7 @@ class DummyDisciplineIMP(MDODiscipline):
     """Dummy."""
 
     def __init__(self, opts1=0, jac_approx_n_processes=1):
-        super(DummyDisciplineIMP, self).__init__()
+        super().__init__()
         self.opts1 = opts1
         self.jac_approx_n_processes = jac_approx_n_processes
 

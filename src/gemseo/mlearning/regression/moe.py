@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -58,10 +57,10 @@ given :math:`x` and
 This concept is implemented through the :class:`.MixtureOfExperts` class
 which inherits from the :class:`.MLRegressionAlgo` class.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Callable
 from typing import Dict
 from typing import Iterable
@@ -94,7 +93,6 @@ from gemseo.mlearning.qual_measure.silhouette import SilhouetteMeasure
 from gemseo.mlearning.regression.factory import RegressionModelFactory
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.py23_compat import Path
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -146,17 +144,17 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        hard=True,  # type: bool
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        hard: bool = True,
+    ) -> None:
         """
         Args:
             hard: Whether clustering/classification should be hard or soft.
         """
-        super(MixtureOfExperts, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -193,8 +191,8 @@ class MixtureOfExperts(MLRegressionAlgo):
         @classmethod
         def format_predict_class_dict(
             cls,
-            predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[DataType],DataType]
+            predict: Callable[[ndarray], ndarray],
+        ) -> Callable[[DataType], DataType]:
             """Make an array-based function be called with a dictionary of NumPy arrays.
 
             Args:
@@ -210,10 +208,10 @@ class MixtureOfExperts(MLRegressionAlgo):
 
             def wrapper(
                 self,
-                input_data,  # type: DataType
+                input_data: DataType,
                 *args,
                 **kwargs,
-            ):  # type: (...) -> DataType
+            ) -> DataType:
                 """Evaluate 'predict' with either array or dictionary-based input data.
 
                 Firstly,
@@ -251,9 +249,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_clusterer(
         self,
-        cluster_algo,  # type: str
-        **cluster_params,  # type:Optional[MLAlgoParameterType]
-    ):  # type: (...) -> None
+        cluster_algo: str,
+        **cluster_params: MLAlgoParameterType | None,
+    ) -> None:
         """Set the clustering algorithm.
 
         Args:
@@ -265,9 +263,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_classifier(
         self,
-        classif_algo,  # type: str
-        **classif_params,  # type:Optional[MLAlgoParameterType]
-    ):  # type: (...) -> None
+        classif_algo: str,
+        **classif_params: MLAlgoParameterType | None,
+    ) -> None:
         """Set the classification algorithm.
 
         Args:
@@ -279,9 +277,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_regressor(
         self,
-        regress_algo,  # type: str
-        **regress_params,  # type:Optional[MLAlgoParameterType]
-    ):  # type: (...) -> None
+        regress_algo: str,
+        **regress_params: MLAlgoParameterType | None,
+    ) -> None:
         """Set the regression algorithm.
 
         Args:
@@ -293,9 +291,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_clustering_measure(
         self,
-        measure,  # type: MLQualityMeasure
-        **eval_options,  # type: EvalOptionType
-    ):  # type: (...) -> None
+        measure: MLQualityMeasure,
+        **eval_options: EvalOptionType,
+    ) -> None:
         """Set the quality measure for the clustering algorithms.
 
         Args:
@@ -309,9 +307,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_classification_measure(
         self,
-        measure,  # type: MLQualityMeasure
-        **eval_options,  # type: EvalOptionType
-    ):  # type: (...) -> None
+        measure: MLQualityMeasure,
+        **eval_options: EvalOptionType,
+    ) -> None:
         """Set the quality measure for the classification algorithms.
 
         Args:
@@ -325,9 +323,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def set_regression_measure(
         self,
-        measure,  # type: MLQualityMeasure
-        **eval_options,  # type: EvalOptionType
-    ):  # type: (...) -> None
+        measure: MLQualityMeasure,
+        **eval_options: EvalOptionType,
+    ) -> None:
         """Set the quality measure for the regression algorithms.
 
         Args:
@@ -341,11 +339,11 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def add_clusterer_candidate(
         self,
-        name,  # type: str
-        calib_space=None,  # type: Optional[DesignSpace]
-        calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
-    ):  # type: (...) -> None
+        name: str,
+        calib_space: DesignSpace | None = None,
+        calib_algo: dict[str, str | int] | None = None,
+        **option_lists: list[MLAlgoParameterType] | None,
+    ) -> None:
         """Add a candidate for clustering.
 
         Args:
@@ -371,11 +369,11 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def add_classifier_candidate(
         self,
-        name,  # type: str
-        calib_space=None,  # type: Optional[DesignSpace]
-        calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
-    ):  # type: (...) -> None
+        name: str,
+        calib_space: DesignSpace | None = None,
+        calib_algo: dict[str, str | int] | None = None,
+        **option_lists: list[MLAlgoParameterType] | None,
+    ) -> None:
         """Add a candidate for classification.
 
         Args:
@@ -401,11 +399,11 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def add_regressor_candidate(
         self,
-        name,  # type: str
-        calib_space=None,  # type: Optional[DesignSpace]
-        calib_algo=None,  # type: Optional[Dict[str,Union[str,int]]]
-        **option_lists,  # type:Optional[List[MLAlgoParameterType]]
-    ):  # type: (...) -> None
+        name: str,
+        calib_space: DesignSpace | None = None,
+        calib_algo: dict[str, str | int] | None = None,
+        **option_lists: list[MLAlgoParameterType] | None,
+    ) -> None:
         """Add a candidate for regression.
 
         Args:
@@ -434,8 +432,8 @@ class MixtureOfExperts(MLRegressionAlgo):
     @DataFormatters.format_transform(transform_outputs=False)
     def predict_class(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> Union[int,ndarray]
+        input_data: DataType,
+    ) -> int | ndarray:
         """Predict classes from input data.
 
         The user can specify these input data either as a NumPy array,
@@ -456,9 +454,9 @@ class MixtureOfExperts(MLRegressionAlgo):
     @DataFormatters.format_input_output
     def predict_local_model(
         self,
-        input_data,  # type: DataType
-        index,  # type: int
-    ):  # type: (...) -> DataType
+        input_data: DataType,
+        index: int,
+    ) -> DataType:
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
@@ -479,9 +477,9 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         dataset = Dataset("training_set")
         dataset.add_group(
             Dataset.INPUT_GROUP,
@@ -502,8 +500,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _fit_clusters(
         self,
-        dataset,  # type:Dataset
-    ):  # type: (...) -> None
+        dataset: Dataset,
+    ) -> None:
         """Train the clustering algorithm.
 
         The methods adds resulting labels as a new output in the dataset.
@@ -535,8 +533,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _fit_classifier(
         self,
-        dataset,  # type:Dataset
-    ):  # type: (...) -> None
+        dataset: Dataset,
+    ) -> None:
         """Train the classification algorithm.
 
         Args:
@@ -566,8 +564,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _fit_regressors(
         self,
-        dataset,  # type:Dataset
-    ):  # type: (...) -> None
+        dataset: Dataset,
+    ) -> None:
         """Train the local regression models on each cluster separately.
 
         Args:
@@ -600,8 +598,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _predict_all(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Predict output of each regression model for given input data.
 
         This method stacks the different outputs along a new axis.
@@ -627,8 +625,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         # dim(probas)         = (n_samples, n_clusters,     1    )
         # dim(local_outputs)  = (n_samples, n_clusters, n_outputs)
         # dim(contributions)  = (n_samples, n_clusters, n_outputs)
@@ -641,8 +639,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         if self.hard:
             jacobians = self._predict_jacobian_hard(input_data)
         else:
@@ -651,8 +649,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _predict_jacobian_hard(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         """Predict the Jacobian matrices of the regression model at input_data.
 
         This method uses a hard classification.
@@ -682,8 +680,8 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _predict_jacobian_soft(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        input_data: ndarray,
+    ) -> NoReturn:
         """Predict the Jacobian matrices of the regression model at input_data.
 
         This method uses a soft classification.
@@ -698,17 +696,17 @@ class MixtureOfExperts(MLRegressionAlgo):
 
     def _save_algo(
         self,
-        directory,  # type: Path
-    ):  # type: (...) -> None
+        directory: Path,
+    ) -> None:
         self.clusterer.save(directory / "clusterer")
         self.classifier.save(directory / "classifier")
         for i, local_model in enumerate(self.regress_models):
-            local_model.save(directory / "local_model_{}".format(i))
+            local_model.save(directory / f"local_model_{i}")
 
     def load_algo(
         self,
-        directory,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        directory: str | Path,
+    ) -> None:
         directory = Path(directory)
         cluster_factory = ClusteringModelFactory()
         classif_factory = ClassificationModelFactory()
@@ -718,12 +716,12 @@ class MixtureOfExperts(MLRegressionAlgo):
         self.regress_models = []
         for i in range(self.n_clusters):
             self.regress_models.append(
-                regress_factory.load(directory / "local_model_{}".format(i))
+                regress_factory.load(directory / f"local_model_{i}")
             )
 
-    def __str__(self):  # type: (...) -> str
+    def __str__(self) -> str:
         string = MultiLineString()
-        string.add(super(MixtureOfExperts, self).__str__())
+        string.add(super().__str__())
         string.indent()
         string.indent()
         string.add("Clustering")
@@ -743,8 +741,8 @@ class MixtureOfExperts(MLRegressionAlgo):
             string.dedent()
         return str(string)
 
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
-        objects = super(MixtureOfExperts, self)._get_objects_to_save()
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
+        objects = super()._get_objects_to_save()
         objects["cluster_algo"] = self.cluster_algo
         objects["classif_algo"] = self.classif_algo
         objects["regress_algo"] = self.regress_algo
@@ -754,11 +752,11 @@ class MixtureOfExperts(MLRegressionAlgo):
         return objects
 
     @property
-    def labels(self):  # type:(...) -> List[int]
+    def labels(self) -> list[int]:
         """The cluster labels."""
         return self.clusterer.labels
 
     @property
-    def n_clusters(self):  # type:(...) -> int
+    def n_clusters(self) -> int:
         """The number of clusters."""
         return self.clusterer.n_clusters

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,7 +17,7 @@
 #                         documentation
 #        :author: Charlie Vanaret
 """Graphs of the disciplines dependencies and couplings."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from shutil import move
@@ -33,12 +32,12 @@ except ImportError:
 import networkx as nx
 
 from gemseo.core.discipline import MDODiscipline
-from gemseo.utils.py23_compat import PY2, OrderedDict, Path
+from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
 
-class DependencyGraph(object):
+class DependencyGraph:
     """Graph of dependencies between disciplines.
 
     This class can create the sequence of execution of the disciplines.
@@ -57,7 +56,7 @@ class DependencyGraph(object):
         self.__graph = self.__create_graph(disciplines)
 
     @property
-    def disciplines(self):  # type: (...) -> Iterator[MDODiscipline]
+    def disciplines(self) -> Iterator[MDODiscipline]:
         """The disciplines used to build the graph."""
         return iter(self.__graph.nodes)
 
@@ -142,7 +141,7 @@ class DependencyGraph(object):
             networkx.DiGraph: The graph of disciplines.
         """
         # python 2: for consistency with the python 3 version
-        nodes_to_ios = OrderedDict()
+        nodes_to_ios = {}
 
         for disc in disciplines:
             nodes_to_ios[disc] = (
@@ -150,12 +149,7 @@ class DependencyGraph(object):
                 set(disc.get_output_data_names()),
             )
 
-        if PY2:
-            # for consistency with the python 3 version
-            graph = nx.OrderedDiGraph()
-        else:
-            graph = nx.DiGraph()
-
+        graph = nx.DiGraph()
         graph.add_nodes_from(disciplines)
 
         graph_add_edge = graph.add_edge
@@ -261,7 +255,7 @@ class DependencyGraph(object):
             if not edge_names:
                 continue
 
-            dummy_node_name = "_{}".format(node_from)
+            dummy_node_name = f"_{node_from}"
             viz_graph.node(dummy_node_name, style="invis", shape="point")
             viz_graph.edge(
                 node_name, dummy_node_name, label=",".join(sorted(edge_names))

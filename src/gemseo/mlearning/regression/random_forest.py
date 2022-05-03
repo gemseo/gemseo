@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -28,14 +27,11 @@ The regression model relies on the RandomForestRegressor class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import ndarray
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
@@ -55,32 +51,32 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        n_estimators=100,  # type: int
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        n_estimators: int = 100,
         **parameters,
-    ):  # type: (...) -> None
+    ) -> None:
         """
         Args:
             n_estimators: The number of trees in the forest.
         """
-        super(RandomForestRegressor, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
             n_estimators=n_estimators,
-            **parameters,  # type: Optional[Union[bool,int,float,str]]
+            **parameters,
         )
         self.algo = SKLRandForest(n_estimators=n_estimators, **parameters)
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         # SKLearn RandomForestReressor does not like output
         # shape (n_samples, 1), prefers (n_samples,).
         # The shape (n_samples, n_outputs) with n_outputs >= 2 is fine.
@@ -90,8 +86,8 @@ class RandomForestRegressor(MLRegressionAlgo):
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         output_data = self.algo.predict(input_data)
 
         # n_outputs=1 => output_shape=(n_samples,). Convert to (n_samples, 1).

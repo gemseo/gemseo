@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 The Rastrigin analytic problem
 ******************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from cmath import cos
@@ -82,14 +80,13 @@ class Rastrigin(OptimizationProblem):
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
         design_space.set_current_x(full(2, 0.01))
-        super(Rastrigin, self).__init__(design_space)
-        expr = "20 + sum(x[i]**2 - 10*cos(2pi*x[i]))"
+        super().__init__(design_space)
         self.objective = MDOFunction(
             self.rastrigin,
             name="Rastrigin",
             f_type="obj",
             jac=self.rastrigin_jac,
-            expr=expr,
+            expr="20 + sum(x[i]**2 - 10*cos(2pi*x[i]))",
             args=["x"],
         )
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,14 +18,12 @@
 #        :author: Benoit Pauwels
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
-from __future__ import unicode_literals
-
+from pathlib import Path
 from typing import Union
 
 import pytest
 from gemseo.algos.database import Database
 from gemseo.api import execute_algo
-from gemseo.utils.py23_compat import Path
 
 p7core = pytest.importorskip("da.p7core", reason="pSeven is not available")
 
@@ -42,10 +39,10 @@ from gemseo.problems.analytical.rosenbrock import Rosenbrock  # noqa: E402
 
 
 def check_on_problem(
-    problem,  # type: Union[Rosenbrock, Power2]
-    algo_name,  # type: str
+    problem: Union[Rosenbrock, Power2],
+    algo_name: str,
     **options,
-):  # type: (...) -> OptimizationProblem
+) -> OptimizationProblem:
     """Check that a pSeven optimizer solves a given problem.
 
     Args:
@@ -96,7 +93,7 @@ def test_pseven_power2(normalize_design_space):
 def test_pseven_unconstrained(algo_name):
     """Check the optimiers that cannot be run on an unconstrained problem."""
     with pytest.raises(
-        RuntimeError, match="{} requires at least one constraint".format(algo_name)
+        RuntimeError, match=f"{algo_name} requires at least one constraint"
     ):
         OptimizersFactory().execute(Rosenbrock(), algo_name)
 
@@ -273,7 +270,7 @@ def test_responses_scalability():
 def test_disable_derivatives(use_gradient):
     """Check the disabling of the derivatives."""
     problem = check_on_problem(Rosenbrock(), "PSEVEN", use_gradient=use_gradient)
-    gradient_name = "{}{}".format(Database.GRAD_TAG, problem.objective.name)
+    gradient_name = f"{Database.GRAD_TAG}{problem.objective.name}"
     assert (
         any(gradient_name in values for values in problem.database.values())
         == use_gradient

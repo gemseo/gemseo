@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,20 +18,17 @@
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A class to creat MDOFunctions from MDODisciplines."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from numbers import Number
 from typing import Callable
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
 
 from numpy import ndarray
-from six import string_types
 
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.make_function import MakeFunction
@@ -46,7 +42,7 @@ OperandType = Union[ndarray, Number]
 OperatorType = Callable[[OperandType, OperandType], OperandType]
 
 
-class MDOFunctionGenerator(object):
+class MDOFunctionGenerator:
     """Generator of :class:`.MDOFunction` objects from a :class:`.MDODiscipline`.
 
     It creates a :class:`.MDOFunction`
@@ -58,8 +54,8 @@ class MDOFunctionGenerator(object):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-    ):  # type: (...) -> None
+        discipline: MDODiscipline,
+    ) -> None:
         """
         Args:
             discipline: The discipline from which the generator builds the functions.
@@ -68,11 +64,11 @@ class MDOFunctionGenerator(object):
 
     def get_function(
         self,
-        input_names_list,  # type: Sequence[str]
-        output_names_list,  # type: Sequence[str]
-        default_inputs=None,  # type: Optional[Mapping[str,ndarray]]
-        differentiable=True,  # type: bool
-    ):  # type: (...) -> MDOFunction
+        input_names_list: Sequence[str],
+        output_names_list: Sequence[str],
+        default_inputs: Mapping[str, ndarray] | None = None,
+        differentiable: bool = True,
+    ) -> MDOFunction:
         """Build a function from a discipline input and output lists.
 
         Args:
@@ -94,10 +90,10 @@ class MDOFunctionGenerator(object):
             ValueError: If a given input (or output) name is not the name
                 of an input (or output) variable of the discipline.
         """
-        if isinstance(input_names_list, string_types):
+        if isinstance(input_names_list, str):
             input_names_list = [input_names_list]
 
-        if isinstance(output_names_list, string_types):
+        if isinstance(output_names_list, str):
             output_names_list = [output_names_list]
 
         if input_names_list is None:

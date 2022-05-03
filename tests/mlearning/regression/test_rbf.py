@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test radial basis function regression module."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
@@ -43,7 +39,7 @@ INPUT_VALUES = {
 
 
 @pytest.fixture
-def dataset():  # type: (...) -> Dataset
+def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline(
         {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"}
@@ -58,7 +54,7 @@ def dataset():  # type: (...) -> Dataset
 
 
 @pytest.fixture
-def model(dataset):  # type: (...) -> RBFRegression
+def model(dataset) -> RBFRegression:
     """A trained RBFRegression."""
     rbf = RBFRegression(dataset)
     rbf.learn()
@@ -66,7 +62,7 @@ def model(dataset):  # type: (...) -> RBFRegression
 
 
 @pytest.fixture
-def model_with_custom_function(dataset):  # type: (...) -> RBFRegression
+def model_with_custom_function(dataset) -> RBFRegression:
     """A trained RBFRegression  f(r) = r**2 - 1 as kernel function."""
 
     def der_function(input_data, norm_input_data, eps):
@@ -80,7 +76,7 @@ def model_with_custom_function(dataset):  # type: (...) -> RBFRegression
 
 
 @pytest.fixture
-def model_with_1d_output(dataset):  # type: (...) -> RBFRegression
+def model_with_1d_output(dataset) -> RBFRegression:
     """A trained RBFRegression with y_1 as output."""
     rbf = RBFRegression(dataset, output_names=["y_1"])
     rbf.learn()
@@ -90,7 +86,7 @@ def model_with_1d_output(dataset):  # type: (...) -> RBFRegression
 def test_get_available_functions():
     """Test available RBFs."""
     for function in RBFRegression.AVAILABLE_FUNCTIONS:
-        assert hasattr(Rbf, "_h_{}".format(function))
+        assert hasattr(Rbf, f"_h_{function}")
 
 
 def test_constructor(dataset):

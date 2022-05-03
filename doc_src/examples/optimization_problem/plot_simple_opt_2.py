@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -26,9 +25,6 @@ Analytical test case # 2
 #
 # Imports
 # -------
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.opt.opt_factory import OptimizersFactory

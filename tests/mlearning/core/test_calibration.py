@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test machine learning algorithm calibration."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
@@ -34,7 +30,7 @@ from numpy import array_equal
 
 
 @pytest.fixture(scope="module")
-def dataset():  # type: (...) -> RosenbrockDataset
+def dataset() -> RosenbrockDataset:
     """The dataset used to train the regression algorithms."""
     return RosenbrockDataset(opt_naming=False)
 
@@ -86,7 +82,7 @@ def test_discipline(dataset):
 
 
 @pytest.fixture(scope="module")
-def calibration_space():  # type: (...) -> DesignSpace
+def calibration_space() -> DesignSpace:
     """The space of the parameters to be calibrated."""
     calibration_space = DesignSpace()
     calibration_space.add_variable("penalty_level", 1, "float", 0.0, 1.0, 0.5)

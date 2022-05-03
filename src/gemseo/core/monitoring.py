@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,15 +20,12 @@
 Monitoring mechanism to track |g| execution (update events)
 ***********************************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from six import with_metaclass
+from __future__ import annotations
 
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 
-class Monitoring(with_metaclass(SingleInstancePerAttributeId, object)):
+class Monitoring(metaclass=SingleInstancePerAttributeId):
     """This class implements the observer pattern.
 
     It is a singleton, it is called by |g| core classes like MDODicipline whenever an

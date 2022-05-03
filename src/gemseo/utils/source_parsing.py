@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,20 +18,17 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parse source code to extract information."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import inspect
 import re
+from inspect import getfullargspec
 from typing import Callable
-from typing import Dict
-
-from gemseo.utils.py23_compat import getargspec
 
 
 def get_options_doc(
-    method,  # type: Callable
-):  # type: (...) -> Dict[str, str]
+    method: Callable,
+) -> dict[str, str]:
     """Get the documentation of a method.
 
     Args:
@@ -45,7 +41,7 @@ def get_options_doc(
     docstring = inspect.getdoc(method)
 
     if docstring is None:
-        raise ValueError("Empty doc for {}".format(method))
+        raise ValueError(f"Empty doc for {method}")
 
     for parse in (parse_google, parse_rest):
         parsed_docstring = parse(docstring)
@@ -60,13 +56,15 @@ def get_options_doc(
 
 def get_default_options_values(
     cls,
-):  # type: (...) -> Dict[str, str]
+) -> dict[str, str]:
     """Get the options default values for the given class, by only addressing kwargs.
 
     Args:
         cls: The class.
     """
-    args, _, _, defaults = getargspec(cls.__init__)
+    full_arg_specs = getfullargspec(cls.__init__)
+    args = full_arg_specs[0]
+    defaults = full_arg_specs[3]
     if "self" in args:
         args.remove("self")
     n_def = len(defaults)
@@ -75,8 +73,8 @@ def get_default_options_values(
 
 
 def parse_rest(
-    docstring,  # type: str
-):  # type: (...) -> Dict[str, str]
+    docstring: str,
+) -> dict[str, str]:
     """Parse a reST docstring.
 
     Args:
@@ -109,8 +107,8 @@ RE_PATTERN_ARGS = re.compile(
 
 
 def parse_google(
-    docstring,  # type: str
-):  # type: (...) -> Dict[str, str]
+    docstring: str,
+) -> dict[str, str]:
     """Parse a Google docstring.
 
     Args:

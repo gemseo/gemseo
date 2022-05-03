@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,12 +17,10 @@
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A chain of MDAs to build hybrids of MDA algorithms sequentially."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Any
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
 
 from gemseo.core.coupling_structure import MDOCouplingStructure
@@ -40,24 +37,24 @@ class MDASequential(MDA):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        mda_sequence,  # type: Sequence[MDA]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        max_mda_iter=10,  # type: int
-        tolerance=1e-6,  # type: float
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        linear_solver="DEFAULT",  # type: str
-        linear_solver_options=None,  # type: Mapping[str,Any]
-    ):  # type: (...) -> None
+        disciplines: Sequence[MDODiscipline],
+        mda_sequence: Sequence[MDA],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        max_mda_iter: int = 10,
+        tolerance: float = 1e-6,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        linear_solver: str = "DEFAULT",
+        linear_solver_options: Mapping[str, Any] = None,
+    ) -> None:
         """
         Args:
             mda_sequence: The sequence of MDAs.
         """
-        super(MDASequential, self).__init__(
+        super().__init__(
             disciplines,
             name=name,
             grammar_type=grammar_type,
@@ -81,19 +78,19 @@ class MDASequential(MDA):
     @MDA.log_convergence.setter
     def log_convergence(
         self,
-        value,  # type: bool
-    ):  # type: (...) -> None
+        value: bool,
+    ) -> None:
         self._log_convergence = value
         for mda in self.mda_sequence:
             mda.log_convergence = value
 
-    def _initialize_grammars(self):  # type: (...) -> None
+    def _initialize_grammars(self) -> None:
         """Define all the inputs and outputs."""
         for discipline in self.disciplines:
             self.input_grammar.update_from(discipline.input_grammar)
             self.output_grammar.update_from(discipline.output_grammar)
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         """Run the MDAs in a sequential way."""
         self._couplings_warm_start()
         # execute MDAs in sequence
@@ -112,21 +109,21 @@ class GSNewtonMDA(MDASequential):
 
     def __init__(
         self,
-        disciplines,  # type: Sequence[MDODiscipline]
-        name=None,  # type: Optional[str]
-        grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,  # type: str
-        tolerance=1e-6,  # type: float
-        max_mda_iter=10,  # type: int
-        relax_factor=0.99,  # type: float
-        linear_solver="DEFAULT",  # type: str
-        max_mda_iter_gs=3,  # type: int
-        linear_solver_tolerance=1e-12,  # type: float
-        warm_start=False,  # type: bool
-        use_lu_fact=False,  # type: bool
-        coupling_structure=None,  # type: Optional[MDOCouplingStructure]
-        linear_solver_options=None,  # type: Mapping[str,Any]
-        log_convergence=False,  # type: bool
-        **newton_mda_options,  # type: float
+        disciplines: Sequence[MDODiscipline],
+        name: str | None = None,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
+        tolerance: float = 1e-6,
+        max_mda_iter: int = 10,
+        relax_factor: float = 0.99,
+        linear_solver: str = "DEFAULT",
+        max_mda_iter_gs: int = 3,
+        linear_solver_tolerance: float = 1e-12,
+        warm_start: bool = False,
+        use_lu_fact: bool = False,
+        coupling_structure: MDOCouplingStructure | None = None,
+        linear_solver_options: Mapping[str, Any] = None,
+        log_convergence: bool = False,
+        **newton_mda_options: float,
     ):
         """
         Args:
@@ -160,7 +157,7 @@ class GSNewtonMDA(MDASequential):
             **newton_mda_options,
         )
         sequence = [mda_gs, mda_newton]
-        super(GSNewtonMDA, self).__init__(
+        super().__init__(
             disciplines,
             sequence,
             name=name,

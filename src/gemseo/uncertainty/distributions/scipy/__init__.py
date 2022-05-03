@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -56,3 +55,4 @@ based on the SciPy library and from a copula name.
    between random variables from their cumulative density functions.
    `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
 """
+from __future__ import annotations

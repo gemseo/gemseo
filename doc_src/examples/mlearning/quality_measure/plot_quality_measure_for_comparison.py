@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -31,9 +30,6 @@ Rosenbrock dataset (two inputs and one output).
 ###############################################################################
 # Import
 # ------
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,12 +17,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 """Build a diagonal DOE for scalable model construction."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Container
-from typing import Dict
 from typing import Optional
 from typing import Union
 
@@ -45,8 +42,8 @@ class DiagonalDOE(DOELibrary):
     __ALGO_DESC = {"DiagonalDOE": "Diagonal design of experiments"}
     LIBRARY_NAME = "GEMSEO"
 
-    def __init__(self):  # type: (...) -> None
-        super(DiagonalDOE, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         for algo, description in self.__ALGO_DESC.items():
             self.lib_dict[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
@@ -57,14 +54,14 @@ class DiagonalDOE(DOELibrary):
 
     def _get_options(
         self,
-        eval_jac=False,  # type: bool
-        n_processes=1,  # type: int
-        wait_time_between_samples=0.0,  # type: float
-        n_samples=2,  # type: int
-        reverse=None,  # type: Optional[Container[str]]
-        max_time=0,  # type: float
-        **kwargs,  # type: OptionType
-    ):  # type: (...) -> Dict[str, OptionType] # pylint: disable=W0221
+        eval_jac: bool = False,
+        n_processes: int = 1,
+        wait_time_between_samples: float = 0.0,
+        n_samples: int = 2,
+        reverse: Container[str] | None = None,
+        max_time: float = 0,
+        **kwargs: OptionType,
+    ) -> dict[str, OptionType]:  # pylint: disable=W0221
         """Get the options.
 
         Args:
@@ -94,9 +91,7 @@ class DiagonalDOE(DOELibrary):
             **kwargs,
         )
 
-    def _generate_samples(
-        self, **options  # type: OptionType
-    ):  # type: (...) -> ndarray
+    def _generate_samples(self, **options: OptionType) -> ndarray:
         """Generate the DOE samples.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -28,9 +27,6 @@ with respect to the problem dimension for the aerostructure problem.
 For that,
 we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario

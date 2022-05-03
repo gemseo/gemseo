@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Self Organizing Maps to display high dimensional design spaces."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from math import floor
@@ -61,20 +59,20 @@ class SOM(OptPostProcessor):
 
     def __init__(
         self,
-        opt_problem,  # type: OptimizationProblem
-    ):  # type: (...) -> None
-        super(SOM, self).__init__(opt_problem)
+        opt_problem: OptimizationProblem,
+    ) -> None:
+        super().__init__(opt_problem)
         self.som = None
         self.cmap = PARULA
 
     @staticmethod
     def __build_som_from_vars(
-        x_vars,  # type: ndarray
-        som_grid_nx=5,  # type:int
-        som_grid_ny=5,  # type:int
-        initmethod="pca",  # type:str
-        verbose="off",  # type:str
-    ):  # type: (...) -> SOM
+        x_vars: ndarray,
+        som_grid_nx: int = 5,
+        som_grid_ny: int = 5,
+        initmethod: str = "pca",
+        verbose: str = "off",
+    ) -> SOM:
         """Builds the SOM from the design variables history.
 
         Args:
@@ -104,10 +102,10 @@ class SOM(OptPostProcessor):
 
     def _plot(
         self,
-        n_x=4,  # type: int
-        n_y=4,  # type: int
-        annotate=False,  # type: bool
-    ):  # type: (...) -> None
+        n_x: int = 4,
+        n_y: int = 4,
+        annotate: bool = False,
+    ) -> None:
         """
         Args:
             n_x: The number of grids in x.
@@ -182,12 +180,12 @@ class SOM(OptPostProcessor):
 
     def __plot_som_from_scalar_data(
         self,
-        f_hist_scalar,  # type: ndarray
-        criteria,  # type: str
-        fig_indx,  # type: int
-        grid_size_x=3,  # type: int
-        grid_size_y=20,  # type: int
-        annotate=False,  # type: bool
+        f_hist_scalar: ndarray,
+        criteria: str,
+        fig_indx: int,
+        grid_size_x: int = 3,
+        grid_size_y: int = 20,
+        annotate: bool = False,
     ):
         """Builds the SOM plot after computation for a given criteria.
 
@@ -251,8 +249,8 @@ class SOM(OptPostProcessor):
 
     def __compute(
         self,
-        som_grid_nx=5,  # type: int
-        som_grid_ny=5,  # type: int
+        som_grid_nx: int = 5,
+        som_grid_ny: int = 5,
     ):
         """Build the SOM from optimization history.
 
@@ -281,9 +279,9 @@ class SOM(OptPostProcessor):
 
     @staticmethod
     def __coord2d_to_coords_offsets(
-        som_coord,  # type: ndarray
-        max_ofset=0.6,  # type: float
-    ):  # type: (...) -> ndarray
+        som_coord: ndarray,
+        max_ofset: float = 0.6,
+    ) -> ndarray:
         """Takes a coord array from SOM and adds an offset to the coordinates of the
         elements in the cluster so that they can be distinguished at display.
 

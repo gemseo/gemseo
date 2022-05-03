@@ -28,26 +28,25 @@ Core features
 *************
 
 The required dependencies provide the core features of |g|,
-these are (shown here for Python 3):
+these are:
 
-   - docstring-inheritance ==1.0.0
-   - fastjsonschema <=2.15.1
-   - genson ==1.2.2
-   - h5py >=2.3,<=3.6.0
-   - jinja2 <=3.0.3
-   - matplotlib >=2,<=3.4.3
-   - networkx >=2.2,<=2.6.3
-   - numpy >=1.10,<=1.21.4
-   - packaging <=21.3
-   - pandas >=0.16,<=1.4.1
-   - pyxdsm <=2.2.0
-   - requests
-   - scipy >=1.1,<=1.7.3
-   - six
-   - tqdm >=4.41,<=4.62.3
-   - typing-extensions >=4,<5
-   - xdsmjs >=1.0.0,<=1.0.1
-   - xxhash ==3.0.0
+    - docstring-inheritance ==1.0.0
+    - fastjsonschema <=2.15.3
+    - genson ==1.2.2
+    - h5py >=2.3,<=3.6.0
+    - jinja2 <=3.1.2
+    - matplotlib >=2,<=3.4.3
+    - networkx >=2.2,<=2.8
+    - numpy >=1.10,<=1.22.3
+    - packaging <=21.3
+    - pandas >=0.16,<=1.4.2
+    - pyxdsm <=2.2.1
+    - requests
+    - scipy >=1.1,<=1.7.3
+    - tqdm >=4.41,<=4.64.0
+    - typing-extensions >=4,<5
+    - xdsmjs >=1.0.0,<=1.0.1
+    - xxhash ==3.0.0
 
 The minimal dependencies will allow to execute
 :ref:`MDO processes <mdo_formulations>`
@@ -69,13 +68,13 @@ full features set of |g|.
 All these tools are open source with non-viral licenses
 (see :ref:`credits`):
 
-   - graphviz >=0.16,<=0.17: coupling graph generation
-   - nlopt >=2.4.2,<=2.7.0: optimization library
+   - graphviz >=0.16,<=0.20: coupling graph generation
+   - nlopt >=2.4.2,<=2.7.1: optimization library
+   - openpyxl <=3.0.9: Excel reading with pandas
    - openturns >=1.13,<=1.18: designs of experiments, machine learning, uncertainty quantification
    - pdfo >=1.0,<=1.2: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments
-   - pyside2 <=5.15.2: grammar editor GUI
-   - scikit-learn >=0.18,<=1.0.1: gaussian process surrogate model and SOM, kmeans
-   - sympy >=0.7,<=1.9: symbolic calculations for analytic disciplines
-   - openpyxl <=3.0.9: excel reading with pandas
-   - xlwings <=0.21.4: excel reading on Windows
+   - pyside2 <=5.15.2.1: grammar editor GUI
+   - scikit-learn >=0.18,<=1.0.2: machine learning
+   - sympy >=0.7,<=1.10.1: symbolic calculations for analytic disciplines
+   - xlwings ==0.27.0: Excel reading on Windows

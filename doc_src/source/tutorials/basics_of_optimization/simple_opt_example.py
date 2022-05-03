@@ -13,9 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-from __future__ import division
-from __future__ import unicode_literals
-
 import numpy as np
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
@@ -44,11 +41,7 @@ scenario = create_scenario(
 scenario.execute({"algo": "fullfact", "n_samples": 11**2})
 
 opt_results = scenario.get_optimum()
-print(
-    "The solution of P is (x*,f(x*)) = ({}, {})".format(
-        opt_results.x_opt, opt_results.f_opt
-    )
-)
+print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
 
 
 # PART 2
@@ -67,7 +60,7 @@ def dgdx(x=0):
 x_0 = -0.5 * np.ones(1)
 opt = optimize.fmin_l_bfgs_b(g, x_0, fprime=dgdx, bounds=[(-0.2, 2.0)])
 x_opt, f_opt, _ = opt
-print("The solution of P is (x*,f(x*)) = ({}, {})".format(x_opt[0], f_opt[0]))
+print(f"The solution of P is (x*, f(x*)) = ({x_opt[0]}, {f_opt[0]})")
 
 
 # PART 3

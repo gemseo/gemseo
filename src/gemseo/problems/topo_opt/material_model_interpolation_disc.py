@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,6 +16,8 @@
 #        :author: Simone Coniglio
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A discipline for topology optimization material model interpolation."""
+from __future__ import annotations
+
 from typing import Sequence
 
 from numpy import atleast_2d
@@ -37,14 +38,14 @@ class MaterialModelInterpolation(MDODiscipline):
 
     def __init__(
         self,
-        e0,  # type: float
-        penalty,  # type: float
-        n_x,  # type: int
-        n_y,  # type: int
-        empty_elements,  # type: Sequence[int]
-        full_elements,  # type: Sequence[int]
-        contrast=1e9,  # type: float
-    ):  # type: (...) -> None # noqa: D205,D212,D415
+        e0: float,
+        penalty: float,
+        n_x: int,
+        n_y: int,
+        empty_elements: Sequence[int],
+        full_elements: Sequence[int],
+        contrast: float = 1e9,
+    ) -> None:  # noqa: D205,D212,D415
         """
         Args:
             e0: The full material Young modulus.
@@ -58,7 +59,7 @@ class MaterialModelInterpolation(MDODiscipline):
             contrast: The ratio between the full material Young's modulus
                 and void material Young's modulus.
         """
-        super(MaterialModelInterpolation, self).__init__()
+        super().__init__()
         self.E0 = e0
         self.penalty = penalty
         self.Emin = e0 / contrast
@@ -67,9 +68,9 @@ class MaterialModelInterpolation(MDODiscipline):
         self.N_elements = n_x * n_y
         self.input_grammar.initialize_from_data_names(["xPhys"])
         self.output_grammar.initialize_from_data_names(["rho", "E"])
-        self.default_inputs = {"xPhys": ones((n_x * n_y))}
+        self.default_inputs = {"xPhys": ones(n_x * n_y)}
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         xphys = self.get_inputs_by_name("xPhys")
         xphys[self.empty_elements] = 0
         xphys[self.full_elements] = 1

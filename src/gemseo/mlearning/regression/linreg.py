@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -52,15 +51,11 @@ The linear model relies on the LinearRegression, Ridge, Lasso and ElasticNet
 classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
-from typing import Optional
-from typing import Union
 
 from numpy import array
 from numpy import ndarray
@@ -91,15 +86,15 @@ class LinearRegression(MLRegressionAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=None,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        fit_intercept=True,  # type: bool
-        penalty_level=0.0,  # type: float
-        l2_penalty_ratio=1.0,  # type: float
-        **parameters,  # type: Optional[Union[float,int,str,bool]]
-    ):  # type: (...) ->None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = None,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        fit_intercept: bool = True,
+        penalty_level: float = 0.0,
+        l2_penalty_ratio: float = 1.0,
+        **parameters: float | int | str | bool | None,
+    ) -> None:
         """
         Args:
             fit_intercept: Whether to fit the intercept.
@@ -111,7 +106,7 @@ class LinearRegression(MLRegressionAlgo):
                 Between 0 and 1, use the ElasticNet penalty.
             **parameters: The parameters of the machine learning algorithm.
         """
-        super(LinearRegression, self).__init__(
+        super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
@@ -152,31 +147,31 @@ class LinearRegression(MLRegressionAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> None
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> None:
         self.algo.fit(input_data, output_data)
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         return self.algo.predict(input_data)
 
     def _predict_jacobian(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        input_data: ndarray,
+    ) -> ndarray:
         n_samples = input_data.shape[0]
         return repeat(self.algo.coef_[None], n_samples, axis=0)
 
     @property
-    def coefficients(self):  # type: (...) ->ndarray
+    def coefficients(self) -> ndarray:
         """The regression coefficients of the linear model."""
         return self.algo.coef_
 
     @property
-    def intercept(self):  # type: (...) ->ndarray
+    def intercept(self) -> ndarray:
         """The regression intercepts of the linear model."""
         if self.parameters["fit_intercept"]:
             intercept = self.algo.intercept_
@@ -186,8 +181,8 @@ class LinearRegression(MLRegressionAlgo):
 
     def get_coefficients(
         self,
-        as_dict=True,  # type: bool
-    ):  # type: (...) -> DataType
+        as_dict: bool = True,
+    ) -> DataType:
         """Return the regression coefficients of the linear model.
 
         Args:
@@ -219,8 +214,8 @@ class LinearRegression(MLRegressionAlgo):
 
     def get_intercept(
         self,
-        as_dict=True,  # type:bool
-    ):  # type: (...) -> DataType
+        as_dict: bool = True,
+    ) -> DataType:
         """Return the regression intercepts of the linear model.
 
         Args:
@@ -251,8 +246,8 @@ class LinearRegression(MLRegressionAlgo):
 
     def __convert_array_to_dict(
         self,
-        data,  # type:ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
+        data: ndarray,
+    ) -> dict[str, ndarray]:
         """Convert a data array into a dictionary.
 
         Args:

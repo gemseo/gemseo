@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,24 +19,23 @@
 #        :author: Antoine Dechaume
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Pretty string utils."""
+from __future__ import annotations
+
+from collections import abc
 from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any
 from typing import Iterable
-from typing import List
-from typing import Optional
-
-from gemseo.utils.py23_compat import abc
 
 # to store the raw ingredients of a string to be formatted later
 MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
 
 
 def pretty_repr(
-    obj,  # type: Any
-    **kwargs,  # type: Any
-):  # type: (...)-> str
+    obj: Any,
+    **kwargs: Any,
+) -> str:
     """String representation of an object.
 
     Args:
@@ -50,7 +48,7 @@ def pretty_repr(
 
     if isinstance(obj, abc.Mapping):
         return delimiter.join(
-            ["{}={}".format(key, repr(val)) for key, val in sorted(obj.items())]
+            [f"{key}={repr(val)}" for key, val in sorted(obj.items())]
         )
 
     if isinstance(obj, abc.Iterable):
@@ -59,7 +57,7 @@ def pretty_repr(
     return repr(obj)
 
 
-class MultiLineString(object):
+class MultiLineString:
     """Multi-line string lazy evaluator.
 
     The creation of the string is postponed to when an instance is stringified through
@@ -78,8 +76,8 @@ class MultiLineString(object):
 
     def __init__(
         self,
-        lines=None,  # type: Optional[Iterable[MessageLine]]
-    ):  # type: (...) -> None
+        lines: Iterable[MessageLine] | None = None,
+    ) -> None:
         if lines is None:
             self.__lines = []
         else:
@@ -90,10 +88,10 @@ class MultiLineString(object):
 
     def add(
         self,
-        str_format,  # type: str
-        *args,  # type: Any
-        **kwargs,  # type: Any
-    ):  # type: (...)-> None
+        str_format: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """Add a line.
 
         Args:
@@ -104,28 +102,28 @@ class MultiLineString(object):
         self.__lines.append(MessageLine(str_format, self.__level, args, kwargs))
 
     @property
-    def lines(self):  # type: (...) -> List[MessageLine]
+    def lines(self) -> list[MessageLine]:
         """The strings composing the lines."""
         return self.__lines
 
-    def reset(self):  # type: (...) ->  None
+    def reset(self) -> None:
         """Reset the indentation."""
         self.__level = self.DEFAULT_LEVEL
 
-    def indent(self):  # type: (...) ->  None
+    def indent(self) -> None:
         """Increase the indentation."""
         self.__level += 1
 
-    def dedent(self):  # type: (...) ->  None
+    def dedent(self) -> None:
         """Decrease the indentation."""
         if self.__level > 0:
             self.__level -= 1
 
     def replace(
         self,
-        old,  # type: str
-        new,  # type: str
-    ):  # type: (...) -> MultiLineString
+        old: str,
+        new: str,
+    ) -> MultiLineString:
         """Return a new MultiLineString with all occurrences of old replaced by new.
 
         Args:
@@ -141,16 +139,14 @@ class MultiLineString(object):
             repl_msg.append(MessageLine(new_str, line.level, line.args, line.kwargs))
         return MultiLineString(repl_msg)
 
-    def __repr__(self):  # type: (...) -> str
+    def __repr__(self) -> str:
         lines = []
         for line in self.__lines:
             str_format = self.INDENTATION * line.level + line.str_format
             lines.append(str_format.format(*line.args, **line.kwargs))
         return "\n".join(lines)
 
-    def __add__(
-        self, other  # type: Any
-    ):  # type: (...) -> MultiLineString
+    def __add__(self, other: Any) -> MultiLineString:
         if isinstance(other, MultiLineString):
             return MultiLineString(self.lines + other.lines)
         out = deepcopy(self)
@@ -159,7 +155,7 @@ class MultiLineString(object):
 
     @classmethod
     @contextmanager
-    def offset(cls):  # type: (...) ->  None
+    def offset(cls) -> None:
         cls.DEFAULT_LEVEL += 1
         try:
             yield

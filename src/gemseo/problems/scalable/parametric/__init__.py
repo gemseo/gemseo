@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -94,3 +93,4 @@ It provides a method to run MDO formulations and save results on the disk.
 The :class:`.TMParamSSPost` provides graphical capabilities to post-process
 these saved results.
 """
+from __future__ import annotations

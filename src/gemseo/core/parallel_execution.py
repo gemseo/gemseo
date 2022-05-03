@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,8 +17,7 @@
 #        :author: Charlie Vanaret, Francois Gallard, Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Parallel execution of disciplines and functions using multiprocessing."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 import multiprocessing as mp
@@ -32,12 +30,8 @@ import traceback
 from collections import Iterable
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
-from typing import Type
 from typing import Union
 
 from numpy import ndarray
@@ -51,10 +45,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 def worker(
-    par_exe,  # type: Union[ParallelExecution, DiscParallelExecution, DiscParallelLinearization]
-    queue_in,  # type: queue.Queue
-    queue_out,  # type: queue.Queue
-):  # type: (...) -> None
+    par_exe: ParallelExecution | DiscParallelExecution | DiscParallelLinearization,
+    queue_in: queue.Queue,
+    queue_out: queue.Queue,
+) -> None:
     """Execute a function while there are args left in the queue_in.
 
     Args:
@@ -78,7 +72,7 @@ def worker(
         queue_in.task_done()
 
 
-class ParallelExecution(object):
+class ParallelExecution:
     """Perform a parallel execution of tasks on input values.
 
     Input values must be a list of independent pointers.
@@ -88,12 +82,12 @@ class ParallelExecution(object):
 
     def __init__(
         self,
-        worker_list,  # type: ParallelExecutionWorkerType
-        n_processes=N_CPUS,  # type: int
-        use_threading=False,  # type: bool
-        wait_time_between_fork=0.0,  # type: float
-        exceptions_to_re_raise=None,  # type: Optional[Tuple[Type[Exception]]]
-    ):  # type: (...) -> None
+        worker_list: ParallelExecutionWorkerType,
+        n_processes: int = N_CPUS,
+        use_threading: bool = False,
+        wait_time_between_fork: float = 0.0,
+        exceptions_to_re_raise: tuple[type[Exception]] | None = None,
+    ) -> None:
         """
         Args:
             worker_list: The objects that perform the tasks.
@@ -127,7 +121,7 @@ class ParallelExecution(object):
             self.__exceptions_to_re_raise = exceptions_to_re_raise
 
         if use_threading:
-            ids = set(id(worker) for worker in worker_list)
+            ids = {id(worker) for worker in worker_list}
             if len(ids) != len(worker_list):
                 raise ValueError(
                     "When using multithreading, all workers"
@@ -136,9 +130,7 @@ class ParallelExecution(object):
         self.wait_time_between_fork = wait_time_between_fork
         self.input_data_list = None
 
-    def _run_task_by_index(
-        self, task_index  # type: int
-    ):  # type: (...) -> Tuple[int, Any]
+    def _run_task_by_index(self, task_index: int) -> tuple[int, Any]:
         """Run a task from an index of discipline and the input local data.
 
         The purpose is to be used by multiprocessing queues as a task.
@@ -163,10 +155,10 @@ class ParallelExecution(object):
 
     def execute(
         self,
-        input_data_list,  # type: Union[Sequence[ndarray], ndarray]
-        exec_callback=None,  # type: Optional[Callable[[int, Any], Any]]
-        task_submitted_callback=None,  # type: Optional[Callable]
-    ):  # type: (...) -> Dict[int, Any]
+        input_data_list: Sequence[ndarray] | ndarray,
+        exec_callback: Callable[[int, Any], Any] | None = None,
+        task_submitted_callback: Callable | None = None,
+    ) -> dict[int, Any]:
         """Execute all the processes.
 
         Args:
@@ -311,9 +303,9 @@ class ParallelExecution(object):
 
     @staticmethod
     def _run_task(
-        worker,  # type: ParallelExecutionWorkerType
-        input_loc,  # type: Any
-    ):  # type: (...) -> Any
+        worker: ParallelExecutionWorkerType,
+        input_loc: Any,
+    ) -> Any:
         """Effectively perform the computation.
 
         To be overloaded by subclasses.
@@ -329,7 +321,7 @@ class ParallelExecution(object):
             TypeError: If the provided worker has the wrong type.
         """
         if not ParallelExecution._is_worker(worker):
-            raise TypeError("Cannot handle worker: {}.".format(worker))
+            raise TypeError(f"Cannot handle worker: {worker}.")
 
         if hasattr(worker, "execute"):
             return worker.execute(input_loc)
@@ -338,8 +330,8 @@ class ParallelExecution(object):
 
     @staticmethod
     def _is_worker(
-        worker,  # type: ParallelExecutionWorkerType
-    ):  # type: (...) -> bool
+        worker: ParallelExecutionWorkerType,
+    ) -> bool:
         """Test if the worker is acceptable.
 
         A `worker` has to be callable or have an "execute" method.
@@ -356,9 +348,7 @@ class ParallelExecution(object):
 class DiscParallelExecution(ParallelExecution):
     """Execute disciplines in parallel."""
 
-    def _update_local_objects(
-        self, ordered_outputs  # type: Mapping[int, Any]
-    ):  # type: (...) -> None
+    def _update_local_objects(self, ordered_outputs: Mapping[int, Any]) -> None:
         """Update the local objects from the parallel results.
 
         The ordered_outputs contains the stacked outputs of the function
@@ -382,9 +372,7 @@ class DiscParallelExecution(ParallelExecution):
 class DiscParallelLinearization(ParallelExecution):
     """Linearize disciplines in parallel."""
 
-    def _update_local_objects(
-        self, ordered_outputs  # type: Mapping[int, Any]
-    ):  # type: (...) -> None
+    def _update_local_objects(self, ordered_outputs: Mapping[int, Any]) -> None:
         """Update the local objects from the parallel results.
 
         The ordered_outputs contains the stacked outputs of the function

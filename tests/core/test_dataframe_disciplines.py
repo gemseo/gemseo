@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -15,9 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 # Antoine DECHAUME
-from __future__ import division
-from __future__ import unicode_literals
-
 import numpy as np
 import numpy.testing
 import pytest
@@ -44,11 +40,11 @@ class DFChooser(MDODiscipline):
 
     def __init__(
         self,
-        with_df,  # type: bool
-        grammar_type,  # type: str
-        df_shares_io,  # type: bool
+        with_df: bool,
+        grammar_type: str,
+        df_shares_io: bool,
     ):
-        super(DFChooser, self).__init__(grammar_type=grammar_type)
+        super().__init__(grammar_type=grammar_type)
         self.with_df = with_df
         if df_shares_io:
             self.output_name = to_df_key("x", "b")
@@ -65,11 +61,11 @@ class A(DFChooser):
 
     def __init__(
         self,
-        with_df,  # type: bool
-        grammar_type,  # type: str
-        df_shares_io=False,  # type: bool
+        with_df: bool,
+        grammar_type: str,
+        df_shares_io: bool = False,
     ):
-        super(A, self).__init__(with_df, grammar_type, df_shares_io)
+        super().__init__(with_df, grammar_type, df_shares_io)
 
         if self.with_df:
             self.default_inputs = {"x": DataFrame(data={"a": array([0.0])})}
@@ -109,11 +105,11 @@ class B(DFChooser):
 
     def __init__(
         self,
-        with_df,  # type: bool
-        grammar_type,  # type: str
-        df_shares_io=False,  # type: bool
+        with_df: bool,
+        grammar_type: str,
+        df_shares_io: bool = False,
     ):
-        super(B, self).__init__(with_df, grammar_type, df_shares_io)
+        super().__init__(with_df, grammar_type, df_shares_io)
         if self.with_df:
             if df_shares_io:
                 df_name = "x"
@@ -149,11 +145,11 @@ class B(DFChooser):
 
 
 def get_executed_disc(
-    disc_class,  # type: type
-    with_df,  # type: bool
-    grammar_type,  # type: str
-    df_shares_io=False,  # type: bool
-):  # type (...) -> MDODiscipline
+    disc_class: type,
+    with_df: bool,
+    grammar_type: str,
+    df_shares_io: bool = False,
+) -> MDODiscipline:
     """Create, execute and return a discipline.
 
     Args:
@@ -222,7 +218,7 @@ class A2(A):
     """Discipline with 2 inputs and 2 outputs."""
 
     def __init__(self, with_df):
-        super(A2, self).__init__(with_df, MDODiscipline.SIMPLE_GRAMMAR_TYPE)
+        super().__init__(with_df, MDODiscipline.SIMPLE_GRAMMAR_TYPE)
         if self.with_df:
             self.default_inputs["x"]["c"] = array([0.0])
             self.input_grammar.update_elements(**{to_df_key("x", "c"): ndarray})
@@ -233,7 +229,7 @@ class A2(A):
             self.output_grammar.update_elements(**{"d": ndarray})
 
     def _run(self):
-        super(A2, self)._run()
+        super()._run()
         d = self.local_data
         if self.with_df:
             d[to_df_key("y", "d")] = d[to_df_key("x", "c")] ** 2

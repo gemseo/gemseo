@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,16 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
 MDO problem."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from ast import literal_eval
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
-from typing import Tuple
 
 from pandas import DataFrame  # noqa F401
 from pandas import read_excel
@@ -45,7 +40,7 @@ from gemseo.core.mdo_scenario import MDOScenario
 LOGGER = logging.getLogger(__name__)
 
 
-class XLSStudyParser(object):
+class XLSStudyParser:
     """Parse the input Excel file that describe the GEMSEO study.
 
     The Excel file must contain one sheet per discipline.
@@ -88,9 +83,7 @@ class XLSStudyParser(object):
     OPTIONS = "Options"
     OPTIONS_VALUES = "Options values"
 
-    def __init__(
-        self, xls_study_path  # type: str
-    ):  # type (..) -> None
+    def __init__(self, xls_study_path: str) -> None:
         """Initialize the study from the Excel specification.
 
         Args:
@@ -103,7 +96,7 @@ class XLSStudyParser(object):
         self.xls_study_path = xls_study_path
         try:
             self.frames = read_excel(xls_study_path, sheet_name=None, engine="openpyxl")
-        except IOError:
+        except OSError:
             LOGGER.error("Failed to open the study file: %s", xls_study_path)
             raise
 
@@ -119,7 +112,7 @@ class XLSStudyParser(object):
         if not self.scenarios:
             raise ValueError("No scenario found in the xls file")
 
-    def _init_disciplines(self):  # type: (...) -> None
+    def _init_disciplines(self) -> None:
         """Initialize the disciplines.
 
         Raises:
@@ -161,10 +154,10 @@ class XLSStudyParser(object):
 
     @staticmethod
     def _get_frame_series_values(
-        frame,  # type: DataFrame
-        series_name,  # type: str
-        return_none=False,  # type: Optional[bool]
-    ):  # type: (...) -> None
+        frame: DataFrame,
+        series_name: str,
+        return_none: bool | None = False,
+    ) -> None:
         """Return the data of a named column.
 
         Removes empty data.
@@ -185,12 +178,12 @@ class XLSStudyParser(object):
         if series is None:
             if return_none:
                 return None
-            raise ValueError("The sheet has no serie named '{}'".format(series_name))
+            raise ValueError(f"The sheet has no serie named '{series_name}'")
         # Remove empty data
         # pylint: disable=comparison-with-itself
         return [val for val in series.tolist() if val == val]
 
-    def _get_opt_pb_descr(self):  # type: (...) -> None
+    def _get_opt_pb_descr(self) -> None:
         """Initialize the objective function, constraints and design_variables.
 
         Raises:
@@ -296,13 +289,13 @@ class XLSStudyParser(object):
 
     def _check_opt_pb(
         self,
-        objectives,  # type: Iterable[str]
-        constraints,  # type: Iterable[str]
-        disciplines,  # type: Iterable[str]
-        design_variables,  # type: Iterable[str]
-        formulation,  # type: str
-        scn_name,  # type: str
-    ):  # type: (...) -> None
+        objectives: Iterable[str],
+        constraints: Iterable[str],
+        disciplines: Iterable[str],
+        design_variables: Iterable[str],
+        formulation: str,
+        scn_name: str,
+    ) -> None:
         """Checks the optimization problem consistency.
 
         Args:
@@ -362,7 +355,7 @@ class XLSStudyParser(object):
                 "outputs of any discipline: {}".format(scn_name, list(missing))
             )
         if not objectives:
-            raise ValueError("No objectives of {} are defined".format(scn_name))
+            raise ValueError(f"No objectives of {scn_name} are defined")
 
         if formulation not in get_available_formulations():
             raise ValueError(
@@ -372,7 +365,7 @@ class XLSStudyParser(object):
             )
 
 
-class StudyAnalysis(object):
+class StudyAnalysis:
     """A MDO study analysis from an Excel specification.
 
     Generate a N2 (equivalent to the Design Structure Matrix) diagram,
@@ -451,9 +444,7 @@ class StudyAnalysis(object):
 
     AVAILABLE_DISTRIBUTED_FORMULATIONS = ("BiLevel", "BLISS98B")
 
-    def __init__(
-        self, xls_study_path  # type: str
-    ):  # type: (...) -> None
+    def __init__(self, xls_study_path: str) -> None:
         """Initialize the study from the Excel specification.
 
         Args:
@@ -470,12 +461,12 @@ class StudyAnalysis(object):
 
     def generate_n2(
         self,
-        file_path="n2.pdf",  # type: str
-        show_data_names=True,  # type: bool
-        save=True,  # type: bool
-        show=False,  # type:bool
-        figsize=(15, 10),  # type: Tuple[float, float]
-    ):  # type: (...) -> None
+        file_path: str = "n2.pdf",
+        show_data_names: bool = True,
+        save: bool = True,
+        show: bool = False,
+        figsize: tuple[float, float] = (15, 10),
+    ) -> None:
         """Generate a N2 plot for the disciplines list.
 
         Args:
@@ -500,9 +491,9 @@ class StudyAnalysis(object):
 
     @staticmethod
     def _create_scenario(
-        disciplines,  # type: Iterable[MDODiscipline]
-        scenario_descr,  # type: Mapping[str, Iterable[str]]
-    ):  # type: (...) -> MDOScenario
+        disciplines: Iterable[MDODiscipline],
+        scenario_descr: Mapping[str, Iterable[str]],
+    ) -> MDOScenario:
         """Create a MDO scenario.
 
         Args:
@@ -545,8 +536,8 @@ class StudyAnalysis(object):
         return scenario
 
     def _get_disciplines_instances(
-        self, scn  # type: Mapping[str, Iterable[str]]
-    ):  # type: (...) -> List[MDODiscipline]
+        self, scn: Mapping[str, Iterable[str]]
+    ) -> list[MDODiscipline]:
         """Get the instances of the disciplines from a scenario.
 
         Args:
@@ -565,7 +556,7 @@ class StudyAnalysis(object):
             discs.append(disc_inst)
         return discs
 
-    def _create_scenarios(self):  # type: (...) -> None
+    def _create_scenarios(self) -> None:
         """Create the main scenario, eventually including sub scenarios.
 
         Raises:
@@ -607,10 +598,10 @@ class StudyAnalysis(object):
 
     def generate_xdsm(
         self,
-        output_dir,  # type: str
-        latex_output=False,  # type: bool
-        open_browser=False,  # type: bool
-    ):  # type: (...) -> MDOScenario
+        output_dir: str,
+        latex_output: bool = False,
+        open_browser: bool = False,
+    ) -> MDOScenario:
         """Create an xdsm.json file from the current scenario.
 
         Args:

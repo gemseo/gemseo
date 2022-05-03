@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,8 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Provide base test class stub for testing bilevel also for |g| plugins."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
 from typing import Callable
@@ -32,7 +30,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiStructure
 FixtureFunc = Callable[[Dict[str, float]], MDOScenario]
 
 
-def create_sobieski_bilevel_scenario():  # type: (...) -> FixtureFunc
+def create_sobieski_bilevel_scenario() -> FixtureFunc:
     """Create a function to generate a Sobieski BiLevel Scenario.
 
     Returns:

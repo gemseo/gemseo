@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -20,9 +19,6 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test dimension reduction with Karhunen-Loeve singular value decomposition."""
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
 from numpy import array

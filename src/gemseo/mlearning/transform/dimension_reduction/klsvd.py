@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,10 +23,7 @@ The :class:`.KLSVD` class wraps the KarhunenLoeveSVDAlgorithm
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
-from typing import Optional
+from __future__ import annotations
 
 import openturns
 from numpy import array
@@ -56,29 +52,29 @@ class KLSVD(DimensionReduction):
 
     def __init__(
         self,
-        mesh,  # type: ndarray
-        n_components=None,  # type: Optional[int]
-        name="KLSVD",  # type: str
-    ):  # type: (...) -> None
+        mesh: ndarray,
+        n_components: int | None = None,
+        name: str = "KLSVD",
+    ) -> None:
         """
         Args:
             mesh: A mesh passed as a 2D NumPy array
                 whose rows are nodes and columns are the dimensions of the nodes.
         """
-        super(KLSVD, self).__init__(name, mesh=mesh, n_components=n_components)
+        super().__init__(name, mesh=mesh, n_components=n_components)
         self.algo = None
         self.ot_mesh = Mesh(Sample(mesh))
 
     @property
-    def mesh(self):  # type: (...) -> ndarray
+    def mesh(self) -> ndarray:
         """The mesh."""
         return self.parameters["mesh"]
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         sample = self._get_process_sample(data)
         mesh_size = self.ot_mesh.getVerticesNumber()
         klsvd = KarhunenLoeveSVDAlgorithm(sample, [1] * mesh_size, 0.0, True)
@@ -92,15 +88,15 @@ class KLSVD(DimensionReduction):
 
     def transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         sample = self._get_process_sample(data)
         return array(self.algo.project(sample))
 
     def inverse_transform(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         pred = []
         for coefficients in data:
             coeff = Point(list(coefficients))
@@ -108,25 +104,25 @@ class KLSVD(DimensionReduction):
         return array(pred)[:, :, 0]
 
     @property
-    def output_dimension(self):  # type: (...) -> int
+    def output_dimension(self) -> int:
         """The dimension of the latent space."""
         return len(self.algo.getModes())
 
     @property
-    def components(self):  # type: (...) -> ndarray
+    def components(self) -> ndarray:
         """The principal components."""
         tmp = array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
         return tmp
 
     @property
-    def eigenvalues(self):  # type: (...) -> ndarray
+    def eigenvalues(self) -> ndarray:
         """The eigen values."""
         return array(get_eigenvalues(self.algo))
 
     def _get_process_sample(
         self,
-        data,  # type: ndarray
-    ):  # type: (...) -> openturns.ProcessSample
+        data: ndarray,
+    ) -> openturns.ProcessSample:
         """Convert numpy.ndarray data to an openturns.ProcessSample.
 
         Args:
@@ -144,8 +140,8 @@ class KLSVD(DimensionReduction):
 
     def _truncate_kl_result(
         self,
-        result,  # type: openturns.KarhunenLoeveResult
-    ):  # type:(...) -> openturns.KarhunenLoeveResult
+        result: openturns.KarhunenLoeveResult,
+    ) -> openturns.KarhunenLoeveResult:
         """Truncate an openturns.KarhunenLoeveResult.
 
         Args:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -21,8 +20,7 @@
 Various termination criteria for drivers
 ****************************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import all
 from numpy import allclose
@@ -83,7 +81,7 @@ def is_x_tol_reached(opt_problem, x_tol_rel=1e-6, x_tol_abs=1e-6, n_x=2):
     x_list = database.get_last_n_x(n_x)
 
     # Checks that there is at least one feasible point
-    is_feas = any((opt_problem.is_point_feasible(database[x]) for x in x_list))
+    is_feas = any(opt_problem.is_point_feasible(database[x]) for x in x_list)
     if not is_feas:
         return False
     x_average = average(x_list, axis=0)
@@ -114,7 +112,7 @@ def is_f_tol_reached(opt_problem, f_tol_rel=1e-6, f_tol_abs=1e-6, n_x=2):
 
     # Checks that there is at least one feasible point
     x_list = database.get_last_n_x(n_x)
-    is_feas = any((opt_problem.is_point_feasible(database[x]) for x in x_list))
+    is_feas = any(opt_problem.is_point_feasible(database[x]) for x in x_list)
     if not is_feas:
         return False
     obj_name = opt_problem.objective.name

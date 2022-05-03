@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -40,9 +36,9 @@ def test_correlation(tmp_path):
     indices = correlation.indices
     assert set(indices.keys()) == set(correlation._ALGORITHMS.keys())
     pearson = indices["pearson"]
-    assert set(pearson.keys()) == set(["y1", "y2"])
+    assert set(pearson.keys()) == {"y1", "y2"}
     assert len(pearson["y1"]) == 1
-    assert set(pearson["y1"][0].keys()) == set(["x1", "x2"])
+    assert set(pearson["y1"][0].keys()) == {"x1", "x2"}
     assert correlation.spearman == indices["spearman"]
     assert pearson == correlation.pearson
     for name in varnames:
@@ -67,8 +63,8 @@ def test_correlation_outputs(tmp_path):
 
     correlation = CorrelationAnalysis(discipline, space, 100)
     correlation.compute_indices()
-    assert set(["y1", "y2"]) == set(correlation.main_indices.keys())
+    assert {"y1", "y2"} == set(correlation.main_indices.keys())
 
     correlation = CorrelationAnalysis(discipline, space, 100)
     correlation.compute_indices("y1")
-    assert set(["y1"]) == set(correlation.main_indices.keys())
+    assert {"y1"} == set(correlation.main_indices.keys())

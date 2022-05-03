@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,9 +18,6 @@
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #         Francois Gallard : refactoring for v1, May 2016
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.algos.doe.lib_pydoe import PyDOE

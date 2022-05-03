@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -43,13 +42,10 @@ By default,
 this name is the concatenation of 'EmpiricalStatistics'
 and the name of the :class:`.Dataset`.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
-from typing import Optional
 
 from numpy import all as np_all
 from numpy import max as np_max
@@ -105,32 +101,32 @@ class EmpiricalStatistics(Statistics):
         >>> mean = statistics.mean()
     """
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
-        dataset,  # type: Dataset,
-        variables_names=None,  # type: Optional[Iterable[str]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None # noqa: D107,D205,D212,D415
+        dataset: Dataset,
+        variables_names: Iterable[str] | None = None,
+        name: str | None = None,
+    ) -> None:
         name = name or dataset.name
-        super(EmpiricalStatistics, self).__init__(dataset, variables_names, name)
+        super().__init__(dataset, variables_names, name)
 
-    def compute_maximum(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_maximum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: np_max(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_mean(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_mean(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: mean(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_minimum(self):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+    def compute_minimum(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: np_min(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_probability(
+    def compute_probability(  # noqa: D102
         self,
-        thresh,  # type: float
-        greater=True,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]  # noqa: D102
+        thresh: float,
+        greater: bool = True,
+    ) -> dict[str, ndarray]:
         if greater:
             result = {
                 name: mean(np_all(self.dataset[name] >= thresh[name], 1))
@@ -143,31 +139,31 @@ class EmpiricalStatistics(Statistics):
             }
         return result
 
-    def compute_quantile(
+    def compute_quantile(  # noqa: D102
         self,
-        prob,  # type:float
-    ):  # type: (...) -> Dict[str, ndarray] # noqa: D102
+        prob: float,
+    ) -> dict[str, ndarray]:
         result = {name: quantile(self.dataset[name], prob, 0) for name in self.names}
         return result
 
-    def compute_standard_deviation(
+    def compute_standard_deviation(  # noqa: D102
         self,
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    ) -> dict[str, ndarray]:
         result = {name: std(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_variance(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_variance(self) -> dict[str, ndarray]:  # noqa: D102
         result = {name: var(self.dataset[name], 0) for name in self.names}
         return result
 
-    def compute_moment(
+    def compute_moment(  # noqa: D102
         self,
-        order,  # type: int
-    ):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+        order: int,
+    ) -> dict[str, ndarray]:
         result = {name: moment(self.dataset[name], order, 0) for name in self.names}
         return result
 
-    def compute_range(self):  # type: (...) -> Dict[str, ndarray]  # noqa: D102
+    def compute_range(self) -> dict[str, ndarray]:  # noqa: D102
         lower = self.compute_minimum()
         upper = self.compute_maximum()
         result = {name: upper[name] - lower[name] for name in self.names}

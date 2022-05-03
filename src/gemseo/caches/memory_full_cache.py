@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,13 +18,10 @@
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Caching module to store all the entries in memory."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from typing import Any
-from typing import Optional
-from typing import Union
 
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import Data
@@ -43,10 +39,10 @@ class MemoryFullCache(AbstractFullCache):
 
     def __init__(
         self,
-        tolerance=0.0,  # type: float
-        name=None,  # type: Optional[str]
-        is_memory_shared=True,  # type: bool
-    ):  # type: (...) -> None
+        tolerance: float = 0.0,
+        name: str | None = None,
+        is_memory_shared: bool = True,
+    ) -> None:
         """
         Args:
             is_memory_shared : If ``True``,
@@ -60,47 +56,47 @@ class MemoryFullCache(AbstractFullCache):
             there may be duplicate computations
             because the cache will not be shared among the processes.
         """
-        super(MemoryFullCache, self).__init__(tolerance, name)
+        super().__init__(tolerance, name)
         self.__is_memory_shared = is_memory_shared
         self.__initialize_data()
 
-    def __initialize_data(self):  # type: (...) -> None
+    def __initialize_data(self) -> None:
         """Initialize the dictionary storing the data."""
         if self.__is_memory_shared:
             self.__data = self._manager.dict()
         else:
             self.__data = {}
 
-    def _copy_empty_cache(self):  # type: (...) -> MemoryFullCache
+    def _copy_empty_cache(self) -> MemoryFullCache:
         return MemoryFullCache(self.tolerance, self.name, self.__is_memory_shared)
 
     def _initialize_entry(
         self,
-        index,  # type: int
-    ):  # type: (...) -> None
+        index: int,
+    ) -> None:
         self.__data[index] = {}
 
-    def _set_lock(self):  # type: (...) -> RLock
+    def _set_lock(self) -> RLock:
         return RLock()
 
     def _has_group(
         self,
-        index,  # type: int
-        group,  # type: str
-    ):  # type: (...) -> bool
+        index: int,
+        group: str,
+    ) -> bool:
         return group in self.__data.get(index)
 
     @synchronized
-    def clear(self):  # type: (...) -> None
-        super(MemoryFullCache, self).clear()
+    def clear(self) -> None:
+        super().clear()
         self.__initialize_data()
 
     def _read_data(
         self,
-        index,  # type: int
-        group,  # type: str
-        **options,  # type: Any
-    ):  # type: (...) -> Union[OutputData,JacobianData]
+        index: int,
+        group: str,
+        **options: Any,
+    ) -> OutputData | JacobianData:
         data = self.__data[index].get(group)
         if group == self._JACOBIAN_GROUP and data is not None:
             return nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
@@ -109,16 +105,16 @@ class MemoryFullCache(AbstractFullCache):
 
     def _write_data(
         self,
-        values,  # type: Data
-        group,  # type: str
-        index,  # type: int
-    ):  # type: (...) -> None
+        values: Data,
+        group: str,
+        index: int,
+    ) -> None:
         data = self.__data[index]
         data[group] = values.copy()
         self.__data[index] = data
 
     @property
-    def copy(self):  # type: (...) -> MemoryFullCache
+    def copy(self) -> MemoryFullCache:
         """Copy the current cache.
 
         Returns:

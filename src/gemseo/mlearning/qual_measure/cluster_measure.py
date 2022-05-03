@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,15 +22,11 @@
 The concept of clustering quality measure is implemented with the
 :class:`.MLClusteringMeasure` class and proposes different evaluation methods.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from copy import deepcopy
-from typing import Dict
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import arange
 from numpy import delete as npdelete
@@ -49,9 +44,9 @@ class MLClusteringMeasure(MLQualityMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLClusteringAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLClusteringAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for clustering.
@@ -60,9 +55,9 @@ class MLClusteringMeasure(MLQualityMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         return self._compute_measure(
@@ -71,10 +66,10 @@ class MLClusteringMeasure(MLQualityMeasure):
 
     def _compute_measure(
         self,
-        data,  # type: ndarray
-        labels,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        data: ndarray,
+        labels: ndarray,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         """Compute the quality measure.
 
         Args:
@@ -88,7 +83,7 @@ class MLClusteringMeasure(MLQualityMeasure):
         """
         raise NotImplementedError
 
-    def _get_data(self):  # type: (...) -> Dict[str,ndarray]
+    def _get_data(self) -> dict[str, ndarray]:
         """Get data.
 
         Returns:
@@ -102,9 +97,9 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLPredictiveClusteringAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLPredictiveClusteringAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for predictive clustering.
@@ -113,22 +108,22 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
         self._train_algo(samples)
         data = test_data.get_data_by_names(self.algo.var_names, False)
         return self._compute_measure(data, self.algo.predict(data), multioutput)
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
         self._train_algo(samples)
         data = self._get_data()
         algo = deepcopy(self.algo)
@@ -148,11 +143,11 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> float | ndarray:
         self._train_algo(samples)
         samples = self._assure_samples(samples)
         n_samples = samples.size
@@ -181,10 +176,10 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
 
     def _compute_measure(
         self,
-        data,  # type: ndarray
-        labels,  # type: ndarray
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> NoReturn
+        data: ndarray,
+        labels: ndarray,
+        multioutput: bool = True,
+    ) -> NoReturn:
         """Compute the quality measure.
 
         Args:
@@ -198,7 +193,7 @@ class MLPredictiveClusteringMeasure(MLClusteringMeasure):
         """
         raise NotImplementedError
 
-    def _get_data(self):  # type: (...) -> Dict[str,ndarray]
+    def _get_data(self) -> dict[str, ndarray]:
         """Get data.
 
         Returns:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,13 +18,12 @@
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pickle
+from pathlib import Path
 
 import pytest
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import PY2
 from matplotlib.testing.decorators import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
@@ -87,7 +85,6 @@ def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     assert file_path.exists()
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @image_comparison(["gantt_chart"], extensions=["png"])
 def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     """Tests the Gantt chart plot creation."""
@@ -121,7 +118,6 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     create_gantt_chart(save=False, font_size=10)
 
 
-@pytest.mark.skipif(PY2, reason="image comparison does not work with python 2")
 @image_comparison(["gantt_chart_filtered"], extensions=["png"])
 def test_plot_filter(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     """Tests the Gantt chart plot creation with disciplines filter."""

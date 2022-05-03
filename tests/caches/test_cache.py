@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,13 +17,11 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import logging
 import re
 import shutil
-from typing import Generator
+from pathlib import Path
+from typing import Iterator
 from typing import Union
 
 import h5py
@@ -40,17 +37,12 @@ from gemseo.core.chain import MDOParallelChain
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.utils.py23_compat import long
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import string_array
-from gemseo.utils.py23_compat import xrange
 from numpy import arange
 from numpy import array
 from numpy import eye
 from numpy import float64
 from numpy import zeros
 from numpy.linalg import norm
-from six import PY2
 
 DIR_PATH = Path(__file__).parent
 
@@ -138,7 +130,7 @@ def test_hdf_cache_read(tmp_wd):
         )
 
     n = 10
-    for i in xrange(1, n + 1):
+    for i in range(1, n + 1):
         cache.cache_outputs(
             {"i": i * arange(3), "j": array([1.0])}, {"o": i * arange(4)}
         )
@@ -216,10 +208,7 @@ def test_collision(tmp_wd):
 def test_hash_data_dict():
     input_data = {"i": 10 * arange(3)}
     hash_0 = hash_data_dict(input_data)
-    if PY2:
-        assert isinstance(hash_0, int)
-    else:
-        assert isinstance(hash_0, long)
+    assert isinstance(hash_0, int)
     assert hash_0 == hash_data_dict(input_data)
     assert hash_0 == hash_data_dict({"i": 10 * arange(3), "t": None})
     assert hash_0 == hash_data_dict({"i": 10 * arange(3), "j": None})
@@ -461,7 +450,7 @@ CACHE_FILE_NAME = "cache.h5"
 
 
 @pytest.fixture
-def h5_file(tmp_wd):  # type: (...) -> Generator[h5py.File]
+def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
     h5_file = h5py.File(CACHE_FILE_NAME, mode="a")
     yield h5_file
@@ -527,8 +516,8 @@ def test_update_file_format(tmp_wd):
         "foo",
     )
     with h5py.File(CACHE_FILE_NAME, mode="r+") as h5_file:
-        old_hash_1 = string_array([1])
-        old_hash_2 = string_array([2])
+        old_hash_1 = array([1], dtype="bytes")
+        old_hash_2 = array([2], dtype="bytes")
         h5_file["foo"]["1"][HDF5FileSingleton.HASH_TAG][0] = old_hash_1
         h5_file["foo"]["2"][HDF5FileSingleton.HASH_TAG][0] = old_hash_2
 

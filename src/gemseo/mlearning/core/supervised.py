@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -73,9 +72,7 @@ from typing import Dict
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 from numpy import array
@@ -117,12 +114,12 @@ class MLSupervisedAlgo(MLAlgo):
 
     def __init__(
         self,
-        data,  # type: Dataset
-        transformer=DEFAULT_TRANSFORMER,  # type: Optional[Mapping[str,TransformerType]]
-        input_names=None,  # type: Optional[Iterable[str]]
-        output_names=None,  # type: Optional[Iterable[str]]
-        **parameters,  # type: MLAlgoParameterType
-    ):  # type: (...) -> None
+        data: Dataset,
+        transformer: Mapping[str, TransformerType] | None = DEFAULT_TRANSFORMER,
+        input_names: Iterable[str] | None = None,
+        output_names: Iterable[str] | None = None,
+        **parameters: MLAlgoParameterType,
+    ) -> None:
         """
         Args:
             input_names: The names of the input variables.
@@ -130,9 +127,7 @@ class MLSupervisedAlgo(MLAlgo):
             output_names: The names of the output variables.
                 If ``None``, consider all the output variables of the learning dataset.
         """
-        super(MLSupervisedAlgo, self).__init__(
-            data, transformer=transformer, **parameters
-        )
+        super().__init__(data, transformer=transformer, **parameters)
         self.input_names = input_names or data.get_names(data.INPUT_GROUP)
         self.output_names = output_names or data.get_names(data.OUTPUT_GROUP)
         self.__groups_to_names = {
@@ -158,7 +153,7 @@ class MLSupervisedAlgo(MLAlgo):
         )
 
     @property
-    def _reduced_dimensions(self):  # type: (...) -> Tuple[int, int]
+    def _reduced_dimensions(self) -> tuple[int, int]:
         """The input and output reduced dimensions."""
         if self.__reduced_dimensions == (0, 0):
             self.__reduced_dimensions = self.__compute_reduced_dimensions()
@@ -166,21 +161,21 @@ class MLSupervisedAlgo(MLAlgo):
         return self.__reduced_dimensions
 
     @property
-    def input_dimension(self):  # type: (...) -> int
+    def input_dimension(self) -> int:
         """The input space dimension."""
         if not self.__input_dimension and self.learning_set is not None:
             self.__input_dimension = sum(
-                [self.learning_set.sizes[name] for name in self.input_names]
+                self.learning_set.sizes[name] for name in self.input_names
             )
 
         return self.__input_dimension
 
     @property
-    def output_dimension(self):  # type: (...) -> int
+    def output_dimension(self) -> int:
         """The output space dimension."""
         if not self.__output_dimension and self.learning_set is not None:
             self.__output_dimension = sum(
-                [self.learning_set.sizes[name] for name in self.output_names]
+                self.learning_set.sizes[name] for name in self.output_names
             )
 
         return self.__output_dimension
@@ -191,8 +186,8 @@ class MLSupervisedAlgo(MLAlgo):
         @classmethod
         def format_dict(
             cls,
-            predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[DataType],DataType]
+            predict: Callable[[ndarray], ndarray],
+        ) -> Callable[[DataType], DataType]:
             """Make an array-based function be called with a dictionary of NumPy arrays.
 
             Args:
@@ -208,10 +203,10 @@ class MLSupervisedAlgo(MLAlgo):
 
             def wrapper(
                 self,
-                input_data,  # type: DataType
+                input_data: DataType,
                 *args,
                 **kwargs,
-            ):  # type: (...) -> DataType
+            ) -> DataType:
                 """Evaluate 'predict' with either array or dictionary-based input data.
 
                 Firstly,
@@ -256,8 +251,8 @@ class MLSupervisedAlgo(MLAlgo):
         @classmethod
         def format_samples(
             cls,
-            predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[ndarray],ndarray]
+            predict: Callable[[ndarray], ndarray],
+        ) -> Callable[[ndarray], ndarray]:
             """Make a 2D NumPy array-based function work with 1D NumPy array.
 
             Args:
@@ -275,10 +270,10 @@ class MLSupervisedAlgo(MLAlgo):
 
             def wrapper(
                 self,
-                input_data,  # type: DataType
+                input_data: DataType,
                 *args,
                 **kwargs,
-            ):  # type: (...) -> DataType
+            ) -> DataType:
                 """Evaluate 'predict' with either a 1D or 2D NumPy data array.
 
                 Firstly,
@@ -313,9 +308,9 @@ class MLSupervisedAlgo(MLAlgo):
         @classmethod
         def format_transform(
             cls,
-            transform_inputs=True,  # type: bool
-            transform_outputs=True,  # type: bool
-        ):  # type: (...) -> Callable[[ndarray],ndarray]
+            transform_inputs: bool = True,
+            transform_outputs: bool = True,
+        ) -> Callable[[ndarray], ndarray]:
             """Force a function to transform its input and/or output variables.
 
             Args:
@@ -329,8 +324,8 @@ class MLSupervisedAlgo(MLAlgo):
             """
 
             def format_transform_(
-                predict,  # type: Callable[[ndarray],ndarray]
-            ):  # type: (...) -> Callable[[ndarray],ndarray]
+                predict: Callable[[ndarray], ndarray],
+            ) -> Callable[[ndarray], ndarray]:
                 """Apply transformation to inputs and inverse transformation to outputs.
 
                 Args:
@@ -344,10 +339,10 @@ class MLSupervisedAlgo(MLAlgo):
 
                 def wrapper(
                     self,
-                    input_data,  # type: ndarray
+                    input_data: ndarray,
                     *args,
                     **kwargs,
-                ):  # type: (...) -> ndarray
+                ) -> ndarray:
                     """Evaluate 'predict' after or before data transformation.
 
                     Firstly,
@@ -411,8 +406,8 @@ class MLSupervisedAlgo(MLAlgo):
         @classmethod
         def format_input_output(
             cls,
-            predict,  # type: Callable[[ndarray],ndarray]
-        ):  # type: (...) -> Callable[[DataType],DataType]
+            predict: Callable[[ndarray], ndarray],
+        ) -> Callable[[DataType], DataType]:
             """Make a function robust to type, array shape and data transformation.
 
             Args:
@@ -480,9 +475,9 @@ class MLSupervisedAlgo(MLAlgo):
 
     def _learn(
         self,
-        indices,  # type: Optional[Sequence[int]]
-        fit_transformers,  # type: bool
-    ):  # type: (...) -> None
+        indices: Sequence[int] | None,
+        fit_transformers: bool,
+    ) -> None:
         dataset = self.learning_set
         if indices is None:
             indices = Ellipsis
@@ -640,9 +635,9 @@ class MLSupervisedAlgo(MLAlgo):
 
     def _fit(
         self,
-        input_data,  # type: ndarray
-        output_data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        input_data: ndarray,
+        output_data: ndarray,
+    ) -> NoReturn:
         """Fit input-output relationship from the learning data.
 
         Args:
@@ -654,8 +649,8 @@ class MLSupervisedAlgo(MLAlgo):
     @DataFormatters.format_input_output
     def predict(
         self,
-        input_data,  # type: DataType
-    ):  # type: (...) -> DataType
+        input_data: DataType,
+    ) -> DataType:
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
@@ -682,8 +677,8 @@ class MLSupervisedAlgo(MLAlgo):
 
     def _predict(
         self,
-        input_data,  # type: ndarray
-    ):  # type: (...) -> NoReturn
+        input_data: ndarray,
+    ) -> NoReturn:
         """Predict output data from input data.
 
         Args:
@@ -694,7 +689,7 @@ class MLSupervisedAlgo(MLAlgo):
         """
         raise NotImplementedError
 
-    def __compute_reduced_dimensions(self):  # type: (...) -> Tuple[int,int]
+    def __compute_reduced_dimensions(self) -> tuple[int, int]:
         """Return the reduced input and output dimensions after transformations.
 
         Returns:
@@ -751,19 +746,19 @@ class MLSupervisedAlgo(MLAlgo):
         }
 
     @property
-    def input_data(self):  # type: (...) -> ndarray
+    def input_data(self) -> ndarray:
         """The input data matrix."""
         data = self.learning_set.get_data_by_names(self.input_names, False)
         return data[self.learning_samples_indices]
 
     @property
-    def output_data(self):  # type: (...) -> ndarray
+    def output_data(self) -> ndarray:
         """The output data matrix."""
         data = self.learning_set.get_data_by_names(self.output_names, False)
         return data[self.learning_samples_indices]
 
-    def _get_objects_to_save(self):  # type: (...) -> Dict[str,SavedObjectType]
-        objects = super(MLSupervisedAlgo, self)._get_objects_to_save()
+    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
+        objects = super()._get_objects_to_save()
         objects["input_names"] = self.input_names
         objects["output_names"] = self.output_names
         objects["input_space_center"] = self.input_space_center

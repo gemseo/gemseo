@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -25,9 +24,6 @@ KL-SVD on Burgers equation
 
 Example using KL-SVD on solutions of the Burgers equation.
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
@@ -67,7 +63,7 @@ for i in range(dataset.n_samples):
         color = "blue"
         lines = lines_gen()  # reset linestyle generator
 
-    plt.plot(u_t[i], color=color, linestyle=next(lines), label="t={:.2f}".format(t[i]))
+    plt.plot(u_t[i], color=color, linestyle=next(lines), label=f"t={t[i]:.2f}")
 
 plt.legend()
 plt.title("Solutions to Burgers equation")
@@ -82,7 +78,7 @@ klsvd.fit(u_t)
 u_t_reduced = klsvd.transform(u_t)
 u_t_restored = klsvd.inverse_transform(u_t_reduced)
 
-print("Dimension of the reduced space: {}".format(klsvd.output_dimension))
+print(f"Dimension of the reduced space: {klsvd.output_dimension}")
 
 ###############################################################################
 # Plot restored data
@@ -99,7 +95,7 @@ for i in range(dataset.n_samples):
     plt.plot(
         u_t_restored[i],
         color=color,  # linestyle=next(lines),
-        label="t={:.2f}".format(t[i]),
+        label=f"t={t[i]:.2f}",
     )
 
 plt.legend()

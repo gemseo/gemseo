@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -27,8 +26,7 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """Custom color maps for plots."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import matplotlib as mpl
 from matplotlib.colors import LinearSegmentedColormap

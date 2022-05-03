@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +18,9 @@
 #        :author: Damien Guenot
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Plot the derivatives of the functions."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
 from typing import Iterable
 from typing import Mapping
 
@@ -49,9 +46,9 @@ class GradientSensitivity(OptPostProcessor):
 
     def _plot(
         self,
-        iteration=-1,  # type: int
-        scale_gradients=False,  # type: bool
-    ):  # type: (...) -> None
+        iteration: int = -1,
+        scale_gradients: bool = False,
+    ) -> None:
         """
         Args:
             iteration: The iteration to plot the sensitivities;
@@ -77,9 +74,9 @@ class GradientSensitivity(OptPostProcessor):
 
     def __get_grad_dict(
         self,
-        x_ref,  # type: ndarray
-        scale_gradients=False,  # type: bool
-    ):  # type: (...) -> Dict[str,ndarray]
+        x_ref: ndarray,
+        scale_gradients: bool = False,
+    ) -> dict[str, ndarray]:
         """Create a gradient dictionary from a given iteration.
 
         Scale it if necessary.
@@ -99,7 +96,7 @@ class GradientSensitivity(OptPostProcessor):
         scale_func = self.opt_problem.design_space.unnormalize_vect
         grad_dict = {}
         for func in all_funcs:
-            grad = self.database.get_f_of_x("@{}".format(func), x_ref)
+            grad = self.database.get_f_of_x(f"@{func}", x_ref)
             if grad is not None:
                 if len(grad.shape) == 1:
                     if scale_gradients:
@@ -110,17 +107,17 @@ class GradientSensitivity(OptPostProcessor):
                     for i in range(n_f):
                         if scale_gradients:
                             grad[i, :] = scale_func(grad[i, :], minus_lb=False)
-                        grad_dict["{}_{}".format(func, i)] = grad[i, :]
+                        grad_dict[f"{func}_{i}"] = grad[i, :]
         return grad_dict
 
     @classmethod
     def __generate_subplots(
         cls,
-        x_names,  # type: Iterable[str]
-        x_ref,  # type: ndarray
-        grad_dict,  # type: Mapping[str, ndarray]
-        scale_gradients=False,  # type: bool
-    ):  # type: (...)-> Figure
+        x_names: Iterable[str],
+        x_ref: ndarray,
+        grad_dict: Mapping[str, ndarray],
+        scale_gradients: bool = False,
+    ) -> Figure:
         """Generate the gradients subplots from the data.
 
         Args:

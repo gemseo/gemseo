@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                   initial documentation
 #        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 from os.path import dirname
 from os.path import join
 
@@ -70,7 +66,7 @@ def test_build_model(sobieski_aerodynamics):
     # scalable_func must take in inputs a 1D numpy array whose length
     # is equal to the input dimension...
     #
-    # for n_in in xrange(10, 1010, 100):
+    # for n_in in range(10, 1010, 100):
     #    fout = scalable_func(get_samples(n_in))
     #    assert -1e-3 <= fout <= 1.001
 

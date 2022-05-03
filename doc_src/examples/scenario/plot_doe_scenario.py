@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This work is licensed under a BSD 0-Clause License.
@@ -24,9 +23,6 @@ Create a DOE Scenario
 =====================
 
 """
-from __future__ import division
-from __future__ import unicode_literals
-
 from gemseo.api import configure_logger
 from gemseo.api import create_design_space
 from gemseo.api import create_discipline
@@ -117,14 +113,14 @@ print(
 # In order to get the list of available DOE algorithms, use:
 
 algo_list = get_available_doe_algorithms()
-print("Available algorithms: {}".format(algo_list))
+print(f"Available algorithms: {algo_list}")
 
 #############################################################################
 # Available post-processing
 # -------------------------
 # In order to get the list of available post-processing algorithms, use:
 post_list = get_available_post_processings()
-print("Available algorithms: {}".format(post_list))
+print(f"Available algorithms: {post_list}")
 #############################################################################
 # You can also look at the examples:
 #

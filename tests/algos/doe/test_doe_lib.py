@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -80,7 +79,7 @@ def test_phip_criteria():
     """Check that the phi-p criterion is well implemented."""
     power = 3.0
     samples = array([[0.0, 0.0], [0.0, 2.0], [0.0, 3.0]])
-    expected = sum([val ** (-power) for val in [2.0, 3.0, 1.0]]) ** (1.0 / power)
+    expected = sum(val ** (-power) for val in [2.0, 3.0, 1.0]) ** (1.0 / power)
     assert DOELibrary.compute_phip_criteria(samples, power) == expected
 
 
@@ -110,7 +109,7 @@ def test_compute_doe_nontransformed(variables_space):
 
 
 @pytest.fixture(scope="module")
-def doe_database(request):  # type: (...) -> Database
+def doe_database(request) -> Database:
     """The DOE-based database with either deterministic or random variables."""
     if request.param:
         space = ParameterSpace()

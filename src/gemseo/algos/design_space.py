@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -42,17 +41,13 @@ from __future__ import annotations
 
 import collections
 import logging
-import sys
 from copy import deepcopy
 from numbers import Number
+from pathlib import Path
 from typing import Any
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import Union
 
 import h5py
@@ -83,7 +78,6 @@ from numpy import string_
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
-from six import string_types
 
 from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.cache import hash_data_dict
@@ -92,9 +86,6 @@ from gemseo.utils.base_enum import BaseEnum
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
-from gemseo.utils.py23_compat import Path
-from gemseo.utils.py23_compat import string_array
-from gemseo.utils.py23_compat import strings_to_unicode_list
 
 LOGGER = logging.getLogger(__name__)
 
@@ -113,29 +104,17 @@ VarType = Union[
     Sequence[DesignVariableType],
 ]
 
-if sys.version_info < (3, 7, 0):
-    DesignVariable = collections.namedtuple(
-        "DesignVariable", ["size", "var_type", "l_b", "u_b", "value"]
-    )
-    DesignVariable.__new__.__defaults__ = (
+DesignVariable = collections.namedtuple(
+    "DesignVariable",
+    ["size", "var_type", "l_b", "u_b", "value"],
+    defaults=(
         1,
         DesignVariableType.FLOAT,
         None,
         None,
         None,
-    )
-else:
-    DesignVariable = collections.namedtuple(
-        "DesignVariable",
-        ["size", "var_type", "l_b", "u_b", "value"],
-        defaults=(
-            1,
-            DesignVariableType.FLOAT,
-            None,
-            None,
-            None,
-        ),
-    )
+    ),
+)
 
 
 class DesignSpace(collections.MutableMapping):
@@ -196,9 +175,9 @@ class DesignSpace(collections.MutableMapping):
 
     def __init__(
         self,
-        hdf_file=None,  # type: Optional[Union[str,Path]]
-        name=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        hdf_file: str | Path | None = None,
+        name: str | None = None,
+    ) -> None:
         """
         Args:
             hdf_file: The path to the file
@@ -235,33 +214,33 @@ class DesignSpace(collections.MutableMapping):
             self.import_hdf(hdf_file)
 
     @property
-    def _current_x(self):  # type: (...) -> Dict[str,ndarray]
+    def _current_x(self) -> dict[str, ndarray]:
         """The current design."""
         return self.__current_x
 
     @_current_x.setter
     def _current_x(
         self,
-        current_x,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> None
+        current_x: Mapping[str, ndarray],
+    ) -> None:
         self.__current_x = current_x
         self.__update_current_x_metadata()
 
-    def __update_current_x_metadata(self):  # type: (...) -> None
+    def __update_current_x_metadata(self) -> None:
         """Update information about the current design value for quick access."""
         self.__update_current_x_status()
         self.__update_common_dtype()
         if self.__has_current_x:
             self.__current_x_array = self.dict_to_array(self.__current_x)
 
-    def __update_common_dtype(self):  # type: (...) -> None
+    def __update_common_dtype(self) -> None:
         """Update the common data type of the variables."""
         if self.__has_current_x:
             self.__common_dtype = self.__get_common_dtype(self.__current_x)
         else:
             self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
 
-    def __update_current_x_status(self):  # type: (...) -> None
+    def __update_current_x_status(self) -> None:
         """Update the availability of current design values for all the variables."""
         if not self.__current_x or set(self.__current_x.keys()) != set(
             self.variables_names
@@ -278,8 +257,8 @@ class DesignSpace(collections.MutableMapping):
 
     def __delitem__(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Remove a variable from the design space.
 
         Args:
@@ -289,8 +268,8 @@ class DesignSpace(collections.MutableMapping):
 
     def remove_variable(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Remove a variable from the design space.
 
         Args:
@@ -316,9 +295,9 @@ class DesignSpace(collections.MutableMapping):
 
     def filter(
         self,
-        keep_variables,  # type: Union[str,Iterable[str]]
-        copy=False,  # type: bool
-    ):  # type: (...) -> DesignSpace
+        keep_variables: str | Iterable[str],
+        copy: bool = False,
+    ) -> DesignSpace:
         """Filter the design space to keep a subset of variables.
 
         Args:
@@ -332,7 +311,7 @@ class DesignSpace(collections.MutableMapping):
         Raises:
             ValueError: If the variable is not in the design space.
         """
-        if isinstance(keep_variables, string_types):
+        if isinstance(keep_variables, str):
             keep_variables = [keep_variables]
         design_space = deepcopy(self) if copy else self
         for name in deepcopy(self.variables_names):
@@ -340,14 +319,14 @@ class DesignSpace(collections.MutableMapping):
                 design_space.remove_variable(name)
         for name in keep_variables:
             if name not in self.variables_names:
-                raise ValueError("Variable '{}' is not known.".format(name))
+                raise ValueError(f"Variable '{name}' is not known.")
         return design_space
 
     def filter_dim(
         self,
-        variable,  # type: str
-        keep_dimensions,  # type: Iterable[int]
-    ):  # type: (...) -> DesignSpace
+        variable: str,
+        keep_dimensions: Iterable[int],
+    ) -> DesignSpace:
         """Filter the design space to keep a subset of dimensions for a variable.
 
         Args:
@@ -400,13 +379,13 @@ class DesignSpace(collections.MutableMapping):
 
     def add_variable(
         self,
-        name,  # type: str
-        size=1,  # type: int
-        var_type=DesignVariableType.FLOAT,  # type: VarType
-        l_b=None,  # type: Optional[Union[float,ndarray]]
-        u_b=None,  # type: Optional[Union[float,ndarray]]
-        value=None,  # type:  Optional[Union[float,ndarray]]
-    ):  # type: (...) -> None
+        name: str,
+        size: int = 1,
+        var_type: VarType = DesignVariableType.FLOAT,
+        l_b: float | ndarray | None = None,
+        u_b: float | ndarray | None = None,
+        value: float | ndarray | None = None,
+    ) -> None:
         r"""Add a variable to the design space.
 
         Args:
@@ -426,12 +405,10 @@ class DesignSpace(collections.MutableMapping):
                 or if the size is not a positive integer.
         """
         if name in self.variables_names:
-            raise ValueError("Variable '{}' already exists.".format(name))
+            raise ValueError(f"Variable '{name}' already exists.")
 
         if size <= 0 or int(size) != size:
-            raise ValueError(
-                "The size of '{}' should be a positive integer.".format(name)
-            )
+            raise ValueError(f"The size of '{name}' should be a positive integer.")
 
         # name and size
         self.variables_names.append(name)
@@ -462,10 +439,10 @@ class DesignSpace(collections.MutableMapping):
 
     def _add_type(
         self,
-        name,  # type: str
-        size,  # type: int
-        var_type=DesignVariableType.FLOAT,  # type: VarType
-    ):  # type: (...) -> None
+        name: str,
+        size: int,
+        var_type: VarType = DesignVariableType.FLOAT,
+    ) -> None:
         """Add a type to a variable.
 
         Args:
@@ -479,7 +456,7 @@ class DesignSpace(collections.MutableMapping):
                 from the variable size or if a variable type is unknown.
         """
         if not hasattr(var_type, "__iter__") or isinstance(
-            var_type, (string_types, DesignVariableType, bytes)
+            var_type, (str, DesignVariableType, bytes)
         ):
             var_type = [var_type] * size
 
@@ -496,8 +473,8 @@ class DesignSpace(collections.MutableMapping):
             if isinstance(v_type, bytes):
                 v_type = v_type.decode()
 
-            if isinstance(v_type, string_types) and v_type not in self.__TYPE_NAMES:
-                msg = 'The type "{0}" of {1} is not known.'.format(v_type, name)
+            if isinstance(v_type, str) and v_type not in self.__TYPE_NAMES:
+                msg = f'The type "{v_type}" of {name} is not known.'
                 raise ValueError(msg)
             elif v_type in DesignVariableType:
                 v_type = v_type.value
@@ -509,8 +486,8 @@ class DesignSpace(collections.MutableMapping):
 
     def _add_norm_policy(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Add a normalization policy to a variable.
 
         Unbounded variables are not normalized.
@@ -528,17 +505,15 @@ class DesignSpace(collections.MutableMapping):
         """
         # Check that the variable is in the design space:
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
         # Check that the variable size is set:
         size = self.get_size(name)
         if size is None:
-            raise ValueError("The size of variable '{}' is not set.".format(name))
+            raise ValueError(f"The size of variable '{name}' is not set.")
         # Check that the variables types are set:
         variables_types = self.variables_types.get(name, None)
         if variables_types is None:
-            raise ValueError(
-                "The components types of variable '{}' are not set.".format(name)
-            )
+            raise ValueError(f"The components types of variable '{name}' are not set.")
         # Set the normalization policy:
         normalize = empty(size)
         for i in range(size):
@@ -578,8 +553,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __is_numeric(
-        value,  # type: Any
-    ):  # type: (...) -> bool
+        value: Any,
+    ) -> bool:
         """Check that a value is numeric.
 
         Args:
@@ -598,8 +573,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __is_not_nan(
-        value,  # type: ndarray
-    ):  # type: (...) -> bool
+        value: ndarray,
+    ) -> bool:
         """Check that a value is not a nan.
 
         Args:
@@ -612,9 +587,9 @@ class DesignSpace(collections.MutableMapping):
 
     def _check_value(
         self,
-        value,  # type: ndarray
-        name,  # type: str
-    ):  # type: (...) -> bool
+        value: ndarray,
+        name: str,
+    ) -> bool:
         """Check that the value of a variable is valid.
 
         Args:
@@ -650,15 +625,13 @@ class DesignSpace(collections.MutableMapping):
         indices = all_indices - set(list(where(test)[0]))
         for idx in indices:
             raise ValueError(
-                "Value {} of variable '{}' is not numerizable.".format(value[idx], name)
+                f"Value {value[idx]} of variable '{name}' is not numerizable."
             )
 
         test = vectorize(self.__is_not_nan)(value)
         indices = all_indices - set(list(where(test)[0]))
         for idx in indices:
-            raise ValueError(
-                "Value {} of variable '{}' is nan.".format(value[idx], name)
-            )
+            raise ValueError(f"Value {value[idx]} of variable '{name}' is NaN.")
 
         # Check if some components of an integer variable are not integer.
         if self.variables_types[name][0] == DesignVariableType.INTEGER.value:
@@ -733,8 +706,8 @@ class DesignSpace(collections.MutableMapping):
 
     def _check_variable_bounds(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Check that the bounds of a variable are compatible and have the same size.
 
         Args:
@@ -755,8 +728,8 @@ class DesignSpace(collections.MutableMapping):
 
     def _check_current_x_value(
         self,
-        name,  # type: str
-    ):  # type: (...) -> None
+        name: str,
+    ) -> None:
         """Check that the current value of a variable is between its bounds.
 
         Args:
@@ -783,7 +756,7 @@ class DesignSpace(collections.MutableMapping):
                 )
             )
 
-    def has_current_x(self):  # type: (...) -> bool
+    def has_current_x(self) -> bool:
         """Check if each variable has a current value.
 
         Returns:
@@ -791,7 +764,7 @@ class DesignSpace(collections.MutableMapping):
         """
         return self.__has_current_x
 
-    def has_integer_variables(self):  # type: (...) -> bool
+    def has_integer_variables(self) -> bool:
         """Check if the design space has at least one integer variable.
 
         Returns:
@@ -802,7 +775,7 @@ class DesignSpace(collections.MutableMapping):
             for variable_name in self.variables_names
         ]
 
-    def check(self):  # type: (...) -> None
+    def check(self) -> None:
         """Check the state of the design space.
 
         Raises:
@@ -819,9 +792,9 @@ class DesignSpace(collections.MutableMapping):
 
     def check_membership(
         self,
-        x_vect,  # type: Union[Mapping[str,ndarray],ndarray]
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> None
+        x_vect: Mapping[str, ndarray] | ndarray,
+        variables_names: Sequence[str] | None = None,
+    ) -> None:
         """Check whether the variables satisfy the design space requirements.
 
         Args:
@@ -863,9 +836,7 @@ class DesignSpace(collections.MutableMapping):
                 f"got a {type(x_vect)} instead."
             )
 
-    def __check_membership_x_vect(
-        self, x_vect  # type: ndarray
-    ):  # type: (...) -> None
+    def __check_membership_x_vect(self, x_vect: ndarray) -> None:
         """Check whether a vector is comprised between the lower and upper bounds.
 
         Args:
@@ -898,9 +869,9 @@ class DesignSpace(collections.MutableMapping):
 
     def __check_membership_x_dict(
         self,
-        x_dict,  # type: Mapping[str,ndarray]
-        variables_names,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        x_dict: Mapping[str, ndarray],
+        variables_names: Iterable[str] | None,
+    ) -> None:
         """Check whether the variables satisfy the design space requirements.
 
         Args:
@@ -955,9 +926,9 @@ class DesignSpace(collections.MutableMapping):
 
     def get_active_bounds(
         self,
-        x_vec=None,  # type: Optional[ndarray]
-        tol=1e-8,  # type: float
-    ):  # type: (...) -> Tuple[Dict[str,ndarray],Dict[str,ndarray]]
+        x_vec: ndarray | None = None,
+        tol: float = 1e-8,
+    ) -> tuple[dict[str, ndarray], dict[str, ndarray]]:
         """Determine which bound constraints of the current point are active.
 
         Args:
@@ -1018,8 +989,8 @@ class DesignSpace(collections.MutableMapping):
 
     def _check_current_x(
         self,
-        variables_names=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> None
+        variables_names: Iterable[str] | None = None,
+    ) -> None:
         """Check the names of the current point.
 
         Args:
@@ -1040,9 +1011,9 @@ class DesignSpace(collections.MutableMapping):
 
     def get_current_x(
         self,
-        variables_names=None,  # type: Optional[Iterable[str]]
-        complex_to_real: bool = False,  # type: bool
-    ):  # type: (...) -> ndarray
+        variables_names: Iterable[str] | None = None,
+        complex_to_real: bool = False,
+    ) -> ndarray:
         """Return the current point in the design space.
 
         Args:
@@ -1059,7 +1030,7 @@ class DesignSpace(collections.MutableMapping):
                     set(self.variables_names) - set(self.__current_x.keys())
                 )
                 raise KeyError(
-                    "The design variables {} have no current value.".format(variables)
+                    f"The design variables {variables} have no current value."
                 )
 
             if complex_to_real:
@@ -1075,13 +1046,13 @@ class DesignSpace(collections.MutableMapping):
             return x_arr
         except KeyError as err:
             raise KeyError(
-                "The design space has no current value for '{}'.".format(err.args[0])
+                f"The design space has no current value for '{err.args[0]}'."
             )
 
     def get_indexed_var_name(
         self,
-        variable_name,  # type: str
-    ):  # type: (...) -> Union[str,List[str]]
+        variable_name: str,
+    ) -> str | list[str]:
         """Create the names of the components of a variable.
 
         If the size of the variable is equal to 1,
@@ -1101,7 +1072,7 @@ class DesignSpace(collections.MutableMapping):
             return variable_name
         return [variable_name + self.SEP + str(i) for i in range(size)]
 
-    def get_indexed_variables_names(self):  # type: (...) -> List[str]
+    def get_indexed_variables_names(self) -> list[str]:
         """Create the names of the components of all the variables.
 
         If the size of the variable is equal to 1,
@@ -1116,7 +1087,7 @@ class DesignSpace(collections.MutableMapping):
         var_ind_names = []
         for var in self.variables_names:
             vnames = self.get_indexed_var_name(var)
-            if isinstance(vnames, string_types):
+            if isinstance(vnames, str):
                 var_ind_names.append(vnames)
             else:
                 var_ind_names += vnames
@@ -1124,8 +1095,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_variables_indexes(
         self,
-        variables_names,  # type: Iterable[str]
-    ):  # type: (...) -> ndarray
+        variables_names: Iterable[str],
+    ) -> ndarray:
         """Return the indexes of a design array corresponding to the variables names.
 
         Args:
@@ -1143,7 +1114,7 @@ class DesignSpace(collections.MutableMapping):
             index += var_size
         return array(indexes)
 
-    def __update_normalization_vars(self):  # type: (...) -> None
+    def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
 
         self.__lower_bounds_array = self.get_lower_bounds()
@@ -1170,10 +1141,10 @@ class DesignSpace(collections.MutableMapping):
 
     def normalize_vect(
         self,
-        x_vect,  # type: ndarray
-        minus_lb=True,  # type: bool
-        out=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        minus_lb: bool = True,
+        out: ndarray | None = None,
+    ) -> ndarray:
         r"""Normalize a vector of the design space.
 
         If `minus_lb` is True:
@@ -1238,8 +1209,8 @@ class DesignSpace(collections.MutableMapping):
 
     def normalize_grad(
         self,
-        g_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        g_vect: ndarray,
+    ) -> ndarray:
         r"""Normalize an unnormalized gradient.
 
         This method is based on the chain rule:
@@ -1274,8 +1245,8 @@ class DesignSpace(collections.MutableMapping):
 
     def unnormalize_grad(
         self,
-        g_vect,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        g_vect: ndarray,
+    ) -> ndarray:
         r"""Unnormalize a normalized gradient.
 
         This method is based on the chain rule:
@@ -1303,11 +1274,11 @@ class DesignSpace(collections.MutableMapping):
 
     def unnormalize_vect(
         self,
-        x_vect,  # type: ndarray
-        minus_lb=True,  # type: bool
-        no_check=False,  # type: bool
-        out=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        minus_lb: bool = True,
+        no_check: bool = False,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Unnormalize a normalized vector of the design space.
 
         If `minus_lb` is True:
@@ -1398,9 +1369,9 @@ class DesignSpace(collections.MutableMapping):
 
     def transform_vect(
         self,
-        vector,  # type: ndarray
-        out=None,  # type: Optional[ndarray]
-    ):  # type:(...) -> ndarray
+        vector: ndarray,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Map a point of the design space to a vector with components in :math:`[0,1]`.
 
         Args:
@@ -1415,10 +1386,10 @@ class DesignSpace(collections.MutableMapping):
 
     def untransform_vect(
         self,
-        vector,  # type: ndarray
-        no_check=False,  # type: bool
-        out=None,  # type: Optional[ndarray]
-    ):  # type:(...) -> ndarray
+        vector: ndarray,
+        no_check: bool = False,
+        out: ndarray | None = None,
+    ) -> ndarray:
         """Map a vector with components in :math:`[0,1]` to the design space.
 
         Args:
@@ -1434,9 +1405,9 @@ class DesignSpace(collections.MutableMapping):
 
     def round_vect(
         self,
-        x_vect,  # type: ndarray
-        copy=True,  # type: bool
-    ):  # type: (...) -> ndarray
+        x_vect: ndarray,
+        copy: bool = True,
+    ) -> ndarray:
         """Round the vector where variables are of integer type.
 
         Args:
@@ -1461,7 +1432,7 @@ class DesignSpace(collections.MutableMapping):
         rounded_x_vect[..., are_integers] = np_round(x_vect[..., are_integers])
         return rounded_x_vect
 
-    def get_current_x_normalized(self):  # type: (...) -> ndarray
+    def get_current_x_normalized(self) -> ndarray:
         """Return the current point normalized.
 
         Returns:
@@ -1475,12 +1446,10 @@ class DesignSpace(collections.MutableMapping):
         except KeyError as err:
             string = err.args[0]
             string = string[:1].lower() + string[1:] if string else ""
-            raise KeyError(
-                "Cannot compute normalized current value since {}".format(string)
-            )
+            raise KeyError(f"Cannot compute normalized current value since {string}")
         return self.normalize_vect(current_x)
 
-    def get_current_x_dict(self):  # type:(...) -> Dict[str,ndarray]
+    def get_current_x_dict(self) -> dict[str, ndarray]:
         """Return the current point in the design space as a dictionary.
 
         Returns:
@@ -1492,8 +1461,8 @@ class DesignSpace(collections.MutableMapping):
 
     def set_current_x(
         self,
-        current_x,  # type: Union[ndarray,Mapping[str,ndarray], OptimizationResult]
-    ):  # type: (...) -> None
+        current_x: ndarray | Mapping[str, ndarray] | OptimizationResult,
+    ) -> None:
         """Set the current point.
 
         Args:
@@ -1547,9 +1516,9 @@ class DesignSpace(collections.MutableMapping):
 
     def set_current_variable(
         self,
-        name,  # type: str
-        current_value,  # type: ndarray
-    ):  # type: (...) -> None
+        name: str,
+        current_value: ndarray,
+    ) -> None:
         """Set the current value of a single variable.
 
         Args:
@@ -1560,12 +1529,12 @@ class DesignSpace(collections.MutableMapping):
             self.__current_x[name] = current_value
             self.__update_current_x_metadata()
         else:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
     def get_size(
         self,
-        name,  # type: str
-    ):  # type:(...) -> Optional[int]
+        name: str,
+    ) -> int | None:
         """Get the size of a variable.
 
         Args:
@@ -1578,8 +1547,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_type(
         self,
-        name,  # type: str
-    ):  # type:(...) -> Optional[str]
+        name: str,
+    ) -> str | None:
         """Return the type of a variable.
 
         Args:
@@ -1592,8 +1561,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_lower_bound(
         self,
-        name,  # type: str
-    ):  # type:(...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the lower bound of a variable.
 
         Args:
@@ -1606,8 +1575,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_upper_bound(
         self,
-        name,  # type: str
-    ):  # type:(...) -> ndarray
+        name: str,
+    ) -> ndarray:
         """Return the upper bound of a variable.
 
         Args:
@@ -1620,8 +1589,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_lower_bounds(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> ndarray
+        variables_names: Sequence[str] | None = None,
+    ) -> ndarray:
         """Generate an array of the variables' lower bounds.
 
         Args:
@@ -1638,8 +1607,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_upper_bounds(
         self,
-        variables_names=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> ndarray
+        variables_names: Sequence[str] | None = None,
+    ) -> ndarray:
         """Generate an array of the variables' upper bounds.
 
         Args:
@@ -1656,9 +1625,9 @@ class DesignSpace(collections.MutableMapping):
 
     def set_lower_bound(
         self,
-        name,  # type: str
-        lower_bound,  # type: ndarray
-    ):  # type: (...) -> None
+        name: str,
+        lower_bound: ndarray,
+    ) -> None:
         """Set the lower bound of a variable.
 
         Args:
@@ -1669,16 +1638,16 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
         self._add_bound(name, self.variables_sizes[name], lower_bound, is_lower=True)
         self._add_norm_policy(name)
 
     def set_upper_bound(
         self,
-        name,  # type: str
-        upper_bound,  # type: ndarray
-    ):  # type: (...) -> None
+        name: str,
+        upper_bound: ndarray,
+    ) -> None:
         """Set the upper bound of a variable.
 
         Args:
@@ -1689,15 +1658,15 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable does not exist.
         """
         if name not in self.variables_names:
-            raise ValueError("Variable '{}' is not known.".format(name))
+            raise ValueError(f"Variable '{name}' is not known.")
 
         self._add_bound(name, self.variables_sizes[name], upper_bound, is_lower=False)
         self._add_norm_policy(name)
 
     def array_to_dict(
         self,
-        x_array,  # type: ndarray
-    ):  # type: (...) -> Dict[str,ndarray]
+        x_array: ndarray,
+    ) -> dict[str, ndarray]:
         """Convert the current point into a dictionary indexed by the variables names.
 
         Args:
@@ -1715,8 +1684,8 @@ class DesignSpace(collections.MutableMapping):
     @classmethod
     def __get_common_dtype(
         cls,
-        x_dict,  # type: Mapping[str,ndarray]
-    ):  # type: (...) -> dtype
+        x_dict: Mapping[str, ndarray],
+    ) -> dtype:
         """Return the common data type.
 
         Use the following rules by parsing the values `x_dict`:
@@ -1756,9 +1725,9 @@ class DesignSpace(collections.MutableMapping):
 
     def dict_to_array(
         self,
-        design_values,  # type: Dict[str,ndarray]
-        variables_names=None,  # type: Sequence[str]
-    ):  # type: (...) -> ndarray
+        design_values: dict[str, ndarray],
+        variables_names: Sequence[str] = None,
+    ) -> ndarray:
         """Convert a point as dictionary into an array.
 
         Args:
@@ -1777,8 +1746,8 @@ class DesignSpace(collections.MutableMapping):
 
     def get_pretty_table(
         self,
-        fields=None,  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> PrettyTable
+        fields: Sequence[str] | None = None,
+    ) -> PrettyTable:
         """Build a tabular view of the design space.
 
         Args:
@@ -1825,9 +1794,9 @@ class DesignSpace(collections.MutableMapping):
 
     def export_hdf(
         self,
-        file_path,  # type: Union[str,Path]
-        append=False,  # type: bool
-    ):  # type: (...) -> None
+        file_path: str | Path,
+        append: bool = False,
+    ) -> None:
         """Export the design space to an HDF file.
 
         Args:
@@ -1856,9 +1825,11 @@ class DesignSpace(collections.MutableMapping):
 
                 var_type = self.variables_types[name]
                 if var_type is not None:
-                    data_array = string_array(var_type)
+                    data_array = array(var_type, dtype="bytes")
                     var_grp.create_dataset(
-                        self.VAR_TYPE_GROUP, data=data_array, dtype=data_array.dtype
+                        self.VAR_TYPE_GROUP,
+                        data=data_array,
+                        dtype=data_array.dtype,
                     )
 
                 value = self.__current_x.get(name)
@@ -1867,8 +1838,8 @@ class DesignSpace(collections.MutableMapping):
 
     def import_hdf(
         self,
-        file_path,  # type: Union[str,Path]
-    ):  # type: (...) -> None
+        file_path: str | Path,
+    ) -> None:
         """Import a design space from an HDF file.
 
         Args:
@@ -1893,9 +1864,9 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __read_opt_attr_array(
-        var_group,  # type: h5py.Group
-        dataset_name,  # type: str
-    ):  # type: (...) -> Optional[ndarray]
+        var_group: h5py.Group,
+        dataset_name: str,
+    ) -> ndarray | None:
         """Read data in a group.
 
         Args:
@@ -1913,8 +1884,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __to_real(
-        data,  # type:ndarray
-    ):  # type: (...) -> ndarray
+        data: ndarray,
+    ) -> ndarray:
         """Convert complex to real NumPy array.
 
         Args:
@@ -1925,7 +1896,7 @@ class DesignSpace(collections.MutableMapping):
         """
         return array(array(data, copy=False).real, dtype=float64)
 
-    def to_complex(self):  # type: (...) -> None
+    def to_complex(self) -> None:
         """Cast the current value to complex."""
         for name, val in self.__current_x.items():
             self.__current_x[name] = array(val, dtype=complex128)
@@ -1934,11 +1905,11 @@ class DesignSpace(collections.MutableMapping):
 
     def export_to_txt(
         self,
-        output_file,  # type: Union[str,Path],
-        fields=None,  # type: Optional[Sequence[str]]
-        header_char="",  # type: str
-        **table_options,  # type: Any
-    ):  # type: (...) -> None
+        output_file: str | Path,
+        fields: Sequence[str] | None = None,
+        header_char: str = "",
+        **table_options: Any,
+    ) -> None:
         """Export the design space to a text file.
 
         Args:
@@ -1961,9 +1932,9 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def read_from_txt(
-        input_file,  # type: Union[str,Path]
-        header=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...) -> DesignSpace
+        input_file: str | Path,
+        header: Iterable[str] | None = None,
+    ) -> DesignSpace:
         """Create a design space from a text file.
 
         Args:
@@ -1981,7 +1952,7 @@ class DesignSpace(collections.MutableMapping):
         float_data = genfromtxt(input_file, dtype="float")
         str_data = genfromtxt(input_file, dtype="str")
         if header is None:
-            header = strings_to_unicode_list(str_data[0, :].tolist())
+            header = str_data[0, :].tolist()
             start_read = 1
         else:
             start_read = 0
@@ -1994,7 +1965,7 @@ class DesignSpace(collections.MutableMapping):
                 )
             )
         col_map = {field: i for i, field in enumerate(header)}
-        var_names = strings_to_unicode_list(str_data[start_read:, 0].tolist())
+        var_names = str_data[start_read:, 0].tolist()
         unique_names = []
         prev_name = None
         for name in var_names:  # set([]) does not preserve order !
@@ -2003,8 +1974,8 @@ class DesignSpace(collections.MutableMapping):
                 prev_name = name
             elif prev_name != name:
                 raise ValueError(
-                    "Malformed DesignSpace input file {} contains some variables ({}) "
-                    "in a non-consecutive order.".format(input_file, name)
+                    f"Malformed DesignSpace input file {input_file} contains some "
+                    f"variables ({name}) in a non-consecutive order."
                 )
 
         k = start_read
@@ -2030,20 +2001,20 @@ class DesignSpace(collections.MutableMapping):
         design_space.check()
         return design_space
 
-    def __str__(self):  # type:(...) -> str
+    def __str__(self) -> str:
         if self.name is None:
             header_suffix = ""
         else:
-            header_suffix = " {}".format(self.name)
-        header = "Design space:{}\n".format(header_suffix)
+            header_suffix = f" {self.name}"
+        header = f"Design space:{header_suffix}\n"
 
         return header + self.get_pretty_table().get_string()
 
     def project_into_bounds(
         self,
-        x_c,  # type: ndarray
-        normalized=False,  # type: bool
-    ):  # type: (...) -> ndarray
+        x_c: ndarray,
+        normalized: bool = False,
+    ) -> ndarray:
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
@@ -2071,21 +2042,21 @@ class DesignSpace(collections.MutableMapping):
 
     def __contains__(
         self,
-        variable,  # type: str
-    ):  # type: (...) -> bool
+        variable: str,
+    ) -> bool:
         return variable in self.variables_names
 
-    def __len__(self):  # type: (...) -> int
+    def __len__(self) -> int:
         return len(self.variables_names)
 
-    def __iter__(self):  # type: (...) -> Iterable[str]
+    def __iter__(self) -> Iterable[str]:
         return iter(self.variables_names)
 
     def __setitem__(
         self,
-        name,  # type: str
-        item,  # type: DesignVariable
-    ):  # type: (...) -> None
+        name: str,
+        item: DesignVariable,
+    ) -> None:
         self.add_variable(
             name,
             size=item.size,
@@ -2097,8 +2068,8 @@ class DesignSpace(collections.MutableMapping):
 
     def __eq__(
         self,
-        other,  # type: DesignSpace
-    ):  # type: (...) -> bool
+        other: DesignSpace,
+    ) -> bool:
         if not isinstance(other, self.__class__):
             return False
 
@@ -2118,8 +2089,8 @@ class DesignSpace(collections.MutableMapping):
 
     def __getitem__(
         self,
-        name,  # type: str
-    ):  # type: (...) -> DesignVariable
+        name: str,
+    ) -> DesignVariable:
         """Return the data associated with a given variable.
 
         These data are: type, size, lower bound, upper bound and current value.
@@ -2134,7 +2105,7 @@ class DesignSpace(collections.MutableMapping):
             ValueError: If the variable name does not exist.
         """
         if name not in self.variables_names:
-            raise KeyError("Variable '{}' is not known.".format(name))
+            raise KeyError(f"Variable '{name}' is not known.")
 
         try:
             value = self.get_current_x([name])
@@ -2151,8 +2122,8 @@ class DesignSpace(collections.MutableMapping):
 
     def extend(
         self,
-        other,  # type: DesignSpace
-    ):  # type: (...) -> None
+        other: DesignSpace,
+    ) -> None:
         """Extend the design space with another design space.
 
         Args:
@@ -2168,8 +2139,8 @@ class DesignSpace(collections.MutableMapping):
 
     @staticmethod
     def __cast_array_to_list(
-        value,  # type: Union[str,int,ndarray]
-    ):  # type: (...) -> Union[str,int,List[Union[str,int]]]
+        value: str | int | ndarray,
+    ) -> str | int | list[str | int]:
         """Convert a value to a ``List`` if it is a NumPy array.
 
         Args:
@@ -2183,8 +2154,8 @@ class DesignSpace(collections.MutableMapping):
     @classmethod
     def __cast_mapping(
         cls,
-        mapping,  # type: Mapping[str,Union[str,int,ndarray]]
-    ):  # type: (...) -> Dict[str,Union[str,int,List[Union[str,int]]]]
+        mapping: Mapping[str, str | int | ndarray],
+    ) -> dict[str, str | int | list[str | int]]:
         """Convert the NumPy arrays of a mapping to ``List``.
 
         Args:
@@ -2203,9 +2174,9 @@ class DesignSpace(collections.MutableMapping):
 
     def rename_variable(
         self,
-        current_name,  # type: str
-        new_name,  # type: str
-    ):  # type: (...) -> None
+        current_name: str,
+        new_name: str,
+    ) -> None:
         """Rename a variable.
 
         Args:
@@ -2213,9 +2184,7 @@ class DesignSpace(collections.MutableMapping):
             new_name: The new name of the variable.
         """
         if current_name not in self.variables_names:
-            raise ValueError(
-                "The variable {} is not in the design space.".format(current_name)
-            )
+            raise ValueError(f"The variable {current_name} is not in the design space.")
 
         self.variables_names[self.variables_names.index(current_name)] = new_name
         for dictionary in [

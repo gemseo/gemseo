@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,7 +23,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 from numpy import ndarray
 
@@ -78,7 +76,7 @@ class OptimizationLibrary(DriverLib):
     VERBOSE = "verbose"
 
     def __init__(self):
-        super(OptimizationLibrary, self).__init__()
+        super().__init__()
         self._ftol_rel = 0.0
         self._ftol_abs = 0.0
         self._xtol_rel = 0.0
@@ -172,7 +170,7 @@ class OptimizationLibrary(DriverLib):
         :param options: the options dict for the algorithm,
             see associated JSON file
         """
-        super(OptimizationLibrary, self)._pre_run(problem, algo_name, **options)
+        super()._pre_run(problem, algo_name, **options)
         self._check_constraints_handling(algo_name, problem)
 
         if self.MAX_ITER in options:
@@ -223,9 +221,7 @@ class OptimizationLibrary(DriverLib):
 
         return True
 
-    def new_iteration_callback(
-        self, x_vect=None  # type: Optional[ndarray]
-    ):  # type: (...) -> None
+    def new_iteration_callback(self, x_vect: ndarray | None = None) -> None:
         """
         Raises:
             FtolReached: If the defined relative or absolute function
@@ -234,7 +230,7 @@ class OptimizationLibrary(DriverLib):
                 is reached.
         """
         # First check if the max_iter is reached and update the progress bar
-        super(OptimizationLibrary, self).new_iteration_callback(x_vect)
+        super().new_iteration_callback(x_vect)
         if is_f_tol_reached(
             self.problem, self._ftol_rel, self._ftol_abs, self._stop_crit_n_x
         ):

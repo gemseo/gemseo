@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -14,18 +13,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Generator of the JSON file defining the coupling structure used by the N2 chart."""
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import json
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 from jinja2 import Template
 
@@ -35,7 +29,7 @@ if TYPE_CHECKING:
 from gemseo.core.discipline import MDODiscipline
 
 
-class N2JSON(object):
+class N2JSON:
     """The JSON structure to be used by the D3.js-based N2 chart."""
 
     _DEFAULT_GROUP_TEMPLATE = "Group {}"
@@ -43,8 +37,8 @@ class N2JSON(object):
 
     def __init__(
         self,
-        graph,  # type: DependencyGraph
-    ):  # type: (...) -> None
+        graph: DependencyGraph,
+    ) -> None:
         """
         Args:
             graph: The dependency graph.
@@ -91,9 +85,9 @@ class N2JSON(object):
 
     @staticmethod
     def _create_variables_html(
-        names,  # type: Iterable[str]
-        variables_sizes=None,  # type: Optional[Mapping[str,int]]
-    ):  # type: (...) -> str
+        names: Iterable[str],
+        variables_sizes: Mapping[str, int] | None = None,
+    ) -> str:
         """Generate the HTML representation of variables from their names and sizes.
 
         Args:
@@ -132,11 +126,11 @@ class N2JSON(object):
     @classmethod
     def _create_coupling_html(
         cls,
-        source,  # type: str
-        destination,  # type: str
-        coupling_names,  # type: Iterable[str]
-        variables_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> str
+        source: str,
+        destination: str,
+        coupling_names: Iterable[str],
+        variables_sizes: Mapping[str, int],
+    ) -> str:
         """Generate the HTML representation of a bi-disciplinary coupling.
 
         Args:
@@ -149,12 +143,10 @@ class N2JSON(object):
             The HTML block describing this bi-disciplinary coupling.
         """
         return Template(
-            (
-                "The coupling variables "
-                "from <b>{{ source }}</b> "
-                "to <b>{{ destination }}</b>:"
-                "{{ coupling_variables }}"
-            )
+            "The coupling variables "
+            "from <b>{{ source }}</b> "
+            "to <b>{{ destination }}</b>:"
+            "{{ coupling_variables }}"
         ).render(
             source=source,
             destination=destination,
@@ -166,9 +158,9 @@ class N2JSON(object):
     @classmethod
     def _create_discipline_html(
         cls,
-        discipline,  # type: MDODiscipline
-        variables_sizes,  # type: Mapping[str,int]
-    ):  # type: (...) -> str
+        discipline: MDODiscipline,
+        variables_sizes: Mapping[str, int],
+    ) -> str:
         """Generate the HTML representation of a discipline.
 
         Args:
@@ -185,12 +177,10 @@ class N2JSON(object):
             discipline.get_output_data_names(), variables_sizes
         )
         return Template(
-            (
-                "The inputs of <b>{{ discipline }}</b>:"
-                "{{ inputs }}"
-                "The outputs of <b>{{ discipline }}</b>:"
-                "{{ outputs }}"
-            )
+            "The inputs of <b>{{ discipline }}</b>:"
+            "{{ inputs }}"
+            "The outputs of <b>{{ discipline }}</b>:"
+            "{{ outputs }}"
         ).render(
             discipline=discipline.name,
             inputs=html_inputs_names,
@@ -200,11 +190,11 @@ class N2JSON(object):
     @classmethod
     def _create_group_html(
         cls,
-        group,  # type: int
-        disciplines,  # type: Sequence[str]
-        n_groups,  # type: int
-        children,  # type: Sequence[Sequence[int]]
-    ):  # type: (...) -> str
+        group: int,
+        disciplines: Sequence[str],
+        n_groups: int,
+        children: Sequence[Sequence[int]],
+    ) -> str:
         """Generate the HTML representation of a group of disciplines.
 
         Args:
@@ -224,10 +214,10 @@ class N2JSON(object):
 
     @staticmethod
     def _create_groups_menu_html(
-        disciplines,  # type: Sequence[str]
-        children,  # type: Sequence[Sequence[int]]
-        groups,  # type: Sequence[str]
-    ):  # type: (...) -> str
+        disciplines: Sequence[str],
+        children: Sequence[Sequence[int]],
+        groups: Sequence[str],
+    ) -> str:
         """Generate the HTML representation of the right menu related to the groups.
 
         Args:
@@ -296,12 +286,12 @@ class N2JSON(object):
 
     def _create_links(
         self,
-        couplings,  # type: Iterable[Tuple[MDODiscipline,MDODiscipline,Sequence[str]]]
-        n_nodes,  # type: int
-        variables_sizes,  # type: Mapping[str,int]
-        disciplines,  # type: Sequence[str]
-        n_groups,  # type: int
-    ):  # type: (...) -> List[Dict[str,Union[int,str]]]
+        couplings: Iterable[tuple[MDODiscipline, MDODiscipline, Sequence[str]]],
+        n_nodes: int,
+        variables_sizes: Mapping[str, int],
+        disciplines: Sequence[str],
+        n_groups: int,
+    ) -> list[dict[str, int | str]]:
         """Create the links.
 
         Args:
@@ -350,12 +340,12 @@ class N2JSON(object):
 
     def _create_nodes(
         self,
-        group,  # type: Mapping[str,int],
-        variables_sizes,  # type: Mapping[str,int],
-        disciplines,  # type: Sequence[str]
-        n_groups,  # type: int
-        children,  # type: Sequence[Sequence[int]]
-    ):  # type: (...) -> Tuple[List[Dict[str,Union[int,str,bool]]],List[str]]
+        group: Mapping[str, int],
+        variables_sizes: Mapping[str, int],
+        disciplines: Sequence[str],
+        n_groups: int,
+        children: Sequence[Sequence[int]],
+    ) -> tuple[list[dict[str, int | str | bool]], list[str]]:
         """Create the nodes representing either a discipline or a disciplines group.
 
         Args:
@@ -409,8 +399,8 @@ class N2JSON(object):
 
     def _compute_groups(
         self,
-        disciplines,  # type: Sequence[str]
-    ):  # type: (...) -> Tuple[Dict[str,int],int,List[List[int]]]
+        disciplines: Sequence[str],
+    ) -> tuple[dict[str, int], int, list[list[int]]]:
         """Compute the groups and the children.
 
         Args:
@@ -454,7 +444,7 @@ class N2JSON(object):
         new_children = [[child + n_groups for child in group] for group in new_children]
         return groups, n_groups, new_children
 
-    def _compute_variables_sizes(self):  # type: (...) -> Dict[str,int]
+    def _compute_variables_sizes(self) -> dict[str, int]:
         """Compute the sizes of the coupling variables.
 
         Returns:
@@ -466,6 +456,6 @@ class N2JSON(object):
                 variables_sizes[name] = len(discipline.default_inputs.get(name, [1]))
         return variables_sizes
 
-    def _get_disciplines_names(self):  # type: (...) -> List[str]
+    def _get_disciplines_names(self) -> list[str]:
         """Return the names of the disciplines."""
         return [discipline.name for discipline in self.__disciplines]

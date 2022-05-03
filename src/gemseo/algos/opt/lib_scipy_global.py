@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -19,16 +18,12 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """scipy.optimize global optimization library wrapper."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import Any
-from typing import Dict
 from typing import Mapping
-from typing import Tuple
-from typing import Union
 
 import scipy
 from distutils.version import LooseVersion
@@ -42,7 +37,6 @@ from scipy.optimize import NonlinearConstraint
 from gemseo.algos.opt.opt_lib import OptimizationAlgorithmDescription
 from gemseo.algos.opt.opt_lib import OptimizationLibrary
 from gemseo.algos.opt_result import OptimizationResult
-from gemseo.utils.py23_compat import PY2
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,7 +67,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         - does it handle equality constraints
         - does it handle inequality constraints
         """
-        super(ScipyGlobalOpt, self).__init__()
+        super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
         self.lib_dict = {
             "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
@@ -106,7 +100,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         # maximum function calls option passed to the algorithm
         self.max_func_calls = 1000000000
         scipy_version_ok = LooseVersion(scipy.__version__) >= LooseVersion("1.4.0")
-        if PY2 or not scipy_version_ok:
+        if not scipy_version_ok:
             for algo in ["DIFFERENTIAL_EVOLUTION", "SHGO"]:
                 self.lib_dict[algo].handle_equality_constraints = False
                 self.lib_dict[algo].handle_inequality_constraints = False
@@ -115,31 +109,31 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
     def _get_options(
         self,
-        max_iter=999,  # type: int
-        ftol_rel=1e-9,  # type: float
-        ftol_abs=1e-9,  # type: float
-        xtol_rel=1e-9,  # type: float
-        xtol_abs=1e-9,  # type: float
-        workers=1,  # type: int
-        updating="immediate",  # type: str
-        atol=0.0,  # type: float
-        init="latinhypercube",  # type: str
-        recombination=0.7,  # type: float
-        tol=0.01,  # type: float
-        popsize=15,  # type: int
-        strategy="best1bin",  # type: str
-        sampling_method="simplicial",  # type: str
-        niters=1,  # type: int
-        n=100,  # type: int
-        seed=1,  # type: int
-        polish=True,  # type: bool
-        iters=1,  # type: int
-        eq_tolerance=1e-6,  # type: float
-        ineq_tolerance=1e-6,  # type: float
-        normalize_design_space=True,  # type: bool
-        local_options=None,  # type: Mapping[str, Any]
-        **kwargs,  # type: Any
-    ):  # type: (...) -> Dict[str, Any] # pylint: disable=W0221
+        max_iter: int = 999,
+        ftol_rel: float = 1e-9,
+        ftol_abs: float = 1e-9,
+        xtol_rel: float = 1e-9,
+        xtol_abs: float = 1e-9,
+        workers: int = 1,
+        updating: str = "immediate",
+        atol: float = 0.0,
+        init: str = "latinhypercube",
+        recombination: float = 0.7,
+        tol: float = 0.01,
+        popsize: int = 15,
+        strategy: str = "best1bin",
+        sampling_method: str = "simplicial",
+        niters: int = 1,
+        n: int = 100,
+        seed: int = 1,
+        polish: bool = True,
+        iters: int = 1,
+        eq_tolerance: float = 1e-6,
+        ineq_tolerance: float = 1e-6,
+        normalize_design_space: bool = True,
+        local_options: Mapping[str, Any] = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:  # pylint: disable=W0221
         r"""Set the options default values.
 
         To get the best and up to date information about algorithms options,
@@ -233,8 +227,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
     def iter_callback(
         self,
-        x_vect,  # type: ndarray
-    ):  # type: (...) -> None
+        x_vect: ndarray,
+    ) -> None:
         """Call the objective and constraints functions.
 
         Args:
@@ -248,8 +242,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
 
     def real_part_obj_fun(
         self,
-        x,  # type: ndarray
-    ):  # type: (...) -> Union[int, float]
+        x: ndarray,
+    ) -> int | float:
         """Wrap the function and return the real part.
 
         Args:
@@ -260,9 +254,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         """
         return real(self.problem.objective.func(x))
 
-    def _run(
-        self, **options  # type: Any
-    ):  # type: (...) -> OptimizationResult
+    def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm, to be overloaded by subclasses.
 
         Args:
@@ -320,10 +312,6 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 options=local_options,
             )
         elif self.internal_algo_name == "differential_evolution":
-            if PY2:
-                opts = {}
-            else:
-                opts = {"constraints": self.__get_non_linear_constraints()}
             opt_result = optimize.differential_evolution(
                 func=self.real_part_obj_fun,
                 bounds=bounds,
@@ -340,14 +328,14 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 init=options["init"],
                 updating=options["updating"],
                 workers=options["workers"],
-                **opts,
+                constraints=self.__get_non_linear_constraints(),
             )
         else:  # pragma: no cover
-            raise ValueError("Unknown algorithm: {}.".format(self.internal_algo_name))
+            raise ValueError(f"Unknown algorithm: {self.internal_algo_name}.")
 
         return self.get_optimum_from_database(opt_result.message, opt_result.success)
 
-    def __get_non_linear_constraints(self):  # type: (...) -> Tuple[NonlinearConstraint]
+    def __get_non_linear_constraints(self) -> tuple[NonlinearConstraint]:
         """Create the constraints to be passed to a SciPy algorithm as
         NonLinearConstraints.
 

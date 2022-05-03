@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -23,11 +22,9 @@
 This disciplines use simple grammars rather than JSON ones mainly for proof of concept.
 Please use the JSON versions with enhanced checks and features.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from typing import Iterable
-from typing import Optional
 
 from numpy import ndarray
 
@@ -49,13 +46,13 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
         """
         Args:
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
         """
-        super(SobieskiDisciplineWithSimpleGrammar, self).__init__(
+        super().__init__(
             auto_detect_grammar_files=False,
             grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
         )
@@ -63,13 +60,13 @@ class SobieskiDisciplineWithSimpleGrammar(MDODiscipline):
         self.init_values = {}
         self.dtype = dtype
 
-    def _set_default_inputs(self):  # type: (...) -> None
+    def _set_default_inputs(self) -> None:
         """Set the default inputs from the grammars and the :class:`SobieskiProblem`."""
         self.default_inputs = self.sobieski_problem.get_default_inputs(
             self.get_input_data_names()
         )
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         raise NotImplementedError()
 
 
@@ -87,16 +84,16 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiMissionSG, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(("y_14", "y_24", "y_34", "x_shared"), ndarray)
         )
         self.output_grammar.update_elements(y_4=ndarray)
         self._set_default_inputs()
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         data_names = ["y_14", "y_24", "y_34", "x_shared"]
         y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
         y_4 = self.sobieski_problem.mission.execute(x_shared, y_14, y_24, y_34)
@@ -104,9 +101,9 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["y_14", "y_24", "y_34", "x_shared"]
         y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.mission.linearize(x_shared, y_14, y_24, y_34)
@@ -117,9 +114,9 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiStructureSG, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_1", "y_21", "y_31", "x_shared"], ndarray)
         )
@@ -128,7 +125,7 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
         )
         self._set_default_inputs()
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         data_names = ["x_shared", "y_21", "y_31", "x_1"]
         x_shared, y_21, y_31, x_1 = self.get_inputs_by_name(data_names)
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
@@ -138,9 +135,9 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_shared", "y_21", "y_31", "x_1"]
         x_shared, y_21, y_31, x_1 = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.structure.linearize(x_shared, y_21, y_31, x_1)
@@ -151,9 +148,9 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiAerodynamicsSG, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_2", "y_12", "y_32", "x_shared"], ndarray)
         )
@@ -162,7 +159,7 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
         )
         self._set_default_inputs()
 
-    def _run(self):  # type: (...)-> None
+    def _run(self) -> None:
         data_names = ["x_2", "y_12", "y_32", "x_shared"]
         x_2, y_12, y_32, x_shared = self.get_inputs_by_name(data_names)
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
@@ -172,9 +169,9 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_2", "y_12", "y_32", "x_shared"]
         x_2, y_12, y_32, x_shared = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.aerodynamics.linearize(
@@ -187,9 +184,9 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def __init__(
         self,
-        dtype=SobieskiBase.DTYPE_DOUBLE,  # type: str
-    ):  # type: (...) -> None
-        super(SobieskiPropulsionSG, self).__init__(dtype=dtype)
+        dtype: str = SobieskiBase.DTYPE_DOUBLE,
+    ) -> None:
+        super().__init__(dtype=dtype)
         self.input_grammar.update_elements(
             **dict.fromkeys(["x_3", "y_23", "x_shared"], ndarray)
         )
@@ -198,7 +195,7 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
         )
         self._set_default_inputs()
 
-    def _run(self):  # type: (...) -> None
+    def _run(self) -> None:
         data_names = ["x_3", "y_23", "x_shared"]
         x_3, y_23, x_shared = self.get_inputs_by_name(data_names)
         y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(
@@ -208,9 +205,9 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
 
     def _compute_jacobian(
         self,
-        inputs=None,  # type: Optional[Iterable[str]]
-        outputs=None,  # type: Optional[Iterable[str]]
-    ):  # type: (...)-> None
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         data_names = ["x_3", "y_23", "x_shared"]
         x_3, y_23, x_shared = self.get_inputs_by_name(data_names)
         self.jac = self.sobieski_problem.propulsion.linearize(x_shared, y_23, x_3)

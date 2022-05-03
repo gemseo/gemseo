@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -36,8 +35,7 @@ the scaling operation linearly transforms the original variable math:`z`
 such that in the scaled space,
 the original data have zero mean and unit standard deviation.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 from numpy import mean
 from numpy import ndarray
@@ -52,23 +50,23 @@ class StandardScaler(Scaler):
 
     def __init__(
         self,
-        name="StandardScaler",  # type: str
-        offset=0.0,  # type: float
-        coefficient=1.0,  # type: float
-    ):  # type: (...) -> None
+        name: str = "StandardScaler",
+        offset: float = 0.0,
+        coefficient: float = 1.0,
+    ) -> None:
         """
         Args:
             name: A name for this transformer.
             offset: The offset of the linear transformation.
             coefficient: The coefficient of the linear transformation.
         """
-        super(StandardScaler, self).__init__(name, offset, coefficient)
+        super().__init__(name, offset, coefficient)
 
     def _fit(
         self,
-        data,  # type: ndarray
-        *args,  # type: TransformerFitOptionType
-    ):  # type: (...) -> None
+        data: ndarray,
+        *args: TransformerFitOptionType,
+    ) -> None:
         average = mean(data, 0)
         std_ = std(data, 0)
         self.offset = -average / std_

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -22,8 +21,7 @@
 Scalable problem - Variables
 ****************************
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 X_LOCAL_NAME_BASIS = "x_local"
 U_LOCAL_NAME_BASIS = "u_local"
@@ -34,7 +32,7 @@ def get_u_local_name(index):
 
     :param int index: index.
     """
-    return "{}_{}".format(U_LOCAL_NAME_BASIS, index)
+    return f"{U_LOCAL_NAME_BASIS}_{index}"
 
 
 def get_x_local_name(index):
@@ -42,7 +40,7 @@ def get_x_local_name(index):
 
     :param int index: index.
     """
-    return "{}_{}".format(X_LOCAL_NAME_BASIS, index)
+    return f"{X_LOCAL_NAME_BASIS}_{index}"
 
 
 X_SHARED_NAME = "x_shared"
@@ -53,7 +51,7 @@ def get_coupling_name(index):
 
     :param int index: index.
     """
-    return "y_{}".format(index)
+    return f"y_{index}"
 
 
 def get_constraint_name(index):
@@ -61,7 +59,7 @@ def get_constraint_name(index):
 
     :param int index: index.
     """
-    return "cstr_{}".format(index)
+    return f"cstr_{index}"
 
 
 OBJECTIVE_NAME = "obj"

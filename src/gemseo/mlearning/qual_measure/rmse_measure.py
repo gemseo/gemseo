@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -38,12 +37,9 @@ where
 :math:`\\hat{y}` are the predictions and
 :math:`y` are the data points.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from numpy import ndarray
 
@@ -57,9 +53,9 @@ class RMSEMeasure(MSEMeasure):
 
     def __init__(
         self,
-        algo,  # type: MLRegressionAlgo
-        fit_transformers=False,  # type: bool
-    ):  # type: (...) -> None
+        algo: MLRegressionAlgo,
+        fit_transformers: bool = False,
+    ) -> None:
         """
         Args:
             algo: A machine learning algorithm for regression.
@@ -68,34 +64,30 @@ class RMSEMeasure(MSEMeasure):
 
     def evaluate_learn(
         self,
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_learn(
-            samples=samples, multioutput=multioutput
-        )
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
+        mse = super().evaluate_learn(samples=samples, multioutput=multioutput)
         return mse**0.5
 
     def evaluate_test(
         self,
-        test_data,  # type:Dataset
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-    ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_test(
-            test_data, samples=samples, multioutput=multioutput
-        )
+        test_data: Dataset,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+    ) -> float | ndarray:
+        mse = super().evaluate_test(test_data, samples=samples, multioutput=multioutput)
         return mse**0.5
 
     def evaluate_kfolds(
         self,
-        n_folds=5,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        randomize=False,  # type:bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_kfolds(
+        n_folds: int = 5,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        randomize: bool = False,
+        seed: int | None = None,
+    ) -> float | ndarray:
+        mse = super().evaluate_kfolds(
             n_folds=n_folds,
             samples=samples,
             multioutput=multioutput,
@@ -106,12 +98,12 @@ class RMSEMeasure(MSEMeasure):
 
     def evaluate_bootstrap(
         self,
-        n_replicates=100,  # type: int
-        samples=None,  # type: Optional[Sequence[int]]
-        multioutput=True,  # type: bool
-        seed=None,  # type: Optional[int]
-    ):  # type: (...) -> Union[float,ndarray]
-        mse = super(RMSEMeasure, self).evaluate_bootstrap(
+        n_replicates: int = 100,
+        samples: Sequence[int] | None = None,
+        multioutput: bool = True,
+        seed: int | None = None,
+    ) -> float | ndarray:
+        mse = super().evaluate_bootstrap(
             n_replicates=n_replicates, samples=samples, multioutput=multioutput
         )
         return mse**0.5

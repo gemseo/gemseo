@@ -67,16 +67,16 @@ def create_tree_file(modules_path, dct, parents):
     """
     items = sorted(dct.keys())
     parent_path = ".".join(parents)
-    parent_rst = Path("{}.rst".format(parent_path))
+    parent_rst = Path(f"{parent_path}.rst")
     for index, name in enumerate(items):
-        path = "{}.{}".format(parent_path, name)
-        path_rst = Path("{}.rst".format(path))
+        path = f"{parent_path}.{name}"
+        path_rst = Path(f"{path}.rst")
         if dct[name]:  # package
             with open(modules_path / parent_rst, "a") as f:
                 f.write("      " + PKG_MSG.format(path, name))
                 if index + 1 == len(items):
                     f.write("   </ul>\n")
-                    f.write(".. automodule:: {}\n".format(parent_path))
+                    f.write(f".. automodule:: {parent_path}\n")
                     f.write("   :noindex:\n\n")
             with open(modules_path / path_rst, "w") as f:
                 f.write(":orphan:\n\n")
@@ -91,8 +91,8 @@ def create_tree_file(modules_path, dct, parents):
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
                 f.write("\n\n")
-                f.write("{}\n".format(path))
-                f.write("{}\n\n".format(underline(path)))
+                f.write(f"{path}\n")
+                f.write(f"{underline(path)}\n\n")
                 f.write(".. raw:: html\n\n")
                 f.write("   <ul class='fa-ul'>\n")
             create_tree_file(modules_path, dct[name], parents + [name])
@@ -102,9 +102,9 @@ def create_tree_file(modules_path, dct, parents):
                 f.write("      " + MOD_MSG.format(path, name, src_path))
                 if index + 1 == len(items):
                     f.write("   </ul>\n")
-                    f.write(".. automodule:: {}\n".format(parent_path))
+                    f.write(f".. automodule:: {parent_path}\n")
                     f.write("   :noindex:\n\n")
-            with open(modules_path / "tree_{}".format(path_rst), "w") as f:
+            with open(modules_path / f"tree_{path_rst}", "w") as f:
                 f.write(":orphan:\n\n")
                 f.write(".. _tree-{}:\n\n".format(path.replace(".", "-")))
                 gparents = ""
@@ -117,17 +117,17 @@ def create_tree_file(modules_path, dct, parents):
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
                 f.write("\n\n")
-                with open(modules_path / path_rst, "r") as fr:
+                with open(modules_path / path_rst) as fr:
                     title = fr.readline()
                 title = title.split(".")[-1]
                 f.write(title)
-                f.write("{}\n".format(underline(title)))
-                with open(modules_path / path_rst, "r") as fr:
+                f.write(f"{underline(title)}\n")
+                with open(modules_path / path_rst) as fr:
                     lines = fr.readlines()[2:]
                     for line in lines:
                         f.write(line)
             (modules_path / path_rst).unlink()
-            old_tree_path = modules_path / "tree_{}.rst".format(path)
+            old_tree_path = modules_path / f"tree_{path}.rst"
             new_tree_path = modules_path / path_rst
             old_tree_path.rename(new_tree_path)
 
@@ -144,8 +144,8 @@ def main(modules_path):
         f.write(".. raw:: html\n\n")
         f.write("   <i class='fa fa-home'></i> \n\n")
         title = "Package tree structure"
-        f.write("{}\n".format(title))
-        f.write("{}\n\n".format(underline(title)))
+        f.write(f"{title}\n")
+        f.write(f"{underline(title)}\n\n")
         f.write(".. raw:: html\n\n")
         f.write("   <ul class='fa-ul'>\n")
 

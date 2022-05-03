@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,14 +23,10 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Aerodynamics discipline for the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from math import pi
-from typing import Dict
-from typing import Optional
-from typing import Tuple
 
 from numpy import array
 from numpy import cos
@@ -52,10 +47,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     PRESSURE_GRADIENT_LIMIT = 1.04
 
-    def __init__(
-        self, sobieski_base  # type: SobieskiBase
-    ):  # type: (...) -> None
-        super(SobieskiAerodynamics, self).__init__(sobieski_base)
+    def __init__(self, sobieski_base: SobieskiBase) -> None:
+        super().__init__(sobieski_base)
         self.__flag1 = array([1, 1], dtype=self.dtype)
         self.__bound1 = array([0.25, 0.25], dtype=self.dtype)
         self.__flag2 = array([5], dtype=self.dtype)
@@ -84,9 +77,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_k_aero(
         self,
-        mach,  # type: float
-        sweep,  # type: float
-    ):  # type: (...) -> float
+        mach: float,
+        sweep: float,
+    ) -> float:
         """Compute the induced drag coefficient (related to lift).
 
         Args:
@@ -105,9 +98,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dk_aero_dsweep(
-        mach,  # type: float
-        sweep,  # type: float
-    ):  # type: (...) -> float
+        mach: float,
+        sweep: float,
+    ) -> float:
         """Derive the induced drag coefficient with respect to the sweep.
 
         Args:
@@ -125,9 +118,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dk_aero_dmach(
-        mach,  # type: float
-        sweep,  # type: float
-    ):  # type: (...) -> float
+        mach: float,
+        sweep: float,
+    ) -> float:
         """Derive the induced drag coefficient with respect to the Mach number.
 
         Args:
@@ -146,8 +139,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dadimcf_dcf(
         self,
-        c_f,  # type: float
-    ):  # type: (...) -> float
+        c_f: float,
+    ) -> float:
         """Derive the adimensional friction coefficient with respect to the friction
         coefficient.
 
@@ -162,8 +155,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dadimtwist_dtwist(
         self,
-        twist,  # type: float
-    ):  # type: (...) -> float
+        twist: float,
+    ) -> float:
         """Derive the adimensional twist with respect to the twist.
 
         Args:
@@ -177,8 +170,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dadimesf_desf(
         self,
-        esf,  # type: float
-    ):  # type: (...) -> float
+        esf: float,
+    ) -> float:
         """Derivate the adimensional ESF with respect to the ESF.
 
         Args:
@@ -192,8 +185,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dadimtaper_dtaper(
         self,
-        tc_ratio,  # type: float
-    ):  # type: (...) -> float
+        tc_ratio: float,
+    ) -> float:
         """Derive an adimensional taper-ratio of polynomial with respect to taper-ratio.
 
         Args:
@@ -207,11 +200,11 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_cd_min(
         self,
-        tc_ratio,  # type: float
-        sweep,  # type: float
-        fo1,  # type:float
-        c_4=None,  # type:Optional[float]
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        sweep: float,
+        fo1: float,
+        c_4: float | None = None,
+    ) -> float:
         """Compute the 2D minimum drag coefficient.
 
         Args:
@@ -234,9 +227,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dcdmin_dsweep(
-        tc_ratio,  # type: float
-        sweep,  # type: float
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        sweep: float,
+    ) -> float:
         """Derive the 2D minimum drag coefficient with respect to the sweep.
 
         Args:
@@ -259,10 +252,10 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_cd(
         self,
-        lift_coeff,  # type: float
-        fo2,  # type: float
-        cdmin,  # type: float
-    ):  # type: (...) -> float
+        lift_coeff: float,
+        fo2: float,
+        cdmin: float,
+    ) -> float:
         """Compute of total drag coefficient.
 
         Args:
@@ -277,12 +270,12 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcd_dsweep(
         self,
-        tc_ratio,  # type: float
-        mach,  # type: float
-        sweep,  # type: float
-        lift_coeff,  # type: float
-        fo2,  # type: float
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        mach: float,
+        sweep: float,
+        lift_coeff: float,
+        fo2: float,
+    ) -> float:
         """Derive the drag coefficient with respect to the sweep.
 
         Args:
@@ -301,9 +294,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcd_dsref(
         self,
-        wing_area,  # type: float
-        fo2,  # type: float
-    ):  # type: (...) -> float
+        wing_area: float,
+        fo2: float,
+    ) -> float:
         """Derive the drag coefficient with respect to the reference surface.
 
         Args:
@@ -319,13 +312,13 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcd_dmach(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        ac_mass,  # type: float
-        fo2,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        sweep: float,
+        wing_area: float,
+        ac_mass: float,
+        fo2: float,
+    ) -> float:
         """Derive the drag coefficient with respect to Mach number.
 
         Args:
@@ -349,9 +342,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_cl(
         self,
-        wing_area,  # type: float
-        ac_mass,  # type: float
-    ):  # type: (...) -> float
+        wing_area: float,
+        ac_mass: float,
+    ) -> float:
         """Computation of the lift coefficient.
 
         Args:
@@ -366,11 +359,11 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcl_dh(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-        wing_area,  # type: float
-        ac_mass,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+        wing_area: float,
+        ac_mass: float,
+    ) -> float:
         """Derive the lift coefficient with respect to the altitude.
 
         Args:
@@ -387,10 +380,10 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcl_dmach(
         self,
-        altitude,  # type: float
-        wing_area,  # type: float
-        ac_mass,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        wing_area: float,
+        ac_mass: float,
+    ) -> float:
         """Derive the lift coefficient with respect to the Mach number.
 
         Args:
@@ -417,8 +410,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dcl_dsref(
         self,
-        wing_area,  # type: float
-    ):  # type: (...) -> float
+        wing_area: float,
+    ) -> float:
         """Derive the lift coefficient with respect to the reference surface.
 
         Args:
@@ -430,7 +423,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         """
         return -self.__lift_coeff / wing_area
 
-    def __compute_rhov2(self):  # type: (...) -> float
+    def __compute_rhov2(self) -> float:
         """Compute :math:`\rho v^2` (2*dynamic pressure).
 
         Returns:
@@ -441,9 +434,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_drhov2_dh(
         self,
-        altitude,  # type: float
-        mach,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+        mach: float,
+    ) -> float:
         """Derive :math:`\rho v^2` with respect to the altitude.
 
         Args:
@@ -461,8 +454,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_drhov2_dmach(
         self,
-        altitude,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+    ) -> float:
         """Derive :math:`\rho v^2` with respect to the Mach number.
 
         Args:
@@ -476,9 +469,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_rho_v(
         self,
-        mach,  # type: float
-        altitude,  # type: float
-    ):  # type: (...) -> Tuple[float,float]
+        mach: float,
+        altitude: float,
+    ) -> tuple[float, float]:
         """Compute the velocity and density from given Mach number and altitude.
 
         Args:
@@ -501,8 +494,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_dv_dmach(
         self,
-        altitude,  # type: float
-    ):  # type: (...) -> float
+        altitude: float,
+    ) -> float:
         """Derive the velocity with respect to the Mach number from a given altitude.
 
         Args:
@@ -518,9 +511,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_drho_dh_dv_dh(
         self,
-        mach,  # type: float
-        altitude,  # type: float
-    ):  # type: (...) -> Tuple[float,float]
+        mach: float,
+        altitude: float,
+    ) -> tuple[float, float]:
         """Compute the derivative of the density and velocity wrt the altitude.
 
         Args:
@@ -551,9 +544,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def __compute_adim_coeff(
         self,
-        force,  # type: float
-        sref,  # type: float
-    ):  # type: (...) -> float
+        force: float,
+        sref: float,
+    ) -> float:
         """Compute the adimensional force coefficient from the force (lift or drag).
 
         Args:
@@ -567,13 +560,13 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def execute(
         self,
-        x_shared,  # type: ndarray
-        y_12,  # type: ndarray
-        y_32,  # type: ndarray
-        x_2,  # type: ndarray
-        true_cstr=False,  # type: bool
-        c_4=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        x_shared: ndarray,
+        y_12: ndarray,
+        y_32: ndarray,
+        x_2: ndarray,
+        true_cstr: bool = False,
+        c_4: ndarray | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the drag and the lift-to-drag ratio.
 
         Args:
@@ -625,18 +618,18 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def _execute(
         self,
-        tc_ratio,  # type: float
-        altitude,  # type: float
-        mach,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        ac_mass,  # type: float
-        twist,  # type: float
-        esf,  # type: float
-        c_f,  # type: float
-        true_cstr=False,  # type: bool
-        c_4=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        tc_ratio: float,
+        altitude: float,
+        mach: float,
+        sweep: float,
+        wing_area: float,
+        ac_mass: float,
+        twist: float,
+        esf: float,
+        c_f: float,
+        true_cstr: bool = False,
+        c_4: ndarray | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the drag and the lift-to-drag ratio.
 
         Args:
@@ -735,11 +728,11 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @staticmethod
     def __derive_liftoverdrag(
-        cl_cd,  # type: ndarray
-        lift_jacobian,  # type: ndarray
-        drag_jacobian,  # type: ndarray
-        inv_drag,  # type: ndarray
-    ):  # type: (...) -> ndarray
+        cl_cd: ndarray,
+        lift_jacobian: ndarray,
+        drag_jacobian: ndarray,
+        inv_drag: ndarray,
+    ) -> ndarray:
         """Compute the Jacobian of the lift-over-drag ratio.
 
         Args:
@@ -755,8 +748,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     @staticmethod
     def __set_coupling_jacobian(
-        jacobian,  # type: Dict[str, Dict[str, ndarray]]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        jacobian: dict[str, dict[str, ndarray]],
+    ) -> dict[str, dict[str, ndarray]]:
         """Set the Jacobian sub-structure related to output coupling variables."""
         jacobian["y_21"]["x_2"] = jacobian["y_2"]["x_2"][0:1, :]
         jacobian["y_21"]["x_shared"] = jacobian["y_2"]["x_shared"][0:1, :]
@@ -777,7 +770,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         jacobian["y_24"]["c_4"] = jacobian["y_2"]["c_4"][2:3, :]
         return jacobian
 
-    def __initialize_jacobian(self):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+    def __initialize_jacobian(self) -> dict[str, dict[str, ndarray]]:
         """Initialize the Jacobian structure.
 
         Returns:
@@ -800,12 +793,12 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def linearize(
         self,
-        x_shared,  # type: ndarray
-        y_12,  # type: ndarray
-        y_32,  # type: ndarray
-        x_2,  # type: ndarray
-        c_4=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        x_shared: ndarray,
+        y_12: ndarray,
+        y_32: ndarray,
+        x_2: ndarray,
+        c_4: ndarray | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobian of the drag and lift-to-drag ratio.
 
         Args:
@@ -843,17 +836,17 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
     def _linearize(
         self,
-        tc_ratio,  # type: float
-        altitude,  # type: float
-        mach,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        ac_mass,  # type: float
-        twist,  # type: float
-        esf,  # type: float
-        c_f,  # type: float
-        c_4=None,  # type: Optional[float]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        tc_ratio: float,
+        altitude: float,
+        mach: float,
+        sweep: float,
+        wing_area: float,
+        ac_mass: float,
+        twist: float,
+        esf: float,
+        c_f: float,
+        c_4: float | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobian of the drag and lift-to-drag ratio.
 
         Args:

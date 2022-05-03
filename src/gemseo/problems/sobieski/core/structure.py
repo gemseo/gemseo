@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -24,13 +23,9 @@
 # Bi-Level Integrated System Synthesis (BLISS)
 # Sobieski, Agte, and Sandusky
 """Structure discipline for the Sobieski's SSBJ use case."""
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
-from typing import Dict
-from typing import Optional
-from typing import Tuple
 
 from numpy import append
 from numpy import array
@@ -52,10 +47,8 @@ class SobieskiStructure(SobieskiDiscipline):
     TWIST_UPPER_LIMIT = 1.04
     TWIST_LOWER_LIMIT = 0.8
 
-    def __init__(
-        self, sobieski_base  # type: SobieskiBase
-    ):  # type: (...) -> None
-        super(SobieskiStructure, self).__init__(sobieski_base)
+    def __init__(self, sobieski_base: SobieskiBase) -> None:
+        super().__init__(sobieski_base)
         self.__ao_coeff_secthick = zeros(1, dtype=self.dtype)
         self.__ai_coeff_secthick = zeros(1, dtype=self.dtype)
         self.__aij_coeff_secthick = zeros((1, 1), dtype=self.dtype)
@@ -97,7 +90,7 @@ class SobieskiStructure(SobieskiDiscipline):
         self.__half_span = None
         self.__dadimlift_dlift = None
 
-    def __compute_dadimcenter_dcenter(self):  # type: (...) -> float
+    def __compute_dadimcenter_dcenter(self) -> float:
         """Derive the adimensioned aerodynamic center wrt the aerodynamic center.
 
         Returns:
@@ -108,9 +101,7 @@ class SobieskiStructure(SobieskiDiscipline):
             self.aero_center_initial, self.__aero_center
         )
 
-    def __compute_dcenter_dlambda(
-        self, wing_taper_ratio  # type: float
-    ):  # type: (...) -> float
+    def __compute_dcenter_dlambda(self, wing_taper_ratio: float) -> float:
         """Derive the aerodynamic center with respect to the wing taper ratio.
 
         Args:
@@ -125,16 +116,16 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __compute_wing_weight(
         self,
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        wing_taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-        linearize=False,  # type: bool
-        c_2=None,  # type: Optional[float]
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        aspect_ratio: float,
+        sweep: float,
+        wing_area: float,
+        wing_taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        linearize: bool = False,
+        c_2: float | None = None,
+    ) -> float:
         """Compute the weight of the wing.
 
         Args:
@@ -196,10 +187,10 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __compute_fuelwing_weight(
         self,
-        tc_ratio,  # type:float
-        aspect_ratio,  # type: float
-        wing_area,  # type: float
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        aspect_ratio: float,
+        wing_area: float,
+    ) -> float:
         """Compute the fuel wing weight.
 
         Args:
@@ -215,9 +206,9 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __compute_dfuelwing_dtoverc(
         self,
-        aspect_ratio,  # type: float
-        wing_area,  # type: float
-    ):  # type: (...) -> float
+        aspect_ratio: float,
+        wing_area: float,
+    ) -> float:
         """Derive the wing fuel weight.
 
         Args:
@@ -231,10 +222,10 @@ class SobieskiStructure(SobieskiDiscipline):
 
     @staticmethod
     def __compute_dfuelwing_dar(
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        wing_area,  # type: float
-    ):  # type: (...) -> float
+        tc_ratio: float,
+        aspect_ratio: float,
+        wing_area: float,
+    ) -> float:
         """Derive the wing fuel weight with respect to the aspect ratio.
 
         Args:
@@ -251,10 +242,10 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __compute_dfuelwing_dsref(
         self,
-        tc_ratio,  # type:float
-        aspect_ratio,  # type: float
-        wing_area,  # type: float
-    ):  # type:(...) -> float
+        tc_ratio: float,
+        aspect_ratio: float,
+        wing_area: float,
+    ) -> float:
         """Derive the wing fuel weight with respect to the reference surface.
 
         Args:
@@ -268,9 +259,7 @@ class SobieskiStructure(SobieskiDiscipline):
         """
         return 637.5 / 54.0 * wing_area**0.5 * tc_ratio / self.math.sqrt(aspect_ratio)
 
-    def __compute_dhalfspan_dar(
-        self, wing_area  # type: float
-    ):  # type:(...) -> float
+    def __compute_dhalfspan_dar(self, wing_area: float) -> float:
         """Derive the half-span with respect to the aspect ratio.
 
         Args:
@@ -282,9 +271,7 @@ class SobieskiStructure(SobieskiDiscipline):
         dadimspan_dspan = self.__compute_dadimspan_dspan()
         return dadimspan_dspan * wing_area / (8.0 * self.__half_span)
 
-    def __compute_dadimspan_dsref(
-        self, aspect_ratio  # type:float
-    ):  # type:(...) -> float
+    def __compute_dadimspan_dsref(self, aspect_ratio: float) -> float:
         """Derive the half-span with respect to the reference surface.
 
         Args:
@@ -297,7 +284,7 @@ class SobieskiStructure(SobieskiDiscipline):
         dadimspan_dspan = self.__compute_dadimspan_dspan()
         return dadimspan_dspan * aspect_ratio / (8.0 * self.__half_span)
 
-    def __compute_dadimspan_dspan(self):  # type:(...) -> float
+    def __compute_dadimspan_dspan(self) -> float:
         """Derive the adimensioned half-span with respect to the half-span.
 
         Returns:
@@ -305,9 +292,7 @@ class SobieskiStructure(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.half_span_initial, self.__half_span)
 
-    def __compute_dadimx_dx(
-        self, wingbox_sectional_area  # type: float
-    ):  # type: (...) -> float
+    def __compute_dadimx_dx(self, wingbox_sectional_area: float) -> float:
         """Derive the adimensional sectional area with respect to the sectional area.
 
         Args:
@@ -319,9 +304,7 @@ class SobieskiStructure(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.x_initial, wingbox_sectional_area)
 
-    def __compute_dadimtaper_dtaper(
-        self, tc_ratio  # type: float
-    ):  # type: (...) -> float
+    def __compute_dadimtaper_dtaper(self, tc_ratio: float) -> float:
         """Derive the adimensional taper ratio with respect to the taper ratio.
 
         Args:
@@ -333,9 +316,7 @@ class SobieskiStructure(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.tc_initial, tc_ratio)
 
-    def __compute_dadimlift_dlift(
-        self, lift  # type: float
-    ):  # type: (...) -> float
+    def __compute_dadimlift_dlift(self, lift: float) -> float:
         """Derive the adimensioned lift with respect to the lift.
 
         Args:
@@ -348,9 +329,9 @@ class SobieskiStructure(SobieskiDiscipline):
 
     @staticmethod
     def __compute_weight_ratio(
-        w_t,  # type: float
-        w_f,  # type: float
-    ):  # type: (...) -> float
+        w_t: float,
+        w_f: float,
+    ) -> float:
         """Computation the weight ratio from the Breguet formula.
 
         Args:
@@ -364,15 +345,15 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def execute(
         self,
-        x_shared,  # type: ndarray
-        y_21,  # type: ndarray
-        y_31,  # type: ndarray
-        x_1,  # type: ndarray
-        true_cstr=False,  # type: bool
-        c_0=None,  # type: Optional[ndarray]
-        c_1=None,  # type: Optional[ndarray]
-        c_2=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        x_shared: ndarray,
+        y_21: ndarray,
+        y_31: ndarray,
+        x_1: ndarray,
+        true_cstr: bool = False,
+        c_0: ndarray | None = None,
+        c_1: ndarray | None = None,
+        c_2: ndarray | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the structural outputs and the structural constraints.
 
         Args:
@@ -418,19 +399,19 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def _execute(
         self,
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-        engine_mass,  # type: float
-        true_cstr=False,  # type: bool
-        c_0=None,  # type: Optional[ndarray]
-        c_1=None,  # type: Optional[ndarray]
-        c_2=None,  # type: Optional[ndarray]
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray,ndarray]
+        tc_ratio: float,
+        aspect_ratio: float,
+        sweep: float,
+        wing_area: float,
+        taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        engine_mass: float,
+        true_cstr: bool = False,
+        c_0: ndarray | None = None,
+        c_1: ndarray | None = None,
+        c_2: ndarray | None = None,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the structural outputs and the structural constraints.
 
         Args:
@@ -495,7 +476,7 @@ class SobieskiStructure(SobieskiDiscipline):
 
         return y_1, y_11, y_12, y_14, g_1
 
-    def __initialize_jacobian(self):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+    def __initialize_jacobian(self) -> dict[str, dict[str, ndarray]]:
         """Initialize the Jacobian structure.
 
         Returns:
@@ -538,15 +519,15 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def linearize(
         self,
-        x_shared,  # type: ndarray
-        y_21,  # type: ndarray
-        y_31,  # type: ndarray
-        x_1,  # type: ndarray
-        true_cstr=False,  # type: bool
-        c_0=None,  # type: Optional[float]
-        c_1=None,  # type: Optional[float]
-        c_2=None,  # type: Optional[float]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        x_shared: ndarray,
+        y_21: ndarray,
+        y_31: ndarray,
+        x_1: ndarray,
+        true_cstr: bool = False,
+        c_0: float | None = None,
+        c_1: float | None = None,
+        c_2: float | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the structural outputs and the structural constraints.
 
         Args:
@@ -592,19 +573,19 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def _linearize(
         self,
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-        engine_mass,  # type: float
-        true_cstr=False,  # type: bool
-        c_0=None,  # type: Optional[float]
-        c_1=None,  # type: Optional[float]
-        c_2=None,  # type: Optional[float]
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+        tc_ratio: float,
+        aspect_ratio: float,
+        sweep: float,
+        wing_area: float,
+        taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        engine_mass: float,
+        true_cstr: bool = False,
+        c_0: float | None = None,
+        c_1: float | None = None,
+        c_2: float | None = None,
+    ) -> dict[str, dict[str, ndarray]]:
         """Derive the structural outputs and the structural constraints.
 
         Args:
@@ -736,7 +717,7 @@ class SobieskiStructure(SobieskiDiscipline):
     @staticmethod
     def __set_coupling_jacobian(
         jacobian,
-    ):  # type: (...) -> Dict[str, Dict[str, ndarray]]
+    ) -> dict[str, dict[str, ndarray]]:
         """Set Jacobian of the coupling variables."""
         for der_v, jac_loc in jacobian["y_1"].items():
             jacobian["y_12"][der_v][1, :] = jac_loc[2, :]
@@ -747,16 +728,16 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __derive_poly_structure(
         self,
-        jacobian,  # type: Dict[str, Dict[str, ndarray]]
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-        engine_mass,  # type: float
-        c_2=None,  # type: Optional[float]
+        jacobian: dict[str, dict[str, ndarray]],
+        tc_ratio: float,
+        aspect_ratio: float,
+        sweep: float,
+        wing_area: float,
+        taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        engine_mass: float,
+        c_2: float | None = None,
     ):
         """Derive the structural variables.
 
@@ -919,14 +900,14 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __derive_constraints(
         self,
-        jacobian,  # type: Dict[str, Dict[str, ndarray]]
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        wing_area,  # type: float
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-        true_cstr=False,  # type: bool
+        jacobian: dict[str, dict[str, ndarray]],
+        tc_ratio: float,
+        aspect_ratio: float,
+        wing_area: float,
+        taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        true_cstr: bool = False,
     ):
         """Derive the structural constraints from a polynomial approximation.
 
@@ -993,18 +974,18 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __poly_structure(
         self,
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        sweep,  # type: float
-        wing_area,  # type: float
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float,
-        engine_mass,  # type: float
-        c_0=None,  # type: Optional[float]
-        c_1=None,  # type: Optional[float]
-        c_2=None,  # type: Optional[float]
-    ):  # type: (...) -> Tuple[ndarray, ndarray]
+        tc_ratio: float,
+        aspect_ratio: float,
+        sweep: float,
+        wing_area: float,
+        taper_ratio: float,
+        wingbox_area: float,
+        lift: float,
+        engine_mass: float,
+        c_0: float | None = None,
+        c_1: float | None = None,
+        c_2: float | None = None,
+    ) -> tuple[ndarray, ndarray]:
         """Compute the structural variables from a polynomial approximation.
 
         Args:
@@ -1064,9 +1045,9 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __compute_wing_twist(
         self,
-        wingbox_area,  # type: float
-        lift,  # type: float
-    ):  # type: (...) -> ndarray
+        wingbox_area: float,
+        lift: float,
+    ) -> ndarray:
         """Compute the wing twist.
 
         Args:
@@ -1093,15 +1074,15 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __der_constraint(
         self,
-        taper_ratio,  # type: float
-        wingbox_area,  # type: float
-        tc_ratio,  # type: float
-        aspect_ratio,  # type: float
-        wing_area,  # type:float
-        a_i,  # type:ndarray
-        a_ij,  # type:ndarray
-        s_shifted,  # type:ndarray
-    ):  # type: (...) -> Tuple[ndarray,ndarray,ndarray,ndarray]
+        taper_ratio: float,
+        wingbox_area: float,
+        tc_ratio: float,
+        aspect_ratio: float,
+        wing_area: float,
+        a_i: ndarray,
+        a_ij: ndarray,
+        s_shifted: ndarray,
+    ) -> tuple[ndarray, ndarray, ndarray, ndarray]:
         """Derive the structural constraints.
 
         Args:
@@ -1204,10 +1185,10 @@ class SobieskiStructure(SobieskiDiscipline):
 
     def __poly_structure_constraints(
         self,
-        tc_ratio,  # type: float
-        wingbox_area,  # type: float
-        lift,  # type: float
-    ):  # type: (...) -> ndarray
+        tc_ratio: float,
+        wingbox_area: float,
+        lift: float,
+    ) -> ndarray:
         """Compute the structural constraints from a polynomial approximation.
 
         Args:

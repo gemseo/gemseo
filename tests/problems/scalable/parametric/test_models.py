@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -17,9 +16,6 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.problems.scalable.parametric.core.models import TMMainModel
 from gemseo.problems.scalable.parametric.core.models import TMSubModel
@@ -125,7 +121,7 @@ def test_tm_sub_model(varnames):
 
     out = model()
     assert isinstance(out, dict)
-    assert set(out.keys()) == set([y_0])
+    assert set(out.keys()) == {y_0}
     assert out[y_0] == pytest.approx(array([2.52631579, 2.425]), abs=1e-8)
 
     jac = model(jacobian=True)

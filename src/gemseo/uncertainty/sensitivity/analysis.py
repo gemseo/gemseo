@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -29,22 +28,20 @@ a :class:`.ParameterSpace` describing the uncertain parameters
 and options associated with a particular concrete class
 inheriting from :class:`.SensitivityAnalysis` which is an abstract one.
 """
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from pathlib import Path
 from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Mapping
 from typing import NoReturn
-from typing import Optional
 from typing import Sequence
 from typing import Tuple
 from typing import Union
 
-import six
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 from numpy import array
@@ -65,7 +62,6 @@ from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.py23_compat import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -99,13 +95,13 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: ParameterSpace
-        n_samples,  # type: Optional[int]
-        algo=None,  # type: Optional[str]
-        algo_options=None,  # type: Optional[Mapping[str,DOELibraryOptionType]]
-    ):  # type: (...) -> None  # noqa: D205,D212,D415
-        """
+        discipline: MDODiscipline,
+        parameter_space: ParameterSpace,
+        n_samples: int | None,
+        algo: str | None = None,
+        algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+    ) -> None:
+        """# noqa: D205,D212,D415
         Args:
             discipline: A discipline.
             parameter_space: A parameter space.
@@ -129,11 +125,11 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def __sample_discipline(
         self,
-        discipline,  # type: MDODiscipline
-        parameter_space,  # type: ParameterSpace,
-        n_samples,  # type: Optional[int]
-        **options,  # type: DOELibraryOptionType
-    ):  # type: (...) -> Dataset
+        discipline: MDODiscipline,
+        parameter_space: ParameterSpace,
+        n_samples: int | None,
+        **options: DOELibraryOptionType,
+    ) -> Dataset:
         """Sample the discipline and return the dataset.
 
         Args:
@@ -163,13 +159,13 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         return scenario.export_to_dataset(opt_naming=False)
 
     @property
-    def inputs_names(self):  # type: (...) -> List[str]
+    def inputs_names(self) -> list[str]:
         """The names of the inputs."""
         return self.dataset.get_names(self.dataset.INPUT_GROUP)
 
     def compute_indices(
-        self, outputs=None  # type: Optional[Sequence[str]]
-    ):  # type: (...) -> Dict[str,IndicesType]
+        self, outputs: Sequence[str] | None = None
+    ) -> dict[str, IndicesType]:
         """Compute the sensitivity indices.
 
         Args:
@@ -197,7 +193,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError
 
     @property
-    def indices(self):  # type: (...) -> Dict[str,IndicesType]
+    def indices(self) -> dict[str, IndicesType]:
         """The sensitivity indices.
 
         With the following structure:
@@ -217,19 +213,19 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError
 
     @property
-    def main_method(self):  # type: (...) -> str
+    def main_method(self) -> str:
         """The name of the main method."""
         return self._main_method
 
     @main_method.setter
     def main_method(
         self,
-        name,  # type: str
-    ):  # type: (...) -> NoReturn
+        name: str,
+    ) -> NoReturn:
         raise NotImplementedError("You cannot change the main method.")
 
     @property
-    def main_indices(self):  # type: (...) -> IndicesType
+    def main_indices(self) -> IndicesType:
         """The main sensitivity indices.
 
         With the following structure:
@@ -248,8 +244,8 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def _outputs_to_tuples(
         self,
-        outputs,  # type: OutputsType
-    ):  # type: (...) -> List[Tuple[str,int]]
+        outputs: OutputsType,
+    ) -> list[tuple[str, int]]:
         """Convert the outputs to a list of tuple(str,int).
 
         Args:
@@ -281,9 +277,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         ]
         return [item for sublist in result for item in sublist]
 
-    def sort_parameters(
-        self, output  # type: Union[str,Tuple[str,int]]
-    ):  # type: (...) -> List[str]
+    def sort_parameters(self, output: str | tuple[str, int]) -> list[str]:
         """Return the parameters sorted in descending order.
 
         Args:
@@ -310,14 +304,14 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot(
         self,
-        output,  # type: Union[str,Tuple[str,int]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        file_format=None,  # type: Optional[str]
-    ):  # type: (...) -> None
+        output: str | tuple[str, int],
+        inputs: Iterable[str] | None = None,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        file_format: str | None = None,
+    ) -> None:
         """Plot the sensitivity indices.
 
         Args:
@@ -341,19 +335,19 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot_field(
         self,
-        output,  # type: Union[str,Tuple[str,int]]
-        mesh=None,  # type: Optional[ndarray]
-        inputs=None,  # type: Optional[Iterable[str]]
-        standardize=False,  # type: bool
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        properties=None,  # type: Mapping[str,DatasetPlotPropertyType]
-    ):  # type: (...) -> Union[Curves,Surfaces]
+        output: str | tuple[str, int],
+        mesh: ndarray | None = None,
+        inputs: Iterable[str] | None = None,
+        standardize: bool = False,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        properties: Mapping[str, DatasetPlotPropertyType] = None,
+    ) -> Curves | Surfaces:
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 
         The output is considered as a 1D or 2D functional variable,
@@ -391,7 +385,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             NotImplementedError: If the dimension of the mesh is greater than 2.
         """
-        if isinstance(output, six.string_types):
+        if isinstance(output, str):
             output_name = output
             output_component = 0
         else:
@@ -439,18 +433,18 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot_bar(
         self,
-        outputs,  # type: OutputsType
-        inputs=None,  # type: Optional[Iterable[str]]
-        standardize=False,  # type: bool
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        **options,  # type:int
-    ):  # type: (...) -> BarPlot
+        outputs: OutputsType,
+        inputs: Iterable[str] | None = None,
+        standardize: bool = False,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        **options: int,
+    ) -> BarPlot:
         """Plot the sensitivity indices on a bar chart.
 
         This method may consider one or more outputs,
@@ -502,9 +496,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            "{}({})".format(output[0], output[1]) for output in outputs
-        ]
+        dataset.row_names = [f"{output[0]}({output[1]})" for output in outputs]
         plot = BarPlot(dataset)
         plot.title = title
         plot.execute(
@@ -520,20 +512,20 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot_radar(
         self,
-        outputs,  # type: OutputsType
-        inputs=None,  # type: Optional[Iterable[str]]
-        standardize=False,  # type: bool
-        title=None,  # type: Optional[str]
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        min_radius=None,  # type: Optional[float]
-        max_radius=None,  # type: Optional[float]
-        **options,  # type:bool
-    ):  # type: (...) -> RadarChart
+        outputs: OutputsType,
+        inputs: Iterable[str] | None = None,
+        standardize: bool = False,
+        title: str | None = None,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        min_radius: float | None = None,
+        max_radius: float | None = None,
+        **options: bool,
+    ) -> RadarChart:
         """Plot the sensitivity indices on a radar chart.
 
         This method may consider one or more outputs,
@@ -592,9 +584,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         for name in inputs_names:
             dataset.add_variable(name, vstack(data[name]))
 
-        dataset.row_names = [
-            "{}({})".format(output[0], output[1]) for output in outputs
-        ]
+        dataset.row_names = [f"{output[0]}({output[1]})" for output in outputs]
         plot = RadarChart(dataset)
         plot.title = title
         plot.rmin = min_radius
@@ -612,9 +602,9 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _filter_names(
-        names,  # type:Iterable[str],
-        names_to_keep,  # type:Iterable[str]
-    ):  # type: (...) -> List[str]
+        names: Iterable[str],
+        names_to_keep: Iterable[str],
+    ) -> list[str]:
         """Sort and filter the names.
 
         Args:
@@ -630,9 +620,9 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def _sort_and_filter_input_parameters(
         self,
-        output,  # type: Tuple[str,int]
-        inputs_to_keep,  # type: Iterable[str]
-    ):  # type: (...) -> List[str]
+        output: tuple[str, int],
+        inputs_to_keep: Iterable[str],
+    ) -> list[str]:
         """Sort and filter the input parameters.
 
         Args:
@@ -647,19 +637,19 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def plot_comparison(
         self,
-        indices,  # type: List[SensitivityAnalysis]
-        output,  # type: Union[str,Tuple[str,int]]
-        inputs=None,  # type: Optional[Iterable[str]]
-        title=None,  # type: Optional[str]
-        use_bar_plot=True,  # type: bool
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        **options,  # type:bool
-    ):  # type: (...) -> Union[BarPlot,RadarChart]
+        indices: list[SensitivityAnalysis],
+        output: str | tuple[str, int],
+        inputs: Iterable[str] | None = None,
+        title: str | None = None,
+        use_bar_plot: bool = True,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        **options: bool,
+    ) -> BarPlot | RadarChart:
         """Plot a comparison between the current sensitivity indices and other ones.
 
         This method allows to use either a bar chart (default option) or a radar one.
@@ -725,14 +715,14 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def _save_show_plot(
         self,
-        fig,  # type: Figure
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-    ):  # type: (...) -> Figure
+        fig: Figure,
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+    ) -> Figure:
         """Save or show the plot.
 
         Args:
@@ -766,7 +756,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         save_show_figure(fig, show, file_path)
         return fig
 
-    def export_to_dataset(self):  # type: (...) -> Dataset
+    def export_to_dataset(self) -> Dataset:
         """Convert :attr:`.SensitivityAnalysis.indices` into a :class:`.Dataset`.
 
         Returns:
@@ -777,7 +767,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         rows_names = []
         for input_name in self.inputs_names:
             for input_component in range(sizes[input_name]):
-                rows_names.append("{}({})".format(input_name, input_component))
+                rows_names.append(f"{input_name}({input_component})")
 
         dataset = Dataset(by_group=False)
         for method, indices in self.indices.items():
@@ -799,8 +789,8 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def standardize_indices(
-        indices,  # type: IndicesType
-    ):  # type: (...) -> IndicesType
+        indices: IndicesType,
+    ) -> IndicesType:
         """Standardize the sensitivity indices for each output component.
 
         Each index is replaced by its absolute value divided by the largest index.
@@ -816,7 +806,7 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
         for output_name, output_indices in indices.items():
             for output_component, output_component_indices in enumerate(output_indices):
                 max_value = max(
-                    [abs(value)[0] for value in output_component_indices.values()]
+                    abs(value)[0] for value in output_component_indices.values()
                 )
 
                 for input_name, input_indices in output_component_indices.items():

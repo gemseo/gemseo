@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -34,11 +33,8 @@ from collections import namedtuple
 from numbers import Number
 from typing import Any
 from typing import Iterable
-from typing import List
 from typing import Mapping
-from typing import Optional
 from typing import Sequence
-from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -56,9 +52,8 @@ if TYPE_CHECKING:
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from six import string_types
 
-from gemseo.utils.py23_compat import Path
+from pathlib import Path
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
 
@@ -77,9 +72,9 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        dataset,  # type: Dataset
-        **kwargs,  # type: Any
-    ):  # type: (...) -> None
+        dataset: Dataset,
+        **kwargs: Any,
+    ) -> None:
         """
         Args:
             dataset: The dataset containing the data to plot.
@@ -120,12 +115,12 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__names_to_labels = {}
 
     @property
-    def output_files(self):  # type: (...) -> List[str]
+    def output_files(self) -> list[str]:
         """The paths to the output files."""
         return self.__output_files
 
     @property
-    def legend_location(self):  # type: (...) -> str
+    def legend_location(self) -> str:
         """The location of the legend."""
         return self.__legend_location
 
@@ -134,7 +129,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__legend_location = value
 
     @property
-    def colormap(self):  # type: (...) -> str
+    def colormap(self) -> str:
         """The color map."""
         return self.__colormap
 
@@ -143,12 +138,12 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__colormap = value
 
     @property
-    def figsize(self):  # type: (...) -> Tuple[float,float]
+    def figsize(self) -> tuple[float, float]:
         """The figure size."""
         return self.__figsize
 
     @property
-    def figsize_x(self):  # type: (...) -> float
+    def figsize_x(self) -> float:
         """The x-component of figure size."""
         return self.__figsize[0]
 
@@ -157,7 +152,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__figsize = (value, self.figsize_y)
 
     @property
-    def figsize_y(self):  # type: (...) -> float
+    def figsize_y(self) -> float:
         """The y-component of figure size."""
         return self.__figsize[1]
 
@@ -166,7 +161,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__figsize = (self.figsize_x, value)
 
     @property
-    def color(self):  # type: (...) -> str
+    def color(self) -> str:
         """The color of the series."""
         return self.__color
 
@@ -175,7 +170,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__color = value
 
     @property
-    def linestyle(self):  # type: (...) -> str
+    def linestyle(self) -> str:
         """The line style of the series."""
         return self.__line_style
 
@@ -184,7 +179,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__line_style = value
 
     @property
-    def title(self):  # type: (...) -> str
+    def title(self) -> str:
         """The title of the plot."""
         return self.__title
 
@@ -193,7 +188,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__title = value
 
     @property
-    def xlabel(self):  # type: (...) -> str
+    def xlabel(self) -> str:
         """The label for the x-axis."""
         return self.__xlabel
 
@@ -202,7 +197,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__xlabel = value
 
     @property
-    def ylabel(self):  # type: (...) -> str
+    def ylabel(self) -> str:
         """The label for the y-axis."""
         return self.__ylabel
 
@@ -211,7 +206,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__ylabel = value
 
     @property
-    def zlabel(self):  # type: (...) -> str
+    def zlabel(self) -> str:
         """The label for the z-axis."""
         return self.__zlabel
 
@@ -220,7 +215,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__zlabel = value
 
     @property
-    def font_size(self):  # type: (...) -> int
+    def font_size(self) -> int:
         """The font size."""
         return self.__font_size
 
@@ -229,7 +224,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__font_size = value
 
     @property
-    def xmin(self):  # type: (...) -> float
+    def xmin(self) -> float:
         """The minimum value on the x-axis."""
         return self.__xmin
 
@@ -238,7 +233,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__xmin = value
 
     @property
-    def xmax(self):  # type: (...) -> float
+    def xmax(self) -> float:
         """The maximum value on the x-axis."""
         return self.__xmax
 
@@ -247,7 +242,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__xmax = value
 
     @property
-    def ymin(self):  # type: (...) -> float
+    def ymin(self) -> float:
         """The minimum value on the y-axis."""
         return self.__ymin
 
@@ -256,7 +251,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__ymin = value
 
     @property
-    def ymax(self):  # type: (...) -> float
+    def ymax(self) -> float:
         """The maximum value on the y-axis."""
         return self.__ymax
 
@@ -265,7 +260,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__ymax = value
 
     @property
-    def rmin(self):  # type: (...) -> float
+    def rmin(self) -> float:
         """The minimum value on the r-axis."""
         return self.__rmin
 
@@ -274,7 +269,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__rmin = value
 
     @property
-    def rmax(self):  # type: (...) -> float
+    def rmax(self) -> float:
         """The maximum value on the r-axis."""
         return self.__rmax
 
@@ -292,7 +287,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.__zmin = value
 
     @property
-    def zmax(self):  # type: (...) -> float
+    def zmax(self) -> float:
         """The maximum value on the z-axis."""
         return self.__zmax
 
@@ -302,17 +297,17 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        save=True,  # type: bool
-        show=False,  # type: bool
-        file_path=None,  # type: Optional[Union[str,Path]]
-        directory_path=None,  # type: Optional[Union[str,Path]]
-        file_name=None,  # type: Optional[str]
-        file_format=None,  # type: Optional[str]
-        properties=None,  # type: Optional[Mapping[str,DatasetPlotPropertyType]]
+        save: bool = True,
+        show: bool = False,
+        file_path: str | Path | None = None,
+        directory_path: str | Path | None = None,
+        file_name: str | None = None,
+        file_format: str | None = None,
+        properties: Mapping[str, DatasetPlotPropertyType] | None = None,
         fig: None | Figure = None,
         axes: None | Axes = None,
         **plot_options,
-    ):  # type: (...) -> List[Figure]
+    ) -> list[Figure]:
         """Execute the post processing.
 
         Args:
@@ -363,13 +358,13 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def _run(
         self,
-        save,  # type:bool
-        show,  # type: bool
-        file_path,  # type: Path
+        save: bool,
+        show: bool,
+        file_path: Path,
         fig: None | Figure,
         axes: None | Axes,
         **plot_options,
-    ):  # type: (...)-> List[Figure]
+    ) -> list[Figure]:
         """Create the post processing and save or display it.
 
         Args:
@@ -434,8 +429,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_variables_names(
         self,
-        dataframe_columns,  # type: Iterable[Tuple]
-    ):  # type: (...) -> List[str]
+        dataframe_columns: Iterable[tuple],
+    ) -> list[str]:
         """Return the names of the variables from the columns of a pandas DataFrame.
 
         Args:
@@ -472,8 +467,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def _get_label(
         self,
-        variable,  # type: Union[str,Tuple[str,int]]
-    ):  # type: (...) -> Tuple[str,Tuple[str, int]]
+        variable: str | tuple[str, int],
+    ) -> tuple[str, tuple[str, int]]:
         """Return the label related to a variable name and a refactored variable name.
 
         Args:
@@ -489,15 +484,15 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             " whose first component is a string and second"
             " one is an integer"
         )
-        if isinstance(variable, string_types):
+        if isinstance(variable, str):
             label = variable
             variable = (self.dataset.get_group(variable), variable, "0")
         elif hasattr(variable, "__len__") and len(variable) == 3:
-            is_string = isinstance(variable[0], string_types)
-            is_string = is_string and isinstance(variable[1], string_types)
+            is_string = isinstance(variable[0], str)
+            is_string = is_string and isinstance(variable[1], str)
             is_number = isinstance(variable[2], Number)
             if is_string and is_number:
-                label = "{}({})".format(variable[1], variable[2])
+                label = f"{variable[1]}({variable[2]})"
                 variable[2] = str(variable[2])
                 variable = tuple(variable)
             else:
@@ -508,8 +503,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
 
     def _set_color(
         self,
-        n_items,  # type: int
-    ):  # type: (...) -> None
+        n_items: int,
+    ) -> None:
         """Set the colors of the items to be plotted.
 
         Args:
@@ -518,14 +513,14 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         colormap = plt.cm.get_cmap(self.colormap)
         default_color = [colormap(color) for color in linspace(0, 1, n_items)]
         self.color = self.color or default_color
-        if isinstance(self.color, string_types):
+        if isinstance(self.color, str):
             self.color = [self.color] * n_items
 
     def _set_linestyle(
         self,
-        n_items,  # type: int
-        default_value,  # type: str
-    ):  # type: (...) -> None
+        n_items: int,
+        default_value: str,
+    ) -> None:
         """Set the line style of the items to be plotted.
 
         Args:
@@ -534,18 +529,16 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         """
 
         self.linestyle = self.linestyle or default_value
-        if isinstance(self.linestyle, string_types):
+        if isinstance(self.linestyle, str):
             self.linestyle = [self.linestyle] * n_items
 
     @property
-    def labels(self):  # type: (...) -> Mapping[str,str]
+    def labels(self) -> Mapping[str, str]:
         """The labels of the variables."""
         return self.__names_to_labels
 
     @labels.setter
-    def labels(
-        self, names_to_labels  # type: Mapping[str,str]
-    ):  # type: (...) -> None
+    def labels(self, names_to_labels: Mapping[str, str]) -> None:
         self.__names_to_labels = names_to_labels
 
     def _get_figure_and_axes(

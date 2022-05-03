@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 #
 # This program is free software; you can redistribute it and/or
@@ -18,9 +17,6 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from __future__ import division
-from __future__ import unicode_literals
-
 import pytest
 from gemseo.utils.source_parsing import get_default_options_values
 from gemseo.utils.source_parsing import get_options_doc
@@ -40,7 +36,7 @@ def function_with_google_docstring(arg1, arg2):
     """
 
 
-class ClassWithGoogleDocstring(object):
+class ClassWithGoogleDocstring:
     """A class doing nothing."""
 
     def __init__(self, arg1=0.0, arg2=1.0):
