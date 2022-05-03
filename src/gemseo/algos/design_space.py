@@ -77,7 +77,6 @@ from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
 from numpy import nonzero
-from numpy import ones
 from numpy import ones_like
 from numpy import round_ as np_round
 from numpy import string_
@@ -453,7 +452,7 @@ class DesignSpace(collections.MutableMapping):
             array_value = atleast_1d(value)
             self._check_value(array_value, name)
             if len(array_value) == 1 and size > 1:
-                array_value = array_value * ones(size)
+                array_value = full(size, value)
             self.__current_x[name] = array_value.astype(
                 self.__TYPES_TO_DTYPES[self.variables_types[name][0]], copy=False
             )
@@ -714,15 +713,16 @@ class DesignSpace(collections.MutableMapping):
             infinity = inf
 
         bound_to_update = atleast_1d(bound)
-        bound_to_update = where(
-            equal(bound_to_update, None), infinity, bound_to_update
-        ).astype(self.__FLOAT_DTYPE)
+        if None in bound_to_update:
+            bound_to_update = where(
+                equal(bound_to_update, None), infinity, bound_to_update
+            ).astype(self.__FLOAT_DTYPE)
 
         self._check_value(bound_to_update, name)
 
         if isinstance(bound, Number):
             # scalar: same lower bound for all components
-            bound_to_update = bound * ones(size)
+            bound_to_update = full(size, bound)
         elif len(bound_to_update) != size:
             bound_prefix = "lower" if is_lower else "upper"
             raise ValueError(
@@ -749,7 +749,7 @@ class DesignSpace(collections.MutableMapping):
         if inds.size != 0:
             raise ValueError(
                 "The bounds of variable '{}'{} are not valid: {}!<{}.".format(
-                    name, inds, u_b[inds], l_b[inds]
+                    name, inds, l_b[inds], u_b[inds]
                 )
             )
 

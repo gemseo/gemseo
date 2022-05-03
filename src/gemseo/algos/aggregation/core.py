@@ -30,10 +30,10 @@ from numpy import argmax as np_argmax
 from numpy import array
 from numpy import atleast_2d
 from numpy import exp as np_exp
+from numpy import full
 from numpy import max as np_max
 from numpy import multiply
 from numpy import ndarray
-from numpy import ones
 from numpy import sum as np_sum
 from numpy import zeros
 
@@ -385,7 +385,7 @@ def sum_square_agg_jac(
         jac = zeros((1, orig_val.size))
         jac[:, indices] = 2.0
     else:
-        jac = 2 * ones((1, orig_val.size))
+        jac = full((1, orig_val.size), 2.0)
 
     return jac
 

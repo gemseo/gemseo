@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import logging
+import sys
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -42,6 +43,7 @@ from numpy import argmin
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import full
 from numpy import hstack
 from numpy import isnan
 from numpy import log10 as np_log10
@@ -49,7 +51,6 @@ from numpy import logspace
 from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ndarray
-from numpy import ones
 from numpy import ones_like
 from numpy import sort as np_sort
 from numpy import vstack
@@ -214,7 +215,7 @@ class OptHistoryView(OptPostProcessor):
                 cstr_names.remove(cstr_name)
 
         constraints_history = []
-        bnd_list = -1e300 * ones(len(cstr_names))
+        bnd_list = full(len(cstr_names), sys.float_info.min)
 
         for cstr_i, cstr_name in enumerate(cstr_names):
 

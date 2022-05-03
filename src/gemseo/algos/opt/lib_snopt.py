@@ -37,6 +37,7 @@ from numpy import array
 from numpy import concatenate
 from numpy import float as np_float
 from numpy import float64
+from numpy import full
 from numpy import hstack
 from numpy import int as np_int
 from numpy import isinf
@@ -255,7 +256,7 @@ class SnOpt(OptimizationLibrary):
         status = -1
         if mode == 0:
             obj_f, status = self.__eval_func(obj_func.func, xn_vect)
-            obj_df = ones((xn_vect.shape[0],)) * 666.0
+            obj_df = full((xn_vect.shape[0],), 666.0)
 
         if mode == 1:
             obj_df, status = self.__eval_func(obj_func.jac, xn_vect)
@@ -376,20 +377,16 @@ class SnOpt(OptimizationLibrary):
         """
         if mode == 0:
             cstr, status = self.__snoptb_create_c(xn_vect)
-            dcstr = (
-                ones(
-                    (
-                        (self.__n_eq_constraints + self.__n_ineq_constraints)
-                        * xn_vect.shape[0]
-                    )
-                )
-                * 666.0
+            dcstr = full(
+                (self.__n_eq_constraints + self.__n_ineq_constraints)
+                * xn_vect.shape[0],
+                666.0,
             )
             status = 1
 
         elif mode == 1:
             dcstr, status = self.__snoptb_create_dc(xn_vect)
-            cstr = ones((self.__n_eq_constraints + self.__n_ineq_constraints,)) * 666.0
+            cstr = full((self.__n_eq_constraints + self.__n_ineq_constraints,), 666.0)
 
         elif mode == 2:
             cstr, c_status = self.__snoptb_create_c(xn_vect)
@@ -464,7 +461,7 @@ class SnOpt(OptimizationLibrary):
             ceqlist = ["c_eq" + str(i) for i in range(self.__n_eq_constraints)]
             names = append(names, array(ceqlist, dtype=str))
         if self.__n_ineq_constraints > 0:
-            min_inf = ones(self.__n_ineq_constraints) * -INFINITY
+            min_inf = full(self.__n_ineq_constraints, -INFINITY)
             blc = append(blc, min_inf)
             buc = append(buc, zeros(self.__n_ineq_constraints))
             cieqlist = ["c_ie" + str(i) for i in range(self.__n_ineq_constraints)]
@@ -474,8 +471,8 @@ class SnOpt(OptimizationLibrary):
         if n_constraints == 0:
             n_constraints = 1
             funcon = self.cb_snopt_dummy_func
-            blc = append(blc, ones((1,)) * -INFINITY)
-            buc = append(buc, ones((1,)) * INFINITY)
+            blc = append(blc, full((1,), -INFINITY))
+            buc = append(buc, full((1,), INFINITY))
             names = append(names, array(["dummy"], dtype=np_str))
         else:
             funcon = self.cb_opt_constraints_snoptb

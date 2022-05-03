@@ -108,9 +108,7 @@ class Rosenbrock(OptimizationProblem):
             function value at optimum
         :rtype: numpy array
         """
-        x_opt = ones(self.design_space.dimension)
-        f_opt = 0.0
-        return x_opt, f_opt
+        return ones(self.design_space.dimension), 0.0
 
 
 class RosenMF(MDODiscipline):
