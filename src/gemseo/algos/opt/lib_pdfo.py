@@ -63,7 +63,7 @@ LOGGER = logging.getLogger(__name__)
 class PDFOAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the PDFO library."""
 
-    lib: str = "PDFO"
+    library_name: str = "PDFO"
     website: str = "https://www.pdfo.net/"
 
 
@@ -98,18 +98,18 @@ class PDFOOpt(OptimizationLibrary):
                 description="Constrained Optimization By Linear Approximations ",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name="cobyla",
+                internal_algorithm_name="cobyla",
                 positive_constraints=True,
             ),
             "PDFO_BOBYQA": PDFOAlgorithmDescription(
                 algorithm_name="BOBYQA",
                 description="Bound Optimization By Quadratic Approximation",
-                internal_algo_name="bobyqa",
+                internal_algorithm_name="bobyqa",
             ),
             "PDFO_NEWUOA": PDFOAlgorithmDescription(
                 algorithm_name="NEWUOA",
                 description="NEWUOA",
-                internal_algo_name="newuoa",
+                internal_algorithm_name="newuoa",
             ),
         }
         self.name = "PDFO"

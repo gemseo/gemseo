@@ -93,7 +93,7 @@ def test_optimization_algorithm():
     """Check the default settings of OptimizationAlgorithmDescription."""
     lib = OptimizationLibrary()
     lib.lib_dict["new_algo"] = OptimizationAlgorithmDescription(
-        algorithm_name="bar", internal_algo_name="foo"
+        algorithm_name="bar", internal_algorithm_name="foo"
     )
     algo = lib.lib_dict["new_algo"]
     assert not lib.algorithm_handles_ineqcstr("new_algo")
@@ -101,9 +101,9 @@ def test_optimization_algorithm():
     assert not algo.handle_inequality_constraints
     assert not algo.handle_equality_constraints
     assert not algo.handle_integer_variables
-    assert not algo.require_grad
+    assert not algo.require_gradient
     assert not algo.positive_constraints
     assert not algo.handle_multiobjective
     assert algo.description == ""
     assert algo.website == ""
-    assert algo.lib == ""
+    assert algo.library_name == ""

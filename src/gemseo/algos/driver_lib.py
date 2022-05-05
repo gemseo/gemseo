@@ -88,7 +88,7 @@ class DriverDescription(AlgorithmDescription):
     handle_integer_variables: bool = False
     """Whether the optimization algorithm handles integer variables."""
 
-    require_grad: bool = False
+    require_gradient: bool = False
     """Whether the optimization algorithm requires the gradient."""
 
 
@@ -447,7 +447,7 @@ class DriverLib(AlgoLib):
             self.__activate_progress_bar = activate_progress_bar
 
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
+        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
 
         problem.check()
         problem.preprocess_functions(
@@ -577,7 +577,7 @@ class DriverLib(AlgoLib):
         if algo_name not in self.lib_dict:
             raise ValueError(f"Algorithm {algo_name} is not available.")
 
-        return self.lib_dict[algo_name].require_grad
+        return self.lib_dict[algo_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
         """Gets x0, bounds, normalized or not depending on algo options, all as numpy

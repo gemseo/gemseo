@@ -115,9 +115,9 @@ class ScipyLinalgAlgos(LinearSolverLib):
         return LinearSolverDescription(
             algorithm_name=algo_name,
             description="Linear solver implemented in the SciPy library.",
-            internal_algo_name=algo_name,
+            internal_algorithm_name=algo_name,
             lhs_must_be_linear_operator=True,
-            lib="SciPy",
+            library_name="SciPy",
             website=cls.__WEBSITE.format(algo_name),
         )
 

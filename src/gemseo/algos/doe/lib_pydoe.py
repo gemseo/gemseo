@@ -104,8 +104,8 @@ class PyDOE(DOELibrary):
             self.lib_dict[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
                 description=self.DESC_LIST[idx],
-                internal_algo_name=algo,
-                lib=self.__class__.__name__,
+                internal_algorithm_name=algo,
+                library_name=self.__class__.__name__,
                 website=self.WEB_LIST[idx],
             )
 

@@ -41,7 +41,7 @@ LOGGER = logging.getLogger(__name__)
 class SciPyAlgorithmAlgorithm(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the SciPy library."""
 
-    lib: str = "SciPy"
+    library_name: str = "SciPy"
 
 
 class ScipyOpt(OptimizationLibrary):
@@ -83,8 +83,8 @@ class ScipyOpt(OptimizationLibrary):
                 ),
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name="SLSQP",
-                require_grad=True,
+                internal_algorithm_name="SLSQP",
+                require_gradient=True,
                 positive_constraints=True,
                 website=f"{doc}optimize.minimize-slsqp.html",
             ),
@@ -93,8 +93,8 @@ class ScipyOpt(OptimizationLibrary):
                 description=(
                     "Limited-memory BFGS algorithm implemented in SciPy library"
                 ),
-                internal_algo_name="L-BFGS-B",
-                require_grad=True,
+                internal_algorithm_name="L-BFGS-B",
+                require_gradient=True,
                 website=f"{doc}generated/scipy.optimize.fmin_l_bfgs_b.html",
             ),
             "TNC": SciPyAlgorithmAlgorithm(
@@ -102,8 +102,8 @@ class ScipyOpt(OptimizationLibrary):
                 description=(
                     "Truncated Newton (TNC) algorithm implemented in SciPy library"
                 ),
-                internal_algo_name="TNC",
-                require_grad=True,
+                internal_algorithm_name="TNC",
+                require_gradient=True,
                 website=f"{doc}optimize.minimize-tnc.html",
             ),
         }

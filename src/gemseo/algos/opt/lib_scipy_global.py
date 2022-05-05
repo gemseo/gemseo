@@ -45,7 +45,7 @@ LOGGER = logging.getLogger(__name__)
 class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of a global optimization algorithm from the SciPy library."""
 
-    lib: str = "SciPy"
+    library_name: str = "SciPy"
 
 
 class ScipyGlobalOpt(OptimizationLibrary):
@@ -74,7 +74,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 algorithm_name="Dual annealing",
                 description="Dual annealing",
                 handle_integer_variables=True,
-                internal_algo_name="dual_annealing",
+                internal_algorithm_name="dual_annealing",
                 website=f"{doc}scipy.optimize.dual_annealing.html",
             ),
             "SHGO": SciPyGlobalAlgorithmDescription(
@@ -83,7 +83,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
                 handle_integer_variables=True,
-                internal_algo_name="shgo",
+                internal_algorithm_name="shgo",
                 positive_constraints=True,
                 website=f"{doc}scipy.optimize.shgo.html",
             ),
@@ -93,7 +93,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
                 handle_integer_variables=True,
-                internal_algo_name="differential_evolution",
+                internal_algorithm_name="differential_evolution",
                 website=f"{doc}scipy.optimize.differential_evolution.html",
             ),
         }

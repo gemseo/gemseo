@@ -42,7 +42,7 @@ class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     problem_type: str = OptimizationProblem.LINEAR_PB
     handle_equality_constraints: bool = True
     handle_inequality_constraints: bool = True
-    lib: str = "SciPy"
+    library_name: str = "SciPy"
 
 
 class ScipyLinprog(OptimizationLibrary):
@@ -80,7 +80,7 @@ class ScipyLinprog(OptimizationLibrary):
                     "Linear programming by the interior-point"
                     " method implemented in the SciPy library"
                 ),
-                internal_algo_name="interior-point",
+                internal_algorithm_name="interior-point",
                 website=f"{doc}optimize.linprog-interior-point.html",
             ),
             ScipyLinprog.REVISED_SIMPLEX: ScipyLinProgAlgorithmDescription(
@@ -89,7 +89,7 @@ class ScipyLinprog(OptimizationLibrary):
                     "Linear programming by a two-phase revised"
                     " simplex algorithm implemented in the SciPy library"
                 ),
-                internal_algo_name="revised simplex",
+                internal_algorithm_name="revised simplex",
                 website=f"{doc}optimize.linprog-revised_simplex.html",
             ),
             "SIMPLEX": ScipyLinProgAlgorithmDescription(
@@ -98,7 +98,7 @@ class ScipyLinprog(OptimizationLibrary):
                     "Linear programming by the two-phase simplex"
                     " algorithm implemented in the SciPy library"
                 ),
-                internal_algo_name="simplex",
+                internal_algorithm_name="simplex",
                 website=f"{doc}optimize.linprog-simplex.html",
             ),
         }
