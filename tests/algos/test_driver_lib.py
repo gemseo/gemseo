@@ -84,8 +84,8 @@ def test_require_grad():
             self.lib_dict = {
                 "SLSQP": DriverDescription(
                     algorithm_name="SLSQP",
-                    internal_algo_name="SLSQP",
-                    require_grad=True,
+                    internal_algorithm_name="SLSQP",
+                    require_gradient=True,
                 )
             }
 

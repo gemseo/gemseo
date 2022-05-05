@@ -69,7 +69,7 @@ SnOptPreprocessType = Tuple[
 class SNOPTAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the SNOPT library."""
 
-    lib: str = "SNOPT"
+    library_name: str = "SNOPT"
 
 
 class SnOpt(OptimizationLibrary):
@@ -137,8 +137,8 @@ class SnOpt(OptimizationLibrary):
                 description="Sparse Nonlinear OPTimizer (SNOPT)",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name="SNOPTB",
-                require_grad=True,
+                internal_algorithm_name="SNOPTB",
+                require_gradient=True,
                 website="https://ccom.ucsd.edu/~optimizers",
             )
         }

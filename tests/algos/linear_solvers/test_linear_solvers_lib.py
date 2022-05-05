@@ -32,7 +32,7 @@ def test_linear_solver_for_symmetric_lhs(is_symmetric, lhs_must_be_symmetric):
     """Check is_algorithm_suited with linear solver requiring symmetric LHS."""
     description = LinearSolverDescription(
         algorithm_name="foo",
-        internal_algo_name="bar",
+        internal_algorithm_name="bar",
         lhs_must_be_symmetric=lhs_must_be_symmetric,
     )
     problem = LinearProblem(eye(2), ones(2), is_symmetric=is_symmetric)
@@ -48,7 +48,7 @@ def test_linear_solver_for_positive_definite_lhs(
     """Check is_algorithm_suited with linear solver requiring positive definite LHS."""
     description = LinearSolverDescription(
         algorithm_name="foo",
-        internal_algo_name="bar",
+        internal_algorithm_name="bar",
         lhs_must_be_positive_definite=lhs_must_be_positive_definite,
     )
     problem = LinearProblem(eye(2), ones(2), is_positive_def=is_positive_def)
@@ -62,7 +62,7 @@ def test_linear_solver_for_linear_operator(lhs, lhs_must_be_linear_operator):
     """Check is_algorithm_suited with linear solver requiring linear operator."""
     description = LinearSolverDescription(
         algorithm_name="foo",
-        internal_algo_name="bar",
+        internal_algorithm_name="bar",
         lhs_must_be_linear_operator=lhs_must_be_linear_operator,
     )
     problem = LinearProblem(lhs, ones(2))

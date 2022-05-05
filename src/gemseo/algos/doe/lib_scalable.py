@@ -48,8 +48,8 @@ class DiagonalDOE(DOELibrary):
             self.lib_dict[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
                 description=description,
-                internal_algo_name=algo,
-                lib="GEMSEO",
+                internal_algorithm_name=algo,
+                library_name="GEMSEO",
             )
 
     def _get_options(

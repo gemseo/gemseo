@@ -49,7 +49,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 class PSevenAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the NLopt library."""
 
-    lib: str = "NLopt"
+    library_name: str = "NLopt"
     website: str = "https://datadvance.net/product/pseven/manual/"
 
 
@@ -108,50 +108,50 @@ class PSevenOpt(OptimizationLibrary):
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
                 handle_integer_variables=True,
-                internal_algo_name="pSeven",
+                internal_algorithm_name="pSeven",
             ),
             "PSEVEN_FD": PSevenAlgorithmDescription(
                 algorithm_name="Feasible direction",
                 description="pSeven's feasible direction method.",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=self.__FD,
+                internal_algorithm_name=self.__FD,
             ),
             "PSEVEN_MOM": PSevenAlgorithmDescription(
                 algorithm_name="MOM",
                 description="pSeven's method of multipliers.",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=self.__MOM,
+                internal_algorithm_name=self.__MOM,
             ),
             "PSEVEN_NCG": PSevenAlgorithmDescription(
                 algorithm_name="NCG",
                 description="pSeven's nonlinear conjugate gradient method.",
-                internal_algo_name=self.__NCG,
+                internal_algorithm_name=self.__NCG,
             ),
             "PSEVEN_NLS": PSevenAlgorithmDescription(
                 algorithm_name="NLS",
                 description="pSeven's nonlinear simplex method.",
-                internal_algo_name=self.__NLS,
+                internal_algorithm_name=self.__NLS,
             ),
             "PSEVEN_POWELL": PSevenAlgorithmDescription(
                 algorithm_name="POWELL",
                 description="pSeven's Powell conjugate direction method.",
-                internal_algo_name=self.__POWELL,
+                internal_algorithm_name=self.__POWELL,
             ),
             "PSEVEN_QP": PSevenAlgorithmDescription(
                 algorithm_name="QP",
                 description="pSeven's quadratic programming method.",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=self.__QP,
+                internal_algorithm_name=self.__QP,
             ),
             "PSEVEN_SQP": PSevenAlgorithmDescription(
                 algorithm_name="SQP",
                 description="pSeven's sequential quadratic programming method.",
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=self.__SQP,
+                internal_algorithm_name=self.__SQP,
             ),
             "PSEVEN_SQ2P": PSevenAlgorithmDescription(
                 algorithm_name="SQ2P",
@@ -161,7 +161,7 @@ class PSevenOpt(OptimizationLibrary):
                 ),
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=self.__SQ2P,
+                internal_algorithm_name=self.__SQ2P,
             ),
         }
 
@@ -344,7 +344,7 @@ class PSevenOpt(OptimizationLibrary):
     ) -> None:
         """Get the pSeven techniques from the options."""
         techniques_list = list()
-        internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
+        internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
 
         if internal_algo_name in self.__LOCAL_METHODS:
             techniques_list.append(internal_algo_name)

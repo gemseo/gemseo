@@ -132,8 +132,8 @@ class OpenTURNS(DOELibrary):
                 algorithm_name=algo_name,
                 description=algo_value[0],
                 handle_integer_variables=True,
-                internal_algo_name=algo_name,
-                lib=self.__class__.__name__,
+                internal_algorithm_name=algo_name,
+                library_name=self.__class__.__name__,
                 website=self.__OT_WEBPAGE.format(algo_value[1]),
             )
 

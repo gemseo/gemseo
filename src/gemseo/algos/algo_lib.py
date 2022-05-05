@@ -48,10 +48,10 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     algorithm_name: str
     """The name of the algorithm in |g|."""
 
-    internal_algo_name: str
+    internal_algorithm_name: str
     """The name of the algorithm in the wrapped library."""
 
-    lib: str = ""
+    library_name: str = ""
     """The name of the wrapped library."""
 
     description: str = ""
@@ -289,7 +289,7 @@ class AlgoLib:
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algo_name
+        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
         problem.check()
 
         self._pre_run(problem, self.algo_name, **options)

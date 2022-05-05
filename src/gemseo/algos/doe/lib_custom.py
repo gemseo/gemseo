@@ -87,8 +87,8 @@ class CustomDOE(DOELibrary):
         self.lib_dict[name] = DOEAlgorithmDescription(
             algorithm_name=name,
             description=desc[name],
-            internal_algo_name=name,
-            lib=name,
+            internal_algorithm_name=name,
+            library_name=name,
         )
 
     def _get_options(

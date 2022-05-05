@@ -52,7 +52,7 @@ class NloptRoundOffException(Exception):
 class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the NLopt library."""
 
-    lib: str = "NLopt"
+    library_name: str = "NLopt"
 
 
 class Nlopt(OptimizationLibrary):
@@ -139,8 +139,8 @@ class Nlopt(OptimizationLibrary):
                     "implemented in the NLOPT library"
                 ),
                 handle_inequality_constraints=True,
-                internal_algo_name=nlopt.LD_MMA,
-                require_grad=True,
+                internal_algorithm_name=nlopt.LD_MMA,
+                require_gradient=True,
                 website=f"{nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
             ),
             "NLOPT_COBYLA": NLoptAlgorithmDescription(
@@ -152,7 +152,7 @@ class Nlopt(OptimizationLibrary):
                 ),
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=nlopt.LN_COBYLA,
+                internal_algorithm_name=nlopt.LN_COBYLA,
                 website=(
                     f"{nlopt_doc}#cobyla-constrained-optimization-by-linear-"
                     "approximations"
@@ -167,8 +167,8 @@ class Nlopt(OptimizationLibrary):
                 ),
                 handle_equality_constraints=True,
                 handle_inequality_constraints=True,
-                internal_algo_name=nlopt.LD_SLSQP,
-                require_grad=True,
+                internal_algorithm_name=nlopt.LD_SLSQP,
+                require_gradient=True,
                 website=f"{nlopt_doc}#slsqp",
             ),
             "NLOPT_BOBYQA": NLoptAlgorithmDescription(
@@ -178,7 +178,7 @@ class Nlopt(OptimizationLibrary):
                     "Approximation (BOBYQA) implemented "
                     "in the NLOPT library"
                 ),
-                internal_algo_name=nlopt.LN_BOBYQA,
+                internal_algorithm_name=nlopt.LN_BOBYQA,
                 website=f"{nlopt_doc}#bobyqa",
             ),
             "NLOPT_BFGS": NLoptAlgorithmDescription(
@@ -187,8 +187,8 @@ class Nlopt(OptimizationLibrary):
                     "Broyden-Fletcher-Goldfarb-Shanno method "
                     "(BFGS) implemented in the NLOPT library"
                 ),
-                internal_algo_name=nlopt.LD_LBFGS,
-                require_grad=True,
+                internal_algorithm_name=nlopt.LD_LBFGS,
+                require_gradient=True,
                 website=f"{nlopt_doc}#low-storage-bfgs",
             ),
             # Does not work on Rastrigin => banned
@@ -202,7 +202,7 @@ class Nlopt(OptimizationLibrary):
                 description=(
                     "NEWUOA + bound constraints implemented in the NLOPT library"
                 ),
-                internal_algo_name=nlopt.LN_NEWUOA_BOUND,
+                internal_algorithm_name=nlopt.LN_NEWUOA_BOUND,
                 website=f"{nlopt_doc}#newuoa-bound-constraints",
             ),
             # Does not work on Rastrigin => banned
@@ -329,7 +329,7 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.lib_dict[self.algo_name].require_grad:
+            if self.lib_dict[self.algo_name].require_gradient:
                 if grad.size > 0:
                     cstr_jac = jac(xn_vect)
                     grad[:] = atleast_2d(cstr_jac)[

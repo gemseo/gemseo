@@ -1921,13 +1921,13 @@ def get_algorithm_features(
     algo_description = driver.lib_dict[algorithm_name]
     return AlgorithmFeatures(
         algorithm_name=algo_description.algorithm_name,
-        library_name=algo_description.lib,
+        library_name=algo_description.library_name,
         handle_equality_constraints=algo_description.handle_equality_constraints,
         handle_inequality_constraints=algo_description.handle_inequality_constraints,
         handle_float_variables=True,
         handle_integer_variables=algo_description.handle_integer_variables,
         handle_multiobjective=algo_description.handle_multiobjective,
-        require_gradient=algo_description.require_grad,
+        require_gradient=algo_description.require_gradient,
     )
 
 
