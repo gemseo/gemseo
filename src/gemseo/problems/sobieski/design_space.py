@@ -25,14 +25,20 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def create_design_space(
-    dtype: str,
+    dtype: str = "float64", physical_naming: bool = False
 ) -> DesignSpace:
     """Create the design space for the Sobieski's SSBJ use case.
 
     Args:
         dtype: The data type for the NumPy arrays, either "float64" or "complex128".
+        physical_naming: Whether to use physical names
+            for the input and output variables (e.g. `"range"`)
+            or mathematical notations (e.g. `"y_4"`).
 
     Returns:
         The design space for the Sobieski's SSBJ use case.
     """
-    return SobieskiProblem(dtype).design_space
+    if physical_naming:
+        return SobieskiProblem(dtype).design_space_with_physical_naming
+    else:
+        return SobieskiProblem(dtype).design_space

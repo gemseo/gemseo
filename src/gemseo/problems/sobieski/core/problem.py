@@ -735,3 +735,17 @@ class SobieskiProblem:
                 self.__design_space.set_current_x(x_dict)
 
         return self.__design_space
+
+    @property
+    def design_space_with_physical_naming(self):  # type: (...) -> DesignSpace
+        """The design space with physical naming."""
+        if self.__design_space is None:
+            input_file = Path(__file__).parent / "sobieski_design_space_pn.txt"
+            self.__design_space = DesignSpace.read_from_txt(input_file)
+            if self.__dtype == complex128:
+                x_dict = self.__design_space.get_current_x_dict()
+                for var_name, value in x_dict.items():
+                    x_dict[var_name] = array(value, dtype=complex128)
+                self.__design_space.set_current_x(x_dict)
+
+        return self.__design_space
