@@ -2,8 +2,9 @@ include src/gemseo/algos/*/options/*.json
 include src/gemseo/core/*.json
 include src/gemseo/post/*.json
 include src/gemseo/problems/*/*.json
+include src/gemseo/problems/*/*/*.json
 include src/gemseo/problems/*/*_design_space.txt
-include src/gemseo/problems/*/*/*_design_space.txt
+include src/gemseo/problems/*/*/*_design_space*.txt
 include src/gemseo/problems/dataset/iris.data
 include src/gemseo/wrappers/icons/license.txt
 include src/gemseo/wrappers/icons/*.png
