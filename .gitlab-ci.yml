@@ -92,7 +92,9 @@ check:
     when: always
     reports:
       junit: report.xml
-      cobertura: $COVERAGE_FILE
+      coverage_report:
+        coverage_format: cobertura
+        path: $COVERAGE_FILE
   # To get the total coverage shown in gitlab UI.
   coverage: '/^TOTAL.+?(\d+\%)$/'
   rules:
