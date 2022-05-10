@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
+from typing import Collection
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -77,7 +79,7 @@ class CorrelationAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = CorrelationAnalysis(discipline, parameter_space, n_samples=1000)
+        >>> analysis = CorrelationAnalysis([discipline], parameter_space, n_samples=1000)
         >>> indices = analysis.compute_indices()
     """
 
@@ -101,14 +103,16 @@ class CorrelationAnalysis(SensitivityAnalysis):
 
     def __init__(  # noqa: D107
         self,
-        discipline: MDODiscipline,
+        disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        formulation: str = "MDF",
+        **formulation_options: Any,
     ) -> None:
         self.__correlation = None
-        super().__init__(discipline, parameter_space, n_samples)
+        super().__init__(disciplines, parameter_space, n_samples)
         self.main_method = self._SPEARMAN
 
     @SensitivityAnalysis.main_method.setter

@@ -51,5 +51,5 @@ def test_create():
         )
     factory = SensitivityAnalysisFactory()
     assert factory.create(
-        "MorrisAnalysis", discipline, space, n_samples=None, n_replicates=5
+        "MorrisAnalysis", (discipline,), space, n_samples=None, n_replicates=5
     )

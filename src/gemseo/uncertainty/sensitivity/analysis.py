@@ -33,6 +33,8 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
+from typing import Collection
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -54,6 +56,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.dataset import Dataset
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
@@ -95,68 +98,123 @@ class SensitivityAnalysis(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
+        disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
-        n_samples: int | None,
+        n_samples: int | None = None,
+        output_names: Iterable[str] = None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
+        formulation: str = "MDF",
+        **formulation_options: Any,
     ) -> None:
         """# noqa: D205,D212,D415
         Args:
-            discipline: A discipline.
+            disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
             n_samples: A number of samples.
-                If None, the number of samples is computed by the algorithm.
+                If ``None``, the number of samples is computed by the algorithm.
+            output_names: The disciplines' outputs to be considered for the analysis.
+                If ``None``, use all the outputs.
             algo: The name of the DOE algorithm.
-                If None, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
+                If ``None``, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
             algo_options: The options of the DOE algorithm.
+            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            **formulation_options: The options of the :class:`.MDOFormulation`.
         """
+        disciplines = list(disciplines)
+
         self._algo_name = algo or self.DEFAULT_DRIVER
-        self.default_output = list(discipline.get_output_data_names())
+        self.default_output = output_names or get_all_outputs(disciplines)
         algo_options = algo_options or {}
-        self.dataset = self.__sample_discipline(
-            discipline, parameter_space, n_samples, **algo_options
-        )
+        formulation_options = formulation_options or {}
+
+        self.dataset = self.__sample_disciplines(
+            disciplines,
+            parameter_space,
+            n_samples,
+            algo_options,
+            formulation,
+            **formulation_options,
+        ).export_to_dataset(opt_naming=False)
+
         self._main_method = self.__class__.__name__
         default_name = FilePathManager.to_snake_case(self.__class__.__name__)
         self._file_path_manager = FilePathManager(
             FileType.FIGURE, default_name=default_name
         )
 
-    def __sample_discipline(
+    def __sample_disciplines(
         self,
-        discipline: MDODiscipline,
+        disciplines: Sequence[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int | None,
-        **options: DOELibraryOptionType,
-    ) -> Dataset:
-        """Sample the discipline and return the dataset.
+        algo_options: Mapping[str, DOELibraryOptionType],
+        formulation: str,
+        **formulation_options: Any,
+    ) -> DOEScenario:
+        """Sample the disciplines and return the scenario after evaluation.
 
         Args:
-            discipline: A discipline.
+            disciplines: The disciplines to sample.
             parameter_space: A parameter space.
             n_samples: A number of samples.
-                If None, the number of samples is computed by the algorithm.
-            **options: The options for the DOE algorithm.
+                If ``None``, the number of samples is computed by the algorithm.
+            algo_options: The options for the DOE algorithm.
+            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            **formulation_options: The options of the :class:`.MDOFormulation`.
 
         Returns:
-            The evaluations of the discipline.
+            The DOE scenario after evaluation.
         """
-        objective_name = self.default_output[0]
-        scenario = DOEScenario(
-            [discipline], "DisciplinaryOpt", objective_name, parameter_space
+        scenario = self._create_scenario(
+            disciplines,
+            self.default_output[0],
+            formulation,
+            formulation_options,
+            parameter_space,
         )
-        for output_name in discipline.get_output_data_names():
-            if output_name != objective_name:
-                scenario.add_observable(output_name)
+
         scenario.execute(
             {
                 "algo": self._algo_name,
                 "n_samples": n_samples,
-                "algo_options": options,
+                "algo_options": algo_options,
             }
         )
-        return scenario.export_to_dataset(opt_naming=False)
+        return scenario
+
+    def _create_scenario(
+        self,
+        disciplines: Iterable[MDODiscipline],
+        objective_name: str,
+        formulation: str,
+        formulation_options: Mapping[str, Any],
+        parameter_space: ParameterSpace,
+    ) -> DOEScenario:
+        """Create a DOE scenario to sample the disciplines.
+
+        Args:
+            disciplines: The disciplines to sample.
+            objective_name: The name of the objective for the DOE.
+            formulation: The name of the :class:`.MDOFormulation` to sample the disciplines.
+            formulation_options: The options of the :class:`.MDOFormulation`.
+            parameter_space: A parameter space.
+
+        Returns:
+            The DOE scenario to be used to sample the disciplines.
+        """
+        scenario = DOEScenario(
+            disciplines,
+            formulation,
+            objective_name,
+            parameter_space,
+            **formulation_options,
+        )
+        for discipline in disciplines:
+            for output_name in discipline.get_output_data_names():
+                if output_name != objective_name:
+                    scenario.add_observable(output_name)
+        return scenario
 
     @property
     def inputs_names(self) -> list[str]:

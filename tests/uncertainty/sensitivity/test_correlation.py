@@ -31,7 +31,7 @@ def test_correlation(tmp_path):
     for name in varnames:
         space.add_random_variable(name, "OTNormalDistribution")
 
-    correlation = CorrelationAnalysis(discipline, space, 100)
+    correlation = CorrelationAnalysis([discipline], space, 100)
     correlation.compute_indices()
     indices = correlation.indices
     assert set(indices.keys()) == set(correlation._ALGORITHMS.keys())
@@ -61,10 +61,10 @@ def test_correlation_outputs(tmp_path):
     for variable in varnames:
         space.add_random_variable(variable, "OTUniformDistribution")
 
-    correlation = CorrelationAnalysis(discipline, space, 100)
+    correlation = CorrelationAnalysis([discipline], space, 100)
     correlation.compute_indices()
     assert {"y1", "y2"} == set(correlation.main_indices.keys())
 
-    correlation = CorrelationAnalysis(discipline, space, 100)
+    correlation = CorrelationAnalysis([discipline], space, 100)
     correlation.compute_indices("y1")
     assert {"y1"} == set(correlation.main_indices.keys())

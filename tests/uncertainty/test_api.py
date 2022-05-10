@@ -57,11 +57,11 @@ def test_create_sensitivity():
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
     assert create_sensitivity_analysis(
-        "MorrisAnalysis", discipline, space, n_samples=None, n_replicates=5
+        "MorrisAnalysis", [discipline], space, n_samples=None, n_replicates=5
     )
 
     assert create_sensitivity_analysis(
-        "morris", discipline, space, n_samples=None, n_replicates=5
+        "morris", [discipline], space, n_samples=None, n_replicates=5
     )
 
 
