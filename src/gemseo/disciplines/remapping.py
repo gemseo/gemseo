@@ -17,7 +17,6 @@
 """A discipline whose inputs and outputs map to those of another."""
 from __future__ import annotations
 
-from functools import singledispatchmethod
 from typing import Dict
 from typing import Iterable
 from typing import Tuple
@@ -27,6 +26,7 @@ from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.python_compatibility import singledispatchmethod
 
 Data = Dict[str, ndarray]
 Indices = Tuple[str, Union[int, Iterable[int]]]
