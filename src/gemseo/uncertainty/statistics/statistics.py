@@ -57,6 +57,8 @@ for the different variables:
   which is the mean squared variation around the mean value,
 - :meth:`.Statistics.compute_standard_deviation`: the standard deviation,
   which is the square root of the variance,
+- :meth:`.Statistics.compute_variation_coefficient`: the coefficient of variation,
+  which is the standard deviation normalized by the mean,
 - :meth:`.Statistics.compute_quantile`: the quantile associated with a probability,
   which is the cut point diving the range into a first continuous interval
   with this given probability and a second continuous interval
@@ -374,6 +376,21 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         raise NotImplementedError
 
     SYMBOLS["standard_deviation"] = "StD"
+
+    def compute_variation_coefficient(self) -> dict[str, ndarray]:
+        r"""Compute the coefficient of variation :math:`CoV[X]`.
+
+        This is the standard deviation normalized by the expectation:
+        :math:`CoV[X]=\mathbb{E}[S]/\mathbb{E}[X]`.
+
+        Returns:
+            The coefficient of variation of the different variables.
+        """
+        mean = self.compute_mean()
+        standard_deviation = self.compute_standard_deviation()
+        return {k: standard_deviation[k] / mean[k] for k in mean}
+
+    SYMBOLS["variation_coefficient"] = "CoV"
 
     def compute_variance(self) -> dict[str, ndarray]:
         r"""Compute the variance :math:`\mathbb{V}[X]`.
