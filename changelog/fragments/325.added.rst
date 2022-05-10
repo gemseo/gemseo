@@ -1,0 +1,1 @@
+``Statistics`` can compute the coefficient of variation.
