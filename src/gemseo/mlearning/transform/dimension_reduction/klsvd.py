@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Karhunen-Loève SVD algorithm to reduce the dimension of a variable.
 
-The :class:`.KLSVD` class wraps the KarhunenLoeveSVDAlgorithm
+The :class:`.KLSVD` class wraps the ``KarhunenLoeveSVDAlgorithm``
 `from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
 _generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
 """
@@ -38,6 +38,7 @@ from openturns import Mesh
 from openturns import Point
 from openturns import ProcessSample
 from openturns import RankMCovarianceModel
+from openturns import ResourceMap
 from openturns import Sample
 
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
@@ -50,18 +51,43 @@ from gemseo.utils.compatibility.openturns import get_eigenvalues
 class KLSVD(DimensionReduction):
     """The Karhunen-Loève SVD Algorithm."""
 
+    __HALKO2010 = "halko2010"
+    __HALKO2011 = "halko2011"
+    __RANDOM_SVD_MAXIMUM_RANK = "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"
+    __RANDOM_SVD_VARIANT = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"
+    __USE_RANDOM_SVD = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"
+
     def __init__(
         self,
         mesh: ndarray,
         n_components: int | None = None,
         name: str = "KLSVD",
+        use_random_svd: bool = False,
+        n_singular_values: int | None = None,
+        use_halko2010: bool = True,
     ) -> None:
         """
         Args:
             mesh: A mesh passed as a 2D NumPy array
                 whose rows are nodes and columns are the dimensions of the nodes.
+            use_random_svd: Whether to use a stochastic algorithm
+                to compute the SVD decomposition;
+                if so,
+                the number of singular values has to be fixed a priori.
+            n_singular_values: The number of singular values to compute
+                when ``use_random_svd`` is ``True``;
+                if ``None``, use the default value implemented by OpenTURNS.
+            use_halko2010: Whether to use the *halko2010* algorithm
+                or the *halko2011* one.
         """
-        super().__init__(name, mesh=mesh, n_components=n_components)
+        super().__init__(
+            name,
+            mesh=mesh,
+            n_components=n_components,
+            use_random_svd=use_random_svd,
+            n_singular_values=n_singular_values,
+            use_halko2010=use_halko2010,
+        )
         self.algo = None
         self.ot_mesh = Mesh(Sample(mesh))
 
@@ -75,10 +101,15 @@ class KLSVD(DimensionReduction):
         data: ndarray,
         *args: TransformerFitOptionType,
     ) -> None:
-        sample = self._get_process_sample(data)
-        mesh_size = self.ot_mesh.getVerticesNumber()
-        klsvd = KarhunenLoeveSVDAlgorithm(sample, [1] * mesh_size, 0.0, True)
+        self.__update_resource_map()
+        klsvd = KarhunenLoeveSVDAlgorithm(
+            self._get_process_sample(data),
+            [1] * self.ot_mesh.getVerticesNumber(),
+            0.0,
+            True,
+        )
         klsvd.run()
+
         result = klsvd.getResult()
         if self.n_components is not None and self.n_components < data.shape[1]:
             result = self._truncate_kl_result(result)
@@ -86,22 +117,36 @@ class KLSVD(DimensionReduction):
         self.algo = result
         self.parameters["n_components"] = len(self.algo.getEigenvalues())
 
+    def __update_resource_map(self) -> None:
+        """Update OpenTURNS constants by using its ResourceMap."""
+        use_random_svd = self.parameters["use_random_svd"]
+        ResourceMap.SetAsBool(self.__USE_RANDOM_SVD, use_random_svd)
+        n_singular_values = self.parameters["n_singular_values"]
+        if n_singular_values:
+            ResourceMap.SetAsUnsignedInteger(
+                self.__RANDOM_SVD_MAXIMUM_RANK, n_singular_values
+            )
+        ResourceMap.SetAsString(
+            self.__RANDOM_SVD_VARIANT,
+            self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
+        )
+
     def transform(
         self,
         data: ndarray,
     ) -> ndarray:
-        sample = self._get_process_sample(data)
-        return array(self.algo.project(sample))
+        return array(self.algo.project(self._get_process_sample(data)))
 
     def inverse_transform(
         self,
         data: ndarray,
     ) -> ndarray:
-        pred = []
-        for coefficients in data:
-            coeff = Point(list(coefficients))
-            pred.append(list(self.algo.liftAsSample(coeff)))
-        return array(pred)[:, :, 0]
+        return array(
+            [
+                list(self.algo.liftAsSample(Point(list(coefficients))))
+                for coefficients in data
+            ]
+        )[:, :, 0]
 
     @property
     def output_dimension(self) -> int:
@@ -111,8 +156,7 @@ class KLSVD(DimensionReduction):
     @property
     def components(self) -> ndarray:
         """The principal components."""
-        tmp = array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
-        return tmp
+        return array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
 
     @property
     def eigenvalues(self) -> ndarray:
@@ -134,8 +178,7 @@ class KLSVD(DimensionReduction):
         datum = [[x_i] for x_i in data[0, :]]
         sample = ProcessSample(1, Field(self.ot_mesh, datum))
         for datum in data[1:, :]:
-            datum = [[x_i] for x_i in datum]
-            sample.add(Field(self.ot_mesh, datum))
+            sample.add(Field(self.ot_mesh, [[x_i] for x_i in datum]))
         return sample
 
     def _truncate_kl_result(
@@ -155,35 +198,32 @@ class KLSVD(DimensionReduction):
 
         # Truncate eigenvalues
         eigenvalues = get_eigenvalues(result)
-        full_n_modes = eigenvalues.getDimension()
-        n_modes = min(self.n_components, full_n_modes)
+        n_modes = min(self.n_components, eigenvalues.getDimension())
         trunc_eigenvalues = eigenvalues[:n_modes]
         trunc_thresh = eigenvalues[n_modes - 1] / eigenvalues[0]
+
         # Truncate modes
-        modes = result.getModes()
         trunc_modes = FunctionCollection()
-        for i in range(n_modes):
-            trunc_modes.add(modes[i])
+        for mode in result.getModes():
+            trunc_modes.add(mode)
+
         # Truncate process sample modes
-        modes_as_proc_samp = result.getModesAsProcessSample()
-        datum = list(modes_as_proc_samp[0])
-        trunc_modes_as_proc_samp = ProcessSample(1, Field(self.ot_mesh, datum))
-        for i in range(1, n_modes):
-            trunc_modes_as_proc_samp.add(modes_as_proc_samp[i])
+        modes = result.getModesAsProcessSample()
+        trunc_modes_as_proc_samp = ProcessSample(1, Field(self.ot_mesh, list(modes[0])))
+        for mode in modes[1:]:
+            trunc_modes_as_proc_samp.add(mode)
+
         # Truncate projection matrix
         proj_matrix = result.getProjectionMatrix()
-        n_cols = proj_matrix.getNbColumns()
-        trunc_proj_mat = Matrix(n_modes, n_cols)
-        for i in range(n_modes):
-            trunc_proj_mat[i, :] = proj_matrix[i, :]
+        trunc_proj_mat = Matrix(n_modes, proj_matrix.getNbColumns())
+        trunc_proj_mat[0:n_modes, :] = proj_matrix[0:n_modes, :]
+
         # Truncate covariance model
-        trunc_cov_model = RankMCovarianceModel(trunc_eigenvalues, Basis(trunc_modes))
-        result = KarhunenLoeveResult(
-            trunc_cov_model,
+        return KarhunenLoeveResult(
+            RankMCovarianceModel(trunc_eigenvalues, Basis(trunc_modes)),
             trunc_thresh,
             trunc_eigenvalues,
             trunc_modes,
             trunc_modes_as_proc_samp,
             trunc_proj_mat,
         )
-        return result

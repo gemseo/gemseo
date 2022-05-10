@@ -55,7 +55,7 @@ class Transformer(metaclass=GoogleDocstringInheritanceMeta):
     def __init__(
         self,
         name: str = "Transformer",
-        **parameters: float | int | str | bool | None,
+        **parameters: bool | int | float | ndarray | str | None,
     ) -> None:
         """
         Args:

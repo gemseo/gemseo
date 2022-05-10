@@ -42,7 +42,7 @@ class DimensionReduction(Transformer):
         self,
         name: str = "DimensionReduction",
         n_components: int | None = None,
-        **parameters: float | int | str | bool | None,
+        **parameters: bool | int | float | ndarray | str | None,
     ) -> None:
         """
         Args:
