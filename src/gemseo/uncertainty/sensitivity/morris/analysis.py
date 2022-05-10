@@ -71,6 +71,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
+from typing import Collection
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -79,13 +81,14 @@ import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.doe_lib import DOELibraryOptionType
 from gemseo.algos.doe.lib_pydoe import PyDOE
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import MDODiscipline
+from gemseo.disciplines.utils import get_all_outputs
 from gemseo.uncertainty.sensitivity.analysis import IndicesType
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.uncertainty.sensitivity.morris.oat import OATSensitivity
+from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -201,7 +204,7 @@ class MorrisAnalysis(SensitivityAnalysis):
         ... )
         >>>
         >>> analysis = MorrisAnalysis(
-        ...     discipline, parameter_space, n_samples=None, n_replicates=5
+        ...     [discipline], parameter_space, n_samples=None, n_replicates=5
         ... )
         >>> indices = analysis.compute_indices()
     """
@@ -210,13 +213,15 @@ class MorrisAnalysis(SensitivityAnalysis):
 
     def __init__(
         self,
-        discipline: MDODiscipline,
-        parameter_space: DesignSpace,
+        disciplines: Collection[MDODiscipline],
+        parameter_space: ParameterSpace,
         n_samples: int | None,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
         n_replicates: int = 5,
         step: float = 0.05,
+        formulation: str = "MDF",
+        **formulation_options: Any,
     ) -> None:
         r"""# noqa: D205,D212,D415
         Args:
@@ -226,7 +231,13 @@ class MorrisAnalysis(SensitivityAnalysis):
                 such that :math:`r(d+1)\leq` ``n_samples``
                 and :math:`r(d+1)` is the number of samples actually carried out.
             step: The finite difference step of the OAT method.
+
+        Raises:
+            ValueError: If at least one input dimension is not equal to 1.
         """
+        if parameter_space.dimension != len(parameter_space.variables_names):
+            raise ValueError("Each input dimension must be equal to 1.")
+
         self.mu_ = None
         self.mu_star = None
         self.sigma = None
@@ -238,17 +249,24 @@ class MorrisAnalysis(SensitivityAnalysis):
             self.__n_replicates = n_replicates
         else:
             self.__n_replicates = n_samples // (parameter_space.dimension + 1)
-        self.__outputs = discipline.get_output_data_names()
 
-        if parameter_space.dimension != len(parameter_space.variables_names):
-            raise ValueError("Each input dimension must be equal to 1.")
+        disciplines = list(disciplines)
+        self.__outputs = get_all_outputs(disciplines)
 
-        self.__diff_discipline = OATSensitivity(discipline, parameter_space, step)
+        scenario = self._create_scenario(
+            disciplines,
+            get_all_outputs(disciplines)[0],
+            formulation,
+            formulation_options,
+            parameter_space,
+        )
+
+        self.__diff_discipline = _OATSensitivity(scenario, parameter_space, step)
         super().__init__(
-            self.__diff_discipline, parameter_space, n_replicates, algo, algo_options
+            [self.__diff_discipline], parameter_space, n_replicates, algo, algo_options
         )
         self._main_method = "Morris(mu*)"
-        self.default_output = list(discipline.get_output_data_names())
+        self.default_output = get_all_outputs(disciplines)
 
     @property
     def outputs_bounds(self) -> dict[str, list[float]]:

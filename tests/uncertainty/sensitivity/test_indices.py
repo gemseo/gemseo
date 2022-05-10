@@ -188,9 +188,9 @@ def test_plot_comparison(discipline, parameter_space):
         discipline: A discipline of interest.
         parameter_space: The parameter space related to this discipline.
     """
-    spearman = CorrelationAnalysis(discipline, parameter_space, 10)
+    spearman = CorrelationAnalysis([discipline], parameter_space, 10)
     spearman.compute_indices()
-    pearson = CorrelationAnalysis(discipline, parameter_space, 10)
+    pearson = CorrelationAnalysis([discipline], parameter_space, 10)
     pearson.main_method = pearson._PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(spearman, "out", save=False, show=False, title="foo")
@@ -247,7 +247,7 @@ def ishigami() -> SobolAnalysis:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol_analysis = SobolAnalysis(Ishigami1D(), space, 100)
+    sobol_analysis = SobolAnalysis([Ishigami1D()], space, 100)
     sobol_analysis.main_method = "total"
     sobol_analysis.compute_indices()
     return sobol_analysis
@@ -336,3 +336,21 @@ def test_standardize_indices():
         ],
     }
     assert standardized_indices == expected_standardized_indices
+
+
+def test_multiple_disciplines(parameter_space):
+    """Test a SensitivityAnalysis with multiple disciplines.
+
+    Args:
+        parameter_space: A parameter space for the analysis.
+    """
+    expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
+    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+
+    sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+
+    assert sensitivity_analysis.dataset.get_names("inputs") == ["x1", "x2", "x3"]
+    assert sensitivity_analysis.dataset.get_names("outputs") == ["f", "y1", "y2"]
+    assert sensitivity_analysis.dataset.n_samples == 5

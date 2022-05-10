@@ -20,6 +20,7 @@
 """The API for uncertainty quantification and management."""
 from __future__ import annotations
 
+from typing import Collection
 from typing import Iterable
 from typing import Sequence
 
@@ -179,7 +180,7 @@ def create_statistics(
 
 def create_sensitivity_analysis(
     analysis: str,
-    discipline: MDODiscipline,
+    disciplines: Collection[MDODiscipline],
     parameter_space: ParameterSpace,
     **options,
 ) -> SensitivityAnalysis:
@@ -187,7 +188,7 @@ def create_sensitivity_analysis(
 
     Args:
         analysis: The name of a sensitivity analysis class.
-        discipline: A discipline.
+        disciplines: The disciplines.
         parameter_space: A parameter space.
         **options: The DOE algorithm options.
 
@@ -212,7 +213,7 @@ def create_sensitivity_analysis(
         ... )
         >>>
         >>> analysis = create_sensitivity_analysis(
-        ...     "CorrelationIndices", discipline, parameter_space, n_samples=1000
+        ...     "CorrelationIndices", [discipline], parameter_space, n_samples=1000
         ... )
         >>> indices = analysis.compute_indices()
     """
@@ -225,4 +226,4 @@ def create_sensitivity_analysis(
         name += "Analysis"
     name = name[0].upper() + name[1:]
 
-    return factory.create(name, discipline, parameter_space, **options)
+    return factory.create(name, disciplines, parameter_space, **options)

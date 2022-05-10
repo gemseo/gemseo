@@ -99,6 +99,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Collection
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
@@ -147,7 +148,7 @@ class SobolAnalysis(SensitivityAnalysis):
         ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
         ... )
         >>>
-        >>> analysis = SobolAnalysis(discipline, parameter_space, n_samples=10000)
+        >>> analysis = SobolAnalysis([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
     """
 
@@ -167,14 +168,14 @@ class SobolAnalysis(SensitivityAnalysis):
 
     def __init__(  # noqa: D107,D205,D212,D415
         self,
-        discipline: MDODiscipline,
+        disciplines: Collection[MDODiscipline],
         parameter_space: ParameterSpace,
         n_samples: int,
         algo: str | None = None,
         algo_options: Mapping[str, DOELibraryOptionType] | None = None,
     ) -> None:
         self.__sobol = None
-        super().__init__(discipline, parameter_space, n_samples)
+        super().__init__(disciplines, parameter_space, n_samples)
         self.main_method = self._FIRST
 
     @SensitivityAnalysis.main_method.setter

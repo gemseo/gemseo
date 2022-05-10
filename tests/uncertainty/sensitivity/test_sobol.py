@@ -43,7 +43,7 @@ def test_sobol(tmp_path):
             name, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol = SobolAnalysis(discipline, space, 100)
+    sobol = SobolAnalysis([discipline], space, 100)
     assert sobol.main_method == sobol._FIRST_METHOD
     sobol.compute_indices()
     indices = sobol.indices
@@ -111,10 +111,10 @@ def test_sobol_outputs(tmp_path):
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol = SobolAnalysis(discipline, space, 100)
+    sobol = SobolAnalysis([discipline], space, 100)
     sobol.compute_indices()
     assert {"y1", "y2"} == set(sobol.main_indices.keys())
 
-    sobol = SobolAnalysis(discipline, space, 100)
+    sobol = SobolAnalysis([discipline], space, 100)
     sobol.compute_indices("y1")
     assert {"y1"} == set(sobol.main_indices.keys())
