@@ -43,29 +43,28 @@ def dataset() -> Dataset:
 
 def test_constructor():
     """Test factory constructor."""
-    factory = RegressionModelFactory()
-    assert factory.models == [
-        "GaussianProcessRegression",
-        "LinearRegression",
-        "MixtureOfExperts",
-        "PCERegression",
-        "PolynomialRegression",
-        "RBFRegression",
+    assert {
+        "GaussianProcessRegressor",
+        "LinearRegressor",
+        "MOERegressor",
+        "PCERegressor",
+        "PolynomialRegressor",
+        "RBFRegressor",
         "RandomForestRegressor",
-    ]
+    } <= set(RegressionModelFactory().models)
 
 
 def test_create(dataset):
     """Test the creation of a model from data."""
     factory = RegressionModelFactory()
-    linreg = factory.create("LinearRegression", data=dataset)
+    linreg = factory.create("LinearRegressor", data=dataset)
     assert hasattr(linreg, "parameters")
 
 
 def test_load(dataset, tmp_path):
     """Test the loading of a model from data."""
     factory = RegressionModelFactory()
-    linreg = factory.create("LinearRegression", data=dataset)
+    linreg = factory.create("LinearRegressor", data=dataset)
     linreg.learn()
     dirname = linreg.save(path=str(tmp_path))
     loaded_linreg = factory.load(dirname)
@@ -75,11 +74,11 @@ def test_load(dataset, tmp_path):
 def test_available_models():
     """Test the getter of available regression models."""
     factory = RegressionModelFactory()
-    assert "LinearRegression" in factory.models
+    assert "LinearRegressor" in factory.models
 
 
 def test_is_available():
     """Test the existence of a regression model."""
     factory = RegressionModelFactory()
-    assert factory.is_available("LinearRegression")
+    assert factory.is_available("LinearRegressor")
     assert not factory.is_available("Dummy")

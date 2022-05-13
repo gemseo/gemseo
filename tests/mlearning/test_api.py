@@ -54,12 +54,12 @@ from numpy import ndarray
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [
-    "LinearRegression",
-    "PolynomialRegression",
-    "GaussianProcessRegression",
-    "PCERegression",
-    "RBFRegression",
-    "MixtureOfExperts",
+    "LinearRegressor",
+    "PolynomialRegressor",
+    "GaussianProcessRegressor",
+    "PCERegressor",
+    "RBFRegressor",
+    "MOERegressor",
 ]
 AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
 AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
@@ -137,7 +137,7 @@ def test_get_clustering_models():
 
 def test_create_mlearning_model(dataset, classification_data, cluster_data):
     """Test creation of model."""
-    model = create_mlearning_model("LinearRegression", dataset)
+    model = create_mlearning_model("LinearRegressor", dataset)
     assert model.algo is not None
     data, variables, groups = classification_data
     dataset = create_dataset("dataset_name", data, variables, groups=groups)
@@ -151,7 +151,7 @@ def test_create_mlearning_model(dataset, classification_data, cluster_data):
 
 def test_create_regression_model(dataset):
     """Test creation of regression model."""
-    model = create_regression_model("LinearRegression", dataset)
+    model = create_regression_model("LinearRegressor", dataset)
     assert model.algo is not None
 
     probability_space = ParameterSpace()
@@ -162,7 +162,7 @@ def test_create_regression_model(dataset):
         "x_2", "OTUniformDistribution", minimum=0, maximum=1
     )
     model = create_regression_model(
-        "PCERegression",
+        "PCERegressor",
         dataset,
         probability_space=probability_space,
         transformer={"inputs": MinMaxScaler()},
@@ -188,7 +188,7 @@ def test_create_clustering_model(cluster_data):
 
 def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_path):
     """Test import of model."""
-    model = create_mlearning_model("LinearRegression", dataset)
+    model = create_mlearning_model("LinearRegressor", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
     loaded_model = import_mlearning_model(dirname)
@@ -211,7 +211,7 @@ def test_import_mlearning_model(dataset, classification_data, cluster_data, tmp_
 
 def test_import_regression_model(dataset, tmp_path):
     """Test import of regression model."""
-    model = create_regression_model("LinearRegression", dataset)
+    model = create_regression_model("LinearRegressor", dataset)
     model.learn()
     dirname = model.save(path=str(tmp_path))
     loaded_model = import_regression_model(dirname)
@@ -242,7 +242,7 @@ def test_import_clustering_model(cluster_data, tmp_path):
 
 def test_get_mlearning_options():
     """Test correct retrieval of model options."""
-    properties = get_mlearning_options("LinearRegression")["properties"]
+    properties = get_mlearning_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
     properties = get_mlearning_options("KNNClassifier")["properties"]
@@ -255,7 +255,7 @@ def test_get_mlearning_options():
 
 def test_get_regression_options():
     """Test correct retrieval of regression model options."""
-    properties = get_regression_options("LinearRegression")["properties"]
+    properties = get_regression_options("LinearRegressor")["properties"]
     assert "fit_intercept" in properties
     assert "Dummy" not in properties
 

@@ -89,7 +89,7 @@ dataset_test = create_dataset("synthetic_data", data[test], variables, groups=gr
 ###############################################################################
 # Build regression model
 # ----------------------
-model = create_regression_model("PolynomialRegression", dataset, degree=max_pow)
+model = create_regression_model("PolynomialRegressor", dataset, degree=max_pow)
 print(model)
 
 ###############################################################################
@@ -136,7 +136,7 @@ plt.show()
 powers = [1, 2, 3, 4, 5, 7]
 test_errors = []
 for power in powers:
-    model = create_regression_model("PolynomialRegression", dataset, degree=power)
+    model = create_regression_model("PolynomialRegressor", dataset, degree=power)
     measure = MSEMeasure(model)
 
     test_mse = measure.evaluate("test", test_data=dataset_test)

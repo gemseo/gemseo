@@ -31,7 +31,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.rbf import RBFRegression
+from gemseo.mlearning.regression.rbf import RBFRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.scaler.scaler import Scaler
@@ -151,7 +151,7 @@ def test_regression_model():
 def test_linreg(dataset, transformer, fit_intercept):
     """Test linear regression Jacobians."""
     discipline = SurrogateDiscipline(
-        "LinearRegression",
+        "LinearRegressor",
         data=dataset,
         transformer=transformer,
         fit_intercept=fit_intercept,
@@ -165,7 +165,7 @@ def test_linreg(dataset, transformer, fit_intercept):
 def test_polyreg(dataset, transformer, fit_intercept, degree):
     """Test polynomial regression Jacobians."""
     discipline = SurrogateDiscipline(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         data=dataset,
         transformer=transformer,
         fit_intercept=fit_intercept,
@@ -183,7 +183,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", RBFRegression.AVAILABLE_FUNCTIONS + [_r3])
+@pytest.mark.parametrize("function", RBFRegressor.AVAILABLE_FUNCTIONS + [_r3])
 def test_rbf(dataset, transformer, function):
     """Test polynomial regression Jacobians."""
     if function is _r3:
@@ -192,7 +192,7 @@ def test_rbf(dataset, transformer, function):
         der_func = None
 
     discipline = SurrogateDiscipline(
-        "RBFRegression",
+        "RBFRegressor",
         data=dataset,
         transformer=transformer,
         function=function,
@@ -209,6 +209,6 @@ def test_pce(dataset):
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(
-        "PCERegression", data=dataset, transformer=None, probability_space=space
+        "PCERegressor", data=dataset, transformer=None, probability_space=space
     )
     discipline.check_jacobian()

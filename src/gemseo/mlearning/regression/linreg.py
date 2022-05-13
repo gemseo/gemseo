@@ -17,10 +17,10 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The linear model algorithm for regression.
+r"""Linear regression model.
 
-The linear regression surrogate discipline expresses the model output
-as a weighted sum of the model inputs:
+The linear regression model expresses the output variables
+as a weighted sum of the input ones:
 
 .. math::
 
@@ -28,8 +28,8 @@ as a weighted sum of the model inputs:
     + \alpha \left( \lambda \|w\|_2 + (1-\lambda) \|w\|_1 \right),
 
 where the coefficients :math:`(w_1, w_2, ..., w_d)` and the intercept
-:math:`w_0` are estimated by least square regression. They are are easily
-accessible via the arguments *coefficients* and *intercept*.
+:math:`w_0` are estimated by least square regression. They are easily
+accessible via the arguments :attr:`.coefficients` and :attr:`.intercept`.
 
 The penalty level :math:`\alpha` is a non-negative parameter intended to
 prevent overfitting, while the penalty ratio :math:`\lambda\in [0, 1]`
@@ -37,17 +37,15 @@ expresses the ratio between :math:`\ell_2`- and :math:`\ell_1`-regularization.
 When :math:`\lambda=1`, there is no :math:`\ell_1`-regularization, and a Ridge
 regression is performed. When :math:`\lambda=0`, there is no
 :math:`\ell_2`-regularization, and a Lasso regression is performed. For
-:math:`\lambda` between 0 and 1, an elastic net regression is performed.
+:math:`\lambda` between 0 and 1, an Elastic Net regression is performed.
 
 One may also choose not to penalize the regression at all, by setting
 :math:`\alpha=0`. In this case, a simple least squares regression is performed.
 
-This concept is implemented through the :class:`.LinearRegression` class which
-inherits from the :class:`.MLRegressionAlgo` class.
-
 Dependence
 ----------
-The linear model relies on the LinearRegression, Ridge, Lasso and ElasticNet
+The linear model relies on the ``LinearRegression``,
+``Ridge``, ``Lasso`` and ``ElasticNet``
 classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 linear_model.html>`_.
 """
@@ -78,8 +76,8 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 LOGGER = logging.getLogger(__name__)
 
 
-class LinearRegression(MLRegressionAlgo):
-    """Linear regression."""
+class LinearRegressor(MLRegressionAlgo):
+    """Linear regression model."""
 
     LIBRARY = "scikit-learn"
     ABBR = "LinReg"

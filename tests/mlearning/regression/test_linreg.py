@@ -24,7 +24,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transform.dimension_reduction.pca import PCA
 from gemseo.mlearning.transform.dimension_reduction.pls import PLS
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
@@ -51,17 +51,17 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture
-def model(dataset) -> LinearRegression:
-    """A trained LinearRegression."""
-    linreg = LinearRegression(dataset)
+def model(dataset) -> LinearRegressor:
+    """A trained LinearRegressor."""
+    linreg = LinearRegressor(dataset)
     linreg.learn()
     return linreg
 
 
 @pytest.fixture
-def model_with_transform(dataset) -> LinearRegression:
-    """A trained LinearRegression with inputs and outputs scaling."""
-    linreg = LinearRegression(
+def model_with_transform(dataset) -> LinearRegressor:
+    """A trained LinearRegressor with inputs and outputs scaling."""
+    linreg = LinearRegressor(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
     linreg.learn()
@@ -70,7 +70,7 @@ def model_with_transform(dataset) -> LinearRegression:
 
 def test_constructor(dataset):
     """Test construction."""
-    model_ = LinearRegression(dataset)
+    model_ = LinearRegressor(dataset)
     assert model_.algo is not None
 
 
@@ -80,7 +80,7 @@ def test_constructor(dataset):
 )
 def test_constructor_penalty(dataset, l2_penalty_ratio, type):
     """Test construction."""
-    model_ = LinearRegression(
+    model_ = LinearRegressor(
         dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
     )
     assert isinstance(model_.algo, type)
@@ -90,7 +90,7 @@ def test_constructor_penalty(dataset, l2_penalty_ratio, type):
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = LinearRegression(dataset)
+    model_ = LinearRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
@@ -111,7 +111,7 @@ def test_coefficients_with_transform(dataset, model_with_transform):
     model_with_transform.get_coefficients(as_dict=False)
     model_with_transform.get_coefficients(as_dict=True)
 
-    model_with_pca = LinearRegression(
+    model_with_pca = LinearRegressor(
         dataset, transformer={dataset.OUTPUT_GROUP: PCA(n_components=1)}
     )
     model_with_pca.learn()
@@ -136,7 +136,7 @@ def test_intercept(model):
 
 def test_intercept_with_output_dimension_change(dataset):
     """Verify that an error is raised."""
-    model = LinearRegression(dataset, transformer={"outputs": PCA(n_components=2)})
+    model = LinearRegressor(dataset, transformer={"outputs": PCA(n_components=2)})
     model.learn()
     with pytest.raises(
         ValueError,
@@ -185,7 +185,7 @@ def test_prediction_with_transform(model_with_transform):
 
 def test_prediction_with_pls(dataset):
     """Test prediction."""
-    model = LinearRegression(dataset, transformer={"inputs": PLS(n_components=2)})
+    model = LinearRegressor(dataset, transformer={"inputs": PLS(n_components=2)})
     model.learn()
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
@@ -204,7 +204,7 @@ def test_prediction_with_pls(dataset):
 
 def test_prediction_with_pls_failure(dataset):
     """Test that PLS does not work with output group."""
-    model = LinearRegression(dataset, transformer={"outputs": PLS(n_components=2)})
+    model = LinearRegressor(dataset, transformer={"outputs": PLS(n_components=2)})
     with pytest.raises(
         NotImplementedError,
         match=(

@@ -54,13 +54,13 @@ dataset.add_variable("y", y[:, None], Dataset.OUTPUT_GROUP, cache_as_input=False
 # scheme (5 folds).
 selector = MLAlgoSelection(dataset, MSEMeasure, eval_method="kfolds", n_folds=5)
 selector.add_candidate(
-    "LinearRegression",
+    "LinearRegressor",
     penalty_level=[0, 0.1, 1, 10, 20],
     l2_penalty_ratio=[0, 0.5, 1],
     fit_intercept=[True],
 )
 selector.add_candidate(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     degree=[2, 3, 4, 10],
     penalty_level=[0, 0.1, 1, 10],
     l2_penalty_ratio=[1],
@@ -69,7 +69,7 @@ selector.add_candidate(
 rbf_space = DesignSpace()
 rbf_space.add_variable("epsilon", 1, "float", 0.01, 0.1, 0.05)
 selector.add_candidate(
-    "RBFRegression",
+    "RBFRegressor",
     calib_space=rbf_space,
     calib_algo={"algo": "fullfact", "n_samples": 16},
     smooth=[0, 0.01, 0.1, 1, 10, 100],

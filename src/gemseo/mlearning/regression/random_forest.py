@@ -17,13 +17,13 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The random forest for regression.
+"""Random forest regression model.
 
-The random forest regression uses averaging methods on an ensemble of decision trees.
+Use an ensemble of decision trees.
 
 Dependence
 ----------
-The regression model relies on the RandomForestRegressor class
+The regression model relies on the ``RandomForestRegressor`` class
 of the `scikit-learn library <https://scikit-learn.org/stable/modules/
 generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 """

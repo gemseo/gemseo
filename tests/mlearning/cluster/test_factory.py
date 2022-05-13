@@ -64,7 +64,7 @@ def test_available_clustering_models():
     """Test the getter of available clustering models."""
     factory = ClusteringModelFactory()
     assert "KMeans" in factory.models
-    assert "LinearRegression" not in factory.models
+    assert "LinearRegressor" not in factory.models
 
 
 def test_is_available():

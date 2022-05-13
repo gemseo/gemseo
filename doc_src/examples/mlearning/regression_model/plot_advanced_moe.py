@@ -35,7 +35,7 @@ dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 
 ##############################################################################
 # For that purpose,
-# we will use a :class:`.MixtureOfExperts` in an advanced way:
+# we will use a :class:`.MOERegressor` in an advanced way:
 # we will not set the clustering, classification and regression algorithms
 # but select them according to their performance
 # from several candidates that we will provide.
@@ -48,10 +48,10 @@ dataset = load_dataset("RosenbrockDataset", opt_naming=False)
 # Initialization
 # --------------
 # First,
-# we initialize a :class:`.MixtureOfExperts` with soft classification
+# we initialize a :class:`.MOERegressor` with soft classification
 # by means of the machine learning API function
 # :meth:`~gemseo.mlearning.api.create_regression_model`.
-model = create_regression_model("MixtureOfExperts", dataset, hard=False)
+model = create_regression_model("MOERegressor", dataset, hard=False)
 
 ##############################################################################
 # Clustering
@@ -92,8 +92,8 @@ model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
 # During the learning stage, for each cluster,
 # the mixture of experts will select the regression algorithm minimizing this measure.
 model.set_regression_measure(MSEMeasure)
-model.add_regressor_candidate("LinearRegression")
-model.add_regressor_candidate("RBFRegression")
+model.add_regressor_candidate("LinearRegressor")
+model.add_regressor_candidate("RBFRegressor")
 
 ##############################################################################
 # .. note::
@@ -120,7 +120,7 @@ model.learn()
 # We can see that
 # a :class:`.KMeans` with four clusters has been selected for the clustering stage,
 # as well as a :class:`.RandomForestClassifier` for the classification stage
-# and a :class:`.RBFRegression` for each cluster.
+# and a :class:`.RBFRegressor` for each cluster.
 print(model)
 
 ##############################################################################
@@ -130,9 +130,9 @@ print(model)
 #    and depending on the complexity of the function to be approximated,
 #    one could obtain different regression models according to the clusters.
 #    For example,
-#    one could use a :class:`.PolynomialRegression` with order 2
+#    one could use a :class:`.PolynomialRegressor` with order 2
 #    on a sub-part of the input space
-#    and a :class:`.GaussianProcessRegression`
+#    and a :class:`.GaussianProcessRegressor`
 #    on another sub-part of the input space.
 #
 # Once built,
@@ -141,4 +141,4 @@ print(model)
 # .. seealso::
 #
 #    :ref:`Another example <sphx_glr_examples_mlearning_regression_model_plot_moe.py>`
-#    proposes a standard use of :class:`.MixtureOfExperts`.
+#    proposes a standard use of :class:`.MOERegressor`.

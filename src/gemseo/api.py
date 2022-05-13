@@ -349,7 +349,7 @@ def get_available_surrogates() -> list[str]:
     --------
     >>> from gemseo.api import get_available_surrogates
     >>> print(get_available_surrogates())
-    ['RBFRegression', 'GaussianProcessRegression', 'LinearRegression', 'PCERegression']
+    ['RBFRegressor', 'GaussianProcessRegressor', 'LinearRegressor', 'PCERegressor']
 
     See also
     --------

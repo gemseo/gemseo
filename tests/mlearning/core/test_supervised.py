@@ -24,7 +24,7 @@ import re
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.supervised import MLSupervisedAlgo
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
@@ -84,34 +84,34 @@ def test_notimplementederror(io_dataset):
 
 def test_learn(io_dataset):
     """Test learn."""
-    model = LinearRegression(io_dataset)
+    model = LinearRegressor(io_dataset)
     model.learn()
     reference = model.get_coefficients(False)
 
-    model = LinearRegression(io_dataset, input_names=["x_1"])
+    model = LinearRegressor(io_dataset, input_names=["x_1"])
     model.learn()
     assert not array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegression(io_dataset, input_names=["x_1", "x_2"])
+    model = LinearRegressor(io_dataset, input_names=["x_1", "x_2"])
     model.learn()
     assert array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegression(io_dataset, output_names=["y_1"])
+    model = LinearRegressor(io_dataset, output_names=["y_1"])
     model.learn()
     assert array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegression(io_dataset)
+    model = LinearRegressor(io_dataset)
     model.learn(samples=[1, 2])
     assert not array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegression(io_dataset)
+    model = LinearRegressor(io_dataset)
     model.learn(samples=list(range(10)))
     assert array_equal(model.get_coefficients(False), reference)
 
 
 def test_io_shape(io_dataset):
     """Test input output shapes."""
-    model = LinearRegression(io_dataset)
+    model = LinearRegressor(io_dataset)
     assert model.input_dimension == 3
     assert model.output_dimension == 3
 

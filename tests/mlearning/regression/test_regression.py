@@ -23,8 +23,8 @@ import re
 
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegression
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from numpy import allclose
 from numpy import arange
@@ -57,7 +57,7 @@ def test_notimplementederror(io_dataset):
 
 def test_predict(io_dataset):
     """Test prediction."""
-    ml_algo = GaussianProcessRegression(io_dataset)
+    ml_algo = GaussianProcessRegressor(io_dataset)
     ml_algo.learn()
     input_data = io_dataset.get_data_by_group("inputs", True)
     input_data = {key: val[0] for key, val in input_data.items()}
@@ -94,7 +94,7 @@ def test_predict_jacobian(dataset_for_jacobian, groups):
         transformer = None
     else:
         transformer = {group: "MinMaxScaler" for group in groups}
-    ml_algo = LinearRegression(dataset_for_jacobian, transformer=transformer)
+    ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
     assert allclose(jac["y_1"]["x_1"], array([[1.0], [-1.0]]))
@@ -110,7 +110,7 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable):
         "please transform the whole group 'inputs' or 'outputs' "
         "or do not use data transformation."
     )
-    ml_algo = LinearRegression(
+    ml_algo = LinearRegressor(
         dataset_for_jacobian, transformer={variable: "MinMaxScaler"}
     )
     ml_algo.learn()

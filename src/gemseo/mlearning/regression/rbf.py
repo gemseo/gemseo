@@ -63,16 +63,16 @@ LOGGER = logging.getLogger(__name__)
 SavedObjectType = Union[SavedObjectType, float, Callable]
 
 
-class RBFRegression(MLRegressionAlgo):
+class RBFRegressor(MLRegressionAlgo):
     r"""Regression based on radial basis functions (RBFs).
 
     This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
-
-    Attributes:
-        der_function (Callable[[ndarray],ndarray]): The derivative
-            of the radial basis function.
-        y_average (ndarray): The mean of the learning output data.
     """
+    der_function: Callable[[ndarray], ndarray]
+    """The derivative of the radial basis function."""
+
+    y_average: ndarray
+    """The mean of the learning output data."""
 
     LIBRARY = "scipy"
     ABBR = "RBF"
@@ -171,7 +171,7 @@ class RBFRegression(MLRegressionAlgo):
         self.der_function = der_function
 
     class RBFDerivatives:
-        r"""Derivatives of functions used in :class:`.RBFRegression`.
+        r"""Derivatives of functions used in :class:`.RBFRegressor`.
 
         For an RBF of the form :math:`f(r)`, :math:`r` scalar,
         the derivative functions are defined by :math:`d(f(r))/dx`,
@@ -399,7 +399,7 @@ class RBFRegression(MLRegressionAlgo):
         if callable(self.function) and self.der_function is None:
             raise NotImplementedError(
                 "No der_function is provided."
-                "Add der_function in RBFRegression constructor."
+                "Add der_function in RBFRegressor constructor."
             )
 
     def _get_objects_to_save(self) -> dict[str, SavedObjectType]:

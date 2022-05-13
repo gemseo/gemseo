@@ -80,7 +80,7 @@ prob_space.add_random_variable("x_1", "OTUniformDistribution")
 prob_space.add_random_variable("x_2", "OTUniformDistribution")
 dataset = scenario.export_to_dataset(opt_naming=False)
 model = create_regression_model(
-    "PCERegression", data=dataset, probability_space=prob_space, transformer=None
+    "PCERegressor", data=dataset, probability_space=prob_space, transformer=None
 )
 model.learn()
 print(model)

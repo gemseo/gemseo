@@ -25,7 +25,7 @@ from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution import IS_WIN
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
 from numpy import allclose
 from numpy import array
 from numpy import concatenate
@@ -51,17 +51,17 @@ def dataset():
 
 def test_constructor(dataset):
     with pytest.raises(ValueError):
-        SurrogateDiscipline("LinearRegression")
-    surr = SurrogateDiscipline("LinearRegression", dataset)
+        SurrogateDiscipline("LinearRegressor")
+    surr = SurrogateDiscipline("LinearRegressor", dataset)
     assert surr.linearization_mode == "auto"
-    surr = SurrogateDiscipline("GaussianProcessRegression", dataset)
+    surr = SurrogateDiscipline("GaussianProcessRegressor", dataset)
     assert surr.linearization_mode == "finite_differences"
     assert {"x_1", "x_2"} == set(surr.get_input_data_names())
     assert {"y_1", "y_2"} == set(surr.get_output_data_names())
 
 
 def test_constructor_from_algo(dataset):
-    algo = LinearRegression(dataset)
+    algo = LinearRegressor(dataset)
     algo.learn()
     surr = SurrogateDiscipline(algo)
     assert surr.linearization_mode == "auto"
@@ -70,26 +70,26 @@ def test_constructor_from_algo(dataset):
 
 
 def test_repr(dataset):
-    surr = SurrogateDiscipline("LinearRegression", dataset)
+    surr = SurrogateDiscipline("LinearRegressor", dataset)
     msg = "SurrogateDiscipline(name=LinReg_func, "
-    msg += "algo=LinearRegression, data=func, "
+    msg += "algo=LinearRegressor, data=func, "
     msg += "size=9, inputs=[x_1, x_2], outputs=[y_1, y_2], jacobian=auto)"
     assert repr(surr) == msg
 
 
 def test_str(dataset):
-    surr = SurrogateDiscipline("LinearRegression", dataset)
+    surr = SurrogateDiscipline("LinearRegressor", dataset)
     msg = "Surrogate discipline: LinReg_func\n"
     msg += "   Dataset name: func\n"
     msg += "   Dataset size: 9\n"
-    msg += "   Surrogate model: LinearRegression\n"
+    msg += "   Surrogate model: LinearRegressor\n"
     msg += "   Inputs: x_1, x_2\n"
     msg += "   Outputs: y_1, y_2"
     assert str(surr) == msg
 
 
 def test_execute(dataset):
-    surr = SurrogateDiscipline("LinearRegression", dataset)
+    surr = SurrogateDiscipline("LinearRegressor", dataset)
     out = surr.execute()
     assert "y_1" in out
     assert "y_2" in out
@@ -98,7 +98,7 @@ def test_execute(dataset):
 
 
 def test_linearize(dataset):
-    surr = SurrogateDiscipline("LinearRegression", dataset)
+    surr = SurrogateDiscipline("LinearRegressor", dataset)
     out = surr.linearize()
     assert "y_1" in out
     assert "y_2" in out
@@ -118,8 +118,8 @@ def test_linearize(dataset):
 )
 def test_parallel_execute(dataset):
     """Test the execution of the surrogate discipline in parallel."""
-    surr_1 = SurrogateDiscipline("LinearRegression", dataset)
-    surr_2 = SurrogateDiscipline("LinearRegression", dataset)
+    surr_1 = SurrogateDiscipline("LinearRegressor", dataset)
+    surr_2 = SurrogateDiscipline("LinearRegressor", dataset)
 
     parallel_execution = DiscParallelExecution(
         [surr_1, surr_2], use_threading=False, n_processes=2
@@ -146,7 +146,7 @@ def test_parallel_execute(dataset):
 def test_serialize(dataset, tmp_wd):
     """Check the serialization of a surroate discipline."""
     file_path = tmp_wd / "discipline.pkl"
-    discipline = SurrogateDiscipline("LinearRegression", dataset)
+    discipline = SurrogateDiscipline("LinearRegressor", dataset)
     discipline.serialize(file_path)
 
     loaded_discipline = SurrogateDiscipline.deserialize(file_path)

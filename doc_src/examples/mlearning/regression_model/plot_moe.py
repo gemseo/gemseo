@@ -80,11 +80,11 @@ print(dataset.export_to_dataframe())
 # We construct the MoE model using the predefined parameters, and fit the model
 # to the dataset through the learn() method.
 model = create_regression_model(
-    "MixtureOfExperts", dataset, transformer={"outputs": MinMaxScaler()}
+    "MOERegressor", dataset, transformer={"outputs": MinMaxScaler()}
 )
 model.set_clusterer("KMeans", n_clusters=3)
 model.set_classifier("KNNClassifier", n_neighbors=5)
-model.set_regressor("GaussianProcessRegression")
+model.set_regressor("GaussianProcessRegressor")
 
 model.learn()
 

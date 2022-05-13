@@ -38,34 +38,32 @@ def dataset() -> Dataset:
 
 def test_constructor():
     """Test factory constructor."""
-    factory = MLAlgoFactory()
-    # plugins may add classes
-    assert set(factory.models) <= {
+    assert {
         "GaussianMixture",
-        "GaussianProcessRegression",
+        "GaussianProcessRegressor",
         "KMeans",
         "KNNClassifier",
-        "LinearRegression",
+        "LinearRegressor",
         "MLClassificationAlgo",
         "MLClusteringAlgo",
         "MLPredictiveClusteringAlgo",
         "MLRegressionAlgo",
         "MLSupervisedAlgo",
         "MLUnsupervisedAlgo",
-        "MixtureOfExperts",
-        "PCERegression",
-        "PolynomialRegression",
-        "RBFRegression",
+        "MOERegressor",
+        "PCERegressor",
+        "PolynomialRegressor",
+        "RBFRegressor",
         "RandomForestClassifier",
         "RandomForestRegressor",
         "SVMClassifier",
-    }
+    } <= set(MLAlgoFactory().models)
 
 
 def test_create(dataset):
     """Test the creation of a model from data."""
     factory = MLAlgoFactory()
-    ml_algo = factory.create("LinearRegression", data=dataset)
+    ml_algo = factory.create("LinearRegressor", data=dataset)
     assert hasattr(ml_algo, "parameters")
 
 
@@ -87,5 +85,5 @@ def test_available_models():
 def test_is_available():
     """Test the existence of a regression model."""
     factory = MLAlgoFactory()
-    assert factory.is_available("PolynomialRegression")
+    assert factory.is_available("PolynomialRegressor")
     assert not factory.is_available("Dummy")

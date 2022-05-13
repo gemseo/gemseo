@@ -24,7 +24,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.gpr import GaussianProcessRegression
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from numpy import allclose
 from numpy import array
@@ -47,23 +47,23 @@ def dataset() -> Dataset:
     return discipline.cache.export_to_dataset("dataset_name")
 
 
-@pytest.fixture(params=[None, GaussianProcessRegression.DEFAULT_TRANSFORMER])
-def model(request, dataset) -> GaussianProcessRegression:
-    """A trained GaussianProcessRegression."""
-    gpr = GaussianProcessRegression(dataset, transformer=request.param)
+@pytest.fixture(params=[None, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+def model(request, dataset) -> GaussianProcessRegressor:
+    """A trained GaussianProcessRegressor."""
+    gpr = GaussianProcessRegressor(dataset, transformer=request.param)
     gpr.learn()
     return gpr
 
 
 def test_constructor(dataset):
     """Test construction."""
-    gpr = GaussianProcessRegression(dataset)
+    gpr = GaussianProcessRegressor(dataset)
     assert gpr.algo is not None
 
 
 def test_learn(dataset):
     """Test learn."""
-    gpr = GaussianProcessRegression(dataset)
+    gpr = GaussianProcessRegressor(dataset)
     gpr.learn()
     assert gpr.algo is not None
 
@@ -138,13 +138,13 @@ def test_save_and_load(model, tmp_path):
 )
 def test_bounds(dataset, bounds, expected):
     """Verify that bounds are correctly passed to the default kernel."""
-    model = GaussianProcessRegression(dataset, bounds=bounds)
+    model = GaussianProcessRegressor(dataset, bounds=bounds)
     assert model.algo.kernel.length_scale_bounds == expected
 
 
 def test_kernel(dataset):
     """Verify that the property 'kernel' corresponds to the kernel for prediction."""
-    model = GaussianProcessRegression(dataset)
+    model = GaussianProcessRegressor(dataset)
     assert id(model.kernel) == id(model.algo.kernel)
     model.learn()
     assert id(model.kernel) == id(model.algo.kernel_)
