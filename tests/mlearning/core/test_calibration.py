@@ -42,7 +42,7 @@ def test_discipline_multioutput_fail(dataset):
         match=("MLAlgoAssessor does not support multioutput."),
     ):
         MLAlgoAssessor(
-            "PolynomialRegression",
+            "PolynomialRegressor",
             dataset,
             ["degree"],
             MSEMeasure,
@@ -57,7 +57,7 @@ def test_discipline_multioutput_fail(dataset):
 def test_discipline_multioutput(dataset, options):
     """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
     assessor = MLAlgoAssessor(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         dataset,
         ["degree"],
         MSEMeasure,
@@ -71,7 +71,7 @@ def test_discipline(dataset):
     """Test discipline."""
     measure_options = {"method": "loo"}
     disc = MLAlgoAssessor(
-        "PolynomialRegression", dataset, ["degree"], MSEMeasure, measure_options
+        "PolynomialRegressor", dataset, ["degree"], MSEMeasure, measure_options
     )
     result = disc.execute({"degree": array([3])})
     assert "degree" in result
@@ -96,7 +96,7 @@ def test_calibration(dataset, calibration_space, algo):
     """Test calibration."""
     n_samples = 2
     calibration = MLAlgoCalibration(
-        "PolynomialRegression",
+        "PolynomialRegressor",
         dataset,
         ["penalty_level"],
         calibration_space,

@@ -149,7 +149,7 @@ class MLAlgoSelection:
 
         Examples:
             >>> selector.add_candidate(
-            >>>     "LinearRegression",
+            >>>     "LinearRegressor",
             >>>     penalty_level=[0, 0.1, 1, 10, 20],
             >>>     l2_penalty_ratio=[0, 0.5, 1],
             >>>     fit_intercept=[True],

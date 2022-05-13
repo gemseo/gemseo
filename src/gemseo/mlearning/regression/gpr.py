@@ -17,12 +17,12 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The Gaussian process algorithm for regression.
+r"""Gaussian process regression model.
 
 Overview
 --------
 
-The Gaussian process regression (GPR) surrogate model
+The Gaussian process regression (GPR) model
 expresses the model output as a weighted sum of kernel functions
 centered on the learning input data:
 
@@ -67,7 +67,7 @@ is estimated by numerical non-linear optimization.
 Surrogate model
 ---------------
 
-The expectation :math:`\hat{f}` is the GPR surrogate model of :math:`f`.
+The expectation :math:`\hat{f}` is the surrogate model of :math:`f`.
 
 Error measure
 -------------
@@ -82,8 +82,8 @@ of :math:`\hat{f}`:
 Interpolation or regression
 ---------------------------
 
-The GPR surrogate model can be regressive or interpolative
-according to the value of the nugget effect :math:`\\alpha\geq 0`
+The GPR model can be regressive or interpolative
+according to the value of the nugget effect :math:`\alpha\geq 0`
 which is a regularization term
 applied to the correlation matrix :math:`K`.
 When :math:`\alpha = 0`,
@@ -104,10 +104,9 @@ from typing import Mapping
 from typing import Tuple
 
 import openturns
+import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import ndarray
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
@@ -120,8 +119,8 @@ LOGGER = logging.getLogger(__name__)
 __Bounds = Tuple[float, float]
 
 
-class GaussianProcessRegression(MLRegressionAlgo):
-    """Gaussian process regression."""
+class GaussianProcessRegressor(MLRegressionAlgo):
+    """Gaussian process regression model."""
 
     LIBRARY = "scikit-learn"
     ABBR = "GPR"
@@ -169,10 +168,13 @@ class GaussianProcessRegression(MLRegressionAlgo):
         )
 
         if kernel is None:
-            bounds = self.__compute_parameter_length_scale_bounds(bounds)
-            kernel = Matern((1.0,) * self._reduced_dimensions[0], bounds, nu=2.5)
+            kernel = sklearn.gaussian_process.kernels.Matern(
+                (1.0,) * self._reduced_dimensions[0],
+                self.__compute_parameter_length_scale_bounds(bounds),
+                nu=2.5,
+            )
 
-        self.algo = GaussianProcessRegressor(
+        self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
             normalize_y=False,
             kernel=kernel,
             copy_X_train=True,

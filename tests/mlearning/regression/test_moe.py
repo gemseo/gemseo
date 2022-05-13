@@ -23,8 +23,8 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.api import import_regression_model
 from gemseo.mlearning.classification.random_forest import RandomForestClassifier
 from gemseo.mlearning.cluster.kmeans import KMeans
-from gemseo.mlearning.regression.linreg import LinearRegression
-from gemseo.mlearning.regression.moe import MixtureOfExperts
+from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.moe import MOERegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transform.scaler.scaler import Scaler
 from numpy import allclose
@@ -71,32 +71,32 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture
-def model(dataset) -> MixtureOfExperts:
-    """A trained MixtureOfExperts."""
-    moe = MixtureOfExperts(dataset)
+def model(dataset) -> MOERegressor:
+    """A trained MOERegressor."""
+    moe = MOERegressor(dataset)
     moe.set_clusterer("KMeans", n_clusters=2)
     moe.learn()
     return moe
 
 
 @pytest.fixture
-def model_soft(dataset) -> MixtureOfExperts:
-    """A trained MixtureOfExperts with soft classification."""
-    moe = MixtureOfExperts(dataset, hard=False)
+def model_soft(dataset) -> MOERegressor:
+    """A trained MOERegressor with soft classification."""
+    moe = MOERegressor(dataset, hard=False)
     moe.set_clusterer("KMeans", n_clusters=2)
     moe.learn()
     return moe
 
 
 @pytest.fixture
-def model_with_transform(dataset) -> MixtureOfExperts:
-    """A trained MixtureOfExperts with inputs and outputs scaling."""
-    moe = MixtureOfExperts(
+def model_with_transform(dataset) -> MOERegressor:
+    """A trained MOERegressor with inputs and outputs scaling."""
+    moe = MOERegressor(
         dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
     )
     moe.set_clusterer("KMeans", n_clusters=2)
     moe.set_regressor(
-        "LinearRegression",
+        "LinearRegressor",
         transformer={"inputs": Scaler(offset=5), "outputs": Scaler(coefficient=-1)},
     )
     moe.learn()
@@ -105,7 +105,7 @@ def model_with_transform(dataset) -> MixtureOfExperts:
 
 def test_constructor(dataset):
     """Test construction."""
-    moe = MixtureOfExperts(dataset)
+    moe = MOERegressor(dataset)
     assert moe.cluster_algo is not None
     assert moe.classif_algo is not None
     assert moe.regress_algo is not None
@@ -113,7 +113,7 @@ def test_constructor(dataset):
 
 def test_learn(dataset):
     """Test learn."""
-    moe = MixtureOfExperts(dataset)
+    moe = MOERegressor(dataset)
     moe.learn()
     assert moe.clusterer is not None
     assert moe.classifier is not None
@@ -125,15 +125,15 @@ def test_learn(dataset):
 
 def test_set_algos(dataset):
     """Test learn."""
-    moe = MixtureOfExperts(dataset)
+    moe = MOERegressor(dataset)
     moe.set_classifier("RandomForestClassifier")
     moe.set_clusterer("KMeans", n_clusters=3)
-    moe.set_regressor("LinearRegression", fit_intercept=False)
+    moe.set_regressor("LinearRegressor", fit_intercept=False)
     moe.learn()
     assert isinstance(moe.clusterer, KMeans)
     assert isinstance(moe.classifier, RandomForestClassifier)
     for local_model in moe.regress_models:
-        assert isinstance(local_model, LinearRegression)
+        assert isinstance(local_model, LinearRegressor)
 
 
 def test_predict_class(model, model_with_transform):
@@ -209,7 +209,7 @@ def test_save_and_load(model, tmp_path):
 def test_str(model):
     """Test str representation."""
     repres = str(model)
-    assert "MixtureOfExperts" in repres
+    assert "MOERegressor" in repres
     assert "KMeans" in repres
     assert "KNNClassifier" in repres
     assert "Local model 0" in repres
@@ -218,7 +218,7 @@ def test_str(model):
 
 
 def test_moe_with_candidates(dataset):
-    moe = MixtureOfExperts(dataset)
+    moe = MOERegressor(dataset)
 
     assert not moe.cluster_cands
     assert not moe.regress_cands
@@ -230,11 +230,11 @@ def test_moe_with_candidates(dataset):
     moe.add_classifier_candidate("SVMClassifier", kernel=["rbf"])
     assert len(moe.classif_cands) == 1
 
-    moe.add_regressor_candidate("PolynomialRegression", degree=[2])
+    moe.add_regressor_candidate("PolynomialRegressor", degree=[2])
     assert len(moe.regress_cands) == 1
 
     moe.learn()
     assert moe.classifier.__class__.__name__ == "SVMClassifier"
     assert moe.clusterer.__class__.__name__ == "GaussianMixture"
     for regression_model in moe.regress_models:
-        assert regression_model.__class__.__name__ == "PolynomialRegression"
+        assert regression_model.__class__.__name__ == "PolynomialRegressor"

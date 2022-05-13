@@ -163,8 +163,8 @@ def test_get_surrogate_options_schema(tmp_wd):
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-    get_surrogate_options_schema("RBFRegression")
-    get_surrogate_options_schema("RBFRegression", pretty_print=True)
+    get_surrogate_options_schema("RBFRegressor")
+    get_surrogate_options_schema("RBFRegressor", pretty_print=True)
 
 
 def test_create_scenario_and_monitor(tmp_wd):
@@ -391,8 +391,8 @@ def test_get_available_surrogates(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     surrogates = get_available_surrogates()
-    assert "RBFRegression" in surrogates
-    assert "LinearRegression" in surrogates
+    assert "RBFRegressor" in surrogates
+    assert "LinearRegressor" in surrogates
 
 
 def test_get_available_disciplines(tmp_wd):
@@ -448,7 +448,7 @@ def test_create_surrogate(tmp_wd):
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
     doe.execute({"algo": "fullfact", "n_samples": 10})
     surr = create_surrogate(
-        "RBFRegression",
+        "RBFRegressor",
         disc.cache.export_to_dataset(),
         input_names=["y_24", "y_34"],
     )

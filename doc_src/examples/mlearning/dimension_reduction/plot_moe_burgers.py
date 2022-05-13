@@ -68,10 +68,10 @@ pca = {dataset.OUTPUT_GROUP: PCA(n_components=10)}
 kpca = {dataset.OUTPUT_GROUP: KPCA(n_components=10, kernel="poly")}
 jameson = {dataset.OUTPUT_GROUP: JamesonSensor()}
 
-model = create_regression_model("MixtureOfExperts", dataset)
+model = create_regression_model("MOERegressor", dataset)
 model.set_clusterer("KMeans", n_clusters=2, transformer=jameson)
 model.set_classifier("KNNClassifier", n_neighbors=3)
-model.set_regressor("GaussianProcessRegression")  # , transformer=pca)
+model.set_regressor("GaussianProcessRegressor")  # , transformer=pca)
 
 model.learn()
 

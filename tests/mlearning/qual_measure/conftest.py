@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import pytest
 from gemseo.core.dataset import Dataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegression
+from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
 from numpy import linspace
 from numpy import pi
 from numpy import sin
@@ -27,9 +27,9 @@ def algo_for_transformer():
     x = linspace(0, 2 * pi, 20)[:, None]
     dataset.add_variable("x", x, group="inputs")
     dataset.add_variable("y", x * sin(x) ** 2, group="outputs")
-    algo = GaussianProcessRegression(
+    algo = GaussianProcessRegressor(
         dataset,
-        transformer=GaussianProcessRegression.DEFAULT_TRANSFORMER,
+        transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,
         n_restarts_optimizer=0,
     )
     algo.learn()

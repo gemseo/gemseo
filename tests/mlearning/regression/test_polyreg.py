@@ -24,7 +24,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from numpy import allclose
 from numpy import array
 from numpy import hstack
@@ -104,35 +104,35 @@ def dataset_from_cache() -> Dataset:
 
 
 @pytest.fixture
-def model(dataset) -> PolynomialRegression:
-    """A trained PolynomialRegression."""
-    polyreg = PolynomialRegression(dataset, degree=DEGREE)
+def model(dataset) -> PolynomialRegressor:
+    """A trained PolynomialRegressor."""
+    polyreg = PolynomialRegressor(dataset, degree=DEGREE)
     polyreg.learn()
     return polyreg
 
 
 @pytest.fixture
-def model_without_intercept(dataset) -> PolynomialRegression:
-    """A trained PolynomialRegression without intercept fitting."""
-    polyreg = PolynomialRegression(dataset, degree=DEGREE, fit_intercept=False)
+def model_without_intercept(dataset) -> PolynomialRegressor:
+    """A trained PolynomialRegressor without intercept fitting."""
+    polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)
     polyreg.learn()
     return polyreg
 
 
 def test_constructor(dataset):
-    model_ = PolynomialRegression(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, degree=2)
     assert model_.algo is not None
 
 
 def test_degree(dataset):
     """Test correct handling of incorrect degree ( < 1)."""
     with pytest.raises(ValueError):
-        PolynomialRegression(dataset, degree=0)
+        PolynomialRegressor(dataset, degree=0)
 
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = PolynomialRegression(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, degree=2)
     model_.learn()
     assert model_.algo is not None
 
@@ -150,7 +150,7 @@ def test_get_coefficients(model):
 
 
 def test_intercept(model, model_without_intercept):
-    """Test intercept parameter from LinearRegression class.
+    """Test intercept parameter from LinearRegressor class.
 
     Should be 0.0, as fit_intercept is False (replaced by include_bias).
     """
@@ -194,7 +194,7 @@ def test_prediction_jacobian(model):
 
 def test_jacobian_constant(dataset):
     """Test Jacobians linear polynomials."""
-    model_ = PolynomialRegression(dataset, degree=1)
+    model_ = PolynomialRegressor(dataset, degree=1)
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)

@@ -186,13 +186,13 @@ def create_regression_model(
 
     factory = RegressionModelFactory()
     if (
-        name == "PCERegression"
+        name == "PCERegressor"
         and isinstance(transformer, dict)
         and Dataset.INPUT_GROUP in transformer
     ):
         LOGGER.warning(
             "Remove input data transformation because "
-            "PCERegression does not support transformers."
+            "PCERegressor does not support transformers."
         )
         del transformer[Dataset.INPUT_GROUP]
     return factory.create(name, data=data, transformer=transformer, **parameters)

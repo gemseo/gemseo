@@ -26,7 +26,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.core.ml_algo import MLAlgo
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.rmse_measure import RMSEMeasure
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 
@@ -70,7 +70,7 @@ def test_constructor(dataset):
 
 def test_evaluate_learn(dataset):
     """Test evaluate learn method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     mse_train = measure.evaluate("learn")
     assert mse_train < TOL_DEG_2
@@ -78,12 +78,12 @@ def test_evaluate_learn(dataset):
     rmse_train = measure.evaluate("learn")
     assert abs(mse_train**0.5 - rmse_train) < 1e-6
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
     mse_train = measure.evaluate("learn")
     assert mse_train < TOL_DEG_1
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -95,7 +95,7 @@ def test_evaluate_learn(dataset):
 
 def test_evaluate_test(dataset, dataset_test):
     """Test evaluate test method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     mse_test = measure.evaluate("test", test_data=dataset_test)
     assert mse_test < TOL_DEG_2
@@ -104,12 +104,12 @@ def test_evaluate_test(dataset, dataset_test):
 
     assert abs(mse_test**0.5 - rmse_test) < 1e-6
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
     mse_test = measure.evaluate("test", test_data=dataset_test)
     assert mse_test < TOL_DEG_1
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -121,7 +121,7 @@ def test_evaluate_test(dataset, dataset_test):
 
 def test_evaluate_loo(dataset):
     """Test evaluate leave one out method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     mse_loo = measure.evaluate("loo")
     assert mse_loo < TOL_DEG_2
@@ -129,7 +129,7 @@ def test_evaluate_loo(dataset):
     rmse_loo = measure.evaluate("loo")
     assert abs(mse_loo**0.5 - rmse_loo) < 1e-6
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
     mse_loo = measure.evaluate("loo")
     assert mse_loo < TOL_DEG_1
@@ -137,7 +137,7 @@ def test_evaluate_loo(dataset):
 
 def test_evaluate_kfolds(dataset):
     """Test evaluate k-folds method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     mse_kfolds = measure.evaluate("kfolds")
     assert mse_kfolds < TOL_DEG_2
@@ -145,12 +145,12 @@ def test_evaluate_kfolds(dataset):
     rmse_kfolds = measure.evaluate("kfolds")
     assert abs(mse_kfolds**0.5 - rmse_kfolds) < 1e-6
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
     mse_kfolds = measure.evaluate("kfolds")
     assert mse_kfolds < TOL_DEG_1
 
-    algo = PolynomialRegression(
+    algo = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
@@ -162,7 +162,7 @@ def test_evaluate_kfolds(dataset):
 
 def test_evaluate_bootstrap(dataset):
     """Test evaluate bootstrap method."""
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     mse_bootstrap = measure.evaluate("bootstrap")
     assert mse_bootstrap < TOL_DEG_2
@@ -172,7 +172,7 @@ def test_evaluate_bootstrap(dataset):
     assert abs(rmse_bootstrap - rmse_bootstrap_2) < 1e-6
     assert abs(mse_bootstrap**0.5 - rmse_bootstrap) < 1e-6
 
-    algo = PolynomialRegression(dataset, degree=1)
+    algo = PolynomialRegressor(dataset, degree=1)
     measure = MSEMeasure(algo)
     mse_bootstrap = measure.evaluate("bootstrap")
     assert mse_bootstrap < TOL_DEG_1

@@ -23,8 +23,8 @@ from gemseo.core.dataset import Dataset
 from gemseo.mlearning.qual_measure.error_measure import MLErrorMeasure
 from gemseo.mlearning.qual_measure.mse_measure import MSEMeasure
 from gemseo.mlearning.qual_measure.r2_measure import R2Measure
-from gemseo.mlearning.regression.linreg import LinearRegression
-from gemseo.mlearning.regression.polyreg import PolynomialRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.polyreg import PolynomialRegressor
 from gemseo.problems.dataset.rosenbrock import RosenbrockDataset
 from numpy import linspace
 
@@ -33,7 +33,7 @@ from numpy import linspace
 def measure() -> MLErrorMeasure:
     """The error measure of a linear regression based on the Rosenbrock dataset."""
     dataset = RosenbrockDataset(opt_naming=False)
-    algo = LinearRegression(dataset)
+    algo = LinearRegressor(dataset)
     return MLErrorMeasure(algo)
 
 
@@ -59,7 +59,7 @@ def test_evaluate(measure):
 def test_resampling_based_measure(method):
     """Check that a resampling-based measure does not re-train the algo (but a copy)."""
     dataset = RosenbrockDataset(opt_naming=False)
-    algo = PolynomialRegression(dataset, degree=2)
+    algo = PolynomialRegressor(dataset, degree=2)
     measure = MSEMeasure(algo)
     measure.evaluate(method)
     assert list(algo.learning_samples_indices) == list(range(len(dataset)))
@@ -107,7 +107,7 @@ def test_subset_of_inputs_and_outputs(
     if method == "test":
         kwargs["test_data"] = test_dataset
 
-    algo = LinearRegression(
+    algo = LinearRegressor(
         learning_dataset, input_names=input_names, output_names=output_names
     )
     if not (measure_cls == R2Measure and method == "bootstrap"):

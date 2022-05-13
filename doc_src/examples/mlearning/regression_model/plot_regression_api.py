@@ -44,7 +44,7 @@ print(get_regression_models())
 ###############################################################################
 # Get regression model options
 # ----------------------------
-print(get_regression_options("GaussianProcessRegression"))
+print(get_regression_options("GaussianProcessRegressor"))
 
 ###############################################################################
 # Create regression model
@@ -64,7 +64,7 @@ scenario = create_scenario(
 scenario.execute({"algo": "fullfact", "n_samples": 9})
 
 dataset = scenario.export_to_dataset(opt_naming=False)
-model = create_regression_model("LinearRegression", data=dataset)
+model = create_regression_model("LinearRegressor", data=dataset)
 model.learn()
 
 print(model)

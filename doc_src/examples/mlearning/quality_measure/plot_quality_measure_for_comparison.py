@@ -85,13 +85,13 @@ plt.show()
 # Create regression algorithms
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 moe = create_regression_model(
-    "MixtureOfExperts", dataset, transformer={"outputs": MinMaxScaler()}
+    "MOERegressor", dataset, transformer={"outputs": MinMaxScaler()}
 )
 
 moe.set_clusterer("GaussianMixture", n_components=4)
 moe.set_classifier("KNNClassifier", n_neighbors=3)
 moe.set_regressor(
-    "PolynomialRegression", degree=5, l2_penalty_ratio=1, penalty_level=0.00005
+    "PolynomialRegressor", degree=5, l2_penalty_ratio=1, penalty_level=0.00005
 )
 
 
@@ -191,12 +191,12 @@ print(dataset)
 # Create regression algorithms
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 moe = create_regression_model(
-    "MixtureOfExperts", dataset, transformer={"outputs": MinMaxScaler()}
+    "MOERegressor", dataset, transformer={"outputs": MinMaxScaler()}
 )
 moe.set_clusterer("KMeans", n_clusters=3)
 moe.set_classifier("KNNClassifier", n_neighbors=5)
 moe.set_regressor(
-    "PolynomialRegression", degree=5, l2_penalty_ratio=1, penalty_level=0.1
+    "PolynomialRegressor", degree=5, l2_penalty_ratio=1, penalty_level=0.1
 )
 
 

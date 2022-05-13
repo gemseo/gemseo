@@ -81,7 +81,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 # Then, we build the Gaussian process regression model from the database and
 # displays this model.
 dataset = scenario.export_to_dataset(opt_naming=False)
-model = create_surrogate("GaussianProcessRegression", data=dataset)
+model = create_surrogate("GaussianProcessRegressor", data=dataset)
 
 ###############################################################################
 # Predict output

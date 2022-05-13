@@ -17,9 +17,9 @@
 #                         documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The polynomial chaos expansion algorithm for regression.
+r"""Polynomial chaos expansion model.
 
-The polynomial chaos expansion (PCE) model expresses the model output
+The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
 in the stochastic input space spanned by the random input variables:
 
@@ -40,7 +40,7 @@ enumerating strategy and :math:`\tau_j(i)` is the polynomial degree of
 Distributions
 -------------
 
-PCE are stochastic models whose inputs are random variables
+PCE models depend on random input variable
 and are often used to deal with uncertainty quantification problems.
 
 If :math:`X_j` is a Gaussian random variable,
@@ -49,15 +49,15 @@ If :math:`X_j` is an uniform random variable,
 :math:`(\psi_{ij})_{i\geq 0}` is the Hermite basis.
 
 When the problem is deterministic,
-we can still use PCE under the assumptions that
+we can still use PCE models under the assumptions that
 the random variables are independent uniform random variables.
 Then,
-the orthonormal basis function is the Hermite basis.
+the orthonormal function basis is the Hermite one.
 
 Degree
 ------
 
-The degree :math:`P` of a PCE is defined
+The degree :math:`P` of a PCE model is defined
 in such a way that :math:`\text{degree}(\phi_i)=\sum_{j=1}^d\tau_j(i)\leq P`.
 
 Estimation
@@ -116,8 +116,8 @@ from gemseo.mlearning.regression.regression import MLRegressionAlgo
 LOGGER = logging.getLogger(__name__)
 
 
-class PCERegression(MLRegressionAlgo):
-    """Polynomial chaos expansion."""
+class PCERegressor(MLRegressionAlgo):
+    """Polynomial chaos expansion model."""
 
     LIBRARY = "openturns"
     ABBR = "PCE"
@@ -206,7 +206,7 @@ class PCERegression(MLRegressionAlgo):
             )
         forbidden_names = set(self.input_names).union({Dataset.INPUT_GROUP})
         if set(list(self.transformer.keys())).intersection(forbidden_names):
-            raise ValueError("PCERegression does not support input transformers.")
+            raise ValueError("PCERegressor does not support input transformers.")
 
         self._distributions = prob_space.distributions
         self._sparse_param = sparse_param or {}

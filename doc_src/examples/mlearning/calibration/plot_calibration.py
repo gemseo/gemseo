@@ -49,7 +49,7 @@ measure_options = {"method": "test", "test_data": test_dataset}
 calibration_space = DesignSpace()
 calibration_space.add_variable("degree", 1, "integer", 1, 10, 1)
 calibration = MLAlgoCalibration(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     dataset,
     ["degree"],
     calibration_space,
@@ -90,7 +90,7 @@ plt.show()
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 100.0, 0.0)
 calibration = MLAlgoCalibration(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     dataset,
     ["penalty_level"],
     calibration_space,
@@ -132,7 +132,7 @@ plt.show()
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 100.0, 0.0)
 calibration = MLAlgoCalibration(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     dataset,
     ["penalty_level"],
     calibration_space,
@@ -176,7 +176,7 @@ calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 40.0, 0.0)
 calibration_space.add_variable("l2_penalty_ratio", 1, "float", 0.0, 1.0, 0.5)
 calibration = MLAlgoCalibration(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     dataset,
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,
@@ -229,7 +229,7 @@ calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 40.0, 0.0)
 calibration_space.add_variable("l2_penalty_ratio", 1, "float", 0.0, 1.0, 0.5)
 calibration = MLAlgoCalibration(
-    "PolynomialRegression",
+    "PolynomialRegressor",
     dataset,
     ["penalty_level", "l2_penalty_ratio"],
     calibration_space,

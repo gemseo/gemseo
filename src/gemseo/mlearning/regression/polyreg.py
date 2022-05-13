@@ -17,15 +17,15 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The polynomial model for regression.
+r"""Polynomial regression model.
 
-Polynomial regression class is a particular case of the linear regression,
+Polynomial regression is a particular case of the linear regression,
 where the input data is transformed before the regression is applied.
-This transform consists of creating a matrix of monomials (Vandermonde)
+This transform consists of creating a matrix of monomials
 by raising the input data to different powers up to a certain degree :math:`D`.
 In the case where there is only one input variable,
 the input data :math:`(x_i)_{i=1, \dots, n}\in\mathbb{R}^n` is transformed
-into the Vandermonde matrix
+into the Vandermonde matrix:
 
 .. math::
 
@@ -37,13 +37,13 @@ into the Vandermonde matrix
     \end{pmatrix}
     = (x_i^d)_{i=1, \dots, n;\ d=1, \dots, D}.
 
-The output is expressed as a weighted sum of monomials:
+The output variable is expressed as a weighted sum of monomials:
 
 .. math::
 
      y = w_0 + w_1 x^1 + w_2 x^2 + ... + w_D x^D,
 
-where the coefficients :math:`(w_1, w_2, ..., w_d)` and the intercept :math:`w_0`
+where the coefficients :math:`w_1, w_2, ..., w_d` and the intercept :math:`w_0`
 are estimated by least square regression.
 
 In the case of a multidimensional input,
@@ -56,22 +56,19 @@ the different terms are
 :math:`x`, :math:`y`, :math:`z`, :math:`x^2`, :math:`xy`, :math:`xz`,
 :math:`y^2`, :math:`yz`, :math:`z^2`, :math:`x^3`, :math:`x^2y` etc.
 More generally,
-for m input variables,
+for :math:`m` input variables,
 the total number of monomials of degree :math:`1 \leq d \leq D` is given
 by :math:`P = \binom{m+D}{m} = \frac{(m+D)!}{m!D!}`.
 In the case of 3 input variables given above,
 the total number of monomial combinations of degree lesser than or equal to three
 is thus :math:`P = \binom{6}{3} = 20`.
-The linear regression has to identify the coefficients :math:`(w_1, \dots, w_P)`,
+The linear regression has to identify the coefficients :math:`w_1, \dots, w_P`,
 in addition to the intercept :math:`w_0`.
-
-This concept is implemented through the :class:`.PolynomialRegression` class
-which inherits from the :class:`.MLRegressionAlgo` class.
 
 Dependence
 ----------
-The polynomial regression model relies on the LinearRegression class
-of the `LinearRegression <https://scikit-learn.org/stable/modules/
+The polynomial regression model relies
+on the `LinearRegression <https://scikit-learn.org/stable/modules/
 linear_model.html>`_ and  `PolynomialFeatures <https://scikit-learn.org/stable/
 modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
 the `scikit-learn library <https://scikit-learn.org/stable/modules/
@@ -94,13 +91,13 @@ from sklearn.preprocessing import PolynomialFeatures
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
-from gemseo.mlearning.regression.linreg import LinearRegression
+from gemseo.mlearning.regression.linreg import LinearRegressor
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PolynomialRegression(LinearRegression):
-    """Polynomial regression."""
+class PolynomialRegressor(LinearRegressor):
+    """Polynomial regression model."""
 
     LIBRARY = "scikit-learn"
     ABBR = "PolyReg"

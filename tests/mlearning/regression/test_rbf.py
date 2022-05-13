@@ -24,7 +24,7 @@ from gemseo.core.dataset import Dataset
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.api import import_regression_model
-from gemseo.mlearning.regression.rbf import RBFRegression
+from gemseo.mlearning.regression.rbf import RBFRegressor
 from numpy import allclose
 from numpy import array
 from scipy.interpolate.rbf import Rbf
@@ -54,21 +54,21 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture
-def model(dataset) -> RBFRegression:
-    """A trained RBFRegression."""
-    rbf = RBFRegression(dataset)
+def model(dataset) -> RBFRegressor:
+    """A trained RBFRegressor."""
+    rbf = RBFRegressor(dataset)
     rbf.learn()
     return rbf
 
 
 @pytest.fixture
-def model_with_custom_function(dataset) -> RBFRegression:
-    """A trained RBFRegression  f(r) = r**2 - 1 as kernel function."""
+def model_with_custom_function(dataset) -> RBFRegressor:
+    """A trained RBFRegressor  f(r) = r**2 - 1 as kernel function."""
 
     def der_function(input_data, norm_input_data, eps):
         return 2 * input_data / eps**2
 
-    rbf = RBFRegression(
+    rbf = RBFRegressor(
         dataset, function=(lambda r: r**2 - 1), der_function=der_function
     )
     rbf.learn()
@@ -76,35 +76,35 @@ def model_with_custom_function(dataset) -> RBFRegression:
 
 
 @pytest.fixture
-def model_with_1d_output(dataset) -> RBFRegression:
-    """A trained RBFRegression with y_1 as output."""
-    rbf = RBFRegression(dataset, output_names=["y_1"])
+def model_with_1d_output(dataset) -> RBFRegressor:
+    """A trained RBFRegressor with y_1 as output."""
+    rbf = RBFRegressor(dataset, output_names=["y_1"])
     rbf.learn()
     return rbf
 
 
 def test_get_available_functions():
     """Test available RBFs."""
-    for function in RBFRegression.AVAILABLE_FUNCTIONS:
+    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
         assert hasattr(Rbf, f"_h_{function}")
 
 
 def test_constructor(dataset):
     """Test construction."""
-    model_ = RBFRegression(dataset)
+    model_ = RBFRegressor(dataset)
     assert model_.algo is None
 
 
 def test_jacobian_not_implemented(dataset):
     """Test cases where the Jacobian is not implemented."""
     # Test unimplemented norm
-    rbf = RBFRegression(dataset, norm="canberra")
+    rbf = RBFRegressor(dataset, norm="canberra")
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
 
     # Test rbf function without derivative
-    rbf = RBFRegression(dataset, function=(lambda x: x - 5))
+    rbf = RBFRegressor(dataset, function=(lambda x: x - 5))
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
@@ -112,7 +112,7 @@ def test_jacobian_not_implemented(dataset):
 
 def test_learn(dataset):
     """Test learn."""
-    model_ = RBFRegression(dataset)
+    model_ = RBFRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
 
@@ -164,8 +164,8 @@ def test_pred_single_out(model_with_1d_output):
 
 def test_predict_jacobian(dataset):
     """Test prediction."""
-    for function in RBFRegression.AVAILABLE_FUNCTIONS:
-        model_ = RBFRegression(dataset, function=function)
+    for function in RBFRegressor.AVAILABLE_FUNCTIONS:
+        model_ = RBFRegressor(dataset, function=function)
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)
         jacobians = model_.predict_jacobian(INPUT_VALUES)

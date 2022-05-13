@@ -163,10 +163,10 @@ mission_dataset = scenario.export_to_dataset(opt_naming=False)
 #
 # Precisely,
 # by means of the API function :meth:`~gemseo.api.create_surrogate`,
-# we create a :class:`.SurrogateDiscipline` relying on a :class:`.LinearRegression`
+# we create a :class:`.SurrogateDiscipline` relying on a :class:`.LinearRegressor`
 # and inheriting from :class:`.MDODiscipline`:
 
-synthetic_surrogate = create_surrogate("LinearRegression", synthetic_dataset)
+synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
 
 ##############################################################################
 # .. seealso::
@@ -182,9 +182,9 @@ print(out["y"])
 
 ##############################################################################
 # In our study case, from the :term:`DOE` built at Step 1,
-# we build a :class:`.RBFRegression`  of :math:`y_4`
+# we build a :class:`.RBFRegressor`  of :math:`y_4`
 # representing the range in function of L/D:
-range_surrogate = create_surrogate("RBFRegression", mission_dataset)
+range_surrogate = create_surrogate("RBFRegressor", mission_dataset)
 
 ##############################################################################
 # Use the :class:`.SurrogateDiscipline` in MDO
@@ -204,7 +204,7 @@ for i in range(5):
 # And we can build and execute an optimization scenario from it.
 # The design variables are "y_24". The Jacobian matrix is computed by finite
 # differences by default for surrogates, except for the
-# :class:`.SurrogateDiscipline` relying on :class:`.LinearRegression` which has
+# :class:`.SurrogateDiscipline` relying on :class:`.LinearRegressor` which has
 # an analytical (and constant) Jacobian.
 design_space = design_space.filter(["y_24"])
 scenario = create_scenario(
@@ -225,23 +225,23 @@ scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
 #
 # - Linear regression,
 #   based on the `Scikit-learn <http://scikit-learn.org/stable/>`_ library,
-#   for that use the :class:`.LinearRegression` class.
+#   for that use the :class:`.LinearRegressor` class.
 # - Polynomial regression,
 #   based on the `Scikit-learn  <http://scikit-learn.org/stable/>`_ library,
-#   for that use the :class:`.PolynomialRegression` class,
+#   for that use the :class:`.PolynomialRegressor` class,
 # - Gaussian processes (also known as Kriging),
 #   based on the `Scikit-learn  <http://scikit-learn.org/stable/>`_ library,
-#   for that use the :class:`.GaussianProcessRegression` class,
-# - Mixture of experts, for that use the :class:`.MixtureOfExperts` class,
+#   for that use the :class:`.GaussianProcessRegressor` class,
+# - Mixture of experts, for that use the :class:`.MOERegressor` class,
 # - Random forest models,
 #   based on the `Scikit-learn # <http://scikit-learn.org/stable/>`_ library,
 #   for that use the :class:`.RandomForestRegressor` class.
 # - RBF models (Radial Basis Functions),
 #   using the `SciPy  <http://www.scipy.org/>`_ library,
-#   for that use the :class:`.RBFRegression` class.
+#   for that use the :class:`.RBFRegressor` class.
 # - PCE models (Polynomial Chaos Expansion),
 #   based on the `OpenTURNS  <http://www.openturns.org/>`_ library,
-#   for that use the :class:`.PCERegression` class.
+#   for that use the :class:`.PCERegressor` class.
 #
 # To understand the detailed behavior of the models, please go to the
 # documentation of the used packages.

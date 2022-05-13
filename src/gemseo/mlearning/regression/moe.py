@@ -17,45 +17,41 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The mixture of experts for regression.
+r"""Mixture of experts for regression.
 
-The mixture of experts (MoE) regression model expresses the output
-as a weighted sum of local surrogate models,
-where the weights are indicating the class of the input.
+The mixture of experts (MoE) model expresses an output variable
+as the weighted sum of the outputs of local regression models,
+whose weights depend on the input data.
 
-Inputs are grouped into clusters by a classification model
-that is trained on a training set
-where the output labels are determined through a clustering algorithm.
-The outputs may be preprocessed
-through a sensor or a dimension reduction algorithm.
+During the learning stage,
+the input space is divided into :math:`K` clusters by a clustering model,
+then a classification model is built to map the input space to the cluster space,
+and finally a regression model :math:`f_k` is built for the :math:`k`-th cluster.
 
-The classification may either be hard,
+The classification may be either hard,
 in which case only one of the weights is equal to one,
 and the rest equal to zero:
 
 .. math::
 
-    y = \sum_{k=1}^K i_{C_k}(x) f_k(x),
+    y = \sum_{k=1}^K I_{C_k}(x) f_k(x),
 
 or soft,
-in which case the weights express the probabilities of belonging to each class:
+in which case the weights express the probabilities of belonging to each cluster:
 
 .. math::
 
     y = \sum_{k=1}^K \mathbb{P}(x \in C_k) f_k(x),
 
 where
-:math:`x` is the input,
-:math:`y` is the output,
-:math:`K` is the number of classes,
-:math:`(C_k)_{k=1,\cdots,K}` are the input spaces associated to the classes,
-:math:`i_{C_k}(x)` is the indicator of class :math:`k`,
-:math:`\mathbb{P}(x \in C_k)` is the probability of class :math:`k`
-given :math:`x` and
-:math:`f_k(x)` is the local surrogate model on class :math:`k`.
-
-This concept is implemented through the :class:`.MixtureOfExperts` class
-which inherits from the :class:`.MLRegressionAlgo` class.
+:math:`x` is the input data,
+:math:`y` is the output data,
+:math:`K` is the number of clusters,
+:math:`(C_k)_{k=1,\cdots,K}` are the input spaces associated to the clusters,
+:math:`I_{C_k}(x)` is the indicator of class :math:`k`,
+:math:`\mathbb{P}(x \in C_k)` is the probability
+that :math:`x` belongs to cluster :math:`k` and
+:math:`f_k(x)` is the local regression model on cluster :math:`k`.
 """
 from __future__ import annotations
 
@@ -78,7 +74,9 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.dataset import Dataset
+from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.classification.factory import ClassificationModelFactory
+from gemseo.mlearning.cluster.cluster import MLClusteringAlgo
 from gemseo.mlearning.cluster.factory import ClusteringModelFactory
 from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import MLAlgoParameterType
@@ -107,33 +105,56 @@ MLAlgoType = Dict[
 ]
 
 
-class MixtureOfExperts(MLRegressionAlgo):
-    """Mixture of experts regression.
+class MOERegressor(MLRegressionAlgo):
+    """Mixture of experts regression."""
 
-    Attributes:
-        hard (bool): Whether clustering/classification should be hard or soft.
-        cluster_algo (str): The name of the clustering algorithm.
-        classif_algo (str): The name of the classification algorithm.
-        regress_algo (str): The name of the regression algorithm.
-        cluster_params (Optional[MLAlgoParameterType]): The parameters
-            of the clustering algorithm.
-        classif_params (Optional[MLAlgoParameterType]): The parameters
-            of the classification algorithm.
-        regress_params (Optional[MLAlgoParameterType]): The parameters
-            of the regression algorithm.
-        cluster_measure (Dict[str,Union[str,EvalOptionType]]): The quality measure
-            for the clustering algorithms.
-        classif_measure (Dict[str,Union[str,EvalOptionType]]): The quality measure
-            for the classification algorithms.
-        regress_measure (Dict[str,Union[str,EvalOptionType]]): The quality measure
-            for the regression algorithms.
-        cluster_cands (List[MLAlgoType]): The clustering algorithm candidates.
-        classif_cands (List[MLAlgoType]): The classification algorithm candidates.
-        regress_cands (List[MLAlgoType]): The regression algorithm candidates.
-        clusterer (MLClusteringAlgo): The clustering algorithm.
-        classifier (MLClassificationAlgo): The classification algorithm.
-        regress_models (List(MLRegressionAlgo)): The regression algorithms.
-    """
+    hard: bool
+    """Whether clustering/classification should be hard or soft."""
+
+    cluster_algo: str
+    """The name of the clustering algorithm."""
+
+    classif_algo: str
+    """The name of the classification algorithm."""
+
+    regress_algo: str
+    """The name of the regression algorithm."""
+
+    cluster_params: MLAlgoParameterType
+    """The parameters of the clustering algorithm."""
+
+    classif_params: MLAlgoParameterType
+    """The parameters of the classification algorithm."""
+
+    regress_params: MLAlgoParameterType
+    """The parameters of the regression algorithm."""
+
+    cluster_measure: dict[str, str | EvalOptionType]
+    """The quality measure for the clustering algorithms."""
+
+    classif_measure: dict[str, str | EvalOptionType]
+    """The quality measure for the classification algorithms."""
+
+    regress_measure: dict[str, str | EvalOptionType]
+    """The quality measure for the regression algorithms."""
+
+    cluster_cands: list[MLAlgoType]
+    """The clustering algorithm candidates."""
+
+    classif_cands: list[MLAlgoType]
+    """The classification algorithm candidates."""
+
+    regress_cands: list[MLAlgoType]
+    """The regression algorithm candidates."""
+
+    clusterer: MLClusteringAlgo
+    """The clustering algorithm."""
+
+    classifier: MLClassificationAlgo
+    """The classification algorithm."""
+
+    regress_models: list[MLRegressionAlgo]
+    """The regression algorithms."""
 
     ABBR = "MoE"
 
@@ -164,7 +185,7 @@ class MixtureOfExperts(MLRegressionAlgo):
         self.hard = hard
         self.cluster_algo = "KMeans"
         self.classif_algo = "KNNClassifier"
-        self.regress_algo = "LinearRegression"
+        self.regress_algo = "LinearRegressor"
         self.cluster_params = {}
         self.classif_params = {}
         self.regress_params = {}
