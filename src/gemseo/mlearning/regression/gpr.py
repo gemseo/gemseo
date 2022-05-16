@@ -107,6 +107,7 @@ import openturns
 import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import ndarray
+from numpy import repeat
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
@@ -234,8 +235,10 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         self,
         input_data: ndarray,
     ) -> ndarray:
-        output_pred = self.algo.predict(input_data, False)
-        return output_pred
+        output_data = self.algo.predict(input_data)
+        if output_data.ndim == 1:
+            output_data = output_data[:, None]
+        return output_data
 
     def predict_std(
         self,
@@ -260,10 +263,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
             The standard deviation at the query points.
 
         Warning:
-            The standard deviation at a query point is defined as a positive scalar,
-            whatever the output dimension.
-            By the way,
-            if the output variables are transformed before the training stage,
+            If the output variables are transformed before the training stage,
             then the standard deviation is related to this transformed output space
             unlike :meth:`.predict` which returns values in the original output space.
         """
@@ -277,4 +277,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         if transformer:
             input_data = transformer.transform(input_data)
 
-        return self.algo.predict(input_data, True)[1]
+        output_data = self.algo.predict(input_data, return_std=True)[1]
+        if output_data.ndim == 1:
+            output_data = repeat(output_data[:, None], self._reduced_dimensions[1], 1)
+        return output_data

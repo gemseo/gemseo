@@ -115,7 +115,7 @@ class KLSVD(DimensionReduction):
             result = self._truncate_kl_result(result)
 
         self.algo = result
-        self.parameters["n_components"] = len(self.algo.getEigenvalues())
+        self.parameters["n_components"] = len(get_eigenvalues(self.algo))
 
     def __update_resource_map(self) -> None:
         """Update OpenTURNS constants by using its ResourceMap."""
