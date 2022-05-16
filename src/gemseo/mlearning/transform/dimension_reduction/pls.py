@@ -31,7 +31,6 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from numpy import matmul
 from numpy import ndarray
 from sklearn.cross_decomposition import PLSRegression
 
@@ -84,10 +83,7 @@ class PLS(DimensionReduction):
         self,
         data: ndarray,
     ) -> ndarray:
-        inv_data = matmul(data, self.algo.x_loadings_.T)
-        inv_data *= self.algo.x_std_
-        inv_data += self.algo.x_mean_
-        return inv_data
+        return self.algo.inverse_transform(data)
 
     def compute_jacobian(
         self,

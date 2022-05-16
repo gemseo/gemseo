@@ -75,6 +75,6 @@ All these tools are open source with non-viral licenses
    - pdfo >=1.0,<=1.2: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments
    - pyside2 <=5.15.2.1: grammar editor GUI
-   - scikit-learn >=0.18,<=1.0.2: machine learning
+   - scikit-learn >=0.18,<=1.1.0: machine learning
    - sympy >=0.7,<=1.10.1: symbolic calculations for analytic disciplines
    - xlwings ==0.27.0: Excel reading on Windows

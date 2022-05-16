@@ -42,6 +42,11 @@ a set of packages versions common to several platforms
 and python versions is tricky and challenging.
 This kind of work is mostly done by trials and errors.
 
+In addition to the dependencies of |g|,
+:file:`setup.cfg` also defines optional dependencies
+used for running the tests or building the documentation.
+These are defined in the ``[options.extras_require]`` section.
+
 Dependencies for development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -71,47 +76,25 @@ The actual call to `pip-tools`_ is done via ``tox`` (see below).
 Documentation files like :file:`CREDITS.rst`
 and :file:`dependencies.rst` shall also be updated accordingly.
 
-Test dependencies
------------------
-
-The test dependencies are defined in :file:`setup.cfg`
-so a end-user can easily run the |g| tests.
-
-To add or constrain them,
-if needed,
-change the contents of the ``test`` key in the
-``[options.extras_require]`` section
-of :file:`setup.cfg`.
-
-Update the actual test requirements used by ``tox`` with:
+Whenever a dependency defined in :file:`setup.cfg` is changed,
+update the requirements for the testing and ``doc`` environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-test-pyX
+    tox -e update-deps-test-py37,update-deps-test-py38,update-deps-test-py39,update-deps-doc
 
-for all the supported Python versions ``X``, e.g. ``tox -e update-deps-test-py39``.
+The dependencies for the ``check`` and ``dist`` environments of ``tox``
+are defined in:
 
-Other dependencies
-~~~~~~~~~~~~~~~~~~
-
-We have the following input requirements files:
-
-- dist.in: for creating the distribution.
 - check.in: for checking the source files.
+- dist.in: for creating the distribution.
 
-To add or constrain the dependencies for the documentation,
-if needed,
-change the contents of the ``doc`` key in the
-``[options.extras_require]`` section
-of :file:`setup.cfg`.
-
-To update them:
+Update the requirements for the those environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-doc
-    tox -e update-deps-dist
     tox -e update-deps-check
+    tox -e update-deps-dist
 
 Testing pypi packages
 ---------------------

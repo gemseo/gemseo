@@ -93,7 +93,7 @@ def test_predict_std_test_point(model):
     """Test std prediction for a test point."""
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
-    assert prediction_std > 0
+    assert (prediction_std > 0).all()
 
 
 def test_predict_std_input_array(model):
@@ -109,12 +109,8 @@ def test_predict_std_shape(model, x_1, x_2):
     """Test the shape and content of standard deviation."""
     input_value = {"x_1": array(x_1), "x_2": array(x_2)}
     prediction_std = model.predict_std(input_value)
-    if array(x_1).shape == (1,):
-        expected = (1,)
-    else:
-        expected = (2,)
-    assert prediction_std.shape == expected
-    assert prediction_std.var() == 0
+    assert prediction_std.ndim == 2
+    assert prediction_std.shape[1] == 2
 
 
 def test_save_and_load(model, tmp_path):
