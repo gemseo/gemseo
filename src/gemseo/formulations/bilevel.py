@@ -187,7 +187,7 @@ class BiLevel(MDOFormulation):
         Returns:
             The output variables of the adapter.
         """
-        couplings = self.couplstr.get_all_couplings()
+        couplings = self.couplstr.all_couplings
         mda2_inputs = self._get_mda2_inputs()
         top_disc = scenario.formulation.get_top_level_disc()
         top_outputs = [
@@ -223,7 +223,7 @@ class BiLevel(MDOFormulation):
             The input variables of the adapter.
         """
         shared_dv = set(self._shared_dv)
-        couplings = self.couplstr.get_all_couplings()
+        couplings = self.couplstr.all_couplings
         mda1_outputs = self._get_mda1_outputs()
         top_disc = scenario.formulation.get_top_level_disc()
         top_inputs = [inpt for disc in top_disc for inpt in disc.get_input_data_names()]
@@ -314,7 +314,7 @@ class BiLevel(MDOFormulation):
             mda_name: The class name of the MDA.
             **mda_options: The options passed to the MDA.
         """
-        disc_mda1 = self.couplstr.strongly_coupled_disciplines()
+        disc_mda1 = self.couplstr.strongly_coupled_disciplines
         if len(disc_mda1) > 0:
             self._mda1 = self._mda_factory.create(
                 mda_name, disc_mda1, grammar_type=self._grammar_type, **mda_options

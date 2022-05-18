@@ -72,6 +72,13 @@ class MDOCouplingStructure:
         self.graph = DependencyGraph(disciplines)
         self.sequence = self.graph.get_execution_sequence()
 
+        self._weak_couplings = None
+        self._weakly_coupled_disc = None
+        self._strong_couplings = None
+        self._strongly_coupled_disc = None
+        self._output_couplings = None
+        self._all_couplings = None
+
     @staticmethod
     def is_self_coupled(
         discipline: MDODiscipline,
@@ -86,16 +93,27 @@ class MDOCouplingStructure:
         Returns:
             Whether the discipline is self-coupled.
         """
-        return (
-            len(
-                set(discipline.get_input_data_names())
-                & set(discipline.get_output_data_names())
-            )
-            > 0
+        self_c_vars = set(discipline.get_input_data_names()) & set(
+            discipline.get_output_data_names()
         )
 
+        if discipline.residual_variables:
+            states = discipline.residual_variables.values()
+            self_c_vars = self_c_vars - set(states)
+        return len(self_c_vars) > 0
+
+    @property
+    def strongly_coupled_disciplines(self) -> list[MDODiscipline]:
+        """The disciplines that are strongly coupled, ie that lie in cycles in the
+        coupling graphs."""
+        if self._strongly_coupled_disc is None:
+            self._strongly_coupled_disc = self.get_strongly_coupled_disciplines(
+                True, False
+            )
+        return self._strongly_coupled_disc
+
     # methods that determine strong/weak/all couplings
-    def strongly_coupled_disciplines(
+    def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = True,
         by_group: bool = False,
@@ -130,12 +148,20 @@ class MDOCouplingStructure:
                                 strong_disciplines.append([discipline])
                             else:
                                 strong_disciplines.append(discipline)
+
         return strong_disciplines
 
+    @property
     def weakly_coupled_disciplines(self) -> list[MDODiscipline]:
+        """The disciplines that do not appear in cycles in the coupling graph."""
+        if self._weakly_coupled_disc is None:
+            self._compute_weakly_coupled()
+        return self._weakly_coupled_disc
+
+    def _compute_weakly_coupled(self) -> None:
         """Determine the weakly coupled disciplines.
 
-        These are the disciplines that do not occur in MDAs.
+        These are the disciplines that do not appear in cycles in the coupling graph.
 
         Returns:
             The weakly coupled disciplines.
@@ -146,9 +172,17 @@ class MDOCouplingStructure:
                 # find single disciplines
                 if len(component) == 1 and not self.is_self_coupled(component[0]):
                     weak_disciplines.append(component[0])
-        return weak_disciplines
+        self._weakly_coupled_disc = weak_disciplines
 
+    @property
     def strong_couplings(self) -> list[str]:
+        """The outputs of the strongly coupled disciplines that are also inputs of a
+        strongly coupled discipline."""
+        if self._strong_couplings is None:
+            self._compute_strong_couplings()
+        return self._strong_couplings
+
+    def _compute_strong_couplings(self) -> list[str]:
         """Determine the strong couplings.
 
         These are the outputs of the strongly coupled disciplines
@@ -157,21 +191,18 @@ class MDOCouplingStructure:
         Returns:
             The names of the strongly coupling variables.
         """
-        strong_disciplines = self.strongly_coupled_disciplines(
-            add_self_coupled=True, by_group=True
-        )
         # determine strong couplings = the outputs of the strongly coupled
         # disciplines that are inputs of any other discipline
         strong_couplings = set()
 
-        for group in strong_disciplines:
+        for group in self.get_strongly_coupled_disciplines(by_group=True):
             inputs = itertools.chain(*(disc.get_input_data_names() for disc in group))
             outputs = itertools.chain(*(disc.get_output_data_names() for disc in group))
             strong_couplings.update(set(inputs) & set(outputs))
 
-        return sorted(list(strong_couplings))
+        self._strong_couplings = sorted(strong_couplings)
 
-    def weak_couplings(self) -> list[str]:
+    def _compute_weak_couplings(self) -> None:
         """Determine the weak couplings.
 
         These are the outputs of the weakly coupled disciplines.
@@ -179,44 +210,38 @@ class MDOCouplingStructure:
         Returns:
             The names of the weakly coupling variables.
         """
-        weak_disciplines = self.weakly_coupled_disciplines()
         # determine strong couplings = the outputs of the weakly coupled
         # disciplines that are inputs of any other discipline
         weak_couplings = set()
-        for weak_discipline in weak_disciplines:
+        for weak_discipline in self.weakly_coupled_disciplines:
             weak_couplings.update(weak_discipline.get_output_data_names())
-        return sorted(list(weak_couplings))
+        self._weak_couplings = sorted(weak_couplings)
 
-    def input_couplings(
-        self,
-        discipline: MDODiscipline,
-    ) -> list[str]:
-        """Compute all the input coupling variables of a discipline.
+    @property
+    def weak_couplings(self) -> list[str]:
+        """The outputs of the weakly coupled disciplines."""
+        if self._weak_couplings is None:
+            self._compute_weak_couplings()
+        return self._weak_couplings
 
-        Args:
-            discipline: The discipline.
+    @property
+    def all_couplings(self) -> list[str]:
+        """The inputs of disciplines that are also ouputs of other disciplines."""
+        if self._all_couplings is None:
+            self._compute_all_couplings()
+        return self._all_couplings
 
-        Returns:
-            The names of the input coupling variables.
-        """
-        input_names = discipline.get_input_data_names()
-        strong_couplings = self.strong_couplings()
-        return sorted(name for name in input_names if name in strong_couplings)
-
-    def get_all_couplings(self) -> list[str]:
-        """Compute all the weak and strong coupling variables.
-
-        Returns:
-            The names of the coupling variables.
-        """
+    def _compute_all_couplings(self) -> None:
+        """Compute the inputs of disciplines that are also ouputs of other
+        disciplines."""
         inputs = []
         outputs = []
         for discipline in self.disciplines:
             inputs += discipline.get_input_data_names()
             outputs += discipline.get_output_data_names()
-        return sorted(list(set(inputs) & set(outputs)))
+        self._all_couplings = sorted(list(set(inputs) & set(outputs)))
 
-    def output_couplings(
+    def get_output_couplings(
         self,
         discipline: MDODiscipline,
         strong: bool = True,
@@ -232,11 +257,31 @@ class MDOCouplingStructure:
         """
         output_names = discipline.get_output_data_names()
         if strong:
-            couplings = self.strong_couplings()
+            couplings = self.strong_couplings
         else:
-            couplings = self.get_all_couplings()
-
+            couplings = self.all_couplings
         return sorted(name for name in output_names if name in couplings)
+
+    def get_input_couplings(
+        self,
+        discipline: MDODiscipline,
+        strong: bool = True,
+    ) -> list[str]:
+        """Compute all the input coupling variables of a discipline.
+
+        Args:
+            discipline: The discipline.
+            strong: If True, consider the strong couplings. Otherwise, the weak ones.
+
+        Returns:
+            The names of the input coupling variables.
+        """
+        input_names = discipline.get_input_data_names()
+        if strong:
+            couplings = self.strong_couplings
+        else:
+            couplings = self.all_couplings
+        return sorted(name for name in input_names if name in couplings)
 
     def find_discipline(
         self,

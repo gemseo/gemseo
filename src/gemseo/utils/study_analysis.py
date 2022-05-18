@@ -504,7 +504,7 @@ class StudyAnalysis:
             A MDO scenario.
         """
         coupl_struct = MDOCouplingStructure(disciplines)
-        couplings = coupl_struct.get_all_couplings()
+        couplings = coupl_struct.all_couplings
         design_space = create_design_space()
         scn_dv = scenario_descr[XLSStudyParser.DESIGN_VARIABLES]
         for var in sorted(set(scn_dv) | set(couplings)):

@@ -141,7 +141,7 @@ def test_build_func_from_disc():
             func = idf._build_func_from_outputs([func_name])
             func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
-    for coupl in idf.coupling_structure.strong_couplings():
+    for coupl in idf.coupling_structure.strong_couplings:
         func = ConsistencyCstr([coupl], idf)
         func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 

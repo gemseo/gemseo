@@ -135,8 +135,8 @@ class MDA(MDODiscipline):
         self._linearize_on_last_state = True
         self.norm0 = None
         self.normed_residual = 1.0
-        self.strong_couplings = self.coupling_structure.strong_couplings()
-        self.all_couplings = self.coupling_structure.get_all_couplings()
+        self.strong_couplings = self.coupling_structure.strong_couplings
+        self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
         self.matrix_type = JacobianAssembly.SPARSE
         self.use_lu_fact = use_lu_fact
@@ -197,7 +197,7 @@ class MDA(MDODiscipline):
                 * If there are too many coupling constraints.
                 * If outputs are defined multiple times.
         """
-        strong_c_disc = self.coupling_structure.strongly_coupled_disciplines(
+        strong_c_disc = self.coupling_structure.get_strongly_coupled_disciplines(
             add_self_coupled=False
         )
         also_strong = [
@@ -361,11 +361,20 @@ class MDA(MDODiscipline):
         exec_cache_tol = self.lin_cache_tol_fact * self.tolerance
         force_no_exec = exec_cache_tol != 0.0
         self.__check_linear_solver_options()
+        residual_variables = {}
+        for disc in self.disciplines:
+            residual_variables.update(disc.residual_variables)
+
+        couplings_adjoint = list(
+            set(self.all_couplings)
+            - set(residual_variables.keys())
+            - set(residual_variables.values())
+        )
         self.jac = self.assembly.total_derivatives(
             self.local_data,
             outputs,
             inputs,
-            self.all_couplings,
+            couplings_adjoint,
             tol=self.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
@@ -373,6 +382,7 @@ class MDA(MDODiscipline):
             exec_cache_tol=exec_cache_tol,
             force_no_exec=force_no_exec,
             linear_solver=self.linear_solver,
+            residual_variables=residual_variables,
             **self.linear_solver_options,
         )
 

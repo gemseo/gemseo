@@ -603,6 +603,9 @@ def test_cache():
     t2 = sm.exec_time
     assert t2 > t1
 
+    sm.exec_time = 1.0
+    assert sm.exec_time == 1.0
+
 
 def test_cache_h5(tmp_wd):
     """Test the HDF5 cache."""
@@ -922,3 +925,41 @@ def test_get_grammar_file_path(grammar_directory, comp_dir, in_or_out, expected)
     path = get_grammar_file_path(Sellar1, comp_dir, in_or_out, "foo")
     assert path == expected
     Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory
+
+
+def test_residuals_fail():
+    """Tests the check of residual variables with run_solves_residuals=False."""
+    disc = SobieskiMission()
+    disc.residual_variables = {"y_4": "x_shared"}
+    with pytest.raises(
+        RuntimeError,
+        match="Disciplines that do not solve their residuals are not supported yet.",
+    ):
+        disc.execute()
+
+
+def test_activate_checks():
+    out_ref = SobieskiMission().execute()["y_4"]
+    disc = SobieskiMission()
+    disc.activate_input_data_check = False
+    disc.activate_output_data_check = False
+    assert out_ref == disc.execute()["y_4"]
+
+
+def test_no_cache():
+    disc = SobieskiMission()
+    disc.execute()
+    disc.execute()
+    assert disc.n_calls == 1
+
+    disc = SobieskiMission()
+    disc.cache = None
+    disc.execute()
+    disc.execute()
+    assert disc.n_calls == 2
+
+    with pytest.raises(ValueError, match="does not have a cache"):
+        disc.cache_tol
+
+    with pytest.raises(ValueError, match="does not have a cache"):
+        disc.cache_tol = 1.0

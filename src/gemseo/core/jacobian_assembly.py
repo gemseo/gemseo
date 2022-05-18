@@ -20,6 +20,7 @@
 """Coupled derivatives calculations."""
 from __future__ import annotations
 
+import itertools
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
@@ -151,13 +152,15 @@ class JacobianAssembly:
                 + " instead"
             )
 
-    def compute_sizes(self, functions, variables, couplings):
+    def compute_sizes(self, functions, variables, couplings, residual_variables=None):
         """Compute the number of scalar functions, variables and couplings.
 
         Args:
             functions: The functions to differentiate.
             variables: The differentiation variables.
             couplings: The coupling variables.
+            residual_variables: The mapping of residuals of disciplines to their
+                respective state variables.
 
         Raises:
             ValueError: When the size of some variables could not be determined.
@@ -167,21 +170,23 @@ class JacobianAssembly:
         # search for the functions/variables/couplings in the
         # Jacobians of the disciplines
 
-        # functions
-        for function in functions:
-            discipline = self.coupling_structure.find_discipline(function)
-            self.disciplines[function] = discipline
-            # get an arbitrary Jacobian and compute the number of rows
-            size = next(iter(discipline.jac[function].values())).shape[0]
-            self.sizes[function] = size
+        if residual_variables is not None:
+            outputs = itertools.chain(
+                functions,
+                couplings,
+                residual_variables.keys(),
+                residual_variables.values(),
+            )
+        else:
+            outputs = itertools.chain(functions, couplings)
 
-        # couplings
-        for coupling in couplings:
-            discipline = self.coupling_structure.find_discipline(coupling)
-            self.disciplines[coupling] = discipline
+        # functions and coupling and states
+        for output in outputs:
+            discipline = self.coupling_structure.find_discipline(output)
+            self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
-            size = next(iter(discipline.jac[coupling].values())).shape[0]
-            self.sizes[coupling] = size
+            size = next(iter(discipline.jac[output].values())).shape[0]
+            self.sizes[output] = size
 
         # variables
         for variable in variables:
@@ -251,7 +256,6 @@ class JacobianAssembly:
             The derivatives of the residuals wrt the variables.
         """
         dres_dvar = dok_matrix((n_residuals, n_variables))
-
         out_i = 0
         # Row blocks
         for residual in residuals:
@@ -268,7 +272,6 @@ class JacobianAssembly:
                     ones_mat = (ones(variable_size), 0)
                     shape = (variable_size, variable_size)
                     diag_mat = -dia_matrix(ones_mat, shape=shape)
-
                     if self.coupling_structure.is_self_coupled(discipline):
                         jac = residual_jac.get(variable, None)
                         if jac is not None:
@@ -288,8 +291,8 @@ class JacobianAssembly:
                         dres_dvar[out_i : out_i + n_i, out_j : out_j + n_j] = jac
                 # Shift the column by block width
                 out_j += variable_size
-            # Shift the row by block height
             out_i += residual_size
+
         return dres_dvar.real
 
     def _dres_dvar_linop(self, residuals, variables, n_residuals, n_variables):
@@ -441,7 +444,10 @@ class JacobianAssembly:
         """
         if matrix_type == JacobianAssembly.SPARSE:
             sparse_dres_dvar = self._dres_dvar_sparse(
-                residuals, variables, n_residuals, n_variables
+                residuals,
+                variables,
+                n_residuals,
+                n_variables,
             )
             if transpose:
                 return sparse_dres_dvar.T
@@ -506,6 +512,7 @@ class JacobianAssembly:
         use_lu_fact=False,
         exec_cache_tol=None,
         force_no_exec=False,
+        residual_variables=None,
         **linear_solver_options,
     ):
         """Compute the Jacobian of total derivatives of the coupled system formed by the
@@ -528,6 +535,8 @@ class JacobianAssembly:
             force_no_exec: Whether the discipline is not re-executed,
                 the cache is loaded anyway.
             linear_solver_options: The options passed to the linear solver factory.
+            residual_variables: a mapping of residuals of disciplines to
+                their respective state variables.
 
         Returns:
             The total coupled derivatives.
@@ -540,43 +549,60 @@ class JacobianAssembly:
 
         self.__check_inputs(functions, variables, couplings, matrix_type, use_lu_fact)
 
+        couplings_and_res = couplings.copy()
+        couplings_and_states = couplings.copy()
         # linearize all the disciplines
-        self._add_differentiated_inouts(functions, variables, couplings)
+        if residual_variables is not None and residual_variables:
+            couplings_and_res += list(residual_variables.keys())
+            couplings_and_states += list(residual_variables.values())
+
+        self._add_differentiated_inouts(functions, variables, couplings_and_res)
 
         for disc in self.coupling_structure.disciplines:
             if disc.cache is not None and exec_cache_tol is not None:
                 disc.cache_tol = exec_cache_tol
-
             disc.linearize(in_data, force_no_exec=force_no_exec)
 
         # compute the sizes from the Jacobians
-        self.compute_sizes(functions, variables, couplings)
+        self.compute_sizes(functions, variables, couplings, residual_variables)
         n_variables = self.compute_dimension(variables)
         n_functions = self.compute_dimension(functions)
-        n_couplings = self.compute_dimension(couplings)
-
+        n_residuals = self.compute_dimension(couplings)
+        if residual_variables is not None:
+            n_residuals += self.compute_dimension(residual_variables.keys())
+            n_variables += self.compute_dimension(residual_variables.values())
         # compute the partial derivatives of the residuals
-        dres_dx = self.dres_dvar(couplings, variables, n_couplings, n_variables)
+        dres_dx = self.dres_dvar(
+            couplings_and_res,
+            variables,
+            n_residuals,
+            n_variables,
+        )
 
         # compute the partial derivatives of the interest functions
         (dfun_dx, dfun_dy) = ({}, {})
         for fun in functions:
             dfun_dx[fun] = self.dfun_dvar(fun, variables, n_variables)
-            dfun_dy[fun] = self.dfun_dvar(fun, couplings, n_couplings)
+            dfun_dy[fun] = self.dfun_dvar(fun, couplings, n_residuals)
 
         mode = self._check_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
         if mode == JacobianAssembly.DIRECT_MODE:
             # sparse square matrix dR/dy
+
             dres_dy = self.dres_dvar(
-                couplings, couplings, n_couplings, n_couplings, matrix_type=matrix_type
+                couplings_and_res,
+                couplings_and_states,
+                n_residuals,
+                n_residuals,
+                matrix_type=matrix_type,
             )
             # compute the coupled derivatives
             total_derivatives = self.coupled_system.direct_mode(
                 functions,
                 n_variables,
-                n_couplings,
+                n_residuals,
                 dres_dx,
                 dres_dy,
                 dfun_dx,
@@ -588,10 +614,10 @@ class JacobianAssembly:
         elif mode == JacobianAssembly.ADJOINT_MODE:
             # transposed square matrix dR/dy^T
             dres_dy_t = self.dres_dvar(
-                couplings,
-                couplings,
-                n_couplings,
-                n_couplings,
+                couplings_and_res,
+                couplings_and_states,
+                n_residuals,
+                n_residuals,
                 matrix_type=matrix_type,
                 transpose=True,
             )

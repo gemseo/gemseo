@@ -199,7 +199,7 @@ class ScalableProblem(unittest.TestCase):
             scalable_disciplines = ScalableProblem.scalable_disciplines
             coupling_structure = MDOCouplingStructure(scalable_disciplines)
             # add an optimization variable for each coupling variable
-            for coupling in coupling_structure.strong_couplings():
+            for coupling in coupling_structure.strong_couplings:
                 value = 0.5 * np.ones(ScalableProblem.sizes[coupling])
                 design_space.add_variable(
                     coupling,
