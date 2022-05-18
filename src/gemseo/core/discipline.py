@@ -23,6 +23,7 @@ from __future__ import annotations
 import collections
 import logging
 import os
+import pickle
 import sys
 from collections import defaultdict
 from copy import deepcopy
@@ -52,6 +53,7 @@ from gemseo.core.discipline_data import DisciplineData
 if TYPE_CHECKING:
     from gemseo.core.execution_sequence import SerialExecSequence
 
+
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.grammar import AbstractGrammar, InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
@@ -59,13 +61,6 @@ from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
 from pathlib import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
-
-# TODO: remove try except when py2 is no longer supported
-try:
-    import cPickle as pickle  # noqa: N813
-except ImportError:
-    import pickle
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -104,8 +99,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         output_grammar (AbstractGrammar): The output grammar.
         data_processor (DataProcessor): A tool to pre- and post-process discipline data.
         re_exec_policy (str): The policy to re-execute the same discipline.
-        residual_variables (List[str]): The output variables
+        residual_variables (Mapping[str, str]): The output variables
+            mapping to their inputs,
             to be considered as residuals; they shall be equal to zero.
+        run_solves_residuals boolean: if True, the run method shall solve the residuals.
         jac (Dict[str, Dict[str, ndarray]]): The Jacobians of the outputs wrt inputs
             of the form ``{output: {input: matrix}}``.
         exec_for_lin (bool): Whether the last execution was due to a linearization.
@@ -163,6 +160,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     _ATTR_TO_SERIALIZE = (
         "residual_variables",
+        "run_solves_residuals",
         "output_grammar",
         "name",
         "_local_data",
@@ -245,7 +243,10 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # and not running
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
         # : list of outputs that shall be null, to be considered as residuals
-        self.residual_variables = []
+        self.residual_variables = {}
+
+        self.run_solves_residuals = False
+
         self._differentiated_inputs = []  # : outputs to differentiate
         # : inputs to be used for differentiation
         self._differentiated_outputs = []
@@ -868,7 +869,15 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The discipline local data after execution.
+
+        Raises:
+            RuntimeError: When residual_variables are declared but
+                self.run_solves_residuals is False. This is not suported yet.
         """
+        if self.residual_variables and not self.run_solves_residuals:
+            raise RuntimeError(
+                "Disciplines that do not solve their residuals are not supported yet."
+            )
         # Load the default_inputs if the user did not provide all required data
         input_data = self._filter_inputs(input_data)
 

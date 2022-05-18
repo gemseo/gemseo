@@ -110,11 +110,8 @@ class MDAChain(MDA):
             linear_solver_options=linear_solver_options,
         )
 
-        if (
-            not self.coupling_structure.get_all_couplings()
-            and not self._chain_linearize
-        ):
-            LOGGER.warning("No coupling in MDA, switching chain_linearize to True")
+        if not self.coupling_structure.all_couplings and not self._chain_linearize:
+            LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
             self._chain_linearize = True
 
         self._create_mdo_chain(

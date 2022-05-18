@@ -1,0 +1,1 @@
+The coupled adjoint can now account for disciplines with state residuals.

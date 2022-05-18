@@ -21,6 +21,7 @@ from os.path import exists
 from random import shuffle
 
 import pytest
+from gemseo.api import create_discipline
 from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -52,14 +53,14 @@ class TestCouplingStructure(unittest.TestCase):
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
         coupling_structure = MDOCouplingStructure(disciplines)
 
-        strong_couplings = coupling_structure.strong_couplings()
-        weak_couplings = coupling_structure.weak_couplings()
+        strong_couplings = coupling_structure.strong_couplings
+        weak_couplings = coupling_structure.weak_couplings
         assert strong_couplings == [Y_1, Y_2]
         assert weak_couplings == [C_1, C_2, OBJ]
 
-        input_coupl = coupling_structure.input_couplings(disciplines[1])
+        input_coupl = coupling_structure.get_input_couplings(disciplines[1])
         assert input_coupl == [Y_1]
-        input_coupl = coupling_structure.input_couplings(disciplines[2])
+        input_coupl = coupling_structure.get_input_couplings(disciplines[2])
         assert input_coupl == [Y_1, Y_2]
         self.assertRaises(TypeError, coupling_structure.find_discipline, self)
 
@@ -68,9 +69,13 @@ class TestCouplingStructure(unittest.TestCase):
     def test_strong_weak_coupling(self):
         disciplines = [SobieskiStructure(), SobieskiMission()]
         coupling_structure = MDOCouplingStructure(disciplines)
-        s1_o_strong = coupling_structure.output_couplings(disciplines[0], strong=True)
+        s1_o_strong = coupling_structure.get_output_couplings(
+            disciplines[0], strong=True
+        )
         assert len(s1_o_strong) == 0
-        s1_o_weak = coupling_structure.output_couplings(disciplines[0], strong=False)
+        s1_o_weak = coupling_structure.get_output_couplings(
+            disciplines[0], strong=False
+        )
         assert s1_o_weak == ["y_14"]
 
     def test_n2(self):
@@ -120,11 +125,11 @@ class TestCouplingStructure(unittest.TestCase):
         sc_disc.execute()
 
         coupl = MDOCouplingStructure([sc_disc])
-        assert coupl.get_all_couplings() == ["y"]
-        assert coupl.strongly_coupled_disciplines() == [sc_disc]
-        assert coupl.weakly_coupled_disciplines() == []
-        assert coupl.weak_couplings() == []
-        assert coupl.strong_couplings() == ["y"]
+        assert coupl.all_couplings == ["y"]
+        assert coupl.strongly_coupled_disciplines == [sc_disc]
+        assert coupl.weakly_coupled_disciplines == []
+        assert coupl.weak_couplings == []
+        assert coupl.strong_couplings == ["y"]
 
 
 class SelfCoupledDisc(MDODiscipline):
@@ -149,7 +154,7 @@ def get_strong_couplings(analytic_expressions):
         The strong couplings.
     """
     disciplines = [AnalyticDiscipline(desc) for desc in analytic_expressions]
-    return MDOCouplingStructure(disciplines).strong_couplings()
+    return MDOCouplingStructure(disciplines).strong_couplings
 
 
 def test_strong_couplings_basic():
@@ -227,3 +232,30 @@ def test_n2_no_coupling(
     MDOCouplingStructure(disciplines).plot_n2_chart(
         f"{baseline_images[0]}.png", show_data_names, save=True, show=False
     )
+
+
+def test_coupl_properties():
+    """Test the weak_couplings and get_input_couplings on the Sellar problem."""
+    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+    coupl = MDOCouplingStructure(disciplines)
+    scd = coupl.strongly_coupled_disciplines
+    assert id(scd) == id(coupl.strongly_coupled_disciplines)
+
+    wcp = coupl.weak_couplings
+    assert id(wcp) == id(coupl.weak_couplings)
+
+    assert coupl.get_input_couplings(disciplines[0]) == ["y_2"]
+
+    assert coupl.get_input_couplings(disciplines[1]) == ["y_1"]
+
+    assert coupl.get_input_couplings(disciplines[2], strong=True) == ["y_1", "y_2"]
+
+    assert sorted(coupl.get_input_couplings(disciplines[2], strong=False)) == [
+        "y_1",
+        "y_2",
+    ]
+
+    disciplines = create_discipline(["Sellar1", "SellarSystem"])
+    coupl = MDOCouplingStructure(disciplines)
+    assert coupl.get_input_couplings(disciplines[1], strong=False) == ["y_1"]
+    assert coupl.get_input_couplings(disciplines[1], strong=True) == []

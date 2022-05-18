@@ -283,7 +283,7 @@ class ScalableProblem:
         :param list(MDODiscipline) disciplines: list of MDODiscipline
         """
         cpl_structure = MDOCouplingStructure(disciplines)
-        st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines()
+        st_cpl_disciplines = cpl_structure.strongly_coupled_disciplines
         wk_cpl_disciplines = cpl_structure.weakly_coupled_disciplines()
         obj = self.objective_function
         max_obj = self.maximize_objective
@@ -354,7 +354,7 @@ class ScalableProblem:
 
         if formulation == "IDF":
             coupling_structure = MDOCouplingStructure(disciplines)
-            all_couplings = set(coupling_structure.get_all_couplings())
+            all_couplings = set(coupling_structure.all_couplings)
             for name in all_couplings:
                 size = self.scaled_sizes[name]
                 design_space.add_variable(

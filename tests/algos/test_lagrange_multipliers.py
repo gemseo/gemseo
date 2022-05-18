@@ -26,13 +26,12 @@ from gemseo.algos.opt.opt_factory import OptimizersFactory
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.analytical.power_2 import Power2
+from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.derivatives_approx import comp_best_step
 from numpy import array
 
 
 DS_FILE = Path(__file__).parent / "sobieski_design_space.txt"
-
-
 NLOPT_OPTIONS = {
     "eq_tolerance": 1e-11,
     "ftol_abs": 1e-14,
@@ -160,43 +159,32 @@ def test_lagrangian_validation_ineq_normalize():
 
 @pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
 def test_lagrangian_constraint(constraint_type):
-    disciplines = create_discipline(
-        [
-            "SobieskiStructure",
-            "SobieskiPropulsion",
-            "SobieskiAerodynamics",
-            "SobieskiMission",
-        ]
-    )
+    disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
+
+    design_space = SellarDesignSpace()
     scenario = create_scenario(
         disciplines,
         formulation="MDF",
-        objective_name="y_4",
-        design_space=DS_FILE,
-        tolerance=1e-12,
-        max_mda_iter=40,
-        warm_start=True,
-        maximize_objective=True,
-        sub_mda_class="MDAGaussSeidel",
-        use_lu_fact=True,
-        linear_solver_tolerance=1e-15,
+        objective_name="obj",
+        design_space=design_space,
     )
-    for output_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(output_name, constraint_type=constraint_type)
 
-    run_inputs = {
-        "max_iter": 20,
-        "algo": "SLSQP",
-        "algo_options": {
-            "ftol_rel": 1e-10,
-            "ineq_tolerance": 2e-3,
-            "normalize_design_space": True,
-        },
-    }
-    scenario.execute(run_inputs)
+    scenario.add_constraint("c_1", constraint_type)
+    scenario.add_constraint("c_2", constraint_type)
+
+    scenario.execute({"max_iter": 50, "algo": "SLSQP"})
     problem = scenario.formulation.opt_problem
     lagrange = LagrangeMultipliers(problem)
-    lagrange.compute(problem.solution.x_opt)
+
+    lag = lagrange.compute(problem.solution.x_opt)
+
+    if constraint_type == "eq":
+        assert lagrange.EQUALITY in lag
+    else:
+        assert lagrange.INEQUALITY in lag
+
+    for c_vals in lag.values():
+        assert (c_vals[-1] > 0).all()
 
 
 def test_lagrange_store(problem):

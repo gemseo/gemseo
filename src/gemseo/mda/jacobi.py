@@ -144,13 +144,13 @@ class MDAJacobi(MDA):
         ones may need one more iteration. The base MDA class uses strong couplings only
         which is not satisfying here if all disciplines are not strongly coupled.
         """
-        if len(self.coupling_structure.strongly_coupled_disciplines()) == len(
+        if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
         ):
             return super()._compute_input_couplings()
 
         inputs = self.get_input_data_names()
-        strong_cpl = self.coupling_structure.get_all_couplings()
+        strong_cpl = self.coupling_structure.all_couplings
         self._input_couplings = set(strong_cpl) & set(inputs)
 
     def execute_all_disciplines(

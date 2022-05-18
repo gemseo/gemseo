@@ -103,7 +103,7 @@ class IDF(MDOFormulation):
             self._parallel_exec = None
 
         self.coupling_structure = MDOCouplingStructure(disciplines)
-        self.all_couplings = self.coupling_structure.get_all_couplings()
+        self.all_couplings = self.coupling_structure.all_couplings
         self._update_design_space()
         self.normalize_constraints = normalize_constraints
         self._build_constraints()
@@ -279,7 +279,7 @@ class IDF(MDOFormulation):
         """
         # Building constraints per generator couplings
         for discipline in self.disciplines:
-            couplings = self.coupling_structure.output_couplings(
+            couplings = self.coupling_structure.get_output_couplings(
                 discipline, strong=False
             )
             if couplings:
