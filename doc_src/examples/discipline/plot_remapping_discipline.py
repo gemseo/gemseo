@@ -27,7 +27,7 @@ to rename the input and output variables of an original discipline
 including defining a variable as a part of an original one.
 """
 from gemseo.core.discipline import MDODiscipline
-from gemseo.disciplines.renaming import RemappingDiscipline
+from gemseo.disciplines.remapping import RemappingDiscipline
 from numpy import array
 
 # %%
