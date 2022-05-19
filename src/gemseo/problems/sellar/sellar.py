@@ -263,7 +263,7 @@ class Sellar2(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.initialize_from_data_names(["x_local", "x_shared", "y_1"])
+        self.input_grammar.initialize_from_data_names(["x_shared", "y_1"])
         self.output_grammar.initialize_from_data_names(["y_2"])
         self.default_inputs = get_inputs(self.input_grammar.get_data_names())
 
