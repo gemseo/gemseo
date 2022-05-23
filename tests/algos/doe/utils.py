@@ -94,7 +94,7 @@ def check_problem_execution(
     """
     problem = get_problem(dim)
     doe_library.execute(problem, algo_name=algo_name, **options)
-    samples = doe_library.samples
+    samples = doe_library.unit_samples
 
     pb_name = problem.__class__.__name__
     error_msg = "DOE with {} failed to generate sample on problem {}".format(

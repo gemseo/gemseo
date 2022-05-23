@@ -189,7 +189,7 @@ def test_algos(algo_name, dim, n_samples, options):
     problem = get_problem(dim)
     doe_library = DOEFactory().create(DOE_LIB_NAME)
     doe_library.execute(problem, algo_name=algo_name, dim=dim, **options)
-    assert doe_library.samples.shape == (n_samples, dim)
+    assert doe_library.unit_samples.shape == (n_samples, dim)
 
 
 def get_expected_nsamples(

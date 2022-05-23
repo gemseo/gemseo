@@ -56,7 +56,7 @@ def test_diagonal_doe():
     doe_library = execute_problem(
         DOE_LIB_NAME, algo_name="DiagonalDOE", dim=dim, n_samples=n_samples
     )
-    samples = doe_library.samples
+    samples = doe_library.unit_samples
     assert samples.shape == (n_samples, dim)
     assert samples[4, 0] == approx(0.4, rel=0.0, abs=0.1)
 
