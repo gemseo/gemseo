@@ -21,8 +21,8 @@
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
+from gemseo.utils.testing import image_comparison
 from matplotlib import pyplot as plt
-from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
 
@@ -84,7 +84,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
 ):

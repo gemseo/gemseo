@@ -24,7 +24,7 @@ import pytest
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
@@ -85,7 +85,7 @@ def test_save(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     assert file_path.exists()
 
 
-@image_comparison(["gantt_chart"], extensions=["png"])
+@image_comparison(["gantt_chart"])
 def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     """Tests the Gantt chart plot creation."""
     # If needed for figure regeneration:
@@ -118,7 +118,7 @@ def test_plot(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     create_gantt_chart(save=False, font_size=10)
 
 
-@image_comparison(["gantt_chart_filtered"], extensions=["png"])
+@image_comparison(["gantt_chart_filtered"])
 def test_plot_filter(tmp_wd, pyplot_close_all, reset_time_stamping, time_stamps_data):
     """Tests the Gantt chart plot creation with disciplines filter."""
     MDODiscipline.time_stamps = time_stamps_data

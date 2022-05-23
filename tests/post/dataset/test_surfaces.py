@@ -18,12 +18,10 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class Surfaces plotting samples of a 2D variable with surfaces."""
-import sys
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 
 
@@ -75,17 +73,13 @@ TEST_PARAMETERS = {
 }
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 6),
-    reason="Image comparison based on Surfaces does not work with Python 3.6",
-)
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TEST_PARAMETERS.values(),
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(kwargs, baseline_images, dataset, pyplot_close_all):
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", None)

@@ -22,8 +22,8 @@ import re
 
 import pytest
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.utils.testing import image_comparison
 from matplotlib import pyplot as plt
-from matplotlib.testing.decorators import image_comparison
 
 from .test_andrews_curves import dataset  # noqa: F401
 
@@ -55,7 +55,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, extensions=["png"], tol=0.025)
+@image_comparison(None)
 def test_plot(
     dataset,  # noqa: F811
     kwargs,

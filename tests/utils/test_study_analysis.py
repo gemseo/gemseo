@@ -17,7 +17,6 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import shutil
-import sys
 from pathlib import Path
 
 import pytest
@@ -25,10 +24,6 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.utils.study_analysis import StudyAnalysis
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
-
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 6), reason="study analysis requires python 3.6 or higher"
-)
 
 try:
     skip_condition = shutil.which("pdflatex") is None

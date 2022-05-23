@@ -17,11 +17,7 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
-
-import pytest
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from numpy import array
@@ -123,10 +119,6 @@ def test_log_convergence(sellar_disciplines):
     assert mda._log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of Jacobi in parallel.
 

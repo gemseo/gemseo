@@ -6,7 +6,7 @@
 #
 attrs==21.4.0
     # via pytest
-certifi==2021.10.8
+certifi==2022.5.18
     # via requests
 charset-normalizer==2.0.12
     # via requests
@@ -24,6 +24,8 @@ execnet==1.9.0
     # via pytest-xdist
 fastjsonschema==2.15.3
     # via gemseo (setup.py)
+fonttools==4.33.3
+    # via matplotlib
 genson==1.2.2
     # via gemseo (setup.py)
 graphviz==0.20
@@ -42,7 +44,7 @@ kiwisolver==1.4.2
     # via matplotlib
 markupsafe==2.1.1
     # via jinja2
-matplotlib==3.4.3
+matplotlib==3.5.2
     # via gemseo (setup.py)
 mpmath==1.2.1
     # via sympy
@@ -69,12 +71,13 @@ openturns==1.18
 packaging==21.3
     # via
     #   gemseo (setup.py)
+    #   matplotlib
     #   pytest
 pandas==1.4.2
     # via gemseo (setup.py)
 pdfo==1.2
     # via gemseo (setup.py)
-pillow==9.1.0
+pillow==9.1.1
     # via matplotlib
 pluggy==1.0.0
     # via pytest

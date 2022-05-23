@@ -21,8 +21,8 @@
 import pytest
 from gemseo.post.dataset.radviz import Radar
 from gemseo.problems.dataset.iris import IrisDataset
+from gemseo.utils.testing import image_comparison
 from matplotlib import pyplot as plt
-from matplotlib.testing.decorators import image_comparison
 
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -49,7 +49,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, pyplot_close_all, fig_and_axes):
     """Test images created by Radar._plot against references."""
     dataset = IrisDataset()

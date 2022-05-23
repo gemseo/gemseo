@@ -35,7 +35,7 @@ these are:
     - genson ==1.2.2
     - h5py >=2.3,<=3.6.0
     - jinja2 <=3.1.2
-    - matplotlib >=2,<=3.4.3
+    - matplotlib >=2,<=3.5.2
     - networkx >=2.2,<=2.8
     - numpy >=1.10,<=1.22.3
     - packaging <=21.3

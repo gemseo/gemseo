@@ -37,7 +37,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 
 from .test_dependency_graph import create_disciplines_from_desc
@@ -207,7 +207,7 @@ def test_strong_couplings_self_coupled():
         ),
     ],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_n2_no_coupling(
     tmp_wd, baseline_images, show_data_names, descriptions, pyplot_close_all
 ):

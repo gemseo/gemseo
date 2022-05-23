@@ -22,8 +22,8 @@ import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.yvsx import YvsX
+from gemseo.utils.testing import image_comparison
 from matplotlib import pyplot as plt
-from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
 
@@ -38,7 +38,7 @@ def dataset() -> Dataset:
     return dataset
 
 
-@image_comparison(["Subplots"], extensions=["png"])
+@image_comparison(["Subplots"])
 def test_plot(dataset, pyplot_close_all):
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)

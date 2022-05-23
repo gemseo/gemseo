@@ -17,7 +17,6 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
 import unittest
 from timeit import default_timer as timer
 
@@ -28,7 +27,6 @@ from gemseo.api import create_scenario
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.core.parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution import DiscParallelLinearization
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.problems.sellar.sellar import get_inputs
 from gemseo.problems.sellar.sellar import Sellar1
@@ -41,11 +39,6 @@ from numpy import complex128
 from numpy import equal
 from numpy import ones
 from scipy.optimize import rosen
-
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 
 
 class CallableWorker:

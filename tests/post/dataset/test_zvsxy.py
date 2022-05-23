@@ -18,13 +18,11 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test the class ZvsXY plotting a variable z versus two variables x and y."""
-import sys
-
 import pytest
 from gemseo.core.dataset import Dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.utils.testing import image_comparison
 from matplotlib import pyplot as plt
-from matplotlib.testing.decorators import image_comparison
 from numpy import array
 
 
@@ -123,10 +121,6 @@ TEST_PARAMETERS = {
 }
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 6),
-    reason="Image comparison based on Surfaces does not work with Python 3.6",
-)
 @pytest.mark.parametrize(
     "kwargs, properties, baseline_images",
     TEST_PARAMETERS.values(),
@@ -134,7 +128,7 @@ TEST_PARAMETERS = {
     ids=TEST_PARAMETERS.keys(),
 )
 @pytest.mark.parametrize("fig_and_axes", [False, True])
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(
     kwargs, properties, baseline_images, dataset, pyplot_close_all, fig_and_axes
 ):

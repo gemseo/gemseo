@@ -17,7 +17,6 @@
 #                         documentation
 #        :author: Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -27,7 +26,6 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
@@ -324,10 +322,6 @@ def test_log_convergence(sellar_disciplines):
         assert mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of MDAChain in parallel.
 

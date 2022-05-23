@@ -18,11 +18,9 @@
 #        :author: Charlie Vanaret, Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import re
-import sys
 
 import pytest
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.mda.newton import MDAQuasiNewton
 from gemseo.problems.sellar.sellar import Sellar1
@@ -231,10 +229,6 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 @pytest.mark.parametrize(
     "mda_class,expected_obj",
     [("MDAQuasiNewton", -591.35), ("MDANewtonRaphson", -608.175)],
