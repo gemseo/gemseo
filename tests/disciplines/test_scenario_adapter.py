@@ -129,29 +129,32 @@ def test_adapter_miss_dvs(scenario):
     MDOScenarioAdapter(scenario, inputs, outputs)
 
 
-def test_adapter_resetx0(scenario):
-    """"""
+def test_adapter_reset_x0_before_opt(scenario):
+    """Check MDOScenarioAdapter.reset_x0_before_opt()."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
+    design_space = scenario.design_space
+    initial_design = design_space.dict_to_array(design_space.get_current_x_dict())
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
-    x0_dict = adapter.scenario.design_space.get_current_x_dict()
-    x0_list = adapter.scenario.design_space.dict_to_array(x0_dict)
     adapter.execute()
-    x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
+    x_shared = adapter.default_inputs["x_shared"] * 1.01
     adapter.default_inputs["x_shared"] = x_shared
+    # initial_x is reset to the initial design value before optimization;
+    # thus the optimization starts from initial_design.
     adapter.execute()
-    x_list = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
-    assert np_all(x_list == x0_list)
+    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
+    assert np_all(initial_x == initial_design)
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=False)
     adapter.execute()
-    x1_dict = adapter.scenario.design_space.get_current_x_dict()
-    x1_list = adapter.scenario.design_space.dict_to_array(x1_dict)
+    new_initial_design = design_space.dict_to_array(design_space.get_current_x_dict())
     adapter.default_inputs["x_shared"] = x_shared
+    # initial_x is NOT reset to the initial design value before optimization;
+    # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
-    x_list = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
-    # compare current initial point to current_x after last optim
-    assert np_all(x_list == x1_list)
+    initial_x = adapter.scenario.formulation.opt_problem.database.get_x_by_iter(0)
+    assert np_all(initial_x == new_initial_design)
+    assert not np_all(initial_x == initial_design)
 
 
 def test_adapter_set_bounds(scenario):

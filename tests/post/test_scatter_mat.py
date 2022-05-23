@@ -26,7 +26,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.power_2 import Power2
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import ones
 from numpy import power
@@ -119,7 +119,7 @@ def test_non_existent_var(tmp_wd):
         (["c_2", "x_shared", "x_local", "obj", "c_1"], ["all_var_func"]),
     ],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_scatter_plot(baseline_images, variables, pyplot_close_all):
     """Test images created by the post_process method against references.
 
@@ -200,7 +200,7 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
     "filter_non_feasible, baseline_images",
     [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_all):
     """Test if the filter_non_feasible option works properly.
 

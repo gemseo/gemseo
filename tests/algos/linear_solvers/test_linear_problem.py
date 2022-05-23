@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pytest
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import diag
 from numpy import eye
 from numpy import ones
@@ -68,7 +68,7 @@ def test_size_checks(lhs, rhs):
         problem.check()
 
 
-@image_comparison(["residuals0"], extensions=["png"])
+@image_comparison(["residuals0"])
 def test_plot_residuals(tmp_wd, pyplot_close_all):
     """Tests the residuals plot creation."""
     random.seed(1)

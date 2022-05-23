@@ -24,8 +24,6 @@ from gemseo.problems.scalable.parametric.study import TMParamSSPost
 
 from ....utils import test_study_analysis
 
-pytestmark = test_study_analysis.pytestmark
-
 
 @pytest.mark.skipif(**test_study_analysis.has_no_pdflatex)
 def test_tm_study_param(tmp_wd):

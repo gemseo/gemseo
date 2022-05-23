@@ -17,13 +17,11 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
 from pathlib import Path
 
 import pytest
 from gemseo.api import create_discipline
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
@@ -140,10 +138,6 @@ def test_log_convergence():
     assert mda.log_convergence
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_doe(generate_parallel_doe_data):
     """Test the execution of GaussSeidel in parallel.
 

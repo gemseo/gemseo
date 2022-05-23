@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -51,7 +51,7 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_post(kwargs, baseline_images, problem, pyplot_close_all):
     """Test the radar chart post-processing with the Power2 problem."""
     post = RadarChart(problem)

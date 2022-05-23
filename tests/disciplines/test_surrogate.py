@@ -16,13 +16,10 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
-
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution import IS_WIN
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.linreg import LinearRegressor
@@ -112,10 +109,6 @@ def test_linearize(dataset):
     assert allclose(out["y_2"]["x_2"][0], -3.0)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 7) and IS_WIN,
-    reason="Subprocesses in ParallelExecution may hang randomly for Python < 3.7 on Windows.",
-)
 def test_parallel_execute(dataset):
     """Test the execution of the surrogate discipline in parallel."""
     surr_1 = SurrogateDiscipline("LinearRegressor", dataset)

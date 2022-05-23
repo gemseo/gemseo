@@ -410,7 +410,7 @@ class SobolAnalysis(SensitivityAnalysis):
         errorbar_options = {"marker": "o", "linestyle": "", "markersize": 7}
         trans1 = Affine2D().translate(-0.01, 0.0) + ax.transData
         trans2 = Affine2D().translate(+0.01, 0.0) + ax.transData
-        values = [first_order_indices[name] for name in names]
+        values = [first_order_indices[name][0] for name in names]
         yerr = array(
             [
                 [
@@ -423,14 +423,14 @@ class SobolAnalysis(SensitivityAnalysis):
         ax.errorbar(
             names,
             values,
-            yerr,
+            yerr=yerr,
             label="First order",
             transform=trans2,
             **errorbar_options,
         )
         intervals = self.get_intervals(False)
         intervals = intervals[output[0]][output[1]]
-        values = [total_order_indices[name] for name in names]
+        values = [total_order_indices[name][0] for name in names]
         yerr = array(
             [
                 [

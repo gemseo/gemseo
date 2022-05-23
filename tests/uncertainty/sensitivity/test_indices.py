@@ -18,8 +18,6 @@
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the class SensitivityAnalysis."""
-import sys
-
 import pytest
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.api import create_discipline
@@ -31,7 +29,7 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import linspace
 from numpy import pi
@@ -149,7 +147,7 @@ BARPLOT_TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=BARPLOT_TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis, pyplot_close_all):
     """Check that a Barplot is created with plot_bar."""
     mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
@@ -300,10 +298,6 @@ TWO_D_FIELD_TEST_PARAMETERS = {
 }
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 6),
-    reason="Image comparison based on Surfaces does not work with Python 3.6",
-)
 @pytest.mark.parametrize(
     "kwargs, baseline_images",
     TWO_D_FIELD_TEST_PARAMETERS.values(),

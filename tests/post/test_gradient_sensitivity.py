@@ -27,7 +27,7 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import empty
 
@@ -188,7 +188,7 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
     "scale_gradients,baseline_images",
     [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
     """Test images created by the post_process method against references.
 

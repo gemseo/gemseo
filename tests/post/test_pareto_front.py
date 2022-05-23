@@ -23,7 +23,7 @@ from gemseo.algos.doe.doe_factory import DOEFactory
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.binh_korn import BinhKorn
 from gemseo.problems.analytical.power_2 import Power2
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
 # - the expected file names without extension to be compared
@@ -55,7 +55,7 @@ pytestmark = pytest.mark.skipif(
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_pareto(
     tmp_wd,
     kwargs,
@@ -147,7 +147,7 @@ def test_pareto_incorrect_objective_names():
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS_BINHKORN.keys(),
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_pareto_binhkorn(
     tmp_wd,
     kwargs,
@@ -176,7 +176,7 @@ def test_pareto_binhkorn(
     post.figures
 
 
-@image_comparison(["binh_korn_design_variable"], extensions=["png"])
+@image_comparison(["binh_korn_design_variable"])
 def test_pareto_binhkorn_design_variable(
     tmp_wd,
     pyplot_close_all,
@@ -201,7 +201,7 @@ def test_pareto_binhkorn_design_variable(
     post.figures
 
 
-@image_comparison(["binh_korn_no_obj"], extensions=["png"])
+@image_comparison(["binh_korn_no_obj"])
 def test_pareto_binhkorn_no_obj(
     tmp_wd,
     pyplot_close_all,

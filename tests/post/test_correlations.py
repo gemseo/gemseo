@@ -26,7 +26,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
@@ -109,7 +109,7 @@ def test_correlations_func_name_error(factory):
     "func_names,baseline_images",
     [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
 )
-@image_comparison(None, extensions=["png"])
+@image_comparison(None)
 def test_correlations_func_names(
     tmp_wd, factory, baseline_images, func_names, pyplot_close_all
 ):
@@ -139,7 +139,7 @@ def test_correlations_func_names(
     post.figures
 
 
-@image_comparison(baseline_images=["modified_sellar"], extensions=["png"])
+@image_comparison(["modified_sellar"])
 def test_func_name_sorting(tmp_wd, factory, pyplot_close_all):
     """Test that the function names sorting.
 

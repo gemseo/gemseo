@@ -17,7 +17,6 @@
 #        :author: Damien Guenot
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import sys
 from pathlib import Path
 
 import pytest
@@ -27,7 +26,7 @@ from gemseo.api import execute_algo
 from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
-from matplotlib.testing.decorators import image_comparison
+from gemseo.utils.testing import image_comparison
 from numpy import array
 
 DIR_PATH = Path(__file__).parent
@@ -44,21 +43,15 @@ def test_get_constraints():
     assert len(cstr) == 1
 
 
-@pytest.mark.skipif(
-    sys.version_info <= (3, 7),
-    reason="Image comparison does not work with Python 2. "
-    "This test throws false negatives with Python 3.6",
-)
 @image_comparison(
-    baseline_images=[
+    [
         "power2_2_variables",
         "power2_2_objective",
         "power2_2_x_xstar",
         "power2_2_hessian_approximation",
         "power2_2_ineq_constraints",
         "power2_2_eq_constraints",
-    ],
-    extensions=["png"],
+    ]
 )
 def test_opt_hist_const(pyplot_close_all):
     """Test that a problem with constraints is properly rendered.
@@ -81,11 +74,6 @@ def test_opt_hist_const(pyplot_close_all):
     post.figures
 
 
-@pytest.mark.skipif(
-    sys.version_info <= (3, 7),
-    reason="Image comparison does not work with Python 2. "
-    "This test throws false negatives with Python 3.6",
-)
 @pytest.mark.parametrize(
     "problem_path,baseline_images",
     [
