@@ -84,7 +84,7 @@ def test_read_file_error():
 def test_samples_shape(n_samples, options):
     """Check that the samples shape is correct."""
     doe_library = execute_problem(DOE_LIB_NAME, dim=3, **options)
-    assert doe_library.samples.shape == (n_samples, 3)
+    assert doe_library.unit_samples.shape == (n_samples, 3)
 
 
 @pytest.mark.parametrize(

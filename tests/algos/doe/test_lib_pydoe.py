@@ -54,7 +54,7 @@ def test_export_samples(tmp_wd):
     doe_file_name = f"test_{algo_name}.csv"
     doe_library.export_samples(doe_output_file=doe_file_name)
     file_samples = loadtxt(doe_file_name, delimiter=",")
-    assert array_equal(doe_library.samples, file_samples)
+    assert array_equal(doe_library.unit_samples, file_samples)
 
 
 def test_invalid_algo():
@@ -86,11 +86,11 @@ def test_lhs_maximin():
         n_samples=n_samples,
         criterion="maximin",
     )
-    samples_maximin = doe_library.samples
+    samples_maximin = doe_library.unit_samples
     doe_library = execute_problem(
         DOE_LIB_NAME, algo_name=algo_name, dim=dim, n_samples=n_samples
     )
-    samples = doe_library.samples
+    samples = doe_library.unit_samples
     assert norm(samples - samples_maximin) / norm(samples_maximin) >= 1e-8
 
 
@@ -167,7 +167,7 @@ def test_rescale_samples():
 def test_algos(algo_name, dim, n_samples, options):
     """Check that the PyDOE library returns samples correctly shaped."""
     doe_library = execute_problem(DOE_LIB_NAME, algo_name=algo_name, dim=dim, **options)
-    assert doe_library.samples.shape == (n_samples, dim)
+    assert doe_library.unit_samples.shape == (n_samples, dim)
 
 
 def test_integer_lhs():

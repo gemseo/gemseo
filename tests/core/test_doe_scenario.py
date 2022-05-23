@@ -260,3 +260,21 @@ def test_export_to_dataset_with_repeated_inputs():
             "obj": samples * 2,
         },
     )
+
+
+def test_export_to_dataset_normalized_integers():
+    """Check the export of the database with normalized integers."""
+    discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
+    design_space = DesignSpace()
+    design_space.add_variable("dv", var_type="integer", l_b=1, u_b=10)
+    scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
+    samples = array([[1], [2], [10]])
+    scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+    dataset = scenario.export_to_dataset(by_group=False)
+    assert_equal(
+        dataset.data,
+        {
+            "dv": samples,
+            "obj": samples * 2,
+        },
+    )

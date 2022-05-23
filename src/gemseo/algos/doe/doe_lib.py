@@ -65,8 +65,11 @@ class DOEAlgorithmDescription(DriverDescription):
 class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class to use for DOE library link See DriverLib."""
 
+    unit_samples: ndarray | None
+    """The input samples transformed in :math:`[0,1]`."""
+
     samples: ndarray | None
-    """The samples of the inputs."""
+    """The input samples."""
 
     seed: int
     """The seed to be used for replicability reasons.
@@ -92,6 +95,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
     def __init__(self):
         """Constructor Abstract class."""
         super().__init__()
+        self.unit_samples = None
         self.samples = None
         self.seed = 0
 
@@ -132,18 +136,18 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         options[self.DIMENSION] = self.problem.dimension
         options[self._VARIABLES_NAMES] = self.problem.design_space.variables_names
         options[self._VARIABLES_SIZES] = self.problem.design_space.variables_sizes
-        self.samples = self._generate_samples(**options)
-        self.untransformed_samples = self.problem.design_space.untransform_vect(
-            self.samples, no_check=True
+        self.unit_samples = self._generate_samples(**options)
+        self.samples = self.problem.design_space.untransform_vect(
+            self.unit_samples, no_check=True
         )
 
         if options.get(self.N_PROCESSES, 1) > 1:
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution.
-            for sample in self.untransformed_samples:
+            for sample in self.samples:
                 self.problem.database.store(sample, {}, add_iter=True)
 
-        self.init_iter_observer(len(self.samples), " ")
+        self.init_iter_observer(len(self.unit_samples), " ")
         self.problem.add_callback(self.new_iteration_callback)
 
     def _generate_samples(self, **options):
@@ -273,9 +277,9 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         :param doe_output_file: export file name
         :type doe_output_file: str
         """
-        if self.samples is None:
+        if self.unit_samples is None:
             raise RuntimeError("Samples are None, execute method before export.")
-        savetxt(doe_output_file, self.samples, delimiter=",")
+        savetxt(doe_output_file, self.unit_samples, delimiter=",")
 
     def _worker(self, sample: ndarray) -> DOELibraryOutputType:
         """Wrap the evaluation of the functions for parallel execution.
@@ -322,7 +326,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
             # Initialize the order as it is not necessarily guaranteed
             # when using parallel execution
-            for sample in self.untransformed_samples:
+            for sample in self.samples:
                 database.store(sample, {}, add_iter=True)
 
             def store_callback(
@@ -340,10 +344,10 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                     for key, val in jac.items():
                         out["@" + key] = val
 
-                database.store(self.untransformed_samples[index], out)
+                database.store(self.samples[index], out)
 
             # The list of inputs of the tasks is the list of samples
-            parallel.execute(self.samples, exec_callback=store_callback)
+            parallel.execute(self.unit_samples, exec_callback=store_callback)
             # We added empty entries by default to keep order in the database
             # but when the DOE point is failed, this is not consistent
             # with the serial exec, so we clean the DB
@@ -354,7 +358,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                 LOGGER.warning(
                     "Wait time between samples option is ignored" " in sequential run."
                 )
-            for sample in self.untransformed_samples:
+            for sample in self.samples:
                 try:
                     self.problem.evaluate_functions(
                         x_vect=sample,
