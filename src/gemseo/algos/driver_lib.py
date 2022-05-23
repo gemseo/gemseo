@@ -451,7 +451,7 @@ class DriverLib(AlgoLib):
 
         problem.check()
         problem.preprocess_functions(
-            normalize=options.get(
+            is_function_input_normalized=options.get(
                 self.NORMALIZE_DESIGN_SPACE_OPTION, self._NORMALIZE_DS
             ),
             use_database=options.get(self.USE_DATABASE_OPTION, True),

@@ -470,7 +470,7 @@ def test_preprocess_functions():
     cstr_id = {id(cstr) for cstr in problem.constraints}
     obs_id = {id(obs) for obs in problem.observables}
 
-    problem.preprocess_functions(normalize=False, round_ints=False)
+    problem.preprocess_functions(is_function_input_normalized=False, round_ints=False)
 
     # Check that the non-preprocessed functions are the original ones
     assert id(problem.nonproc_objective) == obj_id
@@ -502,7 +502,9 @@ def test_normalize_linear_function():
     initial_value = objective(x_0)
     problem = OptimizationProblem(design_space)
     problem.objective = objective
-    problem.preprocess_functions(normalize=True, use_database=False, round_ints=False)
+    problem.preprocess_functions(
+        is_function_input_normalized=True, use_database=False, round_ints=False
+    )
     assert allclose(problem.objective(zeros(2)), low_bnd_value)
     assert allclose(problem.objective(ones(2)), upp_bnd_value)
     assert allclose(problem.objective(0.8 * ones(2)), initial_value)
@@ -574,7 +576,7 @@ def test_evaluate_functions_non_preprocessed(constrained_problem):
 def test_evaluate_functions_preprocessed(pre_normalize, eval_normalize, x_vect):
     """Check the evaluation of preprocessed functions."""
     constrained_problem = Power2()
-    constrained_problem.preprocess_functions(normalize=pre_normalize)
+    constrained_problem.preprocess_functions(is_function_input_normalized=pre_normalize)
     values, _ = constrained_problem.evaluate_functions(
         x_vect=x_vect, normalize=eval_normalize
     )
@@ -646,7 +648,7 @@ def test_grad_normalization(pow2_problem):
     problem = pow2_problem
     x_vec = ones(3)
     grad = problem.objective.jac(x_vec)
-    problem.preprocess_functions(normalize=True)
+    problem.preprocess_functions(is_function_input_normalized=True)
     norm_grad = problem.objective.jac(x_vec)
 
     assert 0.0 == pytest.approx(norm(norm_grad - 2 * grad))
@@ -1003,7 +1005,7 @@ def test_observables_callback():
         {"pow2": 1.61, "ineq1": -0.0024533, "ineq2": -0.0024533, "eq": -0.00228228},
     )
 
-    problem.preprocess_functions(normalize=False)
+    problem.preprocess_functions(is_function_input_normalized=False)
     problem.execute_observables_callback(
         last_x=array([0.79499653, 0.20792012, 0.96630481])
     )

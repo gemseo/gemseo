@@ -878,7 +878,7 @@ class OptimizationProblem:
             a boolean indicator of activation of its different components.
         """
         self.design_space.check_membership(x_vect)
-        normalize = self.preprocess_options.get("normalize", False)
+        normalize = self.preprocess_options.get("is_function_input_normalized", False)
         if normalize:
             x_vect = self.design_space.normalize_vect(x_vect)
 
@@ -1009,7 +1009,7 @@ class OptimizationProblem:
 
     def preprocess_functions(
         self,
-        normalize: bool = True,
+        is_function_input_normalized: bool = True,
         use_database: bool = True,
         round_ints: bool = True,
         eval_obs_jac: bool = False,
@@ -1020,8 +1020,8 @@ class OptimizationProblem:
         and eventually the gradients by complex step or finite differences.
 
         Args:
-            normalize: Whether to unnormalize the input vector of the function
-                before evaluate it.
+            is_function_input_normalized: Whether to consider the function input as
+                normalized and unnormalize it before the evaluation takes place.
             use_database: Whether to wrap the functions in the database.
             round_ints: Whether to round the integer variables.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
@@ -1036,7 +1036,7 @@ class OptimizationProblem:
         # are performed, in bi-level scenarios for instance
         if not self.__functions_are_preprocessed:
             self.preprocess_options = {
-                "normalize": normalize,
+                "is_function_input_normalized": is_function_input_normalized,
                 "use_database": use_database,
                 "round_ints": round_ints,
             }
@@ -1045,7 +1045,7 @@ class OptimizationProblem:
                 self.nonproc_constraints.append(cstr)
                 p_cstr = self.__preprocess_func(
                     cstr,
-                    normalize=normalize,
+                    is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
                     round_ints=round_ints,
                 )
@@ -1057,7 +1057,7 @@ class OptimizationProblem:
                 self.nonproc_observables.append(obs)
                 p_obs = self.__preprocess_func(
                     obs,
-                    normalize=normalize,
+                    is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
@@ -1069,7 +1069,7 @@ class OptimizationProblem:
                 self.nonproc_new_iter_observables.append(obs)
                 p_obs = self.__preprocess_func(
                     obs,
-                    normalize=normalize,
+                    is_function_input_normalized=is_function_input_normalized,
                     use_database=use_database,
                     round_ints=round_ints,
                     is_observable=True,
@@ -1081,7 +1081,7 @@ class OptimizationProblem:
             self.nonproc_objective = self.objective
             self.objective = self.__preprocess_func(
                 self.objective,
-                normalize=normalize,
+                is_function_input_normalized=is_function_input_normalized,
                 use_database=use_database,
                 round_ints=round_ints,
             )
@@ -1103,7 +1103,7 @@ class OptimizationProblem:
         if not self.new_iter_observables:
             return
 
-        if self.preprocess_options["normalize"]:
+        if self.preprocess_options["is_function_input_normalized"]:
             last_x = self.design_space.normalize_vect(last_x)
 
         for func in self.new_iter_observables:
@@ -1114,7 +1114,7 @@ class OptimizationProblem:
     def __preprocess_func(
         self,
         func: MDOFunction,
-        normalize: bool = True,
+        is_function_input_normalized: bool = True,
         use_database: bool = True,
         round_ints: bool = True,
         is_observable: bool = False,
@@ -1126,8 +1126,8 @@ class OptimizationProblem:
 
         Args:
             func: The scaled and derived function to be pre-processed.
-            normalize: Whether to unnormalize the input vector of the function
-                before evaluate it.
+            is_function_input_normalized: Whether to consider the function input as
+                normalized and unnormalize it before the evaluation takes place.
             use_database: If True, then the function is wrapped in the database.
             round_ints: If True, then round the integer variables.
             is_observable: If True, new_iter_listeners are not called
@@ -1142,17 +1142,23 @@ class OptimizationProblem:
         # way round
         # Also, store non normalized values in the database for further
         # exploitation
-        if isinstance(func, MDOLinearFunction) and not round_ints and normalize:
+        if (
+            isinstance(func, MDOLinearFunction)
+            and not round_ints
+            and is_function_input_normalized
+        ):
             func = self.__normalize_linear_function(func)
         else:
-            func = NormFunction(func, normalize, round_ints, self)
+            func = NormFunction(func, is_function_input_normalized, round_ints, self)
 
         if self.differentiation_method in self.__DIFFERENTIATION_CLASSES.keys():
-            self.__add_fd_jac(func, normalize)
+            self.__add_fd_jac(func, is_function_input_normalized)
 
         # Cast to real value, the results can be a complex number (ComplexStep)
         if use_database:
-            func = NormDBFunction(func, normalize, is_observable, self)
+            func = NormDBFunction(
+                func, is_function_input_normalized, is_observable, self
+            )
         return func
 
     def __normalize_linear_function(
