@@ -95,7 +95,9 @@ class LagrangeMultipliers:
         self.active_ineq_names = []
         self.active_eq_names = []
         self.lagrange_multipliers = None
-        self.__normalized = opt_problem.preprocess_options.get("normalize", False)
+        self.__normalized = opt_problem.preprocess_options.get(
+            "is_function_input_normalized", False
+        )
 
     @staticmethod
     def _check_inputs(opt_problem):

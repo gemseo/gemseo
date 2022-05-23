@@ -434,7 +434,7 @@ class TestMdofunctiongenerator(unittest.TestCase):
     def test_set_pt_from_database(self):
         for normalize in (True, False):
             pb = Power2()
-            pb.preprocess_functions(normalize=normalize)
+            pb.preprocess_functions(is_function_input_normalized=normalize)
             x = np.zeros(3)
             pb.evaluate_functions(x, normalize=normalize)
             func = MDOFunction(np.sum, pb.objective.name)
