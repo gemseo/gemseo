@@ -103,11 +103,11 @@ from typing import Iterable
 from typing import Mapping
 from typing import Tuple
 
-import openturns
 import sklearn.gaussian_process
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import repeat
+from sklearn.gaussian_process.kernels import Kernel
 
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.core.ml_algo import DataType
@@ -133,7 +133,7 @@ class GaussianProcessRegressor(MLRegressionAlgo):
         transformer: Mapping[str, TransformerType] | None = None,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
-        kernel: openturns.CovarianceModel | None = None,
+        kernel: Kernel | None = None,
         bounds: __Bounds | Mapping[str, __Bounds] | None = None,
         alpha: float | ndarray = 1e-10,
         optimizer: str | Callable = "fmin_l_bfgs_b",
@@ -142,7 +142,8 @@ class GaussianProcessRegressor(MLRegressionAlgo):
     ) -> None:
         """
         Args:
-            kernel: The kernel function. If None, use a ``Matern(2.5)``.
+            kernel: The kernel specifying the covariance model.
+                If ``None``, use a Matérn(2.5).
             bounds: The lower and upper bounds of the parameter length scales
                 when ``kernel`` is ``None``.
                 Either a unique lower-upper pair common to all the inputs
