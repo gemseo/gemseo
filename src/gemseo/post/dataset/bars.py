@@ -55,12 +55,9 @@ class BarPlot(DatasetPlot):
         dimension = sum(sizes.values())
         series_names = self.dataset.row_names
 
-        if self.color is None:
+        if not self.color:
             colormap = plt.cm.get_cmap(self.colormap)
-            self.color = {
-                name: colormap(color)
-                for name, color in zip(series_names, linspace(0, 1, len(all_data)))
-            }
+            self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]
 
         fig, axes = self._get_figure_and_axes(fig, axes)
 
@@ -72,15 +69,16 @@ class BarPlot(DatasetPlot):
         positions = [
             discretization + index * width + width / 2 for index in range(dimension)
         ]
-        for position, name, data in zip(positions, series_names, all_data):
-            data = data.tolist()
+        for position, name, data, color in zip(
+            positions, series_names, all_data, self.color
+        ):
             subplots.append(
                 axes.bar(
                     position,
-                    data,
+                    data.tolist(),
                     width,
                     label=name,
-                    color=self.color[name],
+                    color=color,
                 )
             )
 

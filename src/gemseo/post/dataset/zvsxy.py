@@ -132,16 +132,16 @@ class ZvsXY(DatasetPlot):
                 y_data = dataset[y][:, y_comp]
                 axes.scatter(x_data, y_data, color=self.color[index + 1])
 
-        if self.xlabel is None:
+        if not self.xlabel:
             self.xlabel = self._get_component_name(x, x_comp, self.dataset.sizes)
 
-        if self.ylabel is None:
+        if not self.ylabel:
             self.ylabel = self._get_component_name(y, y_comp, self.dataset.sizes)
 
-        if self.zlabel is None:
+        if not self.zlabel:
             self.zlabel = self._get_component_name(z, z_comp, self.dataset.sizes)
 
-        if self.title is None:
+        if not self.title:
             self.title = self.zlabel
 
         axes.set_xlabel(self.xlabel)

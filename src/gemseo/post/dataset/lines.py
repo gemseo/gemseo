@@ -17,10 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw lines from a :class:`.Dataset`.
-
-A :class:`.Lines` plot represents variables vs samples using lines.
-"""
+"""Connect the observations of variables stored in a :class:`.Dataset` with lines."""
 from __future__ import annotations
 
 from typing import Sequence
@@ -33,25 +30,44 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 
 class Lines(DatasetPlot):
-    """Plot sampled variables as lines."""
+    """Connect the observations of variables with lines."""
 
     def __init__(
         self,
         dataset: Dataset,
         variables: Sequence[str] | None = None,
+        abscissa_variable: str | None = None,
+        add_markers: bool = False,
     ) -> None:
         """
         Args:
             variables: The names of the variables to plot.
+            abscissa_variable: The name of the variable used in abscissa.
+                The observations of the ``variables`` are plotted
+                in function of the observations of this ``abscissa_variable``.
+                If ``None``,
+                the observations of the ``variables`` are plotted
+                in function of the indices of the observations.
+            add_markers: Whether to mark the observations with dots.
         """
-        super().__init__(dataset, variables=variables)
+        super().__init__(
+            dataset,
+            variables=variables,
+            abscissa_variable=abscissa_variable,
+            add_markers=add_markers,
+        )
 
     def _plot(
         self,
         fig: None | Figure = None,
         axes: None | Axes = None,
     ) -> list[Figure]:
-        x_data = range(len(self.dataset))
+        abscissa_variable = self._param.abscissa_variable
+        if abscissa_variable is None:
+            x_data = range(len(self.dataset))
+        else:
+            x_data = self.dataset[abscissa_variable].ravel()
+
         variables = self._param.variables
         if variables is None:
             y_data = self.dataset.get_all_data(False, True)
@@ -61,6 +77,7 @@ class Lines(DatasetPlot):
 
         self._set_color(len(variables))
         self._set_linestyle(len(variables), "-")
+        self._set_marker(len(variables), "o")
 
         fig, axes = self._get_figure_and_axes(fig, axes)
         for index, (name, value) in enumerate(y_data.items()):
@@ -71,7 +88,16 @@ class Lines(DatasetPlot):
                 color=self.color[index],
                 label=name,
             )
-        axes.set_xlabel(self.xlabel)
+            if self._param.add_markers:
+                for sub_value in value.T:
+                    axes.scatter(
+                        x_data,
+                        sub_value,
+                        color=self.color[index],
+                        marker=self.marker[index],
+                    )
+
+        axes.set_xlabel(self.xlabel or abscissa_variable)
         axes.set_ylabel(self.ylabel)
         axes.set_title(self.title)
         axes.legend(loc=self.legend_location)

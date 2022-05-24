@@ -112,8 +112,8 @@ class RadarChart(OptPostProcessor):
             iteration = n_iterations + iteration
 
         radar = RadarChartPost(dataset)
-        radar.linestyle = {"computed constraints": "-", "limit constraint": "--"}
-        radar.color = {"computed constraints": "k", "limit constraint": "r"}
+        radar.linestyle = ["-", "--"]
+        radar.color = ["k", "r"]
         radar.title = f"Constraints at iteration {iteration}{title_suffix}"
 
         figures = radar.execute(
