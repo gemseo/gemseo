@@ -69,7 +69,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        objective_name: str,
+        objective_name: str | Sequence[str],
         design_space: DesignSpace,
         maximize_objective: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -79,6 +79,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             disciplines: The disciplines.
             objective_name: The name of the objective function.
+                If a sequence is passed, a vector objective function is created.
             design_space: The design space.
             maximize_objective: If True, the objective function is maximized.
             grammar_type: The type of the input and output grammars,
