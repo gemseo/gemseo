@@ -97,7 +97,7 @@ class Scenario(MDODiscipline):
         self,
         disciplines: Sequence[MDODiscipline],
         formulation: str,
-        objective_name: str,
+        objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str | None = None,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -111,6 +111,7 @@ class Scenario(MDODiscipline):
             formulation: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.MDOFormulation`.
             objective_name: The name of the objective.
+                If a sequence is passed, a vector objective function is created.
             design_space: The design space.
             name: The name to be given to this scenario.
                 If None, use the name of the class.
