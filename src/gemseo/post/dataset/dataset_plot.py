@@ -45,7 +45,6 @@ from numpy import linspace
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.file_path_manager import FileType
 from gemseo.utils.matplotlib_figure import save_show_figure
-from gemseo.utils.python_compatibility import Final
 
 if TYPE_CHECKING:
     from gemseo.core.dataset import Dataset
@@ -61,14 +60,86 @@ DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]
 class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     """Abstract class for plotting a dataset."""
 
+    color: str | list[str]
+    """The color(s) for the series.
+
+    If empty, use a default one.
+    """
+
+    colormap: str
+    """The color map."""
+
     dataset: Dataset
     """The dataset to be plotted."""
 
-    COLOR: Final[str] = "color"
-    COLORMAP: Final[str] = "colormap"
-    FIGSIZE_X: Final[str] = "figsize_x"
-    FIGSIZE_Y: Final[str] = "figsize_y"
-    LINESTYLE: Final[str] = "linestyle"
+    figsize: tuple[float, float]
+    """The figure size."""
+
+    font_size: int
+    """The font size."""
+
+    legend_location: str
+    """The location of the legend."""
+
+    linestyle: str | list[str]
+    """The line style(s) for the series.
+
+    If empty, use a default one.
+    """
+
+    marker: str | list[str]
+    """The marker(s) for the series.
+
+    If empty, use a default one.
+    """
+
+    title: str
+    """The title of the plot."""
+
+    xlabel: str
+    """The label for the x-axis."""
+
+    xmin: float | None
+    """The minimum value on the x-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    xmax: float | None
+    """The maximum value on the x-axis."
+
+    If ``None``, compute it from data.
+    """
+
+    ylabel: str
+    """The label for the y-axis."""
+
+    ymin: float | None
+    """The minimum value on the y-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    ymax: float | None
+    """The maximum value on the y-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    zlabel: str
+    """The label for the z-axis."""
+
+    zmin: float | None
+    """The minimum value on the z-axis.
+
+    If ``None``, compute it from data.
+    """
+
+    zmax: float | None
+    """The maximum value on the z-axis.
+
+    If ``None``, compute it from data.
+    """
 
     def __init__(
         self,
@@ -88,28 +159,29 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         if dataset.is_empty():
             raise ValueError("Dataset is empty.")
 
+        self.color = ""
+        self.colormap = "rainbow"
         self.dataset = dataset
-        self.__title = None
-        self.__xlabel = None
-        self.__ylabel = None
-        self.__zlabel = None
-        self.__font_size = 10
-        self.__xmin = None
-        self.__xmax = None
-        self.__ymin = None
-        self.__ymax = None
-        self.__zmin = None
-        self.__zmax = None
-        self.__rmin = None
-        self.__rmax = None
-        self.__line_style = None
-        self.__color = None
-        self.__figsize = (6.4, 4.8)
-        self.__colormap = "rainbow"
-        self.__legend_location = "best"
-        default_name = FilePathManager.to_snake_case(self.__class__.__name__)
+        self.font_size = 10
+        self.legend_location = "best"
+        self.linestyle = ""
+        self.marker = ""
+        self.title = ""
+        self.rmin = None
+        self.rmax = None
+        self.xlabel = ""
+        self.xmin = None
+        self.xmax = None
+        self.ylabel = ""
+        self.ymin = None
+        self.ymax = None
+        self.zlabel = ""
+        self.zmin = None
+        self.zmax = None
+        self.figsize = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
-            FileType.FIGURE, default_name=default_name
+            FileType.FIGURE,
+            default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
         self.__output_files = []
         self.__names_to_labels = {}
@@ -120,180 +192,22 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         return self.__output_files
 
     @property
-    def legend_location(self) -> str:
-        """The location of the legend."""
-        return self.__legend_location
-
-    @legend_location.setter
-    def legend_location(self, value):
-        self.__legend_location = value
-
-    @property
-    def colormap(self) -> str:
-        """The color map."""
-        return self.__colormap
-
-    @colormap.setter
-    def colormap(self, value):
-        self.__colormap = value
-
-    @property
-    def figsize(self) -> tuple[float, float]:
-        """The figure size."""
-        return self.__figsize
-
-    @property
     def figsize_x(self) -> float:
         """The x-component of figure size."""
-        return self.__figsize[0]
+        return self.figsize[0]
 
     @figsize_x.setter
-    def figsize_x(self, value):
-        self.__figsize = (value, self.figsize_y)
+    def figsize_x(self, value: float) -> None:
+        self.figsize = (value, self.figsize_y)
 
     @property
     def figsize_y(self) -> float:
         """The y-component of figure size."""
-        return self.__figsize[1]
+        return self.figsize[1]
 
     @figsize_y.setter
-    def figsize_y(self, value):
-        self.__figsize = (self.figsize_x, value)
-
-    @property
-    def color(self) -> str:
-        """The color of the series."""
-        return self.__color
-
-    @color.setter
-    def color(self, value):
-        self.__color = value
-
-    @property
-    def linestyle(self) -> str:
-        """The line style of the series."""
-        return self.__line_style
-
-    @linestyle.setter
-    def linestyle(self, value):
-        self.__line_style = value
-
-    @property
-    def title(self) -> str:
-        """The title of the plot."""
-        return self.__title
-
-    @title.setter
-    def title(self, value):
-        self.__title = value
-
-    @property
-    def xlabel(self) -> str:
-        """The label for the x-axis."""
-        return self.__xlabel
-
-    @xlabel.setter
-    def xlabel(self, value):
-        self.__xlabel = value
-
-    @property
-    def ylabel(self) -> str:
-        """The label for the y-axis."""
-        return self.__ylabel
-
-    @ylabel.setter
-    def ylabel(self, value):
-        self.__ylabel = value
-
-    @property
-    def zlabel(self) -> str:
-        """The label for the z-axis."""
-        return self.__zlabel
-
-    @zlabel.setter
-    def zlabel(self, value):
-        self.__zlabel = value
-
-    @property
-    def font_size(self) -> int:
-        """The font size."""
-        return self.__font_size
-
-    @font_size.setter
-    def font_size(self, value):
-        self.__font_size = value
-
-    @property
-    def xmin(self) -> float:
-        """The minimum value on the x-axis."""
-        return self.__xmin
-
-    @xmin.setter
-    def xmin(self, value):
-        self.__xmin = value
-
-    @property
-    def xmax(self) -> float:
-        """The maximum value on the x-axis."""
-        return self.__xmax
-
-    @xmax.setter
-    def xmax(self, value):
-        self.__xmax = value
-
-    @property
-    def ymin(self) -> float:
-        """The minimum value on the y-axis."""
-        return self.__ymin
-
-    @ymin.setter
-    def ymin(self, value):
-        self.__ymin = value
-
-    @property
-    def ymax(self) -> float:
-        """The maximum value on the y-axis."""
-        return self.__ymax
-
-    @ymax.setter
-    def ymax(self, value):
-        self.__ymax = value
-
-    @property
-    def rmin(self) -> float:
-        """The minimum value on the r-axis."""
-        return self.__rmin
-
-    @rmin.setter
-    def rmin(self, value):
-        self.__rmin = value
-
-    @property
-    def rmax(self) -> float:
-        """The maximum value on the r-axis."""
-        return self.__rmax
-
-    @rmax.setter
-    def rmax(self, value):
-        self.__rmax = value
-
-    @property
-    def zmin(self):
-        """The minimum value on the z-axis."""
-        return self.__zmin
-
-    @zmin.setter
-    def zmin(self, value):
-        self.__zmin = value
-
-    @property
-    def zmax(self) -> float:
-        """The maximum value on the z-axis."""
-        return self.__zmax
-
-    @zmax.setter
-    def zmax(self, value):
-        self.__zmax = value
+    def figsize_y(self, value: float) -> None:
+        self.figsize = (self.figsize_x, value)
 
     def execute(
         self,
@@ -511,26 +425,38 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
             n_items: The number of items to be plotted.
         """
         colormap = plt.cm.get_cmap(self.colormap)
-        default_color = [colormap(color) for color in linspace(0, 1, n_items)]
-        self.color = self.color or default_color
+        color = [colormap(color) for color in linspace(0, 1, n_items)]
+        self.color = self.color or color
         if isinstance(self.color, str):
             self.color = [self.color] * n_items
 
-    def _set_linestyle(
-        self,
-        n_items: int,
-        default_value: str,
-    ) -> None:
+    def _set_linestyle(self, n_items: int, linestyle: str | Sequence[str]) -> None:
         """Set the line style of the items to be plotted.
 
         Args:
             n_items: The number of items to be plotted.
-            default_value: The default line style.
+            linestyle: The default line style to use
+                when :attr:`.linestyle` is ``None`.
         """
 
-        self.linestyle = self.linestyle or default_value
+        self.linestyle = self.linestyle or linestyle
         if isinstance(self.linestyle, str):
             self.linestyle = [self.linestyle] * n_items
+
+    def _set_marker(
+        self,
+        n_items: int,
+        marker: str | Sequence[str] | None,
+    ) -> None:
+        """Set the marker of the items to be plotted.
+
+        Args:
+            n_items: The number of items to be plotted.
+            marker: The default marker to use when :attr:`.marker` is ``None``.
+        """
+        self.marker = self.marker or marker
+        if isinstance(self.marker, str):
+            self.marker = [self.marker] * n_items
 
     @property
     def labels(self) -> Mapping[str, str]:

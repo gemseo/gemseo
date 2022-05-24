@@ -90,25 +90,23 @@ class RadarChart(DatasetPlot):
         theta.append(theta[0])
 
         series_names = self.dataset.row_names
-        if self.color is None:
+        if not self.color:
             colormap = plt.cm.get_cmap(self.colormap)
-            self.color = {
-                name: colormap(color)
-                for name, color in zip(series_names, linspace(0, 1, len(all_data)))
-            }
+            self.color = [colormap(color) for color in linspace(0, 1, len(all_data))]
 
-        if self.linestyle is None:
-            self.linestyle = {name: linestyle for name in series_names}
+        if not self.linestyle:
+            self.linestyle = [linestyle] * len(series_names)
 
-        for index, data in enumerate(all_data):
-            name = series_names[index]
+        for data, name, linestyle, color in zip(
+            all_data, series_names, self.linestyle, self.color
+        ):
             data = data.tolist()
             data.append(data[0])
             axes.plot(
                 theta,
                 data,
-                self.linestyle[name],
-                color=self.color[name],
+                linestyle,
+                color=color,
                 lw=1,
                 label=name,
             )

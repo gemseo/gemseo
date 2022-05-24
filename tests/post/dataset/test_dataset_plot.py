@@ -69,10 +69,10 @@ def plot():
 @pytest.mark.parametrize(
     "attribute,default_value",
     [
-        ("xlabel", None),
-        ("ylabel", None),
-        ("zlabel", None),
-        ("title", None),
+        ("xlabel", ""),
+        ("ylabel", ""),
+        ("zlabel", ""),
+        ("title", ""),
         ("font_size", 10),
         ("labels", {}),
     ],

@@ -102,7 +102,7 @@ class Surfaces(DatasetPlot):
                 tcf = axes.tricontour(triangle, sample, **options)
 
             if self._param.add_points:
-                axes.scatter(x_data, y_data, color=self.color)
+                axes.scatter(x_data, y_data, color=self.color or None)
 
             axes.set_xlabel(self.xlabel)
             axes.set_ylabel(self.ylabel)
