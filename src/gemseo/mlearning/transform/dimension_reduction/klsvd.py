@@ -28,16 +28,11 @@ from __future__ import annotations
 import openturns
 from numpy import array
 from numpy import ndarray
-from openturns import Basis
 from openturns import Field
-from openturns import FunctionCollection
-from openturns import KarhunenLoeveResult
 from openturns import KarhunenLoeveSVDAlgorithm
-from openturns import Matrix
 from openturns import Mesh
 from openturns import Point
 from openturns import ProcessSample
-from openturns import RankMCovarianceModel
 from openturns import ResourceMap
 from openturns import Sample
 
@@ -108,13 +103,11 @@ class KLSVD(DimensionReduction):
             0.0,
             True,
         )
+        if self.n_components is not None:
+            klsvd.setNbModes(self.n_components)
+
         klsvd.run()
-
-        result = klsvd.getResult()
-        if self.n_components is not None and self.n_components < data.shape[1]:
-            result = self._truncate_kl_result(result)
-
-        self.algo = result
+        self.algo = klsvd.getResult()
         self.parameters["n_components"] = len(get_eigenvalues(self.algo))
 
     def __update_resource_map(self) -> None:
@@ -180,50 +173,3 @@ class KLSVD(DimensionReduction):
         for datum in data[1:, :]:
             sample.add(Field(self.ot_mesh, [[x_i] for x_i in datum]))
         return sample
-
-    def _truncate_kl_result(
-        self,
-        result: openturns.KarhunenLoeveResult,
-    ) -> openturns.KarhunenLoeveResult:
-        """Truncate an openturns.KarhunenLoeveResult.
-
-        Args:
-            result: The original KarhunenLoeveResult.
-
-        Returns:
-            The truncated KarhunenLoeveResult.
-        """
-        # These lines come from an issue opened by Michael Baudin
-        # => https://github.com/openturns/openturns/issues/1470
-
-        # Truncate eigenvalues
-        eigenvalues = get_eigenvalues(result)
-        n_modes = min(self.n_components, eigenvalues.getDimension())
-        trunc_eigenvalues = eigenvalues[:n_modes]
-        trunc_thresh = eigenvalues[n_modes - 1] / eigenvalues[0]
-
-        # Truncate modes
-        trunc_modes = FunctionCollection()
-        for mode in result.getModes():
-            trunc_modes.add(mode)
-
-        # Truncate process sample modes
-        modes = result.getModesAsProcessSample()
-        trunc_modes_as_proc_samp = ProcessSample(1, Field(self.ot_mesh, list(modes[0])))
-        for mode in modes[1:]:
-            trunc_modes_as_proc_samp.add(mode)
-
-        # Truncate projection matrix
-        proj_matrix = result.getProjectionMatrix()
-        trunc_proj_mat = Matrix(n_modes, proj_matrix.getNbColumns())
-        trunc_proj_mat[0:n_modes, :] = proj_matrix[0:n_modes, :]
-
-        # Truncate covariance model
-        return KarhunenLoeveResult(
-            RankMCovarianceModel(trunc_eigenvalues, Basis(trunc_modes)),
-            trunc_thresh,
-            trunc_eigenvalues,
-            trunc_modes,
-            trunc_modes_as_proc_samp,
-            trunc_proj_mat,
-        )
