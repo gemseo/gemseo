@@ -51,6 +51,12 @@ class AutoPyDiscipline(MDODiscipline):
 
     The Python function can take and return only numbers and NumPy arrays.
 
+    The Python function may or may not include default values for input arguments,
+    however, if the resulting :class:`.AutoPyDiscipline` is going to be placed inside
+    an :class:`.MDF`, a :class:`.BiLevel` formulation or an :class:`.MDA`
+    with strong couplings, then the Python function **must** assign default values for
+    its input arguments.
+
     Example:
         >>> from gemseo.disciplines.auto_py import AutoPyDiscipline
         >>> from numpy import array

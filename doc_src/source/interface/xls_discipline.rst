@@ -19,7 +19,7 @@ This section describes how to use an :class:`.XLSDiscipline` with
 a practical application using a simple discipline in a :class:`.DOEScenario`.
 
 Imports
-_______
+-------
 We start by importing all the necessary modules and configuring the logger.
 
 .. code-block:: python
@@ -32,7 +32,7 @@ We start by importing all the necessary modules and configuring the logger.
    configure_logger()
 
 Create an XLSDiscipline
-_______________________
+-----------------------
 For this simple problem, the Excel book will compute :math:`c=a+b`.
 
 1. Create the Excel file that will compute the outputs (``c``) from the inputs (``a``, ``b``).
@@ -127,7 +127,7 @@ Which prints the results of the computation as follows:
 
 
 Parallel execution considerations
-_________________________________
+---------------------------------
 |g| relies on the `xlswings library <https://www.xlwings.org>`__ to communicate with Excel. This imposes some
 constraints to our development. In particular,
 `we cannot pass xlwings objects between processes or threads <https://docs.xlwings.org/en/stable/threading_and_multiprocessing.html>`__.
@@ -259,7 +259,7 @@ And the execution call shall be protected:
 
 
 What about macros?
-__________________
+------------------
 The next figure illustrates how a macro can be wrapped to compute outputs from inputs.
 You shall pass the name of the macro with the option ``macro_name`` at instantiation.
 

@@ -34,6 +34,11 @@ Two families of MDA methods are implemented in |g| and can be instanciated throu
 Any explicit problem of the form :math:`y(x) = x` can be reformulated into a root finding problem by stating :math:`R(x, y) = y(x) - x =0`.
 The opposite is not true. This means that if the disciplines are provided in a residual form, the `Gauss-Seidel algorithm <https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method>`__ for instance cannot be directly used.
 
+.. warning::
+
+    Any :class:`.MDODiscipline` that will be placed inside an :class:`.MDA` with strong couplings **must**
+    define its default inputs. Otherwise, the execution will fail.
+
 Fixed-point algorithms
 ~~~~~~~~~~~~~~~~~~~~~~
 

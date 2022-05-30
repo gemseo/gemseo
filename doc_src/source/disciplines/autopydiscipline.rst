@@ -12,15 +12,15 @@
 
 .. _autopydiscipline:
 
-Build a discipline from a simple python function
+Build a discipline from a simple Python function
 ================================================
 
-Let's consider a simple python function, e.g.:
+Let's consider a simple Python function, e.g.:
 
 .. code::
 
     def f(x=0., y=0.):
-        """A simple python function"""
+        """A simple Python function"""
         z = x + 2*y
         return z
 
@@ -37,6 +37,11 @@ For that, we can use the :meth:`~gemseo.api.create_discipline` API function with
     from numpy import array
 
     disc = create_discipline('AutoPyDiscipline', py_func=f)
+
+The original Python function may or may not include default values for input arguments, however, if the resulting
+:class:`.AutoPyDiscipline` is going to be placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation
+or an :class:`.MDA` with strong couplings, then the Python function **must** assign default values for its input
+arguments.
 
 Execute the discipline
 **********************
@@ -70,7 +75,7 @@ Optional arguments
 
 Optional arguments are:
 
-- :code:`py_jac=None`: pointer to the jacobian function which must returned a 2D numpy array,
+- :code:`py_jac=None`: The Python function to compute the jacobian which must return a 2D numpy array,
 - :code:`use_arrays=False`: if :code:`True`, the function is expected to take arrays as inputs and give outputs as arrays,
 - :code:`write_schema=False`: if :code:`True`, write the json schema on the disk.
 

@@ -100,6 +100,11 @@ For details on the MDAs and coupled derivatives, see :ref:`mda` and :ref:`jacobi
 
 An example of an MDO study using an MDF formulation can be found in the :ref:`Sellar MDO tutorial <sellar_mdo>`
 
+.. warning::
+
+    Any :class:`.MDODiscipline` that will be placed inside an :class:`.MDF` formulation with strong couplings **must**
+    define its default inputs. Otherwise, the execution will fail.
+
 .. _idf_formulation:
 
 IDF
@@ -162,6 +167,11 @@ This formulation was invented in the MDA-MDO project at IRT Saint Exupery :cite:
 
    A process based on a Bi-level formulation
 
+.. warning::
+
+    Any :class:`.MDODiscipline` that will be placed inside a :class:`.BiLevel`
+    formulation with strong couplings **must** define its default inputs.
+    Otherwise, the execution will fail.
 
 .. _xdsm:
 
