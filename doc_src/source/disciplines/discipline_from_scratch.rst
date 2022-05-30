@@ -189,7 +189,7 @@ or raise an error if outputs are invalid, which happens sometimes with simulatio
 Setting the default inputs
 --------------------------
 
-We also defined the default inputs by means of the :attr:`!MDODiscipline.default_inputs` attribute:
+We also define the default inputs by means of the :attr:`!MDODiscipline.default_inputs` attribute:
 
 .. code::
 
@@ -203,6 +203,12 @@ We also defined the default inputs by means of the :attr:`!MDODiscipline.default
             self.input_grammar.initialize_from_data_names(['x', 'z'])
             self.output_grammar.initialize_from_data_names(['f', 'g'])
             self.default_inputs = {'x': array([0.]), 'z': array([0.])}
+
+.. warning::
+
+    An :class:`.MDODiscipline` that will be placed inside an :class:`.MDF`, a :class:`.BiLevel`
+    formulation or an :class:`.MDA` with strong couplings **must** define its default inputs.
+    Otherwise, the execution will fail.
 
 Overloading the :meth:`!MDODiscipline._run` method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

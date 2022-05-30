@@ -840,7 +840,7 @@ We provide some configuration files to help configuring it
 for developing |g|.
 
 Code style
-~~~~~~~~~~
+++++++++++
 
 Configure `PyCharm`_ to match the code style used by |g|.
 Download :download:`this file </_static/pycharm/python-code-style.xml>`,
@@ -851,7 +851,7 @@ select ``Import Scheme...``:
 .. image:: /_images/pycharm/configure-code-style.png
 
 File watchers
-~~~~~~~~~~~~~
++++++++++++++
 
 File watchers can automatically run tools on file save.
 Some tools used by the :ref:`git hooks` can be executed
