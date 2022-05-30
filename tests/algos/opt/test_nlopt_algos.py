@@ -35,7 +35,6 @@ from .opt_lib_test_base import OptLibraryTestBase
 
 
 class TestNLOPT(TestCase):
-
     OPT_LIB_NAME = "Nlopt"
 
     def _test_init(self):
@@ -122,7 +121,12 @@ def get_options(algo_name):
     if algo_name == "NLOPT_SLSQP":
         return {Nlopt.X_TOL_REL: 1e-5, Nlopt.F_TOL_REL: 1e-5, "max_iter": 100}
     if algo_name == "NLOPT_MMA":
-        return {"max_iter": 2700, Nlopt.X_TOL_REL: 1e-8, Nlopt.F_TOL_REL: 1e-8}
+        return {
+            "max_iter": 2700,
+            Nlopt.X_TOL_REL: 1e-8,
+            Nlopt.F_TOL_REL: 1e-8,
+            Nlopt.INNER_MAXEVAL: 10,
+        }
     if algo_name == "NLOPT_COBYLA":
         return {"max_iter": 10000, Nlopt.X_TOL_REL: 1e-8, Nlopt.F_TOL_REL: 1e-8}
     if algo_name == "NLOPT_BOBYQA":

@@ -47,6 +47,10 @@
         "init_step": {
             "type": "number",
             "minimum": 0.0
+        },
+        "inner_maxeval": {
+            "type": "integer",
+            "minimum": 0
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema",

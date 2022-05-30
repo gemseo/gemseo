@@ -62,6 +62,7 @@ class Nlopt(OptimizationLibrary):
     """
 
     LIB_COMPUTE_GRAD = False
+    INNER_MAXEVAL = "inner_maxeval"
     STOPVAL = "stopval"
     CTOL_ABS = "ctol_abs"
     INIT_STEP = "init_step"
@@ -388,6 +389,8 @@ class Nlopt(OptimizationLibrary):
             stopval = opt_options[self.STOPVAL]
             if stopval is not None:
                 nlopt_problem.set_stopval(stopval)
+        if self.INNER_MAXEVAL in opt_options:
+            nlopt_problem.set_param(self.INNER_MAXEVAL, opt_options[self.INNER_MAXEVAL])
 
         return nlopt_problem
 
