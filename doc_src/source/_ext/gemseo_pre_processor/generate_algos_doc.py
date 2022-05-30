@@ -284,26 +284,25 @@ class AlgoOptionsDoc:
     def get_options_schema_from_method(
         method: Callable[[Any], Any],
     ) -> Dict[str, Dict[str, str]]:
-        types = re.findall(
-            r"([\**\w]+).*#\s*type\s*:\s*([\[\w,\]]+)",
-            inspect.getsource(method),
-        )
-        sig = inspect.signature(method)
+        parameters = inspect.signature(method).parameters
         defaults = {
-            parameter.name: parameter.default
-            for parameter in sig.parameters.values()
-            if parameter.default is not parameter.empty
+            p.name: p.default for p in parameters.values() if p.default is not p.empty
+        }
+        types = method.__annotations__
+        types.pop("return", None)
+        names = {
+            p.name: f"**{p.name}" if "**" in str(p) else p.name
+            for p in parameters.values()
         }
         descriptions = get_options_doc(method)
-        schema = {
-            type_i[0]: {
-                "ptype": type_i[1],
-                "default": defaults.get(type_i[0], ""),
-                "description": descriptions.get(type_i[0].replace("**", ""), ""),
+        return {
+            names[name]: {
+                "ptype": type_,
+                "default": defaults.get(name, ""),
+                "description": descriptions.get(name, ""),
             }
-            for type_i in types
+            for name, type_ in types.items()
         }
-        return schema
 
 
 class DriverOptionsDoc(AlgoOptionsDoc):

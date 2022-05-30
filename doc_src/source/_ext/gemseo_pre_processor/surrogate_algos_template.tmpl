@@ -42,15 +42,15 @@ Here are the options available in |g|:
     <dt class="field-odd">Options</dt>
     <dd class="field-odd"><ul class="simple">
 
-{% for option in options[algo]|dictsort %}
+{% for arg in options[algo]|dictsort %}
     <li>
 
-**{{option[0]}}** (*{{option[1]['ptype']}}*)
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
 
-{{option[1]['description']}}
+{{arg[1]['description']}}
 
-{% if option[1]['default'] != '' %}
-By default it is set to {{option[1]['default']}}.
+{% if arg[1]['default'] != '' %}
+By default it is set to {{arg[1]['default']}}.
 {% endif %}
 
 .. raw:: html
