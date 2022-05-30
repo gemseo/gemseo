@@ -860,7 +860,7 @@ and avoid having to fix files when creating a commit.
 
 First,
 install the ``File Watchers`` plugin by opening the `PyCharm`_ settings,
-and search in ``Plugins > Markerplace``.
+and search in ``Plugins > Marketplace``.
 
 Download :download:`this file </_static/pycharm/file-watchers.xml>`,
 open the `PyCharm`_ settings,
