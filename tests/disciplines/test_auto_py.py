@@ -174,3 +174,12 @@ def test_multiprocessing():
 
     assert d1.local_data["y1"] == f1(2.0, 1.0)
     assert d2.local_data["y2"] == f2(5.0, 3.0)[0]
+
+
+@pytest.mark.parametrize(
+    "name,expected", [("custom_name", "custom_name"), (None, "f1")]
+)
+def test_auto_py_name(name, expected):
+    """Test that the name of the AutoPyDiscipline is set correctly."""
+    d1 = AutoPyDiscipline(f1, name=name)
+    assert d1.name == expected

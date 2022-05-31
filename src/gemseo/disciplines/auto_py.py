@@ -91,6 +91,7 @@ class AutoPyDiscipline(MDODiscipline):
         self,
         py_func: Callable[[DataType, ..., DataType], DataType],
         py_jac: Callable[[DataType, ..., DataType], ndarray] | None = None,
+        name: str | None = None,
         use_arrays: bool = False,
         write_schema: bool = False,
     ) -> None:
@@ -101,6 +102,8 @@ class AutoPyDiscipline(MDODiscipline):
                 its output value must be a 2D NumPy array
                 with rows correspond to the outputs
                 and columns to the inputs.
+            name: The name of the discipline. If ``None``, use the name of the Python
+                function.
             use_arrays: Whether the function is expected
                 to take arrays as inputs and give outputs as arrays.
             write_schema: Whether to write JSON schema on the disk.
@@ -112,7 +115,7 @@ class AutoPyDiscipline(MDODiscipline):
             raise TypeError("py_func must be callable.")
 
         super().__init__(
-            name=py_func.__name__,
+            name=name or py_func.__name__,
             auto_detect_grammar_files=False,
             grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
         )
