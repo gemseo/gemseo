@@ -1,0 +1,2 @@
+The constructor of :class:`.AutoPyDiscipline` now allows the user to select a custom name
+instead of the name of the Python function.
