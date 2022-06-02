@@ -1932,13 +1932,13 @@ def get_algorithm_features(
 
 
 def configure(
-    activate_discipline_counters: bool = False,
-    activate_function_counters: bool = False,
-    activate_progress_bar: bool = False,
-    activate_discipline_cache: bool = False,
-    check_input_data: bool = False,
-    check_output_data: bool = False,
-    check_desvars_bounds: bool = False,
+    activate_discipline_counters: bool = True,
+    activate_function_counters: bool = True,
+    activate_progress_bar: bool = True,
+    activate_discipline_cache: bool = True,
+    check_input_data: bool = True,
+    check_output_data: bool = True,
+    check_desvars_bounds: bool = True,
 ) -> None:
     """Update the configuration of |g| if needed.
 
