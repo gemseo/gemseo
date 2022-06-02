@@ -93,6 +93,8 @@ def test_constructor(dataset):
     """Test construction."""
     model_ = RBFRegressor(dataset)
     assert model_.algo is None
+    assert model_.short_algo_name == "RBF"
+    assert model_.library == "SciPy"
 
 
 def test_jacobian_not_implemented(dataset):

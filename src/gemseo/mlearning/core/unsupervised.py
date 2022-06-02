@@ -52,7 +52,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         input_names (List[str]): The names of the variables.
     """
 
-    ABBR = "MLUnsupervisedAlgo"
+    short_algo_name = "MLUnsupervisedAlgo"
 
     def __init__(
         self,

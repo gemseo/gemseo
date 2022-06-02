@@ -72,6 +72,8 @@ def test_constructor(dataset):
     """Test construction."""
     model_ = LinearRegressor(dataset)
     assert model_.algo is not None
+    assert model_.short_algo_name == "LinReg"
+    assert model_.library == "scikit-learn"
 
 
 @pytest.mark.parametrize(

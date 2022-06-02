@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import logging
 from typing import Callable
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import Union
@@ -74,8 +75,8 @@ class RBFRegressor(MLRegressionAlgo):
     y_average: ndarray
     """The mean of the learning output data."""
 
-    LIBRARY = "scipy"
-    ABBR = "RBF"
+    short_algo_name: ClassVar[str] = "RBF"
+    library: ClassVar[str] = "SciPy"
 
     EUCLIDEAN = "euclidean"
 

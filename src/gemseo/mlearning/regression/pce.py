@@ -76,6 +76,7 @@ response_surface/_generated/openturns.FunctionalChaosAlgorithm.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -119,8 +120,8 @@ LOGGER = logging.getLogger(__name__)
 class PCERegressor(MLRegressionAlgo):
     """Polynomial chaos expansion model."""
 
-    LIBRARY = "openturns"
-    ABBR = "PCE"
+    short_algo_name: ClassVar[str] = "PCE"
+    library: ClassVar[str] = "OpenTURNS"
     LS_STRATEGY = "LS"
     QUAD_STRATEGY = "Quad"
     SPARSE_STRATEGY = "SparseLS"

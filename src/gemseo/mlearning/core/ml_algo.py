@@ -100,6 +100,7 @@ import pickle
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+from typing import ClassVar
 from typing import Mapping
 from typing import Optional
 from typing import Sequence
@@ -152,8 +153,17 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         algo (Any): The interfaced machine learning algorithm.
     """
 
-    LIBRARY = None
-    ABBR = "MLAlgo"
+    short_algo_name: ClassVar[str] = "MLAlgo"
+    """The short name of the machine learning algorithm, often an acronym.
+
+    Typically used for composite names,
+    e.g. ``f"{algo.short_algo_name}_{dataset.name}"``
+    or ``f"{algo.short_algo_name}_{discipline.name}"``.
+    """
+
+    library: ClassVar[str] = None
+    """The name of the library of the wrapped machine learning algorithm."""
+
     FILENAME = "ml_algo.pkl"
 
     def __init__(
@@ -275,8 +285,8 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
         msg.indent()
-        if self.LIBRARY is not None:
-            msg.add("based on the {} library", self.LIBRARY)
+        if self.library is not None:
+            msg.add("based on the {} library", self.library)
         if self.is_trained:
             msg.add(
                 "built from {} learning samples", len(self._learning_samples_indices)
