@@ -71,6 +71,7 @@ generated/sklearn.cluster.KMeans.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -89,7 +90,8 @@ LOGGER = logging.getLogger(__name__)
 class KMeans(MLPredictiveClusteringAlgo):
     """The k-means clustering algorithm."""
 
-    ABBR = "K-means"
+    short_algo_name: ClassVar[str] = "KMeans"
+    library: ClassVar[str] = "scikit-learn"
 
     EPS = finfo(float).eps
 

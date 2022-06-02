@@ -91,6 +91,7 @@ generated/sklearn.neighbors.KNeighborsClassifier.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -108,8 +109,8 @@ LOGGER = logging.getLogger(__name__)
 class KNNClassifier(MLClassificationAlgo):
     """The k-nearest neighbors classification algorithm."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "KNN"
+    short_algo_name: ClassVar[str] = "KNN"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

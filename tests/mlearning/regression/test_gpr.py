@@ -59,6 +59,8 @@ def test_constructor(dataset):
     """Test construction."""
     gpr = GaussianProcessRegressor(dataset)
     assert gpr.algo is not None
+    assert gpr.short_algo_name == "GPR"
+    assert gpr.library == "scikit-learn"
 
 
 def test_learn(dataset):

@@ -94,6 +94,8 @@ def test_constructor(dataset):
     """Test construction."""
     knn = KNNClassifier(dataset)
     assert knn.algo is not None
+    assert knn.short_algo_name == "KNN"
+    assert knn.library == "scikit-learn"
 
 
 def test_learn(dataset):

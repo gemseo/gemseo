@@ -31,6 +31,7 @@ generated/sklearn.ensemble.RandomForestClassifier.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -48,8 +49,8 @@ LOGGER = logging.getLogger(__name__)
 class RandomForestClassifier(MLClassificationAlgo):
     """The random forest classification algorithm."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "RandomForestClassifier"
+    short_algo_name: ClassVar[str] = "RF"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

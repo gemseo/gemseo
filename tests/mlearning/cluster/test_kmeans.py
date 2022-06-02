@@ -123,9 +123,10 @@ def model(dataset):
 
 def test_constructor(dataset):
     """Test construction."""
-    for n_clusters in [1, 10]:
-        kmeans = KMeans(dataset, n_clusters=n_clusters)
-        assert kmeans.algo is not None
+    algo = KMeans(dataset)
+    assert algo.algo is not None
+    assert algo.short_algo_name == "KMeans"
+    assert algo.library == "scikit-learn"
 
 
 def test_learn(dataset):

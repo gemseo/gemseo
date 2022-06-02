@@ -52,6 +52,7 @@ linear_model.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -79,8 +80,8 @@ LOGGER = logging.getLogger(__name__)
 class LinearRegressor(MLRegressionAlgo):
     """Linear regression model."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "LinReg"
+    short_algo_name: ClassVar[str] = "LinReg"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

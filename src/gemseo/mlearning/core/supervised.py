@@ -109,7 +109,7 @@ class MLSupervisedAlgo(MLAlgo):
         output_names (List[str]): The names of the output variables.
     """
 
-    ABBR = "MLSupervisedAlgo"
+    short_algo_name = "MLSupervisedAlgo"
     DEFAULT_TRANSFORMER = {Dataset.INPUT_GROUP: MinMaxScaler()}
 
     def __init__(

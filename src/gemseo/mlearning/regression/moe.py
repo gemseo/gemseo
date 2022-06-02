@@ -58,6 +58,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -156,7 +157,7 @@ class MOERegressor(MLRegressionAlgo):
     regress_models: list[MLRegressionAlgo]
     """The regression algorithms."""
 
-    ABBR = "MoE"
+    short_algo_name: ClassVar[str] = "MoE"
 
     LABELS = "labels"
 

@@ -90,7 +90,7 @@ for candidate in selector.candidates:
     algo = candidate[0]
     print(algo)
     predy = algo.predict(finex[:, None])[:, 0]
-    plt.plot(finex, predy, label=algo.ABBR)
+    plt.plot(finex, predy, label=algo.short_algo_name)
 plt.scatter(x, y, label="Training points")
 plt.legend()
 plt.show()

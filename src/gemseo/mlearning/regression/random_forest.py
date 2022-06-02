@@ -30,6 +30,7 @@ generated/sklearn.ensemble.RandomForestRegressor.html>`_.
 from __future__ import annotations
 
 import logging
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -46,8 +47,8 @@ LOGGER = logging.getLogger(__name__)
 class RandomForestRegressor(MLRegressionAlgo):
     """Random forest regression."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "RandomForestRegressor"
+    short_algo_name: ClassVar[str] = "RF"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

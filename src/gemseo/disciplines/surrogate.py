@@ -79,7 +79,7 @@ class SurrogateDiscipline(MDODiscipline):
                 The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
                 the :class:`.MinMaxScaler` strategy for both input and output variables.
             disc_name: The name to be given to the surrogate discipline.
-                If None, concatenate :attr:`.ABBR` and ``data.name``.
+                If None, concatenate :attr:`.short_algo_name` and ``data.name``.
             default_inputs: The default values of the inputs.
                 If None, use the center of the learning input space.
             input_names: The names of the input variables.
@@ -107,7 +107,7 @@ class SurrogateDiscipline(MDODiscipline):
                 output_names=output_names,
                 **parameters,
             )
-            name = f"{self.regression_model.ABBR}_{data.name}"
+            name = f"{self.regression_model.short_algo_name}_{data.name}"
         disc_name = disc_name or name
         if not self.regression_model.is_trained:
             self.regression_model.learn()
@@ -118,8 +118,8 @@ class SurrogateDiscipline(MDODiscipline):
             msg.add("Dataset size: {}", data.length)
             msg.add("Surrogate model: {}", self.regression_model.__class__.__name__)
             LOGGER.info("%s", msg)
-        if not name.startswith(self.regression_model.ABBR):
-            disc_name = f"{self.regression_model.ABBR}_{disc_name}"
+        if not name.startswith(self.regression_model.short_algo_name):
+            disc_name = f"{self.regression_model.short_algo_name}_{disc_name}"
         msg = MultiLineString()
         msg.add("Use the surrogate discipline: {}", disc_name)
         msg.indent()

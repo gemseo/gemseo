@@ -18,7 +18,7 @@ from gemseo.mlearning.core.ml_algo import MLAlgo
 class NewMLAlgo(MLAlgo):
     """New machine learning algorithm class."""
 
-    LIBRARY = "NewLibrary"
+    library = "NewLibrary"
 
     def learn(self, samples=None):
         super().learn(samples=samples)

@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import logging
 from typing import Callable
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -50,8 +51,8 @@ LOGGER = logging.getLogger(__name__)
 class SVMClassifier(MLClassificationAlgo):
     """The Support Vector Machine algorithm for classification."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "SVM"
+    short_algo_name: ClassVar[str] = "SVM"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

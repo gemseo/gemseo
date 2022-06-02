@@ -124,9 +124,10 @@ def model_with_transform(dataset) -> GaussianMixture:
 
 def test_constructor(dataset):
     """Test construction."""
-    for n_components in [1, 10]:
-        gaussian_mixture = GaussianMixture(dataset, n_components=n_components)
-        assert gaussian_mixture.algo is not None
+    gaussian_mixture = GaussianMixture(dataset)
+    assert gaussian_mixture.algo is not None
+    assert gaussian_mixture.short_algo_name == "GMM"
+    assert gaussian_mixture.library == "scikit-learn"
 
 
 def test_learn(dataset):

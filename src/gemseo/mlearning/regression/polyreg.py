@@ -79,6 +79,7 @@ from __future__ import annotations
 import logging
 import pickle
 from pathlib import Path
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 
@@ -99,8 +100,8 @@ LOGGER = logging.getLogger(__name__)
 class PolynomialRegressor(LinearRegressor):
     """Polynomial regression model."""
 
-    LIBRARY = "scikit-learn"
-    ABBR = "PolyReg"
+    short_algo_name: ClassVar[str] = "PolyReg"
+    library: ClassVar[str] = "scikit-learn"
 
     def __init__(
         self,

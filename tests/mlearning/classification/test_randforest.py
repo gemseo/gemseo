@@ -94,6 +94,8 @@ def test_constructor(dataset):
     """Test construction."""
     algo = RandomForestClassifier(dataset)
     assert algo.algo is not None
+    assert algo.short_algo_name == "RF"
+    assert algo.library == "scikit-learn"
 
 
 def test_learn(dataset):
