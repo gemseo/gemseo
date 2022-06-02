@@ -875,20 +875,12 @@ def test_configure(
 def test_configure_default():
     """Check the default use of configure."""
     configure()
-    assert MDOFunction.activate_counters is False
-    assert MDODiscipline.activate_counters is False
-    assert MDODiscipline.activate_input_data_check is False
-    assert MDODiscipline.activate_output_data_check is False
-    assert MDODiscipline.activate_cache is False
-    assert DriverLib.activate_progress_bar is False
-    configure(
-        activate_discipline_counters=True,
-        activate_function_counters=True,
-        activate_progress_bar=True,
-        activate_discipline_cache=True,
-        check_input_data=True,
-        check_output_data=True,
-    )
+    assert MDOFunction.activate_counters is True
+    assert MDODiscipline.activate_counters is True
+    assert MDODiscipline.activate_input_data_check is True
+    assert MDODiscipline.activate_output_data_check is True
+    assert MDODiscipline.activate_cache is True
+    assert DriverLib.activate_progress_bar is True
 
 
 def test_algo_features():
