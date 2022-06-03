@@ -68,7 +68,7 @@ def split_array_to_dict_of_arrays(
     names_to_sizes: Mapping[str, int],
     *names: Iterable[str],
     check_consistency: bool = False,
-) -> dict[str, ndarray]:
+) -> dict[str, ndarray | dict[str, ndarray]]:
     """Split a NumPy array into a dictionary of NumPy arrays.
 
     Example:

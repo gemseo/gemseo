@@ -257,15 +257,46 @@ class ToyDiscipline(MDODiscipline):
 
 @pytest.mark.parametrize("inputs", [["x1"], ["x2"], ["x1", "x2"]])
 @pytest.mark.parametrize("outputs", [["y1"], ["y2"], ["y1", "y2"]])
-@pytest.mark.parametrize("indices", [None, {"x1": 0}, {"y2": 1}, {"x1": 0, "y2": 1}])
+@pytest.mark.parametrize(
+    "indices",
+    [
+        None,
+        {"x1": 0},
+        {"y2": 1},
+        {"x1": 0, "y2": 1},
+        {"x2": [0, 1], "y2": [0, 1]},
+        {"x2": 1, "y2": [0, 1]},
+    ],
+)
 @pytest.mark.parametrize("dtype", [float64, complex128])
 def test_indices(inputs, outputs, indices, dtype):
+    """Test the option to check the Jacobian by indices.
+
+    Args:
+        inputs: The input variables to be checked.
+        outputs: The output variables to be checked.
+        dtype: The data type of the variables for the test discipline.
+    """
     discipline = ToyDiscipline(dtype=dtype)
     discipline.linearize(force_all=True)
     apprx = DisciplineJacApprox(discipline)
     assert apprx.check_jacobian(
         discipline.jac, outputs, inputs, discipline, indices=indices
     )
+
+
+@pytest.mark.parametrize("dtype", [float64, complex128])
+def test_wrong_step(dtype):
+    """Test that an exception is raised if the step size length does not math inputs.
+
+    Args:
+        dtype: The data type of the variables for the test discipline.
+    """
+    discipline = ToyDiscipline(dtype=dtype)
+    discipline.linearize(force_all=True)
+    apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7])
+    with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
+        apprx.compute_approx_jac(outputs=["y1", "y2"], inputs=["x1", "x2"])
 
 
 def test_factory():
