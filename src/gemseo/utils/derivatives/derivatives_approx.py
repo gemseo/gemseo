@@ -21,11 +21,12 @@ from __future__ import annotations
 
 import logging
 import pickle
-from itertools import chain
 from multiprocessing import cpu_count
+from numbers import Number
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+from typing import Sized
 from typing import TYPE_CHECKING
 
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
@@ -46,6 +47,7 @@ from numpy import (
     divide,
     finfo,
     ndarray,
+    zeros,
 )
 
 from gemseo.utils.data_conversion import (
@@ -70,7 +72,7 @@ class DisciplineJacApprox:
         self,
         discipline: MDODiscipline,
         approx_method: str = FINITE_DIFFERENCES,
-        step: float = 1e-7,
+        step: Number | Iterable[Number] = 1e-7,
         parallel: bool = False,
         n_processes: int = N_CPUS,
         use_threading: bool = False,
@@ -81,8 +83,10 @@ class DisciplineJacApprox:
             discipline: The discipline
                 for which the Jacobian approximation shall be made.
             approx_method: The approximation method,
-                either "complex_step" or "finite_differences".
-            step: The differentiation step.
+                either ``complex_step`` or ``finite_differences``.
+            step: The differentiation step. The ``finite_differences`` takes either
+                a float or an iterable of floats with the same length as the inputs.
+                The ``complex_step`` method takes either a complex or a float as input.
             parallel: Whether to differentiate the discipline in parallel.
             n_processes: The maximum number of processors on which to run.
             use_threading: Whether to use threads instead of processes
@@ -160,7 +164,7 @@ class DisciplineJacApprox:
         See Also:
             https://en.wikipedia.org/wiki/Numerical_differentiation
             and *Numerical Algorithms and Digital Representation*,
-            Knut Morken, Chapter 11, "Numerical Differenciation"
+            Knut Morken, Chapter 11, "Numerical Differentiation"
 
         Args:
             inputs: The names of the inputs used to differentiate the outputs.
@@ -223,8 +227,8 @@ class DisciplineJacApprox:
         """Approximate the Jacobian.
 
         Args:
-            inputs: The names of the inputs used to differentiate the outputs.
             outputs: The names of the outputs to be differentiated.
+            inputs: The names of the inputs used to differentiate the outputs.
             x_indices: The components of the input vector
                 to be used for the differentiation.
                 If None, use all the components.
@@ -245,16 +249,33 @@ class DisciplineJacApprox:
         else:
             step = self.step
 
-        if hasattr(step, "len") and 1 < len(step) != len(x_vect):
+        if isinstance(step, Sized) and 1 < len(step) != len(x_vect):
             raise ValueError(
-                "Inconsistent step size, "
-                "expected {} got {}.".format(x_vect.size, len(step))
+                f"Inconsistent step size, expected {x_vect.size} got {len(step)}."
             )
+
         flat_jac = self.approximator.f_gradient(x_vect, x_indices=x_indices, step=step)
         flat_jac = atleast_2d(flat_jac)
-        data_sizes = {key: len(local_data[key]) for key in chain(inputs, outputs)}
+
+        data_sizes = {key: len(local_data[key]) for key in outputs}
+        outputs_len = sum(data_sizes.values())
+
+        input_sizes = {key: len(local_data[key]) for key in inputs}
+        inputs_len = sum(input_sizes.values())
+
+        data_sizes.update(input_sizes)
+        global_shape = [outputs_len, inputs_len]
+
+        if x_indices is None:
+            flat_jac_complete = flat_jac
+        else:
+            flat_jac_complete = zeros(global_shape)
+            flat_jac_complete[:, x_indices] = flat_jac
+
         self.discipline.cache_tol = old_cache_tol
-        return split_array_to_dict_of_arrays(flat_jac, data_sizes, outputs, inputs)
+        return split_array_to_dict_of_arrays(
+            flat_jac_complete, data_sizes, outputs, inputs
+        )
 
     def check_jacobian(
         self,
@@ -358,12 +379,10 @@ class DisciplineJacApprox:
             for in_data, approx_jac in apprx_jac_dict.items():
                 computed_jac = analytic_jacobian[out_data][in_data]
                 if indices is not None:
-                    computed_jac = computed_jac[
-                        outputs_indices[out_data], inputs_indices[in_data]
-                    ]
-                    approx_jac = approx_jac[
-                        outputs_indices[out_data], inputs_indices[in_data]
-                    ]
+                    row_idx = atleast_2d(outputs_indices[out_data]).T
+                    col_idx = inputs_indices[in_data]
+                    computed_jac = computed_jac[row_idx, col_idx]
+                    approx_jac = approx_jac[row_idx, col_idx]
 
                 if approx_jac.shape != computed_jac.shape:
                     succeed = False
