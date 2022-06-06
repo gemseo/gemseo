@@ -90,3 +90,4 @@ Contributors
 - Gilberto Ruiz Jimenez
 - Arthur Piat
 - Selime Gürol
+- Reda El Amri
