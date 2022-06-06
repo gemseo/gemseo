@@ -244,7 +244,7 @@ The following people are the contributors to |g|'s development and maintenance:
     </div>
     <div class="avatar">
           <img src='_static/authors/reda_elamri.png' class='avatar' /><br />
-          Syver<br/>Reda El Amri
+          Reda<br/>El Amri
     </div>
     <div class="avatar">
           <img src='_static/authors/vincent_gachelin.png' class='avatar' /><br />
