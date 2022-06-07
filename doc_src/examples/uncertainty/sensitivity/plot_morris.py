@@ -67,7 +67,7 @@ for variable in ["x1", "x2", "x3"]:
 # :math:`Y_1=f(X_1,X_2,X_3)` and :math:`Y_2=f(X_2,X_1,X_3)`.
 # For that,
 # we can compute the correlation coefficients from a :class:`.MorrisAnalysis`:
-morris = MorrisAnalysis(discipline, space, 10)
+morris = MorrisAnalysis([discipline], space, 10)
 morris.compute_indices()
 
 #######################################################################################

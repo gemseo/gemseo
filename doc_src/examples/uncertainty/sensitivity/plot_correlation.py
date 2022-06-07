@@ -67,7 +67,7 @@ for variable in ["x1", "x2", "x3"]:
 # :math:`Y_1=f(X_1,X_2,X_3)` and :math:`Y_2=f(X_2,X_1,X_3)`.
 # For that,
 # we can compute the correlation coefficients from a :class:`.CorrelationAnalysis`:
-correlation = CorrelationAnalysis(discipline, space, 1000)
+correlation = CorrelationAnalysis([discipline], space, 1000)
 correlation.compute_indices()
 
 #######################################################################################

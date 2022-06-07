@@ -61,14 +61,14 @@ for variable in ["x1", "x2", "x3"]:
 # Firstly,
 # we create a :class:`.CorrelationAnalysis`
 # and compute the sensitivity indices:
-correlation = CorrelationAnalysis(discipline, space, 10)
+correlation = CorrelationAnalysis([discipline], space, 10)
 correlation.compute_indices()
 
 #######################################################################################
 # Then,
 # we create a :class:`.MorrisAnalysis`
 # and compute the sensitivity indices:
-morris = MorrisAnalysis(discipline, space, 10)
+morris = MorrisAnalysis([discipline], space, 10)
 morris.compute_indices()
 
 #######################################################################################

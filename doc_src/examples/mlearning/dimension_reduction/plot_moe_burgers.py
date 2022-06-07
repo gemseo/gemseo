@@ -34,10 +34,6 @@ import matplotlib.pyplot as plt
 from gemseo.api import configure_logger
 from gemseo.api import load_dataset
 from gemseo.mlearning.api import create_regression_model
-from gemseo.mlearning.transform.dimension_reduction.klsvd import KLSVD
-from gemseo.mlearning.transform.dimension_reduction.kpca import KPCA
-from gemseo.mlearning.transform.dimension_reduction.pca import PCA
-from gemseo.mlearning.transform.sensor.jameson import JamesonSensor
 from matplotlib.lines import Line2D
 from numpy import nonzero
 
@@ -63,15 +59,12 @@ outputs = dataset.get_data_by_group(dataset.OUTPUT_GROUP)
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # We construct the MoE model using the predefined parameters, and fit the model
 # to the dataset through the learn() method.
-klsvd = {dataset.OUTPUT_GROUP: KLSVD(mesh=dataset.metadata["x"], n_components=10)}
-pca = {dataset.OUTPUT_GROUP: PCA(n_components=10)}
-kpca = {dataset.OUTPUT_GROUP: KPCA(n_components=10, kernel="poly")}
-jameson = {dataset.OUTPUT_GROUP: JamesonSensor()}
-
 model = create_regression_model("MOERegressor", dataset)
-model.set_clusterer("KMeans", n_clusters=2, transformer=jameson)
+model.set_clusterer("KMeans", n_clusters=2, transformer={"outputs": "JamesonSensor"})
 model.set_classifier("KNNClassifier", n_neighbors=3)
-model.set_regressor("GaussianProcessRegressor")  # , transformer=pca)
+model.set_regressor(
+    "GaussianProcessRegressor", transformer={"outputs": ("PCA", {"n_components": 20})}
+)
 
 model.learn()
 
@@ -139,11 +132,11 @@ plt.show()
 ###############################################################################
 # Plot components
 # ~~~~~~~~~~~~~~~
-# if not isinstance(model.regress_models[0].transformer["outputs"], KPCA):
-#     plt.subplot(121)
-#     plt.plot(model.regress_models[0].transformer["outputs"].components)
-#     plt.title("1st local model")
-#     plt.subplot(122)
-#     plt.plot(model.regress_models[1].transformer["outputs"].components)
-#     plt.title("2nd local model")
-#     plt.show()
+local_models = model.regress_models
+plt.subplot(121)
+plt.plot(local_models[0].transformer["outputs"].components)
+plt.title("1st local model")
+plt.subplot(122)
+plt.plot(local_models[1].transformer["outputs"].components)
+plt.title("2nd local model")
+plt.show()
