@@ -96,10 +96,10 @@ def test_parse_docstrings(reset_factory, tmp_wd):
         file_name = f"{grammar.name}.json"
         assert Path(DATA / file_name).read_text() == Path(file_name).read_text()
 
-        grammar.load_data(opt_vals, raise_exception=True)
+        grammar.validate(opt_vals, raise_exception=True)
 
         opt_doc = factory.get_options_doc(form)
-        data_names = grammar.get_data_names()
+        data_names = grammar.keys()
         assert "name" not in data_names
         assert "design_space" not in data_names
         assert "objective_name" not in data_names

@@ -536,8 +536,8 @@ def complex_step_scenario() -> MDOScenario:
 
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.initialize_from_data_names(["x"])
-            self.output_grammar.initialize_from_data_names(["y"])
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
 
         def _run(self) -> None:
             self.local_data["y"] = self.local_data["x"]

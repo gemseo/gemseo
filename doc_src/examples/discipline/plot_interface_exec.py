@@ -90,8 +90,8 @@ def write_file(data, file_path):
 class ShellExecutableDiscipline(MDODiscipline):
     def __init__(self):
         super().__init__("ShellDisc")
-        self.input_grammar.initialize_from_data_names(["a", "b"])
-        self.output_grammar.initialize_from_data_names(["c"])
+        self.input_grammar.update(["a", "b"])
+        self.output_grammar.update(["c"])
         self.default_inputs = {"a": array([1.0]), "b": array([2.0])}
 
     def _run(self):

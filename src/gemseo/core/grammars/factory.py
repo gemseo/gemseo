@@ -17,33 +17,34 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A factory to instantiate a derived class of :class:`.AbstractGrammar`."""
+"""A factory to instantiate a derived class of :class:`.BaseGrammar`."""
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from gemseo.core.factory import Factory
-from gemseo.core.grammars.abstract_grammar import AbstractGrammar
+from gemseo.core.grammars.base_grammar import BaseGrammar
 
 LOGGER = logging.getLogger(__name__)
 
 
 class GrammarFactory:
-    """A factory of :class:`.AbstractGrammar`."""
+    """A factory of :class:`.BaseGrammar`."""
 
     def __init__(self) -> None:
-        self.__factory = Factory(AbstractGrammar, ("gemseo.core.grammars",))
+        self.__factory = Factory(BaseGrammar, ("gemseo.core.grammars",))
 
     def create(
         self,
         class_name: str,
         name: str,
-        **options,
-    ) -> AbstractGrammar:
+        **options: Any,
+    ) -> BaseGrammar:
         """Create a grammar.
 
         Args:
-            class_name: The name of a class deriving from :class:`.AbstractGrammar`.
+            class_name: The name of a class deriving from :class:`.BaseGrammar`.
             name: The name to be given to the grammar.
             **options: The options to be passed to the initialization.
         """
@@ -54,11 +55,11 @@ class GrammarFactory:
         """The sorted names of the available grammars."""
         return self.__factory.classes
 
-    def is_available(self, class_name) -> bool:
+    def is_available(self, class_name: str) -> bool:
         """Return whether a grammar class exists.
 
         Args:
-            class_name: The name of a class deriving from :class:`.AbstractGrammar`.
+            class_name: The name of a class deriving from :class:`.BaseGrammar`.
 
         Returns:
             Whether the grammar class exists.

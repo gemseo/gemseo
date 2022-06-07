@@ -38,8 +38,8 @@ def graph() -> DependencyGraph:
         input_d = {k: data for k in desc[1]}
         output_d = {k: data for k in desc[2]}
         disc = MDODiscipline(name)
-        disc.input_grammar.initialize_from_base_dict(input_d)
-        disc.output_grammar.initialize_from_base_dict(output_d)
+        disc.input_grammar.update_from_data(input_d)
+        disc.output_grammar.update_from_data(output_d)
         disciplines.append(disc)
     return DependencyGraph(disciplines)
 

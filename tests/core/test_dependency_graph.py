@@ -101,9 +101,9 @@ def create_disciplines_from_desc(disc_desc):
     for name, io_names in disc_desc_items:
         disc = MDODiscipline(name)
         input_d = {k: data for k in io_names[0]}
-        disc.input_grammar.initialize_from_base_dict(input_d)
+        disc.input_grammar.update_from_data(input_d)
         output_d = {k: data for k in io_names[1]}
-        disc.output_grammar.initialize_from_base_dict(output_d)
+        disc.output_grammar.update_from_data(output_d)
         disciplines += [disc]
 
     return disciplines

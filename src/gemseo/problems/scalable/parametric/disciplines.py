@@ -91,8 +91,8 @@ class TMMainDiscipline(TMDiscipline):
         """
         self.model = TMMainModel(c_constraint, default_inputs)
         super().__init__(self.model.name)
-        self.input_grammar.initialize_from_data_names(self.model.inputs_names)
-        self.output_grammar.initialize_from_data_names(self.model.outputs_names)
+        self.input_grammar.update(self.model.inputs_names)
+        self.output_grammar.update(self.model.outputs_names)
         self.default_inputs = default_inputs
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
@@ -164,8 +164,8 @@ class TMSubDiscipline(TMDiscipline):
         """
         self.model = TMSubModel(index, c_shared, c_local, c_coupling, default_inputs)
         super().__init__(name=self.model.name)
-        self.input_grammar.initialize_from_data_names(self.model.inputs_names)
-        self.output_grammar.initialize_from_data_names(self.model.outputs_names)
+        self.input_grammar.update(self.model.inputs_names)
+        self.output_grammar.update(self.model.outputs_names)
         self.default_inputs = default_inputs
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
@@ -173,7 +173,7 @@ class TMSubDiscipline(TMDiscipline):
         x_shared = self.get_inputs_by_name(X_SHARED_NAME)
         x_local = self.get_inputs_by_name(get_x_local_name(self.model.index))
         u_local_name = get_u_local_name(self.model.index)
-        if self.input_grammar.is_data_name_existing(u_local_name):
+        if u_local_name in self.input_grammar:
             u_local = self.get_inputs_by_name(u_local_name)
         else:
             u_local = None

@@ -160,30 +160,26 @@ class MDOScenarioAdapter(MDODiscipline):
         opt_problem = formulation.opt_problem
         top_leveld = formulation.get_top_level_disc()
         for disc in top_leveld:
-            self.input_grammar.update_from(disc.input_grammar)
-            self.output_grammar.update_from(disc.output_grammar)
+            self.input_grammar.update(disc.input_grammar)
+            self.output_grammar.update(disc.output_grammar)
             # The output may also be the optimum value of the design
             # variables, so the output grammar may contain inputs
             # of the disciplines. All grammars are filtered just after
             # this loop
-            self.output_grammar.update_from(disc.input_grammar)
+            self.output_grammar.update(disc.input_grammar)
             self.default_inputs.update(disc.default_inputs)
 
-        self.input_grammar.restrict_to(self._inputs_list)
-        self.output_grammar.restrict_to(self._outputs_list)
-        # If a DV is not an input of the top level disciplines:
-        output_names = self.output_grammar.get_data_names()
-        missing_out = set(self._outputs_list) - set(output_names)
-        if missing_out:
-            dv_names = opt_problem.design_space.variables_names
-            miss_dvs = set(dv_names) & set(missing_out)
-            if miss_dvs:
-                dv_gram = JSONGrammar("dvs")
-                dv_gram.initialize_from_data_names(miss_dvs)
-                self.output_grammar.update_from(dv_gram)
+        try:
+            self.input_grammar.restrict_to(self._inputs_list)
+        except KeyError:
+            missing_inputs = set(self._inputs_list) - set(self.input_grammar.keys())
 
-        output_names = self.output_grammar.get_data_names()
-        missing_out = set(self._outputs_list) - set(output_names)
+            if missing_inputs:
+                raise ValueError(
+                    "Can't compute inputs from scenarios: {}.".format(
+                        ", ".join(sorted(missing_inputs))
+                    )
+                )
 
         # Add the design variables bounds to the input grammar
         if self._set_bounds_before_opt:
@@ -196,22 +192,31 @@ class MDOScenarioAdapter(MDODiscipline):
                 bnds = {name + suffix: val for name, val in current_x.items()}
                 typical_data_dict.update(bnds)
             bnds_gram = JSONGrammar("bnds")
-            bnds_gram.initialize_from_base_dict(typical_data_dict)
-            self.input_grammar.update_from(bnds_gram)
+            bnds_gram.update_from_data(typical_data_dict)
+            self.input_grammar.update(bnds_gram)
 
-        if missing_out:
-            raise ValueError(
-                "Can't compute outputs from scenarios: {}.".format(
-                    ", ".join(sorted(missing_out))
+        # If a DV is not an input of the top level disciplines:
+        missing_outputs = set(self._outputs_list) - set(self.output_grammar.keys())
+
+        if missing_outputs:
+            dv_names = opt_problem.design_space.variables_names
+            miss_dvs = set(dv_names) & set(missing_outputs)
+            if miss_dvs:
+                dv_gram = JSONGrammar("dvs")
+                dv_gram.update(miss_dvs)
+                self.output_grammar.update(dv_gram)
+
+        try:
+            self.output_grammar.restrict_to(self._outputs_list)
+        except KeyError:
+            missing_outputs = set(self._outputs_list) - set(self.output_grammar.keys())
+
+            if missing_outputs:
+                raise ValueError(
+                    "Can't compute outputs from scenarios: {}.".format(
+                        ", ".join(sorted(missing_outputs))
+                    )
                 )
-            )
-        missing_inpt = set(self._inputs_list) - set(self.input_grammar.get_data_names())
-        if missing_inpt:
-            raise ValueError(
-                "Can't compute inputs from scenarios: {}.".format(
-                    ", ".join(sorted(missing_inpt))
-                )
-            )
 
         # Add the Lagrange multipliers to the output grammar
         if self._output_multipliers:
@@ -246,8 +251,8 @@ class MDOScenarioAdapter(MDODiscipline):
 
         # Update the output grammar
         multipliers_grammar = JSONGrammar("multipliers")
-        multipliers_grammar.initialize_from_base_dict(base_dict)
-        self.output_grammar.update_from(multipliers_grammar)
+        multipliers_grammar.update_from_data(base_dict)
+        self.output_grammar.update(multipliers_grammar)
 
     @staticmethod
     def get_bnd_mult_name(

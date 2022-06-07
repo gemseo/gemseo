@@ -100,8 +100,8 @@ class MDAGaussSeidel(MDA):
         self._compute_input_couplings()
 
     def _initialize_grammars(self):
-        self.input_grammar.update_from(self.chain.input_grammar)
-        self.output_grammar.update_from(self.chain.output_grammar)
+        self.input_grammar.update(self.chain.input_grammar)
+        self.output_grammar.update(self.chain.output_grammar)
 
     def _run(self):
         # Run the disciplines in a sequential way

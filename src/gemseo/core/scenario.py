@@ -557,7 +557,7 @@ class Scenario(MDODiscipline):
         return ExecutionSequenceFactory.loop(self, exp_wf)
 
     def _init_algo_factory(self) -> None:
-        """Initalize the factory of algorithms."""
+        """Initialize the factory of algorithms."""
         raise NotImplementedError()
 
     def get_available_driver_names(self) -> list[str]:
@@ -566,13 +566,10 @@ class Scenario(MDODiscipline):
 
     def _update_input_grammar(self) -> None:
         """Update the input grammar from the names of available drivers."""
-        available_algos = self.get_available_driver_names()
-        algo_grammar = {"type": "string", "enum": available_algos}
-        # TODO: Implement a cleaner solution to handle SimpleGrammar,
-        #  use enum not str.
-
         if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-            self.input_grammar.set_item_value("algo", algo_grammar)
+            self.input_grammar.update(
+                {"algo": {"type": "string", "enum": self.get_available_driver_names()}}
+            )
         else:
             self._update_grammar_input()
 

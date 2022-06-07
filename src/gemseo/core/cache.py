@@ -26,7 +26,6 @@ import logging
 import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
-from typing import Any
 from typing import ClassVar
 from typing import Generator
 from typing import Iterable
@@ -45,6 +44,7 @@ from numpy import uint8
 from numpy import vstack
 from xxhash import xxh3_64_hexdigest
 
+from gemseo.core.discipline_data import Data
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -59,8 +59,6 @@ from gemseo.utils.testing import compare_dict_of_arrays
 
 LOGGER = logging.getLogger(__name__)
 
-Data = Mapping[str, Any]
-OutputData = Mapping[str, ndarray]
 JacobianData = Mapping[str, Mapping[str, ndarray]]
 
 CacheEntry = namedtuple("CacheEntry", "inputs,outputs,jacobian", defaults=[None, None])
@@ -212,7 +210,7 @@ class AbstractCache(ABCMapping):
     def __setitem__(
         self,
         input_data: Data,
-        data: tuple[OutputData | None, JacobianData | None],
+        data: tuple[Data | None, JacobianData | None],
     ) -> None:
         output_data, jacobian_data = data
         if not output_data and not jacobian_data:
@@ -237,7 +235,7 @@ class AbstractCache(ABCMapping):
     def cache_outputs(
         self,
         input_data: Data,
-        output_data: OutputData,
+        output_data: Data,
     ) -> None:
         """Cache input and output data.
 
@@ -460,7 +458,7 @@ class AbstractFullCache(AbstractCache):
     def cache_outputs(
         self,
         input_data: Data,
-        output_data: OutputData,
+        output_data: Data,
     ) -> None:
         if self._cache_inputs(input_data, self._OUTPUTS_GROUP):
             # There is already an output data corresponding to this input data.

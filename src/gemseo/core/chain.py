@@ -95,10 +95,10 @@ class MDOChain(MDODiscipline):
         self.input_grammar.clear()
         self.output_grammar.clear()
         for discipline in self.disciplines:
-            self.input_grammar.update_from_if_not_in(
-                discipline.input_grammar, self.output_grammar
+            self.input_grammar.update(
+                discipline.input_grammar, exclude_names=self.output_grammar.keys()
             )
-            self.output_grammar.update_from(discipline.output_grammar)
+            self.output_grammar.update(discipline.output_grammar)
 
     def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""
@@ -332,8 +332,8 @@ class MDOParallelChain(MDODiscipline):
         self.input_grammar.clear()
         self.output_grammar.clear()
         for discipline in self.disciplines:
-            self.input_grammar.update_from(discipline.input_grammar)
-            self.output_grammar.update_from(discipline.output_grammar)
+            self.input_grammar.update(discipline.input_grammar)
+            self.output_grammar.update(discipline.output_grammar)
 
     def _update_default_inputs(self) -> None:
         """Compute the default inputs from the disciplines' ones."""

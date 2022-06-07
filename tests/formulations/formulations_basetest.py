@@ -45,9 +45,9 @@ class FakeDiscipline(MDODiscipline):
 
         """
         self.input_grammar = JSONGrammar("inputs")
-        self.input_grammar.initialize_from_base_dict({self.name + "_x": 0.0})
+        self.input_grammar.update_from_data({self.name + "_x": 0.0})
         self.output_grammar = JSONGrammar("outputs")
-        self.output_grammar.initialize_from_base_dict({self.name + "_y": 1.0})
+        self.output_grammar.update_from_data({self.name + "_y": 1.0})
 
 
 class FormulationsBaseTest(unittest.TestCase):

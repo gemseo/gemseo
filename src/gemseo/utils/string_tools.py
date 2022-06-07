@@ -131,7 +131,7 @@ class MultiLineString:
             new: The sub-string to be replaced with.
 
         Returns:
-            The MultiLineString copy with replaced occurences.
+            The MultiLineString copy with replaced occurrences.
         """
         repl_msg = []
         for line in self.__lines:

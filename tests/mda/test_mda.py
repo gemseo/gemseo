@@ -163,15 +163,15 @@ def test_array_couplings(mda_class, grammar_type):
     )
 
     a_disc = disciplines[0]
-    a_disc.input_grammar.remove_item("y1")
+    del a_disc.input_grammar["y1"]
     a_disc.default_inputs["y1"] = 2.0
-    a_disc.input_grammar.initialize_from_base_dict({"y1": 2.0})
-    assert not a_disc.input_grammar.is_type_array("y1")
+    a_disc.input_grammar.update_from_data({"y1": 2.0})
+    assert not a_disc.input_grammar.is_array("y1")
 
     with pytest.raises(InvalidDataException):
         a_disc.execute({"x": 2.0})
 
-    with pytest.raises(ValueError, match="must be of type array"):
+    with pytest.raises(TypeError, match="must be of type array"):
         mda_class(disciplines, grammar_type=grammar_type)
 
 

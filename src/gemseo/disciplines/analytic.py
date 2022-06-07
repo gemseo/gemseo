@@ -89,8 +89,8 @@ class AnalyticDiscipline(MDODiscipline):
 
     def _init_grammars(self) -> None:
         """Initialize the input an output grammars from the expressions dictionary."""
-        self.input_grammar.initialize_from_data_names(self.input_names)
-        self.output_grammar.initialize_from_data_names(self.expressions.keys())
+        self.input_grammar.update(self.input_names)
+        self.output_grammar.update(self.expressions.keys())
 
     def _init_expressions(self) -> None:
         """Parse the expressions of the functions and their derivatives.

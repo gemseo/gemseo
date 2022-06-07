@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "type": "object",
+    "name": "grammar_2",
+    "properties": {
+        "name1": {
+            "type": "integer"
+        },
+        "name2": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        }
+    },
+    "required":  ["name1"],
+    "additionalProperties": false
+}

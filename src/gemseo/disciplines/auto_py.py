@@ -93,7 +93,6 @@ class AutoPyDiscipline(MDODiscipline):
         py_jac: Callable[[DataType, ..., DataType], ndarray] | None = None,
         name: str | None = None,
         use_arrays: bool = False,
-        write_schema: bool = False,
     ) -> None:
         """# noqa: D205 D212 D415
         Args:
@@ -106,7 +105,6 @@ class AutoPyDiscipline(MDODiscipline):
                 function.
             use_arrays: Whether the function is expected
                 to take arrays as inputs and give outputs as arrays.
-            write_schema: Whether to write JSON schema on the disk.
 
         Raises:
             TypeError: When ``py_func`` is not callable.
@@ -126,13 +124,9 @@ class AutoPyDiscipline(MDODiscipline):
 
         args_in = getfullargspec(py_func)[0]
         self.in_names = args_in
-        self.input_grammar.initialize_from_data_names(self.in_names)
+        self.input_grammar.update(self.in_names)
         self.out_names = self._get_return_spec(py_func)
-        self.output_grammar.initialize_from_data_names(self.out_names)
-
-        if write_schema:
-            self.input_grammar.write_schema()
-            self.output_grammar.write_schema()
+        self.output_grammar.update(self.out_names)
 
         if not use_arrays:
             self.data_processor = AutoDiscDataProcessor(self.out_names)

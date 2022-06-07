@@ -30,8 +30,8 @@ class NewDiscipline(MDODiscipline):
 
     def __init__(self) -> None:
         super().__init__(name="foo")
-        self.input_grammar.initialize_from_data_names(["in_1", "in_2"])
-        self.output_grammar.initialize_from_data_names(["out_1", "out_2"])
+        self.input_grammar.update(["in_1", "in_2"])
+        self.output_grammar.update(["out_1", "out_2"])
         self.default_inputs = {"in_1": array([1.0]), "in_2": array([2.0, 3.0])}
 
     def _run(self) -> None:
@@ -94,8 +94,12 @@ def test_discipline_name(discipline):
 
 def test_io_names(discipline):
     """Check the input and output names."""
-    assert discipline.get_input_data_names() == ["new_in_1", "new_in_2", "new_in_3"]
-    assert discipline.get_output_data_names() == ["new_out_1", "new_out_2"]
+    assert list(discipline.get_input_data_names()) == [
+        "new_in_1",
+        "new_in_2",
+        "new_in_3",
+    ]
+    assert list(discipline.get_output_data_names()) == ["new_out_1", "new_out_2"]
 
 
 def test_default_inputs(discipline):

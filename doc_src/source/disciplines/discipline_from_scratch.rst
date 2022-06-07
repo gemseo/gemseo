@@ -140,7 +140,7 @@ and where the :code:`'NewDiscipline_outputs.json'` file is defined as follows:
 Setting the grammars from a dictionary data example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An intermediate approach is to apply the :meth:`.JSONGrammar.initialize_from_base_dict` method
+An intermediate approach is to apply the :meth:`.JSONGrammar.update_from_data` method
 with a :code:`dict` data example:
 
 .. code::
@@ -151,8 +151,8 @@ with a :code:`dict` data example:
 
         def __init__(self):
             super(NewDiscipline, self).__init__()
-            self.input_grammar.initialize_from_base_dict({'x': array([0.]), 'z': array([0.])})
-            self.output_grammar.initialize_from_base_dict({'y1': array([0.]), 'y2': array([0.])})
+            self.input_grammar.update_from_data({'x': array([0.]), 'z': array([0.])})
+            self.output_grammar.update_from_data({'y1': array([0.]), 'y2': array([0.])})
             # TO BE COMPLETED
 
 .. note::

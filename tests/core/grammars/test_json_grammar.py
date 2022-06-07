@@ -17,317 +17,608 @@
 #                         documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import logging
-from numbers import Number
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
-from gemseo.core.grammar import InvalidDataException
-from gemseo.core.grammar import SimpleGrammar
+from gemseo.core.discipline_data import Data
+from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.json_grammar import JSONGrammar
-from numpy import array
 from numpy import ndarray
 
-TEST_PATH = Path(__file__).parent / "data"
+DATA_PATH = Path(__file__).parent / "data"
 
 
-def get_indict():
-    return {
-        "Mach": 1.0,
-        "Cl": 2.0,
-        "Turbulence_model": "SA",
-        "Navier-Stokes": True,
-        "bounds": [1.0, 2.0],
-    }
-
-
-def get_indict_grammar():
-    g = JSONGrammar(name="basic")
-    g.initialize_from_base_dict(typical_data_dict=get_indict())
+def new_grammar(schema_path: Path | None) -> JSONGrammar:
+    """Create a grammar."""
+    g = JSONGrammar("g")
+    if schema_path is not None:
+        g.update_from_file(schema_path)
     return g
 
 
-def test_basic_grammar_init_from_dict():
-    g = get_indict_grammar()
-    g.load_data(get_indict())
-    g_str = repr(g)
-    assert "properties" in g_str
-    assert "required" in g_str
-    for k in get_indict():
-        assert k in g_str
-
-    array_dct = get_indict()
-    array_dct["bounds"] = array(array_dct["bounds"])
-    g2 = JSONGrammar(name="basic2")
-    g2.initialize_from_base_dict(typical_data_dict=array_dct)
-
-    for k in g.get_data_names():
-        assert k in g2.get_data_names()
-
-    g2_str = repr(g2)
-    assert "properties" in g2_str
-    assert "required" in g2_str
-    for k in get_indict():
-        assert k in g2_str
+def assert_reset_dependencies(grammar: JSONGrammar) -> None:
+    """Verify that the dependencies has been reset."""
+    assert grammar._JSONGrammar__validator is None
+    assert grammar._JSONGrammar__schema == {}
 
 
-def test_nan():
-    grammar = JSONGrammar("test_gram")
-    typical_data_dict = {"no_nan": [1]}
-    grammar.initialize_from_base_dict(typical_data_dict)
-    grammar.load_data({"no_nan": array([float(1)])})
-    with pytest.raises(InvalidDataException):
-        grammar.load_data({"no_nan": array([float("nan")])})
-    with pytest.raises(InvalidDataException):
-        grammar.load_data({"no_nan": array([float("nan"), 1.0])})
+def test_init_error():
+    """Verify that init raises the expected errors."""
+    msg = "The grammar name cannot be empty."
+    with pytest.raises(ValueError, match=msg):
+        JSONGrammar("")
+
+    path = "foo"
+    msg = f"Cannot update the grammar from non existing file: {path}."
+    with pytest.raises(FileNotFoundError, match=msg):
+        JSONGrammar("g", schema_path="foo")
 
 
-#     def test_bench():
-#         from numpy import ones
-#         from timeit import default_timer as timer
-#         n = 1000000
-#         p = 1
-#         nn = 1
-#         typical_data_dict = {str(k): ones(n) for k in range(p)}
-#         grammar = JSONGrammar("test_gram")
-#         grammar.initialize_from_base_dict(typical_data_dict)
-#         t0 = timer()
-#         for i in range(nn):
-#             grammar.load_data(typical_data_dict)
-#         t00 = timer()
-#         print("DT ", (t00 - t0) / nn)
-#         from numpy import issubdtype, number, isnan
-#
-#         def check(data):
-#             for k, v in data.items():
-#                 assert isinstance(v, ndarray)
-#                 assert issubdtype(v.dtype, number)
-#                 min = v.min()
-#                 max = v.max()
-#                 assert not isnan(min)
-#
-#         t1 = timer()
-#         for i in range(nn):
-#             check(typical_data_dict)
-#         t2 = timer()
-#         print("DT 2", ((t2 - t1) / (t00 - t0))**-1)
+def test_init_with_name():
+    """Verify init defaults."""
+    g = JSONGrammar("g")
+    assert g.name == "g"
+    assert not g
 
 
-def test_init_from_datanames():
-    grammar = JSONGrammar("t")
-    names = ["a", "b"]
-    grammar.initialize_from_data_names(names)
-    for name in names:
-        assert name in grammar.get_data_names()
+def test_init_with_file():
+    """Verify initializing with a file."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+    assert g
+    assert list(g.keys()) == ["name1", "name2"]
+    assert g.required_names == {"name1"}
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_init_from_base_dict():
-    grammar = JSONGrammar("test_gram")
-    grammar.initialize_from_base_dict({"a": [1], "b": "b"})
-
-
-def test_update_from():
-    g = get_indict_grammar()
-    with pytest.raises(TypeError):
-        g.update_from({})
-    ge = JSONGrammar(name="empty")
-    ge.update_from(g)
-    assert sorted(ge.get_data_names()) == sorted(g.get_data_names())
-
-    gs = SimpleGrammar("b")
-    with pytest.raises(TypeError):
-        ge.update_from_if_not_in(gs, gs)
-
-
-def test_update_from_if_not_in():
-
-    dct_1 = {
-        "Mach": 1.0,
-        "Cl": 2.0,
-        "Turbulence_model": "SA",
-        "Navier-Stokes": True,
-        "bounds": [1.0, 2.0],
-    }
-    description_dict_1 = {
-        "Mach": "Mach number",
-        "Navier-Stokes": "Equations to be solved",
-    }
-
-    dct_2 = {"Mach": 1.0, "Cl": 2.0, "Turbulence_model": "SA"}
-    g1 = JSONGrammar(name="basic")
-    g1.initialize_from_base_dict(
-        typical_data_dict=dct_1,
-        description_dict=description_dict_1,
+def test_init_with_file_and_descriptions():
+    """Verify initializing with a file and descriptions."""
+    descriptions = {"name1": "name1 description", "name2": "name2 description"}
+    g = JSONGrammar(
+        "g",
+        schema_path=DATA_PATH / "grammar_3.json",
+        descriptions=descriptions,
     )
 
-    g2 = JSONGrammar(name="basic")
-    g2.initialize_from_base_dict(typical_data_dict=dct_2)
-
-    ge = JSONGrammar(name="empty")
-    ge.update_from_if_not_in(g1, g2)
-
-    assert sorted(ge.get_data_names()) == sorted(["bounds", "Navier-Stokes"])
-
-    assert (
-        ge.schema.to_schema()["properties"]["Navier-Stokes"]["description"] is not None
-    )
+    assert g
+    assert list(g.keys()) == ["name1", "name2"]
+    assert g.required_names == {"name1"}
+    assert g.schema["properties"]["name1"]["description"] == "name1 description"
+    for item in g.schema["properties"]["name2"]["anyOf"]:
+        assert item["description"] == "name2 description"
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_update_from_dict():
-    g1 = JSONGrammar("g1")
-    typical_data_dict = {"max_iter": 1}
-    g1.initialize_from_base_dict(typical_data_dict)
-
-    g2 = JSONGrammar(name="basic_str", schema=g1.schema)
-    assert "max_iter" in g2.get_data_names()
+def test_delitem_error():
+    """Verify that removing a non-existing item raises."""
+    g = JSONGrammar("g")
+    msg = "foo"
+    with pytest.raises(KeyError, match=msg):
+        del g["foo"]
 
 
-def test_invalid_data():
-    fpath = TEST_PATH / "grammar_test1.json"
-    assert Path(fpath).exists()
-    gram = JSONGrammar(name="toto", schema_file=fpath)
-    gram.load_data({"X": 1})
-    gram.load_data({"X": 1.1})
-    for data in [{}, {"Y": 2}, {"X": "/opt"}, {"X": array([1.0])}, 1, "X"]:
-        with pytest.raises(InvalidDataException):
-            gram.load_data(data)
+def test_delitem():
+    """Verify removing an item."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+    del g["name1"]
+    assert "name1" not in g
+    assert "name1" not in g.required_names
+    assert "name2" in g
+    assert_reset_dependencies(g)
 
 
-def test_init_from_unexisting_schema():
-    fpath = TEST_PATH / "IDONTEXIST.json"
-    assert not Path(fpath).exists()
-    with pytest.raises(Exception):
-        JSONGrammar("toto", fpath)
+def test_getitem_error():
+    """Verify that getting a non-existing item raises."""
+    g = JSONGrammar("g")
+    msg = "foo"
+    with pytest.raises(KeyError, match=msg):
+        g["foo"]
 
 
-@pytest.mark.usefixtures("tmp_wd")
-def test_write_schema():
-    g = JSONGrammar(name="toto")
-    fpath = "out_test.json"
-    g.initialize_from_base_dict(typical_data_dict={"X": 1})
-    g.write_schema(fpath)
-    assert Path(fpath).exists()
-
-
-def test_set_item():
-    g = get_indict_grammar()
-    g.set_item_value("Mach", {"type": "string"})
-    with pytest.raises(InvalidDataException):
-        g.load_data(get_indict())
-    data = get_indict()
-    data["Mach"] = "1"
-    g.load_data(data)
-
-    with pytest.raises(ValueError):
-        g.set_item_value("unknown", {"type": "string"})
+def test_getitem():
+    """Verify getting an item."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+    assert g["name1"]._active_strategies[0].PYTHON_TYPES == (int, float)
 
 
 @pytest.mark.parametrize(
-    "infile", ["grammar_test1.json", "grammar_test2.json", "grammar_test3.json"]
+    "schema_path,length",
+    [
+        (None, 0),
+        (DATA_PATH / "grammar_2.json", 2),
+    ],
 )
-def test_to_simple_grammar_names(infile):
-    grammar = JSONGrammar(infile, schema_file=TEST_PATH / infile)
-    simp = grammar.to_simple_grammar()
-    assert sorted(simp.get_data_names()) == sorted(grammar.get_data_names())
-    assert grammar.name == simp.name
-
-
-def test_to_simple_grammar_number():
-    grammar = JSONGrammar("number", schema_file=TEST_PATH / "grammar_test1.json")
-    simp = grammar.to_simple_grammar()
-    assert simp.data_types == [Number]
-
-    simp.load_data({"X": 1.0})
-    simp.load_data({"X": 1})
-    simp.load_data({"X": 1j})
-
-    with pytest.raises(InvalidDataException):
-        simp.load_data({})
-
-    with pytest.raises(InvalidDataException):
-        simp.load_data({"X": "X"})
-
-
-def test_to_simple_grammar_array_number():
-    grammar = JSONGrammar("number", schema_file=TEST_PATH / "grammar_test3.json")
-    simp = grammar.to_simple_grammar()
-
-    assert simp.data_types == [Number, ndarray, None]
-
-    simp.load_data({"X": 1, "Y": array([1.0]), "Z": 10})
-    simp.load_data({"X": 1.0, "Y": array([1]), "Z": array([10])})
-    simp.load_data({"X": 1j, "Y": array([1.0j]), "Z": 1j})
-
-    with pytest.raises(InvalidDataException):
-        simp.load_data({"X": 1j, "Y": 1.0})
-
-
-def test_to_simple_grammar_string_array(caplog):
-    """Check that a warning message is logged when a JSONGrammar has a string array."""
-    grammar = JSONGrammar(
-        "grammar_with_string_array",
-        schema_file=TEST_PATH / "grammar_test4.json",
-    )
-    caplog.set_level(logging.WARNING)
-    grammar.to_simple_grammar()
-    expected = (
-        "Unsupported type 'string' in JSONGrammar 'grammar_with_string_array' "
-        "for property 'X' in conversion to simple grammar."
-    )
-    assert expected in caplog.text
-
-
-def test_is_type_array_errors():
-    fpath = TEST_PATH / "grammar_test1.json"
-    gram = JSONGrammar(name="toto", schema_file=fpath)
-    with pytest.raises(ValueError, match="is not in the grammar"):
-        gram.is_type_array("IDONTEXIST")
-
-
-def test_properties_dict():
-    gram = JSONGrammar("")
-    with pytest.raises(ValueError, match="Schema has no properties"):
-        gram.properties_dict
-
-
-def test_description_with_anyof_types_parameter():
-    """Test that the description of a parameter is correctly taken into account when
-    ``anyOf`` tag is used to define several types."""
-
-    description = {
-        "X": "description of X",
-        "Y": "description of Y",
-        "Z": "description of Z",
-    }
-
-    json_file = Path(__file__).parent / "data" / "grammar_test3.json"
-    json_grammar = JSONGrammar("my_json", json_file, descriptions=description)
-    json_dict = json_grammar.schema.to_dict()
-    properties = json_dict["properties"]
-
-    assert properties["X"]["description"] == description["X"]
-    assert properties["Y"]["description"] == description["Y"]
-    assert properties["Z"]["anyOf"][0]["description"] == description["Z"]
-    assert properties["Z"]["anyOf"][1]["description"] == description["Z"]
+def test_len(schema_path, length):
+    """Verify computing the length."""
+    g = new_grammar(schema_path)
+    assert len(g) == length
 
 
 @pytest.mark.parametrize(
-    "file_name, element, expected",
-    [("grammar_test1.json", "X", True), ("grammar_test3.json", "Z", False)],
+    "schema_path,names",
+    [
+        (None, []),
+        (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
+    ],
 )
-def test_required(file_name, element, expected):
-    """Test that the required data names are handled correctly.
+def test_iter(schema_path, names):
+    """Verify iterating."""
+    g = new_grammar(schema_path)
+    assert list(iter(g)) == names
 
-    Args:
-        file_name: The json grammar test file.
-        element: The element of the grammar to test.
-        expected: The expected boolean to get.
-    """
-    fpath = TEST_PATH / file_name
-    gram = JSONGrammar(name="toto", schema_file=fpath)
-    assert expected == gram.is_required(element)
 
-    simple_g = gram.to_simple_grammar()
-    assert expected == simple_g.is_required(element)
+@pytest.mark.parametrize(
+    "schema_path,names",
+    [
+        (None, []),
+        (DATA_PATH / "grammar_2.json", ["name1", "name2"]),
+    ],
+)
+def test_names(schema_path, names):
+    """Verify names getter."""
+    g = new_grammar(schema_path)
+    assert list(g.names) == names
+
+
+exclude_names = pytest.mark.parametrize(
+    "exclude_names",
+    [
+        None,
+        [],
+        ["name1"],
+        ["name2"],
+    ],
+)
+
+
+@pytest.mark.parametrize(
+    "schema_path1",
+    [
+        None,
+        DATA_PATH / "grammar_2.json",
+        DATA_PATH / "grammar_3.json",
+    ],
+)
+@pytest.mark.parametrize(
+    "schema_path2",
+    [
+        None,
+        DATA_PATH / "grammar_2.json",
+        DATA_PATH / "grammar_3.json",
+    ],
+)
+@pytest.mark.parametrize("method_is_update", [True, False])
+@exclude_names
+def test_update_and_update_from_file(
+    schema_path1, schema_path2, method_is_update, exclude_names
+):
+    """Verify update and update_from_file."""
+    g1 = new_grammar(schema_path1)
+    g1_names_before = set(g1.keys())
+    g1_required_names_before = set(g1.required_names)
+    g2 = new_grammar(schema_path2)
+
+    if method_is_update:
+        g1.update(g2, exclude_names=exclude_names)
+    elif schema_path2 is None:
+        # Nothing to be done
+        return
+    else:
+        g1.update_from_file(schema_path2)
+
+    if exclude_names is None or not method_is_update:
+        exclude_names = set()
+    else:
+        exclude_names = set(exclude_names)
+
+    assert set(g1) == g1_names_before | (set(g2) - exclude_names)
+    assert set(g1.required_names) == g1_required_names_before | (
+        set(g2.required_names) - exclude_names
+    )
+    assert_reset_dependencies(g1)
+
+
+@pytest.mark.parametrize(
+    "schema_path",
+    [
+        None,
+        DATA_PATH / "grammar_2.json",
+    ],
+)
+def test_clear(schema_path):
+    """Verify clear."""
+    g = new_grammar(schema_path)
+    g.clear()
+    assert not g
+    assert not g.required_names
+    assert_reset_dependencies(g)
+
+
+@pytest.mark.parametrize(
+    "schema_path,repr_",
+    [
+        (
+            None,
+            """
+Grammar name: g, schema: {
+  "$schema": "http://json-schema.org/schema#"
+}
+""",
+        ),
+        (
+            DATA_PATH / "grammar_2.json",
+            """
+Grammar name: g, schema: {
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "name1": {
+      "type": "integer"
+    },
+    "name2": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "required": [
+    "name1"
+  ]
+}
+""",
+        ),
+    ],
+)
+def test_repr(schema_path, repr_):
+    """Verify repr."""
+    g = new_grammar(schema_path)
+    assert repr(g) == repr_.strip()
+
+
+@pytest.mark.parametrize(
+    "schema_path,data_sets",
+    (
+        # Empty grammar: everything validates.
+        (None, ({"name": 0},)),
+        (
+            DATA_PATH / "grammar_3.json",
+            (
+                {"name1": 1},
+                {"name1": 1, "name2": "bar"},
+                {"name1": 1, "name2": 0},
+            ),
+        ),
+    ),
+)
+def test_validate(schema_path, data_sets):
+    """Verify validate."""
+    g = JSONGrammar("g", schema_path=schema_path)
+    for data in data_sets:
+        g.validate(data)
+
+
+@pytest.mark.parametrize("raise_exception", [True, False])
+@pytest.mark.parametrize(
+    "data,error_msg",
+    [
+        ({}, r"Missing required names: name1."),
+        (
+            {"name1": 0, "name2": ""},
+            r"error: data.name2 must be array",
+        ),
+    ],
+)
+def test_validate_error(raise_exception, data, error_msg, caplog):
+    """Verify that validate raises the expected errors."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+
+    if raise_exception:
+        with pytest.raises(InvalidDataException, match=error_msg):
+            g.validate(data)
+    else:
+        g.validate(data, raise_exception=raise_exception)
+
+    assert caplog.records[0].levelname == "ERROR"
+    assert caplog.text.strip().endswith(error_msg)
+
+
+@pytest.mark.parametrize(
+    "schema_path",
+    [
+        None,
+        DATA_PATH / "grammar_2.json",
+    ],
+)
+@pytest.mark.parametrize(
+    "names",
+    [
+        [],
+        ["name1"],
+        ["name2"],
+    ],
+)
+@exclude_names
+def test_update(schema_path, names, exclude_names):
+    """Verify update with names."""
+    g = new_grammar(schema_path)
+    names_before = set(g.keys())
+    required_names_before = set(g.required_names)
+
+    g.update(names, exclude_names=exclude_names)
+
+    if exclude_names is None:
+        exclude_names = set()
+    else:
+        exclude_names = set(exclude_names)
+
+    assert_reset_dependencies(g)
+    assert set(g) == names_before | (set(names) - exclude_names)
+    assert g.required_names == required_names_before | (set(names) - exclude_names)
+
+    if not set(names) - set(exclude_names):
+        return
+
+    name = names[0]
+    property = g.schema["properties"][name]
+
+    if name == "name1" and schema_path:
+        assert property == {
+            "anyOf": [
+                {"type": "integer"},
+                {"type": "array", "items": {"type": "number"}},
+            ]
+        }
+
+    if name == "name2" or not schema_path:
+        assert property == {"type": "array", "items": {"type": "number"}}
+
+
+@pytest.mark.parametrize(
+    "data,expected_type",
+    [
+        ({}, "integer"),
+        ({"name1": 0}, "integer"),
+        ({"name1": 0.0}, "number"),
+        ({"name1": ""}, "string"),
+        ({"name1": True}, "boolean"),
+        ({"name1": ndarray([0])}, "array"),
+        ({"name1": {"name2": 0}}, "object"),
+    ],
+)
+def test_update_from_data_with_empty(data, expected_type):
+    """Verify update_from_data from an empty grammar."""
+    g = _test_update_from_data(None, data)
+
+    if not g:
+        return
+
+    assert g.schema["properties"]["name1"]["type"] == expected_type
+
+
+@pytest.mark.parametrize(
+    "data,expected_type",
+    [
+        ({}, "integer"),
+        ({"name1": 0}, "integer"),
+        ({"name1": 0.0}, "number"),
+        ({"name1": ""}, ["integer", "string"]),
+        ({"name1": True}, ["boolean", "integer"]),
+        ({"name1": ndarray([0])}, ["array", "integer"]),
+        ({"name1": {"name2": 0}}, "object"),
+    ],
+)
+def test_update_from_data_with_non_empty(data, expected_type):
+    """Verify update_from_data from a non empty grammar."""
+    g = _test_update_from_data(DATA_PATH / "grammar_2.json", data)
+
+    if isinstance(data.get("name1"), dict):
+        assert g.schema["properties"]["name1"] == {
+            "anyOf": [
+                {"type": "integer"},
+                {
+                    "type": "object",
+                    "properties": {"name2": {"type": "integer"}},
+                    "required": ["name2"],
+                },
+            ]
+        }
+    else:
+        assert g.schema["properties"]["name1"]["type"] == expected_type
+
+
+def _test_update_from_data(schema_path: Path | None, data: Data):
+    """Helper function for testing update_from_data."""
+    g = new_grammar(schema_path)
+    names_before = set(g.keys())
+    required_names_before = set(g.required_names)
+
+    g.update_from_data(data)
+
+    assert_reset_dependencies(g)
+    assert set(g) == names_before | set(data)
+    assert g.required_names == required_names_before | set(data)
+
+    return g
+
+
+def test_is_array_error():
+    """Verify that is_array error."""
+    g = JSONGrammar("g")
+    msg = "The name foo is not in the grammar."
+    with pytest.raises(KeyError, match=msg):
+        g.is_array("foo")
+
+
+def test_is_array():
+    """Verify is_array."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+    assert not g.is_array("name1")
+    assert g.is_array("name2")
+
+
+def test_restrict_to_error():
+    """Verify that raises the expected error."""
+    g = JSONGrammar("g")
+    msg = "The name foo is not in the grammar."
+    with pytest.raises(KeyError, match=msg):
+        g.restrict_to(["foo"])
+
+
+@pytest.mark.parametrize(
+    "names",
+    [
+        [],
+        ["name1"],
+        ["name1", "name2"],
+    ],
+)
+def test_restrict_to(names):
+    """Verify restrict_to."""
+    g = new_grammar(DATA_PATH / "grammar_2.json")
+    required_names_before = set(g.required_names)
+    g.restrict_to(names)
+    assert set(g) == set(names)
+    assert g.required_names == required_names_before & set(names)
+    assert_reset_dependencies(g)
+
+
+@pytest.mark.parametrize(
+    "schema_path",
+    [
+        None,
+        DATA_PATH / "grammar_2.json",
+    ],
+)
+def test_convert_to_simple_grammar(schema_path):
+    """Verify grammar conversion."""
+    g1 = new_grammar(schema_path)
+    g2 = g1.convert_to_simple_grammar()
+    assert set(g1) == set(g2)
+    assert g1.required_names == g2.required_names
+    assert isinstance(g2, SimpleGrammar)
+
+
+def test_convert_to_simple_grammar_not_convertible_type():
+    """Verify grammar conversion with non convertible type."""
+    g1 = new_grammar(DATA_PATH / "grammar_1.json")
+    g2 = g1.convert_to_simple_grammar()
+    assert g2["name"] is None
+
+
+def test_convert_to_simple_grammar_warnings(caplog):
+    """Verify grammar conversion warnings."""
+    g1 = new_grammar(
+        DATA_PATH / "grammar_conversion_to_simple_grammar_warn_for_array.json"
+    )
+    g2 = g1.convert_to_simple_grammar()
+    assert len(g2) == 1
+    assert g2["name"] == ndarray
+    assert caplog.records[0].levelname == "WARNING"
+    assert caplog.messages[0] == (
+        "Unsupported type 'string' in JSONGrammar 'g' for property 'name' in "
+        "conversion to simple grammar."
+    )
+    assert caplog.records[1].levelname == "WARNING"
+    assert caplog.messages[1] == (
+        "Unsupported feature 'contains' in JSONGrammar 'g' for property 'name' in "
+        "conversion to simple grammar."
+    )
+
+
+@pytest.mark.parametrize(
+    "schema_path,names",
+    [
+        (None, set()),
+        (DATA_PATH / "grammar_2.json", {"name1"}),
+    ],
+)
+def test_required_names(schema_path, names):
+    """Verify required_names."""
+    g = new_grammar(schema_path)
+    assert g.required_names == names
+
+
+@pytest.mark.parametrize(
+    "descriptions",
+    (
+        {},
+        {"name1": "name1 description"},
+        {"name1": "name1 description", "name2": "name2 description"},
+    ),
+)
+def test_set_descriptions(descriptions):
+    """Verify setting descriptions."""
+    g = JSONGrammar(
+        "g",
+        schema_path=DATA_PATH / "grammar_3.json",
+    )
+    g.set_descriptions(descriptions)
+
+    if "name1" in descriptions:
+        assert g.schema["properties"]["name1"]["description"] == "name1 description"
+    else:
+        assert "description" not in g.schema["properties"]["name1"]
+
+    if "name2" in descriptions:
+        for item in g.schema["properties"]["name2"]["anyOf"]:
+            assert item["description"] == "name2 description"
+    else:
+        assert "description" not in g.schema["properties"]["name2"]
+
+
+@pytest.mark.parametrize(
+    "schema_path,schema",
+    [
+        (None, {"$schema": "http://json-schema.org/schema#"}),
+        (
+            DATA_PATH / "grammar_3.json",
+            {
+                "$schema": "http://json-schema.org/draft-04/schema",
+                "additionalProperties": False,
+                "properties": {
+                    "name1": {"type": "integer"},
+                    "name2": {"type": ["integer", "string"]},
+                },
+                "required": ["name1"],
+                "type": "object",
+            },
+        ),
+    ],
+)
+def test_schema(schema_path, schema):
+    """Verify schema getter."""
+    g = JSONGrammar("g", schema_path=schema_path)
+    assert g.schema == schema
+
+
+EXPECTED_JSON = """
+{
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
+""".strip()
+
+
+@pytest.mark.parametrize("path", (None, "g.json"))
+def test_write(path, tmp_wd):
+    """Verify write."""
+    g = JSONGrammar("g", schema_path=DATA_PATH / "grammar_1.json")
+    g.write(path)
+    assert Path("g.json").read_text() == EXPECTED_JSON
+
+
+def test_to_json(tmp_wd):
+    """Verify to_json."""
+    g = JSONGrammar("g", schema_path=DATA_PATH / "grammar_1.json")
+    assert g.to_json(indent=2) == EXPECTED_JSON

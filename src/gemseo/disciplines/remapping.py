@@ -81,8 +81,8 @@ class RemappingDiscipline(MDODiscipline):
         self._input_mapping = self.__format_mapping(input_mapping)
         self._output_mapping = self.__format_mapping(output_mapping)
         super().__init__(name=self._discipline.name)
-        self.input_grammar.initialize_from_data_names(self._input_mapping.keys())
-        self.output_grammar.initialize_from_data_names(self._output_mapping.keys())
+        self.input_grammar.update(self._input_mapping.keys())
+        self.output_grammar.update(self._output_mapping.keys())
         self.default_inputs = self.__convert_from_origin(
             discipline.default_inputs, self._input_mapping
         )

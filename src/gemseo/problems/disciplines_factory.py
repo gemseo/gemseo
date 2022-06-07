@@ -57,13 +57,12 @@ class DisciplinesFactory:
         )
         self.factory = Factory(MDODiscipline, internal_modules_paths)
 
+        self.__base_grammar = JSONGrammar("MDODiscipline_options")
         base_gram_path = join(
             dirname(discipline.__file__), "MDODiscipline_options.json"
         )
-        self.__base_grammar = JSONGrammar(
-            "MDODiscipline_options", schema_file=base_gram_path
-        )
-        self.__base_grammar_names = self.__base_grammar.get_data_names()
+        self.__base_grammar.update_from_file(base_gram_path)
+        self.__base_grammar_names = self.__base_grammar.keys()
 
     def create(self, discipline_name, **options):
         """Create a :class:`.MDODiscipline` from its name.
@@ -77,7 +76,7 @@ class DisciplinesFactory:
         :returns: the discipline instance
         """
         com_opts_dict, spec_opts_dict = self.__filter_common_options(options)
-        self.__base_grammar.load_data(com_opts_dict)
+        self.__base_grammar.validate(com_opts_dict)
         disc = self.factory.create(discipline_name, **spec_opts_dict)
         if "linearization_mode" in com_opts_dict:
             disc.linearization_mode = com_opts_dict["linearization_mode"]
@@ -130,22 +129,22 @@ class DisciplinesFactory:
         """
         return self.factory.classes
 
-    def get_options_grammar(self, name, write_schema=False, schema_file=None):
+    def get_options_grammar(self, name, write_schema=False, schema_path=None):
         """Get the options default values for the given class name Only addresses kwargs
         Generates.
 
         :param name: name of the class
         :type name: str
-        :param schema_file: the output json file path. If None: input.json or
+        :param schema_path: the output json file path. If None: input.json or
             output.json depending on grammar type.
             (Default value = None)
-        :type schema_file: str
+        :type schema_path: str
         :param write_schema: if True, writes the schema files
             (Default value = False)
         :type write_schema: bool
         :returns: the json grammar for options
         """
-        disc_gram = self.factory.get_options_grammar(name, write_schema, schema_file)
+        disc_gram = self.factory.get_options_grammar(name, write_schema, schema_path)
         base_grammar = deepcopy(self.__base_grammar)
-        base_grammar.update_from(disc_gram)
+        base_grammar.update(disc_gram)
         return base_grammar

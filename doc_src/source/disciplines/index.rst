@@ -45,7 +45,7 @@ Grammar
 The input and output specifications are defined in a grammar,
 through the :attr:`!MDODiscipline.input_grammar` and :attr:`!MDODiscipline.output_grammar` attributes,
 which can be either a :class:`.SimpleGrammar` or a :class:`.JSONGrammar` (default grammar), or your own which
-derives from the :class:`.AbstractGrammar` class.
+derives from the :class:`.BaseGrammar` class.
 
 .. note::
 

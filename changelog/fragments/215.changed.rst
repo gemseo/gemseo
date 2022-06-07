@@ -1,0 +1,27 @@
+The grammars API has been changed to be more pythonic and expose an interface similar to a dictionary.
+The behavior of the grammars has been made more consistent too.
+
+API changes from old to new:
+- ``grammar.load_data``: ``grammar.validate``
+- ``grammar.is_data_name_existing(name)``: ``name in grammar``
+- ``grammar.update_from``: ``grammar.update``
+- ``grammar.remove_item(name)``: ``del grammar[name]``
+- ``grammar.get_data_names``: ``grammar.keys()``
+- ``grammar.is_all_data_names_existing(names)``: ``set(names) <= set(grammar.keys())``
+- ``grammar.initialize_from_data_names``: ``grammar.update_from_names``
+- ``grammar.initialize_from_base_dict``: ``grammar.update_from_data``
+- ``grammar.is_type_array``: ``grammar.is_array``
+- ``grammar.update_from_if_not_in``: use ``update`` with ``exclude_names``
+- ``grammar.to_simple_grammar``: ``grammar.convert_to_simple_grammar()``
+- ``grammar.is_required(name)``: ``name in grammar.required_names``
+- ``grammar.set_item_value``: ``grammar.update_from_schema``
+- ``grammar.remove_required(name)``: ``grammar.required_names.remove(name)``
+- ``grammar.init_from_schema_file``: ``grammar.read``
+- ``grammar.write_schema``: ``grammar.write``
+- ``grammar.schema_dict``: ``grammar.schema``
+- ``grammar.data_names``: ``grammar.keys()``
+- ``grammar.data_types``: ``grammar.values()``
+- ``grammar.update_elements``: ``grammar.update``
+- ``grammar.update_required_elements``: has been removed
+- ``JSONGrammar`` class attributes removed: ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``
+- ``AbstractGrammar``: ``BaseGrammar``

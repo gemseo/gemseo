@@ -133,9 +133,5 @@ class MDOScenario(Scenario):
         self._algo_factory = OptimizersFactory()
 
     def _update_grammar_input(self) -> None:
-        self.input_grammar.update_elements(
-            algo=str, max_iter=int, algo_options=dict, python_typing=True
-        )
-        self.input_grammar.update_required_elements(
-            algo=True, max_iter=True, algo_options=False
-        )
+        self.input_grammar.update(dict(algo=str, max_iter=int, algo_options=dict))
+        self.input_grammar.required_names.remove("algo_options")
