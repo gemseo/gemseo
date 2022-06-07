@@ -29,7 +29,6 @@ from gemseo.core.cache import AbstractCache
 from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
-from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 from gemseo.utils.testing import compare_dict_of_arrays
 
@@ -135,7 +134,7 @@ class SimpleCache(AbstractCache):
     def cache_outputs(
         self,
         input_data: Data,
-        output_data: OutputData,
+        output_data: Data,
     ) -> None:
         self.__input_data_for_outputs = self.__create_input_cache(input_data)
         self.__output_data = deepcopy_dict_of_arrays(output_data)

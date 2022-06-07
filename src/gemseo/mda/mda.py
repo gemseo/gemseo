@@ -155,8 +155,8 @@ class MDA(MDODiscipline):
         Add all the outputs of all the disciplines to the outputs.
         """
         for discipline in self.disciplines:
-            self.input_grammar.update_from(discipline.input_grammar)
-            self.output_grammar.update_from(discipline.output_grammar)
+            self.input_grammar.update(discipline.input_grammar)
+            self.output_grammar.update(discipline.output_grammar)
 
     @property
     def log_convergence(self) -> bool:
@@ -310,19 +310,18 @@ class MDA(MDODiscipline):
         """Check that the coupling variables are of type array in the grammars.
 
         Raises:
-            ValueError: When at least one of the coupling variables is not an array.
+            TypeError: When at least one of the coupling variables is not an array.
         """
         not_arrays = []
         for discipline in self.disciplines:
             for grammar in (discipline.input_grammar, discipline.output_grammar):
                 for coupling in self.all_couplings:
-                    exists = grammar.is_data_name_existing(coupling)
-                    if exists and not grammar.is_type_array(coupling):
+                    if coupling in grammar and not grammar.is_array(coupling):
                         not_arrays.append(coupling)
 
-        not_arrays = sorted(set(not_arrays))
         if not_arrays:
-            raise ValueError(
+            not_arrays = sorted(set(not_arrays))
+            raise TypeError(
                 f"The coupling variables {not_arrays} must be of type array."
             )
 

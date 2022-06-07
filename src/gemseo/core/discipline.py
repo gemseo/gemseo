@@ -55,7 +55,8 @@ if TYPE_CHECKING:
 
 
 from gemseo.caches.cache_factory import CacheFactory
-from gemseo.core.grammar import AbstractGrammar, InvalidDataException
+from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
 from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
@@ -95,8 +96,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     or your own which derives from :class:`.AbstractGrammar`.
 
     Attributes:
-        input_grammar (AbstractGrammar): The input grammar.
-        output_grammar (AbstractGrammar): The output grammar.
+        input_grammar (BaseGrammar): The input grammar.
+        output_grammar (BaseGrammar): The output grammar.
         data_processor (DataProcessor): A tool to pre- and post-process discipline data.
         re_exec_policy (str): The policy to re-execute the same discipline.
         residual_variables (Mapping[str, str]): The output variables
@@ -331,7 +332,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._n_calls_linearize = Value("i", 0)
 
     @property
-    def local_data(self) -> Mapping[str, Any]:
+    def local_data(self) -> DisciplineData:
         """The current input and output data."""
         return self._local_data
 
@@ -409,7 +410,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self._n_calls_linearize.value = value
 
     @property
-    def grammar_type(self) -> AbstractGrammar:
+    def grammar_type(self) -> BaseGrammar:
         """The type of grammar to be used for inputs and outputs declaration."""
         return self._grammar_type
 
@@ -703,12 +704,12 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.input_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_input",
-            schema_file=input_grammar_file,
+            schema_path=input_grammar_file,
         )
         self.output_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_output",
-            schema_file=output_grammar_file,
+            schema_path=output_grammar_file,
         )
 
     def _run(self) -> None:
@@ -743,7 +744,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             )
 
         full_input_data = DisciplineData({})
-        for key in self.input_grammar.data_names:
+        for key in self.input_grammar.keys():
             val = input_data.get(key)
             if val is not None:
                 full_input_data[key] = val
@@ -838,7 +839,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        input_data: dict[str, Any] | None = None,
+        input_data: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Execute the discipline.
 
@@ -1675,7 +1676,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the variable is a discipline output.
         """
-        return self.output_grammar.is_data_name_existing(data_name)
+        return data_name in self.output_grammar
 
     def is_all_outputs_existing(
         self,
@@ -1689,7 +1690,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether all the variables are discipline outputs.
         """
-        return self.output_grammar.is_all_data_names_existing(data_names)
+        output_names = self.output_grammar.keys()
+        for data_name in data_names:
+            if data_name not in output_names:
+                return False
+        return True
 
     def is_all_inputs_existing(
         self,
@@ -1703,7 +1708,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether all the variables are discipline inputs.
         """
-        return self.input_grammar.is_all_data_names_existing(data_names)
+        input_names = self.input_grammar.keys()
+        for data_name in data_names:
+            if data_name not in input_names:
+                return False
+        return True
 
     def is_input_existing(
         self,
@@ -1717,7 +1726,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the variable is a discipline input.
         """
-        return self.input_grammar.is_data_name_existing(data_name)
+        return data_name in self.input_grammar
 
     def _is_status_ok_for_run_again(
         self,
@@ -1809,7 +1818,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             raise_exception: Whether to raise on error.
         """
         try:
-            self.input_grammar.load_data(input_data, raise_exception)
+            self.input_grammar.validate(input_data, raise_exception)
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid input data")
@@ -1827,7 +1836,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             raise_exception: Whether to raise an exception when the data is invalid.
         """
         try:
-            self.output_grammar.load_data(self._local_data, raise_exception)
+            self.output_grammar.validate(self._local_data, raise_exception)
         except InvalidDataException as err:
             err.args = (
                 err.args[0].replace("Invalid data", "Invalid output data")
@@ -1901,7 +1910,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the input variables.
         """
-        return self.input_grammar.data_names
+        return self.input_grammar.keys()
 
     def get_output_data_names(self) -> list[str]:
         """Return the names of the output variables.
@@ -1909,7 +1918,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the output variables.
         """
-        return self.output_grammar.data_names
+        return self.output_grammar.keys()
 
     def get_input_output_data_names(self) -> list[str]:
         """Return the names of the input and output variables.
@@ -1917,8 +1926,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The name of the input and output variables.
         """
-        outpt = self.output_grammar.data_names
-        inpt = self.input_grammar.data_names
+        outpt = self.output_grammar.keys()
+        inpt = self.input_grammar.keys()
         return list(set(outpt) | set(inpt))
 
     def get_all_inputs(self) -> list[Any]:

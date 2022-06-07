@@ -148,9 +148,6 @@ def test_build_func_from_disc():
 
 def test_exec_idf_cstr_complex_step():
     """"""
-    from gemseo.api import configure_logger
-
-    configure_logger()
     obj_opt, is_feasible = build_and_run_idf_scenario_with_constraints(
         "SLSQP",
         linearize=False,

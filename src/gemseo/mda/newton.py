@@ -97,8 +97,8 @@ class MDARoot(MDA):
 
     def _initialize_grammars(self) -> None:
         for disciplines in self.disciplines:
-            self.input_grammar.update_from(disciplines.input_grammar)
-            self.output_grammar.update_from(disciplines.output_grammar)
+            self.input_grammar.update(disciplines.input_grammar)
+            self.output_grammar.update(disciplines.output_grammar)
 
     def execute_all_disciplines(
         self,

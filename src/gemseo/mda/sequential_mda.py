@@ -87,8 +87,8 @@ class MDASequential(MDA):
     def _initialize_grammars(self) -> None:
         """Define all the inputs and outputs."""
         for discipline in self.disciplines:
-            self.input_grammar.update_from(discipline.input_grammar)
-            self.output_grammar.update_from(discipline.output_grammar)
+            self.input_grammar.update(discipline.input_grammar)
+            self.output_grammar.update(discipline.output_grammar)
 
     def _run(self) -> None:
         """Run the MDAs in a sequential way."""

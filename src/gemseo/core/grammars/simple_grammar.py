@@ -15,333 +15,252 @@
 """Most basic grammar implementation."""
 from __future__ import annotations
 
+import collections
 import logging
-from collections import abc
-from collections import defaultdict
-from pathlib import Path
 from typing import Any
+from typing import Container
 from typing import Iterable
+from typing import Iterator
 from typing import Mapping
-from typing import Sequence
+from typing import Optional
 
 from numpy import ndarray
 
-from gemseo.core.grammars.abstract_grammar import AbstractGrammar
+from gemseo.core.discipline_data import Data
+from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
 
+NamesToTypes = Mapping[str, Optional[type]]
 
-class SimpleGrammar(AbstractGrammar):
-    """A grammar based on the names and types of the elements specified by a
-    dictionary."""
+
+class SimpleGrammar(BaseGrammar):
+    """A grammar only based on names and types with a dictionary-like interface.
+
+    The grammar could be empty, in that case the data validation always pass. If the
+    type bound to a name is ``None`` then the type of the corresponding data name is
+    always valid.
+    """
+
+    __names_to_types: dict[str, type]
+    """The binding from element names to element types."""
+
+    __required_names: set[str]
+    """The required names."""
 
     def __init__(
         self,
         name: str,
-        names_to_types: Mapping[str, type] | None = None,
-        required_names: Mapping[str, bool] | None = None,
-        **kwargs: str | Path,
+        names_to_types: NamesToTypes | None = None,
+        required_names: Iterable[str] | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Args:
-            name: The grammar name.
             names_to_types: The mapping defining the data names as keys,
                 and data types as values.
-                If None, the grammar is empty.
-            required_names: The mapping defining the required data names as keys,
-                bound to whether the data name is required. If None,
-                all data names are required.
+                If ``None``, the grammar is empty.
+            required_names: The names of the required elements.
+                If ``None``, all elements are required.
+            **kwargs: These arguments are not used.
         """
         super().__init__(name)
-        if names_to_types is None:
-            self._names_to_types = {}
-        else:
-            self._names_to_types = names_to_types
-            self._check_types()
-
-        self._default_callable = (
-            lambda: True
-        )  # Callable to be assigned to defaultdict.default_factory at init
-        self._required_names = defaultdict(self._default_callable)
-        self._required_names.update(self._names_to_types)
-
+        if names_to_types:
+            self.update(names_to_types)
         if required_names is not None:
-            self._required_names.update(required_names)
+            self.__check_name(*required_names)
+            self.__required_names = set(required_names)
 
-    @property
-    def data_names_keyset(self) -> Iterable[str]:
-        """The data names of the grammar as dict_keys."""
-        return self._names_to_types.keys()
+    def __delitem__(
+        self,
+        name: str,
+    ) -> None:
+        del self.__names_to_types[name]
+        if name in self.__required_names:
+            self.__required_names.remove(name)
 
-    def is_required(self, element_name: str) -> bool:
+    def __getitem__(self, name: str) -> type:
+        return self.__names_to_types[name]
 
-        self._required_names.default_factory = None
+    def __len__(self) -> int:
+        return len(self.__names_to_types)
 
-        try:
-            return self._required_names[element_name]
-        except KeyError:
-            raise ValueError(f"Element {element_name} is not in the grammar.")
-        finally:
-            self._required_names.default_factory = self._default_callable
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.__names_to_types)
 
-    def update_required_elements(self, **elements: Mapping[str, bool]) -> None:
+    def __repr__(self) -> str:
+        text = MultiLineString()
+        text.add(f"Grammar '{self.name}'")
+        text.indent()
+        text.add("Required elements:")
+        text.indent()
+        for name, type_ in self.items():
+            if name in self.__required_names:
+                text.add(f"{name}: {type_.__name__}")
+        text.dedent()
+        text.add("Optional elements:")
+        text.indent()
+        for name, type_ in self.items():
+            if name not in self.__required_names:
+                text.add(f"{name}: {type_.__name__}")
+        return str(text)
 
-        for element_name, element_value in elements.items():
-            if element_name not in self._names_to_types:
-                raise KeyError(f"Data named {element_name} is not in the grammar.")
-            if not isinstance(element_value, bool):
-                raise TypeError(f"Boolean is required for element {element_name}.")
-        self._required_names.update(elements)
+    def update(
+        self,
+        grammar: BaseGrammar | Iterable[str] | NamesToTypes,
+        exclude_names: Container[str] | None = None,
+    ) -> None:
+        """Update the elements from another grammar or elements or names.
 
-    @property
-    def data_names(self) -> list[str]:
-        """The names of the elements."""
-        return list(self._names_to_types.keys())
-
-    @property
-    def data_types(self) -> list[type]:
-        """The types of the elements."""
-        return list(self._names_to_types.values())
-
-    def _check_types(self) -> None:
-        """Check that the elements names to types mapping contains only acceptable type
-        specifications, ie, are a type or None.
+        When elements are not provided with a :class:`.BaseGrammar`,
+        for consistency with :class:`.__init__` behavior
+        it is assumed that all of them are required.
 
         Raises:
-            TypeError: When at least one type specification is not a type.
+            TypeError: If ``grammar`` type is not supported.
+            ValueError: If the elements types are bad.
         """
-        for obj_name, obj in self._names_to_types.items():
-            if obj is not None and not isinstance(obj, type):
-                raise TypeError(
-                    (
-                        "{} is not a type and cannot be used as a"
-                        " type specification for the element named {} in the grammar {}."
-                    ).format(obj, obj_name, self.name)
-                )
-
-    def get_type_from_python_type(self, python_type: type) -> type:
-
-        if python_type == str:
-            return str
+        if isinstance(grammar, BaseGrammar):
+            grammar = grammar.convert_to_simple_grammar()
+            self.__update(grammar, grammar.__required_names, exclude_names)
+        elif isinstance(grammar, Mapping):
+            self.__update(grammar, grammar.keys(), exclude_names)
+        elif isinstance(grammar, Iterable):
+            self.__update(
+                dict.fromkeys(grammar, ndarray),
+                grammar,
+                exclude_names,
+            )
         else:
-            return python_type
+            raise TypeError(f"Cannot update from a {type(grammar)}")
 
-    def update_elements(
+    def __update(
         self,
-        python_typing: bool = False,
-        **elements: Mapping[str, type],
+        grammar: SimpleGrammar | NamesToTypes,
+        required_names: Container[str],
+        exclude_names: Container[str],
     ) -> None:
+        """Update the elements from another grammar or elements.
 
-        if python_typing:
-            for element_name, element_value in elements.items():
-                elements[element_name] = self.get_type_from_python_type(element_value)
-
-        # Generalize dict to support DisciplineData objects.
-        for name, type_ in elements.items():
-            if type_ is dict:
-                elements[name] = abc.Mapping
-
-        self._names_to_types.update(**elements)
-        self._check_types()
-
-    def load_data(
-        self,
-        data: Mapping[str, Any],
-        raise_exception: bool = True,
-    ) -> Mapping[str, Any]:
-        self.check(data, raise_exception)
-        return data
-
-    def check(
-        self,
-        data: Mapping[str, Any],
-        raise_exception: bool = True,
-    ) -> None:
-        """Check the consistency (name and type) of elements with the grammar.
+        When elements are provided names and types instead of a
+        :class:`.BaseGrammar`,
+        for consistency with :class:`.__init__` behavior
+        it is assumed that all of them are required.
 
         Args:
-            data: The elements to be checked.
-            raise_exception: Whether to raise an exception
-                when the elements are invalid.
+            grammar: The grammar to take the elements from.
+            required_names: The names of the elements that are required.
+            exclude_names: The names of the elements that shall not be updated.
 
         Raises:
-            TypeError: If a data type in the grammar is not a type.
-            InvalidDataException:
-                * If the passed data is not a dictionary.
-                * If a name in the passed data is not in the grammar.
-                * If the type of a value in the passed data does not have
-                  the specified type in the grammar for the corresponding name.
+            ValueError: If the types are bad.
         """
-        failed = False
-        if not isinstance(data, Mapping):
-            failed = True
-            LOGGER.error("Grammar data is not a mapping, in %s.", self.name)
-            if raise_exception:
-                raise InvalidDataException(f"Invalid data in: {self.name}.")
+        exclude_names = exclude_names or []
 
+        for element_name, element_type in grammar.items():
+            if element_name in exclude_names:
+                continue
+
+            self.__check_type(element_name, element_type)
+
+            # Generalize dict to support DisciplineData objects.
+            if element_type is dict:
+                self.__names_to_types[element_name] = collections.Mapping
+            else:
+                self.__names_to_types[element_name] = element_type
+
+            if element_name in required_names:
+                self.__required_names.add(element_name)
+            elif element_name in self.__required_names:
+                self.__required_names.remove(element_name)
+
+    def clear(self) -> None:
+        self.__names_to_types = {}
+        self.__required_names = set()
+
+    def validate(
+        self,
+        data: Data,
+        raise_exception: bool = True,
+    ) -> None:
         error_message = MultiLineString()
-        error_message.add("Invalid data in {}", self.name)
-        for element_name, element_type in self._names_to_types.items():
 
-            if element_name not in data and self._required_names[element_name]:
-                failed = True
-                error_message.add(
-                    "Missing mandatory elements: {} in grammar {}".format(
-                        element_name, self.name
-                    )
-                )
-            elif (
+        missing_names = self.required_names - set(data.keys())
+
+        if missing_names:
+            error_message.add(
+                "Missing required names: {}.".format(",".join(sorted(missing_names)))
+            )
+
+        for element_name, element_type in self.__names_to_types.items():
+            if (
                 element_name in data
                 and element_type is not None
-                and not isinstance(data.get(element_name), element_type)
+                and not isinstance(data[element_name], element_type)
             ):
-                failed = True
                 error_message.add(
-                    "Wrong input type for: {} in {} got {} instead of {}.".format(
-                        element_name, self.name, type(data[element_name]), element_type
-                    )
+                    f"Bad type for {element_name}: "
+                    f"{type(data[element_name])} instead of {element_type}."
                 )
 
-        if failed:
+        if error_message.lines:
             LOGGER.error(error_message)
             if raise_exception:
                 raise InvalidDataException(str(error_message))
 
-    def initialize_from_base_dict(
+    def update_from_data(
         self,
-        typical_data_dict: Mapping[str, Any],
+        data: Data,
     ) -> None:
-        self.update_elements(
-            **{name: type(value) for name, value in typical_data_dict.items()}
-        )
+        self.update({name: type(value) for name, value in data.items()})
 
-    def get_data_names(self) -> list[str]:
-        return self.data_names
-
-    def is_all_data_names_existing(
-        self,
-        data_names: Iterable[str],
-    ) -> bool:
-        get = self._names_to_types.get
-        for name in data_names:
-            if get(name) is None:
-                return False
-        return True
-
-    def _update_field(
-        self,
-        data_name: str,
-        data_type: type,
-    ):
-        """Update the grammar elements from an element name and an element type.
-
-        If there is no element with this name,
-        create it and store its type.
-
-        Otherwise,
-        update its type.
-
-        Args:
-            data_name: The name of the element.
-            data_type: The type of the element.
-        """
-        self._names_to_types[data_name] = data_type
-
-    def get_type_of_data_named(
-        self,
-        data_name: str,
-    ) -> str:
-        """Return the element type associated to an element name.
-
-        Args:
-            data_name: The name of the element.
-
-        Returns:
-            The type of the element associated to the passed element name.
-
-        Raises:
-            ValueError: If the name does not correspond to an element name.
-        """
-        if data_name not in self._names_to_types:
-            raise ValueError(f"Unknown data named: {data_name}.")
-        return self._names_to_types[data_name]
-
-    def is_type_array(self, data_name: str) -> bool:
-        element_type = self.get_type_of_data_named(data_name)
+    def is_array(self, name: str) -> bool:
+        self.__check_name(name)
+        element_type = self.__names_to_types[name]
+        if element_type is None:
+            return False
+        # TODO: why only ndarray here vs array in json grammar?
         return issubclass(element_type, ndarray)
 
     def restrict_to(
         self,
-        data_names: Sequence[str],
+        names: Iterable[str],
     ) -> None:
-        for element_name in self.data_names:
-            if element_name not in data_names:
-                del self._names_to_types[element_name]
+        self.__check_name(*names)
+        for element_name in tuple(self.__names_to_types):
+            if element_name not in names:
+                del self.__names_to_types[element_name]
+                if element_name in self.__required_names:
+                    self.__required_names.remove(element_name)
 
-    def remove_item(
-        self,
-        item_name: str,
-    ) -> None:
-        del self._names_to_types[item_name]
-
-    def update_from(
-        self,
-        input_grammar: AbstractGrammar,
-    ) -> None:
-        """
-        Raises:
-            TypeError: If the passed grammar is not an :class:`.AbstractGrammar`.
-        """
-        if not isinstance(input_grammar, AbstractGrammar):
-            msg = self._get_update_error_msg(self, input_grammar)
-            raise TypeError(msg)
-
-        input_grammar = input_grammar.to_simple_grammar()
-        self._names_to_types.update(input_grammar._names_to_types)
-
-    def update_from_if_not_in(
-        self,
-        input_grammar: AbstractGrammar,
-        exclude_grammar: AbstractGrammar,
-    ) -> None:
-        """
-        Raises:
-            TypeError: If a passed grammar is not an :class:`.AbstractGrammar`.
-            ValueError: If types are inconsistent between both passed grammars.
-        """
-        if not isinstance(input_grammar, AbstractGrammar) or not isinstance(
-            exclude_grammar, AbstractGrammar
-        ):
-            msg = self._get_update_error_msg(self, input_grammar, exclude_grammar)
-            raise TypeError(msg)
-
-        input_grammar = input_grammar.to_simple_grammar()
-        exclude_grammar = exclude_grammar.to_simple_grammar()
-
-        for element_name, element_type in zip(
-            input_grammar.data_names, input_grammar.data_types
-        ):
-            if exclude_grammar.is_data_name_existing(element_name):
-                ex_element_type = exclude_grammar.get_type_of_data_named(element_name)
-                if element_type != ex_element_type:
-                    raise ValueError(
-                        "Inconsistent grammar update {} != {}.".format(
-                            element_type, ex_element_type
-                        )
-                    )
-            else:
-                self._names_to_types[element_name] = element_type
-
-    def is_data_name_existing(
-        self,
-        data_name: str,
-    ) -> bool:
-        return data_name in self._names_to_types
-
-    def clear(self) -> None:
-        self._names_to_types = {}
-
-    def to_simple_grammar(self) -> SimpleGrammar:
+    def convert_to_simple_grammar(self) -> SimpleGrammar:
         return self
+
+    @property
+    def required_names(self) -> set[str]:
+        return self.__required_names
+
+    @staticmethod
+    def __check_type(name: str, obj: Any) -> None:
+        """Check that the type of object is a valid element type.
+
+        Raises:
+            TypeError: If the object is neither a type nor ``None``.
+        """
+        if obj is not None and not isinstance(obj, type):
+            raise TypeError(f"The element {name} must be a type or None: it is {obj}.")
+
+    def __check_name(self, *names: str) -> None:
+        """Check that a name is valid.
+
+        Args:
+            *names: The names to be checked.
+
+        Raises:
+            KeyError: If the name is not valid.
+        """
+        for name in names:
+            if name not in self.__names_to_types:
+                raise KeyError(f"The name {name} is not in the grammar.")

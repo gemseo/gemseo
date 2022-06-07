@@ -339,9 +339,9 @@ class MatlabDiscipline(MDODiscipline):
                     outputs_dict.copy(), saved_values
                 )
 
-        self.input_grammar.initialize_from_base_dict(inputs_dict)
+        self.input_grammar.update_from_data(inputs_dict)
 
-        self.output_grammar.initialize_from_base_dict(outputs_dict)
+        self.output_grammar.update_from_data(outputs_dict)
 
         # If none input matlab data is prescribed, we cannot know
         # the size of inputs and outputs. Thus we must evaluate

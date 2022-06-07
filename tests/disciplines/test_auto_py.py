@@ -18,7 +18,6 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import re
-from pathlib import Path
 
 import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
@@ -80,15 +79,6 @@ def test_basic():
     d2 = AutoPyDiscipline(f2)
     d2.execute()
     assert d2.local_data["y2"] == f2()[0]
-
-
-def test_write_schema(tmp_wd):
-    """Test the writing of the schema."""
-    d1 = AutoPyDiscipline(f1, write_schema=True)
-    d1.execute()
-    for trailer in ["input", "output"]:
-        path = Path(f"f1_{trailer}.json")
-        assert path.is_file()
 
 
 def test_use_arrays():

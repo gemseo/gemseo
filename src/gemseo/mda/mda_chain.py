@@ -216,8 +216,8 @@ class MDAChain(MDA):
         """Define all inputs and outputs of the chain."""
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
-        self.input_grammar.update_from(self.mdo_chain.input_grammar)
-        self.output_grammar.update_from(self.mdo_chain.output_grammar)
+        self.input_grammar.update(self.mdo_chain.input_grammar)
+        self.output_grammar.update(self.mdo_chain.output_grammar)
 
     def _check_consistency(self):
         """Check if there is no more than 1 equation per variable.

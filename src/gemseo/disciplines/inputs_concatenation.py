@@ -57,8 +57,8 @@ class ConcatenationDiscipline(MDODiscipline):
             output_variable: The output variable name.
         """
         super().__init__()
-        self.input_grammar.initialize_from_data_names(input_variables)
-        self.output_grammar.initialize_from_data_names([output_variable])
+        self.input_grammar.update(input_variables)
+        self.output_grammar.update([output_variable])
         self.__output_variable = output_variable
 
     def _run(self) -> None:

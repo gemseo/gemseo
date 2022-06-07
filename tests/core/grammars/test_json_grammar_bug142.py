@@ -22,7 +22,6 @@ from pathlib import Path
 
 from gemseo.core.chain import MDOChain
 from gemseo.core.discipline import MDODiscipline
-from gemseo.core.json_grammar import JSONGrammar
 
 TEST_PATH = Path(__file__).parent / "data"
 
@@ -32,10 +31,8 @@ class _MyDisciplineA(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        output_grammar_file = TEST_PATH / "grammar_test_bug142.json"
-        output_grammar_json = JSONGrammar(name="X", schema_file=output_grammar_file)
-        self.input_grammar.initialize_from_data_names(["A"])
-        self.output_grammar.update_from(output_grammar_json)
+        self.input_grammar.update(["A"])
+        self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
 
 class _MyDisciplineB(MDODiscipline):
@@ -43,10 +40,8 @@ class _MyDisciplineB(MDODiscipline):
 
     def __init__(self):
         super().__init__()
-        input_grammar_file = TEST_PATH / "grammar_test_bug142.json"
-        input_grammar_json = JSONGrammar(name="X", schema_file=input_grammar_file)
-        self.input_grammar.update_from(input_grammar_json)
-        self.output_grammar.initialize_from_data_names(["B"])
+        self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
+        self.output_grammar.update(["B"])
 
 
 def test_bug142():

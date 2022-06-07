@@ -59,8 +59,8 @@ def sellar_use_case(tmp_wd):
         discipline = discipline_class()
         discipline.set_cache_policy(discipline.HDF5_CACHE, cache_hdf_file=file_name)
         disciplines_names.append(discipline.name)
-        objective_name = next(iter(discipline.output_grammar.get_data_names()))
-        inputs_names = list(discipline.input_grammar.get_data_names())
+        objective_name = next(iter(discipline.output_grammar.keys()))
+        inputs_names = list(discipline.input_grammar.keys())
         design_space = SellarDesignSpace().filter(inputs_names)
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space

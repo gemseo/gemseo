@@ -945,8 +945,9 @@ def _get_schema(
     """
     if json_grammar is None:
         return None
-    schema = json_grammar.schema
-    dict_schema = schema.to_dict()
+
+    dict_schema = json_grammar.schema
+
     if pretty_print:
         if "name" in dict_schema:
             title = dict_schema["name"].replace("_", " ")
@@ -977,8 +978,10 @@ def _get_schema(
         table.min_width = 25
         print(table)  # noqa: T001
         LOGGER.info("%s", table)
+
     if output_json:
-        return schema.to_json()
+        return json_grammar.to_json()
+
     return dict_schema
 
 

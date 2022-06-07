@@ -58,8 +58,8 @@ class LinearDiscipline(MDODiscipline):
         self.input_names = input_names
         self.output_names = output_names
 
-        self.input_grammar.initialize_from_data_names(input_names)
-        self.output_grammar.initialize_from_data_names(output_names)
+        self.input_grammar.update(input_names)
+        self.output_grammar.update(output_names)
 
         self.size_in = len(input_names) * inputs_size
         self.size_out = len(output_names) * outputs_size

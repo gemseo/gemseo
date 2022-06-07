@@ -737,7 +737,7 @@ class SobieskiProblem:
         return self.__design_space
 
     @property
-    def design_space_with_physical_naming(self):  # type: (...) -> DesignSpace
+    def design_space_with_physical_naming(self) -> DesignSpace:
         """The design space with physical naming."""
         if self.__design_space is None:
             input_file = Path(__file__).parent / "sobieski_design_space_pn.txt"

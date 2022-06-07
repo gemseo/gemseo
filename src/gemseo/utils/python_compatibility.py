@@ -17,7 +17,7 @@ from __future__ import annotations
 import operator
 import sys
 
-if sys.version_info < (3, 8):
+if sys.version_info < (3, 8):  # pragma: >=3.8 no cover
     from typing_extensions import Final  # noqa: F401
 
     def accumulate(iterable, func=operator.add, initial=None):
@@ -55,7 +55,7 @@ if sys.version_info < (3, 8):
 
     from singledispatchmethod import singledispatchmethod  # noqa: F401
 
-else:
+else:  # pragma: <3.8 no cover
     from functools import singledispatchmethod  # noqa: F401
     from importlib import metadata as importlib_metadata  # noqa: F401
     from itertools import accumulate  # noqa: F401

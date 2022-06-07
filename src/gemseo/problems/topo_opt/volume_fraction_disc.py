@@ -59,8 +59,8 @@ class VolumeFraction(MDODiscipline):
         super().__init__(name=name)
         self.n_x = n_x
         self.n_y = n_y
-        self.input_grammar.initialize_from_data_names(["rho"])
-        self.output_grammar.initialize_from_data_names(["volume fraction"])
+        self.input_grammar.update(["rho"])
+        self.output_grammar.update(["volume fraction"])
         self.default_inputs = {"rho": ones(n_x * n_y)}
 
     def _run(self) -> None:

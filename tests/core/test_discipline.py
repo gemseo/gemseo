@@ -87,7 +87,7 @@ def sobieski_chain() -> Tuple[MDOChain, Dict[str, ndarray]]:
             SobieskiMission(),
         ]
     )
-    chain_inputs = chain.input_grammar.get_data_names()
+    chain_inputs = chain.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
 
@@ -151,16 +151,18 @@ def test_check_input_data_exception(grammar_type):
         struct = SobieskiStructureSG()
     else:
         struct = SobieskiStructure()
-    struct_inputs = struct.input_grammar.get_data_names()
+
+    struct_inputs = struct.input_grammar.keys()
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
-    with pytest.raises(InvalidDataException, match="Missing mandatory elements: x_1"):
+
+    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
         struct.check_input_data(indata)
 
     struct.execute(indata)
 
     del struct.default_inputs["x_1"]
-    with pytest.raises(InvalidDataException, match="Invalid input data in"):
+    with pytest.raises(InvalidDataException, match=".*Missing required names: x_1"):
         struct.execute(indata)
 
 
@@ -418,8 +420,8 @@ def test_linearize_errors():
     class LinDisc(MDODiscipline):
         def __init__(self):
             super().__init__()
-            self.input_grammar.initialize_from_data_names(["x"])
-            self.output_grammar.initialize_from_data_names(["y"])
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
 
         def _run(self):
             self.local_data["y"] = array([2.0])
@@ -500,8 +502,8 @@ def test_check_jacobian_2():
     class LinDisc(MDODiscipline):
         def __init__(self):
             super().__init__()
-            self.input_grammar.initialize_from_data_names(["x"])
-            self.output_grammar.initialize_from_data_names(["y"])
+            self.input_grammar.update(["x"])
+            self.output_grammar.update(["y"])
             self.default_inputs = {"x": x}
             self.jac_key = "x"
             self.jac_len = 2
@@ -568,8 +570,8 @@ def test_execute_rerun_errors():
             self.local_data["b"] = array([1.0])
 
     d = MyDisc()
-    d.input_grammar.initialize_from_data_names(["a"])
-    d.output_grammar.initialize_from_data_names(["b"])
+    d.input_grammar.update(["a"])
+    d.output_grammar.update(["b"])
     d.execute({"a": [1]})
     d.status = d.STATUS_RUNNING
     with pytest.raises(ValueError):

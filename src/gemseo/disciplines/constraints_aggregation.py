@@ -79,8 +79,8 @@ class ConstrAggegationDisc(MDODiscipline):
         self.__output_names = [f"{self.__method_name}_{c}" for c in constr_data_names]
         self.__out_sizes = {k: 1 for k in self.__output_names}
 
-        self.input_grammar.initialize_from_data_names(self.__input_names)
-        self.output_grammar.initialize_from_data_names(self.__output_names)
+        self.input_grammar.update(self.__input_names)
+        self.output_grammar.update(self.__output_names)
 
     def _run(self) -> None:
         c_data = concatenate_dict_of_arrays_to_array(

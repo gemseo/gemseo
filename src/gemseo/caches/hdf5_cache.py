@@ -32,7 +32,6 @@ from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import CacheEntry
 from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
-from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
@@ -134,7 +133,7 @@ class HDF5Cache(AbstractFullCache):
         group: str,
         h5_open_file: h5py.File | None = None,
         **options: Any,
-    ) -> tuple[OutputData, JacobianData]:
+    ) -> tuple[Data, JacobianData]:
         """
         Args:
             h5_open_file: The opened HDF file.

@@ -37,7 +37,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 from matplotlib.figure import Figure
 
 from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
@@ -79,12 +79,10 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         self.opt_problem = opt_problem
         self.database = opt_problem.database
         comp_dir = abspath(dirname(inspect.getfile(OptPostProcessor)))
-        schema_file = join(comp_dir, "OptPostProcessor.json")
-        self.opt_grammar = JSONGrammar(
-            "OptPostProcessor",
-            schema_file=schema_file,
-            descriptions=get_options_doc(self.execute),
-        )
+        self.opt_grammar = JSONGrammar("OptPostProcessor")
+        self.opt_grammar.update_from_file(join(comp_dir, "OptPostProcessor.json"))
+        self.opt_grammar.set_descriptions(get_options_doc(self.execute))
+
         cls_name = self.__class__.__name__
         name = cls_name + "_options"
         f_class = inspect.getfile(self.__class__)
@@ -106,9 +104,8 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         if hasattr(self.__class__, "_plot"):
             descriptions.update(get_options_doc(self.__class__._plot))
 
-        self.opt_grammar.update_from(
-            JSONGrammar(name, schema_file=schema_file, descriptions=descriptions)
-        )
+        self.opt_grammar.update_from_file(schema_file)
+        self.opt_grammar.set_descriptions(descriptions)
 
         # the data dict to eventually rebuild the plot in another framework
         self.out_data_dict = {}
@@ -238,7 +235,7 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
             InvalidDataException: If an option is invalid according to the grammar.
         """
         try:
-            self.opt_grammar.load_data(options)
+            self.opt_grammar.validate(options)
         except InvalidDataException:
             raise InvalidDataException(
                 "Invalid options for post-processor {}; "

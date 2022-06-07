@@ -33,7 +33,7 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import ndarray
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.core.grammar import InvalidDataException
+from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.json_grammar import JSONGrammar
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
@@ -148,10 +148,9 @@ class AlgoLib:
             )
             raise ValueError(msg)
 
-        descr_dict = get_options_doc(self.__class__._get_options)
-        self.opt_grammar = JSONGrammar(
-            algo_name, schema_file=schema_file, descriptions=descr_dict
-        )
+        self.opt_grammar = JSONGrammar(algo_name)
+        self.opt_grammar.update_from_file(schema_file)
+        self.opt_grammar.set_descriptions(get_options_doc(self.__class__._get_options))
 
         return self.opt_grammar
 
@@ -201,7 +200,7 @@ class AlgoLib:
         :param option_key: The name of the option.
         :return: Whether the option is in the grammar.
         """
-        return self.opt_grammar.is_data_name_existing(option_key)
+        return option_key in self.opt_grammar
 
     def _process_specific_option(
         self,
@@ -228,26 +227,27 @@ class AlgoLib:
         Raises:
             ValueError: If an option is invalid.
         """
-        for option_key in list(options.keys()):  # Copy keys on purpose
+        for option_name in list(options.keys()):  # Copy keys on purpose
             # Remove extra options added in the _get_option method of the
             # driver
-            if not self.driver_has_option(option_key):
-                del options[option_key]
+            if not self.driver_has_option(option_name):
+                del options[option_name]
             else:
-                self._process_specific_option(options, option_key)
+                self._process_specific_option(options, option_name)
 
         try:
-            self.opt_grammar.load_data(options)
+            self.opt_grammar.validate(options)
         except InvalidDataException:
-            raise ValueError("Invalid options for algorithm " + self.opt_grammar.name)
+            raise ValueError(f"Invalid options for algorithm {self.opt_grammar.name}.")
 
-        for option_key in list(options.keys()):  # Copy keys on purpose
-            lib_option_key = self.OPTIONS_MAP.get(option_key)
+        for option_name in list(options.keys()):  # Copy keys on purpose
+            lib_option_name = self.OPTIONS_MAP.get(option_name)
             # Overload with specific keys
-            if lib_option_key is not None:
-                options[lib_option_key] = options[option_key]
-                if lib_option_key != option_key:
-                    del options[option_key]
+            if lib_option_name is not None:
+                options[lib_option_name] = options[option_name]
+                if lib_option_name != option_name:
+                    del options[option_name]
+
         return options
 
     def _check_ignored_options(self, options: Mapping[str, Any]) -> None:
@@ -257,10 +257,10 @@ class AlgoLib:
 
         :param options: The options.
         """
-        for option_key in options:
-            if not self.driver_has_option(option_key):
+        for option_name in options:
+            if not self.driver_has_option(option_name):
                 msg = "Driver %s has no option %s, option is ignored."
-                LOGGER.warning(msg, self.algo_name, option_key)
+                LOGGER.warning(msg, self.algo_name, option_name)
 
     def execute(
         self,

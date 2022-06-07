@@ -20,9 +20,13 @@ from __future__ import annotations
 from collections import abc
 from typing import Any
 from typing import Generator
+from typing import Mapping
 from typing import MutableMapping
 
 import pandas as pd
+
+Data = Mapping[str, Any]
+MutableData = MutableMapping[str, Any]
 
 
 class DisciplineData(abc.MutableMapping):
@@ -107,7 +111,7 @@ class DisciplineData(abc.MutableMapping):
     """The character used to separate the shared dict key from the column of a
     pandas DataFrame."""
 
-    def __init__(self, data: MutableMapping[str, Any]) -> None:
+    def __init__(self, data: MutableData) -> None:
         """
         Args:
             data: A dict-like object or a :class:`DisciplineData` object.

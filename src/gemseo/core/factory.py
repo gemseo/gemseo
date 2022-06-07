@@ -358,7 +358,7 @@ class Factory(Multiton):
         self,
         name: str,
         write_schema: bool = False,
-        schema_file: str | None = None,
+        schema_path: str | None = None,
     ) -> JSONGrammar:
         """Return the options JSON grammar for a class.
 
@@ -368,7 +368,7 @@ class Factory(Multiton):
         Args:
             name: The name of the class.
             write_schema: If True, write the JSON schema to a file.
-            schema_file: The path to the JSON schema file.
+            schema_path: The path to the JSON schema file.
                 If None, the file is saved in the current directory in a file named
                 after the name of the class.
 
@@ -379,27 +379,17 @@ class Factory(Multiton):
         opts_doc = self.get_options_doc(name)
         opts_doc = {k: v for k, v in opts_doc.items() if k in args_dict}
         grammar = JSONGrammar(name)
+        grammar.update_from_data(args_dict)
+        grammar.set_descriptions(opts_doc)
 
-        grammar.initialize_from_base_dict(
-            args_dict,
-            description_dict=opts_doc,
-        )
-
-        # Remove None args from required
-        sch_dict = grammar.schema.to_dict()
-        required = sch_dict["required"]
-        has_changed = False
-
+        # Remove args bound to None from the required properties
+        # because they are optional.
         for opt, val in args_dict.items():
-            if val is None and opt in required:
-                required.remove(opt)
-                has_changed = True
-
-        if has_changed:
-            grammar = JSONGrammar(name, schema=sch_dict)
+            if val is None:
+                grammar.required_names.remove(opt)
 
         if write_schema:
-            grammar.write_schema(schema_file)
+            grammar.write(schema_path)
 
         return grammar
 

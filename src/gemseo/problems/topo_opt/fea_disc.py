@@ -93,8 +93,8 @@ class FininiteElementAnalysis(MDODiscipline):
         self.fixednodes = fixed_nodes
         self.fixed_dir = fixed_dir
         self.prepare_fea()
-        self.input_grammar.initialize_from_data_names(["E"])
-        self.output_grammar.initialize_from_data_names(["compliance"])
+        self.input_grammar.update(["E"])
+        self.output_grammar.update(["compliance"])
         self.default_inputs = {"E": ones(self.N_elements)}
 
     def _run(self) -> None:

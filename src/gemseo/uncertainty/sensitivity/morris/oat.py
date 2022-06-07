@@ -101,14 +101,14 @@ class _OATSensitivity(MDODiscipline):
             )
         super().__init__()
         input_names = parameter_space.variables_names
-        self.input_grammar.initialize_from_data_names(input_names)
+        self.input_grammar.update(input_names)
         self.__output_names = get_all_outputs(scenario.disciplines)
         output_names = [
             self.get_fd_name(input_name, output_name)
             for output_name in self.__output_names
             for input_name in input_names
         ]
-        self.output_grammar.initialize_from_data_names(output_names)
+        self.output_grammar.update(output_names)
 
         # The scenario is evaluated many times, this setting
         # prevents conflicts between runs.

@@ -87,10 +87,10 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: str = SobieskiBase.DTYPE_DOUBLE,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_elements(
-            **dict.fromkeys(("y_14", "y_24", "y_34", "x_shared"), ndarray)
+        self.input_grammar.update(
+            dict.fromkeys(("y_14", "y_24", "y_34", "x_shared"), ndarray)
         )
-        self.output_grammar.update_elements(y_4=ndarray)
+        self.output_grammar.update({"y_4": ndarray})
         self._set_default_inputs()
 
     def _run(self) -> None:
@@ -117,11 +117,11 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: str = SobieskiBase.DTYPE_DOUBLE,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_elements(
-            **dict.fromkeys(["x_1", "y_21", "y_31", "x_shared"], ndarray)
+        self.input_grammar.update(
+            dict.fromkeys(["x_1", "y_21", "y_31", "x_shared"], ndarray)
         )
-        self.output_grammar.update_elements(
-            **dict.fromkeys(["y_1", "y_11", "y_12", "y_14", "g_1"], ndarray)
+        self.output_grammar.update(
+            dict.fromkeys(["y_1", "y_11", "y_12", "y_14", "g_1"], ndarray)
         )
         self._set_default_inputs()
 
@@ -151,11 +151,11 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: str = SobieskiBase.DTYPE_DOUBLE,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_elements(
-            **dict.fromkeys(["x_2", "y_12", "y_32", "x_shared"], ndarray)
+        self.input_grammar.update(
+            dict.fromkeys(["x_2", "y_12", "y_32", "x_shared"], ndarray)
         )
-        self.output_grammar.update_elements(
-            **dict.fromkeys(["y_2", "y_21", "y_23", "y_24", "g_2"], ndarray)
+        self.output_grammar.update(
+            dict.fromkeys(["y_2", "y_21", "y_23", "y_24", "g_2"], ndarray)
         )
         self._set_default_inputs()
 
@@ -187,11 +187,9 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: str = SobieskiBase.DTYPE_DOUBLE,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_elements(
-            **dict.fromkeys(["x_3", "y_23", "x_shared"], ndarray)
-        )
-        self.output_grammar.update_elements(
-            **dict.fromkeys(["y_3", "y_34", "y_31", "y_32", "g_3"], ndarray)
+        self.input_grammar.update(dict.fromkeys(["x_3", "y_23", "x_shared"], ndarray))
+        self.output_grammar.update(
+            dict.fromkeys(["y_3", "y_34", "y_31", "y_32", "g_3"], ndarray)
         )
         self._set_default_inputs()
 

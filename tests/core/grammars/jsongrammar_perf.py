@@ -53,7 +53,7 @@ def generate_bench_many_io() -> JSONGrammar:
         A JSON grammar.
     """
     grammar = JSONGrammar("manyinpt")
-    grammar.initialize_from_data_names(["t"])
+    grammar.update(["t"])
     return grammar
 
 
@@ -65,7 +65,7 @@ def test_bench_many_io():
         data_dict = {"t": ones(n_t)}
 
         def run_check():
-            return grammar.load_data(data_dict)
+            return grammar.validate(data_dict)
 
         tref = timeit.timeit(stmt=run_check, number=100)
         ref_check_times[n_t] = tref
@@ -81,7 +81,7 @@ def test_large_data_validation(sizes=(10, 1000, 100000), n_repeats=5):
         inputs = {"t": ones(n_t)}
 
         def create_chain():
-            grammar.load_data(inputs)
+            grammar.validate(inputs)
 
         tref = timeit.timeit(stmt=create_chain, number=n_repeats)
         ref_check_times[n_t] = tref / n_repeats
@@ -177,7 +177,7 @@ class ManyDisciplinesBenchmark(BaseBenchmarkee):
         """Run the benchmark payload."""
         self.class_(list(self.disciplines.values()))
         # inst = self.class_(list(self.disciplines.values()))
-        # inst.input_grammar.load_data(inst.default_inputs)
+        # inst.input_grammar.validate(inst.default_inputs)
 
     def __str__(self):
         return f"{self.class_.__name__}-{self.nb_of_disc}"

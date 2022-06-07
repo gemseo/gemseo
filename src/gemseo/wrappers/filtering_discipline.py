@@ -60,8 +60,8 @@ class FilteringDiscipline(MDODiscipline):
                 outputs_names = list(set(original_outputs_names) - set(outputs_names))
         else:
             outputs_names = original_outputs_names
-        self.input_grammar.initialize_from_data_names(inputs_names)
-        self.output_grammar.initialize_from_data_names(outputs_names)
+        self.input_grammar.update(inputs_names)
+        self.output_grammar.update(outputs_names)
         self.default_inputs = self.__filter_inputs(self.discipline.default_inputs)
         removed_inputs = set(original_inputs_names) - set(inputs_names)
         diff_inputs = set(self.discipline._differentiated_inputs) - removed_inputs

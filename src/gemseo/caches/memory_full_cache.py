@@ -26,7 +26,6 @@ from typing import Any
 from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
-from gemseo.core.cache import OutputData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multi_processing import RLock
@@ -96,7 +95,7 @@ class MemoryFullCache(AbstractFullCache):
         index: int,
         group: str,
         **options: Any,
-    ) -> OutputData | JacobianData:
+    ) -> Data | JacobianData:
         data = self.__data[index].get(group)
         if group == self._JACOBIAN_GROUP and data is not None:
             return nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)

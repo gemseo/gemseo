@@ -120,7 +120,7 @@ class TestJacobianAssembly(unittest.TestCase):
         mda = SobieskiMDAGaussSeidel("complex128")
         mda.tolerance = 1e-14
         mda.max_iter = 100
-        inputs = mda.input_grammar.get_data_names()
+        inputs = mda.input_grammar.keys()
         indata = SobieskiProblem("complex128").get_default_inputs(names=inputs)
         # functions/variables/couplings
         functions = ["y_4", "g_1", "g_2", "g_3", "y_1", "y_2", "y_3"]

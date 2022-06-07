@@ -63,8 +63,8 @@ class DensityFilter(MDODiscipline):
         self.min_member_size = min_member_size
         self.filter_matrix = None
         self._create_filter_matrix()
-        self.input_grammar.initialize_from_data_names(["x"])
-        self.output_grammar.initialize_from_data_names(["xPhys"])
+        self.input_grammar.update(["x"])
+        self.output_grammar.update(["xPhys"])
         self.default_inputs = {"x": ones((n_x * n_y,))}
 
     def _run(self) -> None:

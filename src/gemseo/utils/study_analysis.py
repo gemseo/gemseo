@@ -142,8 +142,8 @@ class XLSStudyParser:
 
             all_outputs += outputs
             disc = MDODiscipline(disc_name)
-            disc.input_grammar.initialize_from_data_names(inputs)
-            disc.output_grammar.initialize_from_data_names(outputs)
+            disc.input_grammar.update(inputs)
+            disc.output_grammar.update(outputs)
             LOGGER.info("Inputs: %s", inputs)
             LOGGER.info("Outputs: %s", outputs)
 

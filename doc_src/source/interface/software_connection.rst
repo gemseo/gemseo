@@ -124,7 +124,7 @@ define whether a set of data is valid or not as inputs or outputs of an :class:`
 There are at least two grammars for a discipline: one for input data and one for output data.
 
 In |g|,
-there is an :class:`.AbstractGrammar` class that defines the contract of the grammars implementations,
+there is an :class:`.BaseGrammar` class that defines the contract of the grammars implementations,
 such as checking data,
 listing the required data,
 etc.

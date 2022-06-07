@@ -115,10 +115,10 @@ class DOEScenario(Scenario):
             self._lib = lib
             self._algo_name = algo_name
 
-        if self.SEED in lib.opt_grammar.get_data_names() and self.SEED not in options:
+        if self.SEED in lib.opt_grammar and self.SEED not in options:
             options[self.SEED] = self.seed
 
-        if self.N_SAMPLES in lib.opt_grammar.get_data_names():
+        if self.N_SAMPLES in lib.opt_grammar:
             n_samples = self.local_data.get(self.N_SAMPLES)
             if self.N_SAMPLES in options:
                 LOGGER.warning(
@@ -133,12 +133,9 @@ class DOEScenario(Scenario):
         return self.optimization_result
 
     def _update_grammar_input(self) -> None:
-        self.input_grammar.update_elements(
-            algo=str, n_samples=int, algo_options=dict, python_typing=True
-        )
-        self.input_grammar.update_required_elements(
-            algo=True, n_samples=False, algo_options=False
-        )
+        self.input_grammar.update(dict(algo=str, n_samples=int, algo_options=dict))
+        for name in ("n_samples", "algo_options"):
+            self.input_grammar.required_names.remove(name)
 
     def export_to_dataset(
         self,

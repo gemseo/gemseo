@@ -70,23 +70,19 @@ class A(DFChooser):
         if self.with_df:
             self.default_inputs = {"x": DataFrame(data={"a": array([0.0])})}
             if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.initialize_from_base_dict(
-                    {to_df_key("x", "a"): array([0.0])}
-                )
-                self.output_grammar.initialize_from_base_dict(
-                    {self.output_name: array([0.0])}
-                )
+                self.input_grammar.update_from_data({to_df_key("x", "a"): array([0.0])})
+                self.output_grammar.update_from_data({self.output_name: array([0.0])})
             else:
-                self.input_grammar.update_elements(**{to_df_key("x", "a"): ndarray})
-                self.output_grammar.update_elements(**{self.output_name: ndarray})
+                self.input_grammar.update({to_df_key("x", "a"): ndarray})
+                self.output_grammar.update({self.output_name: ndarray})
         else:
             self.default_inputs = {"x": array([0.0])}
             if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.initialize_from_base_dict({"x": array([0.0])})
-                self.output_grammar.initialize_from_base_dict({"y": array([0.0])})
+                self.input_grammar.update_from_data({"x": array([0.0])})
+                self.output_grammar.update_from_data({"y": array([0.0])})
             else:
-                self.input_grammar.update_elements(**{"x": ndarray})
-                self.output_grammar.update_elements(**{"y": ndarray})
+                self.input_grammar.update({"x": ndarray})
+                self.output_grammar.update({"y": ndarray})
 
     def _run(self):
         d = self.local_data
@@ -118,23 +114,21 @@ class B(DFChooser):
 
             self.default_inputs = {df_name: DataFrame(data={"b": array([0.0])})}
             if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.initialize_from_base_dict(
-                    {self.output_name: array([0.0])}
-                )
-                self.output_grammar.initialize_from_base_dict(
+                self.input_grammar.update_from_data({self.output_name: array([0.0])})
+                self.output_grammar.update_from_data(
                     {to_df_key("x", "a"): array([0.0])}
                 )
             else:
-                self.input_grammar.update_elements(**{self.output_name: ndarray})
-                self.output_grammar.update_elements(**{to_df_key("x", "a"): ndarray})
+                self.input_grammar.update({self.output_name: ndarray})
+                self.output_grammar.update({to_df_key("x", "a"): ndarray})
         else:
             self.default_inputs = {"y": array([0.0])}
             if self.grammar_type == MDODiscipline.JSON_GRAMMAR_TYPE:
-                self.input_grammar.initialize_from_base_dict({"y": array([0.0])})
-                self.output_grammar.initialize_from_base_dict({"x": array([0.0])})
+                self.input_grammar.update_from_data({"y": array([0.0])})
+                self.output_grammar.update_from_data({"x": array([0.0])})
             else:
-                self.input_grammar.update_elements(**{"y": ndarray})
-                self.output_grammar.update_elements(**{"x": ndarray})
+                self.input_grammar.update({"y": ndarray})
+                self.output_grammar.update({"x": ndarray})
 
     def _run(self):
         d = self.local_data
@@ -221,12 +215,12 @@ class A2(A):
         super().__init__(with_df, MDODiscipline.SIMPLE_GRAMMAR_TYPE)
         if self.with_df:
             self.default_inputs["x"]["c"] = array([0.0])
-            self.input_grammar.update_elements(**{to_df_key("x", "c"): ndarray})
-            self.output_grammar.update_elements(**{to_df_key("y", "d"): ndarray})
+            self.input_grammar.update({to_df_key("x", "c"): ndarray})
+            self.output_grammar.update({to_df_key("y", "d"): ndarray})
         else:
             self.default_inputs["c"] = array([0.0])
-            self.input_grammar.update_elements(**{"c": ndarray})
-            self.output_grammar.update_elements(**{"d": ndarray})
+            self.input_grammar.update({"c": ndarray})
+            self.output_grammar.update({"d": ndarray})
 
     def _run(self):
         super()._run()

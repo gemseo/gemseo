@@ -430,7 +430,11 @@ def test_create_discipline(tmp_wd):
         "cache_type": MDODiscipline.SIMPLE_CACHE,
     }
 
-    with pytest.raises(InvalidDataException, match="Invalid data in"):
+    msg = (
+        "data.linearization_mode must be one of "
+        r"\['auto', 'direct', 'reverse', 'adjoint'\]"
+    )
+    with pytest.raises(InvalidDataException, match=msg):
         create_discipline("SobieskiMission", **options_fail)
 
 
