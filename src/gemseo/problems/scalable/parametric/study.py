@@ -420,7 +420,7 @@ class TMScalableStudy:
         self.n_calls = {}
         self.n_calls_linearize = {}
         self.exec_time = {}
-        self.formulation_options = {"MDF": {"sub_mda_class": "MDAGaussSeidel"}}
+        self.formulation_options = {"MDF": {"inner_mda_name": "MDAGaussSeidel"}}
         self.formulation_options["MDF"].update(MDA_TOLERANCE)
         self.disc_names = ["scenario", "mda", "mdo_chain", "sub_mda"]
         tmp = sorted(disc.name for disc in self.problem.disciplines)

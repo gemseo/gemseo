@@ -650,7 +650,7 @@ def get_formulation_sub_options_schema(
     --------
     >>> from gemseo.api import get_formulation_sub_options_schema
     >>> schema = get_formulation_sub_options_schema('MDF',
-    >>>                                             main_mda_class='MDAJacobi',
+    >>>                                             main_mda_name='MDAJacobi',
     >>>                                             pretty_print=True)
 
     See also
@@ -686,7 +686,7 @@ def get_formulations_sub_options_defaults(
     --------
     >>> from gemseo.api import get_formulations_sub_options_defaults
     >>> get_formulations_sub_options_defaults('MDF',
-    >>>                                       main_mda_class='MDAJacobi')
+    >>>                                       main_mda_name='MDAJacobi')
 
     See also
     --------
@@ -721,9 +721,9 @@ def get_formulations_options_defaults(
     --------
     >>> from gemseo.api import get_formulations_options_defaults
     >>> get_formulations_options_defaults('MDF')
-    {'main_mda_class': 'MDAChain',
+    {'main_mda_name': 'MDAChain',
      'maximize_objective': False,
-     'sub_mda_class': 'MDAJacobi'}
+     'inner_mda_name': 'MDAJacobi'}
 
     See also
     --------

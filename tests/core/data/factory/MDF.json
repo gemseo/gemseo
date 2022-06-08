@@ -10,19 +10,19 @@
       "description": "The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.",
       "type": "string"
     },
-    "main_mda_class": {
+    "main_mda_name": {
       "description": "The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
       "type": "string"
     },
-    "sub_mda_class": {
-      "description": "The name of the class used for the sub-MDA.",
+    "inner_mda_name": {
+      "description": "The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.",
       "type": "string"
     }
   },
   "required": [
     "grammar_type",
-    "main_mda_class",
-    "maximize_objective",
-    "sub_mda_class"
+    "inner_mda_name",
+    "main_mda_name",
+    "maximize_objective"
   ]
 }

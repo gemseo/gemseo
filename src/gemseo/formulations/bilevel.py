@@ -71,18 +71,23 @@ class BiLevel(MDOFormulation):
         objective_name: str,
         design_space: DesignSpace,
         maximize_objective: bool = False,
-        mda_name: str = "MDAChain",
+        main_mda_name: str = "MDAChain",
+        inner_mda_name: str = "MDAJacobi",
         parallel_scenarios: bool = False,
         multithread_scenarios: bool = True,
         apply_cstr_tosub_scenarios: bool = True,
         apply_cstr_to_system: bool = True,
         reset_x0_before_opt: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
-        **mda_options: Any,
+        **main_mda_options: Any,
     ) -> None:
         """
         Args:
-            mda_name: The name of the MDA class to be used.
+            main_mda_name: The name of the class used for the main MDA,
+                typically the :class:`.MDAChain`,
+                but one can force to use :class:`.MDAGaussSeidel` for instance.
+            inner_mda_name: The name of the class used for the inner-MDA of the main
+                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
             parallel_scenarios: Whether to run the sub-scenarios in parallel.
             multithread_scenarios: If True and parallel_scenarios=True,
                 the sub-scenarios are run in parallel using multi-threading;
@@ -94,7 +99,8 @@ class BiLevel(MDOFormulation):
                 the constraint to the optimization problem of the system scenario.
             reset_x0_before_opt: Whether to restart the sub optimizations
                 from the initial guesses, otherwise warm start them.
-            **mda_options: The options passed to the MDA at construction.
+            **main_mda_options: The options of the main MDA, which may include those
+                of the inner-MDA.
         """
         super().__init__(
             disciplines,
@@ -117,7 +123,7 @@ class BiLevel(MDOFormulation):
         self.couplstr = MDOCouplingStructure(self.get_sub_disciplines())
 
         # Create MDA
-        self._build_mdas(mda_name, **mda_options)
+        self._build_mdas(main_mda_name, inner_mda_name, **main_mda_options)
 
         # Create MDOChain : MDA1 -> sub scenarios -> MDA2
         self._build_chain()
@@ -270,13 +276,14 @@ class BiLevel(MDOFormulation):
         Raises:
             ValueError: When the MDA name is not provided.
         """
-        main_mda = options.get("mda_name")
-        if main_mda is None:
+        main_mda_name = options.get("main_mda_name")
+        if main_mda_name is None:
             raise ValueError(
-                "'mda_name' option is required to deduce the sub options of BiLevel !"
+                "'main_mda_name' option is required to deduce the "
+                "sub options of BiLevel."
             )
         factory = MDAFactory().factory
-        return factory.get_options_grammar(main_mda)
+        return factory.get_options_grammar(main_mda_name)
 
     @classmethod
     def get_default_sub_options_values(
@@ -293,31 +300,42 @@ class BiLevel(MDOFormulation):
         Raises:
             ValueError: When the MDA name is not provided.
         """
-        main_mda = options.get("mda_name")
-        if main_mda is None:
+        main_mda_name = options.get("main_mda_name")
+        if main_mda_name is None:
             raise ValueError(
-                "'mda_name' option is required to deduce the sub options of BiLevel !"
+                "'main_mda_name' option is required to deduce the "
+                "sub options of BiLevel."
             )
         factory = MDAFactory().factory
-        return factory.get_default_options_values(main_mda)
+        return factory.get_default_options_values(main_mda_name)
 
     def _build_mdas(
         self,
-        mda_name: str,
-        **mda_options: str | int | float | bool | None,
+        main_mda_name: str,
+        inner_mda_name: str,
+        **main_mda_options: str | int | float | bool | None,
     ) -> None:
         """Build the chain on top of which all functions are built.
 
         This chain is as follows: MDA1 -> MDOScenarios -> MDA2.
 
         Args:
-            mda_name: The class name of the MDA.
-            **mda_options: The options passed to the MDA.
+            main_mda_name: The class name of the main MDA.
+            inner_mda_name: The name of the class used for the inner-MDA of the main
+                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
+            **main_mda_options: The options of the main MDA, which may include those
+                of the inner-MDA.
         """
+        if main_mda_name == "MDAChain":
+            main_mda_options["inner_mda_name"] = inner_mda_name
+
         disc_mda1 = self.couplstr.strongly_coupled_disciplines
         if len(disc_mda1) > 0:
             self._mda1 = self._mda_factory.create(
-                mda_name, disc_mda1, grammar_type=self._grammar_type, **mda_options
+                main_mda_name,
+                disc_mda1,
+                grammar_type=self._grammar_type,
+                **main_mda_options,
             )
             self._mda1.warm_start = True
         else:
@@ -328,7 +346,10 @@ class BiLevel(MDOFormulation):
 
         disc_mda2 = self.get_sub_disciplines()
         self._mda2 = self._mda_factory.create(
-            mda_name, disc_mda2, grammar_type=self._grammar_type, **mda_options
+            main_mda_name,
+            disc_mda2,
+            grammar_type=self._grammar_type,
+            **main_mda_options,
         )
 
         self._mda2.warm_start = False

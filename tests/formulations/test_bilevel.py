@@ -123,7 +123,13 @@ def test_get_sub_options_grammar_errors():
 
 def test_get_sub_options_grammar():
     """Test that the MDAJacobi sub-options can be retrieved."""
-    BiLevel.get_default_sub_options_values(mda_name="MDAJacobi")
+    sub_options_schema = BiLevel.get_sub_options_grammar(main_mda_name="MDAJacobi")
+    assert sub_options_schema.name == "MDAJacobi"
+
+    sub_options_values = BiLevel.get_default_sub_options_values(
+        main_mda_name="MDAJacobi"
+    )
+    assert "acceleration" in sub_options_values.keys()
 
 
 def test_bilevel_aerostructure():
@@ -192,7 +198,7 @@ def test_bilevel_aerostructure():
         objective_name="range",
         design_space=design_space_system,
         maximize_objective=True,
-        mda_name="MDAJacobi",
+        main_mda_name="MDAJacobi",
         tolerance=1e-8,
     )
     system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)

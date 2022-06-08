@@ -192,7 +192,7 @@ process to solve the coupling problem with a coupling algorithm.
 To illustrate the typical procedure, we take a dummy 16 disciplines problem.
 
 #. First the coupling graph is generated.
-#. Then, a minimal process is computed, with eventually sub MDAs.
+#. Then, a minimal process is computed, with eventually inner-MDAs.
    A set of coupling problems is generated, which are passed to algorithms.
 #. Finally, many zero search solvers algorithms are available in |g| (14), via the :term:`SciPy` package, or directly
    coded in |g| (Gauss-Seidel and Jacobi for instance). They can be compared on the specific problem,
@@ -207,10 +207,10 @@ The next figure illustrates this typical process
 
 This features is used in the :class:`~gemseo.mda.mda_chain.MDAChain` which generates a chain of MDAs according
 to the graph of dependency in order to minimize the CPU time. The user provides a base MDA class to solve the coupled problems.
-The overall sequential process made of sub-MDAs and disciplines execution is created by a :class:`~gemseo.core.chain.MDOChain`.
-The sub-MDAs can be specified using the argument :code:`sub_mda_class`.
+The overall sequential process made of inner-MDAs and disciplines execution is created by a :class:`~gemseo.core.chain.MDOChain`.
+The inner-MDAs can be specified using the argument :code:`inner_mda_name`.
 
 .. code::
 
-    mda = create_mda("MDAChain", disciplines, sub_mda_class="MDAJacobi")
+    mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
     mda.execute()

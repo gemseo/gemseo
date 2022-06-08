@@ -219,7 +219,7 @@ def generate_disciplines_from_desc(
 
 def test_16_disc_parallel():
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
-    MDAChain(disciplines, sub_mda_class="MDAJacobi")
+    MDAChain(disciplines, inner_mda_name="MDAJacobi")
 
 
 @pytest.mark.parametrize(
@@ -229,13 +229,13 @@ def test_simple_grammar_type(in_gtype):
     disciplines = generate_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(
         disciplines,
-        sub_mda_class="MDAJacobi",
+        inner_mda_name="MDAJacobi",
         grammar_type=MDODiscipline.SIMPLE_GRAMMAR_TYPE,
     )
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
-    for smda in mda.sub_mda_list:
+    for smda in mda.inner_mda_list:
         assert type(smda.input_grammar) == SimpleGrammar
 
 
@@ -284,7 +284,7 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
         inputs=["x"], outputs=["obj"], linearization_mode=linearization_mode
     )
 
-    assert mda.normed_residual == mda.sub_mda_list[0].normed_residual
+    assert mda.normed_residual == mda.inner_mda_list[0].normed_residual
 
 
 def test_no_coupling_jac():
@@ -313,12 +313,12 @@ def test_sub_coupling_structures(sellar_disciplines):
 def test_log_convergence(sellar_disciplines):
     mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.log_convergence
-    for mda in mda_chain.sub_mda_list:
+    for mda in mda_chain.inner_mda_list:
         assert not mda.log_convergence
 
     mda_chain.log_convergence = True
     assert mda_chain.log_convergence
-    for mda in mda_chain.sub_mda_list:
+    for mda in mda_chain.inner_mda_list:
         assert mda.log_convergence
 
 
@@ -327,7 +327,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`
+            a parallel DOE scenario for a particular `main_mda_name`
             and n_samples.
     """
     obj = generate_parallel_doe_data("MDAChain", 7)

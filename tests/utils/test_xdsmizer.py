@@ -90,7 +90,7 @@ class TestXDSMizer(unittest.TestCase):
     def test_xdsmize_mdf(self):
         """Test xdsmization of Sobieski problem solved with MDF with and without
         constraint."""
-        scenario = self.build_mdo_scenario("MDF", sub_mda_class="MDAGaussSeidel")
+        scenario = self.build_mdo_scenario("MDF", inner_mda_name="MDAGaussSeidel")
         options = {
             "output_directory_path": ".",
             "html_output": False,
