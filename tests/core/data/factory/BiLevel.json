@@ -6,8 +6,12 @@
       "description": "If True, the objective function is maximized.",
       "type": "boolean"
     },
-    "mda_name": {
-      "description": "The name of the MDA class to be used.",
+    "main_mda_name": {
+      "description": "The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
+      "type": "string"
+    },
+    "inner_mda_name": {
+      "description": "The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.",
       "type": "string"
     },
     "parallel_scenarios": {
@@ -39,8 +43,9 @@
     "apply_cstr_to_system",
     "apply_cstr_tosub_scenarios",
     "grammar_type",
+    "inner_mda_name",
+    "main_mda_name",
     "maximize_objective",
-    "mda_name",
     "multithread_scenarios",
     "parallel_scenarios",
     "reset_x0_before_opt"

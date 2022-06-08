@@ -27,13 +27,13 @@ from gemseo.problems.sobieski.core.problem import SobieskiProblem
 
 
 def generate_parallel_doe(
-    main_mda_class: str,
+    main_mda_name: str,
     n_samples: int = 4,
 ) -> float:
-    """Execute a parallel DOE with a custom `main_mda_class`.
+    """Execute a parallel DOE with a custom `main_mda_name`.
 
     Args:
-        main_mda_class: The main mda class to be used to execute the
+        main_mda_name: The main mda class to be used to execute the
             parallel DOE scenario.
         n_samples: The number of samples for the DOE.
 
@@ -55,7 +55,7 @@ def generate_parallel_doe(
         design_space=design_space,
         scenario_type="DOE",
         maximize_objective=True,
-        main_mda_class=main_mda_class,
+        main_mda_name=main_mda_name,
     )
     scenario.execute(
         {
@@ -72,7 +72,7 @@ def generate_parallel_doe_data():
     """Wrap a parallel DOE scenario to be used in the MDA tests.
 
     Returns:
-        A wrapped parallel doe scenario for which the `main_mda_class` can be
+        A wrapped parallel doe scenario for which the `main_mda_name` can be
             given as an argument.
     """
     return partial(generate_parallel_doe)

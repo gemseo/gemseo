@@ -203,8 +203,8 @@ def test_exception_mda_jacobi(caplog, use_threading):
         disciplines,
         "MDF",
         "obj",
-        main_mda_class="MDAChain",
-        sub_mda_class="MDAJacobi",
+        main_mda_name="MDAChain",
+        inner_mda_name="MDAJacobi",
         use_threading=use_threading,
         n_processes=2,
         design_space=SellarDesignSpace("float64"),
@@ -230,7 +230,7 @@ def test_other_exceptions_caught(caplog):
     design_space = DesignSpace()
     design_space.add_variable("x", l_b=0.0, u_b=1.0)
     scenario = DOEScenario(
-        [discipline], "MDF", "y", design_space, main_mda_class="MDAJacobi"
+        [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
     with pytest.raises(Exception):
         scenario.execute(

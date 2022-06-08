@@ -256,15 +256,17 @@ def test_get_formulation_sub_options_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     sub_opts_schema = get_formulation_sub_options_schema(
-        "MDF", main_mda_class="MDAJacobi"
+        "MDF", main_mda_name="MDAJacobi"
     )
     props = sub_opts_schema["properties"]
     assert "acceleration" in props
 
     for formulation in get_available_formulations():
         if formulation == "MDF":
-            opts = {"main_mda_class": "MDAJacobi"}
-        elif formulation == "BiLevel" or formulation == "BLISS98B":
+            opts = {"main_mda_name": "MDAJacobi"}
+        elif formulation == "BiLevel":
+            opts = {"main_mda_name": "MDAGaussSeidel"}
+        elif formulation == "BLISS98B":
             opts = {"mda_name": "MDAGaussSeidel"}
         else:
             opts = {}
@@ -573,7 +575,7 @@ def test_get_formulation_options_schema(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
     mdf_schema = get_formulation_options_schema("MDF")
-    for prop in ["maximize_objective", "sub_mda_class"]:
+    for prop in ["maximize_objective", "inner_mda_name"]:
         assert prop in mdf_schema["required"]
 
     idf_schema = get_formulation_options_schema("IDF")
@@ -625,7 +627,7 @@ def test_get_default_sub_options_values(tmp_wd):
         tmp_wd: Fixture to move into a temporary directory.
     """
 
-    defaults = get_formulations_sub_options_defaults("MDF", main_mda_class="MDAChain")
+    defaults = get_formulations_sub_options_defaults("MDF", main_mda_name="MDAChain")
     assert defaults is not None
 
     defaults = get_formulations_sub_options_defaults("DisciplinaryOpt")

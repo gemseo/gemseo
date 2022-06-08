@@ -41,7 +41,7 @@ N_CPUS = cpu_count()
 
 
 class MDAChain(MDA):
-    """A chain of sub-MDAs.
+    """A chain of MDAs.
 
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
@@ -63,7 +63,7 @@ class MDAChain(MDA):
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],
-        sub_mda_class: str = "MDAJacobi",
+        inner_mda_name: str = "MDAJacobi",
         max_mda_iter: int = 20,
         name: str | None = None,
         n_processes: int = N_CPUS,
@@ -77,24 +77,24 @@ class MDAChain(MDA):
         log_convergence: bool = False,
         linear_solver: str = "DEFAULT",
         linear_solver_options: Mapping[str, Any] = None,
-        **sub_mda_options: float | int | bool | str | None,
+        **inner_mda_options: float | int | bool | str | None,
     ):
         """
         Args:
-            sub_mda_class: The class name of the sub-MDA.
+            inner_mda_name: The class name of the inner-MDA.
             n_processes: The number of processes.
             chain_linearize: Whether to linearize the chain of execution.
                 Otherwise, linearize the overall MDA with base class method.
                 This last option is preferred to minimize computations in adjoint mode,
                 while in direct mode, linearizing the chain may be cheaper.
-            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+            sub_coupling_structures: The coupling structures to be used by the inner-MDAs.
                 If None, they are created from the sub-disciplines.
-            **sub_mda_options: The options to be passed to the sub-MDAs.
+            **inner_mda_options: The options of the inner-MDAs.
         """
         self.n_processes = n_processes
         self.mdo_chain = None
         self._chain_linearize = chain_linearize
-        self.sub_mda_list = []
+        self.inner_mda_list = []
 
         # compute execution sequence of the disciplines
         super().__init__(
@@ -116,9 +116,9 @@ class MDAChain(MDA):
 
         self._create_mdo_chain(
             disciplines,
-            sub_mda_class=sub_mda_class,
+            inner_mda_name=inner_mda_name,
             sub_coupling_structures=sub_coupling_structures,
-            **sub_mda_options,
+            **inner_mda_options,
         )
 
         self.log_convergence = log_convergence
@@ -129,8 +129,8 @@ class MDAChain(MDA):
         self._compute_input_couplings()
 
         # cascade the tolerance
-        for sub_mda in self.sub_mda_list:
-            sub_mda.tolerance = self.tolerance
+        for inner_mda in self.inner_mda_list:
+            inner_mda.tolerance = self.tolerance
 
     @MDA.log_convergence.setter
     def log_convergence(
@@ -138,27 +138,27 @@ class MDAChain(MDA):
         value: bool,
     ) -> None:
         self._log_convergence = value
-        for mda in self.sub_mda_list:
+        for mda in self.inner_mda_list:
             mda.log_convergence = value
 
     def _create_mdo_chain(
         self,
         disciplines: Sequence[MDODiscipline],
-        sub_mda_class: str = "MDAJacobi",
+        inner_mda_name: str = "MDAJacobi",
         sub_coupling_structures: Iterable[MDOCouplingStructure] | None = None,
-        **sub_mda_options: float | int | bool | str | None,
+        **inner_mda_options: float | int | bool | str | None,
     ):
         """Create an MDO chain from the execution sequence of the disciplines.
 
         Args:
-            sub_mda_class: The name of the class of the sub-MDAs.
+            inner_mda_name: The name of the class of the inner-MDAs.
             disciplines: The disciplines.
-            sub_coupling_structures: The coupling structures to be used by the sub-MDAs.
+            sub_coupling_structures: The coupling structures to be used by the inner-MDAs.
                 If None, they are created from the sub-disciplines.
-            **sub_mda_options: The options to be used to initialize the sub-MDAs.
+            **inner_mda_options: The options of the inner-MDAs.
         """
         chained_disciplines = []
-        self.sub_mda_list = []
+        self.inner_mda_list = []
 
         if sub_coupling_structures is None:
             sub_coupling_structures = repeat(None)
@@ -179,15 +179,15 @@ class MDAChain(MDA):
 
                     # order the MDA disciplines the same way as the
                     # original disciplines
-                    sub_mda_disciplines = []
+                    inner_mda_disciplines = []
                     for disc in disciplines:
                         if disc in coupled_disciplines:
-                            sub_mda_disciplines.append(disc)
+                            inner_mda_disciplines.append(disc)
 
-                    # create a sub-MDA
-                    sub_mda = create_mda(
-                        sub_mda_class,
-                        sub_mda_disciplines,
+                    # create a inner-MDA
+                    inner_mda = create_mda(
+                        inner_mda_name,
+                        inner_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
                         tolerance=self.tolerance,
                         linear_solver_tolerance=self.linear_solver_tolerance,
@@ -196,17 +196,17 @@ class MDAChain(MDA):
                         linear_solver=self.linear_solver,
                         linear_solver_options=self.linear_solver_options,
                         coupling_structure=next(sub_coupling_structures_iterator),
-                        **sub_mda_options,
+                        **inner_mda_options,
                     )
-                    sub_mda.n_processes = self.n_processes
+                    inner_mda.n_processes = self.n_processes
 
-                    chained_disciplines.append(sub_mda)
-                    self.sub_mda_list.append(sub_mda)
+                    chained_disciplines.append(inner_mda)
+                    self.inner_mda_list.append(inner_mda)
                 else:
                     # single discipline
                     chained_disciplines.append(first_disc)
 
-        # create the MDO chain that sequentially evaluates the sub-MDAs and the
+        # create the MDO chain that sequentially evaluates the inner-MDAs and the
         # single disciplines
         self.mdo_chain = MDOChain(
             chained_disciplines, name="MDA chain", grammar_type=self.grammar_type
@@ -266,8 +266,8 @@ class MDAChain(MDA):
 
     @property
     def normed_residual(self) -> float:
-        """The normed_residuals, computed from the sub-MDAs residuals."""
-        return sum(mda.normed_residual**2 for mda in self.sub_mda_list) ** 0.5
+        """The normed_residuals, computed from the inner-MDAs residuals."""
+        return sum(mda.normed_residual**2 for mda in self.inner_mda_list) ** 0.5
 
     @normed_residual.setter
     def normed_residual(
@@ -277,7 +277,7 @@ class MDAChain(MDA):
         """Set the normed_residual.
 
         Has no effect,
-        since the normed residuals are defined by sub-MDAs residuals
+        since the normed residuals are defined by inner-MDAs residuals
         (see associated property).
 
         Here for compatibility with mother class.
@@ -308,13 +308,13 @@ class MDAChain(MDA):
         filename: str | None = None,
         figsize: tuple[float, float] = (50.0, 10.0),
     ) -> None:
-        for sub_mda in self.sub_mda_list:
+        for inner_mda in self.inner_mda_list:
             if filename is not None:
                 s_filename = split(filename)
                 filename = join(
                     s_filename[0],
-                    f"{sub_mda.__class__.__name__}_{s_filename[1]}",
+                    f"{inner_mda.__class__.__name__}_{s_filename[1]}",
                 )
-            sub_mda.plot_residual_history(
+            inner_mda.plot_residual_history(
                 show, save, n_iterations, logscale, filename, figsize
             )

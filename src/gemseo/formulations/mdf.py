@@ -54,17 +54,19 @@ class MDF(MDOFormulation):
         design_space: DesignSpace,
         maximize_objective: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
-        main_mda_class: str = "MDAChain",
-        sub_mda_class: str = "MDAJacobi",
-        **mda_options: Any,
+        main_mda_name: str = "MDAChain",
+        inner_mda_name: str = "MDAJacobi",
+        **main_mda_options: Any,
     ):
         """
         Args:
-            main_mda_class: The name of the class used for the main MDA,
+            main_mda_name: The name of the class used for the main MDA,
                 typically the :class:`.MDAChain`,
                 but one can force to use :class:`.MDAGaussSeidel` for instance.
-            sub_mda_class: The name of the class used for the sub-MDA.
-            **mda_options: The options passed to the MDA at construction.
+            inner_mda_name: The name of the class used for the inner-MDA of the main
+                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
+            **main_mda_options: The options of the main MDA, which may include
+                those of the inner-MDA.
         """
         super().__init__(
             disciplines,
@@ -74,9 +76,9 @@ class MDF(MDOFormulation):
             grammar_type=grammar_type,
         )
         self.mda = None
-        self._main_mda_class = main_mda_class
+        self._main_mda_name = main_mda_name
         self._mda_factory = MDAFactory()
-        self._instantiate_mda(main_mda_class, sub_mda_class, **mda_options)
+        self._instantiate_mda(main_mda_name, inner_mda_name, **main_mda_options)
         self._update_design_space()
         self._build_objective()
 
@@ -85,21 +87,22 @@ class MDF(MDOFormulation):
 
     def _instantiate_mda(
         self,
-        main_mda_class: str = "MDAChain",
-        sub_mda_class: str = "MDAJacobi",
+        main_mda_name: str = "MDAChain",
+        inner_mda_name: str = "MDAJacobi",
         **mda_options: Any,
     ) -> None:
         """Create the MDA discipline.
 
         Args:
-            main_mda_class: The name of the class of the main MDA.
-            sub_mda_class: The name of the class of the sub-MDA used by the main MDA.
+            main_mda_name: The name of the class of the main MDA.
+            inner_mda_name: The name of the class of the inner-MDA used by the
+                main MDA.
         """
-        if main_mda_class == "MDAChain":
-            mda_options["sub_mda_class"] = sub_mda_class
+        if main_mda_name == "MDAChain":
+            mda_options["inner_mda_name"] = inner_mda_name
 
         self.mda = self._mda_factory.create(
-            main_mda_class,
+            main_mda_name,
             self.disciplines,
             grammar_type=self._grammar_type,
             **mda_options,
@@ -107,20 +110,20 @@ class MDF(MDOFormulation):
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
-        main_mda = options.get("main_mda_class")
+        main_mda = options.get("main_mda_name")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required to deduce the sub options of MDF."
+                "main_mda_name option required to deduce the sub options of MDF."
             )
         factory = MDAFactory().factory
         return factory.get_options_grammar(main_mda)
 
     @classmethod
     def get_default_sub_options_values(cls, **options: str) -> dict:
-        main_mda = options.get("main_mda_class")
+        main_mda = options.get("main_mda_name")
         if main_mda is None:
             raise ValueError(
-                "main_mda_class option required to deduce the sub options of MDF."
+                "main_mda_name option required to deduce the sub options of MDF."
             )
         factory = MDAFactory().factory
         return factory.get_default_options_values(main_mda)

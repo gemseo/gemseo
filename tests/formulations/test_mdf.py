@@ -90,7 +90,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         disc3 = SobieskiAerodynamics()
         disc4 = SobieskiMission()
         disciplines = [disc1, disc2, disc3, disc4]
-        mdf = MDF(disciplines, "y_4", DesignSpace(), sub_mda_class="MDAGaussSeidel")
+        mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
         wkf = mdf.get_expected_workflow()
         self.assertEqual(
             str(wkf),

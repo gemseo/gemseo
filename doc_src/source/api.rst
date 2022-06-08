@@ -244,7 +244,7 @@ For a given :ref:`MDO formulation <mdo_formulations>` named :code:`formulation_n
 .. code::
 
    >>> get_formulation_options_schema("MDF")
-   {'required': ['main_mda_class', 'maximize_objective', 'sub_mda_class'], 'type': 'object', 'properties': {'sub_mda_class': {'type': 'string', 'description': 'the type of MDA  to be used,\nshall be the class name. (default MDAJacobi)\n'}, 'maximize_objective': {'type': 'boolean', 'description': 'if True, the objective function\nis maximized, by default, a minimization is performed\n'}: {'description': 'a path string or a tuple of\nadditional directories to search for MDAs\n'}, 'main_mda_class': {'type': 'string', 'description': 'classname of the main MDA, typically the\nMDAChain,  but one can force to use MDAGaussSeidel for instance\n'}}}
+   {'$schema': 'http://json-schema.org/schema#', 'type': 'object', 'properties': {'maximize_objective': {'description': 'If True, the objective function is maximized.', 'type': 'boolean'}, 'grammar_type': {'description': 'The type of the input and output grammars, either :attr:`.MDODiscipline.JSON_GRAMMAR_TYPE` or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.', 'type': 'string'}, 'main_mda_name': {'description': 'The name of the class used for the main MDA, typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.', 'type': 'string'}, 'inner_mda_name': {'description': 'The name of the class used for the inner-MDA of the main MDA, if any; typically when the main MDA is an :class:`.MDAChain`.', 'type': 'string'}}, 'required': ['grammar_type', 'inner_mda_name', 'main_mda_name', 'maximize_objective']}
 
 - get its list of sub-options by means of the API function  :meth:`~gemseo.api.get_formulation_sub_options_schema` when the :code:`**options` of :code:`formulation_name` are provided in argument;
   if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.
@@ -254,7 +254,7 @@ For a given :ref:`MDO formulation <mdo_formulations>` named :code:`formulation_n
 .. code::
 
    >>> get_formulations_options_defaults("MDF")
-   {'maximize_objective': False, 'main_mda_class': 'MDAChain', 'sub_mda_class': 'MDAJacobi'}
+   {'maximize_objective': False, 'grammar_type': 'JSONGrammar', 'main_mda_name': 'MDAChain', 'inner_mda_name': 'MDAJacobi'}
 
 - get its list of default sub-option values by means of :meth:`~gemseo.api.get_formulations_sub_options_defaults` when the :code:`**options` of :code:`formulation_name` are provided in argument;
   if the argument :code:`output_json` (default: :code:`False`) is set to :code:`True`, this method returns a JSON string, otherwise it returns a dictionary.

@@ -82,7 +82,7 @@ disciplines = create_discipline(
         "SobieskiMission",
     ]
 )
-mda = create_mda("MDAChain", disciplines, sub_mda_class="MDAJacobi")
+mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
 res = mda.execute()
 display_result(res, mda.name)
 mda.plot_residual_history(

@@ -124,7 +124,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`
+            a parallel DOE scenario for a particular `main_mda_name`
             and n_samples.
     """
     obj = generate_parallel_doe_data("MDAJacobi", 7)

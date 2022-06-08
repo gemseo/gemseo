@@ -143,7 +143,7 @@ def test_parallel_doe(generate_parallel_doe_data):
 
     Args:
         generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_class`.
+            a parallel DOE scenario for a particular `main_mda_name`.
     """
     obj = generate_parallel_doe_data("MDAGaussSeidel")
     assert isclose(array([-obj]), array([608.185]), atol=1e-3)
