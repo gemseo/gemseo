@@ -63,6 +63,9 @@ def concatenate_dict_of_arrays_to_array(
     return concatenate([dict_of_arrays[key] for key in names], -1)
 
 
+dict_to_array = concatenate_dict_of_arrays_to_array
+
+
 def split_array_to_dict_of_arrays(
     array: ndarray,
     names_to_sizes: Mapping[str, int],
@@ -137,6 +140,9 @@ def split_array_to_dict_of_arrays(
         first_index += size
 
     return result
+
+
+array_to_dict = split_array_to_dict_of_arrays
 
 
 def update_dict_of_arrays_from_array(
@@ -436,21 +442,3 @@ def __flatten_nested_mapping(
             yield from flatten_nested_dict(value, new_key, separator=separator).items()
         else:
             yield new_key, value
-
-
-# Before v. 3.3 / Since v. 3.3
-# ============================
-# FLAT_JAC_SEP / STRING_SEPARATOR
-# DataConversion.dict_to_array / concatenate_dict_of_arrays_to_array
-# DataConversion.list_of_dict_to_array /
-# DataConversion.array_to_dict / split_array_to_dict_of_arrays
-# DataConversion.jac_2dmat_to_dict / split_array_to_dict_of_arrays
-# DataConversion.jac_3dmat_to_dict / split_array_to_dict_of_arrays
-# DataConversion.dict_jac_to_2dmat /
-# DataConversion.dict_jac_to_dict / flatten_nested_dict
-# DataConversion.flat_jac_name /
-# DataConversion.dict_to_jac_dict / nest_flat_bilevel_dict
-# DataConversion.update_dict_from_array / update_dict_of_arrays_from_array
-# DataConversion.deepcopy_datadict / deepcopy_dict_of_arrays
-# DataConversion.get_all_inputs / get_all_inputs
-# DataConversion.get_all_outputs / get_all_outputs

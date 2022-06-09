@@ -38,7 +38,7 @@ TEST_PARAMETERS = {
     "negative": ({"iteration": -2}, ["RadarChart_negative"]),
     "positive": ({"iteration": 2}, ["RadarChart_positive"]),
     "names": (
-        {"iteration": 2, "constraints_list": ["ineq1", "eq"]},
+        {"iteration": 2, "constraint_names": ["ineq1", "eq"]},
         ["RadarChart_names"],
     ),
     "show_names_radially": ({"show_names_radially": True}, ["RadarChart_radial"]),
@@ -68,7 +68,7 @@ def test_function_error(problem):
             r"stored in the database\."
         ),
     ):
-        post.execute(save=False, show=False, constraints_list=["foo"])
+        post.execute(save=False, show=False, constraint_names=["foo"])
 
 
 def test_iteration_error(problem):
@@ -87,6 +87,6 @@ def test_iteration_error(problem):
         post.execute(
             save=False,
             show=False,
-            constraints_list=problem.get_constraints_names(),
+            constraint_names=problem.get_constraints_names(),
             iteration=1000,
         )

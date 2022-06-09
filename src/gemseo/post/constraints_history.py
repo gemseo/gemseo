@@ -56,21 +56,21 @@ class ConstraintsHistory(OptPostProcessor):
 
     def _plot(
         self,
-        constraints_list: Sequence[str],
+        constraint_names: Sequence[str],
     ) -> None:
         """
         Args:
-            constraints_list: The names of the constraints.
+            constraint_names: The names of the constraints.
 
         Raises:
-            ValueError: If a given element of `constraints_list` is not a
+            ValueError: If a given element of `constraint_names` is not a
                 function.
         """
         # retrieve the constraints values
         add_dv = False
         all_constr_names = self.opt_problem.get_constraints_names()
 
-        for func in list(constraints_list):
+        for func in list(constraint_names):
             if func not in all_constr_names:
                 raise ValueError(
                     "Cannot build constraints history plot, "
@@ -79,7 +79,7 @@ class ConstraintsHistory(OptPostProcessor):
                 )
 
         vals, vname, _ = self.database.get_history_array(
-            constraints_list, add_dv=add_dv
+            constraint_names, add_dv=add_dv
         )
 
         # harmonization of tables format because constraints can be vectorial

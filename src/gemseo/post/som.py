@@ -112,21 +112,21 @@ class SOM(OptPostProcessor):
             n_y: The number of grids in y.
             annotate: If True, add label of neuron value to SOM plot.
         """
-        criteria_list = [
+        criteria = [
             self.opt_problem.get_objective_name()
         ] + self.opt_problem.get_constraints_names()
         all_data = self.database.get_all_data_names()
         # Ensure that the data is available in the database
-        for crit in criteria_list:
-            if crit not in all_data:
-                criteria_list.remove(crit)
+        for criterion in criteria:
+            if criterion not in all_data:
+                criteria.remove(criterion)
         figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
         self.__compute(n_x, n_y)
-        for criteria in criteria_list:
+        for criterion in criteria:
             f_hist, _ = self.database.get_complete_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criteria]
+                ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
@@ -141,40 +141,30 @@ class SOM(OptPostProcessor):
         if (subplot_number % grid_size_x) > 0:
             grid_size_y += 1
 
-        fig_indx = 1
-        for criteria in criteria_list:
+        for index, criterion in enumerate(criteria):
             f_hist, _ = self.database.get_complete_history(
-                ["SOM_i", "SOM_j", "SOM_indx", criteria]
+                ["SOM_i", "SOM_j", "SOM_indx", criterion]
             )
             if isinstance(f_hist[0][3], ndarray):
-                dim_val = f_hist[0][3].size
-                for k in range(dim_val):
-                    f_hist_scalar = []
-                    for f_h in f_hist:
-                        scal_list = f_h[0:3]
-                        scal_list.append(f_h[3][k])
-                        f_hist_scalar.append(scal_list)
-                    criteria_name = criteria + "_" + str(k)
+                for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
-                        f_hist_scalar,
-                        criteria_name,
-                        fig_indx,
+                        [f_h[0:3] + [f_h[3][k]] for f_h in f_hist],
+                        f"{criterion}_{k}",
+                        index + 1,
                         grid_size_x=grid_size_x,
                         grid_size_y=grid_size_y,
                         annotate=annotate,
                     )
-                    fig_indx += 1
 
             else:
                 self.__plot_som_from_scalar_data(
                     f_hist,
-                    criteria,
-                    fig_indx,
+                    criterion,
+                    index + 1,
                     grid_size_x=grid_size_x,
                     grid_size_y=grid_size_y,
                     annotate=annotate,
                 )
-                fig_indx += 1
 
         self._add_figure(figure)
 
@@ -216,7 +206,7 @@ class SOM(OptPostProcessor):
         axe = plt.subplot(grid_size_y, grid_size_x, fig_indx)
         minv = np_min(mat_ij[non_empty])
         maxv = np_max(mat_ij[non_empty])
-        self.out_data_dict[fig_indx] = mat_ij
+        self.materials_for_plotting[fig_indx] = mat_ij
         im1 = axe.imshow(
             mat_ij,
             vmin=minv - 0.01 * abs(minv),
@@ -264,7 +254,7 @@ class SOM(OptPostProcessor):
         som_cluster_index = self.som.project_data(x_vars)
         som_coord = array(self.som.ind_to_xy(som_cluster_index), dtype=int32)
         coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
-        self.out_data_dict["SOM"] = coord_2d_offset
+        self.materials_for_plotting["SOM"] = coord_2d_offset
         for i, x_vars in enumerate(x_history):
             self.database.store(
                 x_vars,

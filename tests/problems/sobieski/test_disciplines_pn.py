@@ -160,14 +160,18 @@ def mda():
 def test_coupling(factor, mda):
     """Check the MDA results of the four disciplines."""
     design_space = create_design_space(physical_naming=True)
-    input_data = compute_input_data(design_space.get_current_x_dict(), factor)
+    input_data = compute_input_data(
+        design_space.get_current_value(as_dict=True), factor
+    )
     mda.execute(input_data)
     y_1 = mda.local_data["y_1"]
     y_2 = mda.local_data["y_2"]
     y_3 = mda.local_data["y_3"]
     y_4 = mda.local_data["range"]
     design_space = create_design_space(physical_naming=False)
-    input_data = compute_input_data(design_space.get_current_x_dict(), factor)
+    input_data = compute_input_data(
+        design_space.get_current_value(as_dict=True), factor
+    )
     original_mda = MDAGaussSeidel(
         [
             SobieskiAerodynamics(),

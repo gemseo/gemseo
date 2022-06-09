@@ -69,7 +69,7 @@ class ScipyGlobalOpt(OptimizationLibrary):
         """
         super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/generated/"
-        self.lib_dict = {
+        self.descriptions = {
             "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
                 algorithm_name="Dual annealing",
                 description="Dual annealing",
@@ -102,8 +102,8 @@ class ScipyGlobalOpt(OptimizationLibrary):
         scipy_version_ok = LooseVersion(scipy.__version__) >= LooseVersion("1.4.0")
         if not scipy_version_ok:
             for algo in ["DIFFERENTIAL_EVOLUTION", "SHGO"]:
-                self.lib_dict[algo].handle_equality_constraints = False
-                self.lib_dict[algo].handle_inequality_constraints = False
+                self.descriptions[algo].handle_equality_constraints = False
+                self.descriptions[algo].handle_inequality_constraints = False
             # Causes overflow due to py2
             self.max_func_calls = 1000000
 

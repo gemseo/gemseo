@@ -81,7 +81,7 @@ def test_require_grad():
     class MyDriver(DriverLib):
         def __init__(self):
             super().__init__()
-            self.lib_dict = {
+            self.descriptions = {
                 "SLSQP": DriverDescription(
                     algorithm_name="SLSQP",
                     internal_algorithm_name="SLSQP",

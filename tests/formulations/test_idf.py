@@ -266,7 +266,7 @@ def test_idf_start_equilibrium():
         "y_32",
         "y_34",
     ]
-    current_couplings = idf.design_space.get_current_x_dict()
+    current_couplings = idf.design_space.get_current_value(as_dict=True)
     ref_couplings = SobieskiProblem().get_default_inputs_equilibrium()
     for coupling_name in coupling_names:
         residual = np.linalg.norm(

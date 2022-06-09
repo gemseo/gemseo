@@ -164,16 +164,15 @@ class MDAJacobi(MDA):
         """
         self.reset_disciplines_statuses()
         if self.n_processes > 1:
-            n_disc = len(self.disciplines)
-            inputs_copy_list = [deepcopy(input_local_data) for _ in range(n_disc)]
-            self.parallel_execution.execute(inputs_copy_list)
+            self.parallel_execution.execute(
+                [deepcopy(input_local_data) for _ in range(len(self.disciplines))]
+            )
         else:
-            for disc in self.disciplines:
-                disc.execute(deepcopy(input_local_data))
+            for discipline in self.disciplines:
+                discipline.execute(deepcopy(input_local_data))
 
-        outputs = [discipline.get_output_data() for discipline in self.disciplines]
-        for data in outputs:
-            self.local_data.update(data)
+        for discipline in self.disciplines:
+            self.local_data.update(discipline.get_output_data())
 
     def get_expected_workflow(self) -> LoopExecSequence:
         sub_workflow = ExecutionSequenceFactory.serial(self.disciplines)

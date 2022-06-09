@@ -228,7 +228,7 @@ def test_pseven_stop_before_gemseo():
 
 def test_pseven_sample_x():
     """Check that the input sample is evaluated."""
-    current_x = Rosenbrock().design_space.get_current_x()
+    current_x = Rosenbrock().design_space.get_current_value()
     sample_x = [array([2.0, -2.0]), array([-2.0, 2.0])]
     problem = Rosenbrock()
     execute_algo(problem, "PSEVEN", sample_x=sample_x, max_iter=3)

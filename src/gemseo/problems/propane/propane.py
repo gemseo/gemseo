@@ -144,8 +144,7 @@ class PropaneReaction(MDODiscipline):
         """Compute the outputs of the propane combustion model."""
         inputs = ["y_1", "y_2", "y_3", "x_shared"]
         y_1, y_2, y_3, x_shared = self.get_inputs_by_name(inputs)
-        f2_list = [self.f_2(x_shared, y_1, y_2, y_3)]
-        f_2 = array(f2_list, dtype=complex128)
+        f_2 = array([self.f_2(x_shared, y_1, y_2, y_3)], dtype=complex128)
         f_6 = array([self.f_6(x_shared, y_1, y_3)], dtype=complex128)
         f_7 = array([self.f_7(x_shared, y_1, y_3)], dtype=complex128)
         f_9 = array([self.f_9(x_shared, y_1, y_3)], dtype=complex128)

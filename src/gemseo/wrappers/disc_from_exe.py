@@ -226,8 +226,8 @@ class DiscFromExe(MDODiscipline):
         self.__check_basepath_on_windows()
 
         self._out_pos = None
-        self._in_dict = None
-        self._out_dict = None
+        self._input_data = None
+        self._output_data = None
         self._in_lines = None
         self._out_lines = None
 
@@ -291,8 +291,8 @@ class DiscFromExe(MDODiscipline):
         with open(self.output_template) as outfile:
             self._out_lines = outfile.readlines()
 
-        self._in_dict, self._in_pos = parse_template(self._in_lines, True)
-        self.input_grammar.update(self._in_dict.keys())
+        self._input_data, self._in_pos = parse_template(self._in_lines, True)
+        self.input_grammar.update(self._input_data.keys())
 
         out_dict, self._out_pos = parse_template(self._out_lines, False)
 
@@ -300,7 +300,7 @@ class DiscFromExe(MDODiscipline):
 
         msg = "Initialize discipline from template. \
                 Input grammar: {}".format(
-            self._in_dict.keys()
+            self._input_data.keys()
         )
         LOGGER.debug(msg)
         msg = "Initialize discipline from template. \
@@ -309,7 +309,7 @@ class DiscFromExe(MDODiscipline):
         )
         LOGGER.debug(msg)
         self.default_inputs = {
-            k: array([literal_eval(v)]) for k, v in self._in_dict.items()
+            k: array([literal_eval(v)]) for k, v in self._input_data.items()
         }
 
     def _run(self) -> None:
@@ -405,16 +405,16 @@ def parse_template(
     """Parse the input or output template.
 
     This function parses the input (or output) template.
-    It returns the tuple (data_dict, pos_dict), where:
+    It returns the tuple (names_to_values, names_to_positions), where:
 
-    - `data_dict` is the `{name:value}` dict:
+    - `names_to_values` is the `{name:value}` dict:
 
        - name is the data name
        - value is the parsed input or output value in the template
 
-    - `pos_dict` describes the template format {data_name:(start,end,line_number)}:
+    - `names_to_positions` describes the template format {name:(start,end,line_number)}:
 
-       - `data_name` is the name of the input data
+       - `name` is the name of the input data
        - `start` is the index of the starting point in the input file template.
          This index is a line index (character number on the line)
        - `end` is the index of the end character in the template
@@ -430,16 +430,16 @@ def parse_template(
     pattern_re = INPUT_REGEX if grammar_is_input else OUTPUT_REGEX
 
     regex = re.compile(pattern_re)  # , re.MULTILINE
-    data_dict = {}
-    pos_dict = {}
+    names_to_values = {}
+    names_to_positions = {}
 
-    for lineid, line in enumerate(template_lines):
+    for line_index, line in enumerate(template_lines):
         for match in regex.finditer(line):
             data = match.groups()[0]
             spl = data.split("::")
             name = spl[0]
             val = spl[1]
-            data_dict[name] = val
+            names_to_values[name] = val
             # When input mode: erase the template value
             if grammar_is_input:
                 start, end = match.start(), match.end()
@@ -449,9 +449,9 @@ def parse_template(
                 start = match.start()
                 end = start + len(val)
 
-            pos_dict[name] = (start, end, lineid)
+            names_to_positions[name] = (start, end, line_index)
 
-    return data_dict, pos_dict
+    return names_to_values, names_to_positions
 
 
 def write_input_file(

@@ -208,7 +208,7 @@ where:
         :rtype: list(MDODiscipline)
         """
         design_space = AerostructureDesignSpace()
-        design_space.set_current_x(design_space.get_current_x().real)
+        design_space.set_current_value(design_space.get_current_value().real)
         sizes = design_space.variables_sizes
         disciplines_scal = []
         for discipline in disciplines:

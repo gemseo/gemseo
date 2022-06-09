@@ -322,11 +322,11 @@ and :code:`print(x1x3_lb, x1x3_ub)` to see the result:
 How to get the current array value of the design parameter vector?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the current value of the design parameters by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_x` method:
+We can get the current value of the design parameters by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_value` method:
 
 .. code::
 
-   current_x = design_space.get_current_x
+   current_x = design_space.get_current_value()
 
 and :code:`print(current_x)` to see the result:
 
@@ -341,7 +341,7 @@ We can get the current value of the design parameters with :code:`dict` format b
 
 .. code::
 
-   dict_current_x = design_space.get_current_x_dict
+   dict_current_x = design_space.get_current_value(as_dict=True)
 
 and :code:`print(dict_current_x)` to see the result:
 
@@ -356,7 +356,7 @@ We can get the normalized current value of the design parameters by means of the
 
 .. code::
 
-   normalized_current_x = design_space.get_current_x_normalized
+   normalized_current_x = design_space.get_current_value(normalize=True)
 
 and :code:`print(normalized_current_x)` to see the result:
 
@@ -367,7 +367,7 @@ and :code:`print(normalized_current_x)` to see the result:
 How to get the active bounds at the current design parameter vector or at a given one?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the active bounds by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_active_bounds` method, either at current parameter values:
+We can get the active bounds by means of the :meth:`.DesignSpace.get_active_bounds` method, either at current parameter values:
 
 .. code::
 
@@ -470,11 +470,11 @@ and :code:`print(design_space)` to see the result:
 How to modify the data values contained in a design space?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can change the current values and bounds contained in a design space by means of the :meth:`.DesignSpace.set_current_x`, :meth:`.DesignSpace.set_current_variable`, :meth:`.DesignSpace.set_lower_bound` and :meth:`.DesignSpace.set_upper_bound` methods:
+We can change the current values and bounds contained in a design space by means of the :meth:`.DesignSpace.set_current_value`, :meth:`.DesignSpace.set_current_variable`, :meth:`.DesignSpace.set_lower_bound` and :meth:`.DesignSpace.set_upper_bound` methods:
 
 .. code::
 
-    design_space.set_current_x(array([1., 1., 1., 1.]))
+    design_space.set_current_value(array([1., 1., 1., 1.]))
     design_space.set_current_variable('x1', array([3.]))
     design_space.set_lower_bound('x1', array([-10.]))
     design_space.set_lower_bound('x2', array([-10.]))
@@ -578,9 +578,9 @@ We can cast the current value to complex by means of the :meth:`.DesignSpace.to_
 
 .. code::
 
-   print(design_space.get_current_x())
+   print(design_space.get_current_value())
    design_space.to_complex()
-   print(design_space.get_current_x())
+   print(design_space.get_current_value())
 
 and the successive printed messages are:
 
@@ -608,11 +608,11 @@ and :code:`print(rounded_vector)` to see the result:
 8. How to test if the current value is defined?
 ***********************************************
 
-We can test if the design parameter set has a current :code:`'value'` by means of the :meth:`.DesignSpace.has_current_x`:
+We can test if the design parameter set has a current :code:`'value'` by means of the :meth:`.DesignSpace.has_current_value`:
 
 .. code::
 
-   print(design_space.has_current_x())
+   print(design_space.has_current_value())
 
 which results in:
 
@@ -622,7 +622,7 @@ which results in:
 
 .. note::
 
-   The result returned by :meth:`.DesignSpace.has_current_x` is :code:`False` as long as at least one component of one variable is :code:`None`.
+   The result returned by :meth:`.DesignSpace.has_current_value` is :code:`False` as long as at least one component of one variable is :code:`None`.
 
 9. How to project a point into bounds?
 **************************************

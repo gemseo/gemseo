@@ -56,7 +56,7 @@ class DisciplinaryOpt(MDOFormulation):
         if len(disciplines) > 1:
             self.chain = MDOChain(disciplines, grammar_type=grammar_type)
         self._filter_design_space()
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
         # Build the objective from its objective name
         self._build_objective_from_disc(objective_name)
 

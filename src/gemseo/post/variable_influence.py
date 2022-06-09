@@ -72,33 +72,34 @@ class VariableInfluence(OptPostProcessor):
         x_0 = self.database.get_x_by_iter(0)
         if log_scale:
             absolute_value = True
-        sens_dict = {}
+
+        names_to_sensitivities = {}
         for func in all_funcs:
-            func_gradient = self.database.get_gradient_name(func)
-            grad = self.database.get_f_of_x(func_gradient, x_0)
+            grad = self.database.get_f_of_x(self.database.get_gradient_name(func), x_0)
             f_0 = self.database.get_f_of_x(func, x_0)
             f_opt = self.database.get_f_of_x(func, x_opt)
             if grad is not None:
                 if len(grad.shape) == 1:
-                    sens = grad * (x_opt - x_0)
-                    delta_corr = (f_opt - f_0) / sens.sum()
-                    sens *= delta_corr
+                    sensitivity = grad * (x_opt - x_0)
+                    delta_corr = (f_opt - f_0) / sensitivity.sum()
+                    sensitivity *= delta_corr
                     if absolute_value:
-                        sens = absolute(sens)
-                    sens_dict[func] = sens
+                        sensitivity = absolute(sensitivity)
+                    names_to_sensitivities[func] = sensitivity
                 else:
-                    n_f, _ = grad.shape
-                    for i in range(n_f):
-                        sens = grad[i, :] * (x_opt - x_0)
-                        delta_corr = (f_opt - f_0)[i] / sens.sum()
-                        sens *= delta_corr
+                    for i in range(grad.shape[0]):
+                        sensitivity = grad[i, :] * (x_opt - x_0)
+                        delta_corr = (f_opt - f_0)[i] / sensitivity.sum()
+                        sensitivity *= delta_corr
                         if absolute_value:
-                            sens = absolute(sens)
-                        sens_dict[f"{func}_{i}"] = sens
+                            sensitivity = absolute(sensitivity)
+                        names_to_sensitivities[f"{func}_{i}"] = sensitivity
 
-        fig = self.__generate_subplots(sens_dict, quantile, log_scale, save_var_files)
-
-        self._add_figure(fig)
+        self._add_figure(
+            self.__generate_subplots(
+                names_to_sensitivities, quantile, log_scale, save_var_files
+            )
+        )
 
     def __get_quantile(
         self,
@@ -155,7 +156,7 @@ class VariableInfluence(OptPostProcessor):
 
     def __generate_subplots(
         self,
-        sens_dict: Mapping[str, ndarray],
+        names_to_sensitivities: Mapping[str, ndarray],
         quantile: float = 0.99,
         log_scale: bool = False,
         save_var_files: bool = False,
@@ -163,26 +164,29 @@ class VariableInfluence(OptPostProcessor):
         """Generate the gradients subplots from the data.
 
         Args:
-            sens_dict: The sensors to plot.
-            save_var_files: If True, save the influent variables indices in a NumPy file.
+            names_to_sensitivities: The sensors to plot.
+            save_var_files: If True,
+                save the influential variables indices in a NumPy file.
 
         Returns:
             The gradients subplots.
 
         Raises:
-            ValueError: If the `sens_dict` is empty.
+            ValueError: If the `names_to_sensitivities` is empty.
         """
-        n_funcs = len(sens_dict)
+        n_funcs = len(names_to_sensitivities)
         if n_funcs == 0:
-            raise ValueError("No gradients to plot at current iteration!")
+            raise ValueError("No gradients to plot at current iteration.")
 
         nrows = n_funcs // 2
         if 2 * nrows < n_funcs:
             nrows += 1
+
         if n_funcs > 1:
             ncols = 2
         else:
             ncols = 1
+
         fig, axes = pyplot.subplots(
             nrows=nrows,
             ncols=ncols,
@@ -200,9 +204,9 @@ class VariableInfluence(OptPostProcessor):
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
         # because the problem dimension is not updated when the history is filtered.
-        abscissas = range(len(tuple(sens_dict.values())[0]))
+        abscissas = range(len(tuple(names_to_sensitivities.values())[0]))
 
-        for func, sens in sorted(sens_dict.items()):
+        for func, sens in sorted(names_to_sensitivities.items()):
             j += 1
             if j == ncols:
                 j = 0
@@ -239,7 +243,7 @@ class VariableInfluence(OptPostProcessor):
                 pyplot.setp(vis_xlabels, visible=False)
                 pyplot.setp(vis_xlabels[::frac_xlabels], visible=True)
 
-        if len(sens_dict) < n_subplots:
+        if len(names_to_sensitivities) < n_subplots:
             # xlabel must be written with the same fontsize on the 2 columns
             j += 1
             axe = axes[i][j]
@@ -247,6 +251,6 @@ class VariableInfluence(OptPostProcessor):
             axe.set_xticks(abscissas)
 
         fig.suptitle(
-            "Partial variation of the functions " + "wrt design variables", fontsize=14
+            "Partial variation of the functions wrt design variables", fontsize=14
         )
         return fig

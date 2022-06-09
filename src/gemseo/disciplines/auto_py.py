@@ -308,18 +308,18 @@ class AutoDiscDataProcessor(DataProcessor):
 
 
 def to_arrays_dict(
-    in_dict: Mapping[str, DataType],
+    data: Mapping[str, DataType],
 ) -> Mapping[str, ndarray]:
     """Ensure that the values of a dictionary are NumPy arrays.
 
     Args:
-        in_dict: The dictionary whose values must be NumPy arrays.
+        data: The dictionary whose values must be NumPy arrays.
 
     Returns:
         The dictionary with NumPy arrays as values.
     """
-    for output_name, output_value in in_dict.items():
-        if not isinstance(output_value, ndarray):
-            in_dict[output_name] = array([output_value])
+    for key, value in data.items():
+        if not isinstance(value, ndarray):
+            data[key] = array([value])
 
-    return in_dict
+    return data

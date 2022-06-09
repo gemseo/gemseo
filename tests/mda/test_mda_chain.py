@@ -235,8 +235,8 @@ def test_simple_grammar_type(in_gtype):
 
     assert type(mda.input_grammar) == SimpleGrammar
     assert type(mda.mdo_chain.input_grammar) == SimpleGrammar
-    for smda in mda.inner_mda_list:
-        assert type(smda.input_grammar) == SimpleGrammar
+    for inner_mda in mda.inner_mdas:
+        assert type(inner_mda.input_grammar) == SimpleGrammar
 
 
 def test_mix_sim_jsongrammar(sellar_disciplines):
@@ -284,7 +284,7 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode):
         inputs=["x"], outputs=["obj"], linearization_mode=linearization_mode
     )
 
-    assert mda.normed_residual == mda.inner_mda_list[0].normed_residual
+    assert mda.normed_residual == mda.inner_mdas[0].normed_residual
 
 
 def test_no_coupling_jac():
@@ -313,12 +313,12 @@ def test_sub_coupling_structures(sellar_disciplines):
 def test_log_convergence(sellar_disciplines):
     mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.log_convergence
-    for mda in mda_chain.inner_mda_list:
+    for mda in mda_chain.inner_mdas:
         assert not mda.log_convergence
 
     mda_chain.log_convergence = True
     assert mda_chain.log_convergence
-    for mda in mda_chain.inner_mda_list:
+    for mda in mda_chain.inner_mdas:
         assert mda.log_convergence
 
 

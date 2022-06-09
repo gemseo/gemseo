@@ -132,7 +132,7 @@ class Nlopt(OptimizationLibrary):
         super().__init__()
 
         nlopt_doc = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
-        self.lib_dict = {
+        self.descriptions = {
             "NLOPT_MMA": NLoptAlgorithmDescription(
                 algorithm_name="MMA",
                 description=(
@@ -330,7 +330,7 @@ class Nlopt(OptimizationLibrary):
             Returns:
                 The result of evaluating the function for a given constraint.
             """
-            if self.lib_dict[self.algo_name].require_gradient:
+            if self.descriptions[self.algo_name].require_gradient:
                 if grad.size > 0:
                     cstr_jac = jac(xn_vect)
                     grad[:] = atleast_2d(cstr_jac)[

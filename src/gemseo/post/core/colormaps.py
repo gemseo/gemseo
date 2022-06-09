@@ -1151,11 +1151,9 @@ for (name, data) in (
     ("viridis", VIRIDIS_DATA),
     ("parula", PARULA_DATA),
 ):
-
     CMAPS[name] = ListedColormap(data, name=name)
 
-cmaps_from_list = LinearSegmentedColormap.from_list
-CMAPS["rg_seismic"] = cmaps_from_list(
+CMAPS["rg_seismic"] = LinearSegmentedColormap.from_list(
     "rg_seismic", RG_SEISMIC_DATA, mpl.rcParams["image.lut"]
 )
 MAGMA = CMAPS["magma"]

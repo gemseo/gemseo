@@ -224,20 +224,19 @@ class MDOChain(MDODiscipline):
 
     @staticmethod
     def copy_jacs(
-        jac_dict: dict[str, dict[str, ndarray]],
+        jacobian: dict[str, dict[str, ndarray]],
     ) -> dict[str, dict[str, ndarray]]:
         """Deepcopy a Jacobian dictionary.
 
         Args:
-            jac_dict: The Jacobian dictionary,
+            jacobian: The Jacobian dictionary,
                 which is a nested dictionary as ``{'out': {'in': derivatives}}``.
 
         Returns:
             The deepcopy of the Jacobian dictionary.
         """
         jacobian_copy = {}
-
-        for output_name, output_jacobian in jac_dict.items():
+        for output_name, output_jacobian in jacobian.items():
             if isinstance(output_jacobian, dict):
                 output_jacobian_copy = {}
                 jacobian_copy[output_name] = output_jacobian_copy
@@ -245,6 +244,7 @@ class MDOChain(MDODiscipline):
                     output_jacobian_copy[input_name] = derivatives.copy()
             elif isinstance(output_jacobian, ndarray):
                 jacobian_copy[output_name] = output_jacobian.copy()
+
         return jacobian_copy
 
     def reset_statuses_for_run(self) -> None:  # noqa: D102
@@ -343,7 +343,7 @@ class MDOParallelChain(MDODiscipline):
                 if disc_input_name in input_names:
                     self.default_inputs[disc_input_name] = disc_input_value
 
-    def _get_inputs_list(self) -> list[dict[str, ndarray]]:
+    def _get_input_data_copies(self) -> list[dict[str, ndarray]]:
         """Return copies of the input data, one per discipline.
 
         Returns:
@@ -356,16 +356,16 @@ class MDOParallelChain(MDODiscipline):
         return [deepcopy(self.local_data) for _ in range(len(self.disciplines))]
 
     def _run(self) -> None:
-        input_data_copies = self._get_inputs_list()
-        self.parallel_execution.execute(input_data_copies)
+        self.parallel_execution.execute(self._get_input_data_copies())
 
         # Update data according to input order of priority
         for discipline in self.disciplines:
-            output_data = {
-                output_name: discipline.local_data[output_name]
-                for output_name in discipline.get_output_data_names()
-            }
-            self.local_data.update(output_data)
+            self.local_data.update(
+                {
+                    output_name: discipline.local_data[output_name]
+                    for output_name in discipline.get_output_data_names()
+                }
+            )
 
     def _compute_jacobian(
         self,
@@ -374,8 +374,7 @@ class MDOParallelChain(MDODiscipline):
     ) -> None:
         self._set_disciplines_diff_outputs(outputs)
         self._set_disciplines_diff_inputs(inputs)
-        input_data_copies = self._get_inputs_list()
-        jacobians = self.parallel_lin.execute(input_data_copies)
+        jacobians = self.parallel_lin.execute(self._get_input_data_copies())
         self.jac = {}
         # Update jacobians according to input order of priority
         for discipline_jacobian in jacobians:

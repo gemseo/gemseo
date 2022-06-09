@@ -121,7 +121,9 @@ def test_variables_bounds(p7_problem, index, bounds):
 )
 def test_initial_guess(p7_problem, problem):
     """Check the initial guess."""
-    assert p7_problem.initial_guess() == problem.design_space.get_current_x().tolist()
+    assert (
+        p7_problem.initial_guess() == problem.design_space.get_current_value().tolist()
+    )
 
 
 @pytest.mark.parametrize("p7_problem", ["Rosenbrock", "Power2"], indirect=True)

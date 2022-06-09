@@ -455,9 +455,9 @@ class TMScalableStudy:
             mdo_chain_exec_time = mda.mdo_chain.exec_time
             mdo_chain_nc = mda.mdo_chain.n_calls
             mdo_chain_ncl = mda.mdo_chain.n_calls_linearize
-            sub_mda_exec_time = mda.inner_mda_list[0].exec_time
-            sub_mda_nc = mda.inner_mda_list[0].n_calls
-            sub_mda_ncl = mda.inner_mda_list[0].n_calls_linearize
+            sub_mda_exec_time = mda.inner_mdas[0].exec_time
+            sub_mda_nc = mda.inner_mdas[0].n_calls
+            sub_mda_ncl = mda.inner_mdas[0].n_calls_linearize
         else:
             mda_exec_time = 0.0
             mda_nc = 0

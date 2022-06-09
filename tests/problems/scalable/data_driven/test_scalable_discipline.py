@@ -227,7 +227,7 @@ class ScalableProblem(unittest.TestCase):
 
         opt_pb.preprocess_functions()
         for func in opt_pb.get_all_functions():
-            func.check_grad(opt_pb.design_space.get_current_x())
+            func.check_grad(opt_pb.design_space.get_current_value())
 
     def test_grad(self):
         """Verify the analytical gradients against finite differences."""

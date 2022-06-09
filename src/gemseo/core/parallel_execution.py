@@ -82,7 +82,7 @@ class ParallelExecution:
 
     def __init__(
         self,
-        worker_list: ParallelExecutionWorkerType,
+        workers: ParallelExecutionWorkerType,
         n_processes: int = N_CPUS,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
@@ -90,7 +90,7 @@ class ParallelExecution:
     ) -> None:
         """
         Args:
-            worker_list: The objects that perform the tasks.
+            workers: The objects that perform the tasks.
                 Either pass one worker, and it will be forked in multiprocessing.
                 Or, when using multithreading or different workers, pass one worker
                 per input data.
@@ -109,10 +109,10 @@ class ParallelExecution:
                 workers are caught and the execution is allowed to continue.
 
         Raises:
-            ValueError: If there are duplicated workers in `worker_list` when
+            ValueError: If there are duplicated workers in `workers` when
                 using multithreading.
         """
-        self.worker_list = worker_list
+        self.workers = workers
         self.n_processes = n_processes
         self.use_threading = use_threading
         if exceptions_to_re_raise is None:
@@ -121,14 +121,14 @@ class ParallelExecution:
             self.__exceptions_to_re_raise = exceptions_to_re_raise
 
         if use_threading:
-            ids = {id(worker) for worker in worker_list}
-            if len(ids) != len(worker_list):
+            ids = {id(worker) for worker in workers}
+            if len(ids) != len(workers):
                 raise ValueError(
                     "When using multithreading, all workers"
                     " shall be different objects !"
                 )
         self.wait_time_between_fork = wait_time_between_fork
-        self.input_data_list = None
+        self.input_values = None
 
     def _run_task_by_index(self, task_index: int) -> tuple[int, Any]:
         """Run a task from an index of discipline and the input local data.
@@ -136,18 +136,18 @@ class ParallelExecution:
         The purpose is to be used by multiprocessing queues as a task.
 
         Args:
-            task_index: The index of the task among `self.worker_list`.
+            task_index: The index of the task among `self.workers`.
 
         Returns:
             The task index and the output of its computation.
         """
-        input_loc = self.input_data_list[task_index]
-        if ParallelExecution._is_worker(self.worker_list):
-            worker = self.worker_list
-        elif len(self.worker_list) > 1:
-            worker = self.worker_list[task_index]
+        input_loc = self.input_values[task_index]
+        if ParallelExecution._is_worker(self.workers):
+            worker = self.workers
+        elif len(self.workers) > 1:
+            worker = self.workers[task_index]
         else:
-            worker = self.worker_list[0]
+            worker = self.workers[0]
 
         # return the worker index to order the outputs properly
         output = self._run_task(worker, input_loc)
@@ -155,18 +155,18 @@ class ParallelExecution:
 
     def execute(
         self,
-        input_data_list: Sequence[ndarray] | ndarray,
+        input_values: Sequence[ndarray] | ndarray,
         exec_callback: Callable[[int, Any], Any] | None = None,
         task_submitted_callback: Callable | None = None,
     ) -> dict[int, Any]:
         """Execute all the processes.
 
         Args:
-            input_data_list: The input values.
+            input_values: The input values.
             exec_callback: A callback function called with the
                 pair (index, outputs) as arguments when an item is retrieved
                 from the processing. Index is the associated index
-                in input_data_list of the input used to compute the outputs.
+                in input_values of the input used to compute the outputs.
                 If None, no function is called.
             task_submitted_callback: A callback function called when all the
                 tasks are submitted, but not done yet. If None, no function
@@ -180,8 +180,8 @@ class ParallelExecution:
                 If the `task_submitted_callback` is not callable.
         """
 
-        n_tasks = len(input_data_list)
-        self.input_data_list = input_data_list
+        n_tasks = len(input_values)
+        self.input_values = input_values
 
         if exec_callback is not None and not callable(exec_callback):
             raise TypeError("exec_callback function must be callable !")
@@ -190,7 +190,7 @@ class ParallelExecution:
             if not callable(task_submitted_callback):
                 raise TypeError("task_submitted_callback function must be callable !")
 
-        tasks_list = list(range(n_tasks))[::-1]
+        tasks = list(range(n_tasks))[::-1]
         # Queue for workers
         if self.use_threading:
             queue_in = queue.Queue()
@@ -199,7 +199,7 @@ class ParallelExecution:
             mananger = mp.Manager()
             queue_in = mananger.Queue()
             queue_out = mananger.Queue()
-            tasks_list = mananger.list(tasks_list)
+            tasks = mananger.list(tasks)
         processes = []
 
         if self.use_threading:
@@ -226,11 +226,11 @@ class ParallelExecution:
 
         if mp.current_process().name != SUBPROCESS_NAME or self.use_threading:
             # fill input queue
-            while tasks_list:
+            while tasks:
                 # if not self.use_threading:
                 #    lock.acquire()
-                task_indx = tasks_list[-1]
-                del tasks_list[-1]
+                task_indx = tasks[-1]
+                del tasks[-1]
                 # delay the next processes execution after the first one
                 if self.wait_time_between_fork > 0 and task_indx > 0:
                     time.sleep(self.wait_time_between_fork)
@@ -358,13 +358,13 @@ class DiscParallelExecution(ParallelExecution):
             ordered_outputs: The outputs, map of _run_task
                 over inputs_list.
         """
-        if not isinstance(self.worker_list, Iterable) or not len(
-            self.worker_list
-        ) == len(self.input_data_list):
+        if not isinstance(self.workers, Iterable) or not len(self.workers) == len(
+            self.input_values
+        ):
             if IS_WIN and not self.use_threading:
-                self.worker_list.n_calls += len(self.input_data_list)
+                self.workers.n_calls += len(self.input_values)
             return
-        for disc, output in zip(self.worker_list, ordered_outputs):
+        for disc, output in zip(self.workers, ordered_outputs):
             # Update discipline local data
             disc.local_data = output
 
@@ -382,17 +382,17 @@ class DiscParallelLinearization(ParallelExecution):
             ordered_outputs: The outputs, map of _run_task
                 over inputs_list.
         """
-        if not isinstance(self.worker_list, Iterable) or not len(
-            self.worker_list
-        ) == len(self.input_data_list):
+        if not isinstance(self.workers, Iterable) or not len(self.workers) == len(
+            self.input_values
+        ):
             if IS_WIN and not self.use_threading:
                 # Only increase the number of calls if the Jacobian was computed.
                 if ordered_outputs[0][0]:
-                    self.worker_list.n_calls += len(self.input_data_list)
-                    self.worker_list.n_calls_linearize += len(self.input_data_list)
+                    self.workers.n_calls += len(self.input_values)
+                    self.workers.n_calls_linearize += len(self.input_values)
             return
 
-        for disc, output in zip(self.worker_list, ordered_outputs):
+        for disc, output in zip(self.workers, ordered_outputs):
             # Update discipline jacobian
             disc.jac = output[1]
             # Update discipline local data in case of execution

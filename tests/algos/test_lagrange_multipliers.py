@@ -66,7 +66,7 @@ def test_lagrange_solutionisnone(problem):
 def test_lagrange_pow2_too_many_acts(problem, upper_bound):
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
     if upper_bound:
-        problem.design_space.set_current_x(array([0.5, 0.9, -0.5]))
+        problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
         problem.design_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
 
     OptimizersFactory().execute(
@@ -95,7 +95,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol):
     def obj(lb):
         problem = Power2()
         dspace = problem.design_space
-        dspace.set_current_x(array([1.0, 0.9, 1.0]))
+        dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
         OptimizersFactory().execute(problem, "NLOPT_SLSQP", **options)
         return problem.solution.f_opt

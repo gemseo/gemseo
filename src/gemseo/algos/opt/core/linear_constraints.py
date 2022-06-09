@@ -47,20 +47,22 @@ def build_constraints_matrices(constraints, constraint_type):
         )
 
     # Filter the constraints to consider
-    cstr_list = [cstr for cstr in constraints if cstr.f_type == constraint_type]
-    if not cstr_list:
+    constraints = [
+        constraint for constraint in constraints if constraint.f_type == constraint_type
+    ]
+    if not constraints:
         return None, None
 
     # Check that the constraint are linear
-    for cstr in cstr_list:
-        if not isinstance(cstr, MDOLinearFunction):
+    for constraint in constraints:
+        if not isinstance(constraint, MDOLinearFunction):
             raise TypeError(
-                f'The constraint "{cstr.name}" is not an MDOLinearFunction.'
+                f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
             )
 
     # Build the constraints matrices
-    lhs_matrix = vstack([cstr.coefficients for cstr in cstr_list])
-    rhs_vector = hstack([-cstr.value_at_zero for cstr in cstr_list])
+    lhs_matrix = vstack([constraint.coefficients for constraint in constraints])
+    rhs_vector = hstack([-constraint.value_at_zero for constraint in constraints])
 
     return lhs_matrix, rhs_vector
 

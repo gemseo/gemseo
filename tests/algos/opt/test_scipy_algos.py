@@ -70,15 +70,15 @@ class TestScipy(TestCase):
 
         self.assertFalse(
             opt_library.is_algorithm_suited(
-                opt_library.lib_dict["TNC"], opt_library.problem
+                opt_library.descriptions["TNC"], opt_library.problem
             )
         )
 
         opt_library.problem.pb_type = OptimizationProblem.NON_LINEAR_PB
-        opt_library.lib_dict["SLSQP"].problem_type = OptimizationProblem.LINEAR_PB
+        opt_library.descriptions["SLSQP"].problem_type = OptimizationProblem.LINEAR_PB
         self.assertFalse(
             opt_library.is_algorithm_suited(
-                opt_library.lib_dict["SLSQP"], opt_library.problem
+                opt_library.descriptions["SLSQP"], opt_library.problem
             )
         )
 

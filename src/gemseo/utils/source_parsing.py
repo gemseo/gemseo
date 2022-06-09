@@ -85,8 +85,8 @@ def parse_rest(
     """
     pattern = r":param ([\*\w]+): (.*?)(?:(?=:param)|(?=:return)|\Z)"
     param_re = re.compile(pattern, re.S)
-    doc_list = param_re.findall(docstring)
-    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in doc_list}
+    strings = param_re.findall(docstring)
+    parsed_doc = {txt[0]: txt[1].replace(" " * 4, "").rstrip("\n") for txt in strings}
     parsed_doc = {
         name: description.replace("  ", " ").replace("\n", " ").replace("  ", "\n\n")
         for name, description in parsed_doc.items()

@@ -79,7 +79,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         :returns: a dictionary of all statuses, keys are the atom ids
         :rtype: dict
         """
-        return self.workflow.get_state_dict()
+        return self.workflow.get_statuses()
 
     def __str__(self):
         """Returns the string representation of the workflow.

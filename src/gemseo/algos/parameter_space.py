@@ -497,9 +497,10 @@ class ParameterSpace(DesignSpace):
     def __unnormalize_vect(self, x_vect, no_check):
         data_names = self.variables_names
         data_sizes = self.variables_sizes
-        dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
-        x_u = self.evaluate_cdf(dict_sample, inverse=True)
+        x_u = self.evaluate_cdf(
+            split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
+        )
         x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
         missing_names = [name for name in data_names if name not in x_u]
         for name in missing_names:
@@ -621,7 +622,7 @@ class ParameterSpace(DesignSpace):
             deterministic_space.add_variable(
                 name, self.get_size(name), self.get_type(name)
             )
-            value = self._current_x.get(name)
+            value = self._current_value.get(name)
             if value is not None:
                 deterministic_space.set_current_variable(name, value)
             deterministic_space.set_lower_bound(name, self.get_lower_bound(name))
@@ -694,7 +695,7 @@ class ParameterSpace(DesignSpace):
                 var_type=self.get_type(name),
                 l_b=self.get_lower_bound(name),
                 u_b=self.get_upper_bound(name),
-                value=self.get_current_x([name]),
+                value=self.get_current_value([name]),
             )
         return design_space
 
@@ -713,7 +714,7 @@ class ParameterSpace(DesignSpace):
             )
         else:
             try:
-                value = self.get_current_x([name])
+                value = self.get_current_value([name])
             except KeyError:
                 value = None
 

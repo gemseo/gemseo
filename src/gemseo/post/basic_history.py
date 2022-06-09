@@ -38,11 +38,11 @@ class BasicHistory(OptPostProcessor):
 
     def _plot(
         self,
-        data_list: Sequence[str],
+        variable_names: Sequence[str],
     ) -> None:
         """
         Args:
-            data_list: The names of the variables.
+            variable_names: The names of the variables.
         """
         dataset = self.opt_problem.export_to_dataset(
             "OptimizationProblem", opt_naming=False, by_group=False
@@ -53,6 +53,6 @@ class BasicHistory(OptPostProcessor):
         plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
-        figures = plot.execute(save=False, show=False, variables=data_list)
+        figures = plot.execute(save=False, show=False, variables=variable_names)
         for figure in figures:
             self._add_figure(figure)

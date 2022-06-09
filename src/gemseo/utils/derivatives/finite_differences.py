@@ -239,17 +239,17 @@ class FirstOrderFD(GradientApproximator):
                 """Call the function without explicitly passed arguments."""
                 return self.f_pointer(xval, **kwargs)
 
-            function_list = [func_noargs] * (n_dim + 1)
-            parallel_execution = ParallelExecution(function_list, **self._par_args)
+            functions = [func_noargs] * (n_dim + 1)
+            parallel_execution = ParallelExecution(functions, **self._par_args)
 
             all_x = [x_vect] + [x_p_arr[:, i] for i in range(n_dim)]
             all_x += [x_m_arr[:, i] for i in range(n_dim)]
-            output_list = parallel_execution.execute(all_x)
+            outputs = parallel_execution.execute(all_x)
 
-            f_0 = output_list[0]
+            f_0 = outputs[0]
             for i in range(n_dim):
-                f_p = output_list[i + 1]
-                f_m = output_list[n_dim + i + 1]
+                f_p = outputs[i + 1]
+                f_m = outputs[n_dim + i + 1]
                 errs, opt_step = comp_step(
                     f_p, f_0, f_m, numerical_error=numerical_error
                 )

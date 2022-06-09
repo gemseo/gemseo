@@ -98,7 +98,7 @@ class TestAerostructure(unittest.TestCase):
         """Evaluate objective function."""
         mission = Mission()
         design_space = AerostructureDesignSpace()
-        indata = design_space.get_current_x_dict()
+        indata = design_space.get_current_value(as_dict=True)
         indata["lift"] = np.array([exp(-11)])
         indata["mass"] = np.array([exp(1)])
         indata["drag"] = np.array([1])
@@ -223,7 +223,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         # run the optimizer
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt
-        xopt = scenario.design_space.get_current_x_dict()
+        xopt = scenario.design_space.get_current_value(as_dict=True)
         sweep = xopt["sweep"]
         thick_airfoils = xopt["thick_airfoils"]
         thick_panels = xopt["thick_panels"]

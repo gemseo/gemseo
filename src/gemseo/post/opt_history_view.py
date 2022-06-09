@@ -180,49 +180,48 @@ class OptHistoryView(OptPostProcessor):
 
         if variables_names is not None:
             # select only the interesting columns
-            block_list = []
+            blocks = []
             column = 0
             for var in self.opt_problem.design_space.variables_names:
                 if var in variables_names:
                     size = self.opt_problem.design_space.variables_sizes[var]
-                    block_list.append(x_hist[:, column : column + size])
+                    blocks.append(x_hist[:, column : column + size])
                     column += size
             # concatenate the blocks
-            x_hist = hstack(block_list)
-        n_iter = x_hist.shape[0]
-        return f_hist, x_hist, n_iter
+            x_hist = hstack(blocks)
+
+        return f_hist, x_hist, x_hist.shape[0]
 
     def _get_constraints(
         self,
-        cstr_names: Iterable[str],
+        constraint_names: Iterable[str],
     ) -> tuple[ndarray, list[ndarray]]:
         """Extract a history of constraints.
 
         Args:
-            cstr_names: The names of the constraints.
+            constraint_names: The names of the constraints.
 
         Returns:
             The bounds of the constraints and history array.
         """
         available_data_names = self.database.get_all_data_names()
-        for cstr_name in cstr_names:
-            if cstr_name not in available_data_names:
-                cstr_names.remove(cstr_name)
+        for constraint_name in constraint_names:
+            if constraint_name not in available_data_names:
+                constraint_names.remove(constraint_name)
 
         constraints_history = []
-        bnd_list = full(len(cstr_names), sys.float_info.min)
-
-        for cstr_i, cstr_name in enumerate(cstr_names):
-
-            cstr_history = array(self.database.get_func_history(cstr_name)).real
-
-            constraints_history.append(cstr_history)
-            bnd_list[cstr_i] = max(
-                bnd_list[cstr_i],
-                max(abs(np_min(cstr_history)), abs(np_max(cstr_history))),
+        bounds = full(len(constraint_names), sys.float_info.min)
+        for constraint_index, constraint_name in enumerate(constraint_names):
+            constraint_history = array(
+                self.database.get_func_history(constraint_name)
+            ).real
+            constraints_history.append(constraint_history)
+            bounds[constraint_index] = max(
+                bounds[constraint_index],
+                max(abs(np_min(constraint_history)), abs(np_max(constraint_history))),
             )
 
-        return bnd_list, constraints_history
+        return bounds, constraints_history
 
     def _normalize_x_hist(
         self,

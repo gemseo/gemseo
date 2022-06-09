@@ -101,7 +101,7 @@ class PSevenOpt(OptimizationLibrary):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.lib_dict = {
+        self.descriptions = {
             "PSEVEN": PSevenAlgorithmDescription(
                 algorithm_name="PSEVEN",
                 description="pSeven's Generic Tool for Optimization (GTOpt).",
@@ -343,22 +343,22 @@ class PSevenOpt(OptimizationLibrary):
         options: MutableMapping[str, Any],
     ) -> None:
         """Get the pSeven techniques from the options."""
-        techniques_list = list()
-        internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
+        technique_names = list()
+        internal_algo_name = self.descriptions[self.algo_name].internal_algorithm_name
 
         if internal_algo_name in self.__LOCAL_METHODS:
-            techniques_list.append(internal_algo_name)
+            technique_names.append(internal_algo_name)
 
         globalization_method = options.pop("globalization_method", None)
         if globalization_method is not None:
-            techniques_list.append(globalization_method)
+            technique_names.append(globalization_method)
 
         surrogate_based = options.pop("surrogate_based", None)
         if surrogate_based is not None and surrogate_based:
-            techniques_list.append(self.__SBO)
+            technique_names.append(self.__SBO)
 
-        if techniques_list:
-            options["GTOpt/Techniques"] = "[" + ", ".join(techniques_list) + "]"
+        if technique_names:
+            options["GTOpt/Techniques"] = "[" + ", ".join(technique_names) + "]"
 
     def _run(self, **options: Any) -> OptimizationResult:
         """Run the algorithm.

@@ -117,7 +117,7 @@ class IDF(MDOFormulation):
 
         The values at equilibrium are set in the initial design space.
         """
-        current_x = self.design_space.get_current_x_dict()
+        current_x = self.design_space.get_current_value(as_dict=True)
         # run MDA to initialize target coupling variables
         mda = MDAChain(self.disciplines)
         res = mda.execute(current_x)
@@ -142,7 +142,7 @@ class IDF(MDOFormulation):
                 "IDF formulation needs coupling variables as design variables, "
                 "missing variables: %s" % missing
             )
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
 
     def get_top_level_disc(self) -> list[MDODiscipline]:
         # All functions and constraints are built from the top level disc

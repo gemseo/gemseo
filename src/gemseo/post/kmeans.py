@@ -81,4 +81,4 @@ class KMeans(OptPostProcessor):
         y_pred = algorithm.labels_.astype(np_int)
         for x_vars, y_vars in zip(x_history, y_pred):
             self.database.store(x_vars, {"KM_cluster": int(y_vars)})
-            self.out_data_dict[tuple(x_vars.real)] = y_vars
+            self.materials_for_plotting[tuple(x_vars.real)] = y_vars

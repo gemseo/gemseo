@@ -375,11 +375,17 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
                     LOGGER.error(traceback.format_exc())
 
     @staticmethod
-    def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem according to its algo dict.
+    def is_algorithm_suited(
+        algorithm_description: DOEAlgorithmDescription, problem: OptimizationProblem
+    ) -> bool:
+        """Check if the algorithm is suited to the problem according to its description.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
         return True
 

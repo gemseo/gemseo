@@ -94,7 +94,7 @@ class MDAChain(MDA):
         self.n_processes = n_processes
         self.mdo_chain = None
         self._chain_linearize = chain_linearize
-        self.inner_mda_list = []
+        self.inner_mdas = []
 
         # compute execution sequence of the disciplines
         super().__init__(
@@ -129,8 +129,8 @@ class MDAChain(MDA):
         self._compute_input_couplings()
 
         # cascade the tolerance
-        for inner_mda in self.inner_mda_list:
-            inner_mda.tolerance = self.tolerance
+        for mda in self.inner_mdas:
+            mda.tolerance = self.tolerance
 
     @MDA.log_convergence.setter
     def log_convergence(
@@ -138,7 +138,7 @@ class MDAChain(MDA):
         value: bool,
     ) -> None:
         self._log_convergence = value
-        for mda in self.inner_mda_list:
+        for mda in self.inner_mdas:
             mda.log_convergence = value
 
     def _create_mdo_chain(
@@ -158,7 +158,7 @@ class MDAChain(MDA):
             **inner_mda_options: The options of the inner-MDAs.
         """
         chained_disciplines = []
-        self.inner_mda_list = []
+        self.inner_mdas = []
 
         if sub_coupling_structures is None:
             sub_coupling_structures = repeat(None)
@@ -185,7 +185,7 @@ class MDAChain(MDA):
                             inner_mda_disciplines.append(disc)
 
                     # create a inner-MDA
-                    inner_mda = create_mda(
+                    mda = create_mda(
                         inner_mda_name,
                         inner_mda_disciplines,
                         max_mda_iter=self.max_mda_iter,
@@ -198,10 +198,10 @@ class MDAChain(MDA):
                         coupling_structure=next(sub_coupling_structures_iterator),
                         **inner_mda_options,
                     )
-                    inner_mda.n_processes = self.n_processes
+                    mda.n_processes = self.n_processes
 
-                    chained_disciplines.append(inner_mda)
-                    self.inner_mda_list.append(inner_mda)
+                    chained_disciplines.append(mda)
+                    self.inner_mdas.append(mda)
                 else:
                     # single discipline
                     chained_disciplines.append(first_disc)
@@ -266,8 +266,8 @@ class MDAChain(MDA):
 
     @property
     def normed_residual(self) -> float:
-        """The normed_residuals, computed from the inner-MDAs residuals."""
-        return sum(mda.normed_residual**2 for mda in self.inner_mda_list) ** 0.5
+        """The normed_residuals, computed from the sub-MDAs residuals."""
+        return sum(mda.normed_residual**2 for mda in self.inner_mdas) ** 0.5
 
     @normed_residual.setter
     def normed_residual(
@@ -308,13 +308,13 @@ class MDAChain(MDA):
         filename: str | None = None,
         fig_size: tuple[float, float] = (50.0, 10.0),
     ) -> None:
-        for inner_mda in self.inner_mda_list:
+        for mda in self.inner_mdas:
             if filename is not None:
                 s_filename = split(filename)
                 filename = join(
                     s_filename[0],
-                    f"{inner_mda.__class__.__name__}_{s_filename[1]}",
+                    f"{mda.__class__.__name__}_{s_filename[1]}",
                 )
-            inner_mda.plot_residual_history(
+            mda.plot_residual_history(
                 show, save, n_iterations, logscale, filename, fig_size
             )

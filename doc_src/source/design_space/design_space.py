@@ -50,7 +50,7 @@ print(design_space)
 design_space.filter_dim("x3", [1])
 print(design_space)
 
-design_space.set_current_x(array([1.0, 1.0, 1.0, 1.0]))
+design_space.set_current_value(array([1.0, 1.0, 1.0, 1.0]))
 design_space.set_current_variable("x1", array([3.0]))
 design_space.set_lower_bound("x1", array([-10.0]))
 design_space.set_lower_bound("x2", array([-10.0]))
@@ -72,15 +72,15 @@ print(design_space.get_lower_bounds(["x1", "x3"]))
 print(design_space.get_upper_bounds(["x1", "x3"]))
 
 
-print(design_space.has_current_x())
+print(design_space.has_current_value())
 
 print(design_space.check())
 
 # print design_space.check_membership()
 
-print(design_space.get_current_x())
-print(design_space.get_current_x_normalized())
-print(design_space.get_current_x_dict())
+print(design_space.get_current_value())
+print(design_space.get_current_value(normalize=True))
+print(design_space.get_current_value(as_dict=True))
 print("normalize", design_space.normalize)
 
 print("active", design_space.get_active_bounds())
@@ -88,9 +88,9 @@ print("active", design_space.get_active_bounds(array([1, 10, 1, 1])))
 
 print(design_space.get_indexed_variables_names())
 
-print(design_space.get_current_x())
+print(design_space.get_current_value())
 design_space.to_complex()
-print(design_space.get_current_x())
+print(design_space.get_current_value())
 
 x_vect = array([1.0, 10.0, 1.0, 1.0])
 print("x_vect", x_vect)

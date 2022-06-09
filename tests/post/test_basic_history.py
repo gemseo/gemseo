@@ -42,7 +42,7 @@ class TestBasicHistory(unittest.TestCase):
             show=False,
             save=True,
             file_path="power2_basic",
-            data_list=problem.get_constraints_names(),
+            variable_names=problem.get_constraints_names(),
         )
         for full_path in view.output_files:
             assert exists(full_path)
@@ -54,7 +54,7 @@ class TestBasicHistory(unittest.TestCase):
             show=False,
             save=True,
             file_path="power2_dv",
-            data_list=problem.design_space.variables_names,
+            variable_names=problem.design_space.variables_names,
         )
 
         for full_path in view.output_files:
@@ -67,7 +67,7 @@ class TestBasicHistory(unittest.TestCase):
             show=False,
             save=True,
             file_path="power2_dv_nans",
-            data_list=problem.get_constraints_names(),
+            variable_names=problem.get_constraints_names(),
         )
 
         for full_path in view.output_files:

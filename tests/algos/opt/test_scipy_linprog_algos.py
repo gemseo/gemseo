@@ -71,7 +71,7 @@ class TestScipyLinprog(TestCase):
     def test_linprog_algorithms(self):
 
         library = OptimizersFactory().create(self.OPT_LIB_NAME)
-        for algo_name in library.lib_dict.keys():
+        for algo_name in library.descriptions.keys():
             self.check_algorithm(algo_name)
 
     def check_algorithm(self, algo_name):

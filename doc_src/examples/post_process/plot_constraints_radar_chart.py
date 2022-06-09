@@ -109,7 +109,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
 scenario.post_process(
     "RadarChart",
-    constraints_list=["g_1", "g_2", "g_3"],
+    constraint_names=["g_1", "g_2", "g_3"],
     save=False,
     show=False,
     fig_size=(5, 5),

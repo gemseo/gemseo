@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -101,7 +100,7 @@ class PyDOE(DOELibrary):
     def __init__(self) -> None:
         super().__init__()
         for idx, algo in enumerate(self.ALGO_LIST):
-            self.lib_dict[algo] = DOEAlgorithmDescription(
+            self.descriptions[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
                 description=self.DESC_LIST[idx],
                 internal_algorithm_name=algo,
@@ -109,8 +108,8 @@ class PyDOE(DOELibrary):
                 website=self.WEB_LIST[idx],
             )
 
-        self.lib_dict["bbdesign"].minimum_dimension = 3
-        self.lib_dict["ccdesign"].minimum_dimension = 2
+        self.descriptions["bbdesign"].minimum_dimension = 3
+        self.descriptions["ccdesign"].minimum_dimension = 2
 
     def _get_options(
         self,
@@ -268,17 +267,16 @@ class PyDOE(DOELibrary):
 
     @staticmethod
     def is_algorithm_suited(
-        algo_charact: Mapping[str, DOELibrary.DOELibraryOptionType],
+        algorithm_description: DOEAlgorithmDescription,
         problem: OptimizationProblem,
     ) -> bool:
-        """Check if the algorithm is suited to the problem according to its
-        characteristics.
+        """Check if the algorithm is suited to the problem according to its description.
 
         Args:
-            algo_charact: The algorithm characteristics.
-            problem: The optimization problem to be solved.
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
 
         Returns:
             Whether the algorithm is suited to the problem.
         """
-        return problem.dimension >= algo_charact.minimum_dimension
+        return problem.dimension >= algorithm_description.minimum_dimension

@@ -112,7 +112,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    :ref:`gen_post_algos`.
 
 scenario.post_process(
-    "ConstraintsHistory", constraints_list=all_constraints, save=False, show=False
+    "ConstraintsHistory", constraint_names=all_constraints, save=False, show=False
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

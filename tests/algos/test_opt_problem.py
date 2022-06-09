@@ -66,7 +66,7 @@ def pow2_problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
     x_0 = np.ones(3)
-    design_space.set_current_x(x_0)
+    design_space.set_current_value(x_0)
 
     problem = OptimizationProblem(design_space)
     power2 = Power2()
@@ -93,7 +93,7 @@ def test_checks():
     problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
 
     with pytest.raises(ValueError):
-        problem.design_space.set_current_x(np.zeros(n))
+        problem.design_space.set_current_value(np.zeros(n))
     with pytest.raises(ValueError):
         problem.design_space.set_upper_bound("x", np.ones(n))
     with pytest.raises(ValueError):
@@ -111,7 +111,7 @@ def test_callback():
     n = 3
     design_space = DesignSpace()
     design_space.add_variable("x", n, l_b=-1.0, u_b=1.0)
-    design_space.set_current_x(np.zeros(n))
+    design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
     problem.check()
@@ -121,7 +121,7 @@ def test_callback():
     problem.preprocess_functions()
     problem.check()
 
-    problem.objective(problem.design_space.get_current_x())
+    problem.objective(problem.design_space.get_current_value())
     call_me.assert_called_once()
 
 
@@ -302,7 +302,7 @@ def test_check():
     # Objective is missing!
     design_space = DesignSpace()
     design_space.add_variable("x", 3, l_b=-1.0, u_b=1.0)
-    design_space.set_current_x(np.array([1.0, 1.0, 1.0]))
+    design_space.set_current_value(np.array([1.0, 1.0, 1.0]))
     problem = OptimizationProblem(design_space)
     with pytest.raises(ValueError):
         problem.check()
@@ -340,14 +340,14 @@ def _test_check_bounds(pow2_problem):
     problem.design_space.set_lower_bound("x", -np.ones(dim))
     problem.design_space.set_upper_bound("x", np.ones(dim))
     x_0 = np.ones(dim + 1)
-    problem.design_space.set_current_x(x_0)
+    problem.design_space.set_current_value(x_0)
     with pytest.raises(ValueError):
         problem.check()
 
     problem.design_space.set_lower_bound("x", np.ones(dim) * 2)
     problem.design_space.set_upper_bound("x", np.ones(dim))
     x_0 = np.ones(dim)
-    problem.design_space.set_current_x(x_0)
+    problem.design_space.set_current_value(x_0)
     with pytest.raises(ValueError):
         problem.check()
 
@@ -361,7 +361,7 @@ def test_pb_type(pow2_problem):
 
 def test_differentiation_method_without_current_x(pow2_problem):
     """Check that a ValueError is raised when the current x is not defined."""
-    pow2_problem.design_space.set_current_x({})
+    pow2_problem.design_space.set_current_value({})
     with pytest.raises(
         ValueError, match=r"Current x is not defined in the design space\."
     ):
@@ -1031,7 +1031,7 @@ def rosenbrock_lhs() -> Tuple[Rosenbrock, Dict[str, ndarray]]:
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(lambda x: sum(x), "obs"))
     problem.add_constraint(MDOFunction(lambda x: sum(x), "cstr"), cstr_type="ineq")
-    start_point = problem.design_space.get_current_x_dict()
+    start_point = problem.design_space.get_current_value(as_dict=True)
     execute_algo(problem, "lhs", n_samples=3, algo_type="doe")
     return problem, start_point
 
@@ -1049,7 +1049,7 @@ def test_reset(rosenbrock_lhs):
     assert len(problem.database) == 0
     assert problem.database.get_max_iteration() == 0
     assert not problem._OptimizationProblem__functions_are_preprocessed
-    for key, val in problem.design_space.get_current_x_dict().items():
+    for key, val in problem.design_space.get_current_value(as_dict=True).items():
         assert (start_point[key] == val).all()
 
     functions = (
@@ -1087,7 +1087,7 @@ def test_reset_design_space(rosenbrock_lhs):
     """Check OptimizationProblem.reset without design_space reset."""
     problem, start_point = rosenbrock_lhs
     problem.reset(design_space=False)
-    for key, val in problem.design_space.get_current_x_dict().items():
+    for key, val in problem.design_space.get_current_value(as_dict=True).items():
         assert (start_point[key] != val).any()
 
 
@@ -1104,9 +1104,9 @@ def test_reset_wo_current_value():
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "obj")
-    problem.design_space.set_current_x({"x": array([0.0])})
+    problem.design_space.set_current_value({"x": array([0.0])})
     problem.reset()
-    assert problem.design_space.get_current_x_dict() == {}
+    assert problem.design_space.get_current_value(as_dict=True) == {}
 
 
 def test_reset_preprocess(rosenbrock_lhs):
@@ -1192,23 +1192,23 @@ def test_get_function_dimension_no_dim(function, design_space, expects_normalize
     """Check the implicitly defined output dimension of a problem function."""
     function.has_dim = mock.Mock(return_value=False)
     function.expects_normalized_inputs = expects_normalized
-    design_space.has_current_x = mock.Mock(return_value=True)
+    design_space.has_current_value = mock.Mock(return_value=True)
     problem = OptimizationProblem(design_space)
     problem.objective = function
     problem.get_x0_normalized = mock.Mock()
     assert problem.get_function_dimension(function.name) == 1
     if expects_normalized:
         problem.get_x0_normalized.assert_called_once()
-        design_space.get_current_x.assert_not_called()
+        design_space.get_current_value.assert_called_once()
     else:
         problem.get_x0_normalized.assert_not_called()
-        design_space.get_current_x.assert_called_once()
+        assert design_space.get_current_value.call_count == 2
 
 
 def test_get_function_dimension_unavailable(function, design_space):
     """Check the unavailable output dimension of a problem function."""
     function.has_dim = mock.Mock(return_value=False)
-    design_space.has_current_x = mock.Mock(return_value=False)
+    design_space.has_current_value = mock.Mock(return_value=False)
     problem = OptimizationProblem(design_space)
     problem.objective = function
     with pytest.raises(
@@ -1383,7 +1383,7 @@ def problem_with_complex_value() -> OptimizationProblem:
     """A problem using a design space with a float variable whose value is complex."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space.set_current_x({"x": array([1.0 + 0j])})
+    design_space.set_current_value({"x": array([1.0 + 0j])})
     return OptimizationProblem(design_space)
 
 

@@ -106,8 +106,8 @@ class PSevenProblem(p7core.gtopt.ProblemGeneric):
 
         if initial_point is not None:
             self.__initial_point = initial_point
-        elif design_space.has_current_x():
-            self.__initial_point = design_space.get_current_x()
+        elif design_space.has_current_value():
+            self.__initial_point = design_space.get_current_value()
         else:
             self.__initial_point = full(design_space.dimension, None)
 

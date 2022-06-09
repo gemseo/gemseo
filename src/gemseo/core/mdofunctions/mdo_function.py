@@ -1370,20 +1370,23 @@ class Concatenate(MDOFunction):
         self.__name = name
         self.__f_type = f_type
 
-        dim = sum(func.dim for func in self.__functions)
-        outvars_list = [func.outvars for func in self.__functions]
-        if None in outvars_list:
-            outvars = None
+        func_output_names = [func.outvars for func in self.__functions]
+        if None in func_output_names:
+            output_names = None
         else:
-            outvars = [out_var for outvars in outvars_list for out_var in outvars]
+            output_names = [
+                output_name
+                for output_names in func_output_names
+                for output_name in output_names
+            ]
 
         super().__init__(
             self._concat_func,
             self.__name,
             self.__f_type,
             self._concat_jac,
-            dim=dim,
-            outvars=outvars,
+            dim=sum(func.dim for func in self.__functions),
+            outvars=output_names,
         )
 
     def _concat_func(
