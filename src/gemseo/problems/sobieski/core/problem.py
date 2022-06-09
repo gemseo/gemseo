@@ -729,10 +729,10 @@ class SobieskiProblem:
             input_file = Path(__file__).parent / "sobieski_design_space.txt"
             self.__design_space = DesignSpace.read_from_txt(input_file)
             if self.__dtype == complex128:
-                x_dict = self.__design_space.get_current_x_dict()
-                for var_name, value in x_dict.items():
-                    x_dict[var_name] = array(value, dtype=complex128)
-                self.__design_space.set_current_x(x_dict)
+                current_x = self.__design_space.get_current_value(as_dict=True)
+                for variable_name, variable_value in current_x.items():
+                    current_x[variable_name] = array(variable_value, dtype=complex128)
+                self.__design_space.set_current_value(current_x)
 
         return self.__design_space
 
@@ -743,9 +743,9 @@ class SobieskiProblem:
             input_file = Path(__file__).parent / "sobieski_design_space_pn.txt"
             self.__design_space = DesignSpace.read_from_txt(input_file)
             if self.__dtype == complex128:
-                x_dict = self.__design_space.get_current_x_dict()
-                for var_name, value in x_dict.items():
-                    x_dict[var_name] = array(value, dtype=complex128)
-                self.__design_space.set_current_x(x_dict)
+                current_x = self.__design_space.get_current_value(as_dict=True)
+                for variable_name, current_value in current_x.items():
+                    current_x[variable_name] = array(current_value, dtype=complex128)
+                self.__design_space.set_current_value(current_x)
 
         return self.__design_space

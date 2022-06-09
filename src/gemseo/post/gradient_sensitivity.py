@@ -60,19 +60,19 @@ class GradientSensitivity(OptPostProcessor):
             x_ref = self.opt_problem.solution.x_opt
         else:
             x_ref = self.opt_problem.database.get_x_by_iter(iteration)
-        grad_dict = self.__get_grad_dict(x_ref, scale_gradients=scale_gradients)
+        gradients = self.__get_output_gradients(x_ref, scale_gradients=scale_gradients)
 
         x_names = self._generate_x_names()
 
         fig = self.__generate_subplots(
             x_names,
             x_ref,
-            grad_dict,
+            gradients,
             scale_gradients=scale_gradients,
         )
         self._add_figure(fig)
 
-    def __get_grad_dict(
+    def __get_output_gradients(
         self,
         x_ref: ndarray,
         scale_gradients: bool = False,
@@ -92,30 +92,30 @@ class GradientSensitivity(OptPostProcessor):
             e.g. 'output_name' for a mono-dimensional output,
             or 'output_name_i' for the i-th component of a multi-dimensional output.
         """
-        all_funcs = self.opt_problem.get_all_functions_names()
+        function_names = self.opt_problem.get_all_functions_names()
         scale_func = self.opt_problem.design_space.unnormalize_vect
-        grad_dict = {}
-        for func in all_funcs:
-            grad = self.database.get_f_of_x(f"@{func}", x_ref)
+        function_names_to_gradients = {}
+        for function_name in function_names:
+            grad = self.database.get_f_of_x(f"@{function_name}", x_ref)
             if grad is not None:
-                if len(grad.shape) == 1:
+                if grad.ndim == 1:
                     if scale_gradients:
                         grad = scale_func(grad, minus_lb=False)
-                    grad_dict[func] = grad
+                    function_names_to_gradients[function_name] = grad
                 else:
-                    n_f, _ = grad.shape
-                    for i in range(n_f):
+                    for i, grad_i in enumerate(grad):
                         if scale_gradients:
-                            grad[i, :] = scale_func(grad[i, :], minus_lb=False)
-                        grad_dict[f"{func}_{i}"] = grad[i, :]
-        return grad_dict
+                            grad_i = scale_func(grad_i, minus_lb=False)
+                        function_names_to_gradients[f"{function_name}_{i}"] = grad_i
+
+        return function_names_to_gradients
 
     @classmethod
     def __generate_subplots(
         cls,
         x_names: Iterable[str],
         x_ref: ndarray,
-        grad_dict: Mapping[str, ndarray],
+        gradients: Mapping[str, ndarray],
         scale_gradients: bool = False,
     ) -> Figure:
         """Generate the gradients subplots from the data.
@@ -123,21 +123,23 @@ class GradientSensitivity(OptPostProcessor):
         Args:
             x_names: The variables names.
             x_ref: The reference value for x.
-            grad_dict: The gradients to plot.
+            gradients: The gradients to plot, labeled by output name.
             scale_gradients: If True, normalize the gradients w.r.t. the design variables.
 
         Returns:
             The gradients subplots.
 
         Raises:
-            ValueError: If `grad_dict` is empty.
+            ValueError: If `gradients` is empty.
         """
-        n_funcs = len(grad_dict)
+        n_funcs = len(gradients)
         if n_funcs == 0:
             raise ValueError("No gradients to plot at current iteration!")
+
         nrows = n_funcs // 2
         if 2 * nrows < n_funcs:
             nrows += 1
+
         ncols = 2
         fig, axes = pyplot.subplots(
             nrows=nrows,
@@ -153,7 +155,7 @@ class GradientSensitivity(OptPostProcessor):
         n_subplots = len(axes) * len(axes[0])
         abscissa = arange(len(x_ref))
         x_labels = [str(x_id) for x_id in x_names]
-        for func, grad in sorted(grad_dict.items()):
+        for func, grad in sorted(gradients.items()):
             j += 1
             if j == ncols:
                 j = 0
@@ -169,7 +171,7 @@ class GradientSensitivity(OptPostProcessor):
             ]
             pyplot.setp(vis_labels[::2], visible=False)
 
-        if len(grad_dict) < n_subplots:
+        if len(gradients) < n_subplots:
             # xlabel must be written with the same fontsize on the 2 columns
             j += 1
             #             if j == ncols: Seems impossible to reach

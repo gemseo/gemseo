@@ -134,7 +134,9 @@ def test_adapter_reset_x0_before_opt(scenario):
     inputs = ["x_shared"]
     outputs = ["y_4"]
     design_space = scenario.design_space
-    initial_design = design_space.dict_to_array(design_space.get_current_x_dict())
+    initial_design = design_space.dict_to_array(
+        design_space.get_current_value(as_dict=True)
+    )
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
     adapter.execute()
     x_shared = adapter.default_inputs["x_shared"] * 1.01
@@ -147,7 +149,9 @@ def test_adapter_reset_x0_before_opt(scenario):
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=False)
     adapter.execute()
-    new_initial_design = design_space.dict_to_array(design_space.get_current_x_dict())
+    new_initial_design = design_space.dict_to_array(
+        design_space.get_current_value(as_dict=True)
+    )
     adapter.default_inputs["x_shared"] = x_shared
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).

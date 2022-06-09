@@ -73,7 +73,7 @@ class ScipyLinprog(OptimizationLibrary):
         super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
 
-        self.lib_dict = {
+        self.descriptions = {
             "LINEAR_INTERIOR_POINT": ScipyLinProgAlgorithmDescription(
                 algorithm_name="Linear interior point",
                 description=(

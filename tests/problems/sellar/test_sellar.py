@@ -208,7 +208,7 @@ class TestSellarScenarios(unittest.TestCase):
         scenario.execute(run_inputs)
 
         obj_opt = scenario.optimization_result.f_opt
-        x_opt = scenario.design_space.get_current_x_dict()
+        x_opt = scenario.design_space.get_current_value(as_dict=True)
 
         x_local = x_opt[X_LOCAL]
         x_shared = x_opt[X_SHARED]

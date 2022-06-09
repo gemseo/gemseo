@@ -644,7 +644,7 @@ class ScalableDiagonalApproximation:
         # where the i-th element is a list whose j-th element corresponds to
         # the degree of dependence between the i-th output component and the
         # i-th input.
-        coefficients = [list(row) for row in io_dependency]
+        io_dependency = [list(row) for row in io_dependency]
 
         # Get the 1D interpolation functions and their derivatives
         interpolated_fun_1d = self.interpolation_dict[function_name]
@@ -652,43 +652,43 @@ class ScalableDiagonalApproximation:
 
         # Get the indices of the 1D interpolation functions
         # associated with the components of the new output.
-        components_list = self.output_dependency[function_name]
+        outputs_to_original_ones = self.output_dependency[function_name]
 
-        def scalable_function(input_vars):
+        def scalable_function(input_data):
             """n-dimensional to size_output-dimensional extrapolated function.
 
-            :param list(float) input_vars: vector of inputs
+            :param list(float) input_data: vector of inputs
             :returns: size_output extrapolated output
             """
             result = zeros(output_size)
-            for out_id in range(output_size):
-                interp_id = components_list[out_id]
-                coeffs = coefficients[out_id]
-                tmp = [
-                    coeffs[in_id] * interpolated_fun_1d[interp_id](in_val)
-                    for in_id, in_val in enumerate(input_vars)
-                ]
-                tmp = sum(tmp) / sum(coeffs)
-                result[out_id] = tmp
+            for output_index in range(output_size):
+                func = interpolated_fun_1d[outputs_to_original_ones[output_index]]
+                coefficients = io_dependency[output_index]
+                result[output_index] = sum(
+                    coefficient * func(input_value)
+                    for coefficient, input_value in zip(coefficients, input_data)
+                ) / sum(coefficients)
+
             return result
 
-        def scalable_derivative(input_vars):
+        def scalable_derivative(input_data):
             """n-dimensional to size_output-dimensional extrapolated function Jacobian.
 
-            :param list(float) input_vars: vector of inputs
+            :param list(float) input_data: vector of inputs
             :returns: size_output - sizeof input_vars extrapolated output
             """
-            dresult = zeros([output_size, input_size])
-            for out_id in range(output_size):
-                interp_id = components_list[out_id]
-                coeffs = coefficients[out_id]
-                tmp = [
-                    coeffs[in_id] * interpolated_dfun_1d[interp_id](in_val)
-                    for in_id, in_val in enumerate(input_vars)
-                ]
-                tmp = array(tmp) / sum(coeffs)
-                dresult[out_id, :] = tmp
-            return dresult
+            result = zeros([output_size, input_size])
+            for output_index in range(output_size):
+                func = interpolated_dfun_1d[outputs_to_original_ones[output_index]]
+                coefficients = io_dependency[output_index]
+                result[output_index, :] = array(
+                    [
+                        coefficient * func(input_value)
+                        for coefficient, input_value in zip(coefficients, input_data)
+                    ]
+                ) / sum(coefficients)
+
+            return result
 
         self.scalable_functions[function_name] = scalable_function
         self.scalable_dfunctions[function_name] = scalable_derivative

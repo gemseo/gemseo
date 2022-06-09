@@ -74,7 +74,7 @@ class ScipyOpt(OptimizationLibrary):
         """
         super().__init__()
         doc = "https://docs.scipy.org/doc/scipy/reference/"
-        self.lib_dict = {
+        self.descriptions = {
             "SLSQP": SciPyAlgorithmDescription(
                 algorithm_name="SLSQP",
                 description=(

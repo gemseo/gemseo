@@ -144,7 +144,7 @@ class MDF(MDOFormulation):
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
         # No couplings in design space (managed by MDA)
         self._remove_couplings_from_ds()
         # Cleanup

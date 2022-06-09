@@ -1,8 +1,8 @@
 {
     "name": "BasicHistory_options",
-    "required": ["data_list"],
+    "required": ["variable_names"],
     "properties": {
-        "data_list":{
+        "variable_names":{
         	"items": {
                 "type": "string",
                 "minItems": 1

@@ -84,7 +84,7 @@ class CustomDOE(DOELibrary):
                 "or as a sequence of sequences of numbers."
             )
         }
-        self.lib_dict[name] = DOEAlgorithmDescription(
+        self.descriptions[name] = DOEAlgorithmDescription(
             algorithm_name=name,
             description=desc[name],
             internal_algorithm_name=name,

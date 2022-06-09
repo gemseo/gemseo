@@ -74,7 +74,7 @@ class QuadApprox(OptPostProcessor):
                 If None and if the output is multidimensional, an error is raised.
         """
         b_mat = self.__build_approx(function, func_index)
-        self.out_data_dict["b_mat"] = b_mat
+        self.materials_for_plotting["b_mat"] = b_mat
         fig = self.__plot_hessian(b_mat, function)
         self._add_figure(fig, "hess_approx")
         fig = self.__plot_variations(b_mat)
@@ -196,7 +196,7 @@ class QuadApprox(OptPostProcessor):
         for i in range(ndv):
             ax_i = plt.subplot(nrows, ncols, i + 1)
             f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
-            self.out_data_dict[i] = f_vals
+            self.materials_for_plotting[i] = f_vals
 
             x_vars = self.unnormalize_vector(xn_vars, i, lower_bounds, upper_bounds)
             ax_i.plot(x_vars, f_vals, "-", lw=2)

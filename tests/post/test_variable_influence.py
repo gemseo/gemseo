@@ -82,7 +82,7 @@ def test_variable_influence_doe(tmp_wd, pyplot_close_all):
             "algo_options": {"eval_jac": False},
         }
     )
-    with pytest.raises(ValueError, match="No gradients to plot at current iteration!"):
+    with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario.post_process(
             "VariableInfluence",
             file_path="doe",

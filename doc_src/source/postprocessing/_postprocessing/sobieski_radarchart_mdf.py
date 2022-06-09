@@ -43,7 +43,7 @@ scenario.execute(algo_options)
 
 scenario.post_process(
     "RadarChart",
-    constraints_list=["g_1", "g_2", "g_3"],
+    constraint_names=["g_1", "g_2", "g_3"],
     save=True,
     show=False,
     file_path="mdf",

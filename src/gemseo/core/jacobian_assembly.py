@@ -192,12 +192,13 @@ class JacobianAssembly:
         for variable in variables:
             for discipline in self.coupling_structure.disciplines:
                 if variable not in self.sizes:
-                    for variables_dict in discipline.jac.values():
-                        jac = variables_dict.get(variable, None)
-                        if jac is not None:
-                            self.sizes[variable] = jac.shape[1]
+                    for jacobian in discipline.jac.values():
+                        jacobian_wrt_variable = jacobian.get(variable, None)
+                        if jacobian_wrt_variable is not None:
+                            self.sizes[variable] = jacobian_wrt_variable.shape[1]
                             self.disciplines[variable] = discipline
                             break
+
             if variable not in self.sizes:
                 raise ValueError(
                     f"Failed to determine the size of input variable {variable}"
@@ -742,14 +743,14 @@ class JacobianAssembly:
         self.n_newton_linear_resolutions += 1
 
         # split the array of steps
-        newton_step_dict = {}
+        couplings_to_steps = {}
         component = 0
         for coupling in couplings:
             size = self.sizes[coupling]
-            newton_step_dict[coupling] = newton_step[component : component + size]
+            couplings_to_steps[coupling] = newton_step[component : component + size]
             component += size
 
-        return newton_step_dict
+        return couplings_to_steps
 
     def residuals(self, in_data, var_names):
         """Form the matrix of residuals wrt coupling variables.
@@ -769,17 +770,17 @@ class JacobianAssembly:
         Returns:
             The residuals array.
         """
-        residual_list = []
+        residuals = []
         # Build rows blocks
-        for var in var_names:
+        for name in var_names:
             for discipline in self.coupling_structure.disciplines:
                 # Find associated discipline
-                if var in discipline.get_output_data_names():
-                    discipline_output = discipline.get_outputs_by_name(var)
-                    residual = atleast_2d(discipline_output - in_data[var])
-                    residual_list.append(residual)
-        residual_array = concatenate(residual_list, axis=1)[0, :]
-        return residual_array
+                if name in discipline.get_output_data_names():
+                    residuals.append(
+                        atleast_2d(discipline.get_outputs_by_name(name) - in_data[name])
+                    )
+
+        return concatenate(residuals, axis=1)[0, :]
 
     # plot method
     def plot_dependency_jacobian(

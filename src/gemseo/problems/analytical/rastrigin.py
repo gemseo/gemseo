@@ -79,7 +79,7 @@ class Rastrigin(OptimizationProblem):
         """
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
-        design_space.set_current_x(full(2, 0.01))
+        design_space.set_current_value(full(2, 0.01))
         super().__init__(design_space)
         self.objective = MDOFunction(
             self.rastrigin,

@@ -45,7 +45,7 @@ class DiagonalDOE(DOELibrary):
     def __init__(self) -> None:
         super().__init__()
         for algo, description in self.__ALGO_DESC.items():
-            self.lib_dict[algo] = DOEAlgorithmDescription(
+            self.descriptions[algo] = DOEAlgorithmDescription(
                 algorithm_name=algo,
                 description=description,
                 internal_algorithm_name=algo,

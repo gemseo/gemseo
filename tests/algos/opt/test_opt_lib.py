@@ -60,7 +60,7 @@ def test_is_algorithm_suited(lib, power, name, remove_eq_constraint, suited):
     """Check is_algorithm_suited."""
     if remove_eq_constraint:
         power.constraints = power.constraints[0:1]
-    assert lib.is_algorithm_suited(lib.lib_dict[name], power) is suited
+    assert lib.is_algorithm_suited(lib.descriptions[name], power) is suited
 
 
 def test_pre_run_fail(lib, power):
@@ -92,10 +92,10 @@ def test_algorithm_handles_eqcstr_fail(lib, power):
 def test_optimization_algorithm():
     """Check the default settings of OptimizationAlgorithmDescription."""
     lib = OptimizationLibrary()
-    lib.lib_dict["new_algo"] = OptimizationAlgorithmDescription(
+    lib.descriptions["new_algo"] = OptimizationAlgorithmDescription(
         algorithm_name="bar", internal_algorithm_name="foo"
     )
-    algo = lib.lib_dict["new_algo"]
+    algo = lib.descriptions["new_algo"]
     assert not lib.algorithm_handles_ineqcstr("new_algo")
     assert not lib.algorithm_handles_eqcstr("new_algo")
     assert not algo.handle_inequality_constraints

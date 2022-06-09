@@ -38,6 +38,7 @@ import re
 from os.path import exists
 from os.path import join
 from pathlib import Path
+from typing import Any
 from typing import Mapping
 from typing import Sequence
 
@@ -96,8 +97,8 @@ class MatlabDiscipline(MDODiscipline):
     def __init__(
         self,
         matlab_fct: str | Path,
-        input_data_list: Sequence[str] | None = None,
-        output_data_list: Sequence[str] | None = None,
+        input_names: Sequence[str] | None = None,
+        output_names: Sequence[str] | None = None,
         add_subfold_path: bool = False,
         search_file: str | None = None,
         matlab_engine_name: str = "matlab",
@@ -117,8 +118,8 @@ class MatlabDiscipline(MDODiscipline):
         """
         Args:
             matlab_fct: The path of the Matlab file or Name of the function.
-            input_data_list: The list of input variables.
-            output_data_list: The list of output variables.
+            input_names: The list of input variables.
+            output_names: The list of output variables.
             add_subfold_path: If True, add all sub-folder to matlab engine path..
             search_file: The root directory to launch the research of matlab file.
             matlab_engine_name: The name of the singleton used for this discipline.
@@ -161,7 +162,7 @@ class MatlabDiscipline(MDODiscipline):
         self.__fct_name = None
 
         matlab_fct = str(matlab_fct)
-        if input_data_list is None or output_data_list is None:
+        if input_names is None or output_names is None:
             parser = MatlabParser()
 
             if search_file is not None:
@@ -180,10 +181,10 @@ class MatlabDiscipline(MDODiscipline):
         else:
             function_path = matlab_fct
 
-        if input_data_list is not None:
-            input_data = input_data_list
-        if output_data_list is not None:
-            output_data = output_data_list
+        if input_names is not None:
+            input_data = input_names
+        if output_names is not None:
+            output_data = output_names
 
         self.__engine = get_matlab_engine(matlab_engine_name)
         self.__inputs = input_data
@@ -325,36 +326,33 @@ class MatlabDiscipline(MDODiscipline):
             # size 1 but that could not be the right size...
             # The right size can be known from either matlab_data_file or evaluating
             # the matlab function
-            inputs_dict = dict.fromkeys(self.__inputs, np.array([0.1]))
+            input_data = dict.fromkeys(self.__inputs, np.array([0.1]))
             if matlab_data_file is not None:
-                inputs_dict = self.__update_default_val(
-                    inputs_dict.copy(), saved_values
-                )
+                input_data = self.__update_data(input_data.copy(), saved_values)
 
         if output_grammar_file is None and not auto_detect_grammar_files:
             # same remark as above about the size
-            outputs_dict = dict.fromkeys(self.__outputs, np.array([0.1]))
+            output_data = dict.fromkeys(self.__outputs, np.array([0.1]))
             if matlab_data_file is not None:
-                outputs_dict = self.__update_default_val(
-                    outputs_dict.copy(), saved_values
-                )
+                output_data = self.__update_data(output_data.copy(), saved_values)
 
-        self.input_grammar.update_from_data(inputs_dict)
+        self.input_grammar.update_from_data(input_data)
 
-        self.output_grammar.update_from_data(outputs_dict)
+        self.output_grammar.update_from_data(output_data)
 
         # If none input matlab data is prescribed, we cannot know
         # the size of inputs and outputs. Thus we must evaluate
         # the function in order to know the sizes
         if matlab_data_file is not None:
             self.__is_size_known = True
-            for in_name, val in inputs_dict.items():
-                self.__inputs_size[in_name] = len(val)
-            for out_name, val in outputs_dict.items():
-                self.__outputs_size[out_name] = len(val)
+            for input_name, input_value in input_data.items():
+                self.__inputs_size[input_name] = len(input_value)
 
-        default_values = inputs_dict.copy()
-        default_values.update(outputs_dict)
+            for output_name, output_value in output_data.items():
+                self.__outputs_size[output_name] = len(output_value)
+
+        default_values = input_data.copy()
+        default_values.update(output_data)
         self.default_inputs = default_values
 
     def __filter_jacobian_in_outputs(self) -> None:
@@ -578,23 +576,24 @@ class MatlabDiscipline(MDODiscipline):
             self._is_linearized = True
 
     @staticmethod
-    def __update_default_val(
-        inputs_dict: dict,
-        updating_dict: dict,
-    ) -> dict:
-        """Update only presented key with new values from another dict.
+    def __update_data(
+        data: Mapping[str, Any],
+        other_data: Mapping[str, Any],
+    ) -> Mapping[str]:
+        """Update the values of a data mapping without adding new data names.
 
         Args:
-            inputs_dict: The dict to be updated.
-            updating_dict: The dict containing new values.
+            data: The data to be updated.
+            other_data: The data to update ``data``.
 
         Returns:
-            The ``inputs_dict`` with only matching keys from ``updating_dict`` updated.
+            The updated data.
         """
-        for key in updating_dict:
-            if key in inputs_dict.keys():
-                inputs_dict[key] = updating_dict[key]
-        return inputs_dict
+        for key, value in other_data.items():
+            if key in data.keys():
+                data[key] = value
+
+        return data
 
     def save_data_to_matlab(self, file_path: str | Path) -> None:
         """Save local data to matlab .mat format.

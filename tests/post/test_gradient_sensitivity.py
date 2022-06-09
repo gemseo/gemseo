@@ -172,7 +172,7 @@ def test_scale_gradients(tmp_wd, scale_gradients, pyplot_close_all):
         save=True,
     )
 
-    actual_jac = post._GradientSensitivity__get_grad_dict(
+    actual_jac = post._GradientSensitivity__get_output_gradients(
         array([-2.0, 0.0]), scale_gradients=scale_gradients
     )
 

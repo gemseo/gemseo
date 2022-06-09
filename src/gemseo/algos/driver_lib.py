@@ -355,7 +355,7 @@ class DriverLib(AlgoLib):
         LOGGER.info("%s", opt_result_str[2])
         problem.solution = result
         if result.x_opt is not None:
-            problem.design_space.set_current_x(result)
+            problem.design_space.set_current_value(result)
         if problem.design_space.dimension <= self.MAX_DS_SIZE_PRINT:
             log = MultiLineString()
             log.indent()
@@ -386,7 +386,7 @@ class DriverLib(AlgoLib):
         """
         if (
             design_space.has_integer_variables()
-            and not self.lib_dict[self.algo_name].handle_integer_variables
+            and not self.descriptions[self.algo_name].handle_integer_variables
         ):
             if not force_execution:
                 raise ValueError(
@@ -447,7 +447,9 @@ class DriverLib(AlgoLib):
             self.__activate_progress_bar = activate_progress_bar
 
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
+        self.internal_algo_name = self.descriptions[
+            self.algo_name
+        ].internal_algorithm_name
 
         problem.check()
         problem.preprocess_functions(
@@ -574,10 +576,10 @@ class DriverLib(AlgoLib):
 
         :param algo_name: name of the algorithm
         """
-        if algo_name not in self.lib_dict:
+        if algo_name not in self.descriptions:
             raise ValueError(f"Algorithm {algo_name} is not available.")
 
-        return self.lib_dict[algo_name].require_gradient
+        return self.descriptions[algo_name].require_gradient
 
     def get_x0_and_bounds_vects(self, normalize_ds):
         """Gets x0, bounds, normalized or not depending on algo options, all as numpy
@@ -588,21 +590,22 @@ class DriverLib(AlgoLib):
                normalization policy
         :returns: x, lower bounds, upper bounds
         """
-        dspace = self.problem.design_space
-        l_b = dspace.get_lower_bounds()
-        u_b = dspace.get_upper_bounds()
+        design_space = self.problem.design_space
+        l_b = design_space.get_lower_bounds()
+        u_b = design_space.get_upper_bounds()
 
         # remove normalization from options for algo
         if normalize_ds:
-            norm_dict = dspace.normalize
-            norm_array = dspace.dict_to_array(norm_dict)
+            norm_array = design_space.dict_to_array(design_space.normalize)
             l_b = where(norm_array, zeros(norm_array.shape), l_b)
             u_b = where(norm_array, ones(norm_array.shape), u_b)
-            xvec = self.problem.get_x0_normalized(cast_to_real=True)
+            current_x = self.problem.get_x0_normalized(cast_to_real=True)
         else:
-            xvec = self.problem.design_space.get_current_x(complex_to_real=True)
+            current_x = self.problem.design_space.get_current_value(
+                complex_to_real=True
+            )
 
-        return xvec, l_b, u_b
+        return current_x, l_b, u_b
 
     def ensure_bounds(self, orig_func, normalize=True):
         """Project the design vector onto the design space before execution.

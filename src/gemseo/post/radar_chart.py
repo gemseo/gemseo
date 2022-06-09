@@ -40,13 +40,13 @@ class RadarChart(OptPostProcessor):
 
     def _plot(
         self,
-        constraints_list: Iterable[str] | None = None,
+        constraint_names: Iterable[str] | None = None,
         iteration: int | RadarChart.OPTIMUM = OPTIMUM,
         show_names_radially: bool = False,
     ) -> None:
         r"""
         Args:
-            constraints_list: The names of the constraints.
+            constraint_names: The names of the constraints.
                 If None, use all the constraints.
             iteration: Either a database index in :math:`-N+1,\ldots,-1,0,1,`ldots,N-1`
                 or the tag :attr:`.OPTIMUM` for the database index
@@ -62,11 +62,11 @@ class RadarChart(OptPostProcessor):
                 or when the requested iteration is neither a database index
                 nor the tag ``"opt"``.
         """
-        if constraints_list is None:
-            constraints_list = self.opt_problem.get_constraints_names()
+        if constraint_names is None:
+            constraint_names = self.opt_problem.get_constraints_names()
         else:
             invalid_names = sorted(
-                set(constraints_list) - set(self.opt_problem.get_constraints_names())
+                set(constraint_names) - set(self.opt_problem.get_constraints_names())
             )
             if invalid_names:
                 raise ValueError(
@@ -87,7 +87,7 @@ class RadarChart(OptPostProcessor):
             )
 
         constraints_values, constraints_names, _ = self.database.get_history_array(
-            constraints_list, add_dv=False
+            constraint_names, add_dv=False
         )
 
         if iteration == self.OPTIMUM:

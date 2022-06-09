@@ -460,7 +460,7 @@ About post processing
 .. code::
 
    >>> get_post_processing_options_schema('RadarChart')
-   {u'name': u'RadarChart_options', 'required': [u'constraints_list', u'save'], u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'save': {'type': u'boolean', 'description': 'if True, exports plot to pdf\n'}, u'iteration': {'type': u'integer', 'description': 'number of iteration to post process\n'}, u'file_path': {'type': u'string', 'description': 'the base paths of the files to export'}, u'constraints_list': {'items': {u'minItems': 1, 'type': u'string'}, 'type': u'array', 'description': 'list of constraints names\n'}, u'show': {'type': u'boolean', 'description': 'if True, display plot\n'}}}
+   {u'name': u'RadarChart_options', 'required': [u'constraint_names', u'save'], u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'save': {'type': u'boolean', 'description': 'if True, exports plot to pdf\n'}, u'iteration': {'type': u'integer', 'description': 'number of iteration to post process\n'}, u'file_path': {'type': u'string', 'description': 'the base paths of the files to export'}, u'constraints_list': {'items': {u'minItems': 1, 'type': u'string'}, 'type': u'array', 'description': 'list of constraints names\n'}, u'show': {'type': u'boolean', 'description': 'if True, display plot\n'}}}
 
 
 - The API function :meth:`~gemseo.api.execute_post` can generate visualizations of the MDO results.

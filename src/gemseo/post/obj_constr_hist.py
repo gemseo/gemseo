@@ -99,7 +99,7 @@ class ObjConstrHist(OptPostProcessor):
         nb_iter = x_history.shape[0]
 
         ineq_vals, eq_vals, ineq_cstr_id, eq_cstr_id = self.__get_constraints(
-            constr_names=constr_names
+            constraint_names=constr_names
         )
 
         # concatenate all constraints values (ineq + eq)
@@ -132,17 +132,16 @@ class ObjConstrHist(OptPostProcessor):
         )
 
         # add labels with constraint violation information
-        all_cstr_list = [ineq_vals, eq_vals]
-        all_cstr_vals = np.concatenate(
-            [cstr for cstr in all_cstr_list if cstr.size > 0], axis=1
+        constraint_values = np.concatenate(
+            [values for values in [ineq_vals, eq_vals] if values.size > 0], axis=1
         )
         for iteration, ind in zip(range(nb_iter), indmaxi_by_iter):
             y_vals = 0.5 * (fmax + fmin)
             x_vals = iteration
             max_label = cstr_ids[ind]
             # no abs on equality constraint
-            max_value = all_cstr_vals[iteration, ind]
-            text = "constraint " + max_label + " = " + str(max_value)
+            max_value = constraint_values[iteration, ind]
+            text = f"constraint {max_label} = {max_value}"
             ax1.text(x_vals - 0.0, y_vals + 1.1 * fmin, text, rotation="vertical")
 
         # color map
@@ -187,28 +186,28 @@ class ObjConstrHist(OptPostProcessor):
 
     def __get_constraints(
         self,
-        constr_names: Sequence[str] | None = None,
+        constraint_names: Sequence[str] | None = None,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray]:
         """Return the constraints with formatted shape.
 
         Args:
-            constr_names: The names of the constraints.
+            constraint_names: The names of the constraints.
                 If None, use all the constraints.
         """
         # retrieve the constraints values
         ineq_cstr_names = []
         eq_cstr_names = []
         for cstr in self.opt_problem.get_ineq_constraints():
-            if constr_names is None:
+            if constraint_names is None:
                 ineq_cstr_names.append(cstr.name)
             else:
-                if cstr.name in constr_names:
+                if cstr.name in constraint_names:
                     ineq_cstr_names.append(cstr.name)
         for cstr in self.opt_problem.get_eq_constraints():
-            if constr_names is None:
+            if constraint_names is None:
                 eq_cstr_names.append(cstr.name)
             else:
-                if cstr.name in constr_names:
+                if cstr.name in constraint_names:
                     eq_cstr_names.append(cstr.name)
         get_hist_array = self.database.get_history_array
         if ineq_cstr_names:

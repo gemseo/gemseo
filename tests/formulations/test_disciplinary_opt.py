@@ -43,8 +43,8 @@ class TestDisciplinaryOpt(unittest.TestCase):
         ds = SobieskiProblem().design_space
         dopt = DisciplinaryOpt([sm], "y_4", ds)
         assert dopt.get_expected_dataflow() == []
-        assert dopt.get_expected_workflow().sequence_list[0].discipline == sm
-        assert len(dopt.get_expected_workflow().sequence_list) == 1
+        assert dopt.get_expected_workflow().sequences[0].discipline == sm
+        assert len(dopt.get_expected_workflow().sequences) == 1
 
 
 def test_grammar_type():

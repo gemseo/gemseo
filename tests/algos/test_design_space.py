@@ -203,12 +203,9 @@ def test_creation_4():
     design_space.add_variable("varname")
     with pytest.raises(
         KeyError,
-        match=re.escape(
-            "Cannot compute normalized current value since "
-            "the design variables {} have no current value.".format(["varname"])
-        ),
+        match=re.escape("The design variables ['varname'] have no current value."),
     ):
-        design_space.get_current_x_normalized()
+        design_space.get_current_value(normalize=True)
 
 
 def test_add_variable_value(design_space):
@@ -231,8 +228,8 @@ def test_add_variable_value(design_space):
 )
 def test_set_current_value(design_space, current_x):
     design_space.filter(["x1", "x2"])
-    design_space.set_current_x(current_x)
-    x_n = design_space.get_current_x_normalized()
+    design_space.set_current_value(current_x)
+    x_n = design_space.get_current_value(normalize=True)
     assert (x_n == 0.5).all()
 
 
@@ -243,7 +240,7 @@ def test_set_current_value_with_malformed_mapping_arg(design_space):
         Exception,
         match="The variable x1 of size 1 cannot be set with an array of size 2.",
     ):
-        design_space.set_current_x({"x1": array([1.0, 1.0])})
+        design_space.set_current_value({"x1": array([1.0, 1.0])})
 
 
 def test_set_current_value_with_malformed_opt_arg(design_space):
@@ -255,7 +252,7 @@ def test_set_current_value_with_malformed_opt_arg(design_space):
             design_space.dimension
         ),
     ):
-        design_space.set_current_x(OptimizationResult(x_opt=array([1.0])))
+        design_space.set_current_value(OptimizationResult(x_opt=array([1.0])))
 
 
 def test_set_current_value_with_malformed_current_x(design_space):
@@ -263,12 +260,12 @@ def test_set_current_value_with_malformed_current_x(design_space):
     with pytest.raises(
         TypeError,
         match=(
-            "The current point should be either an array, "
+            "The current design value should be either an array, "
             "a dictionary of arrays or an optimization result; "
             "got <class 'float'> instead."
         ),
     ):
-        design_space.set_current_x(1.0)
+        design_space.set_current_value(1.0)
 
 
 def test_read_from_txt():
@@ -281,7 +278,7 @@ def test_integer_variable_set_current_x(design_space):
     """Check that an integer value is correctly set."""
     design_space.filter("x3")
     x_i = array([0], dtype=int32)
-    design_space.set_current_x(x_i)
+    design_space.set_current_value(x_i)
     x_i_conv = design_space.dict_to_array(design_space.array_to_dict(x_i))
     assert x_i_conv.dtype == x_i.dtype
     assert x_i_conv == x_i
@@ -346,7 +343,9 @@ def test_extend():
     assert (design_space.get_type("x2") == other.get_type("x2")).all()
     assert (design_space.get_lower_bound("x2") == other.get_lower_bound("x2")).all()
     assert (design_space.get_upper_bound("x2") == other.get_upper_bound("x2")).all()
-    assert (design_space.get_current_x(["x2"]) == other.get_current_x(["x2"])).all()
+    assert (
+        design_space.get_current_value(["x2"]) == other.get_current_value(["x2"])
+    ).all()
 
 
 def test_active_bounds():
@@ -470,13 +469,13 @@ def test_normalization():
     assert design_space.normalize["x_2"]
     assert design_space.normalize["x_3"]
     # Test the normalization:
-    design_space.set_current_x(array([-10.0, 10.0, 5.0, 5]))
-    current_x_norm = design_space.get_current_x_normalized()
+    design_space.set_current_value(array([-10.0, 10.0, 5.0, 5]))
+    current_x_norm = design_space.get_current_value(normalize=True)
     ref_current_x_norm = array([-10.0, 10.0, 0.5, 0.5])
     assert norm(current_x_norm - ref_current_x_norm) == pytest.approx(0.0)
 
     unnorm_curent_x = design_space.unnormalize_vect(current_x_norm)
-    current_x = design_space.get_current_x()
+    current_x = design_space.get_current_value()
     assert norm(unnorm_curent_x - current_x) == pytest.approx(0.0)
 
     x_2d = ones((5, 4))
@@ -584,12 +583,12 @@ def test_current_x():
             u_b=u_b[name],
         )
 
-    design_space.set_current_x(x_0)
+    design_space.set_current_value(x_0)
     design_space.check()
 
     expected = re.escape("Expected current_x variables: ['x_1', 'x_2']; got ['x_1'].")
     with pytest.raises(ValueError, match=expected):
-        design_space.set_current_x({"x_1": array([0.0])})
+        design_space.set_current_value({"x_1": array([0.0])})
 
     with pytest.raises(
         ValueError,
@@ -598,7 +597,7 @@ def test_current_x():
             "than the lower bound (0.5) by 1.0e+03."
         ),
     ):
-        design_space.set_current_x(x_0 - 1000.0)
+        design_space.set_current_value(x_0 - 1000.0)
 
     """
     Design Space: 3 scalar variables
@@ -612,7 +611,7 @@ def test_current_x():
     assert design_space.get_type("x_3") is None
 
     design_space.set_current_variable("x_1", np.array([5.0]))
-    assert design_space.get_current_x_dict()["x_1"][0] == 5.0
+    assert design_space.get_current_value(as_dict=True)["x_1"][0] == 5.0
 
     with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
         design_space.set_current_variable("x_3", 1.0)
@@ -627,8 +626,8 @@ def test_current_x():
     design_space.add_variable(
         "x", size=1, var_type=DesignVariableType.FLOAT, l_b=0.0, u_b=2.0
     )
-    design_space.set_current_x({"x": None})
-    assert not design_space.has_current_x()
+    design_space.set_current_value({"x": None})
+    assert not design_space.has_current_value()
 
 
 def get_sobieski_design_space():
@@ -672,7 +671,7 @@ def test_read_write(tmp_wd):
     check_ds(ref_ds, read_ds, f_path)
 
     ds = DesignSpace.read_from_txt(TEST_INFILE)
-    assert not ds.has_current_x()
+    assert not ds.has_current_value()
     for i in range(1, 9):
         testfile = CURRENT_DIR / f"design_space_fail_{i}.txt"
         with pytest.raises(ValueError):
@@ -704,7 +703,7 @@ def test_dict_to_array():
     )
 
     with pytest.raises(TypeError, match="x_dict values must be ndarray."):
-        design_space.dict_to_array({"x": 1.0}, variables_names=["x"])
+        design_space.dict_to_array({"x": 1.0}, variable_names=["x"])
 
     with pytest.raises(KeyError, match="'y'"):
         design_space.dict_to_array({"x": array([1.0])})
@@ -725,7 +724,7 @@ def check_ds(ref_ds, read_ds, f_path):
     err = read_ds.get_upper_bounds() - ref_ds.get_upper_bounds()
     assert norm(err) == pytest.approx(0.0)
 
-    err = read_ds.get_current_x() - ref_ds.get_current_x()
+    err = read_ds.get_current_value() - ref_ds.get_current_value()
     assert norm(err) == pytest.approx(0.0)
 
     type_read = [t for name in read_ds.variables_names for t in read_ds.get_type(name)]
@@ -863,9 +862,9 @@ def test_vartype_passed_as_bytes(design_space):
     "name,kind", [("x13", "f"), ("x14", "i"), ("x16", "f"), ("x17", "i")]
 )
 def test_current_x_various_types(design_space, name, kind):
-    """Check that set_current_x handles various types of data."""
+    """Check that set_current_value handles various types of data."""
     design_space.filter(["x13", "x14", "x15", "x16", "x17"])
-    design_space.set_current_x(
+    design_space.set_current_value(
         {
             "x13": array([0.5]),
             "x14": array([2.0]),
@@ -874,12 +873,12 @@ def test_current_x_various_types(design_space, name, kind):
             "x17": array([1, 2]),
         }
     )
-    assert design_space._current_x[name].dtype.kind == kind
+    assert design_space._current_value[name].dtype.kind == kind
 
 
 def test_current_x_with_missing_variable(design_space):
     design_space.filter(["x13", "x14", "x15", "x16", "x17"])
-    design_space.set_current_x(
+    design_space.set_current_value(
         {
             "x13": array([0.5]),
             "x14": array([2.0]),
@@ -888,7 +887,7 @@ def test_current_x_with_missing_variable(design_space):
             "x17": array([1, 2]),
         }
     )
-    assert design_space._current_x["x15"] is None
+    assert design_space._current_value["x15"] is None
 
 
 def test_design_space_name():
@@ -1110,14 +1109,14 @@ def design_space_with_complex_value() -> DesignSpace:
     """A design space with a float variable whose value is complex."""
     design_space = DesignSpace()
     design_space.add_variable("x")
-    design_space.set_current_x({"x": array([1.0 + 0j])})
+    design_space.set_current_value({"x": array([1.0 + 0j])})
     return design_space
 
 
 @pytest.mark.parametrize("cast", [False, True])
 def test_get_current_x_no_complex(design_space_with_complex_value, cast):
     """Check that the complex value of a float variable is converted to float."""
-    current_x = design_space_with_complex_value.get_current_x(complex_to_real=cast)
+    current_x = design_space_with_complex_value.get_current_value(complex_to_real=cast)
     assert (current_x.dtype.kind == "c") is not cast
 
 
@@ -1127,24 +1126,24 @@ INT = DesignSpace.INTEGER
 
 
 @pytest.mark.parametrize(
-    "current_x,current_x_array,dtype,a_type,has_current_x",
+    "current_x,current_x_array,dtype,a_type,has_current_value",
     [
         ({"a": array([1])}, array([]), DTYPE, FLOAT, False),
         ({"a": array([1.0]), "b": array([2])}, array([1.0, 2.0]), float64, FLOAT, True),
         ({"a": array([1]), "b": array([2])}, array([1, 2]), int32, INT, True),
     ],
 )
-def test_current_x_setter(current_x, current_x_array, dtype, a_type, has_current_x):
-    """Check that _current_x.setter updates both __current_x and metadata."""
+def test_current_x_setter(current_x, current_x_array, dtype, a_type, has_current_value):
+    """Check that _current_value.setter updates both __current_value and metadata."""
     design_space = DesignSpace()
     design_space.add_variable("a", var_type=a_type)
     design_space.add_variable("b", var_type=design_space.INTEGER)
 
-    design_space._current_x = current_x
-    assert design_space._current_x == current_x
-    assert_equal(design_space._DesignSpace__current_x_array, current_x_array)
+    design_space._current_value = current_x
+    assert design_space._current_value == current_x
+    assert_equal(design_space._DesignSpace__current_value_array, current_x_array)
     assert design_space._DesignSpace__common_dtype == dtype
-    assert design_space._DesignSpace__has_current_x is has_current_x
+    assert design_space._DesignSpace__has_current_value is has_current_value
 
 
 def test_cast_to_var_type(design_space: DesignSpace):
@@ -1154,7 +1153,7 @@ def test_cast_to_var_type(design_space: DesignSpace):
         design_space: fixture that returns the design space for testing.
     """
     design_space.filter(["x23"])
-    assert design_space.get_current_x() == array([1.0], dtype=np.float64)
+    assert design_space.get_current_value() == array([1.0], dtype=np.float64)
 
 
 @pytest.mark.parametrize("normalize", [True, False])
@@ -1284,3 +1283,51 @@ def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub):
     ds.add_variable("x", 2, l_b=l_b, u_b=u_b, var_type=DesignVariableType.INTEGER)
     assert array_equal(ds._lower_bounds["x"], expected_lb)
     assert array_equal(ds._upper_bounds["x"], expected_ub)
+
+
+@pytest.fixture(scope="module")
+def fbb_design_space() -> DesignSpace:
+    """Foo-bar-baz (fbb) design space for test_get_current_value()."""
+    design_space = DesignSpace()
+    design_space.add_variable("foo", l_b=1.0, value=1.0)
+    design_space.add_variable("bar", size=2, l_b=1.0, u_b=3.0, value=2.0)
+    design_space.add_variable("baz", l_b=1.0, u_b=3.0, value=3.0)
+    design_space.set_current_variable("baz", array([3.0 + 0.5j]))
+    return design_space
+
+
+@pytest.mark.parametrize("names", [None, ["baz", "foo"]])
+@pytest.mark.parametrize("cast", [False, True])
+@pytest.mark.parametrize("normalize", [False, True])
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict):
+    """Check get_current_value() with all the combinations of its arguments."""
+    result = fbb_design_space.get_current_value(
+        variable_names=names,
+        complex_to_real=cast,
+        normalize=normalize,
+        as_dict=as_dict,
+    )
+    if normalize:
+        expected = {
+            "foo": array([1.0]),
+            "bar": array([0.5, 0.5]),
+            "baz": array([1.0 + 0.25j]),
+        }
+    else:
+        expected = {
+            "foo": array([1.0]),
+            "bar": array([2.0, 2.0]),
+            "baz": array([3.0 + 0.5j]),
+        }
+
+    names = names or ["foo", "bar", "baz"]
+    expected = {k: v for k, v in expected.items() if k in names}
+
+    if cast:
+        expected = {k: v.real for k, v in expected.items()}
+
+    if not as_dict:
+        expected = fbb_design_space.dict_to_array(expected, variable_names=names)
+
+    assert_equal(result, expected)

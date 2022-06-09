@@ -313,21 +313,24 @@ class LagrangeMultipliers:
         eq_jac, eq_names_act = self._get_act_eq_jac(x_vect)
         self.active_eq_names = eq_names_act
 
-        names_list = (
+        names = (
             self.active_lb_names
             + self.active_ub_names
             + self.active_ineq_names
             + eq_names_act
         )
-        jac_list = [lb_jac_act, ub_jac_act, ineq_jac, eq_jac]
-        jac_list = [jac for jac in jac_list if jac is not None]
-        if jac_list:
-            jac_act_arr = concatenate(jac_list, axis=0)
+        jacobians = [
+            jacobian
+            for jacobian in [lb_jac_act, ub_jac_act, ineq_jac, eq_jac]
+            if jacobian is not None
+        ]
+        if jacobians:
+            jac_act_arr = concatenate(jacobians, axis=0)
         else:
             # There no active constraint
             jac_act_arr = None
 
-        return jac_act_arr, names_list
+        return jac_act_arr, names
 
     def _store_multipliers(self, multipliers):
         """Stores multipliers in a dictionary."""

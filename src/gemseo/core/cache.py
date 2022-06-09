@@ -30,6 +30,10 @@ from typing import ClassVar
 from typing import Generator
 from typing import Iterable
 from typing import Mapping
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gemseo.core.dataset import Dataset
 
 from numpy import append
 from numpy import array
@@ -737,7 +741,7 @@ class AbstractFullCache(AbstractCache):
         categorize: bool = True,
         input_names: Iterable[str] | None = None,
         output_names: Iterable[str] | None = None,
-    ) -> str:
+    ) -> Dataset:
         """Build a :class:`.Dataset` from the cache.
 
         Args:

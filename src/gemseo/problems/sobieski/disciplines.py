@@ -64,11 +64,8 @@ class SobieskiDiscipline(MDODiscipline):
         )
         self.re_exec_policy = self.RE_EXECUTE_DONE_POLICY
 
-    def __setstate__(
-        self,
-        state_dict: Mapping[str, Any],
-    ) -> None:
-        super().__setstate__(state_dict)
+    def __setstate__(self, state: Mapping[str, Any]) -> None:
+        super().__setstate__(state)
         self.sobieski_problem = SobieskiProblem(self.dtype)
 
     def _run(self) -> None:

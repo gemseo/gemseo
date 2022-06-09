@@ -93,14 +93,14 @@ class OptimizationLibrary(DriverLib):
         Returns:
             Whether the algorithm handles the passed type of constraints.
         """
-        if algo_name not in self.lib_dict:
+        if algo_name not in self.descriptions:
             raise KeyError(
                 f"Algorithm {algo_name} not in library {self.__class__.__name__}."
             )
         if eq_constraint:
-            return self.lib_dict[algo_name].handle_equality_constraints
+            return self.descriptions[algo_name].handle_equality_constraints
         else:
-            return self.lib_dict[algo_name].handle_inequality_constraints
+            return self.descriptions[algo_name].handle_inequality_constraints
 
     def algorithm_handles_eqcstr(self, algo_name):
         """Returns True if the algorithms handles equality constraints.
@@ -125,7 +125,7 @@ class OptimizationLibrary(DriverLib):
         :returns: True if constraints must be positive
         :rtype: bool
         """
-        return self.lib_dict[algo_name].positive_constraints
+        return self.descriptions[algo_name].positive_constraints
 
     def _check_constraints_handling(self, algo_name, problem):
         """Check if problem and algorithm are consistent for constraints handling."""
@@ -198,24 +198,34 @@ class OptimizationLibrary(DriverLib):
         )
 
     @staticmethod
-    def is_algorithm_suited(algo_dict, problem):
-        """Checks if the algorithm is suited to the problem according to its algo dict.
+    def is_algorithm_suited(
+        algorithm_description: OptimizationAlgorithmDescription,
+        problem: OptimizationProblem,
+    ) -> bool:
+        """Check if the algorithm is suited to the problem according to its description.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
-        if problem.has_eq_constraints() and not algo_dict.handle_equality_constraints:
+        if (
+            problem.has_eq_constraints()
+            and not algorithm_description.handle_equality_constraints
+        ):
             return False
 
         if (
             problem.has_ineq_constraints()
-            and not algo_dict.handle_inequality_constraints
+            and not algorithm_description.handle_inequality_constraints
         ):
             return False
 
         if (
             problem.pb_type == problem.NON_LINEAR_PB
-            and algo_dict.problem_type == problem.LINEAR_PB
+            and algorithm_description.problem_type == problem.LINEAR_PB
         ):
             return False
 

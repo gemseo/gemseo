@@ -8,7 +8,7 @@
                 {"type": "string", "enum":  ["opt"]}
             ]
         },
-        "constraints_list": {
+        "constraint_names": {
             "anyOf": [
                 {"type": "null"},
                 {"items": {"type": "string", "minItems": 1}, "type": "array"}

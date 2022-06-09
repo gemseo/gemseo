@@ -322,7 +322,9 @@ class OptimizationProblem:
             self.database = Database(input_hdf_file=input_database)
         self.solution = None
         self.design_space = design_space
-        self.__initial_current_x = deepcopy(design_space.get_current_x_dict())
+        self.__initial_current_x = deepcopy(
+            design_space.get_current_value(as_dict=True)
+        )
         self.__x0 = None
         self.stop_if_nan = True
         self.preprocess_options = {}
@@ -779,7 +781,7 @@ class OptimizationProblem:
             normalized between 0 and 1 from their lower and upper bounds.
         """
         dspace = self.design_space
-        normalized_x0 = dspace.normalize_vect(dspace.get_current_x())
+        normalized_x0 = dspace.normalize_vect(dspace.get_current_value())
         if cast_to_real:
             return normalized_x0.real
         return normalized_x0
@@ -866,7 +868,7 @@ class OptimizationProblem:
         self,
         x_vect: ndarray,
         tol: float = 1e-6,
-    ) -> dict[str, ndarray]:
+    ) -> dict[MDOFunction, ndarray]:
         """For each constraint, indicate if its different components are active.
 
         Args:
@@ -878,16 +880,13 @@ class OptimizationProblem:
             a boolean indicator of activation of its different components.
         """
         self.design_space.check_membership(x_vect)
-        normalize = self.preprocess_options.get("is_function_input_normalized", False)
-        if normalize:
+        if self.preprocess_options.get("is_function_input_normalized", False):
             x_vect = self.design_space.normalize_vect(x_vect)
 
-        act_funcs = {}
-        for func in self.get_ineq_constraints():
-            val = np_abs(func(x_vect))
-            act_funcs[func] = where(val <= tol, True, False)
-
-        return act_funcs
+        return {
+            func: atleast_1d(np_abs(func(x_vect)) <= tol)
+            for func in self.get_ineq_constraints()
+        }
 
     def add_callback(
         self,
@@ -955,7 +954,7 @@ class OptimizationProblem:
                     self.design_space.check_membership(x_u_r)
         else:
             if x_vect is None:
-                x_vect = self.design_space.get_current_x()
+                x_vect = self.design_space.get_current_value()
             elif self.activate_bound_check:
                 # Checks proposed x wrt bounds
                 self.design_space.check_membership(x_vect)
@@ -1219,7 +1218,7 @@ class OptimizationProblem:
         Raises:
             ValueError: When the current value is not defined.
         """
-        if not self.design_space.has_current_x():
+        if not self.design_space.has_current_value():
             raise ValueError("Current x is not defined in the design space.")
 
         differentiation_class = self.__DIFFERENTIATION_CLASSES.get(
@@ -1484,15 +1483,16 @@ class OptimizationProblem:
         else:
             best_i = 0
 
-        opt_f_dict = {}
         if len(f_history) <= best_i:
-            f_opt = None
+            outputs_opt = {}
             x_opt = None
+            f_opt = None
         else:
-            f_opt = f_history[best_i].get(self.objective.name)
+            outputs_opt = f_history[best_i]
             x_opt = x_history[best_i]
-            opt_f_dict = f_history[best_i]
-        return x_opt, f_opt, is_opt_feasible, opt_f_dict
+            f_opt = outputs_opt.get(self.objective.name)
+
+        return x_opt, f_opt, is_opt_feasible, outputs_opt
 
     def __get_optimum_infeas(
         self,
@@ -2145,11 +2145,11 @@ class OptimizationProblem:
         if function.has_dim():
             return function.dim
 
-        if self.design_space.has_current_x():
+        if self.design_space.has_current_value():
             if function.expects_normalized_inputs:
                 current_variables = self.get_x0_normalized()
             else:
-                current_variables = self.design_space.get_current_x()
+                current_variables = self.design_space.get_current_value()
 
             return atleast_1d(function(current_variables)).size
 
@@ -2225,7 +2225,7 @@ class OptimizationProblem:
             self.database.clear(current_iter)
 
         if design_space:
-            self.design_space.set_current_x(self.__initial_current_x)
+            self.design_space.set_current_value(self.__initial_current_x)
 
         if function_calls and MDOFunction.activate_counters:
             for func in self.get_all_functions():

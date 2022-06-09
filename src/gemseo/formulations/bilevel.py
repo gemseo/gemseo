@@ -411,7 +411,7 @@ class BiLevel(MDOFormulation):
                 # Or use observers at the system driver level to pass the local
                 # vars
                 for scenario in self.get_sub_scenarios():
-                    x_loc_d = scenario.design_space.get_current_x_dict()
+                    x_loc_d = scenario.design_space.get_current_value(as_dict=True)
                     for indata, x_loc in x_loc_d.items():
                         if self._mda1.is_input_existing(indata):
                             if x_loc is not None:
@@ -422,7 +422,7 @@ class BiLevel(MDOFormulation):
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
-        self._set_defaultinputs_from_ds()
+        self._set_default_input_values_from_design_space()
         self._remove_sub_scenario_dv_from_ds()
         self._remove_couplings_from_ds()
         self._remove_unused_variables()
@@ -549,11 +549,11 @@ class BiLevel(MDOFormulation):
                 top-level disciplines outputs.
         """
         added = False
-        outputs_list = self._check_add_cstr_input(output_name, constraint_type)
-        for scen in self.get_sub_scenarios():
-            if self._scenario_computes_outputs(scen, outputs_list):
-                scen.add_constraint(
-                    outputs_list, constraint_type, constraint_name, value, positive
+        output_names = self._check_add_cstr_input(output_name, constraint_type)
+        for sub_scenario in self.get_sub_scenarios():
+            if self._scenario_computes_outputs(sub_scenario, output_names):
+                sub_scenario.add_constraint(
+                    output_names, constraint_type, constraint_name, value, positive
                 )
                 added = True
         if not added:

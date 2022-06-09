@@ -76,7 +76,7 @@ class AlgoLib:
     or gemseo.algos.linear_solver packages.
     """
 
-    lib_dict: dict[str, AlgorithmDescription]
+    descriptions: dict[str, AlgorithmDescription]
     """The description of the algorithms contained in the library."""
 
     algo_name: str | None
@@ -105,7 +105,7 @@ class AlgoLib:
 
     def __init__(self) -> None:
         # Library settings and check
-        self.lib_dict = {}
+        self.descriptions = {}
         self.algo_name = None
         self.internal_algo_name = None
         self.problem = None
@@ -157,7 +157,7 @@ class AlgoLib:
     @property
     def algorithms(self) -> list[str]:
         """The available algorithms."""
-        return list(self.lib_dict.keys())
+        return list(self.descriptions.keys())
 
     def _pre_run(
         self,
@@ -289,7 +289,9 @@ class AlgoLib:
 
         self._check_algorithm(self.algo_name, problem)
         options = self._update_algorithm_options(**options)
-        self.internal_algo_name = self.lib_dict[self.algo_name].internal_algorithm_name
+        self.internal_algo_name = self.descriptions[
+            self.algo_name
+        ].internal_algorithm_name
         problem.check()
 
         self._pre_run(problem, self.algo_name, **options)
@@ -350,25 +352,29 @@ class AlgoLib:
         :param problem: The problem to be solved.
         """
         # Check that the algorithm is available
-        if algo_name not in self.lib_dict:
+        if algo_name not in self.descriptions:
             raise KeyError(
                 "Requested algorithm {} is not in list of available algorithms: "
-                "{}.".format(algo_name, ", ".join(self.lib_dict.keys()))
+                "{}.".format(algo_name, ", ".join(self.descriptions.keys()))
             )
 
         # Check that the algorithm is suited to the problem
-        if not self.is_algorithm_suited(self.lib_dict[self.algo_name], problem):
+        if not self.is_algorithm_suited(self.descriptions[self.algo_name], problem):
             raise ValueError(f"Algorithm {algo_name} is not adapted to the problem.")
 
     @staticmethod
     def is_algorithm_suited(
-        algo_dict: Mapping[str, bool],
+        algorithm_description: AlgorithmDescription,
         problem: Any,
     ) -> bool:
-        """Check if the algorithm is suited to the problem according to algo_dict.
+        """Check if the algorithm is suited to the problem according to its description.
 
-        :param algo_dict: the algorithm characteristics
-        :param problem: the opt_problem to be solved
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
         """
         raise NotImplementedError()
 
@@ -378,8 +384,9 @@ class AlgoLib:
         :param problem: The opt_problem to be solved.
         :returns: The list of adapted algorithms names.
         """
-        available = []
-        for algo_name, algo_dict in self.lib_dict.items():
-            if self.is_algorithm_suited(algo_dict, problem):
-                available.append(algo_name)
-        return available
+        adapted_algorithms = []
+        for algo_name, algo_description in self.descriptions.items():
+            if self.is_algorithm_suited(algo_description, problem):
+                adapted_algorithms.append(algo_name)
+
+        return adapted_algorithms

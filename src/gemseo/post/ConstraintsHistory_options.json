@@ -1,8 +1,8 @@
 {
     "name": "LineChart_options",
-    "required": ["constraints_list"],
+    "required": ["constraint_names"],
     "properties": {
-        "constraints_list":{
+        "constraint_names":{
         	"items": {
                 "type": "string",
                 "minItems": 1

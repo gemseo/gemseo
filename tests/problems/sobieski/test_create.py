@@ -43,4 +43,4 @@ def test_create_design_space(dtype):
     """Check the creation of the design space."""
     design_space = create_design_space(dtype)
     assert "x_shared" in design_space
-    assert str(design_space.get_current_x(["x_shared"]).dtype) == dtype
+    assert str(design_space.get_current_value(["x_shared"]).dtype) == dtype

@@ -84,9 +84,9 @@ class Rosenbrock(OptimizationProblem):
             args = ["x"]
             design_space.add_variable("x", size=n_x, l_b=l_b, u_b=u_b)
         if initial_guess is None:
-            design_space.set_current_x(zeros(n_x))
+            design_space.set_current_value(zeros(n_x))
         else:
-            design_space.set_current_x(initial_guess)
+            design_space.set_current_value(initial_guess)
 
         super().__init__(design_space)
         self.objective = MDOFunction(

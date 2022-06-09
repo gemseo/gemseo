@@ -108,7 +108,7 @@ def test_matlab_optim_results():
     optim_res = scenario.get_optimum()
     assert pytest.approx(optim_res.f_opt) == 3.182059
 
-    x_opt = scenario.design_space.get_current_x_dict()
+    x_opt = scenario.design_space.get_current_value(as_dict=True)
     assert pytest.approx(x_opt["x"]) == 0.0
     assert pytest.approx(x_opt["z"][0]) == 2.0363869
     assert pytest.approx(x_opt["z"][1]) == 0.0

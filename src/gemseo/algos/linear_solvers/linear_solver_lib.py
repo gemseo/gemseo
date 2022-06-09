@@ -23,7 +23,6 @@ import logging
 import pickle
 from dataclasses import dataclass
 from typing import Any
-from typing import Mapping
 from uuid import uuid4
 
 from numpy import ndarray
@@ -107,25 +106,31 @@ class LinearSolverLib(AlgoLib):
 
     @staticmethod
     def is_algorithm_suited(
-        algo_dict: Mapping[str, bool],
+        algorithm_description: LinearSolverDescription,
         problem: LinearProblem,
     ) -> bool:
         """Check if the algorithm is suited to the problem according to algo_dict.
 
         Args:
-            algo_dict: The algorithm characteristics.
+            algorithm_description: The description of the algorithm.
             problem: The problem to be solved.
 
         Returns:
             Whether the algorithm suits.
         """
-        if not problem.is_symmetric and algo_dict.lhs_must_be_symmetric:
+        if not problem.is_symmetric and algorithm_description.lhs_must_be_symmetric:
             return False
 
-        if not problem.is_positive_def and algo_dict.lhs_must_be_positive_definite:
+        if (
+            not problem.is_positive_def
+            and algorithm_description.lhs_must_be_positive_definite
+        ):
             return False
 
-        if problem.is_lhs_linear_operator and not algo_dict.lhs_must_be_linear_operator:
+        if (
+            problem.is_lhs_linear_operator
+            and not algorithm_description.lhs_must_be_linear_operator
+        ):
             return False
 
         return True

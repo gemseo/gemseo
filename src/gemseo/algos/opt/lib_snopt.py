@@ -131,7 +131,7 @@ class SnOpt(OptimizationLibrary):
         super().__init__()
         self.__n_ineq_constraints = 0
         self.__n_eq_constraints = 0
-        self.lib_dict = {
+        self.descriptions = {
             "SNOPTB": SNOPTAlgorithmDescription(
                 algorithm_name="SNOPT",
                 description="Sparse Nonlinear OPTimizer (SNOPT)",

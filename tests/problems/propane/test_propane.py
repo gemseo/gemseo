@@ -38,7 +38,7 @@ class TestPropaneScenario(unittest.TestCase):
 
     def get_current_x(self):
         """"""
-        return get_design_space().get_current_x()
+        return get_design_space().get_current_value()
 
     def get_inputs_by_names(self, data_names):
         """
@@ -100,7 +100,7 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.execute(run_inputs)
         obj_opt = scenario.optimization_result.f_opt
 
-        x_opt = scenario.design_space.get_current_x()
+        x_opt = scenario.design_space.get_current_value()
         return obj_opt, x_opt
 
     def test_init_mdf(self):

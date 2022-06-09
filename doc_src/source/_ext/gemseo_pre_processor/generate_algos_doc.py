@@ -347,7 +347,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The description of the algorithm.
             """
-            return algo_factory.create(algo).lib_dict[algo].description
+            return algo_factory.create(algo).descriptions[algo].description
 
         return get_description
 
@@ -366,7 +366,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The website associated with the algorithm.
             """
-            return algo_factory.create(algo).lib_dict[algo].website
+            return algo_factory.create(algo).descriptions[algo].website
 
         return get_website
 

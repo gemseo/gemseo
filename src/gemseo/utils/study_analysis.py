@@ -492,47 +492,48 @@ class StudyAnalysis:
     @staticmethod
     def _create_scenario(
         disciplines: Iterable[MDODiscipline],
-        scenario_descr: Mapping[str, Iterable[str]],
+        scenario_description: Mapping[str, Iterable[str]],
     ) -> MDOScenario:
         """Create a MDO scenario.
 
         Args:
-            disciplines: The discipline.
-            scenario_descr: The description of the scenario.
+            disciplines: The disciplines.
+            scenario_description: The description of the scenario.
 
         Returns:
             A MDO scenario.
         """
-        coupl_struct = MDOCouplingStructure(disciplines)
-        couplings = coupl_struct.all_couplings
         design_space = create_design_space()
-        scn_dv = scenario_descr[XLSStudyParser.DESIGN_VARIABLES]
-        for var in sorted(set(scn_dv) | set(couplings)):
-            design_space.add_variable(var, size=1)
+        coupling_variables = set(MDOCouplingStructure(disciplines).all_couplings)
+        design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
+        for name in sorted(coupling_variables | design_variables):
+            design_space.add_variable(name, size=1)
 
-        options = scenario_descr[XLSStudyParser.OPTIONS]
-        options_dict = {}
-        if options is not None:
-            options_values = scenario_descr[XLSStudyParser.OPTIONS_VALUES]
-            for opt, val in zip(options, options_values):
-                if isinstance(val, str):
+        option_names = scenario_description[XLSStudyParser.OPTIONS]
+        options = {}
+        if option_names is not None:
+            option_values = scenario_description[XLSStudyParser.OPTIONS_VALUES]
+            for option_name, option_value in zip(option_names, option_values):
+                if isinstance(option_value, str):
                     try:
-                        val = literal_eval(val)
+                        option_value = literal_eval(option_value)
                     except ValueError:
                         pass
                 else:
                     pass
-                options_dict[opt] = val
+
+                options[option_name] = option_value
 
         scenario = create_scenario(
             disciplines,
-            scenario_descr[XLSStudyParser.FORMULATION],
-            scenario_descr[XLSStudyParser.OBJECTIVE_FUNCTION],
+            scenario_description[XLSStudyParser.FORMULATION],
+            scenario_description[XLSStudyParser.OBJECTIVE_FUNCTION],
             design_space,
-            **options_dict,
+            **options,
         )
-        for cstr in scenario_descr[XLSStudyParser.CONSTRAINTS]:
-            scenario.add_constraint(cstr)
+        for constraint_name in scenario_description[XLSStudyParser.CONSTRAINTS]:
+            scenario.add_constraint(constraint_name)
+
         return scenario
 
     def _get_disciplines_instances(

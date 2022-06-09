@@ -52,7 +52,7 @@ def test_constraints_history(tmp_wd, factory):
         file_path="lines_chart1",
         save=True,
         show=False,
-        constraints_list=problem.get_constraints_names(),
+        constraint_names=problem.get_constraints_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -72,7 +72,7 @@ def test_constraints_history_load(tmp_wd, problem, factory):
         "ConstraintsHistory",
         save=True,
         show=False,
-        constraints_list=problem.get_constraints_names(),
+        constraint_names=problem.get_constraints_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -98,5 +98,5 @@ def test_function_error(tmp_wd, problem, factory):
             "ConstraintsHistory",
             save=True,
             show=False,
-            constraints_list=["toto"],
+            constraint_names=["toto"],
         )

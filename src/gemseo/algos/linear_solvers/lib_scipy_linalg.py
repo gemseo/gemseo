@@ -91,10 +91,10 @@ class ScipyLinalgAlgos(LinearSolverLib):
             "BICGSTAB": bicgstab,
             "DEFAULT": self._run_default_solver,
         }
-        self.lib_dict = {
+        self.descriptions = {
             name: self.get_default_properties(name) for name in self.methods_map
         }
-        self.lib_dict["DEFAULT"].description = (
+        self.descriptions["DEFAULT"].description = (
             "This starts by LGMRES, but if it fails, "
             "switches to GMRES, then direct method super LU factorization."
         )

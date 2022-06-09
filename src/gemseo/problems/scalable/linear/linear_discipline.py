@@ -74,14 +74,15 @@ class LinearDiscipline(MDODiscipline):
         self.default_inputs = {k: 0.5 * ones(inputs_size) for k in input_names}
 
     def _run(self) -> None:
-        in_array = concatenate_dict_of_arrays_to_array(
+        input_data = concatenate_dict_of_arrays_to_array(
             self.local_data, self.input_names
         )
-        out_array = self.mat.dot(in_array)
-        out_dict = split_array_to_dict_of_arrays(
-            out_array, self.__sizes_d, self.output_names
+        output_data = self.mat.dot(input_data)
+        self.local_data.update(
+            split_array_to_dict_of_arrays(
+                output_data, self.__sizes_d, self.output_names
+            )
         )
-        self.local_data.update(out_dict)
 
     def _compute_jacobian(
         self,

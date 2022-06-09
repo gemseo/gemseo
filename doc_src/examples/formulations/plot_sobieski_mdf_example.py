@@ -178,14 +178,14 @@ scenario.post_process("ObjConstrHist", save=False, show=False)
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ConstraintsHistory", save=False, show=False, constraints_list=["g_1", "g_2", "g_3"]
+    "ConstraintsHistory", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
 )
 
 ##############################################################################
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "RadarChart", save=False, show=False, constraints_list=["g_1", "g_2", "g_3"]
+    "RadarChart", save=False, show=False, constraint_names=["g_1", "g_2", "g_3"]
 )
 
 ##############################################################################

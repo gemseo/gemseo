@@ -55,7 +55,7 @@ def test_scatter(tmp_wd, pyplot_close_all):
         "ScatterPlotMatrix",
         save=True,
         file_path="scatter1",
-        variables_list=problem.get_all_functions_names(),
+        variable_names=problem.get_all_functions_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -77,13 +77,13 @@ def test_scatter_load(tmp_wd, pyplot_close_all):
         "ScatterPlotMatrix",
         save=True,
         file_path="scatter2",
-        variables_list=problem.get_all_functions_names(),
+        variable_names=problem.get_all_functions_names(),
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variables_list=[])
+    post = factory.execute(problem, "ScatterPlotMatrix", save=True, variable_names=[])
     for outf in post.output_files:
         assert Path(outf).exists()
 
@@ -106,7 +106,7 @@ def test_non_existent_var(tmp_wd):
             problem,
             "ScatterPlotMatrix",
             save=True,
-            variables_list=["toto"],
+            variable_names=["toto"],
         )
 
 
@@ -151,7 +151,7 @@ def test_scatter_plot(baseline_images, variables, pyplot_close_all):
         save=False,
         file_path="scatter_sellar",
         file_extension="png",
-        variables_list=variables,
+        variable_names=variables,
     )
     post.figures
 
@@ -189,7 +189,7 @@ def test_maximized_func(tmp_wd, pyplot_close_all):
         save=True,
         file_path="scatter_sellar",
         file_extension="png",
-        variables_list=["obj", "x_local", "x_shared"],
+        variable_names=["obj", "x_local", "x_shared"],
     )
     assert len(post.output_files) == 1
     for outf in post.output_files:
@@ -236,7 +236,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images, pyplot_close_
         file_extension="png",
         save=False,
         filter_non_feasible=filter_non_feasible,
-        variables_list=["x"],
+        variable_names=["x"],
     )
     post.figures
 
@@ -257,5 +257,5 @@ def test_filter_non_feasible_exception():
 
     with pytest.raises(ValueError, match="No feasible points were found!"):
         factory.execute(
-            problem, "ScatterPlotMatrix", filter_non_feasible=True, variables_list=["x"]
+            problem, "ScatterPlotMatrix", filter_non_feasible=True, variable_names=["x"]
         )

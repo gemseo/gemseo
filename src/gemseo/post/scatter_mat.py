@@ -44,12 +44,12 @@ class ScatterPlotMatrix(OptPostProcessor):
 
     def _plot(
         self,
-        variables_list: Sequence[str],
+        variable_names: Sequence[str],
         filter_non_feasible: bool = False,
     ) -> None:
         """
         Args:
-            variables_list: The functions names or design variables to plot.
+            variable_names: The functions names or design variables to plot.
                 If the list is empty,
                 plot all design variables.
             filter_non_feasible: If True, remove the non-feasible
@@ -57,16 +57,16 @@ class ScatterPlotMatrix(OptPostProcessor):
 
         Raises:
             ValueError: If `filter_non_feasible` is set to True and no feasible
-                points exist. If an element from variables_list is not either
+                points exist. If an element from variable_names is not either
                 a function or a design variable.
         """
 
         add_dv = False
         all_funcs = self.opt_problem.get_all_functions_names()
         all_dv_names = self.opt_problem.design_space.variables_names
-        variables_list.sort()
+        variable_names.sort()
 
-        if not variables_list:
+        if not variable_names:
             # In this case, plot all design variables, no functions.
             vals = self.opt_problem.get_data_by_names(
                 names=all_dv_names,
@@ -79,12 +79,12 @@ class ScatterPlotMatrix(OptPostProcessor):
 
         else:
             design_variables = []
-            for func in list(variables_list):
+            for func in list(variable_names):
                 if func not in all_funcs and func not in all_dv_names:
                     min_f = f"-{func}" == self.opt_problem.objective.name
                     if min_f and not self.opt_problem.minimize_objective:
-                        variables_list[variables_list.index(func)] = f"-{func}"
-                        variables_list.sort()
+                        variable_names[variable_names.index(func)] = f"-{func}"
+                        variable_names.sort()
                     else:
                         msg = (
                             "Cannot build scatter plot matrix, "
@@ -98,7 +98,7 @@ class ScatterPlotMatrix(OptPostProcessor):
                 if func in self.opt_problem.design_space.variables_names:
                     # if given function is a design variable, then remove it
                     add_dv = True
-                    variables_list.remove(func)
+                    variable_names.remove(func)
                     design_variables.append(func)
             if not design_variables:
                 design_variables = None
@@ -114,9 +114,9 @@ class ScatterPlotMatrix(OptPostProcessor):
                 # and functions i.e. toto_0, toto_1 if toto is a variable
                 # with 2 components
                 dv_labels = self._generate_x_names(variables=design_variables)
-                if variables_list:
+                if variable_names:
                     _, func_labels, _ = self.database.get_history_array(
-                        functions=variables_list,
+                        functions=variable_names,
                         design_variables_names=None,
                         add_dv=False,
                     )
@@ -124,16 +124,16 @@ class ScatterPlotMatrix(OptPostProcessor):
                     func_labels = []
                 # vname contains function names + condensed variable names
                 # i.e. "toto" even if toto has 2 components or more
-                vname = variables_list + design_variables
+                vname = variable_names + design_variables
                 # x_labels contains function names + readable variable names
                 x_labels = func_labels + dv_labels
             else:
                 # In this case we are only plotting functions.
                 # Functions have unique names, so x_labels and
                 # vname are equal.
-                vname = variables_list
+                vname = variable_names
                 _, x_labels, _ = self.database.get_history_array(
-                    functions=variables_list,
+                    functions=variable_names,
                     design_variables_names=None,
                     add_dv=False,
                 )

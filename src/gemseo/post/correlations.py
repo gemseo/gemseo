@@ -166,7 +166,7 @@ class Correlations(OptPostProcessor):
         x_plt = values_array[:, i_ind]
         y_plt = values_array[:, j_ind]
         ax1.scatter(x_plt, y_plt, c="b", s=30)
-        self.out_data_dict[(i_ind, j_ind)] = (
+        self.materials_for_plotting[(i_ind, j_ind)] = (
             variables_names[i_ind],
             variables_names[j_ind],
             corr_coeff,

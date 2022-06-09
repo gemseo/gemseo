@@ -128,7 +128,7 @@ class OpenTURNS(DOELibrary):
         super().__init__()
         self.__sequence = None
         for algo_name, algo_value in self.__OT_METADATA.items():
-            self.lib_dict[algo_name] = DOEAlgorithmDescription(
+            self.descriptions[algo_name] = DOEAlgorithmDescription(
                 algorithm_name=algo_name,
                 description=algo_value[0],
                 handle_integer_variables=True,

@@ -1,11 +1,11 @@
 {
     "name": "ScatterPlotMatrix_options",
-    "required": ["variables_list"],
+    "required": ["variable_names"],
     "properties": {
         "filter_non_feasible":{
             "type": "boolean"
         },
-        "variables_list":{
+        "variable_names":{
         	"items": {
                 "type": "string",
                 "minItems": 1

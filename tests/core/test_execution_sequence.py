@@ -148,7 +148,7 @@ class TestExecSequence(unittest.TestCase):
         self.assertEqual(seq.status, MDODiscipline.STATUS_RUNNING)
         self.d1.status = MDODiscipline.STATUS_DONE
         self.assertEqual(seq.status, MDODiscipline.STATUS_DONE)
-        for state in seq.get_state_dict().values():
+        for state in seq.get_statuses().values():
             self.assertEqual(MDODiscipline.STATUS_DONE, state)
 
     def test_parallel_execution_failed(self):
@@ -201,8 +201,8 @@ class TestExecSequence(unittest.TestCase):
     def status_of(self, seq, disc, n=0):
         #         print seq
         #         print seq.disc_to_uuids[disc]
-        #         print seq.get_state_dict()
-        return seq.get_state_dict()[seq.disc_to_uuids[disc][n]]
+        #         print seq.get_statuses()
+        return seq.get_statuses()[seq.disc_to_uuids[disc][n]]
 
     def test_sub_scenario(self):
         d1 = SobieskiPropulsion()

@@ -576,30 +576,32 @@ class PostScalabilityStudy:
 
         :param bool unique: return either unique values if True
             or one value per scalability result if False (default: False).
-        :return: names of the optimization stategies.
+        :return: names of the optimization strategies.
         :rtype: list(str)
         """
-        os_list = ["_".join(name.split("_")[0:-2]) for name in self.names]
+        strategy_names = ["_".join(name.split("_")[0:-2]) for name in self.names]
         if unique:
-            os_list = sorted(set(os_list))
-        return os_list
+            return sorted(set(strategy_names))
+
+        return strategy_names
 
     @property
     def optimization_strategies(self):
         return self.get_optimization_strategies(True)
 
     def get_scaling_strategies(self, unique=False):
-        """Get the identificants of the scaling strategies.
+        """Get the identifiers of the scaling strategies.
 
         :param bool unique: return either unique values if True
             or one value per scalability result if False (default: False).
-        :return: identifiants of scaling strategies
+        :return: identifiers of scaling strategies
         :rtype: list(int)
         """
-        ss_list = [int(name.split("_")[-2]) for name in self.names]
+        strategy_identifiers = [int(name.split("_")[-2]) for name in self.names]
         if unique:
-            ss_list = sorted(set(ss_list))
-        return ss_list
+            return sorted(set(strategy_identifiers))
+
+        return strategy_identifiers
 
     def get_replicates(self, unique=False):
         """Get the replicate identifiants.

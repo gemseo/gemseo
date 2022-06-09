@@ -419,17 +419,16 @@ class Database:
         for k in empt:
             del self[k]
 
-    def filter(self, data_list_to_keep: Iterable[str]) -> None:
+    def filter(self, names: Iterable[str]) -> None:
         """Filter the database so that only the required output functions are kept.
 
         Args:
-            data_list_to_keep: The name of output functions that must be kept.
+            names: The names of output functions that must be kept.
         """
-        data_list_to_keep = set(data_list_to_keep)
-        for val in self.values():
-            keys_to_del = set(val.keys()) - data_list_to_keep
-            for key in keys_to_del:
-                del val[key]
+        names = set(names)
+        for value in self.values():
+            for key in set(value.keys()) - names:
+                del value[key]
 
     def get_func_history(
         self,
@@ -1184,22 +1183,24 @@ class Database:
                 keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
 
                 array_name = f"arr_{str_index}"
-
                 if array_name in values_group:
-                    argrp = values_group[array_name]
-                    vec_dict = {keys[int(k)]: array(v) for k, v in argrp.items()}
+                    names_to_arrays = {
+                        keys[int(k)]: array(v)
+                        for k, v in values_group[array_name].items()
+                    }
                 else:
-                    vec_dict = {}
-
-                scalar_keys = (k for k in keys if k not in vec_dict)
+                    names_to_arrays = {}
 
                 if str_index in values_group:
-                    locvalues_scalars = get_hdf5_group(values_group, str_index)
-                    scalar_dict = dict(zip(scalar_keys, locvalues_scalars))
+                    scalar_dict = dict(
+                        zip(
+                            (k for k in keys if k not in names_to_arrays),
+                            get_hdf5_group(values_group, str_index),
+                        )
+                    )
                 else:
                     scalar_dict = {}
-
-                scalar_dict.update(vec_dict)
+                scalar_dict.update(names_to_arrays)
 
                 self.store(
                     array(design_vars_grp[str_index]), scalar_dict, add_iter=False

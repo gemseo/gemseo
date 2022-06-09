@@ -21,8 +21,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from os.path import dirname
-from os.path import join
+from pathlib import Path
+from typing import Any
+from typing import Mapping
 
 from gemseo.core import discipline
 from gemseo.core.discipline import MDODiscipline
@@ -49,18 +50,17 @@ class DisciplinesFactory:
         Searches in "GEMSEO_PATH" and :doc:`gemseo.problems`.
         """
         # Defines the benchmark problems to be imported
-        internal_modules_paths = (
-            "gemseo.problems",
-            "gemseo.core",
-            "gemseo.disciplines",
-            "gemseo.wrappers",
+        self.factory = Factory(
+            MDODiscipline,
+            (
+                "gemseo.problems",
+                "gemseo.core",
+                "gemseo.disciplines",
+                "gemseo.wrappers",
+            ),
         )
-        self.factory = Factory(MDODiscipline, internal_modules_paths)
-
         self.__base_grammar = JSONGrammar("MDODiscipline_options")
-        base_gram_path = join(
-            dirname(discipline.__file__), "MDODiscipline_options.json"
-        )
+        base_gram_path = Path(discipline.__file__).parent / "MDODiscipline_options.json"
         self.__base_grammar.update_from_file(base_gram_path)
         self.__base_grammar_names = self.__base_grammar.keys()
 
@@ -75,32 +75,36 @@ class DisciplinesFactory:
         :type options: dict
         :returns: the discipline instance
         """
-        com_opts_dict, spec_opts_dict = self.__filter_common_options(options)
-        self.__base_grammar.validate(com_opts_dict)
-        disc = self.factory.create(discipline_name, **spec_opts_dict)
-        if "linearization_mode" in com_opts_dict:
-            disc.linearization_mode = com_opts_dict["linearization_mode"]
+        common_options, specific_options = self.__filter_common_options(options)
+        self.__base_grammar.validate(common_options)
+        discipline = self.factory.create(discipline_name, **specific_options)
+        if "linearization_mode" in common_options:
+            discipline.linearization_mode = common_options["linearization_mode"]
 
-        cache_opts = self.__filter_opts_dict(com_opts_dict, "cache")
-        if cache_opts:
-            disc.set_cache_policy(**cache_opts)
+        cache_options = self.__filter_options_with_prefix(common_options, "cache")
+        if cache_options:
+            discipline.set_cache_policy(**cache_options)
 
-        jac_opts = self.__filter_opts_dict(com_opts_dict, "jac")
-        if jac_opts:
-            disc.set_jacobian_approximation(**jac_opts)
+        jacobian_options = self.__filter_options_with_prefix(common_options, "jac")
+        if jacobian_options:
+            discipline.set_jacobian_approximation(**jacobian_options)
 
-        return disc
+        return discipline
 
     @staticmethod
-    def __filter_opts_dict(options, startstring):
-        """Filters the options that start with a string.
+    def __filter_options_with_prefix(
+        options: Mapping[str, Any], prefix: str
+    ) -> dict[str, Any]:
+        """Filter the options whose names start with a prefix.
 
-        :param options: discipline options
-        :type options: dict
-        :param startstring: predicate for the option
-        :type startstring: str
+        Args:
+            options: The options of the disciplines.
+            prefix: The prefix.
+
+        Returns:
+            The options whose names start with a prefix.
         """
-        return {k: v for k, v in options.items() if k.startswith(startstring)}
+        return {k: v for k, v in options.items() if k.startswith(prefix)}
 
     def __filter_common_options(self, options):
         """Separates options:
@@ -111,10 +115,10 @@ class DisciplinesFactory:
         :param options: options of the discipline
         :type options: dict
         """
-        com_opts_names = self.__base_grammar_names
-        com_opts_dict = {k: v for k, v in options.items() if k in com_opts_names}
-        spec_opts_dict = {k: v for k, v in options.items() if k not in com_opts_dict}
-        return com_opts_dict, spec_opts_dict
+        common_option_names = self.__base_grammar_names
+        common_options = {k: v for k, v in options.items() if k in common_option_names}
+        specific_options = {k: v for k, v in options.items() if k not in common_options}
+        return common_options, specific_options
 
     def update(self):
         """Updates the paths, to be used if GEMSEO_PATH was changed."""
@@ -145,6 +149,6 @@ class DisciplinesFactory:
         :returns: the json grammar for options
         """
         disc_gram = self.factory.get_options_grammar(name, write_schema, schema_path)
-        base_grammar = deepcopy(self.__base_grammar)
-        base_grammar.update(disc_gram)
-        return base_grammar
+        option_grammar = deepcopy(self.__base_grammar)
+        option_grammar.update(disc_gram)
+        return option_grammar

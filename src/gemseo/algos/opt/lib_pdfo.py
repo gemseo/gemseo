@@ -92,7 +92,7 @@ class PDFOOpt(OptimizationLibrary):
         - does it handle inequality constraints
         """
         super().__init__()
-        self.lib_dict = {
+        self.descriptions = {
             "PDFO_COBYLA": PDFOAlgorithmDescription(
                 algorithm_name="COBYLA",
                 description="Constrained Optimization By Linear Approximations ",

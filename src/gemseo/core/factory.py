@@ -375,16 +375,19 @@ class Factory(Multiton):
         Returns:
             The JSON grammar.
         """
-        args_dict = self.get_default_options_values(name)
-        opts_doc = self.get_options_doc(name)
-        opts_doc = {k: v for k, v in opts_doc.items() if k in args_dict}
+        default_option_values = self.get_default_options_values(name)
+        option_descriptions = {
+            option_name: option_description
+            for option_name, option_description in self.get_options_doc(name).items()
+            if option_name in default_option_values
+        }
         grammar = JSONGrammar(name)
-        grammar.update_from_data(args_dict)
-        grammar.set_descriptions(opts_doc)
+        grammar.update_from_data(default_option_values)
+        grammar.set_descriptions(option_descriptions)
 
         # Remove args bound to None from the required properties
         # because they are optional.
-        for opt, val in args_dict.items():
+        for opt, val in default_option_values.items():
             if val is None:
                 grammar.required_names.remove(opt)
 
@@ -445,25 +448,25 @@ class Factory(Multiton):
             max_table_width=120,
         )
 
-        row_dict = {}
+        names_to_import_statuses = {}
         for cls in self.__names_to_classes.values():
             msg = ""
             try:
-                msgs = cls.__doc__.split("\n")
-                while msgs and msg == "":
-                    msg = msgs[0]
-                    del msgs[0]
+                class_docstring_lines = cls.__doc__.split("\n")
+                while class_docstring_lines and msg == "":
+                    msg = class_docstring_lines[0]
+                    del class_docstring_lines[0]
             except Exception:  # pylint: disable=broad-except
                 pass
 
-            key = cls.__name__
-            row_dict[key] = [key, "Yes", msg]
+            class_name = cls.__name__
+            names_to_import_statuses[class_name] = [class_name, "Yes", msg]
 
-        for key, err in self.failed_imports.items():
-            row_dict[key] = [key, "No", str(err)]
+        for package_name, err in self.failed_imports.items():
+            names_to_import_statuses[package_name] = [package_name, "No", str(err)]
 
         # Take them all and then sort them for pretty printing
-        for key in sorted(row_dict.keys()):
-            table.add_row(row_dict[key])
+        for name in sorted(names_to_import_statuses.keys()):
+            table.add_row(names_to_import_statuses[name])
 
         return table.get_string()

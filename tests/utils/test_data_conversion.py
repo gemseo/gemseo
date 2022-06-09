@@ -22,8 +22,10 @@ from typing import List
 from typing import Union
 
 import pytest
+from gemseo.utils.data_conversion import array_to_dict
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
+from gemseo.utils.data_conversion import dict_to_array
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
@@ -341,3 +343,9 @@ def test_compare_dict_of_arrays(d_1, d_2, d_3, d_4):
     d_1_copy["x"] += 0.1
     assert not compare_dict_of_arrays(d_1, d_1_copy)
     assert compare_dict_of_arrays(d_1, d_1_copy, tolerance=0.1)
+
+
+def test_aliases():
+    """Check aliases."""
+    assert dict_to_array == concatenate_dict_of_arrays_to_array
+    assert array_to_dict == split_array_to_dict_of_arrays

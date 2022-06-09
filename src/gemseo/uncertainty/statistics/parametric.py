@@ -386,13 +386,12 @@ class ParametricStatistics(Statistics):
             distributions: The distributions names.
 
         Returns:
-            dict(str, dict): The distributions for the different variables.
+            The distributions for the different variables.
         """
-        dist_list = ", ".join(distributions)
         LOGGER.info(
             "Fit different distributions (%s) per variable "
             "and compute the goodness-of-fit criterion.",
-            dist_list,
+            ", ".join(distributions),
         )
         results = {}
         for variable in self.names:

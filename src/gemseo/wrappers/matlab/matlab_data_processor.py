@@ -135,33 +135,28 @@ def load_matlab_file(
 
 
 def save_matlab_file(
-    dict_to_save: dict,
+    data: Mapping[str, ndarray],
     file_path: str | Path = "output_dict",
-    *args: bool,
-    **kwargs: bool,
+    **options: bool | str,
 ) -> None:
-    """Create a .mat file from dict of ndarray.
+    """Save data to a MATLAB-style *.mat* file.
 
     Args:
-        dict_to_save: The dict of ndarray to be saved.
-        file_path: The path where to sabe the file.
-        *args: The list of scipy.io.savemat options.
-        **kwargs: The dict of scipy.io.savemat options.
+        data: The data of the form ``{data_name: data_value}``.
+        file_path: The path of the file where to save the data.
+        **options: The options of ``scipy.io.savemat``.
 
     Raises:
-        ValueError: If the saved dictionary is nor composed
-            of ndarray only.
+        ValueError: If some values in ``data`` are not NumPy arrays.
     """
-    saved_dict = dict_to_save.copy()
+    data_copy = data.copy()
+    for data_name, data_value in data_copy.items():
+        if isinstance(data_value, matlab.double):
+            data_copy[data_name] = double2array(data_value)
+        elif not isinstance(data_value, ndarray):
+            raise ValueError("The data must be composed of NumPy arrays only.")
 
-    for key, value in saved_dict.items():
-        if isinstance(value, matlab.double):
-            saved_dict[key] = double2array(value)
-        elif not isinstance(value, ndarray):
-            msg = "The saved dict must be composed of ndarray only"
-            raise ValueError(msg)
-
-    scipy.io.savemat(file_name=str(file_path), mdict=saved_dict, *args, **kwargs)
+    scipy.io.savemat(str(file_path), data_copy, **options)
 
 
 def array2double(data_array: ndarray) -> matlab.double:

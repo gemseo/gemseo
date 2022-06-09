@@ -326,7 +326,7 @@ class XDSMizer:
         nodes = []
         self.to_id = {}
 
-        statuses = self.workflow.get_state_dict()
+        statuses = self.workflow.get_statuses()
 
         # Optimization
         self.to_id[self.root_atom] = OPT_ID
@@ -498,15 +498,17 @@ class XDSMizer:
             The atomic execution sequences.
         """
         atoms = []
-        for seq in workflow.sequence_list:
-            if isinstance(seq, LoopExecSequence):
-                atoms.append(seq.atom_controller)
-                if not seq.atom_controller.discipline.is_scenario():
-                    atoms += XDSMizer._get_single_level_atoms(seq.iteration_sequence)
-            elif isinstance(seq, AtomicExecSequence):
-                atoms.append(seq)
+        for sequence in workflow.sequences:
+            if isinstance(sequence, LoopExecSequence):
+                atoms.append(sequence.atom_controller)
+                if not sequence.atom_controller.discipline.is_scenario():
+                    atoms += XDSMizer._get_single_level_atoms(
+                        sequence.iteration_sequence
+                    )
+            elif isinstance(sequence, AtomicExecSequence):
+                atoms.append(sequence)
             else:
-                atoms += XDSMizer._get_single_level_atoms(seq)
+                atoms += XDSMizer._get_single_level_atoms(sequence)
         return atoms
 
     def _find_atom(
@@ -553,18 +555,18 @@ class XDSMizer:
             None if the list of execution sequences of the original workflow is empty.
         """
         sub_workflow = None
-        for seq in workflow.sequence_list:
-            if isinstance(seq, LoopExecSequence):
-                if seq.atom_controller.uuid == atom_controller.uuid:
-                    sub_workflow = seq
+        for sequence in workflow.sequences:
+            if isinstance(sequence, LoopExecSequence):
+                if sequence.atom_controller.uuid == atom_controller.uuid:
+                    sub_workflow = sequence
                     return sub_workflow
 
                 sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    seq.iteration_sequence, atom_controller
+                    sequence.iteration_sequence, atom_controller
                 )
-            elif not isinstance(seq, AtomicExecSequence):
+            elif not isinstance(sequence, AtomicExecSequence):
                 sub_workflow = sub_workflow or XDSMizer._find_sub_workflow(
-                    seq, atom_controller
+                    sequence, atom_controller
                 )
 
         return sub_workflow
@@ -595,13 +597,13 @@ def expand(
     """
     if isinstance(wks, SerialExecSequence):
         res = []
-        for seq in wks.sequence_list:
-            res += expand(seq, to_id)
+        for sequence in wks.sequences:
+            res += expand(sequence, to_id)
         ids = res
     elif isinstance(wks, ParallelExecSequence):
         res = []
-        for seq in wks.sequence_list:
-            res += expand(seq, to_id)
+        for sequence in wks.sequences:
+            res += expand(sequence, to_id)
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (

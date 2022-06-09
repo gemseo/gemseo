@@ -137,10 +137,10 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 " got: %s instead" % constraint_type
             )
         if isinstance(output_name, list):
-            outputs_list = output_name
+            output_names = output_name
         else:
-            outputs_list = [output_name]
-        return outputs_list
+            output_names = [output_name]
+        return output_names
 
     def add_constraint(
         self,
@@ -170,14 +170,12 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
                 If None, the value is equal to 0.
             positive: If True, the inequality constraint is positive.
         """
-        outputs_list = self._check_add_cstr_input(output_name, constraint_type)
-
-        mapped_cstr = FunctionFromDiscipline(outputs_list, self, top_level_disc=True)
-        mapped_cstr.f_type = constraint_type
-
+        output_names = self._check_add_cstr_input(output_name, constraint_type)
+        constraint = FunctionFromDiscipline(output_names, self, top_level_disc=True)
+        constraint.f_type = constraint_type
         if constraint_name is not None:
-            mapped_cstr.name = constraint_name
-        self.opt_problem.add_constraint(mapped_cstr, value=value, positive=positive)
+            constraint.name = constraint_name
+        self.opt_problem.add_constraint(constraint, value=value, positive=positive)
 
     def add_observable(
         self,
@@ -545,19 +543,17 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The sub-disciplines.
         """
-        sub_disc = []
+        sub_disciplines = []
 
-        def add_to_sub(
-            disc_list: Iterable[MDODiscipline],
-        ) -> None:
+        def add_to_sub(disciplines: Iterable[MDODiscipline]) -> None:
             """Add the disciplines of the sub-scenarios if not already added it.
 
             Args:
-                disc_list: The disciplines.
+                disciplines: The disciplines.
             """
-            for disc in disc_list:
-                if disc not in sub_disc:
-                    sub_disc.append(disc)
+            for discipline in disciplines:
+                if discipline not in sub_disciplines:
+                    sub_disciplines.append(discipline)
 
         for discipline in self.disciplines:
             if hasattr(discipline, "disciplines"):
@@ -565,7 +561,7 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
             else:
                 add_to_sub([discipline])
 
-        return sub_disc
+        return sub_disciplines
 
     def get_sub_scenarios(self) -> list[Scenario]:
         """List the disciplines that are actually scenarios.
@@ -575,15 +571,20 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         """
         return [disc for disc in self.disciplines if disc.is_scenario()]
 
-    def _set_defaultinputs_from_ds(self) -> None:
+    def _set_default_input_values_from_design_space(self) -> None:
         """Initialize the top level disciplines from the design space."""
-        if not self.opt_problem.design_space.has_current_x():
+        if not self.opt_problem.design_space.has_current_value():
             return
-        x_dict = self.opt_problem.design_space.get_current_x_dict()
-        for disc in self.get_top_level_disc():
-            inputs = disc.get_input_data_names()
-            curr_x_disc = {name: x_dict[name] for name in inputs if name in x_dict}
-            disc.default_inputs.update(curr_x_disc)
+        current_x = self.opt_problem.design_space.get_current_value(as_dict=True)
+        for discipline in self.get_top_level_disc():
+            input_names = discipline.get_input_data_names()
+            discipline.default_inputs.update(
+                {
+                    name: value
+                    for name, value in current_x.items()
+                    if name in input_names
+                }
+            )
 
     def get_expected_workflow(
         self,
