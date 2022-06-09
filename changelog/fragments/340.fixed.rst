@@ -1,0 +1,1 @@
+A PCERegressor can now be deepcopied before or after the training stage.

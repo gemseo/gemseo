@@ -18,6 +18,9 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test polynomial chaos expansion regression module."""
+import re
+from copy import deepcopy
+
 import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
@@ -28,6 +31,7 @@ from gemseo.mlearning.regression.pce import PCERegressor
 from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from numpy import allclose
 from numpy import array
+from numpy.testing import assert_equal
 
 LEARNING_SIZE = 9
 
@@ -76,10 +80,27 @@ def test_constructor(dataset, prob_space):
 
     model_ = PCERegressor(dataset, prob_space, strategy="Quad")
     assert model_._proj_strategy is not None
-    with pytest.raises(ValueError):
-        PCERegressor(dataset, prob_space, strategy="foo")
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The strategy foo is not available; "
+            "available ones are: LS, Quad, SparseLS."
+        ),
+    ):
+        PCERegressor(
+            dataset,
+            prob_space,
+            strategy="foo",
+        )
     prob_space.remove_variable("x_1")
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The input names ['x_1', 'x_2'] "
+            "and the names of the variables of the probability space ['x_2'] "
+            "are not all the same."
+        ),
+    ):
         PCERegressor(dataset, prob_space)
 
 
@@ -89,7 +110,9 @@ def test_transform(dataset, prob_space):
     PCERegressor(
         dataset, prob_space, transformer={dataset.OUTPUT_GROUP: MinMaxScaler()}
     )  # Should not raise error
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="PCERegressor does not support input transformers."
+    ):
         PCERegressor(
             dataset, prob_space, transformer={dataset.INPUT_GROUP: MinMaxScaler()}
         )
@@ -112,6 +135,21 @@ def test_prediction(model):
     assert isinstance(predictions, dict)
     assert allclose(prediction["y_1"], array([9.0]))
     assert allclose(prediction["y_2"], array([-9.0]))
+
+
+@pytest.mark.parametrize("after", [False, True])
+def test_deepcopy(dataset, prob_space, after):
+    """Check that a model can be deepcopied before or after learning."""
+    model = PCERegressor(dataset, prob_space)
+    if after:
+        model.learn()
+    model_copy = deepcopy(model)
+    if not after:
+        model.learn()
+        model_copy.learn()
+
+    input_data = {"x_1": array([1.0]), "x_2": array([2.0])}
+    assert_equal(model.predict(input_data), model_copy.predict(input_data))
 
 
 def test_prediction_quad(prob_space, discipline):
@@ -150,7 +188,13 @@ def test_prediction_sparse_ls(dataset, prob_space):
 
 def test_prediction_wrong_strategy(dataset, prob_space):
     """Test prediction."""
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The strategy wrong_strategy is not available; "
+            "available ones are: LS, Quad, SparseLS."
+        ),
+    ):
         PCERegressor(dataset, prob_space, strategy="wrong_strategy")
 
 

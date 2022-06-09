@@ -178,46 +178,51 @@ class PCERegressor(MLRegressionAlgo):
                 if transformers are specified for the inputs,
                 or if the strategy to compute the parameters of the PCE is unknown.
         """
-        prob_space = probability_space
         super().__init__(
             data,
             transformer=transformer,
             input_names=input_names,
             output_names=output_names,
-            probability_space=prob_space,
+            probability_space=probability_space,
             strategy=strategy,
             degree=degree,
             n_quad=n_quad,
             stieltjes=stieltjes,
             sparse_param=sparse_param,
         )
-        self._prob_space = prob_space
+        self._prob_space = probability_space
         self._discipline = discipline
-        try:
-            if data:
-                u_names = set(prob_space.variables_names)
-                assert set(self.input_names) == u_names
-            else:
-                self.input_names = prob_space.variables_names
-        except Exception:
-            raise ValueError(
-                "Data inputs names are %s "
-                "while probability distributions are defined "
-                "%s." % (self.input_names, list(prob_space.distributions.keys()))
-            )
+        if data:
+            if set(self.input_names) != set(probability_space.variables_names):
+                raise ValueError(
+                    f"The input names {self.input_names} "
+                    "and the names of the variables of the probability space "
+                    f"{probability_space.variables_names} "
+                    "are not all the same."
+                )
+        else:
+            self.input_names = probability_space.variables_names
+
         forbidden_names = set(self.input_names).union({Dataset.INPUT_GROUP})
         if set(list(self.transformer.keys())).intersection(forbidden_names):
             raise ValueError("PCERegressor does not support input transformers.")
 
-        self._distributions = prob_space.distributions
-        self._sparse_param = sparse_param or {}
+        self._distributions = probability_space.distributions
+        self._sparse_param = {
+            "max_considered_terms": 120,
+            "most_significant": 30,
+            "significance_factor": 1e-3,
+            "hyper_factor": 1.0,
+        }
+        if sparse_param:
+            self._sparse_param.update(sparse_param)
         self._input_dim = sum(dist.dimension for _, dist in self._distributions.items())
         self._strategy = strategy
         if self._strategy not in self.AVAILABLE_STRATEGIES:
-            strategies = " ".join(self.AVAILABLE_STRATEGIES)
+            strategies = ", ".join(self.AVAILABLE_STRATEGIES)
             raise ValueError(
-                "{} is a wrong strategy."
-                " Available ones are: {}.".format(self._strategy, strategies)
+                f"The strategy {self._strategy} is not available; "
+                f"available ones are: {strategies}."
             )
         self._stieltjes = stieltjes
         self._degree = degree
@@ -226,13 +231,6 @@ class PCERegressor(MLRegressionAlgo):
             self._distributions[name].distribution for name in self.input_names
         ]
         self._dist = ComposedDistribution(self._ot_distributions)
-        hyper_factor = self._sparse_param.get("hyper_factor", 1.0)
-        self._enumerate_function = HyperbolicAnisotropicEnumerateFunction(
-            self._input_dim, hyper_factor
-        )
-        self._basis = self._get_basis()
-        self._n_basis = self._get_basis_size()
-        self._trunc_strategy = self._get_trunc_strategy()
         if self._strategy == self.QUAD_STRATEGY:
             (
                 self._sample,
@@ -240,6 +238,7 @@ class PCERegressor(MLRegressionAlgo):
                 self._proj_strategy,
             ) = self._get_quadrature_points()
         else:
+            self._proj_strategy = None
             self._sample = None
             self._weights = None
 
@@ -248,9 +247,19 @@ class PCERegressor(MLRegressionAlgo):
         input_data: ndarray,
         output_data: ndarray,
     ) -> None:
-        self._proj_strategy = self._get_proj_strategy(input_data, output_data)
-        weights = self._get_weights(input_data)
-        self.algo = self._build_pce(input_data, weights, output_data)
+        proj_strategy = self._proj_strategy or self._get_proj_strategy(
+            input_data, output_data
+        )
+        algo = FunctionalChaosAlgorithm(
+            input_data,
+            self._get_weights(input_data, proj_strategy),
+            output_data,
+            self._dist,
+            self._get_trunc_strategy(),
+        )
+        algo.setProjectionStrategy(proj_strategy)
+        algo.run()
+        self.algo = algo.getResult()
 
     def _predict(
         self,
@@ -274,34 +283,10 @@ class PCERegressor(MLRegressionAlgo):
         """The total Sobol' indices."""
         sensitivity_analysis = FunctionalChaosSobolIndices(self.algo)
         LOGGER.info(str(sensitivity_analysis))
-        total_order = {
+        return {
             name: sensitivity_analysis.getSobolTotalIndex(index)
             for index, name in enumerate(self.input_names)
         }
-        return total_order
-
-    def _build_pce(
-        self,
-        input_data: ndarray,
-        weights: ndarray,
-        output_data: ndarray,
-    ) -> openturns.FunctionalChaosResult:
-        """Build the PCE with OpenTURNS.
-
-        Args:
-            input_data: The input data with shape (n_samples, n_inputs).
-            weights: The data weights.
-            output_data: The output data with shape (n_samples, n_outputs).
-
-        Returns:
-            An OpenTURNS PCE.
-        """
-        pce_algo = FunctionalChaosAlgorithm(
-            input_data, weights, output_data, self._dist, self._trunc_strategy
-        )
-        pce_algo.setProjectionStrategy(self._proj_strategy)
-        pce_algo.run()
-        return pce_algo.getResult()
 
     def _get_basis(self) -> openturns.OrthogonalProductPolynomialFactory:
         """Return the orthogonal product polynomial factory for PCE construction.
@@ -309,34 +294,28 @@ class PCERegressor(MLRegressionAlgo):
         Returns:
             An orthogonal product polynomial factory computed by OpenTURNS.
         """
+        enumerate_function = HyperbolicAnisotropicEnumerateFunction(
+            self._input_dim, self._sparse_param["hyper_factor"]
+        )
         if self._stieltjes:
             # Tend to result in performance issue
-            basis = OrthogonalProductPolynomialFactory(
+            return OrthogonalProductPolynomialFactory(
                 [
                     StandardDistributionPolynomialFactory(
                         AdaptiveStieltjesAlgorithm(marginal)
                     )
                     for marginal in self._ot_distributions
                 ],
-                self._enumerate_function,
+                enumerate_function,
             )
-        else:
-            basis = OrthogonalProductPolynomialFactory(
-                [
-                    StandardDistributionPolynomialFactory(margin)
-                    for margin in self._ot_distributions
-                ],
-                self._enumerate_function,
-            )
-        return basis
 
-    def _get_basis_size(self) -> int:
-        """Return the basis size for PCE construction.
-
-        Returns:
-            The number of basis functions.
-        """
-        return self._enumerate_function.getStrataCumulatedCardinal(self._degree)
+        return OrthogonalProductPolynomialFactory(
+            [
+                StandardDistributionPolynomialFactory(margin)
+                for margin in self._ot_distributions
+            ],
+            enumerate_function,
+        )
 
     def _get_quadrature_points(
         self,
@@ -348,7 +327,7 @@ class PCERegressor(MLRegressionAlgo):
             The weights associated with the quadrature points.
             The projection strategy.
         """
-        measure = self._basis.getMeasure()
+        measure = self._get_basis().getMeasure()
         if self._n_quad is not None:
             degree_by_dim = int(self._n_quad ** (1.0 / self._input_dim))
         else:
@@ -367,16 +346,18 @@ class PCERegressor(MLRegressionAlgo):
                 )
             )
             sample = transformation(sample)
+
         sample = array(sample)
         if not self.learning_set:
             inputs_names = self._prob_space.variables_names
-            in_grp = self.learning_set.INPUT_GROUP
+            input_group = self.learning_set.INPUT_GROUP
             self.learning_set.set_from_array(
                 sample,
                 self._prob_space.variables_names,
                 self._prob_space.variables_sizes,
-                {name: in_grp for name in inputs_names},
+                {name: input_group for name in inputs_names},
             )
+
         if self._discipline is not None:
             n_samples = len(self.learning_set)
             outputs = {name: [] for name in self._discipline.get_output_data_names()}
@@ -384,17 +365,17 @@ class PCERegressor(MLRegressionAlgo):
                 output_data = self._discipline.execute(data)
                 for name in self._discipline.get_output_data_names():
                     outputs[name] += list(output_data[name])
+
             for name in self._discipline.get_output_data_names():
                 outputs[name] = array(outputs[name]).reshape((n_samples, -1))
+
             outputs_names = list(self._discipline.get_output_data_names())
-            outputs = [outputs[name] for name in outputs_names]
-            data = concatenate(outputs, axis=1)
-            out_grp = self.learning_set.OUTPUT_GROUP
-            sizes = {
-                name: len(self._discipline.local_data[name]) for name in outputs_names
-            }
             self.learning_set.add_group(
-                out_grp, data, outputs_names, sizes, cache_as_input=False
+                self.learning_set.OUTPUT_GROUP,
+                concatenate([outputs[name] for name in outputs_names], axis=1),
+                outputs_names,
+                {k: v.size for k, v in self._discipline.get_output_data().items()},
+                cache_as_input=False,
             )
             self.output_names = outputs_names
 
@@ -407,27 +388,24 @@ class PCERegressor(MLRegressionAlgo):
 
         Returns:
             The OpenTURNS truncation strategy.
-
-        Raises:
-            ValueError: If the truncation strategy is invalid.
         """
-        if self._strategy == self.SPARSE_STRATEGY:
-            sparse_param = self._sparse_param
-            sparse_param = {} if sparse_param is None else sparse_param
-            max_considered_terms = sparse_param.get("max_considered_terms", 120)
-            most_significant = sparse_param.get("most_significant", 30)
-            significance_factor = sparse_param.get("significance_factor", 1e-3)
-
-            trunc_strategy = CleaningStrategy(
-                OrthogonalBasis(self._basis),
-                max_considered_terms,
-                most_significant,
-                significance_factor,
-                True,
+        enumerate_function = HyperbolicAnisotropicEnumerateFunction(
+            self._input_dim, self._sparse_param["hyper_factor"]
+        )
+        basis = self._get_basis()
+        if self._strategy != self.SPARSE_STRATEGY:
+            return FixedStrategy(
+                basis,
+                enumerate_function.getStrataCumulatedCardinal(self._degree),
             )
-        else:
-            trunc_strategy = FixedStrategy(self._basis, self._n_basis)
-        return trunc_strategy
+
+        return CleaningStrategy(
+            OrthogonalBasis(basis),
+            self._sparse_param["max_considered_terms"],
+            self._sparse_param["most_significant"],
+            self._sparse_param["significance_factor"],
+            True,
+        )
 
     def _get_proj_strategy(
         self,
@@ -444,57 +422,30 @@ class PCERegressor(MLRegressionAlgo):
             A projection strategy.
         """
         if self._strategy == self.QUAD_STRATEGY:
-            proj_strategy = self._proj_strategy
-        elif self._strategy == self.LS_STRATEGY:
-            proj_strategy = LeastSquaresStrategy(input_data, output_data)
-        else:
-            app = LeastSquaresMetaModelSelectionFactory(LARS(), CorrectedLeaveOneOut())
-            proj_strategy = LeastSquaresStrategy(input_data, output_data, app)
-        return proj_strategy
+            return self._proj_strategy
 
-    def _get_ls_weights(self) -> openturns.Point:
-        """Return LS weights for PCE construction.
+        if self._strategy == self.LS_STRATEGY:
+            return LeastSquaresStrategy(input_data, output_data)
 
-        Returns:
-            The least-squares weights.
-        """
-        _, weights = self._proj_strategy.getExperiment().generateWithWeights()
-        return weights
+        return LeastSquaresStrategy(
+            input_data,
+            output_data,
+            LeastSquaresMetaModelSelectionFactory(LARS(), CorrectedLeaveOneOut()),
+        )
 
-    def _get_quad_weights(
-        self,
-        input_data: ndarray,
-    ) -> ndarray:
-        """Return quadrature weights for PCE construction.
-
-        Args:
-            input_data: The input data with shape (n_samples, n_inputs).
-
-        Returns:
-            The weights.
-        """
-        sample = zeros_like(self._sample)
-        common_len = len(input_data)
-        sample[:common_len] = input_data
-        sample[0] = self._sample[0]
-        sample_arg = np_all(isin(sample, self._sample), axis=1)
-        new_weights = array(self._weights)[sample_arg]
-        return new_weights
-
-    def _get_weights(
-        self,
-        input_data: ndarray,
-    ) -> ndarray:
+    def _get_weights(self, input_data: ndarray, proj_strategy) -> ndarray:
         """Return the weights for PCE construction.
 
         Args:
             input_data: The input data with shape (n_samples, n_inputs).
         """
         if self._strategy == self.QUAD_STRATEGY:
-            weights = self._get_quad_weights(input_data)
-        else:
-            weights = self._get_ls_weights()
-        return weights
+            sample = zeros_like(self._sample)
+            sample[: len(input_data)] = input_data
+            sample[0] = self._sample[0]
+            return array(self._weights)[np_all(isin(sample, self._sample), axis=1)]
+
+        return proj_strategy.getExperiment().generateWithWeights()[1]
 
     def _predict_jacobian(
         self,
