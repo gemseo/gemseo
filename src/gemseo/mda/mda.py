@@ -632,7 +632,16 @@ class MDA(MDODiscipline):
         fig = plt.figure()
         fig_ax = fig.add_subplot(1, 1, 1)
 
-        n_iterations = n_iterations or len(self.residual_history)
+        history_length = len(self.residual_history)
+        n_iterations = n_iterations or history_length
+
+        if n_iterations > history_length:
+            msg = (
+                "Requested %s iterations but the residual history contains only %s, "
+                "plotting all the residual history."
+            )
+            LOGGER.info(msg, n_iterations, history_length)
+            n_iterations = history_length
 
         # red dot for first iteration
         colors = ["black"] * n_iterations

@@ -155,13 +155,14 @@ def test_parallel_doe(generate_parallel_doe_data):
     [
         (["all_iter_default_log"], None, None),
         (["all_iter_modified_log"], None, [1e-15, 10.0]),
+        (["n_iter_larger_than_history"], 50, None),
         (["eight_iter_default_log"], 8, None),
         (["eight_iter_modified_log"], 8, [1e-15, 10.0]),
     ],
 )
 @image_comparison(None, tol=0.098)
 def test_plot_residual_history(
-    baseline_images, n_iterations, logscale, pyplot_close_all
+    baseline_images, n_iterations, logscale, caplog, pyplot_close_all
 ):
     """Test the residual history plot.
 
@@ -169,6 +170,7 @@ def test_plot_residual_history(
         baseline_images: The reference images for the test.
         n_iterations: The number of iterations to plot.
         logscale: The limits of the ``y`` axis.
+        caplog: Fixture to access and control log capturing.
         pyplot_close_all: Fixture that prevents figures aggregation
             with matplotlib pyplot.
     """
@@ -177,3 +179,10 @@ def test_plot_residual_history(
     mda.plot_residual_history(
         False, False, n_iterations=n_iterations, logscale=logscale
     )
+
+    if n_iterations == 50:
+        assert (
+            "Requested 50 iterations but the residual history contains only "
+            f"{len(mda.residual_history)}, plotting all the residual history."
+            in caplog.text
+        )
