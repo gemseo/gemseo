@@ -38,7 +38,7 @@ def create_gantt_chart(
     save: bool = True,
     show: bool = False,
     file_extension: str | None = None,
-    figure_size: tuple[int, int] = (15, 10),
+    fig_size: tuple[float, float] = (15.0, 10.0),
     font_size: int = 12,
     disc_names: Sequence[str] | None = None,
 ) -> plt.Figure:
@@ -58,7 +58,7 @@ def create_gantt_chart(
         show: Whether to show the figure.
         file_extension: A file extension, e.g. 'png', 'pdf', 'svg', ...
             If ``None``, use the default file extension.
-        figure_size: The figure size.
+        fig_size: The figure size.
         font_size: The size of the fonts in the plot.
         disc_names: The names of the disciplines to plot.
             If ``None``, plot all the disciplines for which time stamps exist.
@@ -74,7 +74,7 @@ def create_gantt_chart(
     if time_stamps is None:
         raise ValueError("Time stamps are not activated in MDODiscipline")
 
-    fig, ax = plt.subplots(figsize=figure_size)
+    fig, ax = plt.subplots(figsize=fig_size)
 
     if disc_names is None:
         disc_names = list(time_stamps.keys())

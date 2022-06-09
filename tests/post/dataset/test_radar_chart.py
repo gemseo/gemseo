@@ -68,7 +68,7 @@ def test_plot(
     """Test images created by RadarChart._plot against references."""
     plot = RadarChart(dataset, **kwargs)
     if fig_and_axes:
-        fig = plt.figure(figsize=plot.figsize)
+        fig = plt.figure(figsize=plot.fig_size)
         axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
     else:
         fig, axes = (None, None)

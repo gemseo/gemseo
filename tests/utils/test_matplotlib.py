@@ -22,8 +22,8 @@ from matplotlib import pyplot as plt
 
 @pytest.mark.parametrize("file_path", [None, "file_name.pdf"])
 @pytest.mark.parametrize("show", [True, False])
-@pytest.mark.parametrize("figsize", [[10, 10], None])
-def test_process(tmp_path, pyplot_close_all, file_path, show, figsize):
+@pytest.mark.parametrize("fig_size", [[10, 10], None])
+def test_process(tmp_path, pyplot_close_all, file_path, show, fig_size):
     """Verify that a Matplotlib figure is correctly saved."""
     fig, axes = plt.subplots()
 
@@ -31,7 +31,7 @@ def test_process(tmp_path, pyplot_close_all, file_path, show, figsize):
         file_path = tmp_path / file_path
 
     with patch("matplotlib.pyplot.savefig"), patch("matplotlib.pyplot.show"):
-        save_show_figure(fig, show, file_path, figsize)
+        save_show_figure(fig, show, file_path, fig_size)
 
     if file_path is not None:
         assert file_path.exists()

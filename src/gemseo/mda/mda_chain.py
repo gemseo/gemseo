@@ -306,7 +306,7 @@ class MDAChain(MDA):
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        figsize: tuple[float, float] = (50.0, 10.0),
+        fig_size: tuple[float, float] = (50.0, 10.0),
     ) -> None:
         for inner_mda in self.inner_mda_list:
             if filename is not None:
@@ -316,5 +316,5 @@ class MDAChain(MDA):
                     f"{inner_mda.__class__.__name__}_{s_filename[1]}",
                 )
             inner_mda.plot_residual_history(
-                show, save, n_iterations, logscale, filename, figsize
+                show, save, n_iterations, logscale, filename, fig_size
             )

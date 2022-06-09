@@ -202,7 +202,7 @@ def generate_n2_plot(
     show_data_names: bool = True,
     save: bool = True,
     show: bool = False,
-    figsize: tuple[float, float] = (15.0, 10.0),
+    fig_size: tuple[float, float] = (15.0, 10.0),
     open_browser: bool = False,
 ) -> None:
     """Generate a N2 plot from disciplines.
@@ -216,7 +216,7 @@ def generate_n2_plot(
             whose size depends on the number of coupling names.
         save: Whether to save the static N2 chart.
         show: Whether to show the static N2 chart.
-        figsize: The width and height of the static N2 chart.
+        fig_size: The width and height of the static N2 chart.
         open_browser: Whether to display the interactive N2 chart in a browser.
 
     Examples
@@ -233,7 +233,7 @@ def generate_n2_plot(
 
     coupling_structure = MDOCouplingStructure(disciplines)
     coupling_structure.plot_n2_chart(
-        file_path, show_data_names, save, show, figsize, open_browser
+        file_path, show_data_names, save, show, fig_size, open_browser
     )
 
 

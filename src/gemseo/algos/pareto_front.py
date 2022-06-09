@@ -194,7 +194,7 @@ class ParetoPlotBiObjective:
 def generate_pareto_plots(
     obj_values: ndarray,
     obj_names: Sequence[str],
-    figsize: tuple[float, float] = (10.0, 10.0),
+    fig_size: tuple[float, float] = (10.0, 10.0),
     non_feasible_samples: ndarray | None = None,
     show_non_feasible: bool = True,
 ) -> matplotlib.figure.Figure:
@@ -203,7 +203,7 @@ def generate_pareto_plots(
     Args:
         obj_values: The objective function array of size (n_samples, n_objs).
         obj_names: The names of the objectives.
-        figsize: The matplotlib figure sizes in x and y directions, in inches.
+        fig_size: The matplotlib figure sizes in x and y directions, in inches.
         non_feasible_samples: The array of bool of size n_samples,
             True if the current sample is non-feasible.
             If None, all the samples are considered feasible.
@@ -230,7 +230,7 @@ def generate_pareto_plots(
 
     pareto_opt_all = compute_pareto_optimal_points(obj_values, is_feasible)
 
-    fig, axes = plt.subplots(n_obj - 1, n_obj - 1, figsize=figsize, squeeze=False)
+    fig, axes = plt.subplots(n_obj - 1, n_obj - 1, figsize=fig_size, squeeze=False)
     fig.suptitle("Pareto front")
 
     # 0 vs 1   0 vs 2    0 vs 3

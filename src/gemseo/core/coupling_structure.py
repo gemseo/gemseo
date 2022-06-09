@@ -314,7 +314,7 @@ class MDOCouplingStructure:
         show_data_names: True,
         save: bool,
         show: bool,
-        figsize: tuple[int],
+        fig_size: tuple[float, float],
     ) -> None:
         """Draw the N2 chart for the disciplines.
 
@@ -326,9 +326,9 @@ class MDOCouplingStructure:
                 whose size depends on the number of coupling names.
             save: Whether to save the figure to file_path.
             show: Whether to display the static N2 chart on screen.
-            figsize: The width and height of the figure in inches.
+            fig_size: The width and height of the figure in inches.
         """
-        fig = plt.figure(figsize=figsize)
+        fig = plt.figure(figsize=fig_size)
         plt.grid(True)
         axe = gca()
         axe.grid(True, linestyle="-", color="black", lw=1)
@@ -377,7 +377,7 @@ class MDOCouplingStructure:
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        figsize: tuple[float, float] = (15.0, 10.0),
+        fig_size: tuple[float, float] = (15.0, 10.0),
         open_browser: bool = False,
     ) -> None:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
@@ -400,7 +400,7 @@ class MDOCouplingStructure:
                 whose size depends on the number of coupling names.
             save: Whether to save the static N2 chart.
             show: Whether to display the static N2 chart on screen.
-            figsize: The width and height of the static N2 chart in inches.
+            fig_size: The width and height of the static N2 chart in inches.
             open_browser: Whether to display the interactive N2 chart in a browser.
 
         Raises:
@@ -413,7 +413,7 @@ class MDOCouplingStructure:
         N2HTML(html_file_path, open_browser).from_graph(self.graph)
 
         if save or show:
-            self.__draw_n2_chart(file_path, show_data_names, save, show, figsize)
+            self.__draw_n2_chart(file_path, show_data_names, save, show, fig_size)
 
     @staticmethod
     def _check_size_text(

@@ -69,7 +69,7 @@ class RadarChart(DatasetPlot):
         linestyle = "-o" if self._param.connect else "o"
 
         if not fig or not axes:
-            fig = plt.figure(figsize=self.figsize)
+            fig = plt.figure(figsize=self.fig_size)
             axes = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
 
         axes.grid(True, color="k", linewidth=0.3, linestyle=":")

@@ -59,7 +59,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-s", "--figsize", help="Size of the N2 figure, tuple (x,y)", type=str
+        "-s", "--fig_size", help="Size of the N2 figure, tuple (x,y)", type=str
     )
     return parser.parse_args()
 
@@ -77,9 +77,9 @@ def main():
     if not exists(out_dir):
         mkdir(out_dir)
 
-    if args.figsize is not None:
-        figsize = literal_eval(args.figsize)
-        study.generate_n2(join(out_dir, "n2.pdf"), figsize=figsize)
+    if args.fig_size is not None:
+        fig_size = literal_eval(args.fig_size)
+        study.generate_n2(join(out_dir, "n2.pdf"), fig_size=fig_size)
     else:
         study.generate_n2(join(out_dir, "n2.pdf"))
 

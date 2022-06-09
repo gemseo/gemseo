@@ -465,7 +465,7 @@ class StudyAnalysis:
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
-        figsize: tuple[float, float] = (15, 10),
+        fig_size: tuple[float, float] = (15, 10),
     ) -> None:
         """Generate a N2 plot for the disciplines list.
 
@@ -478,7 +478,7 @@ class StudyAnalysis:
                 which size depends on the number of coupling names.
             save: If True, save the figure to file_path.
             show: If True, show the plot.
-            figsize: The size of the figure.
+            fig_size: The size of the figure.
         """
         generate_n2_plot(
             list(self.disciplines.values()),
@@ -486,7 +486,7 @@ class StudyAnalysis:
             show_data_names,
             save,
             show,
-            figsize,
+            fig_size,
         )
 
     @staticmethod

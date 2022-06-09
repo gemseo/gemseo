@@ -287,8 +287,8 @@ class DisciplineJacApprox:
         plot_result: bool = False,
         file_path: str | Path = "jacobian_errors.pdf",
         show: bool = False,
-        figsize_x: int = 10,
-        figsize_y: int = 10,
+        fig_size_x: float = 10.0,
+        fig_size_y: float = 10.0,
         reference_jacobian_path: str | Path | None = None,
         save_reference_jacobian: bool = False,
         indices: int | Sequence[int] | slice | Ellipsis | None = None,
@@ -317,8 +317,8 @@ class DisciplineJacApprox:
                 (computed vs approximated Jacobians).
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
             reference_jacobian_path: The path of the reference Jacobian file.
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
@@ -433,8 +433,8 @@ class DisciplineJacApprox:
                 approx_jac_complete,
                 file_path,
                 show,
-                figsize_x,
-                figsize_y,
+                fig_size_x,
+                fig_size_y,
             )
         return succeed
 
@@ -540,8 +540,8 @@ class DisciplineJacApprox:
         approx_jac: ndarray,
         file_path: str | Path = "jacobian_errors.pdf",
         show: bool = False,
-        figsize_x: float = 10,
-        figsize_y: float = 10,
+        fig_size_x: float = 10.0,
+        fig_size_y: float = 10.0,
     ) -> Figure:
         """Generate a plot of the exact vs approximated Jacobian.
 
@@ -550,8 +550,8 @@ class DisciplineJacApprox:
             approx_jac: The approximated Jacobian.
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
         """
         comp_grad, app_grad, x_labels = self.__format_jac_as_grad_dict(
             computed_jac, approx_jac
@@ -568,7 +568,7 @@ class DisciplineJacApprox:
             ncols=2,
             sharex=True,
             sharey=False,
-            figsize=(figsize_x, figsize_y),
+            figsize=(fig_size_x, fig_size_y),
         )
         i = 0
         j = -1

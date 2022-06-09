@@ -72,7 +72,9 @@ def test_plot(
 ):
     """Test images created by AndrewsCurves._plot against references."""
     plot = AndrewsCurves(dataset, **kwargs)
-    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    fig, axes = (
+        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
+    )
     plot.execute(save=False, show=False, fig=fig, axes=axes, properties=properties)
 
 

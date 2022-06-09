@@ -90,7 +90,7 @@ class ParetoFront(OptPostProcessor):
         fig = generate_pareto_plots(
             sample_values,
             all_labels,
-            figsize=self.DEFAULT_FIG_SIZE,
+            fig_size=self.DEFAULT_FIG_SIZE,
             non_feasible_samples=non_feasible_samples,
             show_non_feasible=show_non_feasible,
         )
