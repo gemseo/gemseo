@@ -40,7 +40,7 @@ has_no_pdflatex = {
 def test_generate_n2(tmp_path):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
     fpath = tmp_path / "xls_n2.pdf"
-    study.generate_n2(fpath, figsize=(5, 5))
+    study.generate_n2(fpath, fig_size=(5, 5))
     assert fpath.exists()
 
 

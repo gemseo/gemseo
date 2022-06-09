@@ -110,7 +110,7 @@ def test_generate_n2_plot(tmp_wd):
         ]
     )
     file_path = "n2.png"
-    generate_n2_plot(disciplines, file_path, save=True, show=False, figsize=(5, 5))
+    generate_n2_plot(disciplines, file_path, save=True, show=False, fig_size=(5, 5))
     assert Path(file_path).exists()
 
 

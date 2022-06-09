@@ -131,13 +131,13 @@ class ScatterMatrix(DatasetPlot):
             dataframe = dataframe.drop(labels=variable_name, axis=1)
 
         dataframe.columns = self._get_variables_names(dataframe)
-        fig, axes = self._get_figure_and_axes(fig, axes, self.figsize)
+        fig, axes = self._get_figure_and_axes(fig, axes, self.fig_size)
         sub_axes = scatter_matrix(
             dataframe,
             diagonal=diagonal,
             s=size,
             marker=marker,
-            figsize=self.figsize,
+            figsize=self.fig_size,
             ax=axes,
             **kwargs,
         )

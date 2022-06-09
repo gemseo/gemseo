@@ -50,8 +50,8 @@ class BasicHistory(OptPostProcessor):
         plot = Lines(dataset)
         plot.font_size = 12
         plot.xlabel = "Iterations"
-        plot.figsize_x = self.DEFAULT_FIG_SIZE[0]
-        plot.figsize_y = self.DEFAULT_FIG_SIZE[1]
+        plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
+        plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
         figures = plot.execute(save=False, show=False, variables=data_list)
         for figure in figures:

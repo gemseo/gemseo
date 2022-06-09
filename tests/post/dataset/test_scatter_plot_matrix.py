@@ -66,7 +66,9 @@ def test_plot(
 ):
     """Test images created by ScatterMatrix._plot against references."""
     plot = ScatterMatrix(dataset, **kwargs)
-    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    fig, axes = (
+        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
+    )
     plot.execute(save=False, show=False, properties=properties, fig=fig, axes=axes)
 
 

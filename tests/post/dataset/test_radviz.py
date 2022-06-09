@@ -54,5 +54,7 @@ def test_plot(kwargs, properties, baseline_images, pyplot_close_all, fig_and_axe
     """Test images created by Radar._plot against references."""
     dataset = IrisDataset()
     plot = Radar(dataset, classifier="specy")
-    fig, axes = (None, None) if not fig_and_axes else plt.subplots(figsize=plot.figsize)
+    fig, axes = (
+        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
+    )
     plot.execute(save=False, show=False, properties=properties, fig=fig, axes=axes)

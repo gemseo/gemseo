@@ -1515,8 +1515,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         plot_result: bool = False,
         file_path: str | Path = "jacobian_errors.pdf",
         show: bool = False,
-        figsize_x: float = 10,
-        figsize_y: float = 10,
+        fig_size_x: float = 10,
+        fig_size_y: float = 10,
         reference_jacobian_path: str | Path | None = None,
         save_reference_jacobian: bool = False,
         indices: Iterable[int] | None = None,
@@ -1566,8 +1566,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 (computed vs approximated Jacobians).
             file_path: The path to the output file if ``plot_result`` is ``True``.
             show: Whether to open the figure.
-            figsize_x: The x-size of the figure in inches.
-            figsize_y: The y-size of the figure in inches.
+            fig_size_x: The x-size of the figure in inches.
+            fig_size_y: The y-size of the figure in inches.
             reference_jacobian_path: The path of the reference Jacobian file.
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
@@ -1622,8 +1622,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             plot_result=plot_result,
             file_path=file_path,
             show=show,
-            figsize_x=figsize_x,
-            figsize_y=figsize_y,
+            fig_size_x=fig_size_x,
+            fig_size_y=fig_size_y,
             reference_jacobian_path=reference_jacobian_path,
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,

@@ -93,7 +93,7 @@ class Surfaces(DatasetPlot):
 
         figs = []
         for sample, sample_name in zip(samples, self.dataset.row_names):
-            fig = plt.figure(figsize=self.figsize)
+            fig = plt.figure(figsize=self.fig_size)
             axes = fig.add_subplot(1, 1, 1)
             triangle = mtri.Triangulation(x_data, y_data)
             if self._param.fill:

@@ -72,7 +72,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
     dataset: Dataset
     """The dataset to be plotted."""
 
-    figsize: tuple[float, float]
+    fig_size: tuple[float, float]
     """The figure size."""
 
     font_size: int
@@ -178,7 +178,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self.zlabel = ""
         self.zmin = None
         self.zmax = None
-        self.figsize = (6.4, 4.8)
+        self.fig_size = (6.4, 4.8)
         self.__file_path_manager = FilePathManager(
             FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
@@ -192,22 +192,22 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         return self.__output_files
 
     @property
-    def figsize_x(self) -> float:
+    def fig_size_x(self) -> float:
         """The x-component of figure size."""
-        return self.figsize[0]
+        return self.fig_size[0]
 
-    @figsize_x.setter
-    def figsize_x(self, value: float) -> None:
-        self.figsize = (value, self.figsize_y)
+    @fig_size_x.setter
+    def fig_size_x(self, value: float) -> None:
+        self.fig_size = (value, self.fig_size_y)
 
     @property
-    def figsize_y(self) -> float:
+    def fig_size_y(self) -> float:
         """The y-component of figure size."""
-        return self.figsize[1]
+        return self.fig_size[1]
 
-    @figsize_y.setter
-    def figsize_y(self, value: float) -> None:
-        self.figsize = (self.figsize_x, value)
+    @fig_size_y.setter
+    def fig_size_y(self, value: float) -> None:
+        self.fig_size = (self.fig_size_x, value)
 
     def execute(
         self,
@@ -471,7 +471,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
         self,
         fig: Figure | None,
         axes: Axes | None,
-        figsize: tuple[float, float] | None = None,
+        fig_size: tuple[float, float] | None = None,
     ) -> tuple[Figure, Axes]:
         """Return the figure and axes to plot the data.
 
@@ -480,8 +480,8 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
                 If ``None``, create a new one.
             axes: The axes to plot the data.
                 If ``None``, create new ones.
-            figsize: The width and height of the figure in inches.
-                If ``None``, use the default ``figsize``.
+            fig_size: The width and height of the figure in inches.
+                If ``None``, use the default ``fig_size``.
 
         Returns:
             The figure and axis to plot the data.
@@ -492,7 +492,7 @@ class DatasetPlot(metaclass=GoogleDocstringInheritanceMeta):
                     "The figure associated with the given axes is missing."
                 )
 
-            return plt.subplots(figsize=figsize or self.figsize)
+            return plt.subplots(figsize=fig_size or self.fig_size)
 
         if axes is None:
             raise ValueError("The axes associated with the given figure are missing.")
