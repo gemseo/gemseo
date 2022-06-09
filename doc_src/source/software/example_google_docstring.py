@@ -18,12 +18,14 @@ Section breaks are also implicitly created anytime a new section starts.
 """
 from __future__ import annotations
 
+from typing import ClassVar
+from typing import Final
 from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-MODULE_LEVEL_VARIABLE2 = 98765
-"""Module level variable documented inline.
+MODULE_LEVEL_VARIABLE: Final[int] = 98765
+"""Module level constant variable documented inline.
 
 The docstring may span multiple lines.
 """
@@ -125,6 +127,20 @@ class ExampleClass:
     attr2: int
     """The description of ``attr2``."""
 
+    class_attr1 = 0
+    """A class attribute that shall can be re-assigned and turned into an instance
+    attribute by an instance."""
+
+    class_attr2: ClassVar[int] = 0
+    """A class attribute that shall not be re-assigned by an instance."""
+
+    CLASS_CONSTANT_ATTR: Final[int] = 0
+    """A class attribute that shall not be re-assigned or overridden by a subclass."""
+
+    OTHER_CLASS_CONSTANT_ATTR: int = 0
+    """A class attribute that shall not be re-assigned but can be overridden by a
+    subclass."""
+
     def __init__(
         self,
         arg1: int,
@@ -166,7 +182,7 @@ class ExampleClass:
     @readwrite_property.setter
     def readwrite_property(
         self,
-        value: str,
+        value: int,
     ) -> None:
         self.attr1 = value
 

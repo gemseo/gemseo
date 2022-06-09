@@ -763,12 +763,12 @@ Type hints
 The type hints are used when generating the functions and methods documentation,
 they will also be used gradually to check and improved the code quality
 with the help of a type checker like `mypy`_.
-(see :ref:`example module`)
+See :ref:`example module` for a typical example.
 
 Functions and methods arguments shall use `standard duck typing`_.
-In practice, use :class:`Iterable` or :class:`Sequence`
-instead of :class:`List` when appropriate,
-similarly for :class:`Mapping` instead of :class:`Dict`.
+In practice, use :class:`Iterable` or :class:`Sequence` etc...
+instead of :class:`list` when appropriate,
+similarly for :class:`Mapping` instead of :class:`dict`.
 For ``*args`` and ``**kwargs`` arguments,
 use only the value types with no container.
 
