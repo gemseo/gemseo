@@ -24,6 +24,7 @@ Hybrid Jacobi/Newton MDA
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_mda
+from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -86,5 +87,7 @@ mda = create_mda("MDASequential", disciplines, mda_sequence=mda_sequence)
 res = mda.execute()
 display_result(res, mda.name)
 mda.plot_residual_history(
-    n_iterations=10, logscale=[1e-8, 10.0], show=True, save=False, fig_size=(10, 2)
+    n_iterations=10, logscale=[1e-8, 10.0], show=False, save=False, fig_size=(10, 2)
 )
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()
