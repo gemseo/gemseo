@@ -27,6 +27,7 @@ from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.utils.testing import image_comparison
 from numpy import array
 from numpy import isclose
 
@@ -42,7 +43,7 @@ def test_sobieski():
     mda.warm_start = True
     mda.execute()
 
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
     filename = "SobieskiMDAGS_residual_history.pdf"
     mda.plot_residual_history(save=True, filename=filename)
@@ -99,7 +100,7 @@ def test_over_relaxation(over_relax_factor):
         over_relax_factor=over_relax_factor,
     )
     mda.execute()
-    assert mda.residual_history[-1][0] <= tolerance
+    assert mda.residual_history[-1] <= tolerance
     # mda.plot_residual_history(
     # save=True, filename="GaussSeidel_relax{}.pdf".format(over_relax_factor)
     # )
@@ -147,3 +148,32 @@ def test_parallel_doe(generate_parallel_doe_data):
     """
     obj = generate_parallel_doe_data("MDAGaussSeidel")
     assert isclose(array([-obj]), array([608.185]), atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "baseline_images,n_iterations,logscale",
+    [
+        (["all_iter_default_log"], None, None),
+        (["all_iter_modified_log"], None, [1e-15, 10.0]),
+        (["eight_iter_default_log"], 8, None),
+        (["eight_iter_modified_log"], 8, [1e-15, 10.0]),
+    ],
+)
+@image_comparison(None, tol=0.098)
+def test_plot_residual_history(
+    baseline_images, n_iterations, logscale, pyplot_close_all
+):
+    """Test the residual history plot.
+
+    Args:
+        baseline_images: The reference images for the test.
+        n_iterations: The number of iterations to plot.
+        logscale: The limits of the ``y`` axis.
+        pyplot_close_all: Fixture that prevents figures aggregation
+            with matplotlib pyplot.
+    """
+    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda.execute()
+    mda.plot_residual_history(
+        False, False, n_iterations=n_iterations, logscale=logscale
+    )

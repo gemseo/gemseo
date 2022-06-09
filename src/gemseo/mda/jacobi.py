@@ -201,27 +201,20 @@ class MDAJacobi(MDA):
         self._dx_n.append(new_couplings - current_couplings)
         self._g_x_n.append(new_couplings)
 
-        # store initial residual
-        current_iter = 1
         self._compute_residual(
             current_couplings,
             new_couplings,
-            current_iter,
-            first=True,
             log_normed_residual=self._log_convergence,
         )
         current_couplings = new_couplings
 
-        while not self._termination(current_iter):
+        while not self._stop_criterion_is_reached:
             self.execute_all_disciplines(deepcopy(self.local_data))
             new_couplings = self._current_input_couplings()
 
-            # store current residual
-            current_iter += 1
             self._compute_residual(
                 current_couplings,
                 new_couplings,
-                current_iter,
                 log_normed_residual=self._log_convergence,
             )
             x_np1 = self._compute_nex_iterate(current_couplings, new_couplings)

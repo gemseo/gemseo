@@ -502,7 +502,7 @@ def test_create_mda(tmp_wd):
     )
     mda = create_mda("MDAGaussSeidel", disciplines)
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_get_available_mdas(tmp_wd):

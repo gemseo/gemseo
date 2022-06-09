@@ -112,9 +112,8 @@ class MDAGaussSeidel(MDA):
 
         relax = self.over_relax_factor
         use_relax = relax != 1.0
-        # store initial residual
-        current_iter = 0
-        while not self._termination(current_iter) or current_iter == 0:
+
+        while not self._stop_criterion_is_reached or self._current_iter == 0:
             for discipline in self.disciplines:
                 discipline.execute(self.local_data)
                 outs = discipline.get_output_data()
@@ -139,12 +138,8 @@ class MDAGaussSeidel(MDA):
             self._compute_residual(
                 current_couplings,
                 new_couplings,
-                current_iter,
-                first=current_iter == 0,
                 log_normed_residual=self.log_convergence,
             )
-            # store current residuals
-            current_iter += 1
             current_couplings = new_couplings
 
         for discipline in self.disciplines:  # Update all outputs without relax
