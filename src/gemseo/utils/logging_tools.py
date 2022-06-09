@@ -58,3 +58,52 @@ class MultiLineStreamHandler(MultiLineHandlerMixin, logging.StreamHandler):
 
 class MultiLineFileHandler(MultiLineHandlerMixin, logging.FileHandler):
     """FileHandler to split multiline logging messages."""
+
+
+class LoggingContext:
+    """Context manager for selective logging.
+
+    Change the level of the logger in a ``with`` block.
+
+    Examples:
+        logger.setLevel(logging.INFO)
+        logger.info("This should appear.")
+        with LoggingContext(logger, logging.WARNING):
+            logger.warning("This should appear.")
+            logger.info("This should not appear.")
+
+        logger.info("This should appear.")
+
+    Source: `Logging Cookbook
+    <https://docs.python.org/3/howto/
+    logging-cookbook.html#using-a-context-manager-for-selective-logging>`_
+    """
+
+    def __init__(self, logger, level, handler=None, close=True):
+        """
+        Args:
+            logger: The logger.
+            level: The level of the logger to be used on block entry.
+            handler: An additional handler to be used on block entry.
+            close: Whether to close the handler on block exit.
+        """
+        self.logger = logger
+        self.level = level
+        self.handler = handler
+        self.close = close
+
+    def __enter__(self):
+        if self.level is not None:
+            self.old_level = self.logger.level
+            self.logger.setLevel(self.level)
+        if self.handler:
+            self.logger.addHandler(self.handler)
+
+    def __exit__(self, et, ev, tb):
+        if self.level is not None:
+            self.logger.setLevel(self.old_level)
+        if self.handler:
+            self.logger.removeHandler(self.handler)
+        if self.handler and self.close:
+            self.handler.close()
+        # implicit return of None => don't swallow exceptions

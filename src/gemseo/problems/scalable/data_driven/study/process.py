@@ -56,6 +56,7 @@ from numpy import inf
 
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.scalable.data_driven.study.result import ScalabilityResult
+from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -615,14 +616,12 @@ class ScalabilityStudy:
                     msg.add("Save dependency matrices in {}", path)
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
-                    root_logger = logging.getLogger()
-                    saved_level = root_logger.level
-                    root_logger.setLevel(logging.WARNING)
-                    self.__create_scenario(problem, formulation, opt_index)
-                    msg.add("Execute MDO Scenario")
-                    formulation_options = self.formulations_options[opt_index]
-                    algo_options = self.__execute_scenario(problem, algo, opt_index)
-                    root_logger.setLevel(saved_level)
+                    with LoggingContext(LOGGER, logging.WARNING):
+                        self.__create_scenario(problem, formulation, opt_index)
+                        msg.add("Execute MDO Scenario")
+                        formulation_options = self.formulations_options[opt_index]
+                        algo_options = self.__execute_scenario(problem, algo, opt_index)
+
                     path = self.__optview_path(algo, formulation, scal_index, replicate)
                     msg.add("Save optim history view in {}", path)
                     fpath = str(path) + "/"
