@@ -226,27 +226,20 @@ class MDANewtonRaphson(MDARoot):
         self.execute_all_disciplines(self.local_data)
         new_couplings = self._current_input_couplings()
 
-        # store initial residual
-        current_iter = 1
         self._compute_residual(
             current_couplings,
             new_couplings,
-            current_iter,
-            first=True,
             log_normed_residual=self.log_convergence,
         )
         current_couplings = new_couplings
 
-        while not self._termination(current_iter):
+        while not self._stop_criterion_is_reached:
             self._newton_step()
             new_couplings = self._current_input_couplings()
 
-            # store current residual
-            current_iter += 1
             self._compute_residual(
                 current_couplings,
                 new_couplings,
-                current_iter,
                 log_normed_residual=self.log_convergence,
             )
             current_couplings = new_couplings
@@ -489,8 +482,9 @@ class MDAQuasiNewton(MDARoot):
                     y_k: The coupling variables.
                     _: ignored
                 """
-                delta = norm((y_k - self.last_outputs).real) / norm_0
-                self.residual_history.append((delta, 0))  # iter number?
+                self.residual_history.append(
+                    norm((y_k - self.last_outputs).real) / norm_0
+                )
                 self.last_outputs = y_k
 
         else:
@@ -500,7 +494,7 @@ class MDAQuasiNewton(MDARoot):
         y_opt = root(
             fun, x0=y_0, method=self.method, jac=jac, callback=callback, options=options
         )
-        self._warn_convergence_criteria(self.current_iter)
+        self._warn_convergence_criteria()
 
         # transform optimal vector into a dict
         self.local_data = update_dict_of_arrays_from_array(

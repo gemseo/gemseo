@@ -86,5 +86,5 @@ mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
 res = mda.execute()
 display_result(res, mda.name)
 mda.plot_residual_history(
-    n_iterations=10, logscale=[1e-8, 10.0], show=True, save=False, figsize=(10, 2)
+    n_iterations=10, logscale=[1e-8, 10.0], show=True, save=False, fig_size=(10, 2)
 )

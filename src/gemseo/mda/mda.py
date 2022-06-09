@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for all Multi-disciplinary Design Analyses (MDA).."""
+"""Base class for all Multi-disciplinary Design Analyses (MDA)."""
 from __future__ import annotations
 
 import logging
@@ -40,6 +40,7 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.execution_sequence import LoopExecSequence
 from gemseo.core.jacobian_assembly import JacobianAssembly
+from gemseo.utils.matplotlib_figure import save_show_figure
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ class MDA(MDODiscipline):
         "matrix_type",
         "use_lu_fact",
         "linear_solver_tolerance",
+        "_current_iter",
     )
 
     activate_cache = True
@@ -134,6 +136,7 @@ class MDA(MDODiscipline):
 
         self._linearize_on_last_state = True
         self.norm0 = None
+        self._current_iter = 0
         self.normed_residual = 1.0
         self.strong_couplings = self.coupling_structure.strong_couplings
         self.all_couplings = self.coupling_structure.all_couplings
@@ -390,8 +393,6 @@ class MDA(MDODiscipline):
         self,
         current_couplings: ndarray,
         new_couplings: ndarray,
-        current_iter: int,
-        first: bool = False,
         store_it: bool = True,
         log_normed_residual: bool = False,
     ) -> ndarray:
@@ -400,15 +401,13 @@ class MDA(MDODiscipline):
         Args:
             current_couplings: The values of the couplings before the execution.
             new_couplings: The values of the couplings after the execution.
-            current_iter: The current iteration of the fixed-point method.
-            first: Whether it is the first residual of the fixed-point method.
             store_it: Whether to store the normed residual.
             log_normed_residual: Whether to log the normed residual.
 
         Returns:
             The normed residual.
         """
-        if first and self.reset_history_each_run:
+        if self._current_iter == 0 and self.reset_history_each_run:
             self.residual_history = []
 
         normed_residual = norm((current_couplings - new_couplings).real)
@@ -422,11 +421,12 @@ class MDA(MDODiscipline):
                 "%s running... Normed residual = %s (iter. %s)",
                 self.name,
                 f"{self.normed_residual:.2e}",
-                current_iter,
+                self._current_iter,
             )
 
         if store_it:
-            self.residual_history.append((self.normed_residual, current_iter))
+            self.residual_history.append(self.normed_residual)
+            self._current_iter += 1
         return self.normed_residual
 
     def check_jacobian(
@@ -557,14 +557,12 @@ class MDA(MDODiscipline):
             indices=indices,
         )
 
-    def _warn_convergence_criteria(
-        self,
-        current_iter: int,
-    ) -> tuple[bool, bool]:
-        """Log a warning if max_iter is reached and if max residuals is above tolerance.
+    def execute(self, input_data: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        self._current_iter = 0
+        return super().execute(input_data=input_data)
 
-        Args:
-            current_iter: The current iteration of the MDA.
+    def _warn_convergence_criteria(self) -> tuple[bool, bool]:
+        """Log a warning if max_iter is reached and if max residuals is above tolerance.
 
         Returns:
             * Whether the normed residual is lower than the tolerance.
@@ -572,7 +570,7 @@ class MDA(MDODiscipline):
         """
 
         residual_is_small = self.normed_residual <= self.tolerance
-        max_iter_is_reached = self.max_mda_iter <= current_iter
+        max_iter_is_reached = self.max_mda_iter <= self._current_iter
         if max_iter_is_reached and not residual_is_small:
             msg = (
                 "%s has reached its maximum number of iterations "
@@ -581,21 +579,10 @@ class MDA(MDODiscipline):
             LOGGER.warning(msg, self.name, self.normed_residual, self.tolerance)
         return residual_is_small, max_iter_is_reached
 
-    def _termination(
-        self,
-        current_iter: int,
-    ) -> bool:
-        """Termination criterion.
-
-        Args:
-            current_iter: The current iteration of the fixed point method.
-
-        Returns:
-            Whether to stop the MDA algorithm.
-        """
-        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria(
-            current_iter
-        )
+    @property
+    def _stop_criterion_is_reached(self) -> bool:
+        """Whether a stop criterion is reached."""
+        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria()
         return residual_is_small or max_iter_is_reached
 
     def _set_cache_tol(
@@ -620,7 +607,7 @@ class MDA(MDODiscipline):
         n_iterations: int | None = None,
         logscale: tuple[int, int] | None = None,
         filename: str | None = None,
-        figsize: tuple[float, float] = (50.0, 10.0),
+        fig_size: tuple[float, float] = (50.0, 10.0),
     ) -> None:
         """Generate a plot of the residual history.
 
@@ -637,28 +624,32 @@ class MDA(MDODiscipline):
                 If None, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.
                 If None, use "{mda.name}_residual_history.pdf".
-            figsize: The *x* and *y* sizes of the figure in inches.
+            fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
+
+        Returns:
+            The figure, to be customized if not closed.
         """
-        fig = plt.figure(figsize=figsize)
+        fig = plt.figure()
         fig_ax = fig.add_subplot(1, 1, 1)
 
-        # split list of couples
-        residual = [res for (res, _) in self.residual_history]
+        n_iterations = n_iterations or len(self.residual_history)
+
         # red dot for first iteration
-        colors = [
-            "red" if current_iter == 1 else "black"
-            for (_, current_iter) in self.residual_history
-        ]
+        colors = ["black"] * n_iterations
+        colors[0] = "red"
 
         fig_ax.scatter(
-            list(range(len(residual))), residual, s=20, color=colors, zorder=2
+            list(range(n_iterations)),
+            self.residual_history[:n_iterations],
+            s=20,
+            color=colors,
+            zorder=2,
         )
-        fig_ax.plot(residual, linestyle="-", c="k", zorder=1)
+        fig_ax.plot(
+            self.residual_history[:n_iterations], linestyle="-", c="k", zorder=1
+        )
         fig_ax.axhline(y=self.tolerance, c="blue", linewidth=0.5, zorder=0)
         fig_ax.set_title(f"{self.name}: residual plot")
-
-        if n_iterations is None:
-            n_iterations = len(self.residual_history)
 
         plt.yscale("log")
         plt.xlabel(r"iterations", fontsize=14)
@@ -671,9 +662,7 @@ class MDA(MDODiscipline):
         if save:
             if filename is None:
                 filename = f"{self.name}_residual_history.pdf"
-            plt.savefig(filename, bbox_inches="tight")
 
-        if show:
-            plt.show()
-        else:
-            plt.close(fig)
+        save_show_figure(fig, show, filename, fig_size)
+
+        return fig

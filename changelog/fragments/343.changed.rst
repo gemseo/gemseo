@@ -1,0 +1,4 @@
+All ``MDA`` algos now count their iterations starting from ``0``.
+The :attr:`.MDA.residual_history` is now a list of normed residuals.
+The argument ``figsize`` in :meth:`.plot_residual_history` was renamed to ``fig_size`` to be consistent with other
+``OptPostProcessor`` algos.

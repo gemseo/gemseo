@@ -33,28 +33,28 @@ def test_jacobi_sobieski():
     mda.default_inputs["x_shared"] += 0.02
     mda.warm_start = True
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_secant_acceleration(tmp_wd):
     tolerance = 1e-12
     mda = SobieskiMDAJacobi(tolerance=tolerance, max_mda_iter=30, acceleration=None)
     mda.execute()
-    nit1 = mda.residual_history[-1][-1]
+    nit1 = len(mda.residual_history)
 
     mda = SobieskiMDAJacobi(
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.SECANT_ACCELERATION
     )
     mda.execute()
     mda.plot_residual_history(False, True, filename="Jacobi_secant.pdf")
-    nit2 = mda.residual_history[-1][-1]
+    nit2 = len(mda.residual_history)
 
     mda = SobieskiMDAJacobi(
         tolerance=tolerance, max_mda_iter=30, acceleration=mda.M2D_ACCELERATION
     )
     mda.execute()
     mda.plot_residual_history(False, True, filename="Jacobi_m2d.pdf")
-    nit3 = mda.residual_history[-1][-1]
+    nit3 = len(mda.residual_history)
     assert nit2 < nit1
     assert nit3 < nit1
     assert nit3 < nit2
@@ -78,7 +78,7 @@ def test_jacobi_sellar(sellar_disciplines):
     mda = MDAJacobi(sellar_disciplines)
     mda.execute()
 
-    assert mda.residual_history[-1][0] < 1e-4
+    assert mda.residual_history[-1] < 1e-4
 
 
 def test_expected_workflow():

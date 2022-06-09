@@ -56,11 +56,11 @@ def test_raphson_sobieski():
     mda.matrix_type = JacobianAssembly.SPARSE
     mda.reset_history_each_run = True
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     mda.warm_start = True
     mda.execute({"x_1": mda.default_inputs["x_1"] + 1.0e-2})
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 @pytest.mark.parametrize("relax_factor", [-0.1, 1.1])
@@ -94,7 +94,7 @@ def test_raphson_sobieski_sparse():
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 def test_quasi_newton_invalida_method():
@@ -121,7 +121,7 @@ def test_raphson_sellar_sparse_complex():
     mda.matrix_type = JacobianAssembly.SPARSE
     mda.execute()
 
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
@@ -134,7 +134,7 @@ def test_raphson_sellar():
     mda = MDANewtonRaphson(disciplines)
     mda.execute()
 
-    assert mda.residual_history[-1][0] < 1e-6
+    assert mda.residual_history[-1] < 1e-6
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
@@ -146,7 +146,7 @@ def test_raphson_sellar_linop():
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1][0] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
 def test_broyden_sellar():
@@ -154,7 +154,7 @@ def test_broyden_sellar():
     mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.BROYDEN1)
     mda.reset_history_each_run = True
     mda.execute()
-    assert mda.residual_history[-1][0] < 1e-5
+    assert mda.residual_history[-1] < 1e-5
 
     y_ref = array([0.80004953, 1.79981434])
     y_opt = array([mda.local_data[Y_1][0].real, mda.local_data[Y_2][0].real])
