@@ -20,10 +20,12 @@
 """Wrapper for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
 from __future__ import annotations
 
+import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from typing import Dict
 from typing import Mapping
 from typing import MutableMapping
 
@@ -53,6 +55,9 @@ class PSevenAlgorithmDescription(OptimizationAlgorithmDescription):
     website: str = "https://datadvance.net/product/pseven/manual/"
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 class PSevenOpt(OptimizationLibrary):
     """Interface for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
 
@@ -79,6 +84,11 @@ class PSevenOpt(OptimizationLibrary):
         "restore_analytic_func": "GTOpt/RestoreAnalyticResponses",
         "responses_scalability": "GTOpt/ResponsesScalability",
     }
+
+    # Initial sample
+    __SAMPLE_X = "sample_x"
+    __SAMPLE_F = "sample_f"
+    __SAMPLE_C = "sample_c"
 
     LIBRARY_NAME = "pSeven"
 
@@ -373,12 +383,12 @@ class PSevenOpt(OptimizationLibrary):
 
         # Pop GEMSEO options
         normalize_ds = options.pop(self.NORMALIZE_DESIGN_SPACE_OPTION)
-        del options["max_iter"]
-        del options["ftol_abs"]
-        del options["ftol_rel"]
-        del options["xtol_abs"]
-        del options["xtol_rel"]
-        del options["stop_crit_n_x"]
+        max_iter = options.pop(self.MAX_ITER)
+        del options[self.F_TOL_ABS]
+        del options[self.F_TOL_REL]
+        del options[self.X_TOL_ABS]
+        del options[self.X_TOL_REL]
+        del options[self.STOP_CRIT_NX]
 
         # Create the pSeven problem
         initial_x, lower_bnd, upper_bnd = self.get_x0_and_bounds_vects(normalize_ds)
@@ -418,6 +428,9 @@ class PSevenOpt(OptimizationLibrary):
 
         # Grab the initial samples from the options
         samples = self.__get_samples(options, normalize_ds)
+
+        # Check whether the evaluations budget is sufficient for the expensive functions
+        self.__check_expensive_evaluations_budget(options, samples, max_iter)
 
         # Run the algorithm and return the result
         try:
@@ -461,7 +474,7 @@ class PSevenOpt(OptimizationLibrary):
             The pSeven initial samples.
         """
         samples = dict()
-        sample_x = options.pop("sample_x")
+        sample_x = options.pop(self.__SAMPLE_X)
         if sample_x is not None:
             if normalize_design_space:
                 sample_x = [
@@ -469,11 +482,15 @@ class PSevenOpt(OptimizationLibrary):
                     for point in sample_x
                 ]
 
-            samples["sample_x"] = sample_x
+            samples[self.__SAMPLE_X] = sample_x
 
-        for option in ["sample_f", "sample_c"]:
-            if option in options:
-                samples[option] = options.pop(option)
+            for option in [self.__SAMPLE_F, self.__SAMPLE_C]:
+                sample_functions = options.pop(option)
+                if sample_functions is not None:
+                    samples[option] = sample_functions
+        else:
+            del options[self.__SAMPLE_F]
+            del options[self.__SAMPLE_C]
 
         return samples
 
@@ -518,3 +535,38 @@ class PSevenOpt(OptimizationLibrary):
                             self.algo_name, constraint.name
                         )
                     )
+
+    def __check_expensive_evaluations_budget(
+        self,
+        options,  # type: Dict[str, Any]
+        samples,  # type: Dict[str, ndarray]
+        max_iter,  # type: int
+    ):  # type: (...) -> None
+        """Check whether the expensive evaluations budget is sufficient.
+
+        Args:
+            options: The pSeven options.
+            samples: The additional initial guesses.
+            max_iter: The maximum number of evaluated designs.
+        """
+        max_expensive_iter = options.get("GTOpt/MaximumExpensiveIterations")
+        if max_expensive_iter is None:
+            return
+
+        number_of_initial_guesses = 0
+        if self.problem.design_space.has_current_x():
+            number_of_initial_guesses += 1
+
+        if self.__SAMPLE_X in samples:
+            number_of_initial_guesses += len(samples[self.__SAMPLE_X])
+
+        if max_iter < max_expensive_iter + number_of_initial_guesses:
+            LOGGER.warning(
+                "The evaluations budget (%s=%d) is to small to compute the "
+                "expensive functions at both the initial guesses (%d) and the "
+                "iterates (%d).",
+                self.MAX_ITER,
+                max_iter,
+                number_of_initial_guesses,
+                max_expensive_iter,
+            )

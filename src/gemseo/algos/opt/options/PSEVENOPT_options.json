@@ -55,10 +55,17 @@
 			]
 		},
 		"expensive_evaluations": {
-			"type": ["null", "object"],
-			"additionalProperties": {
-				"type": "integer"
-			}
+			"anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "object",
+					"additionalProperties": {
+						"type": "integer"
+					}
+				}
+			]
 		},
 		"sample_x": {
 			"type": ["null", "array"]
@@ -74,10 +81,17 @@
 			"enum": ["Smooth", "Noisy", "Auto"]
 		},
 		"global_phase_intensity": {
-			"type": ["string", "number"],
-			"enum": ["Auto"],
-			"minimum": 0.0,
-			"maximum": 1.0
+			"anyOf": [
+				{
+					"type": "string",
+					"enum": ["Auto"]
+				},
+				{
+					"type": "number",
+					"minimum": 0.0,
+					"maximum": 1.0
+				}
+			]
 		},
 		"max_expensive_func_iter": {
 			"type": "integer",
@@ -94,8 +108,15 @@
 			"enum": ["Smooth", "Noisy", "Auto"]
 		},
 		"deterministic": {
-			"type": ["string", "boolean"],
-			"enum": ["Auto"]
+			"anyOf": [
+				{
+					"type": "string",
+					"enum": ["Auto"]
+				},
+				{
+					"type": "boolean"
+				}
+			]
 		},
 		"log_level": {
 			"type": "string",
@@ -148,8 +169,15 @@
 			"enum": ["Disabled", "Forced"]
 		},
 		"restore_analytic_func": {
-			"type": ["string", "boolean"],
-			"enum": ["Auto"]
+			"anyOf": [
+				{
+					"type": "string",
+					"enum": ["Auto"]
+				},
+				{
+					"type": "boolean"
+				}
+			]
 		},
 		"responses_scalability": {
 			"type": "integer",
@@ -157,8 +185,15 @@
 			"maximum": 512
 		},
 		"globalization_method": {
-			"type": ["null", "string"],
-			"enum": [null, "RL", "PM", "MS"]
+			"anyOf": [
+				{
+					"type": "null"
+				},
+				{
+					"type": "string",
+					"enum": ["RL", "PM", "MS"]
+				}
+			]
 		},
 		"surrogate_based": {
 			"type": ["null", "boolean"]
