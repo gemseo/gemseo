@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 
 if TYPE_CHECKING:
     from gemseo.core.scenario import Scenario

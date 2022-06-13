@@ -35,7 +35,7 @@ from gemseo.core.coupling_structure import MDOCouplingStructure
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
 from gemseo.disciplines.scenario_adapter import MDOScenarioAdapter

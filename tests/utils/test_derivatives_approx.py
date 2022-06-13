@@ -31,11 +31,11 @@ from gemseo.core.discipline import MDODiscipline
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.utils.derivatives.complex_step import ComplexStep
+from gemseo.utils.derivatives.derivatives_approx import comp_best_step
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 from gemseo.utils.derivatives.gradient_approximator import GradientApproximationFactory
-from gemseo.utils.derivatives_approx import comp_best_step
-from gemseo.utils.derivatives_approx import ComplexStep
-from gemseo.utils.derivatives_approx import DisciplineJacApprox
-from gemseo.utils.derivatives_approx import FirstOrderFD
 from numpy import array
 from numpy import complex128
 from numpy import float64

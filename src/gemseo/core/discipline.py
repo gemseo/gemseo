@@ -59,7 +59,8 @@ from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.jacobian_assembly import JacobianAssembly
-from gemseo.utils.derivatives_approx import EPSILON, DisciplineJacApprox
+from gemseo.utils.derivatives.derivatives_approx import EPSILON
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from pathlib import Path
 from gemseo.utils.string_tools import MultiLineString, pretty_repr
 
@@ -119,7 +120,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     STATUS_RUNNING = "RUNNING"
     STATUS_FAILED = "FAILED"
 
-    __DEPRECATED_GRAMMAR_TYPES = {"JSON": "JSONGrammar", "Simple": "SimpleGrammar"}
     JSON_GRAMMAR_TYPE = "JSONGrammar"
     SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"
 
@@ -698,9 +698,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 or :attr:`.MDODiscipline.SIMPLE_GRAMMAR_TYPE`.
         """
         factory = GrammarFactory()
-        grammar_type = self.__DEPRECATED_GRAMMAR_TYPES.get(grammar_type, grammar_type)
-        # TODO: deprecate this at some point.
-
         self.input_grammar = factory.create(
             grammar_type,
             name=f"{self.name}_input",
@@ -1040,9 +1037,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             inputs = self._differentiated_inputs
             outputs = self._differentiated_outputs
         return inputs, outputs
-
-    # TODO: deprecate it at some point
-    _retreive_diff_inouts = _retrieve_diff_inouts
 
     @classmethod
     def activate_time_stamps(cls) -> None:

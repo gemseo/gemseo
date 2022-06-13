@@ -27,7 +27,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.utils.derivatives_approx import comp_best_step
+from gemseo.utils.derivatives.derivatives_approx import comp_best_step
 from numpy import array
 
 

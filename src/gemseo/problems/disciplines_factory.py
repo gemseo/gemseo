@@ -28,7 +28,7 @@ from typing import Mapping
 from gemseo.core import discipline
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.factory import Factory
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 
 
 class DisciplinesFactory:

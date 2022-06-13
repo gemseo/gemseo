@@ -55,8 +55,8 @@ from numpy.linalg import norm
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.utils.derivatives_approx import ComplexStep
-from gemseo.utils.derivatives_approx import FirstOrderFD
+from gemseo.utils.derivatives.complex_step import ComplexStep
+from gemseo.utils.derivatives.finite_differences import FirstOrderFD
 
 LOGGER = logging.getLogger(__name__)
 

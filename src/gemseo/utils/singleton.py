@@ -96,17 +96,6 @@ class _Multiton(type):
 Multiton = with_metaclass(_Multiton, object)
 
 
-class SingleInstancePerAttributeEq(_Multiton):
-    """Legacy multiton metaclass.
-
-    Provided for backward compatibility, please use the Multiton base class instead.
-    """
-
-    # TODO: deprecate at some point.
-
-    instances = _Multiton._cache
-
-
 class SingleInstancePerFileAttribute(type):
     """A Singleton-like design pattern so that subclasses are only instantiated when the
     discipline instance passed as input of the constructor is different from already

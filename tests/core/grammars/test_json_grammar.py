@@ -24,8 +24,8 @@ from pathlib import Path
 import pytest
 from gemseo.core.discipline_data import Data
 from gemseo.core.grammars.errors import InvalidDataException
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.json_grammar import JSONGrammar
 from numpy import ndarray
 
 DATA_PATH = Path(__file__).parent / "data"

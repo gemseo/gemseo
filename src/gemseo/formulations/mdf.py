@@ -27,7 +27,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import ExecutionSequence
 from gemseo.core.formulation import MDOFormulation
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.mda.mda_factory import MDAFactory
 
 LOGGER = logging.getLogger(__name__)
