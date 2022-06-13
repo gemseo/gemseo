@@ -289,6 +289,23 @@ def test_log_file(tmpdir):
     assert path.stat().st_size > 0
 
 
+def test_expensive_iterations_warning(caplog):
+    """Check the warning on too small evaluations budget for expensive evaluations."""
+    OptimizersFactory().execute(
+        Rosenbrock(),
+        "PSEVEN",
+        evaluation_cost_type="Expensive",
+        max_iter=1,
+        max_expensive_func_iter=1,
+    )
+    message = (
+        "The evaluations budget (max_iter=1) is to small to compute the "
+        "expensive functions at both the initial guesses (1) and the iterates "
+        "(1)."
+    )
+    assert message in caplog.text
+
+
 def test_library_name():
     """Check the library name."""
     from gemseo.algos.opt.lib_pseven import PSevenOpt
