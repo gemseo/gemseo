@@ -37,7 +37,7 @@ from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core.discipline import MDODiscipline
 from gemseo.core.execution_sequence import LoopExecSequence
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution import DiscParallelLinearization
 from gemseo.core.scenario import Scenario
 

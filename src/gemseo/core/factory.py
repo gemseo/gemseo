@@ -28,7 +28,7 @@ import sys
 from typing import Any
 from typing import Iterable
 
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.third_party.prettytable import PrettyTable
 from gemseo.utils.python_compatibility import importlib_metadata
 from gemseo.utils.singleton import _Multiton

@@ -34,7 +34,7 @@ from numpy import ndarray
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.core.grammars.errors import InvalidDataException
-from gemseo.core.json_grammar import JSONGrammar
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.utils.python_compatibility import Final
 from gemseo.utils.source_parsing import get_options_doc
 

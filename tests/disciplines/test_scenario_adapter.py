@@ -30,7 +30,7 @@ from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.sobieski.disciplines import SobieskiMission
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from numpy import all as np_all
 from numpy import allclose
 from numpy import array

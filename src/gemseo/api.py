@@ -902,10 +902,6 @@ def get_scenario_differentiation_modes():
     return OptimizationProblem.DIFFERENTIATION_METHODS
 
 
-# TODO: to be deprecated
-get_scenario_differenciation_modes = get_scenario_differentiation_modes
-
-
 def get_available_scenario_types() -> list[str]:
     """Return the names of the available scenario types.
 
@@ -1134,7 +1130,8 @@ def configure_logger(
     """Configure |g| logging.
 
     Args:
-        logger_name: The name of the logger to configure, i.e. the root logger.
+        logger_name: The name of the logger to configure.
+            If ``None``, return the root logger.
         level: The logging level, either 'DEBUG', 'INFO', 'WARNING' and 'CRITICAL'.
         date_format: The logging date format.
         message_format: The logging message format.
@@ -1144,17 +1141,9 @@ def configure_logger(
 
     Examples:
         >>> import logging
-        >>> configure_logger(logging.WARNING)
+        >>> configure_logger(level=logging.WARNING)
     """
-    if logger_name == "GEMSEO":
-        # TODO: deprecate this at some point.
-        # For backward compatibility, create the logger named after the modules
-        # and set an alias pointing to the same logger instance.
-        logger = logging.getLogger("gemseo")
-        logging.Logger.manager.loggerDict["GEMSEO"] = logger
-    else:
-        logger = logging.getLogger(logger_name)
-
+    logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
 

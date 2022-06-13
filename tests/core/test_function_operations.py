@@ -18,8 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pytest
-from gemseo.core.func_operations import LinearComposition
-from gemseo.core.func_operations import RestrictedFunction
+from gemseo.core.mdofunctions.func_operations import LinearComposition
+from gemseo.core.mdofunctions.func_operations import RestrictedFunction
 from gemseo.core.mdofunctions.function_generator import MDOFunctionGenerator
 from gemseo.problems.analytical.rosenbrock import RosenMF
 from numpy import array
