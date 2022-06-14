@@ -79,9 +79,8 @@ GEMSEO depends on software with compatible licenses that are listed below.
     .. image:: /_static/dependencies/pydoe-logo.png
         :target: https://github.com/clicumu/pyDOE2
 
-`PySide2 <https://wiki.qt.io/index.php?title=Qt_for_Python>`_
+`PySide6 <https://wiki.qt.io/Qt_for_Python>`_
     GNU LGPL v3.0
-    (When PySide 2 is unavailable, PyQt is used, distributed under the GNU GPL v3.0.)
 
 `Pytest <https://pytest.org>`_
     MIT

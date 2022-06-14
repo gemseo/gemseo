@@ -30,39 +30,18 @@ from os.path import dirname
 from os.path import exists
 from os.path import join
 
+from PySide6.QtCore import QRegularExpression
+from PySide6.QtGui import QAction
+from PySide6.QtGui import QColor
+from PySide6.QtGui import QIcon
+from PySide6.QtGui import QTextCursor
+from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QInputDialog
+from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QTextEdit
+
 LOGGER = logging.getLogger(__name__)
-
-try:
-    from PySide2.QtCore import QRegExp
-    from PySide2.QtGui import QColor, QIcon, QTextCursor
-    from PySide2.QtWidgets import (
-        QAction,
-        QApplication,
-        QFileDialog,
-        QInputDialog,
-        QMainWindow,
-        QTextEdit,
-    )
-except ImportError:
-    # Both libraries are fully interchangeable so we are not contaminated by
-    # the GPL license here
-    LOGGER.warning("PySide2 cannot be imported.")
-    from PyQt5.QtCore import QRegExp
-    from PyQt5.QtGui import QColor, QIcon, QTextCursor
-    from PyQt5.QtWidgets import (
-        QAction,
-        QApplication,
-        QFileDialog,
-        QInputDialog,
-        QMainWindow,
-        QTextEdit,
-    )
-
-    LOGGER.warning(
-        "Your Python environment uses PyQt5"
-        ": it is distributed under the GNU GPL v3.0 license "
-        "unless you have acquired a commercial license for it."
-    )
 
 
 class QtTemplateEditor(QMainWindow):
@@ -107,13 +86,13 @@ class QtTemplateEditor(QMainWindow):
         self.q_text_e = QTextEdit(self)
         self._setup_toolbars()
 
-        self.q_text_e.setTabStopWidth(12)
+        self.q_text_e.setTabStopDistance(12)
         self.setCentralWidget(self.q_text_e)
 
         self.setGeometry(100, 100, 600, 800)
 
     def _setup_toolbars(self):
-        """Setup the toolbars, the icons and shortcuts."""
+        """Set up the toolbars, the icons and shortcuts."""
         self.toolbar = self.addToolBar("Actions")
 
         self.add_action("Open", "Open existing document", "Ctrl+Shift+O", self.open_doc)
@@ -181,19 +160,17 @@ class QtTemplateEditor(QMainWindow):
         filename, is_ok = self.__get_open_filename("Open File")
         if is_ok:
             f_handler = open(filename)
-            filedata = f_handler.read()
-            self.q_text_e.setText(filedata)
+            self.q_text_e.setText(f_handler.read())
             f_handler.close()
-            self.hightlight(self.in_sep, "green")
-            self.hightlight(self.out_sep)
+            self.highlight(self.in_sep, "green")
+            self.highlight(self.out_sep)
 
     def save_doc(self):
         """Save the template to a file."""
         filename, is_ok = self.__get_save_filename("Save File")
         if is_ok:
             f_handler = open(filename, "w")
-            filedata = self.q_text_e.toPlainText()
-            f_handler.write(filedata)
+            f_handler.write(self.q_text_e.toPlainText())
             f_handler.close()
 
     def make_input(self):
@@ -207,7 +184,7 @@ class QtTemplateEditor(QMainWindow):
 
             tag = self.in_sep + "{" + name + "::" + selection + "}"
             cursor.insertText(tag)
-            self.hightlight(self.in_sep, "green")
+            self.highlight(self.in_sep, "green")
 
     def make_output(self):
         """Make an output from the selected data."""
@@ -220,34 +197,36 @@ class QtTemplateEditor(QMainWindow):
             selection = cursor.selection().toPlainText()
             tag = self.out_sep + "{" + name + "::" + selection + "}"
             cursor.insertText(tag)
-            self.hightlight(self.out_sep)
+            self.highlight(self.out_sep)
 
-    def hightlight(self, sep, color="red"):
-        """Highight some text.
+    def highlight(self, sep, color="red"):
+        """Highlight some text.
 
         :param sep: the regex that validates the text to highlight
         :param color: the color to be used
         """
-        # Setup the desired format for matches
+        # Set up the desired format for matches
         color = QColor(color)
         color.setAlpha(100)
-        # Setup the regex engine
-        regex = QRegExp(sep)
+        # Set up the regex engine
+        regex = QRegularExpression(sep)
         # Process the displayed document
-        index = regex.indexIn(self.q_text_e.toPlainText(), 0)
+        match = regex.match(self.q_text_e.toPlainText())
+        index = match.capturedStart()
         cursor = self.q_text_e.textCursor()
 
         while index != -1:
             # Select the matched text and apply the desired format
             cursor.setPosition(index)
             cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor, n=1)
-            charfmt = cursor.charFormat()
-            charfmt.setBackground(color)
-            cursor.setCharFormat(charfmt)
+            char_fmt = cursor.charFormat()
+            char_fmt.setBackground(color)
+            cursor.setCharFormat(char_fmt)
 
             # Move to the next match
-            pos = index + regex.matchedLength()
-            index = regex.indexIn(self.q_text_e.toPlainText(), pos)
+            pos = index + match.capturedLength()
+            match = regex.match(self.q_text_e.toPlainText(), pos)
+            index = match.capturedStart()
 
 
 def main():
@@ -255,4 +234,4 @@ def main():
     app = QApplication(sys.argv)
     editor = QtTemplateEditor()
     editor.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

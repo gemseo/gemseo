@@ -117,7 +117,7 @@ DesignVariable = collections.namedtuple(
 )
 
 
-class DesignSpace(collections.MutableMapping):
+class DesignSpace(collections.abc.MutableMapping):
     """Description of a design space.
 
     It defines a set of variables from their names, sizes, types and bounds.

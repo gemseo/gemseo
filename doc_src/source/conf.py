@@ -137,7 +137,7 @@ templates_path = ["templates"]
 source_suffix = ".rst"
 
 nitpick_ignore_regex = [
-    ("py:.*", ".*PySide2.*"),
+    ("py:.*", ".*PySide6.*"),
 ]
 
 todo_include_todos = True
