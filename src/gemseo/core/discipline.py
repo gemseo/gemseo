@@ -734,7 +734,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         if input_data is None:
             return deepcopy(self.default_inputs)
 
-        if not isinstance(input_data, collections.Mapping):
+        if not isinstance(input_data, collections.abc.Mapping):
             raise TypeError(
                 "Input data must be of dict type, "
                 "got {} instead.".format(type(input_data))
@@ -1377,7 +1377,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     @default_inputs.setter
     def default_inputs(self, default_inputs: dict[str, Any]) -> None:
-        if not isinstance(default_inputs, collections.Mapping):
+        if not isinstance(default_inputs, collections.abc.Mapping):
             raise TypeError(
                 "MDODiscipline default_inputs must be of dict-like type, "
                 "got {} instead.".format(type(default_inputs))

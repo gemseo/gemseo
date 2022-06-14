@@ -81,7 +81,7 @@ update the requirements for the testing and ``doc`` environments of ``tox``:
 
 .. code-block:: shell
 
-    tox -e update-deps-test-py37,update-deps-test-py38,update-deps-test-py39,update-deps-doc
+    tox -e update-deps-test-py37,update-deps-test-py38,update-deps-test-py39,update-deps-test-py310,update-deps-doc
 
 The dependencies for the ``check`` and ``dist`` environments of ``tox``
 are defined in:

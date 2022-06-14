@@ -438,7 +438,7 @@ def __flatten_nested_mapping(
         else:
             new_key = key
 
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections.abc.Mapping):
             yield from flatten_nested_dict(value, new_key, separator=separator).items()
         else:
             yield new_key, value

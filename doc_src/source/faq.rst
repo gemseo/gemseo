@@ -191,41 +191,6 @@ and :class:`.HDF5Cache` do not work properly. This is due to the way subprocesse
 in this architecture. The method :meth:`.DOEScenario.set_optimization_history_backup`
 is recommended as an alternative.
 
-The user may face issues when running parallel tasks with Python versions < 3.7 on Windows.
-A subprocess may randomly hang and prevent the execution of the rest of the code. The cause of
-this problem is most likely related to a bug in numpy that was solved on version 1.20.0, it
-is strongly recommended to update the Python environment to ensure the stability of the execution.
-
 The progress bar may show duplicated instances during the initialization of each subprocess, in some cases
 it may also print the conclusion of an iteration ahead of another one that was concluded first. This
 is a consequence of the pickling process and does not affect the computations of the scenario.
-
-gemseo-template-grammar-editor
-------------------------------
-
-When executing ``gemseo-template-grammar-editor``,
-you may encounter the error:
-
-.. code-block:: shell
-
-    Traceback (most recent call last):
-      File "/path-to-anaconda-environment/lib/python3.8/site-packages/gemseo/wrappers/template_grammar_editor.py", line 36, in <module>
-        from PySide2.QtCore import QRegExp
-    ModuleNotFoundError: No module named 'PySide2'
-
-    During handling of the above exception, another exception occurred:
-
-    Traceback (most recent call last):
-      File "/path-to-anaconda-environment/bin/gemseo-template-grammar-editor", line 5, in <module>
-        from gemseo.wrappers.template_grammar_editor import main
-      File "/path-to-anaconda-environment/lib/python3.8/site-packages/gemseo/wrappers/template_grammar_editor.py", line 50, in <module>
-        from PyQt5.QtCore import QRegExp
-
-This is a known
-`bug of PySide2<https://bugreports.qt.io/browse/PYSIDE-1357>`_
-which happens when installing |g| with ``pip`` in an anaconda environment.
-The workaround is to install ``pyside2`` with ``conda`` in the anaconda environment:
-
-.. code-block:: shell
-
-   conda install pyside2

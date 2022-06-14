@@ -77,7 +77,7 @@ class TMDesignSpace:
 
         default_inputs = (
             {}
-            if not isinstance(default_inputs, collections.Mapping)
+            if not isinstance(default_inputs, collections.abc.Mapping)
             else default_inputs
         )
         self.names = []

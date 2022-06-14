@@ -156,7 +156,7 @@ class MLRegressionAlgo(MLSupervisedAlgo):
                 Returns:
                     The output data with the same type as the input one.
                 """
-                as_dict = isinstance(input_data, collections.Mapping)
+                as_dict = isinstance(input_data, collections.abc.Mapping)
                 if as_dict:
                     input_data = concatenate_dict_of_arrays_to_array(
                         input_data, self.input_names

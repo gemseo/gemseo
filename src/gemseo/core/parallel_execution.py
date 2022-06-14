@@ -27,7 +27,7 @@ import sys
 import threading as th
 import time
 import traceback
-from collections import Iterable
+from collections.abc import Iterable
 from typing import Any
 from typing import Callable
 from typing import Mapping
