@@ -204,14 +204,19 @@ def test_backup_error(tmp_wd, mdf_scenario):
         )
 
 
-def test_backup_0(tmp_wd, mdf_scenario):
+@pytest.mark.parametrize("each_iter", [False, True])
+def test_backup_0(tmp_wd, mdf_scenario, each_iter):
     """Test the optimization backup with generation of plots during convergence.
 
-    tests that when used, the backup does not call the original objective
+    Test that, when used, the backup does not call the original objective.
     """
     filename = "opt_history.h5"
     mdf_scenario.set_optimization_history_backup(
-        filename, erase=True, pre_load=False, generate_opt_plot=True
+        filename,
+        erase=True,
+        pre_load=False,
+        generate_opt_plot=True,
+        each_new_iter=each_iter,
     )
     mdf_scenario.execute({"algo": "SLSQP", "max_iter": 2})
     assert len(mdf_scenario.formulation.opt_problem.database) == 2
