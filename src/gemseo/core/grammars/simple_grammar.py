@@ -167,7 +167,7 @@ class SimpleGrammar(BaseGrammar):
 
             # Generalize dict to support DisciplineData objects.
             if element_type is dict:
-                self.__names_to_types[element_name] = collections.Mapping
+                self.__names_to_types[element_name] = collections.abc.Mapping
             else:
                 self.__names_to_types[element_name] = element_type
 
