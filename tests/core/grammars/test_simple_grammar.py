@@ -226,7 +226,7 @@ def test_update_dict_with_mapping():
     """Verify update with mapping."""
     g = SimpleGrammar("g")
     g.update({"name": dict})
-    assert g["name"] == collections.Mapping
+    assert g["name"] == collections.abc.Mapping
 
 
 @pytest.mark.parametrize(

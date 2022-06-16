@@ -43,7 +43,7 @@ class __MetaClass(abc.ABCMeta, GoogleDocstringInheritanceMeta):
     pass
 
 
-class BaseGrammar(collections.Mapping, metaclass=__MetaClass):
+class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
     """An abstract base class for grammars with a dictionary-like interface.
 
     A grammar considers a certain type of data defined by mandatory and optional names
