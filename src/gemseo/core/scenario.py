@@ -405,8 +405,14 @@ class Scenario(MDODiscipline):
             each_store=each_store,
         )
 
-    def _execute_backup_callback(self) -> None:
-        """A callback function to backup optimization history."""
+    def _execute_backup_callback(self, option: Any = None) -> None:
+        """A callback function to backup optimization history.
+
+        Args:
+            option: Any input value which is not used within the current function,
+               but need to be defined for the generic mechanism of the
+               callback functions usage in :class:`.OptimizationProblem`.
+        """
         self.save_optimization_history(self._opt_hist_backup_path, append=True)
         if self._gen_opt_backup_plot and self.formulation.opt_problem.database:
             basepath = basename(self._opt_hist_backup_path).split(".")[0]
