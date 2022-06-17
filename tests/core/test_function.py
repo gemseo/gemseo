@@ -40,6 +40,7 @@ from numpy import allclose
 from numpy import array
 from numpy import eye
 from numpy import matmul
+from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
@@ -791,3 +792,75 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac):
     assert repr(f_op_2) == f"2{op_name}f(x)" + suffix
     assert f_op_2(2) == func
     assert f_op_2.jac(2) == jac
+
+
+def simple_function(x: ndarray) -> ndarray:
+    """An identity function.
+
+    Serialization tests require explicitly defined functions instead of lambdas.
+
+    Args:
+        x: The input data.
+
+    Returns:
+        The input data.
+    """
+    return x
+
+
+@pytest.mark.parametrize("activate_counters", [True, False])
+@pytest.mark.parametrize(
+    "mdo_function, kwargs, value",
+    [
+        (
+            MDOFunction,
+            {
+                "func": math.sin,
+                "f_type": "obj",
+                "name": "obj",
+                "jac": math.cos,
+                "expr": "sin(x)",
+                "args": ["x"],
+            },
+            array([1.0]),
+        ),
+        (
+            NormFunction,
+            {
+                "orig_func": MDOFunction(simple_function, "f"),
+                "normalize": True,
+                "round_ints": False,
+                "optimization_problem": Power2(),
+            },
+            array([1.0, 1.0, 1.0]),
+        ),
+    ],
+)
+def test_serialize_deserialize(activate_counters, mdo_function, kwargs, value, tmp_wd):
+    """Test the serialization/deserialization method.
+
+    Args:
+        activate_counters: Whether to activate the function counters.
+        mdo_function: The ``MDOFunction`` to be tested.
+        kwargs: The keyword arguments to instantiate the ``MDOFunction``.
+        value: The value to evaluate the ``MDOFunction``.
+        tmp_wd: Fixture to move into a temporary work directory.
+    """
+    function = mdo_function(**kwargs)
+    out_file = "function1.o"
+    function.activate_counters = activate_counters
+    function(value)
+    function.serialize(out_file)
+    serialized_func = mdo_function.deserialize(out_file)
+
+    if activate_counters:
+        assert function.n_calls == 1
+    else:
+        assert function.n_calls is None
+
+    s_func_u_dict = serialized_func.__dict__
+    ok = True
+    for k, _ in function.__dict__.items():
+        if k not in s_func_u_dict:
+            ok = False
+    assert ok

@@ -1962,36 +1962,35 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
 
     def serialize(
         self,
-        out_file: str | Path,
+        file_path: str | Path,
     ) -> None:
         """Serialize the discipline and store it in a file.
 
         Args:
-            out_file: The path to the file to store the discipline.
+            file_path: The path to the file to store the discipline.
         """
-        out_file = Path(out_file)
-        with out_file.open("wb") as outfobj:
+        with Path(file_path).open("wb") as outfobj:
             pickler = pickle.Pickler(outfobj, protocol=2)
             pickler.dump(self)
 
     @staticmethod
     def deserialize(
-        in_file: str | Path,
+        file_path: str | Path,
     ) -> MDODiscipline:
         """Deserialize a discipline from a file.
 
         Args:
-            in_file: The path to the file containing the discipline.
+            file_path: The path to the file containing the discipline.
 
         Returns:
             The discipline instance.
         """
-        with Path(in_file).open("rb") as file_:
+        with Path(file_path).open("rb") as file_:
             pickler = pickle.Unpickler(file_)
             obj = pickler.load()
         return obj
 
-    def get_attributes_to_serialize(self):  # pylint: disable=R0201
+    def get_attributes_to_serialize(self) -> list[str]:  # pylint: disable=R0201
         """Define the names of the attributes to be serialized.
 
         Shall be overloaded by disciplines
