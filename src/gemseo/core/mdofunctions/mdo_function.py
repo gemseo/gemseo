@@ -21,10 +21,13 @@
 from __future__ import annotations
 
 import logging
+import pickle
 from multiprocessing import Value
 from numbers import Number
 from operator import mul
 from operator import truediv
+from pathlib import Path
+from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Iterable
@@ -182,6 +185,38 @@ class MDOFunction:
     activate_counters: ClassVar[bool] = True
     """Whether to count the number of function evaluations."""
 
+    _n_calls: Value
+    """The number of times that the function has been evaluated."""
+
+    _f_type: str
+    """The type of the function, among :attr:`.MDOFunction.AVAILABLE_TYPES`."""
+
+    _func: Callable[[ndarray], ndarray]
+    """The function to be evaluated from a given input vector."""
+
+    _jac: Callable[[ndarray], ndarray]
+    """The Jacobian function to be evaluated from a given input vector."""
+
+    _name: str
+    """The name of the function."""
+
+    _args: Sequence[str]
+    """The names of the inputs of the function."""
+
+    _expr: str
+    """The expression of the function, e.g. `"2*x"`."""
+
+    _dim: int
+    """The dimension of the output space of the function."""
+
+    _outvars: Sequence[str]
+    """The names of the outputs of the function."""
+
+    _ATTR_NOT_TO_SERIALIZE: tuple[str] = ("_n_calls",)
+    """The attributes that shall be skipped at serialization. Private attributes shall
+    be written following name mangling conventions: ``_ClassName__attribute_name``.
+    Subclasses must expand this class attribute if needed. """
+
     def __init__(
         self,
         func: Callable[[ndarray], ndarray] | None,
@@ -218,10 +253,6 @@ class MDOFunction:
                 If None, use the default string representation.
         """
         super().__init__()
-        if self.activate_counters:
-            self._n_calls = Value("i", 0)
-        else:
-            self._n_calls = None
 
         # Initialize attributes
         self._f_type = None
@@ -232,6 +263,7 @@ class MDOFunction:
         self._expr = None
         self._dim = None
         self._outvars = None
+        self._init_shared_attrs()
         # Use setters to check values
         self.func = func
         self.jac = jac
@@ -303,6 +335,83 @@ class MDOFunction:
 
         self._func = f_pointer
 
+    def serialize(
+        self,
+        file_path: str | Path,
+    ) -> None:
+        """Serialize the function and store it in a file.
+
+        Args:
+            file_path: The path to the file to store the function.
+        """
+        with Path(file_path).open("wb") as outfobj:
+            pickler = pickle.Pickler(outfobj, protocol=2)
+            pickler.dump(self)
+
+    @staticmethod
+    def deserialize(
+        file_path: str | Path,
+    ) -> MDOFunction:
+        """Deserialize a function from a file.
+
+        Args:
+            file_path: The path to the file containing the function.
+
+        Returns:
+            The function instance.
+        """
+        with Path(file_path).open("rb") as file_:
+            pickler = pickle.Unpickler(file_)
+            obj = pickler.load()
+        return obj
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Used by pickle to define what to serialize.
+
+        Returns:
+            The attributes to be serialized.
+        """
+        state = {}
+        for attribute_name in list(self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE):
+            attribute_value = self.__dict__[attribute_name]
+
+            # At this point, there are no Synchronized attributes in MDOFunction or its
+            # child classes other than _n_calls, which is not serialized.
+            # If a Synchronized attribute is added in the future, the following check
+            # (and its counterpart in __setstate__) shall be uncommented.
+
+            # if isinstance(attribute_value, Synchronized):
+            #     # Don´t serialize shared memory object,
+            #     # this is meaningless, save the value instead
+            #     attribute_value = attribute_value.value
+
+            state[attribute_name] = attribute_value
+
+        return state
+
+    def __setstate__(
+        self,
+        state: dict[str, Any],
+    ) -> None:
+        self._init_shared_attrs()
+        for attribute_name, attribute_value in state.items():
+
+            # At this point, there are no Synchronized attributes in MDOFunction or its
+            # child classes other than _n_calls, which is not serialized.
+            # If a Synchronized attribute is added in the future, the following check
+            # (and its counterpart in __getstate__) shall be uncommented.
+
+            # if isinstance(attribute_value, Synchronized):
+            #     # Don´t serialize shared memory object,
+            #     # this is meaningless, save the value instead
+            #     attribute_value = attribute_value.value
+
+            self.__dict__[attribute_name] = attribute_value
+
+    def _init_shared_attrs(self) -> None:
+        """Initialize the shared attributes in multiprocessing."""
+        self._n_calls = Value("i", 0)
+
     def __call__(
         self,
         x_vect: ndarray,
@@ -328,7 +437,6 @@ class MDOFunction:
 
         Args:
             x_vect: The value of the inputs of the function.
-            force_real: If True, cast the result to real value.
 
         Returns:
             The value of the output of the function.
