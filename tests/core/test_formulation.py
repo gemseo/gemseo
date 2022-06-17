@@ -229,3 +229,25 @@ def test_grammar_type():
         [discipline], "y", design_space, grammar_type="a_grammar_type"
     )
     assert formulation._grammar_type == "a_grammar_type"
+
+
+def test_remove_unused_variable_logger(caplog):
+    """Check that a message is logged when an unused variable is removed.
+
+    Args:
+        caplog: Fixture to access and control log capturing.
+    """
+    y1 = AnalyticDiscipline({"y1": "x1+y2"})
+    y2 = AnalyticDiscipline({"y2": "x2+y1"})
+    y3 = AnalyticDiscipline({"toto": "x3+y1+y2"})
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2")
+    design_space.add_variable("y1")
+    design_space.add_variable("toto")
+    formulation = MDOFormulation([y1, y2, y3], "y2", design_space)
+    formulation._remove_unused_variables()
+    assert (
+        "Variable toto was removed from the Design Space, it is not an input of any "
+        "discipline." in caplog.text
+    )

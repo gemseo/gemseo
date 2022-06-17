@@ -474,6 +474,11 @@ class MDOFormulation(metaclass=GoogleDocstringInheritanceMeta):
         for name in set(design_space.variables_names):
             if name not in all_inputs:
                 design_space.remove_variable(name)
+                LOGGER.info(
+                    "Variable %s was removed from the Design Space, it is not an input"
+                    " of any discipline.",
+                    name,
+                )
 
     def _remove_sub_scenario_dv_from_ds(self) -> None:
         """Remove the sub scenarios design variables from the design space."""
