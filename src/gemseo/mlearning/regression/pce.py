@@ -77,6 +77,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -120,12 +121,12 @@ LOGGER = logging.getLogger(__name__)
 class PCERegressor(MLRegressionAlgo):
     """Polynomial chaos expansion model."""
 
-    short_algo_name: ClassVar[str] = "PCE"
-    library: ClassVar[str] = "OpenTURNS"
-    LS_STRATEGY = "LS"
-    QUAD_STRATEGY = "Quad"
-    SPARSE_STRATEGY = "SparseLS"
-    AVAILABLE_STRATEGIES = [LS_STRATEGY, QUAD_STRATEGY, SPARSE_STRATEGY]
+    SHORT_ALGO_NAME: ClassVar[str] = "PCE"
+    LIBRARY: Final[str] = "OpenTURNS"
+    LS_STRATEGY: Final[str] = "LS"
+    QUAD_STRATEGY: Final[str] = "Quad"
+    SPARSE_STRATEGY: Final[str] = "SparseLS"
+    AVAILABLE_STRATEGIES: list[str] = [LS_STRATEGY, QUAD_STRATEGY, SPARSE_STRATEGY]
 
     def __init__(
         self,

@@ -60,6 +60,7 @@ from pathlib import Path
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import List
 from typing import Mapping
@@ -157,12 +158,12 @@ class MOERegressor(MLRegressionAlgo):
     regress_models: list[MLRegressionAlgo]
     """The regression algorithms."""
 
-    short_algo_name: ClassVar[str] = "MoE"
+    SHORT_ALGO_NAME: ClassVar[str] = "MoE"
 
-    LABELS = "labels"
+    LABELS: Final[str] = "labels"
 
-    _LOCAL_INPUT = "input"
-    _LOCAL_OUTPUT = "output"
+    _LOCAL_INPUT: Final[str] = "input"
+    _LOCAL_OUTPUT: Final[str] = "output"
 
     def __init__(
         self,

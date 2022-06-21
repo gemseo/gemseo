@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -47,8 +48,8 @@ LOGGER = logging.getLogger(__name__)
 class RandomForestRegressor(MLRegressionAlgo):
     """Random forest regression."""
 
-    short_algo_name: ClassVar[str] = "RF"
-    library: ClassVar[str] = "scikit-learn"
+    SHORT_ALGO_NAME: ClassVar[str] = "RF"
+    LIBRARY: Final[str] = "scikit-learn"
 
     def __init__(
         self,

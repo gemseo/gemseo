@@ -83,8 +83,8 @@ def test_constructor(dataset):
     """Test construction."""
     svm = SVMClassifier(dataset)
     assert svm.algo is not None
-    assert svm.short_algo_name == "SVM"
-    assert svm.library == "scikit-learn"
+    assert svm.SHORT_ALGO_NAME == "SVM"
+    assert svm.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):

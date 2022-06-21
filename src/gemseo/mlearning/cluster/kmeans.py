@@ -72,6 +72,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -90,8 +91,8 @@ LOGGER = logging.getLogger(__name__)
 class KMeans(MLPredictiveClusteringAlgo):
     """The k-means clustering algorithm."""
 
-    short_algo_name: ClassVar[str] = "KMeans"
-    library: ClassVar[str] = "scikit-learn"
+    SHORT_ALGO_NAME: ClassVar[str] = "KMeans"
+    LIBRARY: Final[str] = "scikit-learn"
 
     EPS = finfo(float).eps
 

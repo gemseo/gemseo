@@ -126,8 +126,8 @@ def test_constructor(dataset):
     """Test construction."""
     gaussian_mixture = GaussianMixture(dataset)
     assert gaussian_mixture.algo is not None
-    assert gaussian_mixture.short_algo_name == "GMM"
-    assert gaussian_mixture.library == "scikit-learn"
+    assert gaussian_mixture.SHORT_ALGO_NAME == "GMM"
+    assert gaussian_mixture.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):

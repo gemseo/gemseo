@@ -100,6 +100,7 @@ from __future__ import annotations
 import logging
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Tuple
@@ -124,9 +125,9 @@ __Bounds = Tuple[float, float]
 class GaussianProcessRegressor(MLRegressionAlgo):
     """Gaussian process regression model."""
 
-    short_algo_name: ClassVar[str] = "GPR"
-    library: ClassVar[str] = "scikit-learn"
-    __DEFAULT_BOUNDS = (0.01, 100.0)
+    SHORT_ALGO_NAME: ClassVar[str] = "GPR"
+    LIBRARY: Final[str] = "scikit-learn"
+    __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
     def __init__(
         self,
