@@ -100,8 +100,7 @@ LOGGER = logging.getLogger(__name__)
 class PolynomialRegressor(LinearRegressor):
     """Polynomial regression model."""
 
-    short_algo_name: ClassVar[str] = "PolyReg"
-    library: ClassVar[str] = "scikit-learn"
+    SHORT_ALGO_NAME: ClassVar[str] = "PolyReg"
 
     def __init__(
         self,

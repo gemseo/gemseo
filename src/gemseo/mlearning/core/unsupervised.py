@@ -28,6 +28,7 @@ which inherits from the :class:`.MLAlgo` class.
 """
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -52,7 +53,7 @@ class MLUnsupervisedAlgo(MLAlgo):
         input_names (List[str]): The names of the variables.
     """
 
-    short_algo_name = "MLUnsupervisedAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "MLUnsupervisedAlgo"
 
     def __init__(
         self,

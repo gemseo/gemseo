@@ -71,6 +71,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -88,8 +89,8 @@ LOGGER = logging.getLogger(__name__)
 class GaussianMixture(MLPredictiveClusteringAlgo):
     """The Gaussian mixture clustering algorithm."""
 
-    short_algo_name: ClassVar[str] = "GMM"
-    library: ClassVar[str] = "scikit-learn"
+    SHORT_ALGO_NAME: ClassVar[str] = "GMM"
+    LIBRARY: Final[str] = "scikit-learn"
 
     def __init__(
         self,

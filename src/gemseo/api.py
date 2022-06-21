@@ -1287,7 +1287,7 @@ def create_surrogate(
             The :attr:`.MLRegressionAlgo.DEFAULT_TRANSFORMER` uses
             the :class:`.MinMaxScaler` strategy for both input and output variables.
         disc_name: The name to be given to the surrogate discipline.
-            If None, concatenate :attr:`.short_algo_name` and ``data.name``.
+            If None, concatenate :attr:`.SHORT_ALGO_NAME` and ``data.name``.
         default_inputs: The default values of the inputs.
             If None, use the center of the learning input space.
         input_names: The names of the input variables.

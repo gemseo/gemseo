@@ -68,7 +68,9 @@ through the :class:`.MLSupervisedAlgo` class based on a :class:`.Dataset`.
 from __future__ import annotations
 
 from typing import Callable
+from typing import ClassVar
 from typing import Dict
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -109,8 +111,10 @@ class MLSupervisedAlgo(MLAlgo):
         output_names (List[str]): The names of the output variables.
     """
 
-    short_algo_name = "MLSupervisedAlgo"
-    DEFAULT_TRANSFORMER = {Dataset.INPUT_GROUP: MinMaxScaler()}
+    SHORT_ALGO_NAME: ClassVar[str] = "MLSupervisedAlgo"
+    DEFAULT_TRANSFORMER: Final[dict[str, Transformer]] = {
+        Dataset.INPUT_GROUP: MinMaxScaler()
+    }
 
     def __init__(
         self,

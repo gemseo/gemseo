@@ -92,6 +92,7 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -109,8 +110,8 @@ LOGGER = logging.getLogger(__name__)
 class KNNClassifier(MLClassificationAlgo):
     """The k-nearest neighbors classification algorithm."""
 
-    short_algo_name: ClassVar[str] = "KNN"
-    library: ClassVar[str] = "scikit-learn"
+    SHORT_ALGO_NAME: ClassVar[str] = "KNN"
+    LIBRARY: Final[str] = "scikit-learn"
 
     def __init__(
         self,

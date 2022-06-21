@@ -74,8 +74,8 @@ def test_learn(dataset):
     model_ = RandomForestRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
-    assert model_.short_algo_name == "RF"
-    assert model_.library == "scikit-learn"
+    assert model_.SHORT_ALGO_NAME == "RF"
+    assert model_.LIBRARY == "scikit-learn"
 
 
 def test_prediction(model):

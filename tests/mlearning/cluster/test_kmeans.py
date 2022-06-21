@@ -125,8 +125,8 @@ def test_constructor(dataset):
     """Test construction."""
     algo = KMeans(dataset)
     assert algo.algo is not None
-    assert algo.short_algo_name == "KMeans"
-    assert algo.library == "scikit-learn"
+    assert algo.SHORT_ALGO_NAME == "KMeans"
+    assert algo.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset):

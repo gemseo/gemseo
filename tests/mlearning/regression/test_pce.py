@@ -75,8 +75,8 @@ def test_constructor(dataset, prob_space):
     """Test construction."""
     model_ = PCERegressor(dataset, prob_space)
     assert model_.algo is None
-    assert model_.short_algo_name == "PCE"
-    assert model_.library == "OpenTURNS"
+    assert model_.SHORT_ALGO_NAME == "PCE"
+    assert model_.LIBRARY == "OpenTURNS"
 
     model_ = PCERegressor(dataset, prob_space, strategy="Quad")
     assert model_._proj_strategy is not None

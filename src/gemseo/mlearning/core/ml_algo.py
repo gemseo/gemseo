@@ -153,18 +153,18 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         algo (Any): The interfaced machine learning algorithm.
     """
 
-    short_algo_name: ClassVar[str] = "MLAlgo"
+    SHORT_ALGO_NAME: ClassVar[str] = "MLAlgo"
     """The short name of the machine learning algorithm, often an acronym.
 
     Typically used for composite names,
-    e.g. ``f"{algo.short_algo_name}_{dataset.name}"``
-    or ``f"{algo.short_algo_name}_{discipline.name}"``.
+    e.g. ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"``
+    or ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
     """
 
-    library: ClassVar[str] = None
+    LIBRARY: ClassVar[str] = ""
     """The name of the library of the wrapped machine learning algorithm."""
 
-    FILENAME = "ml_algo.pkl"
+    FILENAME: ClassVar[str] = "ml_algo.pkl"
 
     def __init__(
         self,
@@ -285,8 +285,8 @@ class MLAlgo(metaclass=GoogleDocstringInheritanceMeta):
         msg = MultiLineString()
         msg.add("{}({})", self.__class__.__name__, pretty_repr(self.parameters))
         msg.indent()
-        if self.library is not None:
-            msg.add("based on the {} library", self.library)
+        if self.LIBRARY:
+            msg.add("based on the {} library", self.LIBRARY)
         if self.is_trained:
             msg.add(
                 "built from {} learning samples", len(self._learning_samples_indices)

@@ -41,6 +41,7 @@ from __future__ import annotations
 import logging
 from typing import Callable
 from typing import ClassVar
+from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Union
@@ -75,20 +76,20 @@ class RBFRegressor(MLRegressionAlgo):
     y_average: ndarray
     """The mean of the learning output data."""
 
-    short_algo_name: ClassVar[str] = "RBF"
-    library: ClassVar[str] = "SciPy"
+    SHORT_ALGO_NAME: ClassVar[str] = "RBF"
+    LIBRARY: Final[str] = "SciPy"
 
-    EUCLIDEAN = "euclidean"
+    EUCLIDEAN: Final[str] = "euclidean"
 
-    MULTIQUADRIC = "multiquadric"
-    INVERSE_MULTIQUADRIC = "inverse_multiquadric"
-    GAUSSIAN = "gaussian"
-    LINEAR = "linear"
-    CUBIC = "cubic"
-    QUINTIC = "quintic"
-    THIN_PLATE = "thin_plate"
+    MULTIQUADRIC: Final[str] = "multiquadric"
+    INVERSE_MULTIQUADRIC: Final[str] = "inverse_multiquadric"
+    GAUSSIAN: Final[str] = "gaussian"
+    LINEAR: Final[str] = "linear"
+    CUBIC: Final[str] = "cubic"
+    QUINTIC: Final[str] = "quintic"
+    THIN_PLATE: Final[str] = "thin_plate"
 
-    AVAILABLE_FUNCTIONS = [
+    AVAILABLE_FUNCTIONS: list[str] = [
         MULTIQUADRIC,
         INVERSE_MULTIQUADRIC,
         GAUSSIAN,
