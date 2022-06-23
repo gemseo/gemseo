@@ -53,7 +53,6 @@ from __future__ import annotations
 
 import logging
 from typing import ClassVar
-from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -74,6 +73,7 @@ from gemseo.mlearning.transform.dimension_reduction.dimension_reduction import (
     DimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 

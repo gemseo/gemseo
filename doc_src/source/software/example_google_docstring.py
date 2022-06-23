@@ -19,10 +19,10 @@ Section breaks are also implicitly created anytime a new section starts.
 from __future__ import annotations
 
 from typing import ClassVar
-from typing import Final
 from typing import Generator
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+from gemseo.utils.python_compatibility import Final
 
 MODULE_LEVEL_VARIABLE: Final[int] = 98765
 """Module level constant variable documented inline.

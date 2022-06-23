@@ -70,7 +70,6 @@ from __future__ import annotations
 from typing import Callable
 from typing import ClassVar
 from typing import Dict
-from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import NoReturn
@@ -95,6 +94,7 @@ from gemseo.mlearning.transform.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transform.transformer import Transformer
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.python_compatibility import Final
 
 SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], Dict[str, ndarray]]
 
