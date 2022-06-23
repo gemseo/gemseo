@@ -35,7 +35,6 @@ from __future__ import annotations
 import logging
 from typing import Callable
 from typing import ClassVar
-from typing import Final
 from typing import Iterable
 from typing import Mapping
 
@@ -45,6 +44,7 @@ from sklearn.svm import SVC
 from gemseo.core.dataset import Dataset
 from gemseo.mlearning.classification.classification import MLClassificationAlgo
 from gemseo.mlearning.core.ml_algo import TransformerType
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 

@@ -100,7 +100,6 @@ from __future__ import annotations
 import logging
 from typing import Callable
 from typing import ClassVar
-from typing import Final
 from typing import Iterable
 from typing import Mapping
 from typing import Tuple
@@ -116,6 +115,7 @@ from gemseo.mlearning.core.ml_algo import DataType
 from gemseo.mlearning.core.ml_algo import TransformerType
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.python_compatibility import Final
 
 LOGGER = logging.getLogger(__name__)
 
