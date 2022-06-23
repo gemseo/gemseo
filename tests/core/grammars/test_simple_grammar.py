@@ -13,6 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import collections
+import pickle
 
 import pytest
 from gemseo.core.grammars.errors import InvalidDataException
@@ -419,3 +420,15 @@ Grammar 'g'
       name2: str
 """.strip()
     )
+
+
+def test_serialization():
+    """Check that the SimpleGrammar can be serialized."""
+    g = SimpleGrammar(
+        "g", names_to_types={"name1": int, "name2": str}, required_names=["name1"]
+    )
+    serialized_grammar = pickle.dumps(g)
+    deserialized_grammar = pickle.loads(serialized_grammar)
+
+    for k, v in g.__dict__.items():
+        assert deserialized_grammar.__dict__[k] == v
