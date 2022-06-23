@@ -27,7 +27,7 @@ from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 
 #######################################################################################
-# Let us consider a discipline implementing the function :math:`y=a+b`
+# Let us consider a discipline implementing the function :math:`y=a*b`
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "a*b"})
 
 #######################################################################################
