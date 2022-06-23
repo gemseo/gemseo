@@ -43,7 +43,7 @@ configure_logger()
 #############################################################################
 # Define the objective function
 # -----------------------------
-# We define the objective function :math:`f(x)=sin(x)-exp(x)`
+# We define the objective function :math:`f(x)=\sin(x)-\exp(x)`
 # using a :class:`.MDOFunction` defined by the sum of :class:`.MDOFunction` objects.
 f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
 f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
