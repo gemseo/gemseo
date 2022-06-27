@@ -66,7 +66,7 @@ def test_unknown_class(reset_factory):
 def test_create_error(reset_factory):
     """Verify that Factory.create catches bad sub-classes."""
     factory = Factory(MDOFormulation)
-    msg = "Class dummy is not available!\nAvailable ones are: "
+    msg = "Class dummy is not available; \navailable ones are: "
     with pytest.raises(ImportError, match=msg):
         factory.create("dummy")
 

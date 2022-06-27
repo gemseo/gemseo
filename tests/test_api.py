@@ -75,6 +75,7 @@ from gemseo.core.doe_scenario import DOEScenario
 from gemseo.core.grammars.errors import InvalidDataException
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
 from gemseo.core.scenario import Scenario
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda import MDA
 from gemseo.problems.analytical.rosenbrock import Rosenbrock
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
@@ -821,19 +822,34 @@ def test_compute_doe_nontransformed(variables_space):
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
-def test_import_discipline(tmp_wd):
-    """Check that a discipline performs correctly after import."""
+def test_import_analytic_discipline(tmp_wd):
+    """Check that an analytic discipline performs correctly after import."""
     file_path = tmp_wd / "saved_discipline.pkl"
 
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
-    discipline.execute()
     discipline.serialize(file_path)
+    discipline.execute()
 
-    loaded_discipline = import_discipline(file_path)
+    loaded_discipline = import_discipline(file_path, AnalyticDiscipline)
     loaded_discipline.execute()
 
     assert loaded_discipline.local_data["x"] == discipline.local_data["x"]
     assert loaded_discipline.local_data["y"] == discipline.local_data["y"]
+
+
+def test_import_discipline(tmp_wd):
+    """Check that a discipline performs correctly after import."""
+    file_path = tmp_wd / "saved_discipline.pkl"
+
+    discipline = create_discipline("Sellar1")
+    discipline.serialize(file_path)
+    discipline.execute()
+
+    loaded_discipline = import_discipline(file_path)
+    loaded_discipline.execute()
+
+    assert loaded_discipline.local_data["x_local"] == discipline.local_data["x_local"]
+    assert loaded_discipline.local_data["y_1"] == discipline.local_data["y_1"]
 
 
 @pytest.mark.parametrize("activate_discipline_counters", [False, True])

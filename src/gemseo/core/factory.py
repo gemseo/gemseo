@@ -297,7 +297,7 @@ class Factory(Multiton):
         try:
             return self.__names_to_classes[name]
         except KeyError:
-            msg = "Class {} is not available!\nAvailable ones are: {}".format(
+            msg = "Class {} is not available; \navailable ones are: {}.".format(
                 name, ", ".join(sorted(self.__names_to_classes.keys()))
             )
             raise ImportError(msg)

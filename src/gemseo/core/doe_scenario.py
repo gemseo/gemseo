@@ -50,6 +50,7 @@ class DOEScenario(Scenario):
     N_SAMPLES = "n_samples"
     EVAL_JAC = "eval_jac"
     SEED = "seed"
+    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + ("seed",)
 
     def __init__(
         self,

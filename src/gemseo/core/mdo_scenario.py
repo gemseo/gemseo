@@ -54,13 +54,6 @@ class MDOScenario(Scenario):
     MAX_ITER = "max_iter"
     X_OPT = "x_opt"
 
-    _ATTR_TO_SERIALIZE = Scenario._ATTR_TO_SERIALIZE + (
-        "formulation",
-        "disciplines",
-        "clear_history_before_run",
-        "_algo_factory",
-    )
-
     def __init__(
         self,
         disciplines: Sequence[MDODiscipline],

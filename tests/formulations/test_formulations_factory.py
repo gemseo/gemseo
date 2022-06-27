@@ -16,63 +16,67 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-import unittest
+from pathlib import Path
 
-import numpy as np
+import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.formulations.formulations_factory import MDOFormulationsFactory
+from gemseo.formulations.mdf import MDF
 from gemseo.problems.sellar.sellar import Sellar1
 from gemseo.problems.sellar.sellar import Sellar2
 from gemseo.problems.sellar.sellar import SellarSystem
 
+from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
 
-class TestFormulationsFactory(unittest.TestCase):
-    """"""
 
-    def setUp(self):
-        """"""
-        if not hasattr(self, "factory"):
-            self.factory = MDOFormulationsFactory()
+@pytest.fixture
+def factory(reset_factory) -> MDOFormulationsFactory:
+    """The factory of MDOFormulation."""
+    return MDOFormulationsFactory()
 
-    def test_list_formulations(self):
-        """"""
-        f_list = self.factory.formulations
-        known_form = ["MDF", "IDF", "DisciplinaryOpt", "BiLevel"]
-        for form in known_form:
-            assert form in f_list
 
-    @staticmethod
-    def get_xzy():
-        """Generate initial solution."""
-        x_local = np.array([0.0], dtype=np.float64)
-        x_shared = np.array([1.0, 0.0], dtype=np.float64)
-        y_0 = np.zeros(1, dtype=np.complex128)
-        y_1 = np.zeros(1, dtype=np.complex128)
-        return x_local, x_shared, y_0, y_1
+def test_formulations(factory):
+    """Check the property formulations."""
+    assert "MDF" in factory.formulations
 
-    @staticmethod
-    def get_current_x():
-        """Build dictionary with initial solution."""
-        x_local, x_shared, y_0, y_1 = TestFormulationsFactory.get_xzy()
-        return {"x_local": x_local, "x_shared": x_shared, "y_0": y_0, "y_1": y_1}
 
-    def test_create(self):
-        """"""
-        self.assertRaises(
-            Exception,
-            self.factory.create,
-            "toto is not a formulation",
-            None,
-            None,
-            None,
-        )
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        objective_name = "obj"
-        design_space = DesignSpace()
-        design_space.add_variable("x", 3)
-        self.factory.create("MDF", disciplines, objective_name, design_space)
+def test_is_available(monkeypatch, factory):
+    """Check the method is_available."""
+    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "not_mdo_formulations")
+    assert factory.is_available("MDF")
+    assert not factory.is_available("ANotMDOFormulation")
 
-        self.assertRaises(Exception, self.factory.create, Sellar1, None, None, None)
 
-    def test_isavailable(self):
-        self.factory.is_available("MDF")
+def test_create_with_wrong_formulation_name(factory):
+    """Check that a MDOFormulation cannot be instantiated with a wrong name."""
+    with pytest.raises(
+        ImportError,
+        match=(
+            "Class foo is not available; \n"
+            "available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
+        ),
+    ):
+        factory.create("foo", None, None, None)
+
+
+def test_create(factory):
+    """Check the creation of a MDOFormulation."""
+    design_space = DesignSpace()
+    design_space.add_variable("x_shared", 3)
+    formulation = factory.create(
+        "MDF", [Sellar1(), Sellar2(), SellarSystem()], "obj", design_space
+    )
+    assert isinstance(formulation, MDF)
+    assert "x_shared" in formulation.design_space
+    assert [d.name for d in formulation.disciplines] == [
+        "Sellar1",
+        "Sellar2",
+        "SellarSystem",
+    ]
+
+
+def test_not_mdo_formulation():
+    """Check the use of a factory of _BaseFormulation that is not a MDOFormulation."""
+    factory = NotMDOFormulationFactory()
+    assert factory.factory.is_available("ANotMDOFormulation")
+    assert not factory.factory.is_available("MDF")

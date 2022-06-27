@@ -191,15 +191,6 @@ class TestMDOFormulation(unittest.TestCase):
         f2._remove_sub_scenario_dv_from_ds()
         assert "x" not in f2.design_space.variables_names
 
-    def test_wrong_inputs(self):
-        """"""
-        dvs = ["x_shared", "y_14"]
-
-        design_space = DesignSpace()
-        for name in dvs:
-            design_space.add_variable(name, 1)
-        self.assertRaises(TypeError, MDOFormulation, [], "y_4", design_space)
-
     def test_get_obj(self):
         """"""
         sm = SobieskiMission()

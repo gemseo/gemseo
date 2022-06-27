@@ -465,4 +465,7 @@ class Statistics(metaclass=GoogleDocstringInheritanceMeta):
         if value and not separator:
             separator = "; "
 
-        return f"{cls.SYMBOLS[statistic_name]}[{variable_name}{separator}{value}]"
+        return (
+            f"{cls.SYMBOLS.get(statistic_name, statistic_name)}"
+            f"[{variable_name}{separator}{value}]"
+        )
