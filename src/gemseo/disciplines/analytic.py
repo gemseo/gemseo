@@ -58,6 +58,14 @@ class AnalyticDiscipline(MDODiscipline):
         >>> discipline = AnalyticDiscipline({'y_1': '2*x**2', 'y_2': '4*x**2+5+z**3'})
     """
 
+    _ATTR_TO_SERIALIZE = MDODiscipline._ATTR_TO_SERIALIZE + (
+        "expressions",
+        "output_names_to_symbols",
+        "_fast_evaluation",
+        "_sympy_exprs",
+        "_sympy_jac_exprs",
+    )
+
     def __init__(
         self,
         expressions: Mapping[str, str | Expr],
@@ -240,3 +248,9 @@ class AnalyticDiscipline(MDODiscipline):
                         [[jac_expr[input_symbol.name].evalf(subs=subs)]],
                         dtype=float64,
                     )
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._sympy_funcs = {}
+        self._sympy_jac_funcs = {}
+        self._init_expressions()

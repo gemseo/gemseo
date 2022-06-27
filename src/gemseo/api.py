@@ -158,32 +158,29 @@ from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.doe.doe_lib import DOELibraryOptionType
-from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from logging import Logger
     from matplotlib.figure import Figure
+    from gemseo.algos.doe.doe_lib import DOELibraryOptionType
+    from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
     from gemseo.algos.opt_result import OptimizationResult
-    from gemseo.algos.parameter_space import ParameterSpace  # noqa:F401
+    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.cache import AbstractCache
     from gemseo.core.dataset import Dataset
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.core.scenario import Scenario
-    from gemseo.core.surrogate_disc import SurrogateDiscipline  # noqa:F401
+    from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.mda.mda import MDA
     from gemseo.mlearning.core.ml_algo import TransformerType
-    from gemseo.problems.scalable.data_driven.discipline import (  # noqa:F401
+    from gemseo.problems.scalable.data_driven.discipline import (
         ScalableDiscipline,
     )
 
 from gemseo.mlearning.regression.regression import MLRegressionAlgo
-from gemseo.third_party.prettytable import PrettyTable
-from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
+
 from pathlib import Path
 
 # Most modules are imported directly in the methods, which adds a very small
@@ -939,6 +936,8 @@ def _get_schema(
     Returns:
         The schema of the JSON grammar if any.
     """
+    from gemseo.third_party.prettytable import PrettyTable
+
     if json_grammar is None:
         return None
 
@@ -1143,6 +1142,8 @@ def configure_logger(
         >>> import logging
         >>> configure_logger(level=logging.WARNING)
     """
+    from gemseo.utils.logging_tools import MultiLineFileHandler, MultiLineStreamHandler
+
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
@@ -1208,13 +1209,15 @@ def create_discipline(
 
 
 def import_discipline(
-    file_path: str | Path,
+    file_path: str | Path, cls: type[MDODiscipline] | None = None
 ) -> MDODiscipline:
     """Import a discipline from a pickle file.
 
     Args:
         file_path: The path to the file containing the discipline
             saved with the method :meth:`.MDODiscipline.serialize`.
+        cls: A class of discipline.
+            If ``None``, use ``MDODiscipline``.
 
     Returns:
         The discipline.
@@ -1228,9 +1231,12 @@ def import_discipline(
     get_discipline_options_schema
     get_discipline_options_defaults
     """
-    from gemseo.core.discipline import MDODiscipline
+    if cls is None:
+        from gemseo.core.discipline import MDODiscipline
 
-    return MDODiscipline.deserialize(file_path)
+        cls = MDODiscipline
+
+    return cls.deserialize(file_path)
 
 
 def create_scalable(
@@ -1821,6 +1827,8 @@ def compute_doe(
     get_algorithm_options_schema
     execute_algo
     """
+    from gemseo.algos.doe.doe_factory import DOEFactory
+
     library = DOEFactory().create(algo_name)
     return library.compute_doe(
         variables_space, size=size, unit_sampling=unit_sampling, **options
@@ -1831,6 +1839,7 @@ def _log_settings() -> None:
     from gemseo.algos.driver_lib import DriverLib
     from gemseo.core.discipline import MDODiscipline
     from gemseo.core.mdofunctions.mdo_function import MDOFunction
+    from gemseo.utils.string_tools import MultiLineString
 
     add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
     add_not_prefix = lambda x: "" if x else " not"  # noqa: E731

@@ -23,6 +23,7 @@ import sympy
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from numpy import array
+from numpy.testing import assert_equal
 from packaging import version
 
 
@@ -87,3 +88,19 @@ def test_absolute_value(fast_evaluation):
     # Be careful: the derivative of sympy.Abs(x) at 0 is equal to 0
     # even if it is not defined at 0 from a mathematical point of view.
     assert discipline.linearize({"x": array([0])}, force_all=True)["y"]["x"] == 0
+
+
+@pytest.mark.parametrize("fast_evaluation", [False, True])
+def test_serialize(tmp_wd, fast_evaluation):
+    """Check the serialization of an AnalyticDiscipline."""
+    input_data = {"x": array([2.0])}
+    file_path = tmp_wd / "discipline.h5"
+
+    discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
+    discipline.serialize(file_path)
+    discipline.execute(input_data)
+
+    saved_discipline = AnalyticDiscipline.deserialize(file_path)
+    saved_discipline.execute(input_data)
+
+    assert_equal(saved_discipline.get_output_data(), discipline.get_output_data())

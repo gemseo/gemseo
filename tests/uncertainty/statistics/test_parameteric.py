@@ -305,6 +305,9 @@ def test_distfitstats_available(random_sample):
         ("range", {}, "R[X]"),
         ("variance", {}, "V[X]"),
         ("moment", {}, "M[X]"),
+        ("foo", {}, "foo[X]"),
+        ("foo", {"bar": 2}, "foo[X; 2]"),
+        ("foo", {"bar": 2, "show_name": True}, "foo[X; bar=2]"),
     ],
 )
 def test_expression(name, options, expression):
