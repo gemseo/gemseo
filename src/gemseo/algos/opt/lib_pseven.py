@@ -51,7 +51,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOQuadraticFunction
 class PSevenAlgorithmDescription(OptimizationAlgorithmDescription):
     """The description of an optimization algorithm from the NLopt library."""
 
-    library_name: str = "NLopt"
+    library_name: str = "pSeven"
     website: str = "https://datadvance.net/product/pseven/manual/"
 
 
@@ -554,7 +554,7 @@ class PSevenOpt(OptimizationLibrary):
             return
 
         number_of_initial_guesses = 0
-        if self.problem.design_space.has_current_x():
+        if self.problem.design_space.has_current_value():
             number_of_initial_guesses += 1
 
         if self.__SAMPLE_X in samples:
