@@ -765,7 +765,7 @@ class Database:
         self,
         functions: Iterable[str] | None = None,
         add_missing_tag: bool = False,
-        missing_tag: str = "NA",
+        missing_tag: str | float = "NA",
         all_iterations: bool = False,
         stacked_data: Iterable[str] | None = None,
     ) -> tuple[list[list[float | ndarray]], list[ndarray]]:
@@ -1256,7 +1256,7 @@ class Database:
         functions: Iterable[str] | None = None,
         design_variables_names: str | Iterable[str] | None = None,
         add_missing_tag: bool = False,
-        missing_tag: str = "NA",
+        missing_tag: str | float = "NA",
         add_dv: bool = True,
         all_iterations: bool = False,
         stacked_data: Iterable[str] | None = None,
@@ -1300,15 +1300,13 @@ class Database:
                     f_val = array(f_val)
                 if isinstance(f_val, ndarray) and len(f_val) > 1:
                     flat_vals_i = flat_vals_i + f_val.tolist()
-                    fdict[f_name] = [
-                        f_name + "_" + str(i + 1) for i in range(len(f_val))
-                    ]
+                    fdict[f_name] = [f"{f_name} ({i})" for i in range(len(f_val))]
                 else:
                     flat_vals_i.append(f_val)
                     if f_name not in fdict:
                         fdict[f_name] = [f_name]
             flat_vals.append(flat_vals_i)
-        flat_names = sorted(list(chain(*fdict.values())))
+        flat_names = list(chain(*fdict.values()))
 
         x_flat_vals = []
         xdict = {}
@@ -1317,9 +1315,7 @@ class Database:
             for x_val, x_name in zip(x_val_i, design_variables_names):
                 if isinstance(x_val, ndarray) and len(x_val) > 1:
                     x_flat_vals_i = x_flat_vals_i + x_val.tolist()
-                    xdict[x_name] = [
-                        x_name + "_" + str(i + 1) for i in range(len(x_val))
-                    ]
+                    xdict[x_name] = [f"{x_name} ({i})" for i in range(len(x_val))]
                 else:
                     x_flat_vals_i.append(x_val)
                     if x_name not in xdict:

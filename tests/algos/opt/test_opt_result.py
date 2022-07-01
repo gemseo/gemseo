@@ -110,7 +110,7 @@ def test_str(optimization_result):
     expected.indent()
     expected.add("The solution is not feasible.")
     expected.add("Objective: 0.5")
-    expected.add("Constraints:")
+    expected.add("Standardized constraints:")
     expected.indent()
     expected.add("-ineq_p_1 = -0.5")
     expected.add("-ineq_p_2 + 0.25 = -0.25")

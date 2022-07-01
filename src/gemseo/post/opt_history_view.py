@@ -84,9 +84,9 @@ class OptHistoryView(OptPostProcessor):
         opt_problem: OptimizationProblem,
     ) -> None:
         super().__init__(opt_problem)
-        self.cmap = PARULA  # "viridis"  # "jet"
-        self.ineq_cstr_cmap = RG_SEISMIC  # "seismic" "PRGn_r"
-        self.eq_cstr_cmap = "seismic"  # "seismic" "PRGn_r"
+        self.cmap = PARULA
+        self.ineq_cstr_cmap = RG_SEISMIC
+        self.eq_cstr_cmap = "seismic"
 
     def _plot(
         self,
@@ -112,8 +112,9 @@ class OptHistoryView(OptPostProcessor):
         eq_cstr = self.opt_problem.get_eq_constraints()
         eq_cstr_names = [c.name for c in eq_cstr]
 
-        obj_name = self.opt_problem.get_objective_name()
-        obj_history, x_history, n_iter = self._get_history(obj_name, variables_names)
+        obj_history, x_history, n_iter = self._get_history(
+            self._standardized_obj_name, variables_names
+        )
 
         # design variables
         self._create_variables_plot(x_history, variables_names)
@@ -130,9 +131,11 @@ class OptHistoryView(OptPostProcessor):
         self._create_x_star_plot(x_history, n_iter)
 
         # Hessian plot
-        plot_hessian = not self.database.is_func_grad_history_empty(obj_name)
+        plot_hessian = not self.database.is_func_grad_history_empty(
+            self._standardized_obj_name
+        )
         if plot_hessian:
-            self._create_hessian_approx_plot(self.database, obj_name)
+            self._create_hessian_approx_plot(self.database, self._standardized_obj_name)
 
         # inequality and equality constraints
         self._plot_cstr_history(ineq_cstr_names, MDOFunction.TYPE_INEQ)
@@ -325,9 +328,9 @@ class OptHistoryView(OptPostProcessor):
             obj_relative: If True, plot the objective value difference
                 with the initial value.
         """
-        # if max problem, plot -objective value
-        if not self.opt_problem.minimize_objective:
+        if self._change_obj:
             obj_history = -obj_history
+
         if obj_relative:
             LOGGER.info(
                 "Plot of optimization history "
@@ -336,6 +339,7 @@ class OptHistoryView(OptPostProcessor):
                 obj_history[0],
             )
             obj_history -= obj_history[0]
+
         # Remove nans
         n_x = len(obj_history)
         x_absc = arange(n_x)
@@ -492,10 +496,10 @@ class OptHistoryView(OptPostProcessor):
                     if component_j == 0:
                         cstr_name = cstr_names[i]
                         if nb_components >= 2:
-                            cstr_name += " (" + str(component_j + 1) + ")"
+                            cstr_name += " (" + str(component_j) + ")"
                         cstr_labels.append(cstr_name)
                     else:
-                        cstr_labels.append("(" + str(component_j + 1) + ")")
+                        cstr_labels.append("(" + str(component_j) + ")")
 
                     history_i_j = atleast_2d(history_i[component_j, :])
 

@@ -1392,3 +1392,44 @@ def test_get_x0_normalized_no_complex(problem_with_complex_value, cast):
     """Check that the complex value of a float variable is converted to float."""
     normalized_x0 = problem_with_complex_value.get_x0_normalized(cast_to_real=cast)
     assert (normalized_x0.dtype.kind == "c") is not cast
+
+
+def test_objective_name():
+    """Check the name of the objective."""
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = MDOFunction(lambda x: x, "f")
+    assert problem.get_objective_name() == "f"
+    assert problem.get_objective_name(False) == "f"
+    problem.change_objective_sign()
+    assert problem.get_objective_name() == "-f"
+    assert problem.get_objective_name(False) == "f"
+
+
+@pytest.mark.parametrize("cstr_type", [MDOFunction.TYPE_EQ, MDOFunction.TYPE_INEQ])
+@pytest.mark.parametrize("has_default_name", [False, True])
+@pytest.mark.parametrize(
+    "value,positive,name",
+    [
+        (None, False, "c"),
+        (None, True, "-c"),
+        (1.0, True, "-c + 1.0"),
+        (-1.0, True, "-c - 1.0"),
+        (1.0, False, "c - 1.0"),
+        (-1.0, False, "c + 1.0"),
+    ],
+)
+def test_constraint_name(has_default_name, value, positive, cstr_type, name):
+    """Check the name of a constraint."""
+    problem = OptimizationProblem(DesignSpace())
+    constraint_function = MDOFunction(lambda x: x, "c")
+    constraint_function.has_default_name = has_default_name
+    problem.add_constraint(
+        constraint_function, value=value, positive=positive, cstr_type=cstr_type
+    )
+    cstr_name = problem.constraints[0].name
+    if not has_default_name:
+        assert cstr_name == "c"
+    else:
+        assert cstr_name == name
+
+    assert problem.constraint_names["c"] == [cstr_name]

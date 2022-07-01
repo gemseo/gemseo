@@ -1,0 +1,2 @@
+The post-processing algorithms plotting the objective function can now use the standardized objective when ``OptimizationProblem.use_standardized_objective`` is ``True``.
+When post-processing a ``Scenario``, the name of a constraint passed to the ``OptPostProcessor`` should be the value of ``constraint_name`` passed to ``Scenario.add_constraint`` or the vale of ``output_name`` if ``None``.

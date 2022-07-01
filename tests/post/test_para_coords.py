@@ -16,44 +16,42 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from pathlib import Path
+import re
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
-from numpy import ones
-
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+import pytest
+from gemseo.post.para_coord import ParallelCoordinates
+from gemseo.utils.testing import image_comparison
+from numpy import array
 
 
-def test_para_coords(tmp_wd):
-    """Test the post processing for the Rosenbrock problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    n = 10
-    problem = Rosenbrock(n)
-    problem.x_0 = ones(n) * 0.99
-    OptimizersFactory().execute(problem, "SLSQP")
-    post = PostFactory().execute(
-        problem,
-        "ParallelCoordinates",
-        save=True,
-        file_path="para_coords1",
-    )
-    assert len(post.output_files) == 2
-    for outf in post.output_files:
-        assert Path(outf).exists()
+TEST_PARAMETERS = {
+    "standardized": (True, ["PC_standardized_0", "PC_standardized_1"]),
+    "unstandardized": (False, ["PC_unstandardized_0", "PC_unstandardized_1"]),
+}
 
 
-def test_para_coords_load(tmp_wd):
-    """Verify the post processing for an imported database.
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check ParallelCoordinates with objective, standardized or not."""
+    opt = ParallelCoordinates(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(show=False, save=False)
 
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-    """
-    post = PostFactory().execute(str(POWER2), "ParallelCoordinates", save=True)
-    assert len(post.output_files) == 2
-    for outf in post.output_files:
-        assert Path(outf).exists()
+
+def test_shape_error():
+    """Check the error raised by parallel_coordinates if shapes are inconsistent."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The data shape (1, 1) is not equal to the expected one (2, 1)."
+        ),
+    ):
+        ParallelCoordinates.parallel_coordinates(array([[1]]), ["x"], [0.0, 0.5])

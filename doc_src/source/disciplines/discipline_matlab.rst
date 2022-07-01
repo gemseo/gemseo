@@ -311,7 +311,7 @@ An example is:
 Aliasing input and output names
 -------------------------------
 
-The arguments ``input_data_list`` and ``output_data_list`` enable to change
+The arguments ``input_names`` and ``output_names`` enable to change
 the name of the input and/or output variables when using the discipline.
 As an example, in the previous simple scalar case, the inputs and outputs are respectively
 denoted ``x``, ``y``, ``z1`` and ``z2`` in the MATLAB function:
@@ -320,10 +320,12 @@ denoted ``x``, ``y``, ``z1`` and ``z2`` in the MATLAB function:
 
     from gemseo.api import create_discipline
 
-    disc = create_discipline("MatlabDiscipline",
-                             matlab_fct="simple_scalar_func.m",
-                             input_data_list=["in1, in2"],
-                             output_data_list=["out1, out2"])
+    disc = create_discipline(
+        "MatlabDiscipline",
+        matlab_fct="simple_scalar_func.m",
+        input_names=["in1, in2"],
+        output_names=["out1, out2"]
+    )
 
     from numpy import array
 

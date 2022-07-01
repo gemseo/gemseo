@@ -111,7 +111,7 @@ scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
     show=False,
-    variables_list=design_variables + ["-y_4"],
+    variable_names=design_variables + ["-y_4"],
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

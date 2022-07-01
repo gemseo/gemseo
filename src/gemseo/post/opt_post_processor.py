@@ -64,6 +64,15 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
     DEFAULT_FIG_SIZE = (11.0, 11.0)
     """tuple(float, float): The default width and height of the figure, in inches."""
 
+    _obj_name: str
+    """The name of the objective function as passed by the user."""
+
+    _standardized_obj_name: str
+    """The name of the objective function stored in the database."""
+
+    _neg_obj_name: str
+    """The name of the objective function starting with a '-'."""
+
     def __init__(
         self,
         opt_problem: OptimizationProblem,
@@ -77,6 +86,9 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
                 for the options of the post-processor does not exist.
         """
         self.opt_problem = opt_problem
+        self._obj_name = opt_problem.get_objective_name(False)
+        self._standardized_obj_name = opt_problem.get_objective_name()
+        self._neg_obj_name = f"-{self._obj_name}"
         self.database = opt_problem.database
         comp_dir = abspath(dirname(inspect.getfile(OptPostProcessor)))
         self.opt_grammar = JSONGrammar("OptPostProcessor")
@@ -114,6 +126,14 @@ class OptPostProcessor(metaclass=GoogleDocstringInheritanceMeta):
         self.__output_files = []
         self.__figures = {}
         self.__nameless_figure_counter = 0
+
+    @property
+    def _change_obj(self) -> bool:
+        """Whether to change the objective value and names by using the opposite."""
+        return not (
+            self.opt_problem.minimize_objective
+            or self.opt_problem.use_standardized_objective
+        )
 
     @property
     def figures(self) -> dict[str, Figure]:

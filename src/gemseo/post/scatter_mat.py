@@ -60,96 +60,103 @@ class ScatterPlotMatrix(OptPostProcessor):
                 points exist. If an element from variable_names is not either
                 a function or a design variable.
         """
+        problem = self.opt_problem
+        add_design_variables = False
+        all_function_names = problem.get_all_functions_names()
+        all_design_names = problem.design_space.variables_names
 
-        add_dv = False
-        all_funcs = self.opt_problem.get_all_functions_names()
-        all_dv_names = self.opt_problem.design_space.variables_names
+        if not problem.minimize_objective and self._obj_name in variable_names:
+            obj_index = variable_names.index(self._obj_name)
+            variable_names[obj_index] = self._standardized_obj_name
+
         variable_names.sort()
-
         if not variable_names:
             # In this case, plot all design variables, no functions.
-            vals = self.opt_problem.get_data_by_names(
-                names=all_dv_names,
+            variable_values = problem.get_data_by_names(
+                names=all_design_names,
                 as_dict=False,
                 filter_non_feasible=filter_non_feasible,
             )
-            # This section creates readable labels for design variables
-            # i.e. toto_0, toto_1 if toto is a variable with 2 components
-            x_labels = self._generate_x_names(variables=all_dv_names)
+            variable_labels = self._generate_x_names(variables=all_design_names)
 
         else:
-            design_variables = []
-            for func in list(variable_names):
-                if func not in all_funcs and func not in all_dv_names:
-                    min_f = f"-{func}" == self.opt_problem.objective.name
-                    if min_f and not self.opt_problem.minimize_objective:
-                        variable_names[variable_names.index(func)] = f"-{func}"
-                        variable_names.sort()
-                    else:
-                        msg = (
-                            "Cannot build scatter plot matrix, "
-                            "Function {} is neither among"
-                            " optimization problem functions : {}"
-                            " nor design variables : {}".format(
-                                func, all_funcs, all_dv_names
-                            )
-                        )
-                        raise ValueError(msg)
-                if func in self.opt_problem.design_space.variables_names:
-                    # if given function is a design variable, then remove it
-                    add_dv = True
-                    variable_names.remove(func)
-                    design_variables.append(func)
-            if not design_variables:
-                design_variables = None
+            design_names = []
+            function_names = []
+            for variable_name in list(variable_names):
+                if (
+                    variable_name not in all_function_names
+                    and variable_name not in all_design_names
+                    and variable_name not in problem.constraint_names
+                ):
+                    raise ValueError(
+                        "Cannot build scatter plot matrix: "
+                        f"function {variable_name} is neither among "
+                        f"optimization problem functions: {all_function_names} "
+                        f"nor design variables: {all_design_names}"
+                    )
 
-            if add_dv:
+                if variable_name in problem.design_space.variables_names:
+                    add_design_variables = True
+                    design_names.append(variable_name)
+                elif variable_name in problem.constraint_names:
+                    function_names.extend(problem.constraint_names[variable_name])
+                else:
+                    function_names.append(variable_name)
+
+            if not design_names:
+                design_names = None
+
+            if add_design_variables:
                 # Sort the design variables to be consistent with GEMSEO.
-                design_variables = sorted(
-                    set(all_dv_names) & set(design_variables),
-                    key=all_dv_names.index,
+                design_names = sorted(
+                    set(all_design_names) & set(design_names),
+                    key=all_design_names.index,
                 )
 
-                # This section creates readable labels for design variables
-                # and functions i.e. toto_0, toto_1 if toto is a variable
-                # with 2 components
-                dv_labels = self._generate_x_names(variables=design_variables)
-                if variable_names:
-                    _, func_labels, _ = self.database.get_history_array(
-                        functions=variable_names,
+                design_labels = self._generate_x_names(variables=design_names)
+                if function_names:
+                    _, function_labels, _ = self.database.get_history_array(
+                        functions=function_names,
                         design_variables_names=None,
                         add_dv=False,
                     )
                 else:
-                    func_labels = []
-                # vname contains function names + condensed variable names
-                # i.e. "toto" even if toto has 2 components or more
-                vname = variable_names + design_variables
-                # x_labels contains function names + readable variable names
-                x_labels = func_labels + dv_labels
+                    function_labels = []
+
+                variable_names = function_names + design_names
+                variable_labels = function_labels + design_labels
             else:
-                # In this case we are only plotting functions.
-                # Functions have unique names, so x_labels and
-                # vname are equal.
-                vname = variable_names
-                _, x_labels, _ = self.database.get_history_array(
+                variable_names = function_names
+                _, variable_labels, _ = self.database.get_history_array(
                     functions=variable_names,
                     design_variables_names=None,
                     add_dv=False,
                 )
-                x_labels.sort()
-            vals = self.opt_problem.get_data_by_names(
-                names=vname, as_dict=False, filter_non_feasible=filter_non_feasible
+                variable_labels.sort()
+
+            variable_values = problem.get_data_by_names(
+                names=variable_names,
+                as_dict=False,
+                filter_non_feasible=filter_non_feasible,
             )
-        if filter_non_feasible and not any(vals):
-            raise ValueError("No feasible points were found!")
+
+        if (
+            self._standardized_obj_name in variable_labels
+            and not problem.minimize_objective
+            and not problem.use_standardized_objective
+        ):
+            index = variable_labels.index(self._standardized_obj_name)
+            variable_labels[index] = self._obj_name
+            variable_values[:, index] *= -1
+
+        if filter_non_feasible and not any(variable_values):
+            raise ValueError("No feasible points were found.")
+
         # Next line is a trick for a bug workaround in numpy/matplotlib
         # https://stackoverflow.com/questions/39180873/
         # pandas-dataframe-valueerror-num-must-be-1-num-0-not-1
-        vals = (list(x.real) for x in vals)
-        frame = DataFrame(vals, columns=x_labels)
         scatter_matrix(
-            frame,
+            DataFrame((list(x.real) for x in variable_values), columns=variable_labels),
             alpha=1.0,
             figsize=self.DEFAULT_FIG_SIZE,
             diagonal="kde",

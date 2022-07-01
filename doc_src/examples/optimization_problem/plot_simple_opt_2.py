@@ -32,6 +32,7 @@ from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.api import configure_logger
 from gemseo.api import execute_post
 from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from matplotlib import pyplot as plt
 from numpy import cos
 from numpy import exp
 from numpy import ones
@@ -93,7 +94,9 @@ problem.export_hdf("my_optim.hdf5")
 #############################################################################
 # Post-process the results
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-execute_post(problem, "OptHistoryView", show=True, save=False)
+execute_post(problem, "OptHistoryView", show=False, save=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()
 
 #############################################################################
 # .. note::

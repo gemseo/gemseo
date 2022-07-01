@@ -22,8 +22,10 @@ import pytest
 from gemseo.algos.opt_problem import OptimizationProblem
 from gemseo.core.doe_scenario import DOEScenario
 from gemseo.post.post_factory import PostFactory
+from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.testing import image_comparison
 from numpy import repeat
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
@@ -106,10 +108,32 @@ def test_variable_influence_ssbj(tmp_wd, pyplot_close_all):
         file_path="ssbj",
         log_scale=True,
         absolute_value=False,
-        quantile=0.98,
+        level=0.98,
         save=True,
         save_var_files=True,
     )
     assert len(post.output_files) == 14
     for outf in post.output_files:
         assert Path(outf).exists()
+
+
+TEST_PARAMETERS = {
+    "standardized": (True, ["VariableInfluence_standardized"]),
+    "unstandardized": (False, ["VariableInfluence_unstandardized"]),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check VariableInfluence with objective, standardized or not."""
+    opt = VariableInfluence(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(show=False, save=False)

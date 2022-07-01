@@ -127,8 +127,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 If 0, consider all the iterations.
             at_most_niter: The maximum number of iterations to be considered.
                 If -1, consider all the iterations.
-            func_index: The output index of the function
-                to be provided if the function output is a vector.
+            func_index: The index of the output of interest
+                to be defined if the function has a multidimensional output.
+                If ``None`` and if the output is multidimensional, an error is raised.
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
             design_space: The input space used to scale the input values
@@ -352,8 +353,9 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             at_most_niter: The maximum number of iterations to be considered.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
-            func_index: The output index of the function
-                to be provided if the function output is a vector.
+            func_index: The index of the output of interest
+                to be defined if the function has a multidimensional output.
+                If ``None`` and if the output is multidimensional, an error is raised.
             save_matrix: Whether to store the approximations of the Hessian
                 in :attr:`.HessianApproximation.b_mat_history`.
             scaling: do scaling step

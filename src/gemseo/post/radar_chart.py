@@ -65,13 +65,14 @@ class RadarChart(OptPostProcessor):
         if constraint_names is None:
             constraint_names = self.opt_problem.get_constraints_names()
         else:
+            constraint_names = self.opt_problem.get_function_names(constraint_names)
             invalid_names = sorted(
                 set(constraint_names) - set(self.opt_problem.get_constraints_names())
             )
             if invalid_names:
                 raise ValueError(
-                    "The names {} are not names of constraints "
-                    "stored in the database.".format(invalid_names)
+                    f"The names {invalid_names} are not names of constraints "
+                    "stored in the database."
                 )
 
         n_iterations = len(self.database)
@@ -80,10 +81,9 @@ class RadarChart(OptPostProcessor):
             and not -n_iterations + 1 < iteration < n_iterations - 1
         ):
             raise ValueError(
-                "The requested iteration {} is neither in ({},...,0,...,{}) "
-                "nor equal to the tag {}.".format(
-                    iteration, -n_iterations + 1, n_iterations - 1, self.OPTIMUM
-                )
+                f"The requested iteration {iteration} is neither "
+                f"in ({-n_iterations + 1},...,0,...,{ n_iterations - 1}) "
+                f"nor equal to the tag {self.OPTIMUM}."
             )
 
         constraints_values, constraints_names, _ = self.database.get_history_array(

@@ -43,7 +43,7 @@ scenario.execute(algo_options)
 
 scenario.post_process(
     "BasicHistory",
-    data_list=["g_2", "g_3"],
+    variable_names=["g_2", "g_3"],
     save=True,
     show=False,
     file_path="mdf",
@@ -51,7 +51,7 @@ scenario.post_process(
 )
 scenario.post_process(
     "BasicHistory",
-    data_list=["-y_4"],
+    variable_names=["y_4"],
     save=True,
     show=False,
     file_path="mdf_obj",

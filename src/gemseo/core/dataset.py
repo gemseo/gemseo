@@ -82,6 +82,8 @@ from numpy import unique
 from numpy import where
 from pandas import DataFrame
 from pandas import read_csv
+from sympy import lambdify
+from sympy import parse_expr
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractFullCache
@@ -1434,3 +1436,71 @@ class Dataset:
                 dataset.add_variable(name, data, group, name in self._cached_inputs)
 
         return dataset
+
+    def transform_variable(self, name: str, transformation: str) -> None:
+        """Transform a variable.
+
+        Args:
+            name: The name of the variable, e.g. ``"foo"``.
+            transformation: The expression of the transformation, e.g. ``"exp(x)".``
+                By convention,
+                `"x"` is the symbol of the variable to transform,
+                independently of its name.
+        """
+        if not self._group:
+            self.data[name] = self.__transform_data(self.data[name], transformation)
+        else:
+            group = self.get_group(name)
+            indices = self._positions[name]
+            self.data[group][indices] = self.__transform_data(
+                self.data[group][indices], transformation
+            )
+
+    @staticmethod
+    def __transform_data(data: ndarray, transformation: str) -> ndarray:
+        """Transform a data array.
+
+        Args:
+            data: The data array to transform.
+            transformation: The expression of the transformation, e.g. ``"exp(x)"``.
+                By convention,
+                `"x"` is the symbol of the variable to transform,
+                independently of its name.
+        """
+        expr = parse_expr(transformation)
+        func = lambdify(list(expr.free_symbols), expr)
+        return func(data)
+
+    def rename_variable(self, name: str, new_name: str) -> None:
+        """Rename a variable.
+
+        Args:
+            name: The name of the variable.
+            new_name: The new name of the variable.
+        """
+        dictionaries = [
+            self._groups,
+            self.sizes,
+            self._positions,
+            self.strings_encoding,
+        ]
+        if not self._group:
+            dictionaries.append(self.data)
+
+        for dict_ in dictionaries:
+            if name in dict_:
+                dict_[new_name] = dict_.pop(name)
+
+        if name in self._cached_inputs:
+            self._cached_inputs[self._cached_inputs.index(name)] = new_name
+
+        if name in self._cached_outputs:
+            self._cached_outputs[self._cached_outputs.index(name)] = new_name
+
+        for _group, names in self._names.items():
+            if name in names:
+                break
+
+        names = self._names[_group]
+        names[names.index(name)] = new_name
+        self._names[_group] = names

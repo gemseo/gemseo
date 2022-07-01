@@ -148,7 +148,7 @@ system_scenario = create_scenario(
     objective_name="range",
     design_space=design_space_system,
     maximize_objective=True,
-    mda_name="MDAJacobi",
+    inner_mda_name="MDAJacobi",
     tolerance=1e-8,
 )
 system_scenario.add_constraint("reserve_fact", "ineq", value=0.5)

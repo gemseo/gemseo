@@ -167,7 +167,9 @@ scenario.post_process("OptHistoryView", save=False, show=False)
 ##############################################################################
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("BasicHistory", data_list=["x_shared"], save=False, show=False)
+scenario.post_process(
+    "BasicHistory", variable_names=["x_shared"], save=False, show=False
+)
 
 ##############################################################################
 # Plot the constraints and objective history
@@ -205,7 +207,7 @@ scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
     show=False,
-    variables_list=["-y_4", "g_1"],
+    variable_names=["-y_4", "g_1"],
     fig_size=(14, 14),
 )
 

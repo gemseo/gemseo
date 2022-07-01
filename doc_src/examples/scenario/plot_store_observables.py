@@ -159,13 +159,13 @@ print(dataset.get_data_by_names(["y_1", "y2"], False))
 # we can generate plots with the observable variables. Have a look at the
 # Basic History plot and the Scatter Plot Matrix:
 scenario.post_process(
-    "BasicHistory", data_list=["obj", "y_1", "y2"], save=False, show=False
+    "BasicHistory", variable_names=["obj", "y_1", "y2"], save=False, show=False
 )
 scenario.post_process(
     "ScatterPlotMatrix",
     save=False,
     show=False,
-    variables_list=["obj", "c_1", "c_2", "y2", "y_1"],
+    variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

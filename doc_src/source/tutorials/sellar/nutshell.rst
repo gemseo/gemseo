@@ -67,7 +67,7 @@ After having called the superconstructor :meth:`!MDODiscipline.__init__`,
 we complete the constructor of the new discipline
 by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!MDODiscipline.input_grammar`
 and discipline output data names :attr:`!MDODiscipline.output_grammar`
-in a straightforward way with :meth:`.JSONGrammar.initialize_from_data_names` .
+in a straightforward way with :meth:`.JSONGrammar.update` .
 
 .. warning::
 
@@ -88,8 +88,8 @@ For example, in the case of Sellar 1, we build:
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
-            self.input_grammar.initialize_from_data_names(['x_local', 'x_shared', 'y_2'])
-            self.output_grammar.initialize_from_data_names(['y_1'])
+            self.input_grammar.update(['x_local', 'x_shared', 'y_2'])
+            self.output_grammar.update(['y_1'])
 
 .. seealso::
 
@@ -275,8 +275,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self, residual_form=False):
             super(Sellar1, self).__init__()
-            self.input_grammar.initialize_from_data_names(['x_local', 'x_shared', 'y_2'])
-            self.output_grammar.initialize_from_data_names(['y_1'])
+            self.input_grammar.update(['x_local', 'x_shared', 'y_2'])
+            self.output_grammar.update(['y_1'])
 
         def _run(self):
             x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
@@ -300,8 +300,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self, residual_form=False):
             super(Sellar2, self).__init__()
-            self.input_grammar.initialize_from_data_names(['x_shared', 'y_1'])
-            self.output_grammar.initialize_from_data_names(['y_2'])
+            self.input_grammar.update(['x_shared', 'y_1'])
+            self.output_grammar.update(['y_2'])
 
         def _run(self):
             x_shared, y_1 = self.get_inputs_by_name(['x_shared', 'y_1'])
@@ -324,8 +324,8 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
         def __init__(self):
             super(SellarSystem, self).__init__()
-            self.input_grammar.initialize_from_data_names(['x_local', 'x_shared', 'y_1', 'y_2'])
-            self.output_grammar.initialize_from_data_names(['obj', 'c_1', 'c_2'])
+            self.input_grammar.update(['x_local', 'x_shared', 'y_1', 'y_2'])
+            self.output_grammar.update(['obj', 'c_1', 'c_2'])
 
         def _run(self):
             x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_1', 'y_2'])

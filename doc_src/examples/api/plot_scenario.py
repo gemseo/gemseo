@@ -95,7 +95,7 @@ scenario = create_scenario(
 )
 scenario.execute({"algo": "fullfact", "n_samples": 25})
 scenario.post_process(
-    "ScatterPlotMatrix", variables_list=["x1", "x2", "y"], save=False, show=True
+    "ScatterPlotMatrix", variable_names=["x1", "x2", "y"], save=False, show=True
 )
 
 ##########################################################################

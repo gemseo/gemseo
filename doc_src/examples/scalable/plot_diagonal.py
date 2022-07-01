@@ -145,7 +145,7 @@ scalable.scalable_model.plot_dependency(save=False, show=False)
 # Twice as many variables
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each input and each output by a factor of 2.
-names = input_names + discipline.get_output_data_names()
+names = input_names + list(discipline.get_output_data_names())
 sizes = {name: dataset.sizes[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=False)
