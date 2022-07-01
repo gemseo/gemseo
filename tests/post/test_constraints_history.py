@@ -16,87 +16,33 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-from pathlib import Path
-
 import pytest
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.power_2 import Power2
-
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+from gemseo.post.constraints_history import ConstraintsHistory
+from gemseo.utils.testing import image_comparison
 
 
-@pytest.fixture(scope="module")
-def problem():
-    return OptimizationProblem.import_hdf(file_path=POWER2)
-
-
-@pytest.fixture(scope="module")
-def factory():
-    return PostFactory()
-
-
-def test_constraints_history(tmp_wd, factory):
-    """Test the constraints history post-processing with the Power2 problem.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
-    """
-    problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
-    post = factory.execute(
-        problem,
-        "ConstraintsHistory",
-        file_path="lines_chart1",
-        save=True,
-        show=False,
-        constraint_names=problem.get_constraints_names(),
-    )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
-
-
-def test_constraints_history_load(tmp_wd, problem, factory):
-    """Test the radar chart post processing from a database.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
-        factory: Fixture to return a post-processing factory.
-    """
-    post = factory.execute(
-        problem,
-        "ConstraintsHistory",
-        save=True,
-        show=False,
-        constraint_names=problem.get_constraints_names(),
-    )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
-
-
-def test_function_error(tmp_wd, problem, factory):
-    """Test a ValueError is raised for a non-existent function.
-
-    Args:
-        tmp_wd: Fixture to move into a temporary directory.
-        problem: Fixture to return a Power2 `OptimizationProblem` from an hdf5 database.
-        factory: Fixture to return a post-processing factory.
-    """
+def test_function_error(common_problem):
+    """Test a ValueError is raised for a non-existent function."""
     with pytest.raises(
         ValueError,
         match="Cannot build constraints history plot, "
-        "function toto is not among the constraints names "
+        "function foo is not among the constraints names "
         "or does not exist.",
     ):
-        factory.execute(
-            problem,
-            "ConstraintsHistory",
-            save=True,
-            show=False,
-            constraint_names=["toto"],
-        )
+        ConstraintsHistory(common_problem).execute(save=False, constraint_names=["foo"])
+
+
+TEST_PARAMETERS = {"default": ["ConstraintsHistory_default"]}
+
+
+@pytest.mark.parametrize(
+    "baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
+    """Check ConstraintsHistory."""
+    opt = ConstraintsHistory(common_problem)
+    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)

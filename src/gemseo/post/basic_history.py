@@ -44,15 +44,25 @@ class BasicHistory(OptPostProcessor):
         Args:
             variable_names: The names of the variables.
         """
-        dataset = self.opt_problem.export_to_dataset(
-            "OptimizationProblem", opt_naming=False, by_group=False
-        )
+        problem = self.opt_problem
+        dataset = problem.export_to_dataset(opt_naming=False, by_group=False)
+        if self._obj_name in variable_names:
+            if problem.use_standardized_objective and not problem.minimize_objective:
+                obj_index = variable_names.index(self._obj_name)
+                variable_names[obj_index] = self._neg_obj_name
+
+            if self._change_obj:
+                dataset.transform_variable(self._neg_obj_name, "-x")
+                dataset.rename_variable(self._neg_obj_name, self._obj_name)
+
         plot = Lines(dataset)
         plot.font_size = 12
         plot.xlabel = "Iterations"
         plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
         plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
         plot.title = "History plot"
-        figures = plot.execute(save=False, show=False, variables=variable_names)
+        figures = plot.execute(
+            save=False, show=False, variables=problem.get_function_names(variable_names)
+        )
         for figure in figures:
             self._add_figure(figure)

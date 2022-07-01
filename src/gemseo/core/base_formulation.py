@@ -175,8 +175,11 @@ class BaseFormulation(metaclass=GoogleDocstringInheritanceMeta):
         output_names = self._check_add_cstr_input(output_name, constraint_type)
         constraint = FunctionFromDiscipline(output_names, self, top_level_disc=True)
         constraint.f_type = constraint_type
-        if constraint_name is not None:
+        if constraint_name is None:
+            constraint.has_default_name = True
+        else:
             constraint.name = constraint_name
+            constraint.has_default_name = False
         self.opt_problem.add_constraint(constraint, value=value, positive=positive)
 
     def add_observable(

@@ -90,3 +90,19 @@ def test_iteration_error(problem):
             constraint_names=problem.get_constraints_names(),
             iteration=1000,
         )
+
+
+TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
+
+
+@pytest.mark.parametrize(
+    "baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(baseline_images, common_problem, pyplot_close_all):
+    """Check RadarChart."""
+    opt = RadarChart(common_problem)
+    opt.execute(constraint_names=["eq", "neg", "pos"], show=False, save=False)

@@ -70,7 +70,7 @@ scenario.post_process("OptHistoryView", save=False, show=False)
 # Plot parallel coordinates
 # -------------------------
 scenario.post_process(
-    "ScatterPlotMatrix", save=False, show=False, variables_list=["y_4", "y_24", "y_34"]
+    "ScatterPlotMatrix", save=False, show=False, variable_names=["y_4", "y_24", "y_34"]
 )
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

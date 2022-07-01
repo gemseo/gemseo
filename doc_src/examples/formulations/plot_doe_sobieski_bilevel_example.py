@@ -197,7 +197,7 @@ system_scenario.post_process("OptHistoryView", show=False, save=False)
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process(
-    "ScatterPlotMatrix", show=False, save=False, variables_list=["y_4", "x_shared"]
+    "ScatterPlotMatrix", show=False, save=False, variable_names=["y_4", "x_shared"]
 )
 
 ##############################################################################

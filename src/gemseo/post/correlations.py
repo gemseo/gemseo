@@ -41,13 +41,13 @@ LOGGER = logging.getLogger(__name__)
 class Correlations(OptPostProcessor):
     """Scatter plots of the correlated variables.
 
-    These variables can be design variables, outputs functions or constraints.
-
-    The plot method considers all the variable correlations greater than 95%.
-    Another level value, a sublist of variable names or both can be passed as options.
+    These variables can be design variables, constraints, objective or observables. This
+    post-processor considers all the correlations greater than a threshold.
     """
 
     DEFAULT_FIG_SIZE = (15.0, 10.0)
+    MAXIMUM_CORRELATION_COEFFICIENT = 1.0 - 1e-9
+    """The maximum correlation coefficient above which the variable is not plotted."""
 
     def _plot(
         self,
@@ -58,61 +58,61 @@ class Correlations(OptPostProcessor):
     ) -> None:
         """
         Args:
-            func_names: The function names subset
-                for which the correlations are computed.
-                If None, all functions are considered.
-            coeff_limit: The plot is not made
-                if the correlation between the variables is lower than this limit.
+            func_names: The names of the functions to be considered.
+                If ``None``, all functions are considered.
+            coeff_limit: The minimum correlation coefficient
+                below which the variable is not plotted.
             n_plots_x: The number of horizontal plots.
             n_plots_y: The number of vertical plots.
 
         Raises:
-            ValueError: If an element of `func_names` is not a function
-                defined in `opt_problem`.
+            ValueError: If an element of `func_names` is unknown.
         """
-        functions = self.opt_problem.get_all_functions()
-        all_func_names = [func.name for func in functions]
+        problem = self.opt_problem
 
+        all_func_names = [func.name for func in problem.get_all_functions()]
         if not func_names:
             func_names = all_func_names
-        elif set(func_names).issubset(all_func_names):
-            func_names = [
-                func_name for func_name in all_func_names if func_name in func_names
-            ]
-        else:
+
+        func_names = problem.get_function_names(func_names)
+        if not problem.minimize_objective and self._obj_name in func_names:
+            func_names[func_names.index(self._obj_name)] = self._standardized_obj_name
+
+        not_func_names = set(func_names) - set(all_func_names)
+        if not_func_names:
             raise ValueError(
-                "The following elements are not "
-                "functions: {}. Defined functions are {}.".format(
-                    ", ".join(set(func_names) - set(all_func_names)),
-                    ", ".join(all_func_names),
-                )
+                f"The following elements are not functions: {sorted(not_func_names)}; "
+                f"available ones are: {sorted(all_func_names)}."
             )
 
-        values_array, variables_names, _ = self.database.get_history_array(
+        variable_history, variable_names, _ = self.database.get_history_array(
             func_names, None, True, 0.0
         )
+        variable_names = self.__sort_variables_names(variable_names, func_names)
 
-        variables_names = self.__sort_variables_names(variables_names, func_names)
+        if self._standardized_obj_name in variable_names and self._change_obj:
+            obj_index = variable_names.index(self._standardized_obj_name)
+            variable_history[:, obj_index] = -variable_history[:, obj_index]
+            variable_names[obj_index] = self._obj_name
 
-        corr_coeffs_array = self.__compute_correlations(values_array)
+        correlation_coefficients = self.__compute_correlations(variable_history)
         i_corr, j_corr = np.where(
-            (np.abs(corr_coeffs_array) > coeff_limit)
-            & (np.abs(corr_coeffs_array) < (1.0 - 1e-9))
+            (np.abs(correlation_coefficients) > coeff_limit)
+            & (np.abs(correlation_coefficients) < self.MAXIMUM_CORRELATION_COEFFICIENT)
         )
         LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
 
         if i_corr.size <= 16:
-            n_plots_x = 4
-            n_plots_y = 4
+            n_plots_x = n_plots_y = 4
+
         spec = gridspec.GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
         spec.update(top=0.95, bottom=0.06, left=0.08, right=0.95)
         fig = None
-        fig_indx = 0
         for plot_index, (i, j) in enumerate(zip(i_corr, j_corr)):
             plot_index_loc = plot_index % (n_plots_x * n_plots_y)
             if plot_index_loc == 0:
-                if fig is not None:  # Save previous plot
-                    fig_indx += 1
+                if fig is not None:
+                    # Save previous plot
                     self._add_figure(fig)
                 fig = pylab.plt.figure(figsize=self.DEFAULT_FIG_SIZE)
                 mng = pylab.plt.get_current_fig_manager()
@@ -122,78 +122,78 @@ class Correlations(OptPostProcessor):
             self.__create_sub_correlation_plot(
                 i,
                 j,
-                corr_coeffs_array[i, j],
+                correlation_coefficients[i, j],
                 fig,
                 spec,
                 plot_index_loc,
                 n_plots_y,
                 n_plots_x,
-                values_array,
-                variables_names,
+                variable_history,
+                variable_names,
             )
         if fig is not None:
             self._add_figure(fig)
 
     def __create_sub_correlation_plot(
         self,
-        i_ind: int,
-        j_ind: int,
-        corr_coeff: ndarray,
+        x_index: int,
+        y_index: int,
+        correlation_coefficients: ndarray,
         fig: Figure,
         spec: gridspec,
         plot_index: int,
-        n_plot_v: int,
-        n_plot_h: int,
-        values_array: ndarray,
-        variables_names: Sequence[str],
+        n_y: int,
+        n_x: int,
+        variable_history: ndarray,
+        variable_names: Sequence[str],
     ) -> None:
         """Create a correlation plot.
 
         Args:
-            i_ind: The index for the x-axis data.
-            j_ind: The index for the y-axis data.
-            corr_coeff: The correlation coefficients.
+            x_index: The position of the variable on the x-axis.
+            y_index: The position of the variable on the y-axis.
+            correlation_coefficients: The correlation coefficients.
             fig: The figure where the subplot will be placed.
             spec: The matplotlib grid structure.
             plot_index: The local plot index.
-            n_plot_v: The number of vertical plots.
-            n_plot_h: The number of horizontal plots.
-            values_array: The function values from the optimization history.
-            variables_names: The variables names.
+            n_y: The number of vertical plots.
+            n_x: The number of horizontal plots.
+            variable_history: The history of the variables.
+            variable_names: The names of the variables.
         """
-        gs_curr = spec[int(plot_index / n_plot_v), plot_index % n_plot_h]
-        ax1 = fig.add_subplot(gs_curr)
-        x_plt = values_array[:, i_ind]
-        y_plt = values_array[:, j_ind]
-        ax1.scatter(x_plt, y_plt, c="b", s=30)
-        self.materials_for_plotting[(i_ind, j_ind)] = (
-            variables_names[i_ind],
-            variables_names[j_ind],
-            corr_coeff,
+        ax1 = fig.add_subplot(spec[int(plot_index / n_y), plot_index % n_x])
+        ax1.scatter(
+            variable_history[:, x_index], variable_history[:, y_index], c="b", s=30
         )
-        ax1.set_xlabel(variables_names[i_ind], fontsize=9)
+        self.materials_for_plotting[(x_index, y_index)] = (
+            variable_names[x_index],
+            variable_names[y_index],
+            correlation_coefficients,
+        )
+        ax1.set_xlabel(variable_names[x_index], fontsize=9)
         # Update y labels spacing
         start, stop = ax1.get_ylim()
         ax1.yaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
         start, stop = ax1.get_xlim()
         ax1.xaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
-        ax1.set_ylabel(variables_names[j_ind], fontsize=10)
+        ax1.set_ylabel(variable_names[y_index], fontsize=10)
         ax1.tick_params(labelsize=10)
-        ax1.set_title(f"R={corr_coeff:.5f}", fontsize=12)
+        ax1.set_title(f"R={correlation_coefficients:.5f}", fontsize=12)
         ax1.grid()
 
     @classmethod
-    def __compute_correlations(cls, values_array: ndarray) -> ndarray:
-        """Compute correlations.
+    def __compute_correlations(cls, variable_history: ndarray) -> ndarray:
+        """Compute the correlations between the variables.
 
         Args:
-            values_array: The values to compute the correlations.
+            variable_history: The history of the variables.
 
         Returns:
-            The lower diagonal of the correlations matrix.
+            The lower diagonal of the correlation matrix of the variables.
         """
-        ccoeff = np.corrcoef(values_array.astype(float), rowvar=False)
-        return np.tril(atleast_2d(ccoeff))  # Keep lower diagonal only
+        return np.tril(
+            atleast_2d(np.corrcoef(variable_history.astype(float), rowvar=False))
+        )
 
     def __sort_variables_names(
         self,
@@ -229,12 +229,11 @@ class Correlations(OptPostProcessor):
             x: An element from a list.
 
         Returns:
-            The index to be given to the sort method and the
-                function name associated to that index.
+            The index to be given to the sort method
+            and the function name associated to that index.
         """
-
-        for i, func_name in enumerate(func_names):
+        for func_index, func_name in enumerate(func_names):
             if fullmatch(rf"{func_name}(_\d+)?", x):
-                return (i, x.replace(func_name, ""))
+                return func_index, x.replace(func_name, "")
 
-        return (len(func_names) + 1, x)
+        return len(func_names) + 1, x

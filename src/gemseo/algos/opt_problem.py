@@ -219,6 +219,9 @@ class OptimizationProblem:
     and the values of the original objective.
     """
 
+    constraint_names: dict[str, list[str]]
+    """The standardized constraint names bound to the original ones."""
+
     LINEAR_PB: Final[str] = "linear"
     NON_LINEAR_PB: Final[str] = "non-linear"
     AVAILABLE_PB_TYPES: ClassVar[str] = [LINEAR_PB, NON_LINEAR_PB]
@@ -331,6 +334,7 @@ class OptimizationProblem:
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = parallel_differentiation_options
         self.__eval_obs_jac = False
+        self.constraint_names = {}
 
     def __raise_exception_if_functions_are_already_preprocessed(self):
         """Raise an exception if the function have already been pre-processed."""
@@ -481,6 +485,8 @@ class OptimizationProblem:
                 is not an :class:`.MDOLinearFunction`.
             ValueError: When the type of the constraint is missing.
         """
+        func_name = cstr_func.name
+        has_default_name = cstr_func.has_default_name
         self.check_format(cstr_func)
         if self.pb_type == OptimizationProblem.LINEAR_PB and not isinstance(
             cstr_func, MDOLinearFunction
@@ -507,6 +513,16 @@ class OptimizationProblem:
                 raise ValueError(msg)
         cstr_func.special_repr = cstr_repr
         self.constraints.append(cstr_func)
+        if not has_default_name:
+            cstr_func.name = func_name
+            if cstr_func.outvars:
+                cstr_repr = cstr_repr.replace(func_name, "#".join(cstr_func.outvars))
+                cstr_func.special_repr = f"{func_name}: {cstr_repr}"
+
+        if func_name not in self.constraint_names:
+            self.constraint_names[func_name] = [cstr_func.name]
+        else:
+            self.constraint_names[func_name].append(cstr_func.name)
 
     def add_eq_constraint(
         self,
@@ -726,13 +742,39 @@ class OptimizationProblem:
         """
         return [func.name for func in self.get_all_functions()]
 
-    def get_objective_name(self) -> str:
+    def get_objective_name(self, standardize: bool = True) -> str:
         """Retrieve the name of the objective function.
+
+        Args:
+            standardize: Whether to use the name of the objective expressed as a cost,
+                e.g. ``"-f"`` when the user seeks to maximize ``"f"``.
 
         Returns:
             The name of the objective function.
         """
-        return self.objective.name
+        if standardize or self.minimize_objective:
+            return self.objective.name
+
+        return self.objective.name[1:]
+
+    def get_function_names(self, names: Iterable[str]) -> list[str]:
+        """Return the names of the functions stored in the database.
+
+        Args:
+            names: The names of the outputs or constraints specified by the user.
+
+        Returns:
+            The names of the constraints stored in the database.
+        """
+        user_constraint_names = self.constraint_names.keys()
+        function_names = []
+        for name in names:
+            if name in user_constraint_names:
+                function_names.extend(self.constraint_names[name])
+            else:
+                function_names.append(name)
+
+        return function_names
 
     def get_nonproc_objective(self) -> MDOFunction:
         """Retrieve the non-processed objective function."""

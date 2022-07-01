@@ -17,6 +17,7 @@
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import random
+import re
 from functools import partial
 from pathlib import Path
 
@@ -98,7 +99,11 @@ def test_correlations_func_name_error(factory):
     OptimizersFactory().execute(problem, "L-BFGS-B")
 
     with pytest.raises(
-        ValueError, match=r"The following elements are not" r" functions: .*toto.*"
+        ValueError,
+        match=re.escape(
+            "The following elements are not functions: ['toto']; "
+            "available ones are: ['rosen']."
+        ),
     ):
         factory.execute(
             problem, "Correlations", save=False, show=False, func_names=["toto"]
@@ -241,3 +246,34 @@ def test_func_order():
     ]
 
     assert variables == variables_expected
+
+
+TEST_PARAMETERS = {
+    "standardized": (
+        True,
+        ["Correlations_standardized_0", "Correlations_standardized_1"],
+    ),
+    "unstandardized": (
+        False,
+        ["Correlations_unstandardized_0", "Correlations_unstandardized_1"],
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check Correlations with objective, standardized or not."""
+    opt = Correlations(common_problem)
+    maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
+    opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(func_names=["obj", "eq", "neg", "pos"], show=False, save=False)
+    opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient

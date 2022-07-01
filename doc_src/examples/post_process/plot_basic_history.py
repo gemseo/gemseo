@@ -31,7 +31,7 @@ from gemseo.api import create_scenario
 from gemseo.problems.sobieski.core.problem import SobieskiProblem
 from matplotlib import pyplot as plt
 
-###############################################################################
+# %%
 # Import
 # ------
 # The first step is to import some functions from the API
@@ -39,14 +39,14 @@ from matplotlib import pyplot as plt
 
 configure_logger()
 
-###############################################################################
+# %%
 # Description
 # -----------
 # The :class:`~gemseo.post.basic_history.BasicHistory` post-processing
 # plots any of the constraint or objective functions
 # w.r.t. the optimization iterations or sampling snapshots.
 
-###############################################################################
+# %%
 # Create disciplines
 # ------------------
 # At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
@@ -60,13 +60,13 @@ disciplines = create_discipline(
     ]
 )
 
-###############################################################################
+# %%
 # Create design space
 # -------------------
 # We also read the design space from the :class:`.SobieskiProblem`.
 design_space = SobieskiProblem().design_space
 
-###############################################################################
+# %%
 # Create and execute scenario
 # ---------------------------
 # The next step is to build an MDO scenario in order to maximize the range,
@@ -86,14 +86,14 @@ for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, "ineq")
 scenario.execute({"algo": "SLSQP", "max_iter": 10})
 
-###############################################################################
+# %%
 # Post-process scenario
 # ---------------------
 # Lastly, we post-process the scenario by means of the :class:`.BasicHistory`
 # plot which plots any of the constraint or objective functions
 # w.r.t. optimization iterations or sampling snapshots.
 
-###############################################################################
+# %%
 # .. tip::
 #
 #    Each post-processing method requires different inputs and offers a variety
@@ -103,15 +103,16 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "BasicHistory", data_list=["g_1", "g_2", "g_3"], save=False, show=False
+    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=False
 )
-###############################################################################
-# .. warning::
+scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=False)
+# %%
+# .. note::
 #
-#    In the :class:`~gemseo.algos.database.Database`, when the aim of the
-#    optimization problem is to maximize the objective function,
-#    the objective function name is preceded by a "-" and the stored values are
-#    the opposite of the objective function.
-scenario.post_process("BasicHistory", data_list=["-y_4"], save=False, show=False)
+#    Set the boolean instance attribute
+#    :attr:`.OptimizationProblem.use_standardized_objective` to ``False``
+#    to plot the objective to maximize as a performance function.
+scenario.use_standardized_objective = False
+scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=False)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

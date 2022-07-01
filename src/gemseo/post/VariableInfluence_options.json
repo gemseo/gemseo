@@ -2,7 +2,7 @@
 	"name": "VariableInfluence_options",
 	"required": [],
 	"properties": {
-		"quantile": {
+		"level": {
 			"type": "number",
 			"minimum": 0.0,
 			"maximum": 1.0

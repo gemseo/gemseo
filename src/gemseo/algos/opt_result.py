@@ -130,7 +130,7 @@ class OptimizationResult:
         msg.indent()
         msg.add("Objective: {}", self.f_opt)
         if self.constraints_values and len(self.constraints_values) < 20:
-            msg.add("Constraints:")
+            msg.add("Standardized constraints:")
             msg.indent()
             for name, value in sorted(self.constraints_values.items()):
                 msg.add("{} = {}", name, value)

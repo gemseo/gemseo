@@ -55,7 +55,7 @@ configure_logger()
 #
 # 1. Instantiate the :class:`.MDODiscipline` using the super constructor,
 # 2. Initialize the grammars using the
-#    :meth:`.JSONGrammar.initialize_from_data_names` method,
+#    :meth:`.JSONGrammar.update` method,
 # 3. Set the default inputs from the initial :code:`'inputs.txt'`
 #
 # The :class:`!MDODiscipline._run` method consists in three steps:

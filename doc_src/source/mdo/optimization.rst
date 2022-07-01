@@ -99,7 +99,7 @@ optimization libraries. It can be obtained using :
 .. code::
 
     algo_list = OptimizersFactory().algorithms
-    print "Available algorithms:" +str(algo_list)
+    print(f"Available algorithms: {algo_list}")
 
 The optimization history can be saved to the disk for further analysis,
 without having to re execute the optimization.

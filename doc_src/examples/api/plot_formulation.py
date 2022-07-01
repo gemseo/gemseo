@@ -60,9 +60,9 @@ print(get_formulations_options_defaults("MDF"))
 ##########################################################################
 # - get sub-options of an MDO formulation using the
 #   :meth:`~gemseo.api.get_formulation_sub_options_schema` function; e.g.
-print(get_formulation_sub_options_schema("MDF", main_mda_class="MDAGaussSeidel"))
+print(get_formulation_sub_options_schema("MDF", main_mda_name="MDAGaussSeidel"))
 
 ##########################################################################
 # - get the sub-option values using the
 #   :meth:`~gemseo.api.get_formulations_sub_options_defaults` function; e.g.
-print(get_formulations_sub_options_defaults("MDF", main_mda_class="MDAGaussSeidel"))
+print(get_formulations_sub_options_defaults("MDF", main_mda_name="MDAGaussSeidel"))

@@ -24,6 +24,7 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.core.doe_scenario import DOEScenario
+from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.post_factory import PostFactory
 from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
@@ -224,3 +225,29 @@ def test_plot(tmp_wd, baseline_images, scale_gradients, pyplot_close_all):
         save=False,
     )
     post.figures
+
+
+TEST_PARAMETERS = {
+    "standardized": (True, ["GradientSensitivity_standardized"]),
+    "unstandardized": (False, ["GradientSensitivity_unstandardized"]),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    tmp_wd,
+    use_standardized_objective,
+    baseline_images,
+    common_problem,
+    pyplot_close_all,
+):
+    """Check GradientSensitivity with objective, standardized or not."""
+    opt = GradientSensitivity(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(show=False, save=False)

@@ -129,3 +129,43 @@ def test_diag_with_nan(caplog):
     log = caplog.text
     assert "Failed to create Hessian approximation." in log
     assert "ValueError: The approximated Hessian diagonal contains NaN." in log
+
+
+TEST_PARAMETERS = {
+    "standardized": (
+        True,
+        [
+            "opt_history_view_variables_standardized",
+            "opt_history_view_objective_standardized",
+            "opt_history_view_x_xstar_standardized",
+            "opt_history_view_ineq_constraints_standardized",
+            "opt_history_view_eq_constraints_standardized",
+        ],
+    ),
+    "unstandardized": (
+        False,
+        [
+            "opt_history_view_variables_unstandardized",
+            "opt_history_view_objective_unstandardized",
+            "opt_history_view_x_xstar_unstandardized",
+            "opt_history_view_ineq_constraints_unstandardized",
+            "opt_history_view_eq_constraints_unstandardized",
+        ],
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check OptHistoryView with objective, standardized or not."""
+    opt = OptHistoryView(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(show=False, save=False)

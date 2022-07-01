@@ -20,6 +20,7 @@
 """Plot the partial sensitivity of the functions."""
 from __future__ import annotations
 
+import itertools
 import logging
 from typing import Mapping
 
@@ -39,134 +40,152 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VariableInfluence(OptPostProcessor):
-    """First order variable influence analysis.
+    r"""First order variable influence analysis.
 
-    This post-processing computes df/dxi * (xi* - xi0)
-    where xi0 is the initial value of the variable
-    and xi* is the optimal value of the variable.
+    This post-processing computes
+    :math:`\frac{\partial f(x)}{\partial x_i}\left(x_i^* - x_i^{(0)}\right)`
+    where :math:`x_i^{(0)}` is the initial value of the variable
+    and :math:`x_i^*` is the optimal value of the variable.
 
-    Options of the plot method are the quantile level, the use of a
-    logarithmic scale and the possibility to save the influent variables
-    indices as a NumPy file.
+    Options of the plot method are:
+
+    - proportion of the total sensitivity
+      to use as a threshold to filter the variables,
+    - the use of a logarithmic scale,
+    - the possibility to save the indice of the influential variables indices
+      in a NumPy file.
     """
 
     DEFAULT_FIG_SIZE = (20.0, 5.0)
 
     def _plot(
         self,
-        quantile: float = 0.99,
+        level: float = 0.99,
         absolute_value: bool = False,
         log_scale: bool = False,
         save_var_files: bool = False,
     ) -> None:
         """
         Args:
-            quantile: Between 0 and  1, the proportion of the total
-                sensitivity to use as a threshold to filter the variables.
-            absolute_value: If True, plot the absolute value of the influence.
-            log_scale: If True, use a logarithmic scale.
-            save_var_files: If True, save the influent variables indices as a NumPy file.
+            level: The proportion of the total sensitivity
+                to use as a threshold to filter the variables.
+            absolute_value: Whether to plot the absolute value of the influence.
+            log_scale: Whether to set the y-axis as log scale.
+            save_var_files: Whether to save the influential variables indices
+                to a NumPy file.
         """
-        all_funcs = self.opt_problem.get_all_functions_names()
+        function_names = self.opt_problem.get_all_functions_names()
         _, x_opt, _, _, _ = self.opt_problem.get_optimum()
         x_0 = self.database.get_x_by_iter(0)
-        if log_scale:
-            absolute_value = True
+        absolute_value = log_scale or absolute_value
 
         names_to_sensitivities = {}
-        for func in all_funcs:
-            grad = self.database.get_f_of_x(self.database.get_gradient_name(func), x_0)
-            f_0 = self.database.get_f_of_x(func, x_0)
-            f_opt = self.database.get_f_of_x(func, x_opt)
-            if grad is not None:
-                if len(grad.shape) == 1:
-                    sensitivity = grad * (x_opt - x_0)
-                    delta_corr = (f_opt - f_0) / sensitivity.sum()
-                    sensitivity *= delta_corr
+        evaluate = self.database.get_f_of_x
+        for function_name in function_names:
+            grad = evaluate(self.database.get_gradient_name(function_name), x_0)
+            if grad is None:
+                continue
+
+            f_0 = evaluate(function_name, x_0)
+            f_opt = evaluate(function_name, x_opt)
+            if self._change_obj and function_name == self._neg_obj_name:
+                grad = -grad
+                function_name = self._obj_name
+
+            if len(grad.shape) == 1:
+                sensitivity = grad * (x_opt - x_0)
+                sensitivity *= (f_opt - f_0) / sensitivity.sum()
+                if absolute_value:
+                    sensitivity = absolute(sensitivity)
+                names_to_sensitivities[function_name] = sensitivity
+            else:
+                for i, _grad in enumerate(grad):
+                    sensitivity = _grad * (x_opt - x_0)
+                    sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[func] = sensitivity
-                else:
-                    for i in range(grad.shape[0]):
-                        sensitivity = grad[i, :] * (x_opt - x_0)
-                        delta_corr = (f_opt - f_0)[i] / sensitivity.sum()
-                        sensitivity *= delta_corr
-                        if absolute_value:
-                            sensitivity = absolute(sensitivity)
-                        names_to_sensitivities[f"{func}_{i}"] = sensitivity
+                    names_to_sensitivities[f"{function_name}_{i}"] = sensitivity
 
         self._add_figure(
             self.__generate_subplots(
-                names_to_sensitivities, quantile, log_scale, save_var_files
+                names_to_sensitivities,
+                level=level,
+                log_scale=log_scale,
+                save=save_var_files,
             )
         )
 
     def __get_quantile(
         self,
-        sensor: ndarray,
+        sensitivity: ndarray,
         func: str,
-        quant: float = 0.99,
-        save_var_files: bool = False,
+        level: float = 0.99,
+        save: bool = False,
     ) -> tuple[int, float]:
-        """Get the number of variables that explain a quantile fraction of the
-        variation.
+        """Get the number of variables explaining a fraction of the sensitivity.
 
         Args:
-            sensor: The sensitivity.
+            sensitivity: The sensitivity.
             func: The function name.
-            quant: The quantile threshold.
-            save_var_files: If True, save the influent variables indices in a NumPy file.
+            level: The quantile level.
+            save: Whether to save the influential variables indices in a NumPy file.
 
         Returns:
-            The number of required variables
-            and the threshold value for the sensitivity.
+            The number of influential variables
+            and the absolute sensitivity w.r.t. the least influential variable.
         """
-        abs_vals = absolute(sensor)
-        abs_sens_i = argsort(abs_vals)[::-1]
-        abs_sens = abs_vals[abs_sens_i]
-        total = abs_sens.sum()
-        var = 0.0
-        tresh_ind = 0
-        while var < total * quant and tresh_ind < len(abs_sens):
-            var += abs_sens[tresh_ind]
-            tresh_ind += 1
-        kept_vars = abs_sens_i[:tresh_ind]
+        absolute_sensitivity = absolute(sensitivity)
+        absolute_sensitivity_indices = argsort(absolute_sensitivity)[::-1]
+        absolute_sensitivity = absolute_sensitivity[absolute_sensitivity_indices]
+        variance = 0.0
+        total_variance = absolute_sensitivity.sum() * level
+        n_variables = 0
+        while variance < total_variance and n_variables < len(absolute_sensitivity):
+            variance += absolute_sensitivity[n_variables]
+            n_variables += 1
+
+        influential_variables = absolute_sensitivity_indices[:n_variables]
         LOGGER.info("VariableInfluence for function %s", func)
         LOGGER.info(
-            "Most influent variables indices to explain "
-            "%% of the function variation : %s",
-            int(quant * 100),
+            "Most influential variables indices to explain "
+            "%% of the function variation: %s",
+            int(level * 100),
         )
-        LOGGER.info(kept_vars)
-        if save_var_files:
-            names = self.opt_problem.design_space.variables_names
-            sizes = self.opt_problem.design_space.variables_sizes
-            ll_of_names = array(
-                [[f"{name}${i}" for i in range(sizes[name])] for name in names]
-            )
-            flaten_names = array([name for sublist in ll_of_names for name in sublist])
-            kept_names = flaten_names[kept_vars]
-            var_names_file = f"{func}_influ_vars.csv"
-            data = stack((kept_names, kept_vars)).T
+        LOGGER.info(influential_variables)
+        if save:
+            names = [
+                [f"{name}${i}" for i in range(size)]
+                for name, size in self.opt_problem.design_space.variables_sizes.items()
+            ]
+            names = array(list(itertools.chain(*names)))
+            file_name = f"{func}_influ_vars.csv"
             savetxt(
-                var_names_file, data, fmt="%s", delimiter=" ; ", header="name ; index"
+                file_name,
+                stack((names[influential_variables], influential_variables)).T,
+                fmt="%s",
+                delimiter=" ; ",
+                header="name ; index",
             )
-            self.output_files.append(var_names_file)
-        return tresh_ind, abs_sens[tresh_ind - 1]
+            self.output_files.append(file_name)
+
+        return n_variables, absolute_sensitivity[n_variables - 1]
 
     def __generate_subplots(
         self,
         names_to_sensitivities: Mapping[str, ndarray],
-        quantile: float = 0.99,
+        level: float = 0.99,
         log_scale: bool = False,
-        save_var_files: bool = False,
+        save: bool = False,
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
         Args:
-            names_to_sensitivities: The sensors to plot.
-            save_var_files: If True,
-                save the influential variables indices in a NumPy file.
+            names_to_sensitivities: The output sensitivities
+                w.r.t. the design variables.
+            level: The proportion of the total sensitivity
+                to use as a threshold to filter the variables.
+            log_scale: Whether to set the y-axis as log scale.
+            save: Whether to save the influential variables indices in a NumPy file.
 
         Returns:
             The gradients subplots.
@@ -175,30 +194,23 @@ class VariableInfluence(OptPostProcessor):
             ValueError: If the `names_to_sensitivities` is empty.
         """
         n_funcs = len(names_to_sensitivities)
-        if n_funcs == 0:
+        if not n_funcs:
             raise ValueError("No gradients to plot at current iteration.")
 
-        nrows = n_funcs // 2
-        if 2 * nrows < n_funcs:
-            nrows += 1
-
-        if n_funcs > 1:
-            ncols = 2
-        else:
-            ncols = 1
+        n_cols = 2
+        n_rows = sum(divmod(n_funcs, n_cols))
+        if n_funcs == 1:
+            n_cols = 1
 
         fig, axes = pyplot.subplots(
-            nrows=nrows,
-            ncols=ncols,
+            nrows=n_rows,
+            ncols=n_cols,
             sharex=True,
             sharey=False,
             figsize=self.DEFAULT_FIG_SIZE,
         )
-        i = 0
-        j = -1
 
         axes = atleast_2d(axes)
-        n_subplots = len(axes) * len(axes[0])
         x_labels = self._generate_x_names()
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
@@ -206,25 +218,24 @@ class VariableInfluence(OptPostProcessor):
         # because the problem dimension is not updated when the history is filtered.
         abscissas = range(len(tuple(names_to_sensitivities.values())[0]))
 
-        for func, sens in sorted(names_to_sensitivities.items()):
-            j += 1
-            if j == ncols:
-                j = 0
-                i += 1
+        font_size = 12
+        rotation = 90
+        i = j = 0
+        for name, sensitivity in sorted(names_to_sensitivities.items()):
             axe = axes[i][j]
-            n_vars = len(sens)
-            axe.bar(abscissas, sens, color="blue", align="center")
-            quant, treshold = self.__get_quantile(sens, func, quantile, save_var_files)
-            axe.set_title(
-                "{} variables required to explain {}% of {} variations".format(
-                    quant, round(quantile * 100), func
-                )
+            axe.bar(abscissas, sensitivity, color="blue", align="center")
+            quantile, threshold = self.__get_quantile(
+                sensitivity, name, level=level, save=save
             )
-            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.set_title(
+                f"{quantile} variables required "
+                f"to explain {round(level * 100)}% of {name} variations"
+            )
+            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissas)
-            axe.set_xlim(-1, n_vars + 1)
-            axe.axhline(treshold, color="r")
-            axe.axhline(-treshold, color="r")
+            axe.set_xlim(-1, len(sensitivity) + 1)
+            axe.axhline(threshold, color="r")
+            axe.axhline(-threshold, color="r")
             if log_scale:
                 axe.set_yscale("log")
 
@@ -239,15 +250,18 @@ class VariableInfluence(OptPostProcessor):
                 label for label in axe.get_xticklabels() if label.get_visible() is True
             ]
             if len(vis_xlabels) > 20:
-                frac_xlabels = int(len(vis_xlabels) / 10.0)
                 pyplot.setp(vis_xlabels, visible=False)
-                pyplot.setp(vis_xlabels[::frac_xlabels], visible=True)
+                pyplot.setp(vis_xlabels[:: int(len(vis_xlabels) / 10.0)], visible=True)
 
-        if len(names_to_sensitivities) < n_subplots:
-            # xlabel must be written with the same fontsize on the 2 columns
-            j += 1
+            if j == n_cols - 1:
+                j = 0
+                i += 1
+            else:
+                j += 1
+
+        if len(names_to_sensitivities) < n_rows * n_cols:
             axe = axes[i][j]
-            axe.set_xticklabels(x_labels, fontsize=12, rotation=90)
+            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
             axe.set_xticks(abscissas)
 
         fig.suptitle(

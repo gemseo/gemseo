@@ -584,9 +584,12 @@ def get_post_processing_options_schema(
     """
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.core.mdofunctions.mdo_function import MDOFunction
     from gemseo.post.post_factory import PostFactory
 
-    post_proc = PostFactory().create(OptimizationProblem(DesignSpace()), post_proc_name)
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = MDOFunction(lambda x: x, "f")
+    post_proc = PostFactory().create(problem, post_proc_name)
     return _get_schema(post_proc.opt_grammar, output_json, pretty_print)
 
 

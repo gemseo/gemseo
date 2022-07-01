@@ -98,7 +98,7 @@ scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
 # Post-process the optimization history:
 scenario.post_process(
     "BasicHistory",
-    data_list=["compliance"],
+    variable_names=["compliance"],
     save=True,
     show=False,
     file_name=problem_name + "_history.png",

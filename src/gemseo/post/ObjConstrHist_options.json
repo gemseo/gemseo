@@ -2,7 +2,7 @@
     "name": "OptHistoryView_options",
     "required": [],
     "properties": {
-        "constr_names": {
+        "constraint_names": {
             "type": "array"
         }
     },

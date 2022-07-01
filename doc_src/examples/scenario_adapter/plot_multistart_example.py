@@ -87,6 +87,8 @@ scenario_doe.execute(run_inputs)
 ##############################################################################
 # Plot the optimum objective for different x0
 # -------------------------------------------
-scenario_doe.post_process("BasicHistory", data_list=["obj"], save=False, show=False)
+scenario_doe.post_process(
+    "BasicHistory", variable_names=["obj"], save=False, show=False
+)
 # Workaround for HTML rendering, instead of ``show=True``
 plt.show()

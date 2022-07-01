@@ -47,7 +47,7 @@ Implementation of the discipline
 The construction of an :class:`.MDODiscipline` consists in three steps:
 
 1. Instantiate the :class:`.MDODiscipline` using the super constructor,
-2. Initialize the grammars using the :meth:`.JSONGrammar.initialize_from_data_names` method,
+2. Initialize the grammars using the :meth:`.JSONGrammar.update` method,
 3. Set the default inputs from the initial :file:`inputs.txt`.
 
 The :class:`!MDODiscipline._run` method consists in three steps:
@@ -68,8 +68,8 @@ Now you can implement the discipline in the following way:
         def __init__(self):
             super(ShellExecutableDiscipline, self).__init__("ShellDisc")
             # Initialize the grammars
-            self.input_grammar.initialize_from_data_names(['a','b'])
-            self.output_grammar.initialize_from_data_names(['c'])
+            self.input_grammar.update(['a','b'])
+            self.output_grammar.update(['c'])
             # Initialize the default inputs
             self.default_inputs=parse_file("inputs.txt")
 

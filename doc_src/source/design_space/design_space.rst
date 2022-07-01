@@ -337,7 +337,7 @@ and :code:`print(current_x)` to see the result:
 How to get the current dictionary value of the design parameter vector?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the current value of the design parameters with :code:`dict` format by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_x_dict` method:
+We can get the current value of the design parameters with :code:`dict` format by means of the :meth:`.DesignSpace.get_lower_bounds` and :meth:`.DesignSpace.get_current_value` method:
 
 .. code::
 
@@ -568,8 +568,7 @@ and :code:`print(new_array_point)` to see the result:
 
 .. note::
 
-   - An optional argument denoted :code:`'all_vars'`, which is a boolean and set at :code:`True` by default, indicates if all design variables shall be in the :code:`dict` passed in argument.
-   - An optional argument denoted :code:`'all_var_list'`, which is a list of string and set at :code:`None` by default, list all of the variables to consider. If :code:`None`, all design variables are considerd.
+   An optional argument denoted :code:`'variable_names'`, which is a list of string and set at :code:`None` by default, lists all of the variables to consider. If :code:`None`, all design variables are considerd.
 
 How to cast the current value to complex?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

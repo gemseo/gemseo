@@ -639,3 +639,38 @@ def test_malformed_sizes():
         ),
     ):
         dataset.set_from_array(array([[1]]), variables=["x"], sizes={"x": 2})
+
+
+@pytest.mark.parametrize("by_group", [False, True])
+def test_rename_variable(by_group):
+    """Check the renaming of a variable."""
+    data = array([[1]])
+    dataset = Dataset(by_group=by_group)
+    dataset.add_variable("x", data)
+    dataset.add_variable("a", data, cache_as_input=False)
+    dataset.rename_variable("x", "y")
+    dataset.rename_variable("a", "b")
+    assert dataset["y"] == data
+    assert dataset.sizes["y"] == 1
+    assert dataset._positions["y"] == [0, 0]
+    assert "x" not in dataset.sizes
+    if by_group:
+        assert "x" not in dataset.data[dataset.DEFAULT_GROUP]
+    else:
+        assert "x" not in dataset.data
+    assert "x" not in dataset._positions
+    assert "x" not in dataset._names[dataset.DEFAULT_GROUP]
+    assert "y" in dataset._names[dataset.DEFAULT_GROUP]
+    assert "x" not in dataset._cached_inputs
+    assert "y" in dataset._cached_inputs
+    assert "a" not in dataset._cached_outputs
+    assert "b" in dataset._cached_outputs
+
+
+@pytest.mark.parametrize("by_group", [False, True])
+def test_transform_variable(by_group):
+    """Check the transformation of a variable."""
+    dataset = Dataset(by_group=by_group)
+    dataset.add_variable("x", array([[1]]))
+    dataset.transform_variable("x", "-x")
+    assert dataset["x"] == array([[-1]])

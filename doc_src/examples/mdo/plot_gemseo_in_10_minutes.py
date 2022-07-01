@@ -164,7 +164,7 @@ design_space.add_variable("y_2", 1, l_b=-100.0, u_b=100.0, value=ones(1))
 scenario = create_scenario(
     disciplines,
     formulation="MDF",
-    main_mda_class="MDAGaussSeidel",
+    inner_mda_name="MDAGaussSeidel",
     objective_name="obj",
     design_space=design_space,
 )

@@ -25,6 +25,7 @@ from gemseo.api import create_design_space
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.post.post_factory import PostFactory
+from gemseo.post.scatter_mat import ScatterPlotMatrix
 from gemseo.problems.analytical.power_2 import Power2
 from gemseo.utils.testing import image_comparison
 from numpy import array
@@ -98,15 +99,15 @@ def test_non_existent_var(tmp_wd):
     problem = OptimizationProblem.import_hdf(POWER2)
     with pytest.raises(
         ValueError,
-        match=r"Cannot build scatter plot matrix, Function toto is neither "
-        r"among optimization problem functions : .* "
-        r"nor design variables : .*",
+        match=r"Cannot build scatter plot matrix: function foo is neither "
+        r"among optimization problem functions: .* "
+        r"nor design variables: .*",
     ):
         factory.execute(
             problem,
             "ScatterPlotMatrix",
             save=True,
-            variable_names=["toto"],
+            variable_names=["foo"],
         )
 
 
@@ -255,7 +256,29 @@ def test_filter_non_feasible_exception():
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
 
-    with pytest.raises(ValueError, match="No feasible points were found!"):
+    with pytest.raises(ValueError, match="No feasible points were found."):
         factory.execute(
             problem, "ScatterPlotMatrix", filter_non_feasible=True, variable_names=["x"]
         )
+
+
+TEST_PARAMETERS = {
+    "standardized": (True, ["ScatterPlotMatrix_standardized"]),
+    "unstandardized": (False, ["ScatterPlotMatrix_unstandardized"]),
+}
+
+
+@pytest.mark.parametrize(
+    "use_standardized_objective, baseline_images",
+    TEST_PARAMETERS.values(),
+    indirect=["baseline_images"],
+    ids=TEST_PARAMETERS.keys(),
+)
+@image_comparison(None)
+def test_common_scenario(
+    use_standardized_objective, baseline_images, common_problem, pyplot_close_all
+):
+    """Check ScatterPlotMatrix with objective, standardized or not."""
+    opt = ScatterPlotMatrix(common_problem)
+    common_problem.use_standardized_objective = use_standardized_objective
+    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], show=False, save=False)

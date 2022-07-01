@@ -130,15 +130,6 @@ class MDOFunction:
 
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see :meth:`.MDOFunction.check_grad`).
-
-
-    Attributes:
-        last_eval (Optional[ndarray]): The value of the function output
-            at the last evaluation; None if it has not yet been evaluated.
-        force_real (bool): Whether to cast the results to real value.
-        special_repr (Optional[str]): The string representation of the function
-            overloading its default string ones.
-            If None, the default string representation is used.
     """
 
     TYPE_OBJ: str = "obj"
@@ -184,6 +175,24 @@ class MDOFunction:
 
     activate_counters: ClassVar[bool] = True
     """Whether to count the number of function evaluations."""
+
+    has_default_name: bool
+    """Whether the name has been set with a default value."""
+
+    last_eval: ndarray | None
+    """The value of the function output at the last evaluation.
+
+    ``None`` if it has not yet been evaluated.
+    """
+
+    force_real: bool
+    """Whether to cast the results to real value."""
+
+    special_repr: str | None
+    """The string representation of the function overloading its default string ones.
+
+    If ``None``, the default string representation is used.
+    """
 
     _n_calls: Value
     """The number of times that the function has been evaluated."""
@@ -276,6 +285,7 @@ class MDOFunction:
         self.last_eval = None
         self.force_real = force_real
         self.special_repr = special_repr
+        self.has_default_name = False
 
     @property
     def n_calls(self) -> int:
