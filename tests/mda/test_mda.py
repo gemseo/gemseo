@@ -30,6 +30,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda import MDA
+from gemseo.mda.newton import MDANewtonRaphson
 from gemseo.problems.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -226,3 +227,44 @@ def test_log_convergence(caplog):
 
     mda._compute_residual(np.array([1, 2]), np.array([2, 1]), log_normed_residual=True)
     assert "MDA running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+@pytest.mark.parametrize("norm0", [None, 1.0])
+@pytest.mark.parametrize("scale_coupl_active", [True, False])
+def test_scale_res_size(mda_class, norm0, scale_coupl_active):
+    coupl_size = 10
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        inputs_size=coupl_size,
+        outputs_size=coupl_size,
+    )
+
+    mda = mda_class(disciplines, max_mda_iter=1)
+    mda.norm0 = 1.0  # Deactivate scaling
+    mda.execute()
+
+    mda_scale = mda_class(disciplines, max_mda_iter=1)
+    mda.norm0 = norm0
+    mda_scale.set_residuals_scaling_options(scale_coupl_active, True)
+    mda_scale.execute()
+
+    scaled_res = mda.residual_history[-1] / ((2 * coupl_size) ** 0.5)
+    scaled_mda_res = mda_scale.residual_history[-1]
+    assert (abs(scaled_res - scaled_mda_res) < 1e-6) == scale_coupl_active
+
+
+@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
+@pytest.mark.parametrize("scale_active", [True, False])
+def test_deactivate_scaling(mda_class, scale_active):
+    coupl_size = 10
+    disciplines = create_disciplines_from_desc(
+        [("A", ["x", "y1"], ["y2"]), ("B", ["x", "y2"], ("y1",))],
+        inputs_size=coupl_size,
+        outputs_size=coupl_size,
+    )
+
+    mda = mda_class(disciplines, max_mda_iter=2)
+    mda.set_residuals_scaling_options(False, scale_active)
+    mda.execute()
+    assert (mda.residual_history[0] == 1.0) == scale_active
