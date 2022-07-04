@@ -21,6 +21,8 @@
 MDF-based DOE on the Sobieski SSBJ test case
 ============================================
 """
+from os import name as os_name
+
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
@@ -88,9 +90,8 @@ scenario.set_differentiation_method("user")
 # this, we specify the number of processes to be used for the computation of
 # the samples.
 
-##############################################################################
-# .. warning::
 #    The multiprocessing option has some limitations on Windows.
+#    Due to problems with sphinx, we disable it in this example.
 #    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
 #    randomly during execution. It is strongly recommended to update your
 #    environment to avoid this problem.
@@ -98,7 +99,6 @@ scenario.set_differentiation_method("user")
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
-n_processes = 4
 
 ##############################################################################
 # We define the algorithm options. Here the criterion = center option of pyDOE
@@ -108,17 +108,11 @@ algo_options = {
     # Evaluate gradient of the MDA
     # with coupled adjoint
     "eval_jac": True,
-    # Run in parallel on 4 processors
-    "n_processes": n_processes,
+    # Run in parallel on 1 or 4 processors
+    "n_processes": 1 if os_name == "nt" else 4,
 }
-run_inputs = {"n_samples": 30, "algo": "lhs", "algo_options": algo_options}
 
-##############################################################################
-# .. warning::
-#    When running a parallel DOE on Windows, the execution must be
-#    protected to avoid recursive calls:
-if __name__ == "__main__":
-    scenario.execute(run_inputs)
+scenario.execute({"n_samples": 30, "algo": "lhs", "algo_options": algo_options})
 
 ##############################################################################
 # .. warning::

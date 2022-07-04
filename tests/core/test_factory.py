@@ -114,7 +114,9 @@ def test_ext_plugin_syspath(monkeypatch, reset_factory):
     # and monkeypatch can only prepend.
     monkeypatch.syspath_prepend("")
     # There could be more classes available with the plugins
-    assert "DummyBiLevel" in Factory(MDOFormulation).classes
+    factory = Factory(MDOFormulation)
+    assert "DummyBiLevel" in factory.classes
+    assert factory.get_library_name("DummyBiLevel") == "gemseo_dummy_plugins"
 
 
 def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
@@ -184,3 +186,9 @@ def test_wanted_classes_with_entry_points(monkeypatch, reset_factory):
 
     # There could be more classes available with the plugins
     assert "DummyBiLevel" in Factory(MDOFormulation).classes
+
+
+def test_get_library_name(reset_factory):
+    """Verify that the library names found are the expected ones."""
+    factory = Factory(MDOFormulation, ("gemseo.formulations",))
+    assert factory.get_library_name("MDF") == "gemseo"

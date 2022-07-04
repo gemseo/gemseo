@@ -30,5 +30,5 @@ Table Of Contents
     glossary
     zreferences
     software/index
-    _modules/gemseo
+    _modules/projects
     genindex

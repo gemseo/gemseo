@@ -170,7 +170,7 @@ class AlgoLib:
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         pass
 
@@ -190,7 +190,7 @@ class AlgoLib:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
             result: The result of the run, i.e. the solution.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         pass
 
@@ -274,7 +274,7 @@ class AlgoLib:
         :param algo_name: The name of the algorithm>
             If None, use the algo_name attribute
             which may have been set by the factory.
-        :param options: The options dict for the algorithm.
+        :param **options: The options dict for the algorithm.
         """
         self.problem = problem
 

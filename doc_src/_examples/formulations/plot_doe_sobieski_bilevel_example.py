@@ -22,6 +22,7 @@ BiLevel-based DOE on the Sobieski SSBJ test case
 ================================================
 """
 from copy import deepcopy
+from os import name as os_name
 
 from gemseo.api import configure_logger
 from gemseo.api import create_discipline
@@ -156,6 +157,7 @@ for sub_sc in sub_disciplines[0:3]:
 ##############################################################################
 # .. warning::
 #    The multiprocessing option has some limitations on Windows.
+#    Due to problems with sphinx, we disable it in this example.
 #    For Python versions < 3.7 and Numpy < 1.20.0, subprocesses may get hung
 #    randomly during execution. It is strongly recommended to update your
 #    environment to avoid this problem.
@@ -163,20 +165,13 @@ for sub_sc in sub_disciplines[0:3]:
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
-n_processes = 4
-
-run_inputs = {
-    "n_samples": 30,
-    "algo": "lhs",
-    "algo_options": {"n_processes": n_processes},
-}
-
-##############################################################################
-# .. warning::
-#    When running a parallel DOE on Windows, the execution must be
-#    protected to avoid recursive calls:
-if __name__ == "__main__":
-    system_scenario.execute(run_inputs)
+system_scenario.execute(
+    {
+        "n_samples": 30,
+        "algo": "lhs",
+        "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
+    }
+)
 
 system_scenario.print_execution_metrics()
 

@@ -103,6 +103,7 @@ class Factory(Multiton):
         self.__base_class = base_class
         self.__module_names = module_names or []
         self.__names_to_classes = {}
+        self.__names_to_library_names = {}
         self.failed_imports = {}
 
         self.update()
@@ -160,6 +161,7 @@ class Factory(Multiton):
         for name, cls in names_to_classes.items():
             if self.__is_class_in_modules(module_names, cls):
                 self.__names_to_classes[name] = cls
+                self.__names_to_library_names[name] = cls.__module__.split(".")[0]
 
     def __log_import_failure(self, pkg_name: str) -> None:
         """Log import failures.
@@ -282,6 +284,17 @@ class Factory(Multiton):
         """
         return name in self.__names_to_classes
 
+    def get_library_name(self, name: str) -> str:
+        """Return the name of the library related to the name of a class.
+
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The name of the library.
+        """
+        return self.__names_to_library_names[name]
+
     def get_class(self, name: str) -> type[Any]:
         """Return a class from its name.
 
@@ -297,10 +310,11 @@ class Factory(Multiton):
         try:
             return self.__names_to_classes[name]
         except KeyError:
-            msg = "Class {} is not available; \navailable ones are: {}.".format(
-                name, ", ".join(sorted(self.__names_to_classes.keys()))
+            raise ImportError(
+                "Class {} is not available; \navailable ones are: {}.".format(
+                    name, ", ".join(sorted(self.__names_to_classes.keys()))
+                )
             )
-            raise ImportError(msg)
 
     def create(
         self,
