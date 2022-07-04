@@ -1,17 +1,17 @@
-# Read the Docs configuration file
-# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+# Read the Docs configuration file.
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details.
 
 version: 2
 
 sphinx:
-   configuration: doc_src/source/conf.py
+  configuration: doc_src/conf.py
 
 python:
-   install:
-      - requirements: requirements/doc.txt
-      - path: .
-        extra_requirements:
-           - all
+  install:
+    - requirements: requirements/doc.txt
+    - path: .
+      extra_requirements:
+        - all
 
 build:
   os: ubuntu-20.04
@@ -19,3 +19,12 @@ build:
     python: "3.9"
   apt_packages:
     - graphviz
+  jobs:
+    post_install:
+      - pip install --no-deps -r requirements/doc-plugins.txt
+    pre_build:
+      - sphinx-apidoc -e -M -o doc_src/_modules ../../envs/develop/lib/python3.9/site-packages/gemseo_scilab
+      - sphinx-apidoc -e -M -o doc_src/_modules ../../envs/develop/lib/python3.9/site-packages/gemseo_pymoo
+      - sphinx-apidoc -e -M -o doc_src/_modules ../../envs/develop/lib/python3.9/site-packages/gemseo_java
+      - sphinx-apidoc -e -M -o doc_src/_modules ../../envs/develop/lib/python3.9/site-packages/gemseo_petsc
+      - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo
