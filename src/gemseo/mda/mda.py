@@ -70,6 +70,8 @@ class MDA(MDODiscipline):
         "matrix_type",
         "use_lu_fact",
         "linear_solver_tolerance",
+        "_scale_residuals_with_coupling_size",
+        "_scale_residuals_with_first_norm",
         "_current_iter",
     )
 
@@ -131,6 +133,8 @@ class MDA(MDODiscipline):
         self.residual_history = []
         self.reset_history_each_run = False
         self.warm_start = warm_start
+        self._scale_residuals_with_coupling_size = False
+        self._scale_residuals_with_first_norm = True
 
         # Don't erase coupling values before calling _compute_jacobian
 
@@ -388,7 +392,6 @@ class MDA(MDODiscipline):
             **self.linear_solver_options,
         )
 
-    # fixed point methods
     def _compute_residual(
         self,
         current_couplings: ndarray,
@@ -411,11 +414,22 @@ class MDA(MDODiscipline):
             self.residual_history = []
 
         normed_residual = norm((current_couplings - new_couplings).real)
-        if self.norm0 is None:
-            self.norm0 = normed_residual
-        if self.norm0 == 0:
-            self.norm0 = 1
-        self.normed_residual = normed_residual / self.norm0
+
+        if self._scale_residuals_with_first_norm:
+            if self._scale_residuals_with_coupling_size:
+                if self.norm0 is not None:
+                    self.normed_residual = normed_residual / self.norm0
+                else:
+                    self.normed_residual = normed_residual / new_couplings.size**0.5
+            else:
+                if self.norm0 is None:
+                    self.norm0 = normed_residual
+                if self.norm0 == 0:
+                    self.norm0 = 1
+                self.normed_residual = normed_residual / self.norm0
+        else:
+            self.normed_residual = normed_residual
+
         if log_normed_residual:
             LOGGER.info(
                 "%s running... Normed residual = %s (iter. %s)",
@@ -514,7 +528,7 @@ class MDA(MDODiscipline):
                 If a variable name is missing, consider all its components.
                 If None, consider all the components of all the ``inputs`` and ``outputs``.
 
-        Return:
+        Returns:
             Whether the passed Jacobian is correct.
         """
         # Strong couplings are not linearized
@@ -599,6 +613,27 @@ class MDA(MDODiscipline):
         super()._set_cache_tol(cache_tol)
         for disc in self.disciplines:
             disc.cache_tol = cache_tol or 0.0
+
+    def set_residuals_scaling_options(
+        self,
+        scale_residuals_with_coupling_size: bool = False,
+        scale_residuals_with_first_norm: bool = True,
+    ) -> None:
+        """Set the options for the residuals scaling.
+
+        Args:
+            scale_residuals_with_coupling_size: Whether to activate the scaling of the MDA
+                residuals by the number of coupling variables.
+                This divides the residuals obtained by the norm of the difference
+                between iterates by the square root of the coupling vector size.
+
+            scale_residuals_with_first_norm: Whether to scale the residuals by the first
+                residual norm, except if `:attr:.norm0` is set by the user.
+                If `:attr:.norm0` is set to a value, it deactivates
+                the residuals scaling by the design variables size.
+        """
+        self._scale_residuals_with_coupling_size = scale_residuals_with_coupling_size
+        self._scale_residuals_with_first_norm = scale_residuals_with_first_norm
 
     def plot_residual_history(
         self,

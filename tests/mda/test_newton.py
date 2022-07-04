@@ -44,7 +44,8 @@ from .test_gauss_seidel import SelfCoupledDisc
 TRESHOLD_MDA_TOL = 1e-6
 
 
-def test_raphson_sobieski():
+@pytest.mark.parametrize("coupl_scaling", [True, False])
+def test_raphson_sobieski(coupl_scaling):
     """Test the execution of Gauss-Seidel on Sobieski."""
     disciplines = [
         SobieskiAerodynamics(),
@@ -53,6 +54,7 @@ def test_raphson_sobieski():
         SobieskiMission(),
     ]
     mda = MDANewtonRaphson(disciplines)
+    mda.set_residuals_scaling_options(scale_residuals_with_coupling_size=coupl_scaling)
     mda.matrix_type = JacobianAssembly.SPARSE
     mda.reset_history_each_run = True
     mda.execute()
