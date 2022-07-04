@@ -62,6 +62,7 @@ import operator
 from collections import namedtuple
 from pathlib import Path
 from typing import Any
+from typing import Callable
 from typing import ClassVar
 from typing import Dict
 from typing import Iterable
@@ -82,8 +83,6 @@ from numpy import unique
 from numpy import where
 from pandas import DataFrame
 from pandas import read_csv
-from sympy import lambdify
-from sympy import parse_expr
 
 from gemseo.caches.cache_factory import CacheFactory
 from gemseo.core.cache import AbstractFullCache
@@ -1437,39 +1436,22 @@ class Dataset:
 
         return dataset
 
-    def transform_variable(self, name: str, transformation: str) -> None:
+    def transform_variable(
+        self, name: str, transformation: Callable[[ndarray], ndarray]
+    ) -> None:
         """Transform a variable.
 
         Args:
             name: The name of the variable, e.g. ``"foo"``.
-            transformation: The expression of the transformation, e.g. ``"exp(x)".``
-                By convention,
-                `"x"` is the symbol of the variable to transform,
-                independently of its name.
+            transformation: The function transforming the variable,
+                e.g. ``"lambda x: np.exp(x)"``.
         """
         if not self._group:
-            self.data[name] = self.__transform_data(self.data[name], transformation)
+            self.data[name] = transformation(self.data[name])
         else:
             group = self.get_group(name)
             indices = self._positions[name]
-            self.data[group][indices] = self.__transform_data(
-                self.data[group][indices], transformation
-            )
-
-    @staticmethod
-    def __transform_data(data: ndarray, transformation: str) -> ndarray:
-        """Transform a data array.
-
-        Args:
-            data: The data array to transform.
-            transformation: The expression of the transformation, e.g. ``"exp(x)"``.
-                By convention,
-                `"x"` is the symbol of the variable to transform,
-                independently of its name.
-        """
-        expr = parse_expr(transformation)
-        func = lambdify(list(expr.free_symbols), expr)
-        return func(data)
+            self.data[group][indices] = transformation(self.data[group][indices])
 
     def rename_variable(self, name: str, new_name: str) -> None:
         """Rename a variable.

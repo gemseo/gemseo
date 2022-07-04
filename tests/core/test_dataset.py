@@ -672,5 +672,5 @@ def test_transform_variable(by_group):
     """Check the transformation of a variable."""
     dataset = Dataset(by_group=by_group)
     dataset.add_variable("x", array([[1]]))
-    dataset.transform_variable("x", "-x")
+    dataset.transform_variable("x", lambda x: -x)
     assert dataset["x"] == array([[-1]])
