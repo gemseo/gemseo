@@ -34,6 +34,7 @@ from gemseo.problems.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 from gemseo.problems.scalable.data_driven.problem import ScalableProblem
+from matplotlib import pyplot as plt
 
 configure_logger()
 
@@ -130,4 +131,6 @@ scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 100})
 ###############################################################################
 # We can post-process the results.
 # Here, we use the standard :class:`.OptHistoryView`.
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process("OptHistoryView", save=False, show=False)
+# Workaround for HTML rendering, instead of ``show=True``
+plt.show()

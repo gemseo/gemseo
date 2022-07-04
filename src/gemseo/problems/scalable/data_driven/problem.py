@@ -63,6 +63,7 @@ from gemseo.api import create_scenario
 from gemseo.api import generate_coupling_graph
 from gemseo.api import generate_n2_plot
 from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.scenario import Scenario
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.mda_factory import MDAFactory
 from gemseo.problems.scalable.data_driven.discipline import ScalableDiscipline
@@ -233,33 +234,35 @@ class ScalableProblem:
 
     def create_scenario(
         self,
-        formulation="DisciplinaryOpt",
-        scenario_type="MDO",
-        start_at_equilibrium=False,
-        active_probability=0.1,
-        feasibility_level=0.5,
+        formulation: str = "DisciplinaryOpt",
+        scenario_type: str = "MDO",
+        start_at_equilibrium: bool = False,
+        active_probability: float = 0.1,
+        feasibility_level: float = 0.5,
         **options,
-    ):
-        """Create MDO scenario from the scalable disciplines.
+    ) -> Scenario:
+        """Create a :class:`.Scenario` from the scalable disciplines.
 
-        :param str formulation: MDO formulation. Default: 'DisciplinaryOpt'.
-        :param str scenario_type: type of scenario ('MDO' or 'DOE').
-            Default: 'MDO'.
-        :param bool start_at_equilibrium: start at equilibrium
-            using a preliminary MDA. Default: True.
-        :param float active_probability: probability to set the inequality
-            constraints as active at initial step of the optimization.
-            Default: 0.1.
-        :param float feasibility_level: offset of satisfaction for inequality
-            constraints. Default: 0.5.
-        :param options: formulation options.
+        Args:
+            formulation: The MDO formulation to use for the scenario.
+            scenario_type: The type of scenario, either ``MDO`` or ``DOE``.
+            start_at_equilibrium: Whether to start at equilibrium using a preliminary
+                MDA.
+            active_probability: The probability to set the inequality constraints as
+                active at the initial step of the optimization.
+            feasibility_level: The offset of satisfaction for inequality
+                constraints.
+            **options: The formulation options.
+
+        Returns:
+            The :class:`.Scenario` from the scalable disciplines.
         """
-        equilibrium = None
+        equilibrium = {}
         if start_at_equilibrium:
             equilibrium = self.__get_equilibrium()
+
         disciplines = self.scaled_disciplines
         design_space = self._create_design_space(disciplines, formulation)
-        max_obj = self.maximize_objective
         if formulation == "BiLevel":
             self.scenario = self._create_bilevel_scenario(disciplines, **options)
         else:
@@ -269,10 +272,9 @@ class ScalableProblem:
                 self.objective_function,
                 deepcopy(design_space),
                 scenario_type=scenario_type,
-                maximize_objective=max_obj,
+                maximize_objective=self.maximize_objective,
                 **options,
             )
-        equilibrium = {} if not isinstance(equilibrium, dict) else equilibrium
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)
         self.__add_eq_constraints(equilibrium)
         return self.scenario
