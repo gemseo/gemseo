@@ -52,7 +52,7 @@ class BasicHistory(OptPostProcessor):
                 variable_names[obj_index] = self._neg_obj_name
 
             if self._change_obj:
-                dataset.transform_variable(self._neg_obj_name, "-x")
+                dataset.transform_variable(self._neg_obj_name, lambda x: -x)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
 
         plot = Lines(dataset)
