@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from pathlib import Path
 
-NAME = "gemseo"
-
 MOD_MSG = (
     "<li><a href='{}.html'>"
     "<span class='fa-li'><i class='far fa-file-alt'></i></span>{}"
@@ -59,7 +57,7 @@ def underline(title, char="="):
     return len(title) * char
 
 
-def create_tree_file(modules_path, dct, parents):
+def create_tree_file(modules_path, dct, parents, root):
     """Create a rst tree file.
 
     :param dict dct: dictionary
@@ -86,7 +84,7 @@ def create_tree_file(modules_path, dct, parents):
                 f.write("   <i class='fa fa-home'></i> ")
                 for parent in parents:
                     gparents = gparents + "." + parent
-                    if parent == NAME:
+                    if parent == root:
                         f.write("   " + LINK_MSG.format(gparents[1:], parent))
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
@@ -95,7 +93,7 @@ def create_tree_file(modules_path, dct, parents):
                 f.write(f"{underline(path)}\n\n")
                 f.write(".. raw:: html\n\n")
                 f.write("   <ul class='fa-ul'>\n")
-            create_tree_file(modules_path, dct[name], parents + [name])
+            create_tree_file(modules_path, dct[name], parents + [name], root)
         else:  # module
             with open(modules_path / parent_rst, "a") as f:
                 src_path = path.replace(".", "/")
@@ -112,7 +110,7 @@ def create_tree_file(modules_path, dct, parents):
                 f.write("   <i class='fa fa-home'></i> ")
                 for parent in parents:
                     gparents = gparents + "." + parent
-                    if parent == NAME:
+                    if parent == root:
                         f.write("   " + LINK_MSG.format(gparents[1:], parent))
                     else:
                         f.write(" / " + LINK_MSG.format(gparents[1:], parent))
@@ -132,22 +130,21 @@ def create_tree_file(modules_path, dct, parents):
             old_tree_path.rename(new_tree_path)
 
 
-def main(modules_path):
+def main(modules_path, name):
     lst = [
         f.name
         for f in modules_path.iterdir()
         if f.is_file() and f.name != "modules.rst"
     ]
 
-    with open(modules_path / Path(NAME).with_suffix(".rst"), "w") as f:
-        f.write(".. _gemseo:\n\n")
+    with open(modules_path / Path(name).with_suffix(".rst"), "w") as f:
+        f.write(f".. _{name}:\n\n")
         f.write(".. raw:: html\n\n")
         f.write("   <i class='fa fa-home'></i> \n\n")
-        title = "Package tree structure"
-        f.write(f"{title}\n")
-        f.write(f"{underline(title)}\n\n")
+        f.write(f"{name}\n")
+        f.write(f"{underline(name)}\n\n")
         f.write(".. raw:: html\n\n")
         f.write("   <ul class='fa-ul'>\n")
 
     tree = initialize_file_tree(lst)
-    create_tree_file(modules_path, tree[NAME], [NAME])
+    create_tree_file(modules_path, tree[name], [name], name)

@@ -419,7 +419,7 @@ class DriverLib(AlgoLib):
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
             skip_int_check: Whether to skip the integer variable handling check
                 of the selected algorithm.
-            options: The options for the algorithm.
+            **options: The options for the algorithm.
 
         Returns:
             The optimization result.

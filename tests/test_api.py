@@ -910,6 +910,7 @@ def test_algo_features():
     expected = AlgorithmFeatures(
         library_name="SciPy",
         algorithm_name="SLSQP",
+        root_package_name="gemseo",
         handle_equality_constraints=True,
         handle_inequality_constraints=True,
         handle_float_variables=True,

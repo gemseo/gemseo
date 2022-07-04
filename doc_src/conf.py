@@ -51,7 +51,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.plantuml",
     "sphinxcontrib.bibtex",
-    "sphinxcontrib.apidoc",
     "sphinx_gallery.gen_gallery",
     "autodocsumm",
     "add_toctree_functions",
@@ -61,25 +60,25 @@ extensions = [
 
 ################################################################################
 # Settings for sphinx_gallery.
-
-examples_dir = Path("examples")
-examples_path = Path(".." / examples_dir)
+current_dir = Path(__file__).parent
+gallery_dir = current_dir / "examples"
+examples_dir = current_dir / "_examples"
 examples_subdirs = [
-    subdir
-    for subdir in examples_path.iterdir()
-    if (examples_path / subdir).is_dir()
-    and (examples_path / subdir / "README.rst").is_file()
+    subdir.name
+    for subdir in examples_dir.iterdir()
+    if (examples_dir / subdir).is_dir()
+    and (examples_dir / subdir / "README.rst").is_file()
 ]
 
-examples_dirs = [(examples_path / subdir) for subdir in examples_subdirs]
-gallery_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
+examples_dirs = [(examples_dir / subdir) for subdir in examples_subdirs]
+gallery_dirs = [(gallery_dir / subdir) for subdir in examples_subdirs]
 
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": examples_dirs,
     # path to where to save gallery generated output
     "gallery_dirs": gallery_dirs,
-    "default_thumb_file": Path(__file__).parent / "_static/icon.png",
+    "default_thumb_file": current_dir / "_static/icon.png",
     "within_subsection_order": ExampleTitleSortKey,
     "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
@@ -103,7 +102,17 @@ autoclass_content = "both"
 autodoc_kwargs_defaults = True
 
 # Mock missing dependencies.
-autodoc_mock_imports = ["optimize", "matlab", "da"]
+autodoc_mock_imports = [
+    "optimize",
+    "matlab",
+    "da",
+    "pymoo",
+    "petsc4py",
+    "jnius",
+    "jnius_config",
+    "jep",
+    "scilab2py",
+]
 
 ################################################################################
 # Settings for napoleon.
@@ -111,21 +120,6 @@ autodoc_mock_imports = ["optimize", "matlab", "da"]
 # True to include special members (like __membername__) with docstrings in the documentation.
 # False to fall back to Sphinx’s default behavior.
 napoleon_include_special_with_doc = False
-
-################################################################################
-# Settings for apidoc.
-
-apidoc_module_dir = "../../src/gemseo"
-apidoc_excluded_paths = [
-    "utils/n2d3/js",
-    "utils/n2d3/css",
-    "core/grammar.py",
-    "core/json_grammar.py",
-    "third_party/fastjsonschema/version.py",
-]
-apidoc_output_dir = "_modules"
-apidoc_separate_modules = True
-apidoc_module_first = True
 
 ################################################################################
 # Settings for sphinx.
@@ -273,6 +267,12 @@ html_context["meta_og_description"] = (
     "Connect your tools. Explore your design space. Find solutions."
 )
 html_context["meta_og_root_url"] = "https://gemseo.readthedocs.io/en"
+html_context["plugins"] = {
+    "gemseo-java": "Interfacing Java code",
+    "gemseo-petsc": "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
+    "gemseo-pymoo": "Pymoo wrapper for optimization algorithms",
+    "gemseo-scilab": "Intefacing Scilab functions",
+}
 
 ###############################################################################
 # Sphinx workaround for duplicated args when using typehints

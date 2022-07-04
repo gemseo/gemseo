@@ -538,6 +538,7 @@ class JacobianAssembly:
             linear_solver_options: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
+            **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
             The total coupled derivatives.
@@ -715,7 +716,7 @@ class JacobianAssembly:
             linear_solver: The name of the linear solver.
             matrix_type: The representation of the matrix dR/dy (sparse or
                 linear operator).
-            linear_solver_options: The options passed to the linear solver factory.
+            **linear_solver_options: The options passed to the linear solver factory.
 
         Returns:
             The Newton step -[dR/dy]^-1 . R as a dict of steps
@@ -902,7 +903,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy once.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of the total coupled derivatives.
@@ -947,7 +948,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy_t once.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -990,7 +991,7 @@ class CoupledSystem:
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1035,7 +1036,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             dres_dy_t: The derivatives of the residuals wrt coupling vars.
-            linear_solver_options: The optional parameters.
+            **linear_solver_options: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.

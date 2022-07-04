@@ -68,7 +68,7 @@ class LinearSolversFactory(DriverFactory):
             problem: The linear equations and right hand side
              (lhs, rhs) that defines the linear problem. XXX is a tuple expected?
             algo_name: The algorithm name.
-            options: The options for the algorithm,
+            **options: The options for the algorithm,
                 see associated JSON file.
 
         Returns:

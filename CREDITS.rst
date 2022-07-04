@@ -159,8 +159,8 @@ colormap
     .. image:: /_static/dependencies/whatsopt-logo.svg
         :target: https://github.com/OneraHub/WhatsOpt-CLI
 
-External application
---------------------
+External applications
+---------------------
 
 Some external applications are used by GEMSEO,
 but not linked with the application,

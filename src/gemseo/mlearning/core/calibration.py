@@ -131,7 +131,7 @@ class MLAlgoAssessor(MDODiscipline):
                 the :class:`.Transformer` will be applied
                 to all the variables of this group.
                 If None, do not transform the variables.
-            **options: The options of the machine learning algorithm.
+            **algo_options: The options of the machine learning algorithm.
 
         Raises:
             ValueError: If the measure option "multioutput" is True.

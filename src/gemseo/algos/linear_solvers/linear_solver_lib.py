@@ -146,7 +146,7 @@ class LinearSolverLib(AlgoLib):
         Args:
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         problem.solver_options = options
         problem.solver_name = algo_name
@@ -167,7 +167,7 @@ class LinearSolverLib(AlgoLib):
             problem: The problem to be solved.
             algo_name: The name of the algorithm.
             result: The result of the run, i.e. the solution.
-            options: The options for the algorithm, see associated JSON file.
+            **options: The options for the algorithm, see associated JSON file.
         """
         if options.get(self.SAVE_WHEN_FAIL, False):
             if not self.problem.is_converged:

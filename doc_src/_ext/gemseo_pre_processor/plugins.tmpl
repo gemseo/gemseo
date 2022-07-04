@@ -11,29 +11,25 @@
 Plugins
 =======
 
-.. _gemseo-java: https://gitlab.com/gemseo/dev/gemseo-java
-.. _gemseo-petsc: https://gitlab.com/gemseo/dev/gemseo-petsc
-.. _gemseo-scilab: https://gitlab.com/gemseo/dev/gemseo-scilab
-.. _Java: https://www.oracle.com/java/
-.. _Scilab: https://www.scilab.org/
 .. _cookiecutter-gemseo: https://gitlab.com/gemseo/dev/cookiecutter-gemseo
 .. _cookiecutter: https://cookiecutter.readthedocs.io
-.. _developer: https://gemseo.readthedocs.io/en/develop/software/contributing_dev.html
-.. _maintainer: https://gemseo.readthedocs.io/en/develop/software/maintenance.html
 
 |g| features can be extended with external Python modules.
 All kinds of additional features can be implemented:
 disciplines, optimizers, DOE algorithms, formulations, post-processings, surrogate models, ...
 
-The available plugins are:
+.. list-table::
+   :widths: 25 50 25
+   :header-rows: 1
 
-- `gemseo-java`_:
-  interfacing `Java`_ code with |g|.
-- `gemseo-petsc`_:
-  a PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`,
-  this is *not* the MPI approach.
-- `gemseo-scilab`_:
-  interfacing `Scilab`_ functions with |g|.
+   * - Name / Repo
+     - Description
+     - Documentation
+{% for name, description in plugins.items() %}
+   * - `{{ name }} <https://gitlab.com/gemseo/dev/{{ name }}>`_
+     - {{ description }}
+     - :ref:`Modules <{{ name.replace('-', '_') }}>`
+{% endfor %}
 
 .. seealso::
 

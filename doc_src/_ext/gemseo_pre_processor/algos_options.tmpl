@@ -75,12 +75,13 @@ Options for {{long_algo_type}} algorithms
         <th onclick="sortTable(0)">Algorithm<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(1)">Library<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(2)">Name in GEMSEO<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(3)">Handle equality constraints<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(4)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(5)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(6)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(7)">Handle multiobjective<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(8)">Require gradient<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(3)">Package<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(4)">Handle equality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(5)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(6)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(7)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(8)">Handle multiobjective<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(9)">Require gradient<br/>&#x25B2;&#x25BC;</th>
       </tr>
 {% for algo in algos %}
 {% set algo_features = features[algo] %}
@@ -88,6 +89,7 @@ Options for {{long_algo_type}} algorithms
          <td>{{algo_features.algorithm_name}}</td>
          <td>{{algo_features.library_name}}</td>
          <td><a href="#{{ algo|lower|replace('_', '-') }}">{{algo}}</a></td>
+         <td>{{algo_features.root_package_name}}</td>
          <td>{% if algo_features.handle_equality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
          <td>{% if algo_features.handle_inequality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
          <td>{% if algo_features.handle_float_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
@@ -128,6 +130,7 @@ Mandatory and optional parameters:
     <dd class="field-odd"><ul class="simple">
 
 {% for arg in options[algo]|dictsort %}
+{% if not arg[0].startswith('*') %}
     <li>
 
 **{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
@@ -141,7 +144,25 @@ By default it is set to {{arg[1]['default']}}.
 .. raw:: html
 
     </li>
+{% endif %}
+{% endfor %}
 
+{% for arg in options[algo]|dictsort|reverse %}
+{% if arg[0].startswith('*') %}
+    <li>
+
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+
+{{arg[1]['description']}}
+
+{% if arg[1]['default'] != '' %}
+By default it is set to {{arg[1]['default']}}.
+{% endif %}
+
+.. raw:: html
+
+    </li>
+{% endif %}
 {% endfor %}
 
     </ul>

@@ -1889,6 +1889,7 @@ AlgorithmFeatures = namedtuple(
     [
         "algorithm_name",
         "library_name",
+        "root_package_name",
         "handle_equality_constraints",
         "handle_inequality_constraints",
         "handle_float_variables",
@@ -1926,6 +1927,7 @@ def get_algorithm_features(
     return AlgorithmFeatures(
         algorithm_name=description.algorithm_name,
         library_name=description.library_name,
+        root_package_name=factory.factory.get_library_name(driver.__class__.__name__),
         handle_equality_constraints=description.handle_equality_constraints,
         handle_inequality_constraints=description.handle_inequality_constraints,
         handle_float_variables=True,

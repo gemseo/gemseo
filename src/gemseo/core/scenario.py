@@ -441,7 +441,7 @@ class Scenario(MDODiscipline):
         Args:
             post_name: The name of the post-processor,
                 i.e. the name of a class inheriting from :class:`.OptPostProcessor`.
-            options: The options for the post-processor.
+            **options: The options for the post-processor.
         """
         return self.post_factory.execute(
             self.formulation.opt_problem, post_name, **options
