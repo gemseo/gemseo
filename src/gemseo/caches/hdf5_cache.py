@@ -68,6 +68,11 @@ class HDF5Cache(AbstractFullCache):
         super().__init__(tolerance, name)
         self._read_hashes()
 
+    @property
+    def hdf_file(self) -> HDF5FileSingleton:
+        """The hdf file handler."""
+        return self.__hdf_file
+
     def __str__(self) -> str:
         msg = MultiLineString()
         msg.add(super().__str__())

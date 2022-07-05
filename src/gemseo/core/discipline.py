@@ -615,7 +615,7 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         if self.cache.__class__.__name__ != cache_type or not (
             cache_type == self.HDF5_CACHE
-            and cache_hdf_file == self.cache._hdf_file.hdf_file_path
+            and cache_hdf_file == self.cache.hdf_file.hdf_file_path
             and cache_hdf_node_name == self.cache.node_path
         ):
             self.cache = self.__create_new_cache(

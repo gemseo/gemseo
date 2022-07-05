@@ -689,6 +689,16 @@ def test_cache_h5_jac(tmp_wd):
     sm.cache = HDF5Cache(hdf_file, sm.name)
 
 
+def test_replace_h5_cache(tmp_wd):
+    """Check that changing the HDF5 cache is correctly taken into account."""
+    sm = SobieskiMission()
+    hdf_file_1 = sm.name + "_1.hdf5"
+    hdf_file_2 = sm.name + "_2.hdf5"
+    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_1)
+    sm.set_cache_policy(sm.HDF5_CACHE, cache_hdf_file=hdf_file_2)
+    assert sm.cache.hdf_file.hdf_file_path == hdf_file_2
+
+
 def test_cache_run_and_linearize():
     """Check that the cache is filled with the Jacobian during linearization."""
     sm = SobieskiMission()
