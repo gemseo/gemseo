@@ -35,7 +35,7 @@ Requirements
 ************
 
 To install |g|,
-you should use a python environment.
+you should use a Python environment.
 You can create environments with
 the Python built-in `venv`_ module
 or with `Anaconda`_.
@@ -68,7 +68,7 @@ Install from Anaconda
 *********************
 
 Install the full features
-in an anaconda environment named *gemseo* for python 3.9 with
+in an anaconda environment named *gemseo* for Python 3.9 with
 
 .. code-block:: console
 

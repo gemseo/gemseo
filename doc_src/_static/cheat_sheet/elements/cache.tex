@@ -14,7 +14,7 @@ discipline = create_discipline('disc')
 \end{python}
 Set the cache policy to store all executions:
 \begin{python}
-discipline.set_cache_policy('HDF5Cache', 'file.h5') #  on the disk
+discipline.set_cache_policy('HDF5Cache', cache_hdf_file='file.h5') #  on the disk
 discipline.set_cache_policy('MemoryFullCache') # in memory
 \end{python}
 Set the simple cache policy to store the last execution in memory:

@@ -13,7 +13,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from gemseo_templator.blocks.template import Block
-from gemseo_templator.blocks.template import WebLink
 
 block = Block(
     title="MDA",
@@ -22,14 +21,6 @@ block = Block(
         "using a Multi-Disciplinary Analysis."
     ),
     url="algorithms/mda_algos.html",
-    algorithms=[
-        WebLink("Gauss-Seidel", anchor="mdagaussseidel"),
-        WebLink("Jacobi", anchor="mdajacobi"),
-        WebLink("MDAChain", anchor="mdachain"),
-        WebLink("Newton-Raphson", anchor="mdanewtonraphson"),
-        WebLink("Quasi-Newton", anchor="mdaquasinewton"),
-        WebLink("Gauss-Seidel / Newton", anchor="gsnewtonmda"),
-    ],
     examples="examples/mda/index.html",
     info="mdo/mda.html",
     options="algorithms/mda_algos.html",

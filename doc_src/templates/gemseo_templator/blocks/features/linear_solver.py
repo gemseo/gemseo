@@ -21,14 +21,6 @@ block = Block(
         "Define and solve a linear problem, typically in the context of an MDA."
     ),
     url="algorithms/linear_solver_algos.html",
-    algorithms=[
-        WebLink("LGMRES", anchor="lgmres"),
-        WebLink("GMRES", anchor="gmres"),
-        WebLink("BICG", anchor="bicg"),
-        WebLink("QMR", anchor="qmr"),
-        WebLink("BICGSTAB", anchor="bicgstab"),
-        WebLink("DEFAULT", anchor="default"),
-    ],
     dependencies=[
         WebLink("scipy", url="https://www.scipy.org/"),
     ],

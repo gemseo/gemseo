@@ -8,12 +8,16 @@
 
 .. _gen_surrogate_algos:
 
-Options for the surrogate discipline
-====================================
+Surrogate disciplines
+=====================
 
 A :class:`.SurrogateDiscipline` is built
 from the name of a :class:`.MLRegressionAlgo` and its options.
 These names and options are listed below.
+
+.. warning::
+    Some algorithms can require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
+    and others can depend on :ref:`plugins <plugins>`.
 
 {% for algo in algos %}
 .. _{{algo}}_options:

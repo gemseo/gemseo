@@ -22,14 +22,6 @@ block = Block(
         "relying on a machine learning regression model."
     ),
     url="algorithms/surrogate_algos.html",
-    algorithms=[
-        WebLink(
-            "Gaussian process regression (Kriging)", anchor="gaussianprocessregression"
-        ),
-        WebLink("linear model", anchor="linearregression"),
-        WebLink("radial basis regression", anchor="rbfregression"),
-        WebLink("polynomial chaos expansion", anchor="pceregression"),
-    ],
     dependencies=[
         WebLink("OpenTURNS", url="http://www.openturns.org/"),
         WebLink(
