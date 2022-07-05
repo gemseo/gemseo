@@ -102,28 +102,36 @@ class OptimizationLibrary(DriverLib):
         else:
             return self.descriptions[algo_name].handle_inequality_constraints
 
-    def algorithm_handles_eqcstr(self, algo_name):
-        """Returns True if the algorithms handles equality constraints.
+    def algorithm_handles_eqcstr(self, algo_name: str) -> bool:
+        """Check if an algorithm handles equality constraints.
 
-        :param algo_name: the name of the algorithm
-        :returns: True or False
+        Args:
+            algo_name: The name of the algorithm.
+
+        Returns:
+            Whether the algorithm handles equality constraints.
         """
         return self.__algorithm_handles(algo_name, True)
 
-    def algorithm_handles_ineqcstr(self, algo_name):
-        """Returns True if the algorithms handles inequality constraints.
+    def algorithm_handles_ineqcstr(self, algo_name: str) -> bool:
+        """Check if an algorithm handles inequality constraints.
 
-        :param algo_name: the name of the algorithm
-        :returns: True or False
+        Args:
+            algo_name: The name of the algorithm.
+
+        Returns:
+            Whether the algorithm handles inequality constraints.
         """
         return self.__algorithm_handles(algo_name, False)
 
-    def is_algo_requires_positive_cstr(self, algo_name):
-        """Returns True if the algorithm requires positive constraints False otherwise.
+    def is_algo_requires_positive_cstr(self, algo_name: str) -> bool:
+        """Check if an algorithm requires positive constraints.
 
-        :param algo_name: the name of the algorithm
-        :returns: True if constraints must be positive
-        :rtype: bool
+        Args:
+            algo_name: The name of the algorithm.
+
+        Returns:
+            Whether the algorithm requires positive constraints.
         """
         return self.descriptions[algo_name].positive_constraints
 
@@ -154,21 +162,23 @@ class OptimizationLibrary(DriverLib):
         return self.problem.constraints
 
     def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Args:
+            **options: The options of the algorithm.
         """
         raise NotImplementedError()
 
     def _pre_run(self, problem, algo_name, **options):
-        """To be overriden by subclasses Specific method to be executed just before _run
-        method call.
+        """To be overridden by subclasses.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-        :param options: the options dict for the algorithm,
-            see associated JSON file
+        Specific method to be executed just before _run method call.
+
+        Args:
+            problem: The optimization problem.
+            algo_name: The name of the algorithm.
+            **options: The options of the algorithm,
+                see the associated JSON file.
         """
         super()._pre_run(problem, algo_name, **options)
         self._check_constraints_handling(algo_name, problem)

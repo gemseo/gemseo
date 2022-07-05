@@ -35,11 +35,10 @@ if os.name == "nt":
     class MockValue:
         """A mock object for multiprocessing Value."""
 
-        def __init__(self, value):
-            """Constructor.
-
-            :param value: initializing value
-            :type value: `int` or `float`
+        def __init__(self, value: int | float):
+            """
+            Args:
+                value: The initializing value.
             """
             self.value = value
             self.lock = threading.RLock()
@@ -48,13 +47,12 @@ if os.name == "nt":
             """Get the Lock."""
             return self.lock
 
-    def new_value(new_type, initial_value):
+    def new_value(new_type: str, initial_value: int | float):
         """Monkey patch for the Value function.
 
-        :param new_type: type of the Value, currently 'i' or 'd' are supported
-        :type new_type: `str`
-        :param initial_value: initial value of the Value object
-        :type initial_value: `int` or `float`
+        Args:
+            new_type: The type of the Value, currently 'i' or 'd' are supported.
+            initial_value: The initial value of the ``Value`` object.
         """
         if new_type == "i":
             initial_value = int(initial_value)

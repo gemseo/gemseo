@@ -119,6 +119,13 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
     STATUS_DONE = "DONE"
     STATUS_RUNNING = "RUNNING"
     STATUS_FAILED = "FAILED"
+    AVAILABLE_STATUSES = [
+        STATUS_DONE,
+        STATUS_FAILED,
+        STATUS_PENDING,
+        STATUS_RUNNING,
+        STATUS_VIRTUAL,
+    ]
 
     JSON_GRAMMAR_TYPE = "JSONGrammar"
     SIMPLE_GRAMMAR_TYPE = "SimpleGrammar"

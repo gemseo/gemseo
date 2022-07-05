@@ -556,16 +556,26 @@ class OptimizationProblem:
             cstr_func, value, cstr_type=MDOFunction.TYPE_INEQ, positive=positive
         )
 
-    def aggregate_constraint(self, constr_id, method="max", groups=None, **options):
+    def aggregate_constraint(
+        self,
+        constr_id: int,
+        method: str | Callable[[Callable], Callable] = "max",
+        groups: tuple[ndarray] | None = None,
+        **options: Any,
+    ):
         """Aggregates a constraint to generate a reduced dimension constraint.
 
-        :param constr_id: index of the constraint in self.constraints
-        :type constr_id: int
-        :param method: aggregation method, among ('max','KS', 'IKS')
-        :type method: str or Callable[[Callable], Callable]
-        :param groups: if None, a single output constraint is produced
-            otherwise, one output per group is produced.
-        :type groups: Tuple[ndarray]
+        Args:
+            constr_id: The index of the constraint in :attr:`.constraints`.
+            method: The aggregation method, e.g. ``"max"``, ``"KS"`` or ``"IKS"``.
+            groups: The groups for which to produce an output.
+                If ``None``, a single output constraint is produced.
+            **options: The options of the aggregation method.
+
+        Raises:
+            ValueError: When the given is index is greater or equal
+                than the number of constraints
+                or when the method is aggregation unknown.
         """
         if constr_id >= len(self.constraints):
             raise ValueError("constr_id must be lower than the number of constraints.")

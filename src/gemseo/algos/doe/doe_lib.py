@@ -27,6 +27,8 @@ import logging
 import traceback
 from dataclasses import dataclass
 from multiprocessing import current_process
+from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -43,6 +45,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.driver_lib import DriverDescription
 from gemseo.algos.driver_lib import DriverLib
 from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt_result import OptimizationResult
 from gemseo.core.parallel_execution import ParallelExecution
 from gemseo.core.parallel_execution import SUBPROCESS_NAME
 
@@ -100,20 +103,28 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         self.seed = 0
 
     @staticmethod
-    def compute_phip_criteria(samples, power=10.0):
+    def compute_phip_criteria(samples: ndarray, power: float = 10.0) -> float:
         r"""Compute the :math:`\phi^p` space-filling criterion.
 
         See Morris & Mitchell, Exploratory designs for computational experiments, 1995.
 
-        :param samples: design variables list
-        :param power: The power p of the :math:`\phi^p` criteria.
+        Args:
+            samples: The samples of the input variables.
+            power: The power :math:`p` of the :math:`\phi^p` criterion.
+
+        Returns:
+            The :math:`\phi^p` space-filling criterion.
         """
 
-        def compute_distance(sample, other_sample):
+        def compute_distance(sample: ndarray, other_sample: ndarray) -> float:
             r"""Compute the distance used by the :math:`\phi^p` criterion.
 
-            :param sample: A sample.
-            :param other_sample: Another sample.
+            Args:
+                sample: A sample.
+                other_sample: Another sample.
+
+            Returns:
+                The distance between those samples.
             """
             return sum(abs(sample - other_sample)) ** (-power)
 
@@ -150,32 +161,30 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         self.init_iter_observer(len(self.unit_samples), " ")
         self.problem.add_callback(self.new_iteration_callback)
 
-    def _generate_samples(self, **options):
-        """Generates the list of x samples.
+    def _generate_samples(self, **options: Any) -> ndarray:
+        """Generate the samples of the input variables.
 
-        :param options: the options' dict for the algorithm,
-               see associated JSON file
+        Args:
+            **options: The options of the DOE algorithm.
         """
         raise NotImplementedError()
 
-    def __call__(self, n_samples, dimension, **options):
-        """Generate samples in the unit hypercube.
+    def __call__(self, n_samples: int, dimension: int, **options: Any) -> ndarray:
+        """Generate a design of experiments in the unit hypercube.
 
-        :param int n_samples: number of samples.
-        :param int dimension: parameter space dimension.
-        :param options: options passed to the DOE algorithm.
-        :returns: samples.
-        :rtype: ndarray
+        Args:
+            n_samples: The number of samples.
+            dimension: The dimension of the input space.
+            **options: The options of the DOE algorithm.
+
+        Returns:
+            A design of experiments in the unit hypercube.
         """
-        options = self.__get_algorithm_options(options, n_samples, dimension)
-        return self._generate_samples(**options)
+        return self._generate_samples(
+            **self.__get_algorithm_options(options, n_samples, dimension)
+        )
 
-    def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
-
-        :param options: the options' dict for the algorithm,
-            see associated JSON file
-        """
+    def _run(self, **options: Any) -> OptimizationResult:
         eval_jac = options.get(self.EVAL_JAC, False)
         n_processes = options.get(self.N_PROCESSES, 1)
         wait_time_between_samples = options.get(self.WAIT_TIME_BETWEEN_SAMPLES, 0)
@@ -184,7 +193,7 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     def _generate_fullfact(
         self,
-        dimension,
+        dimension: int,
         n_samples: int | None = None,
         levels: int | Iterable[int] | None = None,
     ) -> ndarray:
@@ -248,13 +257,15 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         """
         raise NotImplementedError()
 
-    def _compute_fullfact_levels(self, n_samples, dimension):
+    def _compute_fullfact_levels(self, n_samples: int, dimension: int) -> list[int]:
         """Compute the number of levels per input dimension for a full factorial design.
 
-        :param n_samples: number of samples
-        :param int dimension: parameter space dimension.
-        :returns: The number of levels per input dimension.
-        :rtype: List[int]
+        Args:
+            n_samples: The number of samples.
+            dimension: The dimension of the input space.
+
+        Returns:
+            The number of levels per input dimension.
         """
         n_samples_dir = int(n_samples ** (1.0 / dimension))
         LOGGER.info(
@@ -271,11 +282,11 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
         )
         return [n_samples_dir] * dimension
 
-    def export_samples(self, doe_output_file):
-        """Export samples generated by DOE library to a csv file.
+    def export_samples(self, doe_output_file: Path | str) -> None:
+        """Export the samples generated by DOE library to a CSV file.
 
-        :param doe_output_file: export file name
-        :type doe_output_file: str
+        Args:
+            doe_output_file: The path to the output file.
         """
         if self.unit_samples is None:
             raise RuntimeError("Samples are None, execute method before export.")
@@ -391,10 +402,13 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _rescale_samples(samples):
-        """When the samples are out of the [0,1] bounds, rescales them.
+        """When the samples are out of the [0, 1] bounds, rescales them.
 
-        :param samples: the samples to rescale
-        :returns: samples normed ndarray
+        Args:
+            samples: The samples to rescale.
+
+        Returns:
+            The samples scaled in the interval [0, 1].
         """
         if (not (samples >= 0.0).all()) or (not (samples <= 1.0).all()):
             max_s = samples.max()

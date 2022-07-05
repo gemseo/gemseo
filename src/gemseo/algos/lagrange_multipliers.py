@@ -26,6 +26,7 @@ from numpy import arange
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import ndarray
 from numpy import where
 from numpy import zeros
 from numpy.linalg import matrix_rank
@@ -82,11 +83,11 @@ class LagrangeMultipliers:
     EQUALITY = "equality"
     CSTR_LABELS = [LOWER_BOUNDS, UPPER_BOUNDS, INEQUALITY, EQUALITY]
 
-    def __init__(self, opt_problem):
-        """Constructor.
-
-        :param opt_problem: optimization problem on which Lagrange multipliers
-            shall be computed
+    def __init__(self, opt_problem: OptimizationProblem) -> None:
+        """
+        Args:
+            opt_problem: The optimization problem
+                on which Lagrange multipliers shall be computed.
         """
         self._check_inputs(opt_problem)
         self.opt_problem = opt_problem
@@ -100,11 +101,16 @@ class LagrangeMultipliers:
         )
 
     @staticmethod
-    def _check_inputs(opt_problem):
-        """Verify that opt_problem is an instance of OptimizationProblem.
+    def _check_inputs(opt_problem: OptimizationProblem) -> None:
+        """Verify that an problem is an instance of :class:`.OptimizationProblem`.
 
-        :param opt_problem: optimization problem on which Lagrange multipliers
-            shall be computed
+        Args:
+            opt_problem: The optimization problem
+                on which Lagrange multipliers shall be computed.
+
+        Raises:
+            ValueError: When the problem is not an :class:`.OptimizationProblem`
+                or when the problem was not solved.
         """
         if not isinstance(opt_problem, OptimizationProblem):
             raise ValueError(
@@ -113,9 +119,10 @@ class LagrangeMultipliers:
         if opt_problem.solution is None:
             raise ValueError("The optimization problem was not solved.")
 
-    def compute(self, x_vect, ineq_tolerance=1e-6, rcond=-1):
-        """Computes and returns the Lagrange multipliers, as a post-processing of the
-        optimal point.
+    def compute(
+        self, x_vect: ndarray, ineq_tolerance: float = 1e-6, rcond: float = -1
+    ) -> dict[str, tuple[list[str], ndarray]]:
+        """Compute the Lagrange multipliers, as a post-processing of the optimal point.
 
         This solves:
 
@@ -123,11 +130,14 @@ class LagrangeMultipliers:
         (-------------------)  . Lambda = -  -----------
         (d X                )                d X
 
-        :param x_vect: x point on which the multipliers shall be computed
-        :param ineq_tolerance: tolerance on inequality constraints
-        :param rcond: float, optional
-               Cut-off ratio for small singular values of the jacobian.
-               see sipy.linalg.lsq
+        Args:
+            x_vect: The optimal point on which the multipliers shall be computed.
+            ineq_tolerance: The tolerance on inequality constraints.
+            rcond: The cut-off ratio for small singular values of the Jacobian
+               (see scipy.linalg.lsq).
+
+        Returns:
+            The Lagrange multipliers.
         """
         LOGGER.info("Computation of Lagrange multipliers")
 
@@ -176,13 +186,12 @@ class LagrangeMultipliers:
 
         return self.lagrange_multipliers
 
-    def _check_feasibility(self, x_vect):
-        """Checks that the given point is in the design space and satisfies all
+    def _check_feasibility(self, x_vect: ndarray) -> None:
+        """Check that the given point is in the design space and satisfies all
         constraints.
 
-        :param x_vect: point at which the Lagrange multipliers are to be
-            computed
-        :type x_vect: ndarray
+        Args:
+            x_vect: The point at which the Lagrange multipliers are to be computed.
         """
         problem = self.opt_problem
 
@@ -195,11 +204,20 @@ class LagrangeMultipliers:
         )
         feasible = problem.is_point_feasible(values)
         if not feasible:
-            LOGGER.warning("Infeasible point, Lagrange multipliers may not" " exist")
+            LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")
 
-    def _get_act_bound_jac(self, act_bounds):
-        """Returns the jacobian of active  bounds constraints sign is not taken into
-        account (matrix is made of 0 and 1)"""
+    def _get_act_bound_jac(self, act_bounds: dict[str, ndarray]):
+        """Return the Jacobian of the active bounds.
+
+        The constraints sign is not taken into account (matrix is made of 0 and 1).
+
+        Args:
+            act_bounds: The active bounds.
+
+        Returns:
+            The Jacobian of the active bounds
+            and the name of each component of each function.
+        """
         dspace = self.opt_problem.design_space
         x_dim = dspace.dimension
         dim_act = sum(len(where(bnd)[0]) for bnd in act_bounds.values())
@@ -219,9 +237,19 @@ class LagrangeMultipliers:
         act_b_names = indexed_varnames[act_array].tolist()
         return bnd_jac, act_b_names
 
-    def __get_act_ineq_jac(self, x_vect, ineq_tolerance=1e-6):
-        """Returns the jacobian of active inequality constraints defined by user in the
-        optimization problem."""
+    def __get_act_ineq_jac(
+        self, x_vect: ndarray, ineq_tolerance: float = 1e-6
+    ) -> tuple[ndarray, list[str]]:
+        """Return the Jacobian of the active inequality constraints.
+
+        Args:
+            x_vect: The point at which the Jacobian is computed.
+            ineq_tolerance: The tolerance for the inequality constraints.
+
+        Returns:
+            The Jacobian of the active inequality constraints
+            and the name of each component of each function.
+        """
         # retrieves the active functions and the indices :
         # a function is active if at least
         # one of its component (in case of multidimensional constraints) is
@@ -258,9 +286,16 @@ class LagrangeMultipliers:
             jac = None
         return jac, names
 
-    def _get_act_eq_jac(self, x_vect):
-        """Returns jacobian of active equality constraints defined by user in the
-        optimization problem."""
+    def _get_act_eq_jac(self, x_vect: ndarray) -> tuple[ndarray, list[str]]:
+        """Return The Jacobian of the active equality constraints.
+
+        Args:
+            x_vect: The point at which the Jacobian is computed.
+
+        Returns:
+            The Jacobian of the active equality constraints
+            and the name of each component of each function.
+        """
         eq_functions = self.opt_problem.get_eq_constraints()
         # loop on equality functions
         # NB: as the solution (x_vect) is supposed to be feasible,
@@ -288,16 +323,33 @@ class LagrangeMultipliers:
             jac = None
         return jac, names
 
-    def _get_obj_jac(self, x_vect):
-        """Returns objective jacobian."""
+    def _get_obj_jac(self, x_vect: ndarray) -> ndarray:
+        """Return the Jacobian of the objective.
+
+        Args:
+            x_vect: The point at which the Jacobian is computed.
+
+        Returns:
+            The Jacobian of the objective.
+        """
         if self.__normalized:
             x_vect = self.opt_problem.design_space.normalize_vect(x_vect)
 
         return self.opt_problem.objective.jac(x_vect)
 
-    def _get_jac_act(self, x_vect, ineq_tolerance=1e-6):
-        """Returns active constraints jacobian, and the name of each component of each
-        function."""
+    def _get_jac_act(
+        self, x_vect: ndarray, ineq_tolerance: float = 1e-6
+    ) -> tuple[ndarray, list[str]]:
+        """Return the Jacobian of the active constraints.
+
+        Args:
+            x_vect: The point at which the Jacobian is computed.
+            ineq_tolerance: The tolerance for the inequality constraints.
+
+        Returns:
+            The Jacobian of the active constraints
+            and the name of each component of each function.
+        """
         # Bounds jacobian
         dspace = self.opt_problem.design_space
         act_lb, act_ub = dspace.get_active_bounds(x_vect, tol=ineq_tolerance)
@@ -332,8 +384,12 @@ class LagrangeMultipliers:
 
         return jac_act_arr, names
 
-    def _store_multipliers(self, multipliers):
-        """Stores multipliers in a dictionary."""
+    def _store_multipliers(self, multipliers: ndarray) -> None:
+        """Store the Lagrange multipliers in the attribute :attr:`lagrange_multipliers`.
+
+        Args:
+            multipliers: The Lagrange multipliers.
+        """
         lag = {}
 
         i_min = 0
@@ -388,11 +444,11 @@ class LagrangeMultipliers:
 
         self.lagrange_multipliers = lag
 
-    def _initialize_multipliers(self):
+    def _initialize_multipliers(self) -> dict[str, dict[str, ndarray]]:
         """Initialize the Lagrange multipliers with zeros.
 
-        :returns: Lagrange multipliers
-        :rtype: dict(dict(float64))
+        Returns:
+            The Lagrange multipliers.
         """
         problem = self.opt_problem
         multipliers = dict()
@@ -418,11 +474,11 @@ class LagrangeMultipliers:
 
         return multipliers
 
-    def get_multipliers_arrays(self):
+    def get_multipliers_arrays(self) -> dict[str, dict[str, ndarray]]:
         """Return the Lagrange multipliers (zero and nonzero) as arrays.
 
-        :returns: Lagrange multipliers
-        :rtype: dict(dict(ndarray))
+        Returns:
+            The Lagrange multipliers.
         """
         problem = self.opt_problem
         design_space = problem.design_space
@@ -493,20 +549,20 @@ class LagrangeMultipliers:
         return mult_arrays
 
     @staticmethod
-    def _get_component_name(name, index):
+    def _get_component_name(name: str, index: int) -> str:
         """Return the name of a variable component.
 
-        :param name: the variable name
-        :type name: str
-        :param index: the component index
-        :type index: int
-        :returns: name of the variable component
-        :rtype: str
-        """
-        return name + DesignSpace.SEP + str(index)
+        Args:
+            name: The name of the variable.
+            index: The index of the component.
 
-    def _get_pretty_table(self):
-        """Displays Lagrange Multipliers."""
+        Returns:
+            The name of the variable component.
+        """
+        return f"{name}{DesignSpace.SEP}{index}"
+
+    def _get_pretty_table(self) -> PrettyTable:
+        """Display the Lagrange Multipliers."""
         table = PrettyTable(
             ["Constraint type", "Constraint name", "Lagrange Multiplier"]
         )
@@ -517,8 +573,5 @@ class LagrangeMultipliers:
 
         return table
 
-    def __str__(self, *args, **kwargs):
-        """Textual representation of the design space."""
-        desc = "Lagrange multipliers : "
-        desc += "\n" + str(self._get_pretty_table().get_string())
-        return desc
+    def __str__(self, *args, **kwargs) -> str:
+        return f"Lagrange multipliers:\n{self._get_pretty_table().get_string()}"

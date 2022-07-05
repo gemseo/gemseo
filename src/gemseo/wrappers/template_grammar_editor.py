@@ -73,12 +73,11 @@ class QtTemplateEditor(QMainWindow):
     """
 
     def __init__(self, in_sep="GEMSEO_INPUT", out_sep="GEMSEO_OUTPUT"):
-        """Constructor :
-
-        :param in_sep: separator name for the input tag, default GEMSEO_INPUT
-        :param out_sep: separator name for the output tag, default GEMSEO_OUTPUT
         """
-
+        Args:
+            in_sep: The separator name for the input tag.
+            out_sep: The separator name for the output tag.
+        """
         self.in_sep = in_sep
         self.out_sep = out_sep
 
@@ -120,7 +119,14 @@ class QtTemplateEditor(QMainWindow):
         self.addToolBarBreak()
 
     def __get_open_filename(self, name):
-        """Open a dialog to select a file to open."""
+        """Open a dialog to select a file to open.
+
+        Args:
+            name: The file name.
+
+        Returns:
+            The name of the file, and whether the file contains data.
+        """
         filename, _ = QFileDialog.getOpenFileName(self, name)
         is_not_empty = bool(filename)
         if is_not_empty and filename is not None:
@@ -128,7 +134,14 @@ class QtTemplateEditor(QMainWindow):
         return "", False
 
     def __get_save_filename(self, name):
-        """Open a dialog to select a file to save."""
+        """Open a dialog to select a file to save.
+
+        Args:
+            name: The file name.
+
+        Returns:
+            The name of the file, and whether the file contains data.
+        """
         filename, _ = QFileDialog.getSaveFileName(self, name)
         is_not_empty = bool(filename)
         if is_not_empty and filename is not None:
@@ -138,10 +151,11 @@ class QtTemplateEditor(QMainWindow):
     def add_action(self, name, status_tip, shortcut, connect):
         """Add an action with a button and icon.
 
-        :param name: name of the action
-        :param status_tip: tip for the user to browse with the mouse
-        :param shortcut: keyboard shortcut (Ctrl+S) for instance
-        :param connect: method to call at trigger
+        Args:
+            name: The name of the action.
+            status_tip: The tip for the user to browse with the mouse.
+            shortcut: The keyboard shortcut (Ctrl+S) for instance.
+            connect: The method to call at trigger.
         """
         icon_path = join(dirname(__file__), "icons", name + ".png")
         if exists(icon_path):
@@ -202,8 +216,9 @@ class QtTemplateEditor(QMainWindow):
     def highlight(self, sep, color="red"):
         """Highlight some text.
 
-        :param sep: the regex that validates the text to highlight
-        :param color: the color to be used
+        Args:
+            sep: The regex that validates the text to highlight.
+            color: The color to be used.
         """
         # Set up the desired format for matches
         color = QColor(color)

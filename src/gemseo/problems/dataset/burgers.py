@@ -70,24 +70,23 @@ class BurgersDataset(Dataset):
 
     def __init__(
         self,
-        name="Burgers",
-        by_group=True,
-        n_samples=30,
-        n_x=501,
-        fluid_viscosity=0.1,
-        categorize=True,
-    ):
-        """Constructor.
-
-        :param str name: name of the dataset.
-        :param bool by_group: if True, store the data by group. Otherwise,
-            store them by variables. Default: True.
-        :param int n_samples: number of samples. Default: 30.
-        :param int n_x: number of spatial points. Default: 501.
-        :param float fluid_viscosity: fluid viscosity. Default: 0.1.
-        :param bool categorize: distinguish between the different groups of
-            variables. Default: True.
-        :parma bool opt_naming: use an optimization naming. Default: True.
+        name: str = "Burgers",
+        by_group: bool = True,
+        n_samples: int = 30,
+        n_x: int = 501,
+        fluid_viscosity: float = 0.1,
+        categorize: bool = True,
+    ) -> None:
+        """
+        Args:
+            name: The name of the dataset.
+            by_group: Whether to store the data by group.
+                Otherwise, store them by variables.
+            n_samples: The number of samples.
+            n_x: The number of spatial points.
+            fluid_viscosity: The fluid viscosity.
+            categorize: Whether to distinguish
+                between the different groups of variables.
         """
         super().__init__(name, by_group)
 

@@ -316,8 +316,9 @@ class DriverLib(AlgoLib):
         algo_name: str,
         **options: DriverLibOptionType,
     ) -> None:
-        """To be overridden by subclasses. Specific method to be executed just before
-        _run method call.
+        """To be overridden by subclasses.
+
+        Specific method to be executed just before _run method call.
 
         Args:
             problem: The optimization problem.
@@ -340,10 +341,11 @@ class DriverLib(AlgoLib):
         """To be overridden by subclasses Specific method to be executed just after _run
         method call.
 
-        :param problem: the problem to be solved
-        :param algo_name: name of the algorithm
-        :param result: result of the run such as an OptimizationResult
-        :param options: the options dict for the algorithm, see associated JSON file
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+            result: The result of the run, e.g. an :class:`.OptimizationResult`.
+            **options: The options of the algorithm.
         """
         opt_result_str = result._strings
         LOGGER.info("%s", opt_result_str[0])
@@ -490,7 +492,8 @@ class DriverLib(AlgoLib):
     def _termination_criterion_raised(self, error):  # pylint: disable=W0613
         """Retrieve the best known iterate when max iter has been reached.
 
-        :param error: the obtained error from the algorithm
+        Args:
+            error: The obtained error from the algorithm.
         """
         if isinstance(error, TerminationCriterion):
             message = ""
@@ -557,24 +560,27 @@ class DriverLib(AlgoLib):
         )
 
     def _get_options(self, **options):
-        """Retrieves the options of the library To be overloaded by subclasses Used to
+        """Retrieve the options of the library. To be overloaded by subclasses. Used to
         define default values for options using keyword arguments.
 
-        :param options: options of the driver
+        Args:
+            **options: The options of the driver.
         """
         raise NotImplementedError()
 
     def _run(self, **options):
-        """Runs the algorithm, to be overloaded by subclasses.
+        """Run the algorithm, to be overloaded by subclasses.
 
-        :param options: the options dict for the algorithm
+        Args:
+            **options: The options of the driver.
         """
         raise NotImplementedError()
 
     def is_algo_requires_grad(self, algo_name):
         """Returns True if the algorithm requires a gradient evaluation.
 
-        :param algo_name: name of the algorithm
+        Args:
+            algo_name: The name of the algorithm.
         """
         if algo_name not in self.descriptions:
             raise ValueError(f"Algorithm {algo_name} is not available.")
@@ -585,10 +591,13 @@ class DriverLib(AlgoLib):
         """Gets x0, bounds, normalized or not depending on algo options, all as numpy
         arrays.
 
-        :param normalize_ds: if True, normalizes all input vars
-               that are not integers, according to design space
-               normalization policy
-        :returns: x, lower bounds, upper bounds
+        Args:
+            normalize_ds: Whether to normalize the input variables
+                that are not integers,
+                according to the normalization policy of the design space.
+
+        Returns:
+            The current value, the lower bounds and the upper bounds.
         """
         design_space = self.problem.design_space
         l_b = design_space.get_lower_bounds()
@@ -610,9 +619,13 @@ class DriverLib(AlgoLib):
     def ensure_bounds(self, orig_func, normalize=True):
         """Project the design vector onto the design space before execution.
 
-        :param orig_func: the original function
-        :param normalize: if True, use the normalized design space
-        :returns: the wrapped function
+        Args:
+            orig_func: The original function.
+            normalize: Whether to use the normalized design space.
+
+        Returns:
+            A function calling the original function
+            with the input data projected onto the design space.
         """
 
         def wrapped_func(x_vect):

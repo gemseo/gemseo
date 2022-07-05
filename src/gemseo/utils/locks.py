@@ -29,9 +29,10 @@ def synchronized(wrapped):
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
-    with a self.lock attribute
+    with a :attr:`lock` attribute
 
-    :param wrapped: function to be protected
+    Args:
+        wrapped: The function to be protected.
     """
 
     @functools.wraps(wrapped)
@@ -49,7 +50,8 @@ def synchronized_hashes(wrapped):
     The wrapped function must be a method of an object
     with a self.lock_hashes attribute
 
-    :param wrapped: function to be protected
+    Args:
+        wrapped: The function to be protected.
     """
 
     @functools.wraps(wrapped)

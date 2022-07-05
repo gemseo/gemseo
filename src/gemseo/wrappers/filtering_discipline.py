@@ -19,6 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import Any
+from typing import Iterable
+from typing import Mapping
+
 from gemseo.core.discipline import MDODiscipline
 
 
@@ -28,38 +32,38 @@ class FilteringDiscipline(MDODiscipline):
 
     def __init__(
         self,
-        discipline,
-        inputs_names=None,
-        outputs_names=None,
-        keep_in=True,
-        keep_out=True,
-    ):
-        """Constructor.
-
-        :param MDODiscipline discipline: discipline.
-        :param list(str) inputs_names: list of inputs names. If None, use all inputs.
-            Default: None.
-        :param list(str) outputs_names: list of outputs names. If None, use all outputs.
-            Default: None.
-        :param bool keep_in: if True, keep the list of inputs names.
-            Otherwise, remove them.
-        :param bool keep_out: if True, keep the list of outputs names.
-            Otherwise, remove them.
+        discipline: MDODiscipline,
+        inputs_names: Iterable[str] | None = None,
+        outputs_names: Iterable[str] | None = None,
+        keep_in: bool = True,
+        keep_out: bool = True,
+    ) -> None:
+        """
+        Args:
+            discipline: The original discipline.
+            inputs_names: The names of the inputs of interest.
+                If ``None``, use all the inputs.
+            outputs_names: The names of the outputs of interest.
+                If ``None``, use all the outputs.
+            keep_in: Whether to the inputs of interest.
+                Otherwise, remove them.
+            keep_out: Whether to the outputs of interest.
+                Otherwise, remove them.
         """
         self.discipline = discipline
         super().__init__(name=discipline.name)
         original_inputs_names = discipline.get_input_data_names()
         original_outputs_names = discipline.get_output_data_names()
-        if inputs_names is not None:
-            if not keep_in:
-                inputs_names = list(set(original_inputs_names) - set(inputs_names))
-        else:
+        if not inputs_names:
             inputs_names = original_inputs_names
-        if outputs_names is not None:
-            if not keep_out:
-                outputs_names = list(set(original_outputs_names) - set(outputs_names))
-        else:
+        elif not keep_in:
+            inputs_names = list(set(original_inputs_names) - set(inputs_names))
+
+        if not outputs_names:
             outputs_names = original_outputs_names
+        elif not keep_out:
+            outputs_names = list(set(original_outputs_names) - set(outputs_names))
+
         self.input_grammar.update(inputs_names)
         self.output_grammar.update(outputs_names)
         self.default_inputs = self.__filter_inputs(self.discipline.default_inputs)
@@ -70,12 +74,16 @@ class FilteringDiscipline(MDODiscipline):
         diff_outputs = set(self.discipline._differentiated_outputs) - removed_outputs
         self.add_differentiated_outputs(list(diff_outputs))
 
-    def _run(self):
+    def _run(self) -> None:
         self.discipline.execute(self.get_input_data())
         self.store_local_data(**self.__filter_inputs(self.discipline.local_data))
         self.store_local_data(**self.__filter_outputs(self.discipline.local_data))
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(
+        self,
+        inputs: Iterable[str] | None = None,
+        outputs: Iterable[str] | None = None,
+    ) -> None:
         self.discipline._compute_jacobian(inputs, outputs)
         self._init_jacobian(inputs, outputs, with_zeros=True)
         jac = self.discipline.jac
@@ -83,25 +91,24 @@ class FilteringDiscipline(MDODiscipline):
             for input_name in self.get_input_data_names():
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
-    @staticmethod
-    def __filter(data, keys):
-        """Filter a data dictionary by names.
+    def __filter_inputs(self, data: Mapping[str, Any]):
+        """Filter a mapping by input names.
 
-        :param dict data: data dictionary.
-        :param list(str) keys: list of dictionary keys.
+        Args:
+            data: The original mapping.
+
+        Returns:
+            The mapping filtered by input names.
         """
-        return {key: data[key] for key in keys}
-
-    def __filter_inputs(self, data):
-        """Filter a data dictionary by inputs names.
-
-        :param dict data: data dictionary.
-        """
-        return self.__filter(data, self.get_input_data_names())
+        return {name: data[name] for name in self.get_input_data_names()}
 
     def __filter_outputs(self, data):
-        """Filter a data dictionary by outputs names.
+        """Filter a mapping by output names.
 
-        :param dict data: data dictionary.
+        Args:
+            data: The original mapping.
+
+        Returns:
+            The mapping filtered by output names.
         """
-        return self.__filter(data, self.get_output_data_names())
+        return {name: data[name] for name in self.get_output_data_names()}

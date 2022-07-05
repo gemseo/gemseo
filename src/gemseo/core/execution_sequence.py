@@ -58,35 +58,46 @@ class ExecutionSequence:
         self._parent = None
 
     def accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern). Have to be implemented by
-        subclasses.
+        """Accept a visitor object (see Visitor pattern).
 
-        :param visitor: a visitor object
+        Have to be implemented by subclasses.
+
+        Args:
+            visitor: A visitor object.
         """
         raise NotImplementedError()
 
     def set_observer(self, obs):
-        """Register the given observer object which is intended to be notified via its
-        update() method each time an underlying discipline changes its status. To be
-        implemented in subclasses.
+        """Register an observer.
 
-        :returns: the disciplines list.
+        This observer is intended to be notified via its :meth:`update` method
+        each time an underlying discipline changes its status.
+        To be implemented in subclasses.
+
+        Returns:
+            The disciplines.
         """
         raise NotImplementedError()
 
     @property
     def status(self):
-        """Get status value.
+        """Get the value of the status.
 
-        :returns: the status value (MDODiscipline.STATUS_XXX values).
+        One of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+
+        Returns:
+            The value of the status.
         """
         return self._status
 
     @status.setter
     def status(self, status):
-        """Set status value.
+        """Set the value of the status.
 
-        :param status: (MDODiscipline.STATUS_XXX values).
+        One of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
+
+        Args:
+            status: The value of the status
         """
         self._status = status
 
@@ -94,27 +105,31 @@ class ExecutionSequence:
     def parent(self):
         """Get the containing execution sequence.
 
-        :returns: a composite execution sequence.
+        Returns:
+             The execution sequence containing the current one.
         """
         return self._parent
 
     @parent.setter
     def parent(self, parent):
-        """Set the containing execution sequence as parent. self should be included in
-        parent.sequences.
+        """Set the containing execution sequence as parent.
 
-        :returns: the status value.
+        Args:
+            parent: An execution sequence.
+
+        Raises:
+            RuntimeError: When the current execution sequence is not a child
+                of the given parent execution sequence.
         """
         if self not in parent.sequences:
-            raise RuntimeError(
-                "parent " + str(parent) + " do not include child " + str(self)
-            )
+            raise RuntimeError(f"parent {parent} does not include child {self}")
         self._parent = parent
 
     def enabled(self):
         """Get activation state.
 
-        :returns: boolean True if enabled.
+        Returns:
+            Whether the execution sequence is enabled.
         """
         return self._enabled
 
@@ -165,23 +180,26 @@ class AtomicExecSequence(ExecutionSequence):
         )
 
     def accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern)
+        """Accept a visitor object (see Visitor pattern).
 
-        :param visitor: a visitor object implementing visit_atomic() method
+        Args:
+            visitor: An object implementing the :meth:`visit_atomic` method.
         """
         visitor.visit_atomic(self)
 
     def set_observer(self, obs):
-        """Register given observer obs to be notified (obs.update()) when discipline
-        status changes.
+        """Register a given observer to be notified when discipline status changes.
 
-        :param obs: the observe object implementing update() method
+        Args:
+            obs: An object implementing the :meth:`update` method for notification.
         """
         self._observer = obs
 
     def enable(self):
-        """Subscribe to status changes of the discipline (notified via
-        update_status())"""
+        """Subscribe to status changes of the discipline.
+
+        Notified via the :meth:`update_status` method.
+        """
         super().enable()
         self.discipline.add_status_observer(self)
 
@@ -193,19 +211,20 @@ class AtomicExecSequence(ExecutionSequence):
     def get_statuses(self):
         """Get the dictionary of statuses mapping atom uuid to status.
 
-        :returns: the status
+        Args:
+            The statuses mapping atom uuid to status.
         """
         return {self.uuid: self.status}
 
     def update_status(self, discipline):
-        """
-        Update status from given discipline.
+        """Update status from given discipline.
+
         Reflect the status then notifies the parent and the observer if any.
         Note: update_status if discipline status change actually
         compared to current, otherwise do nothing.
 
-        :param discipline: the discipline whose status changed
-
+        Args:
+            discipline: The discipline whose status changed.
         """
         if self._enabled and self.status != discipline.status:
             self.status = discipline.status or STATUS_PENDING
@@ -221,7 +240,9 @@ class AtomicExecSequence(ExecutionSequence):
         parent (as the force_status is called by a parent), but notify the observer is
         status changed.
 
-        :param: status value (see MDODiscipline.STATUS_XXX values)
+        Args:
+            status: The value of the status,
+                one of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
         """
         old_status = self._status
         self._status = status
@@ -232,7 +253,7 @@ class AtomicExecSequence(ExecutionSequence):
 class CompositeExecSequence(ExecutionSequence):
     """A base class for execution sequence made of other execution sequences.
 
-    Intented to be subclassed.
+    Intended to be subclassed.
     """
 
     START_STR = "'"
@@ -254,24 +275,31 @@ class CompositeExecSequence(ExecutionSequence):
         """Accept a visitor object (see Visitor pattern) and then make its children
         accept it too.
 
-        :param visitor: a visitor object implementing visit_serial() method
+        Args:
+            visitor: A visitor object implementing the :meth:`visit_serial` method.
         """
         self._accept(visitor)
         for sequence in self.sequences:
             sequence.accept(visitor)
 
     def _accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern). To be specifically implemented
+        """Accept a visitor object (see Visitor pattern).
+
+        To be specifically implemented
         by subclasses to call relevant visitor method depending the subclass type.
 
-        :param visitor: a visitor object implementing visit_serial() method
+        Args:
+            visitor: An object implementing the :meth:`visit_serial` method.
         """
         raise NotImplementedError()
 
     def set_observer(self, obs):
-        """Set observer obs to subsequences. Override super.set_observer()
+        """Set observer obs to subsequences.
 
-        :param obs: observer object implementing update() method
+        Override super.set_observer()
+
+        Args:
+            obs: An object implementing the meth:`update` method.
         """
         for sequence in self.sequences:
             sequence.set_observer(obs)
@@ -285,7 +313,9 @@ class CompositeExecSequence(ExecutionSequence):
     def force_statuses(self, status):
         """Force the self status and the status of subsequences.
 
-        params: status value (see MDODiscipline.STATUS_XXX values)
+        Args:
+            status: The value of the status,
+                one of :attr:`.MDODiscipline.AVAILABLE_STATUSES`.
         """
         self.status = status
         for sequence in self.sequences:
@@ -294,7 +324,8 @@ class CompositeExecSequence(ExecutionSequence):
     def get_statuses(self):
         """Get the dictionary of statuses mapping atom uuid to status.
 
-        :returns: the status
+        Returns:
+            The statuses related to the atom uuid.
         """
         uuids_to_statuses = {}
         for sequence in self.sequences:
@@ -305,8 +336,9 @@ class CompositeExecSequence(ExecutionSequence):
         """Manage status change of child execution sequences. Propagates status change
         to the parent (containing execution sequence)
 
-        :param child: the child execution sequence (contained in sequences)
-            whose status has changed
+        Args:
+            child: The child execution sequence (contained in sequences)
+                whose status has changed.
         """
         old_status = self.status
         self._update_child_status(child)
@@ -316,8 +348,9 @@ class CompositeExecSequence(ExecutionSequence):
     def _update_child_status(self, child):
         """Handle child execution change. To be implemented in subclasses.
 
-        :param child: the child execution sequence (contained in sequences)
-            whose status has changed
+        Args:
+            child: the child execution sequence (contained in sequences)
+                whose status has changed.
         """
         raise NotImplementedError()
 
@@ -325,7 +358,7 @@ class CompositeExecSequence(ExecutionSequence):
 class ExtendableExecSequence(CompositeExecSequence):
     """A base class for composite execution sequence that are extendable.
 
-    Intented to be subclassed.
+    Intended to be subclassed.
     """
 
     def __init__(self, sequence=None):
@@ -334,9 +367,13 @@ class ExtendableExecSequence(CompositeExecSequence):
             self.extend(sequence)
 
     def extend(self, sequence):
-        """Extend the execution sequence with another ExecutionSequence or a discipline.
+        """Extend the execution sequence with another sequence or discipline(s).
 
-        :param sequence: another execution sequence or
+        Args:
+            sequence: Either another execution sequence or one or several disciplines.
+
+        Returns:
+            The extended execution sequence.
         """
         seq_class = sequence.__class__
         self_class = self.__class__
@@ -380,7 +417,8 @@ class ExtendableExecSequence(CompositeExecSequence):
     def _extend_with_atomic_sequence(self, sequence):
         """Extend by a list of AtomicExecutionSequence.
 
-        :param sequence: a list of MDODiscipline objects
+        Args:
+            sequence: A list of MDODiscipline objects.
         """
         self.sequences.append(sequence)
         self.uuid_to_disc[sequence.uuid] = sequence
@@ -388,7 +426,8 @@ class ExtendableExecSequence(CompositeExecSequence):
     def _extend_with_same_sequence_kind(self, sequence):
         """Extend by another ExecutionSequence of same type.
 
-        :param sequence: an ExecutionSequence of same type as self
+        Args:
+            sequence: An ExecutionSequence of same type as self.
         """
         self.sequences.extend(sequence.sequences)
         self.uuid_to_disc.update(sequence.uuid_to_disc)
@@ -396,7 +435,8 @@ class ExtendableExecSequence(CompositeExecSequence):
     def _extend_with_diff_sequence_kind(self, sequence):
         """Extend by another ExecutionSequence of different type.
 
-        :param sequence: an ExecutionSequence of type different from self's one
+        Args:
+            sequence: An ExecutionSequence of type different from self's one.
         """
         self.sequences.append(sequence)
         self.uuid_to_disc.update(sequence.uuid_to_disc)
@@ -405,8 +445,9 @@ class ExtendableExecSequence(CompositeExecSequence):
         """Manage status change of child execution sequences. Done status management is
         handled in subclasses.
 
-        :param child: the child execution sequence (contained in sequences)
-            whose status has changed
+        Args:
+            child: The child execution sequence (contained in sequences)
+                whose status has changed.
         """
         if child.status == STATUS_FAILED:
             self.status = STATUS_FAILED
@@ -419,8 +460,9 @@ class ExtendableExecSequence(CompositeExecSequence):
         """Handle done status of child execution sequences. To be implemented in
         subclasses.
 
-        :param child: the child execution sequence (contained in sequences)
-            whose status has changed
+        Args:
+            child: The child execution sequence (contained in sequences)
+                whose status has changed.
         """
         raise NotImplementedError()
 
@@ -436,9 +478,10 @@ class SerialExecSequence(ExtendableExecSequence):
         self.exec_index = None
 
     def _accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern)
+        """Accept a visitor object (see Visitor pattern).
 
-        :param visitor: a visitor object implementing visit_serial() method
+        Args:
+            visitor: An object implementing the :meth:`visit_serial` method.
         """
         visitor.visit_serial(self)
 
@@ -455,7 +498,8 @@ class SerialExecSequence(ExtendableExecSequence):
         """Activate next child to given child execution sequence. Disable itself when
         all children done.
 
-        :param child: the child execution sequence in done state.
+        Args:
+            child: The child execution sequence in done state.
         """
         if child.status == STATUS_DONE:
             child.disable()
@@ -474,9 +518,10 @@ class ParallelExecSequence(ExtendableExecSequence):
     END_STR = ")"
 
     def _accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern)
+        """Accept a visitor object (see Visitor pattern).
 
-        :param visitor: a visitor object implementing visit_parallel() method
+        Args:
+            visitor: An object implementing the :meth:`visit_serial` method.
         """
         visitor.visit_parallel(self)
 
@@ -489,7 +534,8 @@ class ParallelExecSequence(ExtendableExecSequence):
     def _update_child_done_status(self, child):  # pylint: disable=unused-argument
         """Disable itself when all children done.
 
-        :param child: the child execution sequence in done state.
+        Args:
+            child: The child execution sequence in done state.
         """
         all_done = True
         for sequence in self.sequences:
@@ -500,8 +546,7 @@ class ParallelExecSequence(ExtendableExecSequence):
 
 
 class LoopExecSequence(CompositeExecSequence):
-    """A class to describe a loop with a controller discipline and an execution_sequence
-    as iterate."""
+    """A loop with a controller discipline and an execution_sequence as iterate."""
 
     START_STR = "{"
     END_STR = "}"
@@ -511,19 +556,15 @@ class LoopExecSequence(CompositeExecSequence):
             control = controller
         elif not isinstance(controller, MDODiscipline):
             raise Exception(
-                "Controller of a loop shall be a discipline"
-                + ", got "
-                + str(type(controller))
-                + " instead !"
+                "Controller of a loop shall be a discipline, "
+                f"got {type(controller)} instead."
             )
         else:
             control = AtomicExecSequence(controller)
         if not isinstance(sequence, CompositeExecSequence):
             raise Exception(
-                "Sequence of a loop shall be a composite execution sequence"
-                + ", got "
-                + str(type(sequence))
-                + " instead !"
+                "Sequence of a loop shall be a composite execution sequence, "
+                f"got {type(sequence)} instead."
             )
         super().__init__()
         self.sequences = [control, sequence]
@@ -537,9 +578,10 @@ class LoopExecSequence(CompositeExecSequence):
         self.iteration_count = 0
 
     def _accept(self, visitor):
-        """Accept a visitor object (see Visitor pattern)
+        """Accept a visitor object (see Visitor pattern).
 
-        :param visitor: a visitor object implementing visit_loop() method
+        Args:
+            visitor: An object implementing the :meth:`visit_serial` method.
         """
         visitor.visit_loop(self)
 
@@ -550,10 +592,12 @@ class LoopExecSequence(CompositeExecSequence):
         self.iteration_count = 0
 
     def _update_child_status(self, child):
-        """Activate iteration successively regarding controller status. Count iterations
-        regarding iteration_sequence status.
+        """Activate iteration successively regarding controller status.
 
-        :param child: the child execution sequence in done state.
+        Count iterations regarding iteration_sequence status.
+
+        Args:
+            child: The child execution sequence in done state.
         """
         self.status = self.atom_controller.status
         if child == self.atom_controller:
@@ -584,8 +628,11 @@ class ExecutionSequenceFactory:
         """Returns a structure representing the execution of a discipline. This function
         is intended to be called by MDOFormulation.get_expected_workflow methods.
 
-        :param discipline: a discipline
-        :returns: the structure used within XDSM workflow representation
+        Args:
+            discipline: A discipline.
+
+        Returns:
+            The structure used within XDSM workflow representation.
         """
         return AtomicExecSequence(discipline)
 
@@ -595,9 +642,12 @@ class ExecutionSequenceFactory:
         disciplines. This function is intended to be called by
         MDOFormulation.get_expected_workflow methods.
 
-        :param sequence: any number of discipline
-            or the return value of a serial, parallel or loop call
-        :returns: a serial execution sequence
+        Args:
+            sequence: Any number of discipline
+                or the return value of a serial, parallel or loop call.
+
+        Returns:
+            A serial execution sequence.
         """
         return SerialExecSequence(sequence)
 
@@ -607,9 +657,12 @@ class ExecutionSequenceFactory:
         disciplines. This function is intended to be called by
         MDOFormulation.get_expected_workflow methods.
 
-        :param sequence: any number of discipline or
-            the return value of a serial, parallel or loop call
-        :returns: a parallel execution sequence
+        Args:
+            sequence: Any number of discipline or
+                the return value of a serial, parallel or loop call.
+
+        Returns:
+            A parallel execution sequence.
         """
         return ParallelExecSequence(sequence)
 
@@ -618,9 +671,12 @@ class ExecutionSequenceFactory:
         """Returns a structure representing a loop execution of a This function is
         intended to be called by MDOFormulation.get_expected_workflow methods.
 
-        :param control: the discipline object, controller of the loop
-        :param composite_sequence: any number of discipline
-            or the return value of a serial, parallel or loop call
-        :returns: a loop execution sequence
+        Args:
+            control: The discipline object, controller of the loop.
+            composite_sequence: Any number of discipline
+                or the return value of a serial, parallel or loop call.
+
+        Returns:
+            A loop execution sequence.
         """
         return LoopExecSequence(control, composite_sequence)

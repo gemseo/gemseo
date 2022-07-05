@@ -24,45 +24,46 @@ import logging
 
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
+from gemseo.algos.opt.core.trust_updater import TrustUpdater
 
 LOGGER = logging.getLogger(__name__)
 
 
 class UpdaterFactory:
-    """Creates the trust updater."""
+    """A factory of :class:`.TrustUpdater`."""
 
     RADIUS = "radius"
     PENALTY = "penalty"
     TRUST_PARAMETERS = [RADIUS, PENALTY]
 
-    def __init__(self):
-        """Initializer."""
+    def __init__(self) -> None:
         self.__update_name_to_updater = {
             UpdaterFactory.RADIUS: RadiusUpdater,
             UpdaterFactory.PENALTY: PenaltyUpdater,
         }
 
-    def create(self, name, thresholds, multipliers, bound):
-        """Factory method to create a TrustUpdater subclass from an update name.
+    def create(
+        self,
+        name: str,
+        thresholds: tuple[float, float],
+        multipliers: tuple[float, float],
+        bound: float,
+    ) -> TrustUpdater:
+        """Create a :class:`.TrustUpdater`.
 
-        :param name: update name
-        :type name: str
-        :param thresholds: thresholds for the decreases' ratio
-        :type thresholds: tuple
-        :param multipliers: multipliers for the trust parameter
-        :type multipliers: tuple
-        :param bound: (lower or upper) bound for the trust parameter
-        :returns: trust updater
+        Args:
+            name: The name of the updater.
+            thresholds: The thresholds for the decrease ratio.
+            multipliers: The multipliers for the trust parameter.
+            bound: The absolute bound for the trust parameter.
+
+        Raises:
+            ValueError: When the updater does not exist.
         """
-        if name in self.__update_name_to_updater:
-            updater = self.__update_name_to_updater[name](
-                thresholds, multipliers, bound
-            )
-        else:
+        if name not in self.__update_name_to_updater:
             raise ValueError(
-                "No update method named "
-                + str(name)
-                + " is available among update methods : "
-                + str(list(self.__update_name_to_updater.keys()))
+                f"No update method named {name} is available among update methods: "
+                f"{list(self.__update_name_to_updater.keys())}."
             )
-        return updater
+
+        return self.__update_name_to_updater[name](thresholds, multipliers, bound)

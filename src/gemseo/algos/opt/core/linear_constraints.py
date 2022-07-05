@@ -19,23 +19,28 @@
 """Build matrices from linear constraints for solvers."""
 from __future__ import annotations
 
+from typing import Iterable
+
 from numpy import hstack
 from numpy import isfinite
+from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 
 from gemseo.core.mdofunctions.mdo_function import MDOLinearFunction
 
 
-def build_constraints_matrices(constraints, constraint_type):
+def build_constraints_matrices(
+    constraints: Iterable[MDOLinearFunction], constraint_type: str
+) -> tuple[ndarray | None, ndarray | None]:
     """Build the constraints matrices associated with passed linear constraints.
 
-    :param constraints: list of linear constraints
-    :type constraints: list(MDOLinearFunction)
-    :param constraint_type: type of constraint to consider
-    :type constraint_type: str
-    :returns: left-hand side matrix, right-hand side vector
-    :rtype: ndarray or None, ndarray or None
+    Args:
+        constraints: The linear constraints.
+        constraint_type: The type of constraint to consider.
+
+    Returns:
+        The left-hand side matrix, the right-hand side vector
     """
     # Check the constraint type
     valid_types = [MDOLinearFunction.TYPE_INEQ, MDOLinearFunction.TYPE_EQ]
@@ -67,15 +72,17 @@ def build_constraints_matrices(constraints, constraint_type):
     return lhs_matrix, rhs_vector
 
 
-def build_bounds_matrices(bounds, upper):
+def build_bounds_matrices(
+    bounds: ndarray, upper: bool
+) -> tuple[ndarray | None, ndarray | None]:
     """Return the constraint matrices corresponding to bound.
 
-    :param bounds: value of the bounds
-    :type bounds: ndarray
-    :param upper: if True the bounds are considered upper bounds
-    :type upper: bool
-    :return: left-hand side matrix, right-hand side vector
-    :rtype: ndarray, ndarray
+    Args:
+        bounds: The value of the bounds.
+        upper: Whether the bounds are considered as upper bounds.
+
+    Returns:
+        The left-hand side matrix, the right-hand side vector.
     """
     is_finite = isfinite(bounds)
     n_finite = is_finite.sum()

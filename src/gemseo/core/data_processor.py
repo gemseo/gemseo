@@ -50,8 +50,11 @@ class DataProcessor:
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
-        :param data: the input data to process
-        :returns: the processed input data
+        Args:
+            data: The input data to process.
+
+        Returns:
+            The processed input data.
         """
         raise NotImplementedError()
 
@@ -59,8 +62,11 @@ class DataProcessor:
         """Executes a post processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
-        :param data: the output data to process
-        :returns: the processed output data
+        Args:
+            data: The output data to process.
+
+        Returns:
+            The processed output data.
         """
         raise NotImplementedError()
 
@@ -74,8 +80,11 @@ class FloatDataProcessor(DataProcessor):
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
-        :param data: the input data to process
-        :returns: the processed input data
+        Args:
+            data: The input data to process.
+
+        Returns:
+            The processed input data.
         """
         processed_data = data.copy()
         for key, val in data.items():
@@ -89,8 +98,11 @@ class FloatDataProcessor(DataProcessor):
         """Executes a post processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
-        :param data: the output data to process
-        :returns: the processed output data
+        Args:
+            data: The output data to process.
+
+        Returns:
+            The processed output data.
         """
         processed_data = data.copy()
         for key, val in data.items():
@@ -110,8 +122,11 @@ class ComplexDataProcessor(DataProcessor):
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
-        :param data: the input data to process
-        :returns: the processed input data
+        Args:
+            data: The input data to process.
+
+        Returns:
+            The processed input data.
         """
         processed_data = data.copy()
         for key, val in data.items():
@@ -122,8 +137,11 @@ class ComplexDataProcessor(DataProcessor):
         """Executes a post processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
-        :param data: the output data to process
-        :returns: the processed output data
+        Args:
+            data: The output data to process.
+
+        Returns:
+            The processed output data.
         """
         processed_data = data.copy()
         for key, val in data.items():
@@ -136,13 +154,13 @@ class NameMapping(DataProcessor):
     names."""
 
     def __init__(self, mapping):
-        """Construcor.
-
-        :param mapping: dictionary of names mapping
-            data structure is {global_key:local_key}
-            the global_key must be consistent with the discipline
-            Grammar. The local key is the data provided to the _run
-            method
+        """
+        Args:
+            mapping: A mapping structure of the form ``{global_name: local_name}``
+                where ``global_name`` must be consistent
+                with the grammar of the discipline.
+                The local name is the data provided
+                to the :meth:`.MDODiscipline._run` method.
         """
         super().__init__()
         self.mapping = mapping
@@ -155,24 +173,24 @@ class NameMapping(DataProcessor):
         MDODiscipline.check_data, and before the _run method of the discipline is
         called.
 
-        :param data: the input data to process
-        :returns: the processed input data
+        Args:
+            data: The input data to process.
+
+        Returns:
+            The processed input data.
         """
         mapping = self.mapping
-        processed_data = {
-            mapping[global_key]: value for global_key, value in data.items()
-        }
-        return processed_data
+        return {mapping[global_key]: value for global_key, value in data.items()}
 
     def post_process_data(self, data):
         """Executes a post processing of discipline output data after the _run method of
         the discipline, before they are checked by  MDODiscipline.check_output_data,
 
-        :param data: the output data to process
-        :returns: the processed output data
+        Args:
+            data: The output data to process.
+
+        Returns:
+            The processed output data.
         """
         reverse_mapping = self.reverse_mapping
-        processed_data = {
-            reverse_mapping[local_key]: value for local_key, value in data.items()
-        }
-        return processed_data
+        return {reverse_mapping[local_key]: value for local_key, value in data.items()}

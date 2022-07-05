@@ -52,13 +52,15 @@ class DriverFactory:
                 self.__algo_name_to_lib_name[algo_name] = lib_name
 
     def is_available(self, name):
-        """Checks the availability of a library name or algorithm name.
+        """Check the availability of a library name or algorithm name.
 
-        :param name: the name of the library name or algorithm name
-        :returns: True if the library is installed
+        Args:
+            name: The name of the library name or algorithm name.
+
+        Returns:
+            Whether the library or algorithm is available.
         """
-        is_lib = self.factory.is_available(name)
-        return name in self.__algo_name_to_lib_name or is_lib
+        return name in self.__algo_name_to_lib_name or self.factory.is_available(name)
 
     @property
     def algorithms(self):
@@ -72,19 +74,21 @@ class DriverFactory:
 
     @property
     def libraries(self):
-        """Lists the available library names in the present configuration.
+        """List the available library names in the present configuration.
 
-        :returns: the list of libraries as a string list
+        Returns:
+            The names of the available libraries.
         """
         return self.factory.classes
 
     def create(self, name):
-        """Factory method to create a DriverLib subclass from algo identifier or a
-        library identifier.
+        """Create a driver library from an algorithm name or a library name.
 
-        :param name: library or algorithm name
-        :type name: str
-        :returns: library according to context (optimization or DOE for instance)
+        Args:
+            name: The name of a library or algorithm.
+
+        Returns:
+             The driver library.
         """
         lib_name = self.__algo_name_to_lib_name.get(name)
         algo_name = None
@@ -93,10 +97,10 @@ class DriverFactory:
         elif self.factory.is_available(name):
             lib_name = name
         else:
-            algorithms = sorted(self.algorithms)
+            algorithms = ", ".join(sorted(self.algorithms))
             raise ImportError(
-                "No algorithm or library of algorithms named '{}' is available; "
-                "available algorithms are {}.".format(name, ", ".join(algorithms))
+                f"No algorithm or library of algorithms named '{name}' is available; "
+                f"available algorithms are {algorithms}."
             )
         lib_created = self.factory.create(lib_name)
         # Set the algo name if it was passed by the user as "name" arg
@@ -104,12 +108,11 @@ class DriverFactory:
         return lib_created
 
     def execute(self, problem, algo_name, **options):
-        """Finds the appropriate library and executes the driver on the problem.
+        """Execute a problem with an algorithm.
 
-        :param problem: the problem on which to run the execution
-        :param algo_name: the algorithm name
-        :param options: the options' dict for the DOE,
-            see associated JSON file
+        Args:
+            problem: The problem to execute.
+            algo_name: The name of the algorithm.
+            **options: The options of the algorithm.
         """
-        lib = self.create(algo_name)
-        return lib.execute(problem, algo_name=algo_name, **options)
+        return self.create(algo_name).execute(problem, algo_name=algo_name, **options)
