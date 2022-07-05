@@ -50,6 +50,35 @@ def test_xdsm_mdf(tmp_path):
     study.generate_xdsm(tmp_path, latex_output=True)
 
 
+def test_discipline_self_coupled_two_disciplines(tmp_path):
+    """Test that a GEMSEO study can be performed with a self-coupled discipline.
+
+    In this test, two disciplines with one self-coupled discipline are present in the
+    MDO process.
+    """
+    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
+    fpath = tmp_path / "xls_n2.pdf"
+    study.generate_n2(fpath, fig_size=(5, 5))
+    study.generate_xdsm(tmp_path, latex_output=False)
+    assert fpath.exists()
+
+
+def test_discipline_self_coupled_one_disc(tmp_path):
+    """Test that a GEMSEO study can be done with a self-coupled discipline.
+
+    In this test, only one self-coupled discipline is present in the MDO process.
+    """
+    study = StudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
+    fpath = tmp_path / "xls_n2.pdf"
+
+    with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
+        study.generate_n2(fpath, fig_size=(5, 5))
+
+    study.generate_xdsm(tmp_path, latex_output=False)
+    xdsm_path = tmp_path / "xdsm.html"
+    assert xdsm_path.exists()
+
+
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf_special_characters(tmp_path):
     study = StudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
