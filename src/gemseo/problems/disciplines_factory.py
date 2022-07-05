@@ -67,13 +67,14 @@ class DisciplinesFactory:
     def create(self, discipline_name, **options):
         """Create a :class:`.MDODiscipline` from its name.
 
-        :param discipline_name: name of the discipline
-        :type discipline_name: str
-        :param options: options of the discipline,
-            both the options to be passed to the constructor
-            and the options that are generic to all the disciplines
-        :type options: dict
-        :returns: the discipline instance
+        Args:
+            discipline_name: The name of the discipline
+            **options: The options of the discipline,
+                both the options to be passed to the constructor
+                and the options that are generic to all the disciplines.
+
+        Returns:
+            The discipline.
         """
         common_options, specific_options = self.__filter_common_options(options)
         self.__base_grammar.validate(common_options)
@@ -107,13 +108,17 @@ class DisciplinesFactory:
         return {k: v for k, v in options.items() if k.startswith(prefix)}
 
     def __filter_common_options(self, options):
-        """Separates options:
+        """Separate options:
 
         - from the :class:`.MDODiscipline` options grammar
         - from the options that are specific to the discipline.
 
-        :param options: options of the discipline
-        :type options: dict
+        Args:
+            options: The options of the discipline.
+
+        Returns:
+            The options common to all the disciplines,
+            and the options specific to the current discipline.
         """
         common_option_names = self.__base_grammar_names
         common_options = {k: v for k, v in options.items() if k in common_option_names}
@@ -121,32 +126,25 @@ class DisciplinesFactory:
         return common_options, specific_options
 
     def update(self):
-        """Updates the paths, to be used if GEMSEO_PATH was changed."""
+        """Update the paths, to be used if GEMSEO_PATH was changed."""
         self.factory.update()
 
     @property
-    def disciplines(self):
-        """Lists the available :class:`.MDODiscipline`, known to this factory.
-
-        :returns: the list of available disciplines names
-            (ie their class names)
-        """
+    def disciplines(self) -> list[str]:
+        """The names of the available disciplines."""
         return self.factory.classes
 
     def get_options_grammar(self, name, write_schema=False, schema_path=None):
-        """Get the options default values for the given class name Only addresses kwargs
-        Generates.
+        """Get the options default values for the given class name.
 
-        :param name: name of the class
-        :type name: str
-        :param schema_path: the output json file path. If None: input.json or
-            output.json depending on grammar type.
-            (Default value = None)
-        :type schema_path: str
-        :param write_schema: if True, writes the schema files
-            (Default value = False)
-        :type write_schema: bool
-        :returns: the json grammar for options
+        Args:
+            name: The name of the class.
+            schema_path: the output json file path. If None: input.json or
+                output.json depending on grammar type.
+            write_schema: Whether to write the schema files
+
+        Returns:
+            The JSON grammar of the options.
         """
         disc_gram = self.factory.get_options_grammar(name, write_schema, schema_path)
         option_grammar = deepcopy(self.__base_grammar)

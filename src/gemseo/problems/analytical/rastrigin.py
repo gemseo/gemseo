@@ -71,12 +71,6 @@ class Rastrigin(OptimizationProblem):
     """
 
     def __init__(self):
-        """
-        The constructor initializes the Rastrigin
-        :class:`.OptimizationProblem`
-        by defining the :class:`.DesignSpace`
-        and the objective function.
-        """
         design_space = DesignSpace()
         design_space.add_variable("x", 2, l_b=-0.1, u_b=0.1)
         design_space.set_current_value(full(2, 0.01))
@@ -92,46 +86,44 @@ class Rastrigin(OptimizationProblem):
 
     @staticmethod
     def rastrigin(x_dv):
-        """This function computes the order n=2 Rastrigin function.
+        """Evaluate the 2nd order Rastrigin function.
 
-        :param x_dv: design variable vector of size 2
-        :returns: result of Rastrigin function evaluation
+        Args:
+            x_dv: The design variables.
+
+        Returns:
+            The Rastrigin function output.
         """
         a_c = 10.0
-        func = (
+        return (
             a_c * 2.0
             + (x_dv[0] ** 2 - a_c * cos(2 * pi * x_dv[0]))
             + (x_dv[1] ** 2 - a_c * cos(2 * pi * x_dv[1]))
         )
-        return func.real
 
     @staticmethod
     def get_solution():
         """Return theoretical optimal value of Rastrigin function.
 
-        :returns: design variables values of optimized values,
-            function value at optimum
-        :rtype: numpy array
+        Returns:
+            The design variable and objective function at optimum.
         """
-        x_opt = zeros(2)
-        f_opt = 0.0
-        return x_opt, f_opt
+        return zeros(2), 0.0
 
     @staticmethod
     def rastrigin_jac(x_dv):
-        """This function computes the analytical gradient of 2nd order Rastrigin
-        function.
+        """Compute the analytical gradient of 2nd order Rastrigin function.
 
-        :param x_dv: design variable vector
-        :type x_dv: numpy array
-        :returns: analytical gradient vector of Rastrigin function
-        :rtype: numpy array
+        Args:
+            x_dv: The design variable vector.
+
+        Returns:
+            The analytical gradient vector of Rastrigin function.
         """
         a_c = 10.0
-        analytic_grad = array(
+        return array(
             [
                 2 * x_dv[0] + 2 * pi * a_c * sin(2 * pi * x_dv[0]),
                 2 * x_dv[1] + 2 * pi * a_c * sin(2 * pi * x_dv[1]),
             ]
-        )
-        return analytic_grad.real
+        ).real

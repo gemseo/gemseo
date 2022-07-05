@@ -23,120 +23,109 @@ from __future__ import annotations
 
 import logging
 
+from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import divide
 from numpy import maximum
 from numpy import minimum
 from numpy import multiply
+from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class TrustUpdater:
-    """Updater of the trust parameter."""
+class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
+    """Updater of a trust parameter."""
 
-    def __init__(self, thresholds=None, multipliers=None, bound=None):
-        """Initializer.
-
-        :param thresholds: thresholds for the decreases' ratio
-        :type thresholds: tuple
-        :param multipliers: multipliers for the trust parameter
-        :type multipliers: tuple
-        :param bound: (lower or upper) bound for the trust parameter
+    def __init__(
+        self,
+        thresholds: tuple[float, float],
+        multipliers: tuple[float, float],
+        bound=None,
+    ) -> None:
+        """
+        Args:
+            thresholds: The thresholds for the decreases' ratio.
+            multipliers: The multipliers for the trust parameter.
+            bound: The absolute bound for the trust parameter.
         """
         if not isinstance(thresholds, tuple):
             raise ValueError(
                 "The thresholds must be input as a tuple; "
-                "input of type " + type(thresholds) + " was provided."
+                f"input of type {type(thresholds)} was provided."
             )
         self._ratio_thresholds = thresholds
         if not isinstance(multipliers, tuple):
             raise ValueError(
                 "The multipliers must be input as a tuple; "
-                "input of type " + type(multipliers) + " was provided."
+                f"input of type {type(multipliers)} was provided."
             )
         self._param_multipliers = multipliers
-        self._param_bound = bound  # bound for the trust parameter
+        self._param_bound = bound
 
-    def _check(self):
-        """Checks attributes consistency."""
+    def _check(self) -> None:
+        """Check the consistency of the attributes."""
         raise NotImplementedError()
 
-    def update(self, ratio, parameter):
-        """Updates the trust parameter relative to the decreases ratio value. Method to
-        be overridden by subclasses.
+    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
+        """Update the trust parameter relative to the decrease ratio value.
 
-        :param ratio: decreases ratio
-        :param parameter: trust parameter (radius or penalty)
-        :returns: new trust parameter, iteration success
-        :rtype: bool
+        Method to be overridden by subclasses.
+
+        Args:
+            ratio: The decrease ratio.
+            parameter: The trust parameter (radius or penalty).
+
+        Returns:
+            The new trust parameter, the iteration success.
         """
         raise NotImplementedError()
 
 
 class PenaltyUpdater(TrustUpdater):
-    """Updates the penalty parameter."""
+    """Update the penalty parameter."""
 
-    def __init__(self, thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1e-6):
-        """Initializer.
-
-        :param thresholds: thresholds for the decreases' ratio
-        :type thresholds: tuple
-        :param multipliers: multipliers for the penalty parameter
-        :type multipliers: tuple
-        :param bound: lower bound for the penalty parameter
-        """
+    def __init__(
+        self,
+        thresholds: tuple[float, float] = (0.0, 0.25),
+        multipliers: tuple[float, float] = (0.5, 2.0),
+        bound: float = 1e-6,
+    ) -> None:
         super().__init__(thresholds, multipliers, bound)
         self._check()
 
-    def _check(self):
-        """Checks the attributes of the penalty updater."""
+    def _check(self) -> None:
         # Check the thresholds:
         if len(self._ratio_thresholds) != 2:
             raise ValueError(
                 "There must be exactly two thresholds for the "
-                "decreases ratio; " + str(len(self._ratio_thresholds)) + " were given."
+                f"decreases ratio; {len(self._ratio_thresholds)} were given."
             )
         update_thresh = self._ratio_thresholds[0]
         nonexp_thresh = self._ratio_thresholds[1]
         if update_thresh > nonexp_thresh:
             raise ValueError(
-                "The update threshold ("
-                + str(update_thresh)
-                + ") must be lower than or equal to "
-                + "the non-expansion threshold ("
-                + str(nonexp_thresh)
-                + ")."
+                f"The update threshold ({update_thresh}) must be lower than or equal "
+                f"to the non-expansion threshold ({nonexp_thresh})."
             )
         # Check the multipliers:
         if len(self._param_multipliers) != 2:
             raise ValueError(
                 "There must be exactly two multipliers for the "
-                "penalty parameter; "
-                + str(len(self._ratio_thresholds))
-                + " were given."
+                f"penalty parameter; {len(self._ratio_thresholds)} were given."
             )
         contract_fact = self._param_multipliers[0]
         expan_fact = self._param_multipliers[1]
         if contract_fact >= 1.0:
             raise ValueError(
-                "The contraction factor ("
-                + str(contract_fact)
-                + ") must be lower than one."
+                f"The contraction factor ({contract_fact}) must be lower than one."
             )
         if expan_fact < 1.0:
             raise ValueError(
-                "The expansion factor ("
-                + str(expan_fact)
-                + ") must be greater than or equal to one."
+                f"The expansion factor ({expan_fact}) "
+                "must be greater than or equal to one."
             )
 
-    def update(self, ratio, parameter):
-        """Updates the penalty parameter.
-
-        :param ratio: decreases ratio
-        :param parameter: penalty parameter
-        :returns: new penalty parameter, iteration success (boolean)
-        """
+    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
         # The iteration is declared successful if and only if the ratio is
         #         greater than or equal to the lower threshold.
         success = ratio >= self._ratio_thresholds[0]
@@ -155,65 +144,50 @@ class PenaltyUpdater(TrustUpdater):
 
 
 class RadiusUpdater(TrustUpdater):
-    """Updates the trust region radius."""
+    """Update the radius of the trust region."""
 
-    def __init__(self, thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1000.0):
-        """Initializer.
-
-        :param thresholds: thresholds for the decreases' ratio
-        :type thresholds: tuple
-        :param multipliers: multipliers for the region radius
-        :type multipliers: tuple
-        :param bound: lower bound for the region radius
-        """
+    def __init__(
+        self,
+        thresholds: tuple[float, float] = (0.0, 0.25),
+        multipliers: tuple[float, float] = (0.5, 2.0),
+        bound: float = 1000.0,
+    ) -> None:
         super().__init__(thresholds, multipliers, bound)
         self._check()
 
-    def _check(self):
-        """Checks the attributes of the radius updater."""
+    def _check(self) -> None:
         # Check the thresholds:
         if len(self._ratio_thresholds) != 2:
             raise ValueError(
                 "There must be exactly two thresholds for the "
-                "decreases ratio; " + str(len(self._ratio_thresholds)) + " were given."
+                f"decreases ratio; {len(self._ratio_thresholds)} were given."
             )
         update_thresh = self._ratio_thresholds[0]
         noncontract_thresh = self._ratio_thresholds[1]
         if update_thresh > noncontract_thresh:
             raise ValueError(
-                "The update threshold ("
-                + str(update_thresh)
-                + ") must be lower than or equal to the "
-                "non-contraction threshold (" + str(noncontract_thresh) + ")."
+                f"The update threshold ({update_thresh}) must be lower than or equal "
+                f"to the non-contraction threshold ({noncontract_thresh})."
             )
         # Check the multipliers:
         if len(self._param_multipliers) != 2:
             raise ValueError(
-                "There must be exactly two multipliers for the "
-                "region radius; " + str(len(self._ratio_thresholds)) + " were  given."
+                "There must be exactly two multipliers for the region radius; "
+                f"{len(self._ratio_thresholds)} were given."
             )
         contract_fact = self._param_multipliers[0]
         expan_fact = self._param_multipliers[1]
         if contract_fact > 1.0:
             raise ValueError(
-                "The contraction factor ("
-                + str(contract_fact)
-                + ") must be lower than or equal to one."
+                f"The contraction factor ({contract_fact}) "
+                f"must be lower than or equal to one."
             )
         if expan_fact <= 1.0:
             raise ValueError(
-                "The expansion factor ("
-                + str(expan_fact)
-                + ") must be greater than one."
+                f"The expansion factor ({expan_fact}) must be greater than one."
             )
 
-    def update(self, ratio, parameter):
-        """Updates the trust radius.
-
-        :param ratio: decreases ratio
-        :param parameter: region radius
-        :returns: new region radius, iteration success (boolean)
-        """
+    def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
         # The iteration is declared successful if and only if the ratio is
         # greater than or equal to the lower threshold.
         success = ratio >= self._ratio_thresholds[0]
@@ -234,77 +208,82 @@ class BoundsUpdater:
     the infinity norm.
     """
 
-    def __init__(self, lower_bounds, upper_bounds, normalize=False):
-        """Initializer.
-
-        :param lower_bounds: reference lower bounds
-        :type lower_bounds: ndarray
-        :param upper_bounds: reference upper bounds
-        :type upper_bounds: ndarray
-        :param normalize: if True the radius is applied to the normalized
-            bounds
-        :param normalize: bool, optional
+    def __init__(
+        self, lower_bounds: ndarray, upper_bounds: ndarray, normalize: bool = False
+    ) -> None:
+        """
+        Args:
+            lower_bounds: The reference lower bounds.
+            upper_bounds: The reference upper bounds.
+            normalize: Whether to apply the radius to the normalized bounds.
         """
         self._lower_bounds = lower_bounds
         self._upper_bounds = upper_bounds
         self._normalized_update = normalize
+        self.__bound_sum = lower_bounds + upper_bounds
+        self.__bound_diff = upper_bounds - lower_bounds
 
-    def update(self, radius, center):
-        """Updates the trust bounds.
+    def update(self, radius: float, center: ndarray) -> tuple[ndarray, ndarray]:
+        """Update the trust bounds.
 
-        :param radius: region radius w.r.t. the infinity norm
-        :type radius: float
-        :param center: region center
-        :type center: ndarray
-        :returns: new region radius, iteration success (boolean)
+        Args:
+            radius: The region radius w.r.t. the infinity norm.
+            center: The center of the region
+
+        Returns:
+            The updated lower and upper bounds of the trust region.
         """
-        if not self._normalized_update:
-            low_bnds, upp_bnds = self._compute_trust_bounds(
-                self._lower_bounds, self._upper_bounds, center, radius
-            )
-        else:
-            # Compute the normalized coordinate-specific radii:
-            # radius_i = radius * 0.5 * (upper_bound_i - lower_bound_i)
-            radii = radius * 0.5 * (self._upper_bounds - self._lower_bounds)
-            # Compute the trust bounds
-            low_bnds, upp_bnds = self._compute_trust_bounds(
-                self._lower_bounds, self._upper_bounds, center, radii
-            )
+        if self._normalized_update:
+            radius = radius * 0.5 * self.__bound_diff
 
-        return low_bnds, upp_bnds
+        return self._compute_trust_bounds(
+            self._lower_bounds, self._upper_bounds, center, radius
+        )
 
     @staticmethod
-    def _compute_trust_bounds(lower_bounds, upper_bounds, center, radius):
-        """Updates bounds based on a ball center and ball radius w.r.t. the infinity
-        norm.
+    def _compute_trust_bounds(
+        lower_bounds: ndarray,
+        upper_bounds: ndarray,
+        center: ndarray,
+        radius: float | ndarray,
+    ) -> tuple[ndarray, ndarray]:
+        """Update the bounds of the trust region.
 
-        :param lower_bounds: lower bounds to be updated
-        :type lower_bounds: ndarray
-        :param upper_bounds: upper bounds to be updated
-        :type upper_bounds: ndarray
-        :param center: ball center
-        :type center: ndarray
-        :param radius: ball radius (same for all coordinate or coordinate-specific)
-        :type radius: float or ndarray
-        :returns: updated lower bounds, updated upper bounds
-        :rtype: ndarray, ndarray
+        Use a ball center and ball radius w.r.t. the infinity norm.
+
+        Args:
+            lower_bounds: The lower bounds to be updated.
+            upper_bounds: The upper bounds to be updated.
+            center: The center of the ball.
+            radius: The radius of the ball;
+                either the same for all coordinate or coordinate-specific.
+
+        Returns:
+            The updated lower and upper bounds.
         """
-        lower_trust_bounds = minimum(
-            maximum(center - radius, lower_bounds), upper_bounds
+        return (
+            minimum(maximum(center - radius, lower_bounds), upper_bounds),
+            maximum(minimum(center + radius, upper_bounds), lower_bounds),
         )
-        upper_trust_bounds = maximum(
-            minimum(center + radius, upper_bounds), lower_bounds
-        )
-        return lower_trust_bounds, upper_trust_bounds
 
-    def _normalize(self, x_vect):
-        """Normalize a vector coordinates to [-1, 1]."""
-        x_norm = 2.0 * x_vect - self._upper_bounds - self._lower_bounds
-        x_norm = divide(x_norm, self._upper_bounds - self._lower_bounds)
-        return x_norm
+    def _normalize(self, x_vect: ndarray) -> ndarray:
+        """Normalize the coordinates of a vector to [-1, 1].
 
-    def _unnormalize(self, x_norm):
-        """Unnormalize a vector coordinates from [-1, 1]."""
-        x_vect = multiply(x_norm, (self._upper_bounds - self._lower_bounds))
-        x_vect = (x_vect + self._upper_bounds + self._lower_bounds) / 2.0
-        return x_vect
+        Args:
+            x_vect: The vector to normalize.
+
+        Returns:
+            The normalized vector.
+        """
+        return divide(2.0 * x_vect - self.__bound_sum, self.__bound_diff)
+
+    def _unnormalize(self, x_norm: ndarray) -> ndarray:
+        """Unnormalize the coordinates of a vector to [-1, 1].
+
+        Args:
+            x_norm: The vector to unnormalize.
+
+        Returns:
+            The unnormalized vector.
+        """
+        return (multiply(x_norm, self.__bound_diff) + self.__bound_sum) / 2.0

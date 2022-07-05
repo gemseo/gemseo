@@ -117,7 +117,8 @@ class AlgoLib:
     ) -> JSONGrammar:
         """Initialize the options grammar.
 
-        :param algo_name: The name of the algorithm.
+        Args:
+            algo_name: The name of the algorithm.
         """
         # Store the lib in case we rerun the same algorithm,
         # for multilevel scenarios for instance
@@ -194,13 +195,16 @@ class AlgoLib:
         """
         pass
 
-    def driver_has_option(self, option_key: str) -> bool:
-        """Check if the option key exists.
+    def driver_has_option(self, option_name: str) -> bool:
+        """Check the existence of an option.
 
-        :param option_key: The name of the option.
-        :return: Whether the option is in the grammar.
+        Args:
+            option_name: The name of the option.
+
+        Returns:
+            Whether the option exists.
         """
-        return option_key in self.opt_grammar
+        return option_name in self.opt_grammar
 
     def _process_specific_option(
         self,
@@ -219,7 +223,7 @@ class AlgoLib:
         """Convert the options to algorithm specific options and check them.
 
         Args:
-            options: The driver options.
+            **options: The driver options.
 
         Returns:
             The converted options.
@@ -255,7 +259,8 @@ class AlgoLib:
 
         Log a warning if it is the case.
 
-        :param options: The options.
+        Args:
+            options: The options.
         """
         for option_name in options:
             if not self.driver_has_option(option_name):
@@ -268,13 +273,14 @@ class AlgoLib:
         algo_name: str = None,
         **options: Any,
     ) -> None:
-        """Executes the driver.
+        """Execute the driver.
 
-        :param problem: The problem to be solved.
-        :param algo_name: The name of the algorithm>
-            If None, use the algo_name attribute
-            which may have been set by the factory.
-        :param **options: The options dict for the algorithm.
+        Args:
+            problem: The problem to be solved.
+            algo_name: The name of the algorithm.
+                If ``None`, use :attr:`algo_name` attribute
+                which may have been set by the factory.
+            **options: The algorithm options.
         """
         self.problem = problem
 
@@ -317,13 +323,17 @@ class AlgoLib:
         self._check_ignored_options(options)
         return self._get_options(**options)
 
-    def _get_options(self, **options: Any) -> None:
+    def _get_options(self, **options: Any) -> dict[str, Any]:
         """Retrieve the options of the library.
 
         To be overloaded by subclasses.
         Used to define default values for options using keyword arguments.
 
-        :param options: The options of the driver.
+        Args:
+            **options: The options of the algorithm.
+
+        Returns:
+            The options of the algorithm.
         """
         raise NotImplementedError()
 
@@ -332,9 +342,11 @@ class AlgoLib:
 
         To be overloaded by subclasses.
 
-        :param options: The options for the algorithm.
+        Args:
+            **options: The options of the algorithm.
 
-        :returns: The solution of the problem.
+        Returns:
+            The solution of the problem.
         """
         raise NotImplementedError()
 
@@ -348,8 +360,9 @@ class AlgoLib:
         Set the optimization library and the algorithm name according
         to the requirements of the optimization library.
 
-        :param algo_name: The name of algorithm.
-        :param problem: The problem to be solved.
+        Args:
+            algo_name: The name of the algorithm.
+            problem: The problem to be solved.
         """
         # Check that the algorithm is available
         if algo_name not in self.descriptions:
@@ -378,11 +391,14 @@ class AlgoLib:
         """
         raise NotImplementedError()
 
-    def filter_adapted_algorithms(self, problem: Any) -> bool:
+    def filter_adapted_algorithms(self, problem: Any) -> list[str]:
         """Filter the algorithms capable of solving the problem.
 
-        :param problem: The opt_problem to be solved.
-        :returns: The list of adapted algorithms names.
+        Args:
+            problem: The problem to be solved.
+
+        Returns:
+            The names of the algorithms adapted to this problem.
         """
         adapted_algorithms = []
         for algo_name, algo_description in self.descriptions.items():

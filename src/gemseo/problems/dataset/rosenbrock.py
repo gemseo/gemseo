@@ -51,21 +51,21 @@ class RosenbrockDataset(Dataset):
 
     def __init__(
         self,
-        name="Rosenbrock",
-        by_group=True,
-        n_samples=100,
-        categorize=True,
-        opt_naming=True,
-    ):
-        """Constructor.
-
-        :param str name: name of the dataset.
-        :param bool by_group: if True, store the data by group. Otherwise,
-            store them by variables. Default: True
-        :param int n_samples: number of samples
-        :param bool categorize: distinguish between the different groups of
-            variables. Default: True.
-        :parma bool opt_naming: use an optimization naming. Default: True.
+        name: str = "Rosenbrock",
+        by_group: bool = True,
+        n_samples: int = 100,
+        categorize: bool = True,
+        opt_naming: bool = True,
+    ) -> None:
+        """
+        Args:
+            name: The name of the dataset.
+            by_group: Whether to store the data by group.
+                Otherwise, store them by variables.
+            n_samples: The number of samples.
+            categorize: Whether to distinguish
+                between the different groups of variables.
+            opt_naming: Whether to use an optimization naming.
         """
         super().__init__(name, by_group)
         root_n_samples = int(n_samples**0.5)

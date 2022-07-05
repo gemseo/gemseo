@@ -286,8 +286,11 @@ class ParallelExecution:
         Eventually return a subset in the execute method.
         To be overloaded by subclasses.
 
-        :param ordered_outputs: the list of outputs, map of _run_task
-           over inputs_list
+        Args:
+            ordered_outputs: The outputs, map of ``_run_task`` over ``inputs_list``.
+
+        Returns:
+            The filtered outputs.
         """
         return ordered_outputs
 
@@ -297,8 +300,8 @@ class ParallelExecution:
         The ordered_outputs contains the stacked outputs of the function
         _run_task() To be overloaded by subclasses.
 
-        :param ordered_outputs: the list of outputs, map of _run_task
-            over inputs_list
+        Args:
+            ordered_outputs: The outputs, map of ``_run_task`` over ``inputs_list``.
         """
 
     @staticmethod
@@ -404,21 +407,28 @@ class DiscParallelLinearization(ParallelExecution):
 
         To be overloaded by subclasses
 
-        :param worker: the worker pointes
-        :param input_loc: input of the worker
+        Args:
+            worker: The worker pointer.
+            input_loc: The input of the worker.
+
+        Returns:
+            The local data of the worker and its Jacobian.
         """
         jac = worker.linearize(input_loc)
         return worker.local_data, jac
 
     @staticmethod
     def _filter_ordered_outputs(ordered_outputs):
-        """Filters the ordered_outputs.
+        """Filter the ordered_outputs.
 
         Eventually return a subset in the execute method.
         To be overloaded by subclasses.
 
-        :param ordered_outputs: the list of outputs, map of _run_task
-           over inputs_list
+        Args:
+            ordered_outputs: The outputs, map of ``_run_task`` over ``inputs_list``.
+
+        Returns:
+            The Jacobians.
         """
         # Only keep the jacobians as outputs, dismiss local_data
         return [out[1] for out in ordered_outputs]
