@@ -12,8 +12,11 @@
 ==========={{ (long_algo_type|length)*'=' }}
 
 .. warning::
-    Some algorithms can require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
-    and others can depend on :ref:`plugins <plugins>`.
+    Some algorithms may require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
+    and some others may depend on :ref:`plugins <plugins>`.
+
+.. note::
+    All the features of the wrapped optimization libraries may not be exposed through |g|.
 
 .. raw:: html
 
@@ -119,11 +122,11 @@
 
 Module: :class:`{{modules[algo]}}`
 
-{% if descriptions is not none %}
+{% if descriptions[algo] %}
 {{descriptions[algo]}}
 {% endif %}
 
-{% if websites is not none %}
+{% if websites[algo] %}
 More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
