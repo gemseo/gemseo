@@ -21,4 +21,4 @@ Credits
     div.body img {height: 50px!important;}
     </style>
 
-.. include:: ../../CREDITS.rst
+.. include:: ../CREDITS.rst

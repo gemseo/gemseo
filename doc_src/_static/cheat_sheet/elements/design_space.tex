@@ -14,7 +14,7 @@ from gemseo.api import read_design_space
 design_space = read_design_space('file.txt')
 design_space.filter(['x', 'y']) # Keep x & y variables
 design_space.add_variable('z', l_b=-3, u_b=2)
-design_space.remove_variable('x')
+del design_space['x']
 print(design_space) # Pretty table view
 \end{python}
 Create a design space from scratch and handle it:
@@ -26,7 +26,7 @@ design_space.add_variable('z', size=2, l_b=-3, u_b=2)
 Export a design space to a text or HDF file:
 \begin{python}
 from gemseo.api import export_design_space
-export_design_space(design_space, 'file.txt', export_hdf=True)
+export_design_space(design_space, 'file.txt')
 \end{python}
 \end{minipage}
 };

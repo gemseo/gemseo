@@ -172,14 +172,14 @@ class AlgoOptionsDoc:
 
         self.algo_type = algo_type
         self.long_algo_type = long_algo_type
-        self.algo_factory = algo_factory
-        if isinstance(self.algo_factory, Factory):
-            self.factory = self.algo_factory
+        if isinstance(algo_factory, Factory):
+            self.factory = algo_factory
         else:
-            self.factory = self.algo_factory.factory
+            self.factory = algo_factory.factory
 
         self.algos_names = self.factory.classes
         self.get_class = self.factory.get_class
+        self.get_library_name = self.factory.get_library_name
         self.__get_options_schema = self.__default_options_schema_getter
 
         def _get_options_schema(
@@ -204,6 +204,14 @@ class AlgoOptionsDoc:
             The module path of the algorithm.
         """
         return self.get_class(algo_name).__module__
+
+    @property
+    def libraries(self) -> Dict[str, str]:
+        """The names of the libraries related to the algorithms."""
+        return {
+            algo: self.get_library_name(self.get_class(algo).__name__)
+            for algo in self.algos_names
+        }
 
     @property
     def options(self) -> Dict[str, str]:
@@ -275,6 +283,7 @@ class AlgoOptionsDoc:
             websites=self.websites,
             descriptions=self.descriptions,
             features=self.features,
+            libraries=self.libraries,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
         with open(output_file_path, "w", encoding="utf-8") as outf:

@@ -22,17 +22,6 @@ block = Block(
         "from an optimization algorithm."
     ),
     url="algorithms/opt_algos.html",
-    algorithms=[
-        WebLink("BFGS", anchor="l-bfgs-b"),
-        WebLink("BOBYQA", anchor="nlopt-bobyqa"),
-        WebLink("COBYLA", anchor="nlopt-cobyla"),
-        WebLink("L-BFGS-B", anchor="l-bfgs-b"),
-        WebLink("MMA", anchor="nlopt-mma"),
-        WebLink("NEWUOA", anchor="nlopt-newuoa"),
-        WebLink("ODD", anchor="odd"),
-        WebLink("SLSQP", anchor="slsqp"),
-        WebLink("TNC", anchor="tnc"),
-    ],
     dependencies=[
         WebLink(
             "nlopt",

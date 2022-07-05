@@ -13,7 +13,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from gemseo_templator.blocks.template import Block
-from gemseo_templator.blocks.template import WebLink
 
 block = Block(
     title="MDO formulations",
@@ -22,12 +21,6 @@ block = Block(
         "and managed by the optimization or DOE algorithm."
     ),
     url="algorithms/formulation_algos.html",
-    algorithms=[
-        WebLink("bi-level", anchor="bilevel"),
-        WebLink("IDF", anchor="idf"),
-        WebLink("MDF", anchor="mdf"),
-        WebLink("sequential", anchor="disciplinaryopt"),
-    ],
     examples="examples/formulations/index.html",
     info="mdo/mdo_formulations.html",
     options="algorithms/formulation_algos.html",

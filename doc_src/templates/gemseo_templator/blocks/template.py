@@ -63,4 +63,4 @@ class Block:
         """
         for weblink in weblinks:
             if weblink.url is None:
-                weblink.url = self.url + "#" + weblink.anchor
+                weblink.url = f"{self.url}#{weblink.anchor}"
