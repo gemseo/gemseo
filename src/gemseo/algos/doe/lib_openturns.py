@@ -165,7 +165,8 @@ class OpenTURNS(DOELibrary):
             n_samples: The number of samples. If None, the algorithm uses
                 the number of levels per input dimension provided by the
                 argument ``levels``.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             criterion: The space-filling criterion, either "C2", "PhiP" or "MinDist".
             temperature: The temperature profile for simulated annealing,

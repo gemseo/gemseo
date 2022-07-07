@@ -88,7 +88,9 @@ class DisciplineJacApprox:
                 a float or an iterable of floats with the same length as the inputs.
                 The ``complex_step`` method takes either a complex or a float as input.
             parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,

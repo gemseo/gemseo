@@ -298,7 +298,12 @@ class MDOParallelChain(MDODiscipline):
             grammar_type: The type of grammar to use for inputs and outputs declaration,
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
             use_threading: Whether to use threads instead of processes
-                to parallelize the execution.
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.
@@ -474,9 +479,12 @@ class MDOAdditiveChain(MDOParallelChain):
             grammar_type: The type of grammar to use for inputs and outputs declaration,
                 e.g. :attr:`.JSON_GRAMMAR_TYPE` or :attr:`.SIMPLE_GRAMMAR_TYPE`.
             use_threading: Whether to use threads instead of processes
-                to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution.
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
             n_processes: The maximum simultaneous number of threads,
                 if ``use_threading`` is True, or processes otherwise,
                 used to parallelize the execution.

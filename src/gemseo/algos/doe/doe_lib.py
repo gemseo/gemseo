@@ -321,7 +321,8 @@ class DOELibrary(DriverLib, metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             eval_jac: Whether to evaluate the Jacobian.
-            n_processes: The number of processes used to evaluate the samples.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
                 evaluation, in seconds.
         """

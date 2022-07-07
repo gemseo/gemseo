@@ -10,12 +10,12 @@
       "description": "If True, the outputs of the coupling consistency constraints are scaled.",
       "type": "boolean"
     },
-    "parallel_exec": {
-      "description": "If True, all constraints and objectives are computed in parallel. At every iteration, all disciplines are executed in parallel. Otherwise, a separate constraint is created for each discipline with couplings.",
-      "type": "boolean"
+    "n_processes": {
+      "description": "The maximum simultaneous number of threads, if ``use_threading`` is True, or processes otherwise, used to parallelize the execution.",
+      "type": "integer"
     },
     "use_threading": {
-      "description": "If True and parallel_exec=True, the disciplines are run in parallel using multi-threading. If False and parallel_exec=True, multi-processing is used.",
+      "description": "Whether to use threads instead of processes to parallelize the execution; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing.",
       "type": "boolean"
     },
     "start_at_equilibrium": {
@@ -30,8 +30,8 @@
   "required": [
     "grammar_type",
     "maximize_objective",
+    "n_processes",
     "normalize_constraints",
-    "parallel_exec",
     "start_at_equilibrium",
     "use_threading"
   ]

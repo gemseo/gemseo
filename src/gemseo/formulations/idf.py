@@ -56,7 +56,7 @@ class IDF(MDOFormulation):
     with respect to the local, global design variables and coupling variables
     is made at the top level.
 
-    The disciplinary analysis is made at a each optimization iteration
+    The disciplinary analysis is made at each optimization iteration
     while the multidisciplinary analysis is made at the optimum.
     """
 
@@ -67,7 +67,7 @@ class IDF(MDOFormulation):
         design_space: DesignSpace,
         maximize_objective: bool = False,
         normalize_constraints: bool = True,
-        parallel_exec: bool = False,
+        n_processes: int = 1,
         use_threading: bool = True,
         start_at_equilibrium: bool = False,
         grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
@@ -76,15 +76,16 @@ class IDF(MDOFormulation):
         Args:
             normalize_constraints: If True,
                 the outputs of the coupling consistency constraints are scaled.
-            parallel_exec: If True,
-                all constraints and objectives are computed in parallel.
-                At every iteration,
-                all disciplines are executed in parallel.
-                Otherwise,
-                a separate constraint is created for each discipline with couplings.
-            use_threading: If True and parallel_exec=True,
-                the disciplines are run in parallel using multi-threading.
-                If False and parallel_exec=True, multi-processing is used.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
+            use_threading: Whether to use threads instead of processes
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
             start_at_equilibrium: If True,
                 an MDA is used to initialize the coupling variables.
         """
@@ -95,9 +96,16 @@ class IDF(MDOFormulation):
             maximize_objective=maximize_objective,
             grammar_type=grammar_type,
         )
-        if parallel_exec:
+        if n_processes > 1:
+            LOGGER.info(
+                "Running IDF formulation in parallel on n_processes = %s",
+                n_processes,
+            )
             self._parallel_exec = MDOParallelChain(
-                self.disciplines, use_threading=use_threading, grammar_type=grammar_type
+                self.disciplines,
+                use_threading=use_threading,
+                grammar_type=grammar_type,
+                n_processes=n_processes,
             )
         else:
             self._parallel_exec = None
@@ -140,7 +148,7 @@ class IDF(MDOFormulation):
             missing = strong_couplings - variables_names
             raise ValueError(
                 "IDF formulation needs coupling variables as design variables, "
-                "missing variables: %s" % missing
+                f"missing variables: {missing}."
             )
         self._set_default_input_values_from_design_space()
 

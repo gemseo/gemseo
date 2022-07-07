@@ -1,0 +1,1 @@
+It is now possible to select the number of processes on which to run an :class:`.IDF` formulation using the option ``n_processes``.

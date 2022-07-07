@@ -82,7 +82,9 @@ class MDAChain(MDA):
         """
         Args:
             inner_mda_name: The class name of the inner-MDA.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             chain_linearize: Whether to linearize the chain of execution.
                 Otherwise, linearize the overall MDA with base class method.
                 This last option is preferred to minimize computations in adjoint mode,

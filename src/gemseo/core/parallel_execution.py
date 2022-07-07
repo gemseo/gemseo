@@ -94,7 +94,9 @@ class ParallelExecution:
                 Either pass one worker, and it will be forked in multiprocessing.
                 Or, when using multithreading or different workers, pass one worker
                 per input data.
-            n_processes: The maximum number of processes on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: If True, use Threads instead of processes
                 to parallelize the execution.
                 Multiprocessing will copy (serialize) all the disciplines,

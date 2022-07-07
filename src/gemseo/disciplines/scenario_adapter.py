@@ -529,8 +529,13 @@ class MDOScenarioAdapter(MDODiscipline):
             inputs: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
                 If None, then all the optimizations functions are differentiated.
-            use_threading: If True, use threads instead of processes
-                to parallelize the execution.
+            use_threading: Whether to use threads instead of processes
+                to parallelize the execution;
+                multiprocessing will copy (serialize) all the disciplines,
+                while threading will share all the memory.
+                This is important to note
+                if you want to execute the same discipline multiple times,
+                you shall use multiprocessing.
 
         Returns:
             The Jacobians of the optimization functions.

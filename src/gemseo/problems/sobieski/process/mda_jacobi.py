@@ -31,7 +31,9 @@ class SobieskiMDAJacobi(MDAJacobi):
     ) -> None:
         """
         Args:
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
             **mda_options: The options of the MDA.
         """

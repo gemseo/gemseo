@@ -94,7 +94,9 @@ class MDAJacobi(MDA):
     ) -> None:
         """
         Args:
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             acceleration: The type of acceleration
                 to be used to extrapolate the residuals
                 and save CPU time by reusing the information from the last iterations,

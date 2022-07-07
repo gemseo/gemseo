@@ -118,7 +118,8 @@ class CustomDOE(DOELibrary):
                 None implies no comments.
             skiprows: The number of first lines to skip.
             eval_jac: Whether to evaluate the jacobian.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             max_time: The maximum runtime in seconds,
                 disabled if 0.
