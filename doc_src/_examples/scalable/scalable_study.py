@@ -49,12 +49,20 @@ disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 for discipline in disciplines:
     design_space = AerostructureDesignSpace()
     design_space.filter(discipline.get_input_data_names())
-    output = next(iter(discipline.get_output_data_names()))
+    output_names = iter(discipline.get_output_data_names())
     scenario = create_scenario(
-        discipline, "DisciplinaryOpt", output, design_space, scenario_type="DOE"
+        discipline,
+        "DisciplinaryOpt",
+        next(output_names),
+        design_space,
+        scenario_type="DOE",
     )
+    for output_name in output_names:
+        scenario.add_observable(output_name)
     scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
-    datasets[discipline.name] = scenario.export_to_dataset(opt_naming=False)
+    datasets[discipline.name] = scenario.export_to_dataset(
+        name=discipline.name, opt_naming=False
+    )
 
 ###############################################################################
 # Define the design problem
