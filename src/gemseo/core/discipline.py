@@ -687,6 +687,19 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return []
 
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
+        """Return the disciplines that must be shown as blocks within the XDSM
+        representation of a chain.
+
+        By default, only the discipline itself is shown.
+        This function can be differently implemented for
+        any type of inherited discipline.
+
+        Returns:
+            The disciplines shown in the XDSM chain.
+        """
+        return [self]
+
     def _instantiate_grammars(
         self,
         input_grammar_file: str | Path | None,

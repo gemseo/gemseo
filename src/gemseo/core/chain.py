@@ -259,7 +259,7 @@ class MDOChain(MDODiscipline):
         return sequence
 
     def get_expected_dataflow(self) -> None:  # noqa: D102
-        disciplines = list(set(self.disciplines))
+        disciplines = self.get_disciplines_in_dataflow_chain()
         graph = DependencyGraph(disciplines)
         disciplines_couplings = graph.get_disciplines_couplings()
 
@@ -268,6 +268,12 @@ class MDOChain(MDODiscipline):
             disciplines_couplings.extend(discipline.get_expected_dataflow())
 
         return disciplines_couplings
+
+    def get_disciplines_in_dataflow_chain(self) -> list[MDODiscipline]:
+        dataflow = []
+        for disc in self.disciplines:
+            dataflow.extend(disc.get_disciplines_in_dataflow_chain())
+        return dataflow
 
     def _set_cache_tol(
         self,
