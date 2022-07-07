@@ -34,6 +34,10 @@ compute and return output Jacobian matrices.
     check that there is no error when executing :code:`import matlab`.
     See :ref:`matlab_requirements` for more information.
 
+.. warning::
+
+   MATLAB disciplines cannot be used with Python multiprocessing.
+
 
 A first simple example with scalar inputs and outputs
 =====================================================
