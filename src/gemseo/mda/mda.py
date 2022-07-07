@@ -496,7 +496,9 @@ class MDA(MDODiscipline):
             step: The step
                 for finite differences or complex step differentiation methods.
             parallel: Whether to execute the MDA in parallel.
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,

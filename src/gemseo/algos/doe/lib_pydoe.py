@@ -149,7 +149,8 @@ class PyDOE(DOELibrary):
             levels: The level in each direction for the full-factorial design.
                 If `None`, then the number of samples provided by the argument
                 `n_samples` is used in order to deduce the levels.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             seed: The seed value.
             max_time: The maximum runtime in seconds, disabled if 0.

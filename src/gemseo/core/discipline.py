@@ -1171,7 +1171,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             jac_approx_type: The approximation method,
                 either "complex_step" or "finite_differences".
             jax_approx_step: The differentiation step.
-            jac_approx_n_processes: The maximum number of processors on which to run.
+            jac_approx_n_processes: The maximum simultaneous number of threads,
+                if ``jac_approx_use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             jac_approx_use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -1551,7 +1553,9 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
             outputs: The names of the outputs to be differentiated.
             step: The differentiation step.
             parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum number of processors on which to run.
+            n_processes: The maximum simultaneous number of threads,
+                if ``use_threading`` is True, or processes otherwise,
+                used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,

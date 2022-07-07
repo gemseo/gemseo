@@ -583,7 +583,7 @@ def test_get_formulation_options_schema(tmp_wd):
     for prop in [
         "maximize_objective",
         "normalize_constraints",
-        "parallel_exec",
+        "n_processes",
         "use_threading",
     ]:
         assert prop in idf_schema["required"]

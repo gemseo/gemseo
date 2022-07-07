@@ -66,7 +66,8 @@ class DiagonalDOE(DOELibrary):
 
         Args:
             eval_jac: Whether to evaluate the Jacobian.
-            n_processes: The number of processes.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
             wait_time_between_samples: The waiting time between two samples.
             n_samples: The number of samples.
                 The number of samples must be greater than or equal to 2.

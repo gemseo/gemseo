@@ -19,7 +19,6 @@
 import numpy as np
 import pytest
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.idf import IDF
@@ -30,89 +29,6 @@ from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
 from .formulations_basetest import FakeDiscipline
-
-
-def build_and_run_idf_scenario_with_constraints(
-    algo,
-    linearize=False,
-    dtype="complex128",
-    normalize_cstr=True,
-    eq_tolerance=1e-4,
-    ineq_tolerance=1e-3,
-    remove_coupl_from_ds=False,
-    parallel_exec=True,
-    use_threading=True,
-):
-    """
-    :param algo: param linearize:  (Default value = False)
-    :param dtype: Default value = "complex128")
-    :param linearize:  (Default value = False)
-    """
-    disciplines = [
-        SobieskiStructure(dtype),
-        SobieskiPropulsion(dtype),
-        SobieskiAerodynamics(dtype),
-        SobieskiMission(dtype),
-    ]
-    design_space = SobieskiProblem().design_space
-    if dtype == "complex128":
-        design_space.to_complex()
-    if remove_coupl_from_ds:
-        for var in design_space.variables_names:
-            if var.startswith("y_"):
-                design_space.remove_variable(var)
-
-    scenario = MDOScenario(
-        disciplines,
-        "IDF",
-        "y_4",
-        design_space=design_space,
-        normalize_constraints=normalize_cstr,
-        parallel_exec=parallel_exec,
-        use_threading=use_threading,
-        maximize_objective=True,
-        start_at_equilibrium=True,
-    )
-    if linearize:
-        scenario.set_differentiation_method("user")
-    else:
-        scenario.set_differentiation_method("complex_step", 1e-30)
-    # Set the design constraints
-    for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, "ineq")
-
-    run_inputs = {
-        "max_iter": 50,
-        "algo": algo,
-        "algo_options": {
-            "eq_tolerance": eq_tolerance,
-            "ineq_tolerance": ineq_tolerance,
-        },
-    }
-    opt_pb = scenario.formulation.opt_problem
-
-    scenario.iteration = 0
-    scenario.stores = 0
-
-    def callback_iter(x_vect=None):
-        scenario.iteration += 1
-
-    def callback_store(x_vect=None):
-        scenario.stores += 1
-
-    opt_pb.add_callback(callback_iter)
-    opt_pb.add_callback(callback_store, each_new_iter=False, each_store=True)
-
-    scenario.execute(run_inputs)
-    assert (
-        scenario.iteration == len(opt_pb.database)
-        or scenario.iteration == len(opt_pb.database) + 1
-    )
-    assert scenario.stores > len(opt_pb.database)
-
-    obj_opt = scenario.optimization_result.f_opt
-    is_feasible = scenario.optimization_result.is_feasible
-    return -obj_opt, is_feasible
 
 
 def test_build_func_from_disc():
@@ -146,79 +62,107 @@ def test_build_func_from_disc():
         func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
 
-def test_exec_idf_cstr_complex_step():
-    """"""
-    obj_opt, is_feasible = build_and_run_idf_scenario_with_constraints(
+@pytest.mark.parametrize(
+    "options, expected_feasible",
+    [
+        (
+            {
+                "linearize": False,
+                "dtype": "complex128",
+                "normalize_cstr": True,
+                "eq_tolerance": 1e-4,
+                "ineq_tolerance": 1e-4,
+                "n_processes": 1,
+                "max_iter": 50,
+            },
+            True,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": False,
+                "n_processes": 2,
+                "max_iter": 50,
+            },
+            False,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": True,
+                "n_processes": 1,
+                "max_iter": 50,
+            },
+            True,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": True,
+                "n_processes": 2,
+                "use_threading": True,
+                "max_iter": 50,
+            },
+            True,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": True,
+                "n_processes": 2,
+                "use_threading": False,
+                "max_iter": 2,
+            },
+            False,
+        ),
+    ],
+)
+def test_idf_execution(
+    options,
+    expected_feasible,
+    generate_idf_scenario,
+    caplog,
+):
+    """Test the IDF formulation with an :class:`.MDOScenario`.
+
+    Args:
+        options: The options for the generate_idf_scenario fixture.
+        expected_feasible: Whether the optimization result is expected to be feasible.
+        generate_idf_scenario: Fixture that returns an :class:`.MDOScenario` with an IDF
+            formulation with custom arguments.
+        caplog: Fixture to access and control log capturing.
+    """
+    obj_opt, is_feasible = generate_idf_scenario(
         "SLSQP",
-        linearize=False,
-        dtype="complex128",
-        normalize_cstr=True,
-        eq_tolerance=1e-4,
-        ineq_tolerance=1e-4,
+        **options,
     )
 
-    assert 3962.0 < obj_opt < 3966.0
-    assert is_feasible
+    if options["max_iter"] == 50:
+        assert 3962.0 < obj_opt < 3965.0
+
+    assert is_feasible == expected_feasible
+
+    if options["n_processes"] > 1:
+        assert "Running IDF formulation in parallel on n_processes" in caplog.text
 
 
-def test_exec_idf_scipy_slsqp_cstr():
-    """"""
-    obj_opt, _ = build_and_run_idf_scenario_with_constraints(
-        "SLSQP",
-        linearize=True,
-        dtype="float64",
-        normalize_cstr=False,
-    )
+def test_fail_idf_no_coupl(generate_idf_scenario):
+    """Test an exception when the coupling variables are not in the Design Space.
 
-    assert 3962.0 < obj_opt
-    assert obj_opt < 3965.0
-
-
-def test_exec_idf_scipy_slsqp_norm_cstr():
-    obj_opt, is_feasible = build_and_run_idf_scenario_with_constraints(
-        "SLSQP", linearize=True, dtype="float64", normalize_cstr=True
-    )
-
-    assert 3962.0 < obj_opt
-    assert obj_opt < 3965.0
-    assert is_feasible
-
-
-def test_exec_idf_scipy_slsqp_norm_cstr_par_thread():
-    obj_opt, is_feasible = build_and_run_idf_scenario_with_constraints(
-        "SLSQP",
-        linearize=True,
-        dtype="float64",
-        normalize_cstr=True,
-        parallel_exec=True,
-        use_threading=True,
-    )
-
-    assert 3962.0 < obj_opt
-    assert obj_opt < 3965.0
-    assert is_feasible
-
-
-@pytest.mark.skip_under_windows
-def test_exec_idf_scipy_slsqp_norm_cstr_par_process():
-    obj_opt, is_feasible = build_and_run_idf_scenario_with_constraints(
-        "SLSQP",
-        linearize=True,
-        dtype="float64",
-        normalize_cstr=True,
-        parallel_exec=True,
-        use_threading=False,
-    )
-
-    assert 3962.0 < obj_opt
-    assert obj_opt < 3965.0
-    assert is_feasible
-
-
-def test_fail_idf_no_coupl():
-    """"""
-    with pytest.raises(Exception):
-        build_and_run_idf_scenario_with_constraints(
+    Args:
+        generate_idf_scenario: Fixture that returns an :class:`.MDOScenario` with an IDF
+            formulation with custom arguments.
+    """
+    with pytest.raises(
+        ValueError,
+        match="IDF formulation needs coupling variables as design variables, "
+        r"missing variables: \{.*\}\.",
+    ):
+        generate_idf_scenario(
             "SLSQP",
             linearize=False,
             dtype="float64",
@@ -282,6 +226,6 @@ def test_grammar_type():
     design_space.add_variable("x")
     grammar_type = discipline.SIMPLE_GRAMMAR_TYPE
     formulation = IDF(
-        [discipline], "y", design_space, grammar_type=grammar_type, parallel_exec=True
+        [discipline], "y", design_space, grammar_type=grammar_type, n_processes=2
     )
     assert formulation._parallel_exec.grammar_type == grammar_type
