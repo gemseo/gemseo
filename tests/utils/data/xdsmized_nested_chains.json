@@ -1,0 +1,101 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis2",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis3",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      },
+      {
+        "id": "Dis4",
+        "name": "AnalyticDiscipline",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_1^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "x_5^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_1"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "x_5"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "x_2^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "x_3^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "x_4^*"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "x_5"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis2",
+        "name": "x_2"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis3",
+        "name": "x_3"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "x_4"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1",
+          "Dis2",
+          "Dis3",
+          "Dis4"
+        ]
+      ]
+    ],
+    "optpb": "Optimization problem:\n   minimize x_5(x_1)\n   with respect to x_1"
+  }
+}
