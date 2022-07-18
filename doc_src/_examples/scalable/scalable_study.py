@@ -42,7 +42,7 @@ configure_logger()
 ###############################################################################
 # Create the disciplinary datasets
 # --------------------------------
-# First of all, we create the disciplinary :class:`.AbstractFullCache` datasets
+# First of all, we create the disciplinary :class:`.Dataset` datasets
 # based on a :class:`.DiagonalDOE`.
 datasets = {}
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
@@ -121,10 +121,9 @@ study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
 # In this case, the strategies are:
 #
 # 1. All design parameters have a size equal to 1,
-# 2. All design parameters have a size equal to 10,
-# 3. All design parameters have a size equal to 20.
+# 2. All design parameters have a size equal to 20.
 #
-# To do that, we pass :code:`design_size=[1, 10, 20]`
+# To do that, we pass :code:`design_size=[1, 20]`
 # to the :meth:`.ScalabilityStudy.add_scaling_strategies` method.
 # :code:`design_size` expects either:
 #
@@ -143,7 +142,7 @@ study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
 # whose keys are variables names and values are variables sizes.
 # In this way, we can use this argument to fine-tune a scaling strategy
 # to very specific variables, e.g. local variables.
-study.add_scaling_strategies(design_size=[1, 10, 20])
+study.add_scaling_strategies(design_size=[1, 20])
 
 ###############################################################################
 # Execute the scalable study
@@ -151,9 +150,9 @@ study.add_scaling_strategies(design_size=[1, 10, 20])
 # Then, we execute the scalability study,
 # i.e. to build and execute a :class:`.ScalableProblem`
 # for each optimization strategy and each scaling strategy,
-# and repeat it 10 times in order to get statistics on the results
+# and repeat it 2 times in order to get statistics on the results
 # (because the :class:`.ScalableDiagonalModel` relies on stochastic features.
-study.execute(n_replicates=10)
+study.execute(n_replicates=2)
 
 ###############################################################################
 # Look at the dependency matrices
@@ -227,9 +226,7 @@ study.execute(n_replicates=10)
 # while they seems to be the same when each design parameter has a size equal to 1.
 post = plot_scalability_results("study")
 post.labelize_scaling_strategy("Number of design parameters per type.")
-post.plot(
-    xmargin=3.0, xticks=[1.0, 10.0, 20.0], xticks_labels=["1", "10", "20"], widths=1.0
-)
+post.plot(xmargin=3.0, xticks=[1.0, 20.0], xticks_labels=["1", "20"], widths=1.0)
 
 ###############################################################################
 # .. image:: /_images/scalable_example/exec_time-1.png

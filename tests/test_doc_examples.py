@@ -12,19 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Test helpers."""
+import runpy
+from pathlib import Path
+from shutil import copytree
+
 import pytest
-from gemseo.utils.pytest_conftest import *  # noqa: F401,F403
 
-MARK = "doc_examples"
+EXAMPLE_PATHS = [
+    path
+    for path in Path(__file__, "..", "..", "doc_src", "_examples")
+    .resolve()
+    .rglob("*.py")
+    if (path.parent / "README.rst").is_file() and path.name != "run.py"
+]
 
 
-def pytest_collection_modifyitems(
-    session: pytest.Session, config: pytest.Config, items: list[pytest.Item]
-) -> None:
-    """Skip by default some marked tests."""
-    if not config.getoption("-m"):
-        skip_me = pytest.mark.skip(reason=f"use '-m {MARK}' to run this test")
-        for item in items:
-            if MARK in item.keywords:
-                item.add_marker(skip_me)
+@pytest.mark.doc_examples
+@pytest.mark.parametrize(
+    "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
+)
+def test_script_execution(example_path, tmp_wd, monkeypatch):
+    Path(copytree(example_path.parent, tmp_wd, dirs_exist_ok=True))
+    monkeypatch.chdir(tmp_wd)
+    runpy.run_path(example_path.name)

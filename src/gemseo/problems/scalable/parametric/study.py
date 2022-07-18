@@ -487,17 +487,19 @@ class TMScalableStudy:
         post_coeff=True,
         algo="NLOPT_SLSQP",
         algo_options=None,
+        xdsm_pdf=False,
     ):
-        """This method solves the scalable problem with a particular MDO formulation.
+        """Solve the scalable problem with a particular MDO formulation.
 
-        :param str formulation: MDO formulation name
-        :param int max_iter: maximum number of iterations
-        :param bool post_coupling: store coupling plots
-        :param bool post_optim: store optimization plots
-        :param bool post_coeff: store coefficients plots
-        :param algo: algorithm name to solve the problem
-        :param algo_options: inequality and equality tolerance,
-            xtol etc..
+        Args:
+            formulation: The name of the MDO formulation.
+            max_iter: THe maximum number of iterations.
+            post_coupling: Whether to store the coupling plots.
+            post_optim: Whether to store the optimization plots.
+            post_coeff: Whether to store the coefficients plots.
+            algo: The name of the algorithm used to solve the problem.
+            algo_options: The options for the algorithm.
+            xdsm_pdf: Whether to export the xdsm in pdf.
         """
         if algo_options is None:
             algo_options = ALGO_OPTIONS
@@ -541,7 +543,9 @@ class TMScalableStudy:
         if post_coupling:
             path = mkdir(self.directory, COUPLING_DIR)
             scenario.xdsmize(
-                latex_output=True, outdir=path, outfilename=formulation + "_xdsm"
+                latex_output=xdsm_pdf,
+                outdir=path,
+                outfilename=formulation + "_xdsm",
             )
             coupling_structure = MDOCouplingStructure(scenario.disciplines)
             coupling_structure.plot_n2_chart(file_path=os.path.join(path, "n2.pdf"))

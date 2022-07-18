@@ -801,6 +801,12 @@ Example
 Have a look to the uncertainty module
 for an example of proper code documentation.
 
+Check that the examples run correctly with:
+
+.. code::
+
+    tox -e py39 -- tests/test_doc_examples.py -m doc_examples
+
 Versioning
 ----------
 
