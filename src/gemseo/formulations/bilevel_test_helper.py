@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Callable
-from typing import Dict
 
 from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
@@ -26,11 +25,8 @@ from gemseo.problems.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.sobieski.disciplines import SobieskiStructure
 
-# TODO: remove when PEP 484 type hints will be used
-FixtureFunc = Callable[[Dict[str, float]], MDOScenario]
 
-
-def create_sobieski_bilevel_scenario() -> FixtureFunc:
+def create_sobieski_bilevel_scenario() -> Callable[[dict[str, float]], MDOScenario]:
     """Create a function to generate a Sobieski BiLevel Scenario.
 
     Returns:

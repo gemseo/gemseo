@@ -1165,7 +1165,7 @@ class MDOFunction:
         """
         return where(np_abs(arr) < floor_value, 0.0, arr)
 
-    def get_data_dict_repr(self) -> dict[str, str | int | list[str]]:
+    def to_dict(self) -> dict[str, str | int | list[str]]:
         """Create a dictionary representation of the function.
 
         This is used for serialization.

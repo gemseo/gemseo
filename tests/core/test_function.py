@@ -172,7 +172,7 @@ class TestMdofunction(unittest.TestCase):
             f_type=MDOFunction.TYPE_EQ,
             dim=1,
         )
-        repr_dict = f.get_data_dict_repr()
+        repr_dict = f.to_dict()
         for k in MDOFunction.DICT_REPR_ATTR:
             if k != "special_repr":
                 assert k in repr_dict

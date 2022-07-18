@@ -164,9 +164,6 @@ class OptimizationResult:
 
         return dict_
 
-    # TODO: for backward compatibility, to be removed
-    get_data_dict_repr = to_dict
-
     @classmethod
     def from_dict(cls, dict_: Mapping[str, Value]) -> OptimizationResult:
         """Create an optimization result from a dictionary.
