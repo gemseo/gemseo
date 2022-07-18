@@ -80,6 +80,7 @@ sphinx_gallery_conf = {
     "gallery_dirs": gallery_dirs,
     "default_thumb_file": current_dir / "_static/icon.png",
     "within_subsection_order": ExampleTitleSortKey,
+    "filename_pattern": r"\.py$",
     "ignore_pattern": r"run\.py",
     "only_warn_on_example_error": True,
 }
