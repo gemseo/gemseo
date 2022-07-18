@@ -197,29 +197,19 @@ class ScalabilityStudy:
         msg.add("Early stopping: {}", self.early_stopping)
         LOGGER.info("%s", msg)
 
-    @staticmethod
-    def __mkdir(directory):
-        """Create directory if not exist.
-
-        :param Path directory: directory name.
-        """
-        # TODO: in Python 3, replace this workaround with Path.mkdir(exist_ok=True)
-        if not directory.exists():
-            directory.mkdir()
-
     def __create_directories(self):
         """Create the different directories to store results, post-processings, ..."""
-        self.__mkdir(self.directory)
+        self.directory.mkdir(exist_ok=True)
         post = self.directory / POST_DIRECTORY
-        self.__mkdir(post)
+        post.mkdir(exist_ok=True)
         postoptim = self.directory / POSTOPTIM_DIRECTORY
-        self.__mkdir(postoptim)
+        postoptim.mkdir(exist_ok=True)
         poststudy = self.directory / POSTSTUDY_DIRECTORY
-        self.__mkdir(poststudy)
+        poststudy.mkdir(exist_ok=True)
         postscal = self.directory / POSTSCAL_DIRECTORY
-        self.__mkdir(postscal)
+        postscal.mkdir(exist_ok=True)
         results = self.directory / RESULTS_DIRECTORY
-        self.__mkdir(results)
+        results.mkdir(exist_ok=True)
         msg = MultiLineString()
         msg.indent()
         msg.add("Create directories")
@@ -612,7 +602,7 @@ class ScalabilityStudy:
                     problem = self.__create_scalable_problem(scaling, replicate)
                     path = self.__dep_mat_path(algo, formulation, scal_index, replicate)
                     directory = path.stem
-                    self.__mkdir(path)
+                    path.mkdir(exist_ok=True)
                     msg.add("Save dependency matrices in {}", path)
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
@@ -707,13 +697,14 @@ class ScalabilityStudy:
         :param int id_scaling: scaling index.
         :param int replicate: replicate number.
         """
-        directory = Path(self.prefix + "_" + algo + "_" + formulation)
-        path = self.directory / POSTOPTIM_DIRECTORY / directory
-        self.__mkdir(path)
-        path = path / Path(f"scaling_{id_scaling + 1}")
-        self.__mkdir(path)
-        path = path / Path(f"replicate_{replicate}")
-        self.__mkdir(path)
+        path = (
+            self.directory
+            / POSTOPTIM_DIRECTORY
+            / Path(f"{self.prefix}_{algo}_{formulation}")
+            / Path(f"scaling_{id_scaling + 1}")
+            / Path(f"replicate_{replicate}")
+        )
+        path.mkdir(exist_ok=True, parents=True)
         return path
 
     def __create_scalable_problem(self, scaling, seed):

@@ -1713,13 +1713,13 @@ class OptimizationProblem:
         obj: Any,
         group: str,
     ) -> None:
-        """Store an object that has a get_data_dict_repr attribute in the hdf5 dataset.
+        """Store an object that has a to_dict attribute in the hdf5 dataset.
 
         Args:
             obj: The object to store
             group: The hdf5 group.
         """
-        data_dict = obj.get_data_dict_repr()
+        data_dict = obj.to_dict()
         for attr_name, attr in data_dict.items():
             dtype = None
             is_arr_n = isinstance(attr, ndarray) and issubdtype(attr.dtype, np_number)
@@ -1775,7 +1775,7 @@ class OptimizationProblem:
                         o_subgroup = observables_group.require_group(observable.name)
                         self.__store_attr_h5data(observable, o_subgroup)
 
-                if hasattr(self.solution, "get_data_dict_repr"):
+                if hasattr(self.solution, "to_dict"):
                     sol_group = h5file.require_group(self.SOLUTION_GROUP)
                     self.__store_attr_h5data(self.solution, sol_group)
 

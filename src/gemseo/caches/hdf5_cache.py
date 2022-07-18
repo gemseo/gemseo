@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from multiprocessing import RLock
 from pathlib import Path
 from typing import Any
 from typing import Generator
@@ -34,7 +35,6 @@ from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
-from gemseo.utils.multi_processing import RLock
 from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)

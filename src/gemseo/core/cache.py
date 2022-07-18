@@ -26,6 +26,9 @@ import logging
 import sys
 from collections import namedtuple
 from collections.abc import Mapping as ABCMapping
+from multiprocessing import Manager
+from multiprocessing import RLock
+from multiprocessing import Value
 from typing import ClassVar
 from typing import Generator
 from typing import Iterable
@@ -55,9 +58,6 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
 from gemseo.utils.locks import synchronized_hashes
-from gemseo.utils.multi_processing import Manager
-from gemseo.utils.multi_processing import RLock
-from gemseo.utils.multi_processing import Value
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.testing import compare_dict_of_arrays
 

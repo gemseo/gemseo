@@ -80,9 +80,6 @@ class Factory(Multiton):
     __GEMSEO_PATH = "GEMSEO_PATH"
     __GEMS_PATH = "GEMS_PATH"
 
-    # Allowed prefix for naming a plugin importable from sys.path
-    __PLUGIN_PREFIX = "gemseo_"
-
     # The name of the setuptools entry point for declaring plugins.
     PLUGIN_ENTRY_POINT = "gemseo_plugins"
 
@@ -128,11 +125,6 @@ class Factory(Multiton):
         # See https://docs.python.org/3.9/library/sys.html#sys.path
         sys_path = list(sys.path)
         sys_path.pop(0)
-
-        for _, module_name, _ in pkgutil.iter_modules(path=sys_path):
-            if module_name.startswith(self.__PLUGIN_PREFIX):
-                self.__import_modules_from(module_name)
-                module_names += [module_name]
 
         # Import from the setuptools entry points.
         for entry_point in importlib_metadata.entry_points().get(

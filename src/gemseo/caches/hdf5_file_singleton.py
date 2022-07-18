@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from genericpath import exists
+from multiprocessing import RLock
 from pathlib import Path
 from typing import ClassVar
 
@@ -35,7 +36,6 @@ from gemseo.core.cache import AbstractFullCache
 from gemseo.core.cache import Data
 from gemseo.core.cache import hash_data_dict
 from gemseo.core.cache import to_real
-from gemseo.utils.multi_processing import RLock
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 

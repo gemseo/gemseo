@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+from multiprocessing import RLock
 from typing import Any
 
 from gemseo.core.cache import AbstractFullCache
@@ -28,7 +29,6 @@ from gemseo.core.cache import Data
 from gemseo.core.cache import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
-from gemseo.utils.multi_processing import RLock
 
 LOGGER = logging.getLogger(__name__)
 

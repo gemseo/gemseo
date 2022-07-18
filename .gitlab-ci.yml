@@ -102,7 +102,7 @@ check:
     - changes:
       - src/**/*.*
       - tests/**/*.*
-      - requirements/test.txt
+      - requirements/test-python*.txt
       - setup.cfg
       - tox.ini
       - .gitlab-ci.yml

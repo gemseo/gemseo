@@ -107,18 +107,6 @@ def test_parse_docstrings(reset_factory, tmp_wd):
             assert item in opt_doc
 
 
-def test_ext_plugin_syspath(monkeypatch, reset_factory):
-    """Verify that plugins are discovered from the python path."""
-    monkeypatch.syspath_prepend(DATA)
-    # Add a new dummy item in sys.path because the first item will be removed,
-    # and monkeypatch can only prepend.
-    monkeypatch.syspath_prepend("")
-    # There could be more classes available with the plugins
-    factory = Factory(MDOFormulation)
-    assert "DummyBiLevel" in factory.classes
-    assert factory.get_library_name("DummyBiLevel") == "gemseo_dummy_plugins"
-
-
 def test_ext_plugin_syspath_is_first(reset_factory, tmp_path):
     """Verify that plugins are not discovered from the first path in sys.path."""
     # This test requires to use subprocess such that python can
