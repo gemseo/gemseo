@@ -201,7 +201,6 @@ class MDA(MDODiscipline):
 
         Raises:
             ValueError:
-                * If there are too many coupling constraints.
                 * If outputs are defined multiple times.
         """
         strong_c_disc = self.coupling_structure.get_strongly_coupled_disciplines(
@@ -224,12 +223,11 @@ class MDA(MDODiscipline):
                 )
 
             also_strong_n = [disc.name for disc in also_strong]
-            raise ValueError(
-                "Too many coupling constraints; "
-                "the following disciplines are self coupled "
-                "and also strongly coupled with other disciplines: {}.".format(
-                    also_strong_n
-                )
+            LOGGER.warning(
+                "The following disciplines contain self-couplings and strong couplings:"
+                " %s. This is not a problem as long as their self-coupling variables "
+                "are not strongly coupled to another discipline.",
+                also_strong_n,
             )
 
         all_outs = {}
