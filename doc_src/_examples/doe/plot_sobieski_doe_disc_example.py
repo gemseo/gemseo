@@ -13,10 +13,11 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Matthias De Lozzo
+# - Jean-Christophe Giret
+# - Antoine DECHAUME
 """
 Simple disciplinary DOE example on the Sobieski SSBJ test case
 ==============================================================

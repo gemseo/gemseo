@@ -12,12 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Damien Guenot
-#        :author: Francois Gallard, refactoring
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Selime Gurol
+# - Matthias De Lozzo
+# - Remi Lafage
+# - Jean-Christophe Giret
+# - Vincent Gachelin
+# - François Gallard
+# - Damien Guenot
+# - Charlie Vanaret
+# - Benoit Pauwels
+# - Antoine DECHAUME
+# - Gilberto Ruiz Jiménez
 """Optimization library wrappers base class."""
 from __future__ import annotations
 

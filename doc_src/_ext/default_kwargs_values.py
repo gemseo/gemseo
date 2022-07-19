@@ -1,3 +1,5 @@
+# Contributors:
+# - Antoine DECHAUME
 import re
 from collections import OrderedDict
 from typing import Any

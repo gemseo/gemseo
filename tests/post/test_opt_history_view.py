@@ -12,11 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Damien Guenot
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Pierre-Jean Barjhoux
+# - Matthias De Lozzo
+# - Jean-Christophe Giret
+# - François Gallard
+# - Damien Guenot
+# - Charlie Vanaret
+# - Antoine DECHAUME
+# - Gilberto Ruiz Jiménez
 from pathlib import Path
 
 import pytest

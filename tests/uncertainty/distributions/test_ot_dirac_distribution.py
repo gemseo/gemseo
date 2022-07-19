@@ -12,11 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or
-#                      initial documentation
-#        :author:  Reda El Amri
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Reda EL AMRI
+# - Antoine DECHAUME
 from gemseo.uncertainty.distributions.openturns.dirac import OTDiracDistribution
 from numpy import array
 from numpy.testing import assert_equal

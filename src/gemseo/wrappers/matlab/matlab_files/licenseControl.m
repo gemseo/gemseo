@@ -1,3 +1,6 @@
+%  Contributors:
+%  - Nicolas Roussouly
+%  - Antoine DECHAUME
 function licenseControl(varargin)
 p = inputParser;
 addRequired(p, 'license_list',@(x)iscell(x));

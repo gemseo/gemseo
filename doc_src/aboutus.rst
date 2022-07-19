@@ -6,6 +6,14 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+   Contributors:
+   - Matthias De Lozzo
+   - Jean-Christophe Giret
+   - Gilberto Ruiz Jiménez
+   - François Gallard
+   - Antoine DECHAUME
+   - Reda EL AMRI
+
 About us
 ========
 
@@ -231,7 +239,7 @@ The following people are the contributors to |g|'s development and maintenance:
           Yann<br/>David
     </div>
     <div class="avatar">
-          <img src='_static/authors/antoine_dechaume.jpg' class='avatar' /><br />
+          <img src='_static/authors/Antoine DECHAUME.jpg' class='avatar' /><br />
           Antoine<br/>Dechaume
     </div>
     <div class="avatar">
@@ -247,11 +255,11 @@ The following people are the contributors to |g|'s development and maintenance:
           Reda<br/>El Amri
     </div>
     <div class="avatar">
-          <img src='_static/authors/vincent_gachelin.png' class='avatar' /><br />
+          <img src='_static/authors/Vincent Gachelin.png' class='avatar' /><br />
           Vincent<br/>Gachelin
     </div>
     <div class="avatar">
-          <img src='_static/authors/francois_gallard.jpg' class='avatar' /><br />
+          <img src='_static/authors/François Gallard.jpg' class='avatar' /><br />
           François<br/>Gallard
     </div>
     <div class="avatar">
@@ -263,7 +271,7 @@ The following people are the contributors to |g|'s development and maintenance:
           Jean-Christophe<br/>Giret
     </div>
     <div class="avatar">
-          <img src='_static/authors/damien_guenot.png' class='avatar' /><br />
+          <img src='_static/authors/damien_Damien Guenot.png' class='avatar' /><br />
           Damien<br/>Guénot
     </div>
     <div class="avatar">
@@ -271,11 +279,11 @@ The following people are the contributors to |g|'s development and maintenance:
           Selime<br/>Gürol
     </div>
     <div class="avatar">
-          <img src='_static/authors/remi_lafage.jpg' class='avatar' /><br />
+          <img src='_static/authors/remi_Remi Lafage.jpg' class='avatar' /><br />
           Remi<br/>Lafage
     </div>
     <div class="avatar">
-          <img src='_static/authors/benoit_pauwels.jpg' class='avatar' /><br />
+          <img src='_static/authors/Benoit Pauwels.jpg' class='avatar' /><br />
           Benoit<br/>Pauwels
     </div>
     <div class="avatar">
@@ -283,12 +291,12 @@ The following people are the contributors to |g|'s development and maintenance:
           Arthur<br/>Piat
     </div>
     <div class="avatar">
-          <img src='_static/authors/nicolas_roussouly.jpg' class='avatar' /><br />
+          <img src='_static/authors/Nicolas Roussouly.jpg' class='avatar' /><br />
           Nicolas<br/>Roussouly
     </div>
     <div class="avatar">
-          <img src='_static/authors/gilberto_ruiz-jimenez.jpg' class='avatar' /><br />
-          Gilberto<br/>Ruiz Jimenez
+          <img src='_static/authors/Gilberto Ruiz Jiménezimenez.jpg' class='avatar' /><br />
+          Gilberto<br/>Ruiz Jiménez
     </div>
     <div class="avatar">
           <img src='_static/authors/charlie_vanaret.jpg' class='avatar' /><br />

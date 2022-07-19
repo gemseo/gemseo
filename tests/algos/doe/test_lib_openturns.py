@@ -12,10 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#      :author: Damien Guenot - 20 avr. 2016
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Nicolas Roussouly
+# - Jean-Christophe Giret
+# - François Gallard
+# - Matthias De Lozzo
+# - Damien Guenot
+# - Antoine DECHAUME
+# - Benoit Pauwels
+# - Gilberto Ruiz Jiménez
 import re
 from typing import Any
 from typing import Dict

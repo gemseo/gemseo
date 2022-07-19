@@ -12,11 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Jean-Christophe Giret
+# - François Gallard
+# - Matthias De Lozzo
+# - Antoine DECHAUME
+# - Syver Doving AGDESTEIN
 """Test machine learning algorithm calibration."""
 import pytest
 from gemseo.algos.design_space import DesignSpace

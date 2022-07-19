@@ -12,10 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - François Gallard
+# - Matthias De Lozzo
+# - Antoine DECHAUME
 import pytest
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverDescription

@@ -12,10 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#       :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Matthias De Lozzo
+# - Jean-Christophe Giret
+# - Jean-Christophe Giret
+# - Gilberto Ruiz Jiménez
+# - François Gallard
+# - Antoine DECHAUME
 from unittest import mock  # noqa: F401
 
 import pytest

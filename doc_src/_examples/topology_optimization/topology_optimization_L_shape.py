@@ -13,9 +13,11 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Simone Coniglio
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#
+# Contributors:
+# - Antoine DECHAUME
+# - SimoneConiglio
+# - Matthias De Lozzo
 """
 Solve a 2D L-shape topology optimization problem
 ================================================

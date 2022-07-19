@@ -17,12 +17,10 @@
 # All rights reserved.
 #
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#        :author: Arthur Piat
-#        :author: Nicolas Roussouly: GEMSEO integration
+# - Nicolas Roussouly
+# - Antoine DECHAUME
+# - Matthias De Lozzo
 #
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Definition of the matlab engine singleton for workspace handling.
 
 Overview

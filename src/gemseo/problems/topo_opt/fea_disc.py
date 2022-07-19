@@ -12,9 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Simone Coniglio
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#
+# Contributors:
+# - Simone Coniglio
+# - Antoine DECHAUME
 """Finite element analysis (FEA) for 2D topology optimization problems."""
 from __future__ import annotations
 

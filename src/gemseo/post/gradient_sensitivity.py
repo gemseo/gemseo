@@ -12,11 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#        :author: Damien Guenot
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Pierre-Jean Barjhoux
+# - Jean-Christophe Giret
+# - Damien Guenot
+# - Gilberto Ruiz Jiménez
+# - François Gallard
+# - Matthias De Lozzo
+# - Antoine DECHAUME
 """Plot the derivatives of the functions."""
 from __future__ import annotations
 

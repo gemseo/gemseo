@@ -6,11 +6,10 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-..
    Contributors:
-      INITIAL AUTHORS - initial API and implementation and/or
-                        initial documentation
-          :author:  Francois Gallard
+   - Matthias De Lozzo
+   - Gilberto Ruiz Jiménez
+   - Antoine DECHAUME
 
 .. _pytest: https://docs.pytest.org
 .. _Anaconda: https://docs.anaconda.com/anaconda/install

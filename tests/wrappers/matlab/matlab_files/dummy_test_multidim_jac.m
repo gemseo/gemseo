@@ -2,10 +2,8 @@
 %  All rights reserved.
 %
 %  Contributors:
-%     INITIAL AUTHORS - API and implementation and/or documentation
-%         :author: François Gallard
-%
-%     OTHER AUTHORS   - MACROSCOPIC CHANGES
+%  - Nicolas Roussouly
+%  - Antoine DECHAUME
 
 function [z1, z2, jac_dz1_dx, jac_dz1_dy, jac_dz2_dx, jac_dz2_dy] = dummy_test_multidim_jac(x, y)
 z1(1) = x(1)^2 + 3*x(2);
