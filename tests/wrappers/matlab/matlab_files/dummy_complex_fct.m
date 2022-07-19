@@ -2,10 +2,8 @@
 %  All rights reserved.
 %
 %  Contributors:
-%     INITIAL AUTHORS - API and implementation and/or documentation
-%         :author: Arthur Piat
-%
-%     OTHER AUTHORS   - MACROSCOPIC CHANGES
+%  - Nicolas Roussouly
+%  - Antoine DECHAUME
 
 function [x,y,z] = dummy_complex_fct(a,b,c,d,e,f)
 %DUMMY_COMPLEX_FCT Summary of this function goes here

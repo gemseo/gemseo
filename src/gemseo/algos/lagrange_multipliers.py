@@ -12,11 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#       :author: Pierre-Jean Barjhoux
-#       :author: Francois Gallard, integration and cleanup
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Jean-Christophe Giret
+# - François Gallard
+# - Matthias De Lozzo
+# - Benoit Pauwels
+# - Antoine DECHAUME
+# - Simone Coniglio
+# - Gilberto Ruiz Jiménez
 """Implementation of the Lagrange multipliers."""
 from __future__ import annotations
 

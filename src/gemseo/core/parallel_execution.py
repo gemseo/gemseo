@@ -12,10 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret, Francois Gallard, Gilberto Ruiz
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Nicolas Desfachelles
+# - Jean-Christophe Giret
+# - Damien Guenot
+# - Gilberto Ruiz Jiménez
+# - François Gallard
+# - Matthias De Lozzo
+# - Charlie Vanaret
+# - Antoine DECHAUME
 """Parallel execution of disciplines and functions using multiprocessing."""
 from __future__ import annotations
 

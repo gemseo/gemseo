@@ -6,9 +6,11 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-..
    Contributors:
-          :author: Charlie Vanaret, Francois Gallard
+   - Jean-Christophe Giret
+   - François Gallard
+   - Matthias De Lozzo
+   - Antoine DECHAUME
 
 .. _scalable:
 
@@ -27,7 +29,7 @@ In this section we describe the |g|' scalable problem, or scalable discipline fe
       booktitle = {Proceedings of the AIAA SciTech Conference},
       year = {2017},
       month = {January},
-      author = {Charlie Vanaret and Francois Gallard and Joaquim R. R. A. Martins}
+      author = {Charlie Vanaret and François Gallard and Joaquim R. R. A. Martins}
    }
 
 .. seealso::

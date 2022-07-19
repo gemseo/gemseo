@@ -12,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-#        :author: Benoit Pauwels - Stacked data management
-#               (e.g. iteration index)
-#        :author: Gilberto Ruiz Jimenez
+# - Gilberto Ruiz Jiménez
+# - Matthias De Lozzo
+# - Antoine DECHAUME
 """The MDOFunction consistency constraint subclass to support formulations."""
 from __future__ import annotations
 

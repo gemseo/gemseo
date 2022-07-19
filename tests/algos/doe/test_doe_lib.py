@@ -14,9 +14,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Matthias De Lozzo
+# - Jean-Christophe Giret
+# - François Gallard
+# - Antoine DECHAUME
+# - Benoit Pauwels
+#
 import pytest
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace

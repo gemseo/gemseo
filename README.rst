@@ -74,7 +74,7 @@ The list of dependencies with their licenses is given in the CREDITS.rst file.
 Contributors
 ------------
 
-- Francois Gallard
+- François Gallard
 - Damien Guenot
 - Vincent Gachelin
 - Charlie Vanaret
@@ -84,10 +84,10 @@ Contributors
 - Matthias De Lozzo
 - Jean-Christophe Giret
 - Syver Doving Agdestein
-- Antoine Dechaume
+- Antoine DECHAUME
 - Anne Gazaix
 - Nicolas Roussouly
-- Gilberto Ruiz Jimenez
+- Gilberto Ruiz Jiménez
 - Arthur Piat
 - Selime Gürol
 - Reda El Amri

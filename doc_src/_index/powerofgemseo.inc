@@ -6,9 +6,11 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-..
    Contributors:
-          :author: Matthias De Lozzo
+   - Jean-Christophe Giret
+   - Matthias De Lozzo
+   - Antoine DECHAUME
+
 
 Fully based on the power of object-oriented programming, the :term:`scenario` automatically generates the :term:`process`, with corresponding :term:`work flow` and :term:`data flow`.
 

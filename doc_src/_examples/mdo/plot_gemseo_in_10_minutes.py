@@ -13,11 +13,12 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Jean-Christophe Giret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Jean-Christophe Giret
+# - Gilberto Ruiz Jiménez
+# - Matthias De Lozzo
+# - Antoine DECHAUME
 """
 |g| in 10 minutes
 =============================

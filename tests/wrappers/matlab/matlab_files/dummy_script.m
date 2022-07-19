@@ -2,10 +2,8 @@
 %  All rights reserved.
 %
 %  Contributors:
-%     INITIAL AUTHORS - API and implementation and/or documentation
-%         :author: Arthur Piat
-%
-%     OTHER AUTHORS   - MACROSCOPIC CHANGES
+%  - Nicolas Roussouly
+%  - Antoine DECHAUME
 
 
 %dummy test for the matlab parser

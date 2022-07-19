@@ -12,11 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - syver.agdestein
+# - Jean-Christophe Giret
+# - Matthias De Lozzo
+# - Antoine DECHAUME
+# - Syver Doving AGDESTEIN
 """The Partial Least Square (PLS) regression to reduce the dimension of a variable.
 
 The :class:`.PLS` class wraps the PCA from Scikit-learn.

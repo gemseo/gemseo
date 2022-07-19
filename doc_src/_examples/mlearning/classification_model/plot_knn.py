@@ -13,11 +13,12 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
 # Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Syver Doving Agdestein, Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+# - Matthias De Lozzo
+# - Jean-Christophe Giret
+# - Antoine DECHAUME
+# - Syver Doving AGDESTEIN
 """
 K nearest neighbors classification
 ==================================

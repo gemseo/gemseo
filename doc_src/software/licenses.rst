@@ -6,6 +6,11 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+   Contributors:
+   - Matthias De Lozzo
+   - François Gallard
+   - Antoine DECHAUME
+
 .. _licenses:
 
 Licenses
