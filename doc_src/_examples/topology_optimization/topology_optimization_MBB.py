@@ -43,8 +43,8 @@ problem_name = "MBB"
 
 # %%
 # Define the number of elements in x- and y- directions:
-n_x = 100
-n_y = 50
+n_x = 50
+n_y = 25
 
 # %%
 # Define the full material Young's modulus and the Poisson's ratio:

@@ -41,8 +41,8 @@ problem_name = "L-Shape"
 
 # %%
 # Define the number of elements in the x- and y- directions:
-n_x = 50
-n_y = 50
+n_x = 25
+n_y = 25
 
 # %%
 # Define the full material Young's modulus and Poisson's ratio:
