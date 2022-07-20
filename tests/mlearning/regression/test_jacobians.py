@@ -12,12 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - Antoine DECHAUME
-# - Syver Doving AGDESTEIN
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Syver Doeving Agdestein
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test analytical Jacobian expressions against finite difference approximations.
 
 This is done using the built in check method of MDODiscipline. The regression models are

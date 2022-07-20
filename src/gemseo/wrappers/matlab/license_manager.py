@@ -17,10 +17,9 @@
 # All rights reserved.
 #
 # Contributors:
-# - Nicolas Roussouly
-# - Antoine DECHAUME
-# - Matthias De Lozzo
-#
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Arthur Piat
+#        :author: Nicolas Roussouly: GEMSEO integration
 """Definition of the Matlab license manager.
 
 Overview

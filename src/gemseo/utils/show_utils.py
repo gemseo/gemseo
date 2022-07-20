@@ -12,18 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
-# Contributors:
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Antoine DECHAUME
 """Copyright ONERA, taken from WhatsOpt-CLI https://github.com/OneraHub/WhatsOpt-
 CLI/blob/master/whatsopt/show_utils.py.
 
 Distributed under the Apache 2.0 license
 
-Minor modifications by François Gallard : merge the two methods an comment
+Minor modifications by Francois Gallard : merge the two methods an comment
 """
 from __future__ import annotations
 

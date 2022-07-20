@@ -12,10 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import pytest
 from gemseo.problems.sobieski.design_space import create_design_space
 from gemseo.problems.sobieski.disciplines import create_disciplines

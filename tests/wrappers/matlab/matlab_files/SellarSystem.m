@@ -1,31 +1,29 @@
-%  Discipline for Sellar System
 %
-%  Inputs:
-%     x: a scalar value
-%     z: a 2d vector value
-%     y_1: scalar output of Sellar1
-%     y_2: scalar output of Sellar2
+% Discipline for Sellar System
 %
-%  Outputs:
-%     obj: objective function
-%     c_1: constraint 1
-%     c_2: constraint 2
-%     jac_dobj_dx: jacobian of obj with respect to x
-%     jac_dobj_dz: jacobian of obj with respect to z
-%     jac_dobj_dy_1: jacobian of obj with respect to y_1
-%     jac_dobj_dy_2: jacobian of obj with respect to y_2
-%     jac_dc_1_dx: jacobian of c_1 with respect to x
-%     jac_dc_1_dz: jacobian of c_1 with respect to z
-%     jac_dc_1_dy_1: jacobian of c_1 with respect to y_1
-%     jac_dc_1_dy_2: jacobian of c_1 with respect to y_2
-%     jac_dc_2_dx: jacobian of c_2 with respect to x
-%     jac_dc_2_dz: jacobian of c_2 with respect to z
-%     jac_dc_2_dy_1: jacobian of c_2 with respect to y_1
-%     jac_dc_2_dy_2: jacobian of c_2 with respect to y_2
+% Inputs:
+%    x: a scalar value
+%    z: a 2d vector value
+%    y_1: scalar output of Sellar1
+%    y_2: scalar output of Sellar2
 %
-%  Contributors:
-%  - Nicolas Roussouly
-%  - Antoine DECHAUME
+% Outputs:
+%    obj: objective function
+%    c_1: constraint 1
+%    c_2: constriant 2
+%    jac_dobj_dx: jacobian of obj with respect to x
+%    jac_dobj_dz: jacobian of obj with respect to z
+%    jac_dobj_dy_1: jacobian of obj with respect to y_1
+%    jac_dobj_dy_2: jacobian of obj with respect to y_2
+%    jac_dc_1_dx: jacobian of c_1 with respect to x
+%    jac_dc_1_dz: jacobian of c_1 with respect to z
+%    jac_dc_1_dy_1: jacobian of c_1 with respect to y_1
+%    jac_dc_1_dy_2: jacobian of c_1 with respect to y_2
+%    jac_dc_2_dx: jacobian of c_2 with respect to x
+%    jac_dc_2_dz: jacobian of c_2 with respect to z
+%    jac_dc_2_dy_1: jacobian of c_2 with respect to y_1
+%    jac_dc_2_dy_2: jacobian of c_2 with respect to y_2
+%
 function [obj, c_1, c_2, jac_dobj_dx, jac_dobj_dz, jac_dobj_dy_1, jac_dobj_dy_2, jac_dc_1_dx, jac_dc_1_dz, jac_dc_1_dy_1, jac_dc_1_dy_2, jac_dc_2_dx, jac_dc_2_dz, jac_dc_2_dy_1, jac_dc_2_dy_2  ] = SellarSystem(x, z, y_1, y_2)
 
 obj = x^2 + z(2) + y_1 + exp(-y_2);

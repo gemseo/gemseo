@@ -33,9 +33,6 @@
 # Taken from :
 # https://github.com/kxxoling/PTable
 # https://pypi.python.org/pypi/PTable
-# 
-# Contributors:
-# - Antoine DECHAUME
 """
 A pretty table in the shell or in a file
 """

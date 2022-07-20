@@ -12,15 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - François Gallard
-# - Damien Guenot
-# - Charlie Vanaret
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#      :author: Damien Guenot - 18 mars 2016
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from gemseo.problems.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.sobieski._disciplines_sg import SobieskiPropulsionSG

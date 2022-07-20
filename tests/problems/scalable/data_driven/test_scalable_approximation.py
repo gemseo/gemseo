@@ -12,14 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Jean-Christophe Giret
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Charlie Vanaret
-# - Antoine DECHAUME
+# INITIAL AUTHORS - initial API and implementation and/or
+#                   initial documentation
+#        :author:  Francois Gallard, Charlie Vanaret, Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from os.path import dirname
 from os.path import join
 

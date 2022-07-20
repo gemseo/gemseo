@@ -12,16 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Charlie Vanaret
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#          Arthur Piat: greatly improve the N2 layout
 """Graph-based analysis of the weak and strong couplings between several disciplines."""
 from __future__ import annotations
 

@@ -2,55 +2,8 @@ exclude: ^src/gemseo/third_party
 
 repos:
 
-- repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.3.0
-  hooks:
-    - id: insert-license
-      name: insert LGPL license
-      exclude: ^doc_src
-      files: \.py$
-      args:
-        - --license-filepath
-        - LICENSES/headers/LGPL-3.0.txt
-    - id: insert-license
-      name: insert BSD license
-      files: ^doc_src/(examples|tutorials).*\.py$
-      args:
-        - --license-filepath
-        - LICENSES/headers/BSD-0-Clause.txt
-    - id: insert-license
-      name: insert CC BY-SA license
-      files: (\.rst|\.rst\.txt)$
-      exclude: ^changelog/fragments
-      args:
-        - --license-filepath
-        - LICENSES/headers/CC-BY-SA-4.0.txt
-        - --comment-style
-        - ..|   |
-
-- repo: https://gitlab.com/gemseo/dev/pre-commit-hooks
-  rev: 6e5d64b64c0e575292d0895a7688d6526b6f9d75
-  hooks:
-    - id: add-author-to-headers
-      name: add authors to .py headers
-      files: \.py$
-    - id: add-author-to-headers
-      name: add authors to .rst headers
-      files: ^doc_src/.*\.(rst|inc)$
-      args:
-        - --comment-prefix
-        - "   "
-        - --comment-start
-        - "..\n"
-    - id: add-author-to-headers
-      name: add authors to .m headers
-      files: \.m$
-      args:
-        - --comment-prefix
-        - "%  "
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.3.0
+  rev: v4.2.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
@@ -64,8 +17,15 @@ repos:
     - id: destroyed-symlinks
     - id: check-symlinks
 
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.9.0
+  hooks:
+    - id: rst-backticks
+    - id: rst-directive-colons
+    - id: rst-inline-touching-normal
+
 - repo: https://github.com/asottile/reorder_python_imports
-  rev: v3.3.0
+  rev: v3.1.0
   hooks:
     - id: reorder-python-imports
       name: reorder python imports inside src
@@ -94,22 +54,15 @@ repos:
       ]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.34.0
+  rev: v2.32.1
   hooks:
     - id: pyupgrade
       args: [--py37-plus]
 
 - repo: https://github.com/psf/black
-  rev: 22.6.0
+  rev: 22.3.0
   hooks:
     - id: black
-
-- repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.9.0
-  hooks:
-    - id: rst-backticks
-    - id: rst-directive-colons
-    - id: rst-inline-touching-normal
 
 - repo: https://github.com/PyCQA/flake8
   rev: 4.0.1
@@ -123,7 +76,33 @@ repos:
         - pep8-naming==0.12.1
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v2.28.0
+  rev: v2.27.0
   hooks:
     - id: commitizen
       stages: [commit-msg]
+
+- repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.1.14
+  hooks:
+    - id: insert-license
+      name: insert LGPL license
+      exclude: ^doc_src
+      files: \.py$
+      args:
+        - --license-filepath
+        - LICENSES/headers/LGPL-3.0.txt
+    - id: insert-license
+      name: insert BSD license
+      files: ^doc_src/(examples|tutorials).*\.py$
+      args:
+        - --license-filepath
+        - LICENSES/headers/BSD-0-Clause.txt
+    - id: insert-license
+      name: insert CC BY-SA license
+      files: (\.rst|\.rst\.txt)$
+      exclude: ^changelog/fragments
+      args:
+        - --license-filepath
+        - LICENSES/headers/CC-BY-SA-4.0.txt
+        - --comment-style
+        - ..|   |

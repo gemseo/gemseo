@@ -12,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Antoine DECHAUME
-# - Matthias De Lozzo
-# - Benoît Pauwels
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Benoit Pauwels
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Wrapper for the Generic Tool for Optimization (GTOpt) of pSeven Core."""
 from __future__ import annotations
 

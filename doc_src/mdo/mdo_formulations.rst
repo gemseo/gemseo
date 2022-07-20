@@ -6,14 +6,9 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+..
    Contributors:
-   - Benoit Pauwels
-   - Remi Lafage
-   - Jean-Christophe Giret
-   - François Gallard
-   - Matthias De Lozzo
-   - Antoine DECHAUME
-   - Gilberto Ruiz Jiménez
+          :author: Charlie Vanaret, Francois Gallard, Rémi Lafage
 
 .. _mdo_formulations:
 

@@ -12,20 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Pierre-Jean Barjhoux
-# - Nicolas Desfachelles
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Nicolas Roussouly
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                        documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The base class for the scenarios."""
 from __future__ import annotations
 

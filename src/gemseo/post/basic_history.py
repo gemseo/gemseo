@@ -12,14 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Matthias De Lozzo
-# - Benoit Pauwels
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Pierre-Jean Barjhoux
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A constraints plot."""
 from __future__ import annotations
 

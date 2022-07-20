@@ -6,11 +6,6 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-   Contributors:
-   - Matthias De Lozzo
-   - Jean-Christophe Giret
-   - Antoine DECHAUME
-
 .. _gaussian_mixture_algo:
 
 .. automodule:: gemseo.mlearning.cluster.gaussian_mixture

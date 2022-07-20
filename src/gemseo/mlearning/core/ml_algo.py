@@ -12,14 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Syver Doeving Agdestein
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Antoine DECHAUME
-# - Syver Doving AGDESTEIN
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """This module contains the base class for machine learning algorithms.
 
 Machine learning is the art of building models from data,

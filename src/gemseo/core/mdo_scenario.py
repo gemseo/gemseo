@@ -12,18 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - pierre-jean.barjhoux
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                        documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
+#                                                        Jacobian computation
 """A scenario whose driver is an optimization algorithm."""
 from __future__ import annotations
 

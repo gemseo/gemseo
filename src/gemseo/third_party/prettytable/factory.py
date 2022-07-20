@@ -33,9 +33,6 @@
 # Taken from :
 # https://github.com/kxxoling/PTable
 # https://pypi.python.org/pypi/PTable
-# 
-# Contributors:
-# - Antoine DECHAUME
 """
 Pretty table factory
 ********************

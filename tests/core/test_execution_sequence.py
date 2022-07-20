@@ -12,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - François Gallard
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Francois Gallard, Remi Lafage
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 import unittest
 from copy import deepcopy
 

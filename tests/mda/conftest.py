@@ -12,13 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
-# Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Antoine DECHAUME
 """Test helpers."""
 from functools import partial
 from typing import List

@@ -12,12 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - Antoine DECHAUME
-# - François Gallard
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Matthias De Lozzo
+#        :author: Antoine Dechaume
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Pretty string utils."""
 from __future__ import annotations
 

@@ -6,15 +6,9 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+..
    Contributors:
-   - Nicolas Roussouly
-   - Jean-Christophe Giret
-   - Gilberto Ruiz Jiménez
-   - François Gallard
-   - Matthias De Lozzo
-   - Benoit Pauwels
-   - Antoine DECHAUME
-   - gilberto.ruiz-j
+          :author:  Francois Gallard
 
 .. _software_connection:
 
@@ -297,11 +291,11 @@ second component of :code:`y_14` is of the wrong type.
    ERROR - 15:21:22 : Invalid data in : SobieskiMission_input on property : 'y_14 1', error : 'a' is not of type u'number'
    ERROR - 15:21:22 : JSON Grammar schema = {u'name': u'SobieskiMission_input', 'required': [u'x_shared', u'y_14', u'y_24', u'y_34'], u'id': u'#SobieskiMission_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_24': {'items': {'type': u'number'}, 'type': u'array'}, u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'y_14': {'items': {'type': u'number'}, 'type': u'array'}}}
    Traceback (most recent call last):
-   File "/home/François/workspace/|g|/mdo_examples/sellar_full_example.py", line 105, in <module>
+   File "/home/Francois/workspace/|g|/mdo_examples/sellar_full_example.py", line 105, in <module>
      misssion.execute(input_data={"y_14": [2.0, "a"]})
-   File "/home/François/workspace/|g|/gemseo/core/discipline.py", line 376, in execute
+   File "/home/Francois/workspace/|g|/gemseo/core/discipline.py", line 376, in execute
      self.check_input_data(input_data)
-   File "/home/François/workspace/|g|/gemseo/core/discipline.py", line 803, in check_input_data
+   File "/home/Francois/workspace/|g|/gemseo/core/discipline.py", line 803, in check_input_data
      raise InvalidDataException("Invalid input data for: " + self.name)
    gemseo.core.grammar.InvalidDataException: Invalid input data for: SobieskiMission
 

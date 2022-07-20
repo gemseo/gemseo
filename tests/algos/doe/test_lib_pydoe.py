@@ -12,14 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - François Gallard
-# - Damien Guenot
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#      :author: Damien Guenot - 20 avr. 2016
+#      :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from typing import Any
 from typing import Dict
 from typing import Optional

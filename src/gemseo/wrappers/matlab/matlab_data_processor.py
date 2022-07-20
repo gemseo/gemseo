@@ -17,10 +17,13 @@
 # All rights reserved.
 #
 # Contributors:
-# - Nicolas Roussouly
-# - Antoine DECHAUME
-# - Matthias De Lozzo
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Arthur Piat
+#        :author: François Gallard: initial author of the scilab version
+#                                   of MatlabDataProcessorWrapper
+#        :author: Nicolas Roussouly: GEMSEO integration
 #
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Definition of Matlab data processor.
 
 Overview

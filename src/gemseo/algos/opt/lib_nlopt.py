@@ -12,20 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Pierre-Jean Barjhoux
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Simone Coniglio
-# - s_coniglio
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Damien Guenot
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#         Francois Gallard : refactoring for v1, May 2016
 """NLopt library wrapper."""
 from __future__ import annotations
 

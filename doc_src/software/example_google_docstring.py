@@ -1,6 +1,3 @@
-# Contributors:
-# - Matthias De Lozzo
-# - Antoine DECHAUME
 """Example Google style docstrings.
 
 This module demonstrates the documentation as specified by the Google style:

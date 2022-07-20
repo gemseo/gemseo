@@ -13,20 +13,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Selime Gurol
-# - Pierre-Jean Barjhoux
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Gabriel Max De Mendonça Abrantes
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#       :author: Damien Guenot
+#       :author: Francois Gallard, Charlie Vanaret, Benoit Pauwels
+#       :author: Gabriel Max De Mendonça Abrantes
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Optimization problem.
 
 The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defining:

@@ -12,15 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Pierre-Jean Barjhoux
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Charlie Vanaret
+#                 Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The disciplines for the MDO problem proposed by Sellar et al. in
 
 Sellar, R., Batill, S., & Renaud, J. (1996).

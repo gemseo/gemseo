@@ -12,15 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Charlie Vanaret
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from gemseo.core.discipline import MDODiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi

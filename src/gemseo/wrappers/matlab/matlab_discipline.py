@@ -15,11 +15,11 @@
 # -*-mode: python; py-indent-offset: 4; tab-width: 8; coding:utf-8 -*-
 # Copyright (c) 2018 IRT-AESE.
 # All rights reserved.
-#
 # Contributors:
-# - Nicolas Roussouly
-# - Antoine DECHAUME
-# - Matthias De Lozzo
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: François Gallard: initial Scilab version
+#        :author: Arthur Piat: conversion Scilab to Matlab and complementary features
+#        :author: Nicolas Roussouly: GEMSEO integration
 """Definition of the Matlab discipline.
 
 Overview

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#  A modified version by François Gallard, from :
+#  A modified version by Francois Gallard, from :
 # Vahid Moosavi 2015 02 04 10:08 pm
 # sevamoo@gmail.com
 # Chair For Computer Aided Architectural Design, ETH  Zurich
@@ -207,11 +207,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-# This code was modified by François Gallard, IRT Saint Exupery
+# This code was modified by Francois Gallard, IRT Saint Exupery
 # for integration within |g|
-# 
-# Contributors:
-# - Antoine DECHAUME
 """
 Self Organizing Maps
 ********************

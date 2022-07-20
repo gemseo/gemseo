@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
-# Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - François Gallard
-# - Antoine DECHAUME
 from gemseo.api import create_discipline
 from gemseo.api import create_scenario
 from gemseo.api import get_available_formulations

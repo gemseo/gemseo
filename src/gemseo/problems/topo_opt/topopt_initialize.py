@@ -12,11 +12,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
-# Contributors:
-# - Simone Coniglio
-# - Matthias De Lozzo
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Simone Coniglio
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generation of the design space and disciplines of the topology optimization
 problems."""
 from __future__ import annotations

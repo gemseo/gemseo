@@ -12,18 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Pierre-Jean Barjhoux
-# - Nicolas Roussouly
-# - Jean-Christophe Giret
-# - François Gallard
-# - Matthias De Lozzo
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#        :author: Damien Guenot
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#        :author: Benoit Pauwels - Stacked data management
+#               (e.g. iteration index)
 """A database of function calls and design variables."""
 from __future__ import annotations
 

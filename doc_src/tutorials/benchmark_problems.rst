@@ -6,11 +6,9 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+..
    Contributors:
-   - Jean-Christophe Giret
-   - François Gallard
-   - Matthias De Lozzo
-   - Antoine DECHAUME
+          :author: Francois Gallard
 
 .. _benchmark_problems:
 

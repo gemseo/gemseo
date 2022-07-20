@@ -2,8 +2,10 @@
 %  All rights reserved.
 %
 %  Contributors:
-%  - Nicolas Roussouly
-%  - Antoine DECHAUME
+%     INITIAL AUTHORS - API and implementation and/or documentation
+%         :author: François Gallard
+%
+%     OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 function [z1, z2, jac_dz1_dx, jac_dz1_dy, jac_dz2_dx] = dummy_test_multidim_jac_wrong(x, y)
 z1(1) = x(1)^2 + 3*x(2);

@@ -12,12 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Gilberto Ruiz Jiménez
-# - Antoine DECHAUME
-# - Benoit Pauwels
-# - Matthias De Lozzo
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                        documentation
+#        :author: Benoit Pauwels
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """An adapter from `.OptimizationProblem` to a pSeven ProblemGeneric."""
 from __future__ import annotations
 

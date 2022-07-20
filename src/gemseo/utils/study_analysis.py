@@ -12,14 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Nicolas Roussouly
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - François Gallard
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
+#    INITIAL AUTHORS - initial API and implementation and/or
+#                      initial documentation
+#        :author:  Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Generate a N2 and XDSM into files (and/or web page) from an Excel description of the
 MDO problem."""
 from __future__ import annotations

@@ -1,6 +1,3 @@
-%  Contributors:
-%  - Nicolas Roussouly
-%  - Antoine DECHAUME
 classdef Logger
     %LOGGER Summary of this class goes here
     %   Detailed explanation goes here

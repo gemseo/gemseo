@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
-# Contributors:
-# - Jean-Christophe Giret
-# - Matthias De Lozzo
-# - Antoine DECHAUME
 from gemseo.api import create_design_space
 from gemseo.api import read_design_space
 from numpy import array

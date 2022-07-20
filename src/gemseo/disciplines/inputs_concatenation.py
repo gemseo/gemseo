@@ -12,11 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Jean-Christophe Giret
-# - Matthias De Lozzo
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Jean-Christophe Giret
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The concatenation of several input variables into a single one."""
 from __future__ import annotations
 

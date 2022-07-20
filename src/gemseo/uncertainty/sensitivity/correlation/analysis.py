@@ -14,11 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
-#
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Class for the estimation of various correlation coefficients."""
 from __future__ import annotations
 

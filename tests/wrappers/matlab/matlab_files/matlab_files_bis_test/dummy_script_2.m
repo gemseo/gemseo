@@ -2,8 +2,10 @@
 %  All rights reserved.
 %
 %  Contributors:
-%  - Nicolas Roussouly
-%  - Antoine DECHAUME
+%     INITIAL AUTHORS - API and implementation and/or documentation
+%         :author: Nicolas Roussouly
+%
+%     OTHER AUTHORS   - MACROSCOPIC CHANGES
 
 
 %dummy test for the matlab parser

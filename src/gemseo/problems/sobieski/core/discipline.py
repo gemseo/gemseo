@@ -12,10 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - initial API and implementation
+#               and/or initial documentation
+#        :author: Sobieski, Agte, and Sandusky
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+#        :author: Damien Guenot
+#        :author: Francois Gallard
+# From NASA/TM-1998-208715
+# Bi-Level Integrated System Synthesis (BLISS)
+# Sobieski, Agte, and Sandusky
 """Aerodynamics computation for the Sobieski's SSBJ use case."""
 from __future__ import annotations
 

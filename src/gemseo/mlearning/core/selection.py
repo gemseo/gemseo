@@ -12,13 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Syver Doeving Agdestein
-# - syver.agdestein
-# - Jean-Christophe Giret
-# - Matthias De Lozzo
-# - Antoine DECHAUME
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """This module contains a class to select a machine learning algorithm from a list.
 
 Machine learning is used to find relations or underlying structures in data.

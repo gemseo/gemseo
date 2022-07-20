@@ -1,6 +1,3 @@
-# Contributors:
-# - Matthias De Lozzo
-# - Antoine DECHAUME
 """Inspired by https://github.com/pandas-dev/pydata-sphinx-theme.
 
 BSD 3-Clause License

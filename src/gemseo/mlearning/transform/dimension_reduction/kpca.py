@@ -12,13 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - syver.agdestein
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - Antoine DECHAUME
-# - Syver Doving AGDESTEIN
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Kernel Principal Component Analysis (KPCA) to reduce the dimension of a variable.
 
 The :class:`.KPCA` class implements the KCPA wraps the KPCA from Scikit-learn.

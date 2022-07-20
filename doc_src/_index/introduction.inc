@@ -6,11 +6,9 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+..
    Contributors:
-   - Jean-Christophe Giret
-   - Matthias De Lozzo
-   - Antoine DECHAUME
-
+          :author: Matthias De Lozzo
 
 **|g|** stands for Generic Engine for `Multidisciplinary Design Optimization <https://en.wikipedia.org/wiki/Multidisciplinary_design_optimization>`_ Scenarios.
 

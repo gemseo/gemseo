@@ -6,13 +6,6 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-   Contributors:
-   - Matthias De Lozzo
-   - Jean-Christophe Giret
-   - Gilberto Ruiz Jiménez
-   - Antoine DECHAUME
-   - Syver Doving AGDESTEIN
-
 .. _machine_learning_overview:
 
 Introduction to machine learning

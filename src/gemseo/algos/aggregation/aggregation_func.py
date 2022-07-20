@@ -12,12 +12,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Antoine DECHAUME
-# - Matthias De Lozzo
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#       :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Constraint aggregation methods.
 
 Transform a constraint vector into one scalar equivalent or quasi equivalent constraint.

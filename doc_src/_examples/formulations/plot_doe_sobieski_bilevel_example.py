@@ -13,14 +13,10 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
 # Contributors:
-# - Matthias De Lozzo
-# - Jean-Christophe Giret
-# - François Gallard
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
-# - gilberto.ruiz-j
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: François Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
 BiLevel-based DOE on the Sobieski SSBJ test case
 ================================================

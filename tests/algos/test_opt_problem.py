@@ -13,22 +13,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 # Contributors:
-# - Pierre-Jean Barjhoux
-# - Matthias De Lozzo
-# - Remi Lafage
-# - Jean-Christophe Giret
-# - Gilberto Ruiz Jiménez
-# - François Gallard
-# - Damien Guenot
-# - Charlie Vanaret
-# - Benoit Pauwels
-# - Antoine DECHAUME
-# - Gilberto Ruiz Jiménez
-# - Nicolas Roussouly
-# - Gabriel Max De Mendonça Abrantes
-# - gilberto.ruiz-j
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard, Gabriel Max De Mendonça Abrantes
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from functools import partial
 from pathlib import Path
 from typing import Dict
