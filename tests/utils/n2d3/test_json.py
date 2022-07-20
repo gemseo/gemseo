@@ -58,7 +58,7 @@ def expected_links(n2_json):
             "target": 4,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D1", "D2", ["y12"], {"y12": 1, "y21": 1}
+                "D1", "D2", ["y12"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -66,7 +66,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D1", "D3", ["y12"], {"y12": 1, "y21": 1}
+                "D1", "D3", ["y12"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -74,7 +74,7 @@ def expected_links(n2_json):
             "target": 3,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D1", ["y21"], {"y12": 1, "y21": 1}
+                "D2", "D1", ["y21"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {
@@ -82,7 +82,7 @@ def expected_links(n2_json):
             "target": 2,
             "value": 1,
             "description": n2_json._create_coupling_html(
-                "D2", "D3", ["y21"], {"y12": 1, "y21": 1}
+                "D2", "D3", ["y21"], {"y12": "n/a", "y21": "n/a"}
             ),
         },
         {"source": 0, "target": 0, "value": 1, "description": ""},
@@ -128,7 +128,7 @@ def expected_nodes(n2_json):
     for discipline in [disciplines[index] for index in [2, 0, 1]]:
         desc = n2_json._create_discipline_html(
             discipline,
-            {"y12": 1, "y21": 1},
+            {"y12": "n/a", "y21": "n/a"},
         )
         nodes.append(
             {
@@ -339,7 +339,7 @@ def test_compute_variables_sizes(n2_json):
         n2_json (N2JSON): The N2JSON
             related to two strongly coupled disciplines and a weakly one.
     """
-    assert n2_json._compute_variables_sizes() == {"y12": 1, "y21": 1}
+    assert n2_json._compute_variables_sizes() == {"y12": "n/a", "y21": "n/a"}
 
 
 def test_compute_groups(n2_json):
@@ -368,7 +368,7 @@ def test_create_nodes(n2_json, expected_nodes):
     children = [[2], [3, 4]]
     nodes, groups = n2_json._create_nodes(
         {"D1": 1, "D2": 1, "D3": 0},
-        {"y12": 1, "y21": 1},
+        {"y12": "n/a", "y21": "n/a"},
         disciplines,
         n_groups,
         children,
@@ -402,7 +402,7 @@ def test_create_links(n2_json, expected_links):
     links = n2_json._create_links(
         n2_json._graph.get_disciplines_couplings(),
         5,
-        {"y12": 1, "y21": 1},
+        {"y12": "n/a", "y21": "n/a"},
         ["D3", "D1", "D2"],
         2,
     )

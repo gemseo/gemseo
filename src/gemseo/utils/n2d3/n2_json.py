@@ -34,6 +34,7 @@ class N2JSON:
 
     _DEFAULT_GROUP_TEMPLATE = "Group {}"
     _DEFAULT_WEAKLY_COUPLED_DISCIPLINES = "Weakly coupled disciplines"
+    __NA = "n/a"
 
     def __init__(
         self,
@@ -453,7 +454,14 @@ class N2JSON:
         variables_sizes = {}
         for discipline in self.__disciplines:
             for name in discipline.get_input_data_names():
-                variables_sizes[name] = len(discipline.default_inputs.get(name, [1]))
+                if name not in variables_sizes or variables_sizes[name] == self.__NA:
+                    default_value = discipline.default_inputs.get(name)
+                    if default_value is not None:
+                        size = default_value.size
+                    else:
+                        size = self.__NA
+                    variables_sizes[name] = size
+
         return variables_sizes
 
     def _get_disciplines_names(self) -> list[str]:

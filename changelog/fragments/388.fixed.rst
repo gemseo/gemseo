@@ -1,0 +1,2 @@
+:class:`.N2JSON` now works when a coupling variable has no default value, and displays ``"n/a"`` as variable dimension.
+:class:`.N2JSON` now works when the default value of a coupling variable is an unsized object, e.g. ``array(1)``.
