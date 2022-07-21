@@ -6,9 +6,9 @@
     http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
     Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-.. _breaking-changes:
+.. _upgrading-gemseo:
 
-Breaking changes
+Upgrading GEMSEO
 ~~~~~~~~~~~~~~~~
 
 This page contains the history of the breaking changes in |g|.
@@ -29,8 +29,7 @@ API changes that impact user scripts code
 - ``ScatterPlotMatrix`` ``variables_list``  has been renamed to ``variable_names``.
 - All ``MDA`` algos now count their iterations starting from ``0``.
 - The ``MDA.residual_history`` is now a list of normed residuals.
-- The argument ``figsize`` in ``plot_residual_history`` was renamed to ``fig_size`` to be consistent with other
-``OptPostProcessor`` algos.
+- The argument ``figsize`` in ``plot_residual_history`` was renamed to ``fig_size`` to be consistent with other ``OptPostProcessor`` algos.
 - ``ConstraintsHistory``: ``constraints_list``  has been renamed to ``constraint_names``.
 - The ``MDAChain`` now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
 - The ``MDF`` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of - ``sub_mda_class``.
@@ -44,11 +43,10 @@ API changes that impact user scripts code
 - ``save_matlab_file`` ``dict_to_save``  has been renamed to ``data``.
 - In ``AbstractCache``, ``cache.get_length()`` has been replaced by ``len(cache)``.
 - In ``AbstractFullCache``, ``varsizes`` has been renamed to ``names_to_sizes`` and ``max_length`` to ``MAXSIZE``.
-- The ``AbstractFullCache``'s getters (``get_data`` and ``get_all_data``) now return one or more ``CacheItem``,
-that is a ``namedtuple`` with variable groups as fields.
+- The ``AbstractFullCache``'s getters (``get_data`` and ``get_all_data``) now return one or more ``CacheItem``, that is a ``namedtuple`` with variable groups as fields.
 
-API change that impact discipline wrappers
-------------------------------------------
+API changes that impact discipline wrappers
+-------------------------------------------
 
 - In Grammar, ``update_from`` has been renamed to ``update``
 - In Grammar, ``remove_item(name)`` has been replaced by ``del grammar[name]``
@@ -64,8 +62,8 @@ API change that impact discipline wrappers
 - In Grammar, ``update_required_elements`` has been removed
 - In Grammar, ``init_from_schema_file`` has been renamed to ``read``
 
-API change that affect plugin or features developers
-----------------------------------------------------
+API changes that affect plugin or features developers
+-----------------------------------------------------
 
 - ``AlgoLib.lib_dict``  has been renamed to ``AlgoLib.descriptions``.
 - ``gemseo.utils.data_conversion.FLAT_JAC_SEP``  has been renamed to ``STRING_SEPARATOR``.

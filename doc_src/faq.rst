@@ -18,7 +18,7 @@ As |g| code evolves,
 some calling signatures and behavior may change.
 These changes may break the codes that use |g|
 and require modifications of them.
-See :ref:`breaking-changes` for more information.
+See :ref:`upgrading-gemseo` for more information.
 
 Create a simple :term:`DOE` on a single discipline
 --------------------------------------------------
