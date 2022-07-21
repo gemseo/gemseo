@@ -1,4 +1,5 @@
-Renaming:
+API changes:
+
 - :attr:`.AlgoLib.lib_dict` renamed to :attr:`.AlgoLib.descriptions`.
 - :attr:`.AnalyticDiscipline.expr_symbols_dict` renamed to :attr:`.AnalyticDiscipline.output_names_to_symbols`.
 - :meth:`.AtomicExecSequence.get_state_dict` renamed to :meth:`.AtomicExecSequence.get_statuses`.
@@ -34,4 +35,4 @@ Renaming:
   - :meth:`.DataConversion.deepcopy_datadict` renamed to :meth:`.deepcopy_dict_of_arrays`
   - :meth:`.DataConversion.get_all_inputs` renamed to :meth:`.get_all_inputs`
   - :meth:`.DataConversion.get_all_outputs` renamed to :meth:`.get_all_outputs`
-:meth:`.DesignSpace.get_current_value` can now return a dictionary of NumPy arrays or normalized design values.
+  - :meth:`.DesignSpace.get_current_value` can now return a dictionary of NumPy arrays or normalized design values.

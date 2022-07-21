@@ -11,63 +11,14 @@
 Frequently Asked Questions
 ==========================
 
-Upgrading to |g| 3
-------------------
+Upgrading |g|
+-------------
 
-As *GEMS* has been renamed to |g|,
-upgrading from version 2 to version 3
-requires to change all the import statements of your code
-from
-
-.. code-block:: python
-
-  import gems
-  from gems.x.y import z
-
-to
-
-.. code-block:: python
-
-  import gemseo
-  from gemseo.x.y import z
-
-Upgrading to GEMS 2
--------------------
-
-The API of *GEMS* 2 has been slightly modified
-with respect to *GEMS* 1.
-In particular,
-for all the supported Python versions,
-the strings shall to be encoded in unicode
-while they were previously encoded in ASCII.
-
-That kind of error:
-
-.. code-block:: console
-
-  ERROR - 17:11:09 : Invalid data in : MDOScenario_input
-  ', error : data.algo must be string
-  Traceback (most recent call last):
-    File "plot_mdo_scenario.py", line 85, in <module>
-      scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
-    File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 586, in execute
-      self.check_input_data(input_data)
-    File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 1243, in check_input_data
-      raise InvalidDataException("Invalid input data for: " + self.name)
-  gemseo.core.grammar.InvalidDataException: Invalid input data for: MDOScenario
-
-is most likely due to the fact
-that you have not migrated your code
-to be compliant with |g| 2.
-To migrate your code,
-add the following import at the beginning
-of all your modules defining literal strings:
-
-.. code-block:: python
-
-   from __future__ import unicode_literals
-
-Please also read carefully :ref:`python2and3` for more information.
+As |g| code evolves,
+some calling signatures and behavior may change.
+These changes may break the codes that use |g|
+and require modifications of them.
+See :ref:`breaking-changes` for more information.
 
 Create a simple :term:`DOE` on a single discipline
 --------------------------------------------------
