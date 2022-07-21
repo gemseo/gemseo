@@ -197,11 +197,8 @@ class MDA(MDODiscipline):
     def _check_consistency(self) -> None:
         """Check if there are not more than one equation per variable.
 
-        For instance if a strong coupling is not also a self coupling.
-
-        Raises:
-            ValueError:
-                * If outputs are defined multiple times.
+        For instance if a strong coupling is not also a self coupling, or if outputs are
+        defined multiple times.
         """
         strong_c_disc = self.coupling_structure.get_strongly_coupled_disciplines(
             add_self_coupled=False
@@ -213,8 +210,8 @@ class MDA(MDODiscipline):
         ]
         if also_strong:
             for disc in also_strong:
-                in_outs = set(disc.get_input_data_names()) & set(
-                    disc.get_output_data_names()
+                in_outs = sorted(
+                    set(disc.get_input_data_names()) & set(disc.get_output_data_names())
                 )
                 LOGGER.warning(
                     "Self coupling variables in discipline %s are: %s.",
@@ -222,7 +219,7 @@ class MDA(MDODiscipline):
                     in_outs,
                 )
 
-            also_strong_n = [disc.name for disc in also_strong]
+            also_strong_n = sorted(disc.name for disc in also_strong)
             LOGGER.warning(
                 "The following disciplines contain self-couplings and strong couplings:"
                 " %s. This is not a problem as long as their self-coupling variables "
@@ -239,7 +236,10 @@ class MDA(MDODiscipline):
                 all_outs[out] = disc
 
         if multiple_outs:
-            raise ValueError(f"Outputs are defined multiple times: {multiple_outs}.")
+            LOGGER.warning(
+                "The following outputs are defined multiple times: %s.",
+                sorted(multiple_outs),
+            )
 
     def _compute_input_couplings(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
