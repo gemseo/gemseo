@@ -31,15 +31,15 @@ The required dependencies provide the core features of |g|,
 these are:
 
     - docstring-inheritance ==1.0.0
-    - fastjsonschema <=2.15.3
+    - fastjsonschema <=2.16.1
     - genson ==1.2.2
     - h5py >=2.3,<=3.6.0
     - jinja2 <=3.1.2
     - matplotlib >=2,<=3.5.2
-    - networkx >=2.2,<=2.8
-    - numpy >=1.10,<=1.22.3
+    - networkx >=2.2,<=2.8.5
+    - numpy >=1.10,<=1.23.1
     - packaging <=21.3
-    - pandas >=0.16,<=1.4.2
+    - pandas >=0.16,<=1.4.3
     - pyxdsm <=2.2.1
     - requests
     - scipy >=1.1,<=1.7.3
@@ -70,11 +70,11 @@ All these tools are open source with non-viral licenses
 
    - graphviz >=0.16,<=0.20: coupling graph generation
    - nlopt >=2.4.2,<=2.7.1: optimization library
-   - openpyxl <=3.0.9: Excel reading with pandas
+   - openpyxl <=3.0.10: Excel reading with pandas
    - openturns >=1.13,<=1.18: designs of experiments, machine learning, uncertainty quantification
    - pdfo >=1.0,<=1.2: derivative-free optimization algorithms
    - pydoe2 >=0.3.8,<=1.3.0: design of experiments
-   - pyside2 <=5.15.2.1: grammar editor GUI
-   - scikit-learn >=0.18,<=1.1.0: machine learning
+   - pyside6 >=6.3.0,<=6.3.1: grammar editor GUI
+   - scikit-learn >=0.18,<=1.1.1: machine learning
    - sympy >=0.7,<=1.10.1: symbolic calculations for analytic disciplines
    - xlwings ==0.27.0: Excel reading on Windows
