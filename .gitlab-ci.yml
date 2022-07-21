@@ -99,7 +99,7 @@ check:
         coverage_format: cobertura
         path: $COVERAGE_FILE
   # To get the total coverage shown in gitlab UI.
-  coverage: '/^TOTAL.+?(\d+\%)$/'
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   rules:
     # Only run a test job when the following files have changed.
     - changes:
