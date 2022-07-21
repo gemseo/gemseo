@@ -1,2 +1,4 @@
-The short names of some machine learning algorithms have been replaced by conventional acronyms.
-The class variable ``MLAlgo.ABBR`` was renamed as :attr:`.MLAlgo.SHORT_ALGO_NAME`.
+API changes:
+
+- The short names of some machine learning algorithms have been replaced by conventional acronyms.
+- The class variable ``MLAlgo.ABBR`` was renamed as :attr:`.MLAlgo.SHORT_ALGO_NAME`.

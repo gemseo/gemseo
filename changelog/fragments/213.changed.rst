@@ -1,3 +1,6 @@
-The ``AbstractFullCache``'s getters (``get_data`` and ``get_all_data``) return one or more ``CacheItem``, that is a namedtuple with variable groups as fields.
-In ``AbstractFullCache``, ``varsizes`` is renamed as ``names_to_sizes`` and ``max_length`` as ``MAXSIZE``,
-The number of items stored in an AbstractCache can no longer be obtained with ``get_length``, but ``__len__``.
+API changes:
+
+- The :class:`.AbstractFullCache`'s getters (:meth:`~.AbstractFullCache.get_data` and :meth:`~.AbstractFullCache.get_all_data`) return one or more :class:`.CacheItem`,
+that is a namedtuple with variable groups as fields.
+- In :class:`.AbstractFullCache`, ``varsizes`` is renamed as :attr:`~.AbstractFullCache.names_to_sizes` and ``max_length`` as :attr:`.AbstractFullCache.MAXSIZE`,
+The number of items stored in an :class:`.AbstractCache` can no longer be obtained with ``get_length``, but ``__len__``.

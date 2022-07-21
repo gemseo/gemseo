@@ -1,3 +1,5 @@
-The MDAChain now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
-The MDF formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of ``sub_mda_class``.
-The BiLevel formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
+API changes:
+
+- The MDAChain now takes ``inner_mda_name`` as argument instead of ``sub_mda_class``.
+- The :class:`.MDF` formulation now takes ``main_mda_name`` as argument instead of ``main_mda_class`` and ``inner_mda_name`` instead of ``sub_mda_class``.
+- The :class:`.BiLevel` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
