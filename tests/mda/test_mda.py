@@ -132,40 +132,34 @@ def analytic_disciplines_from_desc(descriptions):
 
 
 @pytest.mark.parametrize(
-    "desc, raise_exception",
+    "desc, log_message",
     [
         (
             (
                 {"y": "x"},
                 {"y": "z"},
             ),
-            True,
+            "The following outputs are defined multiple times: ['y'].",
         ),
-        (({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}), False),
+        (
+            ({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}),
+            "The following disciplines contain self-couplings and strong couplings: "
+            "['AnalyticDiscipline'].",
+        ),
     ],
 )
-def test_consistency_fail(desc, raise_exception, caplog):
+def test_consistency_fail(desc, log_message, caplog):
     """Test that the consistency check is done properly.
 
     Args:
         desc: The mathematical expressions to create analytic disciplines.
-        raise_exception: Whether an exception is expected for the check.
+        log_message: The expected warning message.
         caplog: Fixture to access and control log capturing.
     """
     disciplines = analytic_disciplines_from_desc(desc)
 
-    if raise_exception:
-        with pytest.raises(
-            ValueError,
-            match="Outputs are defined multiple times",
-        ):
-            MDA(disciplines)
-    else:
-        MDA(disciplines)
-        assert (
-            "The following disciplines contain self-couplings and strong couplings:"
-            in caplog.text
-        )
+    MDA(disciplines)
+    assert log_message in caplog.text
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
