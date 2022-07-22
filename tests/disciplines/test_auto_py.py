@@ -69,16 +69,41 @@ def f4(x=1.0):
     return y, x
 
 
+def f5(y=2.0):
+    u = 1.0 - 0.01 * y
+    f = 2 * u
+    return u, f
+
+
+def df5(y=2.0):
+    return array([[-0.01], [-0.02]])
+
+
 def test_basic():
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
+
+    assert list(d1.get_input_data_names()) == ["y2", "z"]
     d1.execute()
 
     assert d1.local_data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
+    assert list(d2.get_input_data_names()) == ["y1", "z"]
+    assert list(d2.get_output_data_names()) == ["y2", "y3"]
+
     d2.execute()
     assert d2.local_data["y2"] == f2()[0]
+
+
+@pytest.mark.parametrize(
+    "grammar_type",
+    [AutoPyDiscipline.SIMPLE_GRAMMAR_TYPE, AutoPyDiscipline.JSON_GRAMMAR_TYPE],
+)
+def test_jac(grammar_type):
+    """Test a basic jacobian."""
+    disc = AutoPyDiscipline(py_func=f5, py_jac=df5, grammar_type=grammar_type)
+    assert disc.check_jacobian()
 
 
 def test_use_arrays():

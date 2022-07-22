@@ -49,6 +49,9 @@ from numpy import zeros
 
 from gemseo.core.cache import AbstractCache
 from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline_data import MutableData
+from gemseo.core.namespaces import remove_prefix_from_dict
+from gemseo.core.namespaces import remove_prefix_from_list
 
 if TYPE_CHECKING:
     from gemseo.core.execution_sequence import SerialExecSequence
@@ -246,6 +249,8 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # : data converters between execute and _run
         self.data_processor = None
         self._default_inputs = None
+        self.input_grammar = None
+        self.output_grammar = None
         self.__set_default_inputs({})
         # Allow to re-execute the same discipline twice, only if did not fail
         # and not running
@@ -294,8 +299,6 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         # linearize mode :auto, adjoint, direct
         self._linearization_mode = JacobianAssembly.AUTO_MODE
 
-        self.input_grammar = None
-        self.output_grammar = None
         self._grammar_type = grammar_type
 
         if auto_detect_grammar_files:
@@ -348,7 +351,11 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         self.__set_local_data(data)
 
     def __set_local_data(self, data: MutableMapping[str, Any]) -> None:
-        self._local_data = DisciplineData(data)
+        self._local_data = DisciplineData(
+            data,
+            input_to_namespaced=self.input_grammar.to_namespaced,
+            output_to_namespaced=self.output_grammar.to_namespaced,
+        )
 
     @property
     def n_calls(self) -> int | None:
@@ -1404,10 +1411,58 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
                 "MDODiscipline default_inputs must be of dict-like type, "
                 "got {} instead.".format(type(default_inputs))
             )
-        self.__set_default_inputs(default_inputs)
+        self.__set_default_inputs(default_inputs, with_namespace=True)
 
-    def __set_default_inputs(self, data: dict[str, Any]) -> None:
-        self._default_inputs = DisciplineData(data)
+    def __set_default_inputs(self, data: MutableData, with_namespace=False) -> None:
+        """Set the default inputs.
+
+        Args:
+            data: The mapping containing default values.
+            with_namespace: Whether to add the input grammar namespaces prefixes
+                to the keys of the default inputs.
+        """
+        if with_namespace:
+            to_ns = self.input_grammar.to_namespaced
+            in_names = self.input_grammar.keys()
+            data = {
+                (to_ns[k] if (k not in in_names and k in to_ns) else k): v
+                for k, v in data.items()
+            }
+        if self.input_grammar is not None:
+            disc_data = DisciplineData(
+                data, input_to_namespaced=self.input_grammar.to_namespaced
+            )
+        else:
+            disc_data = DisciplineData(data)
+        self._default_inputs = disc_data
+
+    def add_namespace_to_input(self, name: str, namespace: str):
+        """Add a namespace prefix to an existing input grammar element.
+
+        The updated input grammar element name will be
+        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+
+        Args:
+            name: The element name to rename.
+            namespace: The name of the namespace.
+        """
+        self.input_grammar.add_namespace(name, namespace)
+        default_value = self.default_inputs.get(name)
+        if default_value is not None:
+            del self.default_inputs[name]
+            self.default_inputs[self.input_grammar.to_namespaced[name]] = default_value
+
+    def add_namespace_to_output(self, name: str, namespace: str):
+        """Add a namespace prefix to an existing output grammar element.
+
+        The updated output grammar element name will be
+        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+
+        Args:
+            name: The element name to rename.
+            namespace: The name of the namespace.
+        """
+        self.output_grammar.add_namespace(name, namespace)
 
     def _compute_jacobian(
         self,
@@ -1821,7 +1876,19 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             kwargs: The data to be stored in :attr:`.MDODiscipline.local_data`.
         """
-        self._local_data.update(kwargs)
+        out_ns = self.output_grammar.to_namespaced
+        if not out_ns:
+            self._local_data.update(kwargs)
+        else:
+            out_names = self.output_grammar.keys()
+            for key, value in kwargs.items():
+                if key in out_names:
+                    self._local_data[key] = value
+                else:
+                    key_with_ns = out_ns.get(key)
+                    if key_with_ns is not None:
+                        self._local_data[key_with_ns] = value
+                    # else out data will be cleared
 
     def check_input_data(
         self,
@@ -1922,31 +1989,51 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         except KeyError as err:
             raise ValueError(f"Discipline {self.name} has no output named {err}.")
 
-    def get_input_data_names(self) -> list[str]:
+    def get_input_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the input variables.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                input names, if any.
 
         Returns:
             The names of the input variables.
         """
-        return self.input_grammar.keys()
+        if with_namespaces:
+            return self.input_grammar.keys()
+        else:
+            return remove_prefix_from_list(self.input_grammar.keys())
 
-    def get_output_data_names(self) -> list[str]:
+    def get_output_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the output variables.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The names of the output variables.
         """
-        return self.output_grammar.keys()
+        if with_namespaces:
+            return self.output_grammar.keys()
+        else:
+            return remove_prefix_from_list(self.output_grammar.keys())
 
-    def get_input_output_data_names(self) -> list[str]:
+    def get_input_output_data_names(self, with_namespaces=True) -> list[str]:
         """Return the names of the input and output variables.
+
+         Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The name of the input and output variables.
         """
-        outpt = self.output_grammar.keys()
-        inpt = self.input_grammar.keys()
-        return list(set(outpt) | set(inpt))
+        in_outs = set(self.output_grammar.keys()) | set(self.input_grammar.keys())
+        if with_namespaces:
+            return list(in_outs)
+        else:
+            return remove_prefix_from_list(in_outs)
 
     def get_all_inputs(self) -> list[Any]:
         """Return the local input data as a list.
@@ -1968,21 +2055,37 @@ class MDODiscipline(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self.get_outputs_by_name(self.get_output_data_names())
 
-    def get_output_data(self) -> dict[str, Any]:
+    def get_output_data(self, with_namespaces=True) -> dict[str, Any]:
         """Return the local output data as a dictionary.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                output names, if any.
 
         Returns:
             The local output data.
         """
-        return {k: v for k, v in self._local_data.items() if self.is_output_existing(k)}
+        if with_namespaces or not self.output_grammar.to_namespaced:
+            output_names = self.output_grammar.keys()
+            return {k: v for k, v in self._local_data.items() if k in output_names}
+        else:
+            return remove_prefix_from_dict(self.get_output_data(True))
 
-    def get_input_data(self) -> dict[str, Any]:
+    def get_input_data(self, with_namespaces=True) -> dict[str, Any]:
         """Return the local input data as a dictionary.
+
+        Args:
+            with_namespaces: Whether to keep the namespace prefix of the
+                input names, if any.
 
         Returns:
             The local input data.
         """
-        return {k: v for k, v in self._local_data.items() if self.is_input_existing(k)}
+        if with_namespaces or not self.input_grammar.to_namespaced:
+            input_names = self.input_grammar.keys()
+            return {k: v for k, v in self._local_data.items() if k in input_names}
+        else:
+            return remove_prefix_from_dict(self.get_input_data(True))
 
     def serialize(
         self,

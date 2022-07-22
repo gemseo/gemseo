@@ -165,3 +165,21 @@ def test_init():
     d2 = DisciplineData(d1)
     d2["x"] = 0
     assert data["x"] == d2["x"]
+
+
+def test_get_ns():
+    """Verify access of data from keys without namespaces."""
+    data = DisciplineData(
+        {"ns:x": 1, "ns:y": 2},
+        input_to_namespaced={"x": "ns:x"},
+        output_to_namespaced={"y": "ns:y"},
+    )
+    assert data["ns:x"] == 1
+    assert data["x"] == 1
+    assert data.get("x") == 1
+    assert data.get("ns:x") == 1
+
+    assert data["ns:y"] == 2
+    assert data["y"] == 2
+    assert data.get("y") == 2
+    assert data.get("ns:y") == 2

@@ -622,3 +622,25 @@ def test_to_json(tmp_wd):
     """Verify to_json."""
     g = JSONGrammar("g", schema_path=DATA_PATH / "grammar_1.json")
     assert g.to_json(indent=2) == EXPECTED_JSON
+
+
+def test_rename():
+    """Verify rename."""
+    g = JSONGrammar("g")
+    g.update(["name1", "name2"])
+
+    g.rename_element("name1", "n:name1")
+    g.rename_element("name2", "n:name2")
+
+    assert sorted(g.required_names) == ["n:name1", "n:name2"]
+    assert "name1" not in g
+    assert sorted(g.names) == ["n:name1", "n:name2"]
+
+
+def test_update_from_error():
+    g = JSONGrammar("g")
+    g2 = SimpleGrammar("g")
+    with pytest.raises(
+        TypeError, match="A JSONGrammar cannot be updated from a grammar"
+    ):
+        g.update(g2)

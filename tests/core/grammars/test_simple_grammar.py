@@ -432,3 +432,16 @@ def test_serialization():
 
     for k, v in g.__dict__.items():
         assert deserialized_grammar.__dict__[k] == v
+
+
+def test_rename():
+    """Verify rename."""
+    g = SimpleGrammar(
+        "g", names_to_types={"name1": int, "name2": str}, required_names=["name1"]
+    )
+    g.rename_element("name1", "n:name1")
+    g.rename_element("name2", "n:name2")
+
+    assert list(g.required_names) == ["n:name1"]
+    assert "name1" not in g
+    assert ["n:name1", "n:name2"] == sorted(g.names)

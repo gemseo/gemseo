@@ -74,39 +74,39 @@ class ConstrAggegationDisc(MDODiscipline):
         super().__init__(name)
 
         self.__method_name = method_name
-        self.__input_names = constr_data_names
         self.__meth_options = meth_options
-        self.__output_names = [f"{self.__method_name}_{c}" for c in constr_data_names]
-        self.__out_sizes = {k: 1 for k in self.__output_names}
+        output_names = [f"{self.__method_name}_{c}" for c in constr_data_names]
 
-        self.input_grammar.update(self.__input_names)
-        self.output_grammar.update(self.__output_names)
+        self.input_grammar.update(constr_data_names)
+        self.output_grammar.update(output_names)
+        self.__data_sizes = {}
 
     def _run(self) -> None:
         c_data = concatenate_dict_of_arrays_to_array(
-            self.local_data, self.__input_names
+            self.local_data, self.get_input_data_names()
         )
         method = METHODS_MAP[self.__method_name]
         c_agg = atleast_1d(method(c_data, **self.__meth_options))
 
+        output_names = self.get_output_data_names()
+
         out_data = split_array_to_dict_of_arrays(
-            c_agg, self.__out_sizes, self.__output_names
+            c_agg, dict.fromkeys(output_names, 1), output_names
         )
         self.store_local_data(**out_data)
+        if not self.__data_sizes:
+            self.__data_sizes = {k: s.size for k, s in self.local_data.items()}
 
     def _compute_jacobian(
         self,
         inputs: Sequence[str] | None = None,
         outputs: Sequence[str] | None = None,
     ) -> None:
-        c_data = concatenate_dict_of_arrays_to_array(
-            self.local_data, self.__input_names
-        )
+        input_names = self.get_input_data_names()
+        c_data = concatenate_dict_of_arrays_to_array(self.local_data, input_names)
         method_jac = METHODS_JAC_MAP[self.__method_name]
         c_agg_jac = method_jac(c_data, **self.__meth_options)
 
-        data_sizes = {k: s.size for k, s in self.local_data.items()}
-        data_sizes.update(self.__out_sizes)
         self.jac = split_array_to_dict_of_arrays(
-            c_agg_jac, data_sizes, self.__output_names, self.__input_names
+            c_agg_jac, self.__data_sizes, self.get_output_data_names(), input_names
         )

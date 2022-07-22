@@ -71,6 +71,7 @@ class AnalyticDiscipline(MDODiscipline):
         expressions: Mapping[str, str | Expr],
         name: str | None = None,
         fast_evaluation: bool = True,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
         """# noqa: D205 D212 D415
         Args:
@@ -81,7 +82,7 @@ class AnalyticDiscipline(MDODiscipline):
                 in order to accelerate their numerical evaluation;
                 otherwise the expressions are evaluated with ``sympy.Expr.evalf``.
         """
-        super().__init__(name)
+        super().__init__(name, grammar_type=grammar_type)
         self.expressions = expressions
         self.output_names_to_symbols = {}
         self.input_names = []
@@ -215,7 +216,7 @@ class AnalyticDiscipline(MDODiscipline):
         """Return the local data with float values."""
         return {
             input_name: float(self.local_data[input_name].real)
-            for input_name in self.get_input_data_names()
+            for input_name in self.get_input_data_names(with_namespaces=False)
         }
 
     def _compute_jacobian(

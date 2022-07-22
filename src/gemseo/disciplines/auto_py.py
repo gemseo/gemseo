@@ -93,6 +93,7 @@ class AutoPyDiscipline(MDODiscipline):
         py_jac: Callable[[DataType, ..., DataType], ndarray] | None = None,
         name: str | None = None,
         use_arrays: bool = False,
+        grammar_type: str = MDODiscipline.JSON_GRAMMAR_TYPE,
     ) -> None:
         """# noqa: D205 D212 D415
         Args:
@@ -115,7 +116,7 @@ class AutoPyDiscipline(MDODiscipline):
         super().__init__(
             name=name or py_func.__name__,
             auto_detect_grammar_files=False,
-            grammar_type=MDODiscipline.JSON_GRAMMAR_TYPE,
+            grammar_type=grammar_type,
         )
 
         self.py_func = py_func
@@ -156,7 +157,7 @@ class AutoPyDiscipline(MDODiscipline):
         return {args[-n_defaults:][i]: defaults[i] for i in range(n_defaults)}
 
     def _run(self):
-        output_values = self.py_func(**self.get_input_data())
+        output_values = self.py_func(**self.get_input_data(with_namespaces=False))
         if len(self.out_names) == 1:
             output_values = {self.out_names[0]: output_values}
         else:
@@ -178,11 +179,18 @@ class AutoPyDiscipline(MDODiscipline):
         if self.sizes is None:
             self.sizes = {k: v.size for k, v in self.local_data.items()}
 
+        func_jac = self.py_jac(**self.get_input_data(with_namespaces=False))
+
+        in_to_ns = self.input_grammar.to_namespaced
+        in_names_ns = [
+            in_to_ns[name] if name in in_to_ns else name for name in self.in_names
+        ]
+        out_to_ns = self.output_grammar.to_namespaced
+        out_names_ns = [
+            out_to_ns[name] if name in out_to_ns else name for name in self.out_names
+        ]
         self.jac = split_array_to_dict_of_arrays(
-            atleast_2d(self.py_jac(**self.get_input_data())),
-            self.sizes,
-            self.out_names,
-            self.in_names,
+            atleast_2d(func_jac), self.sizes, out_names_ns, in_names_ns
         )
 
     @staticmethod

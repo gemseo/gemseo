@@ -32,6 +32,9 @@ from typing import TYPE_CHECKING
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.discipline_data import Data
+from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import update_namespaces
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -54,6 +57,14 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
     name: str
     """The name of the grammar."""
 
+    to_namespaced: NamespacesMapping
+    """The mapping from element names without namespace prefix to element
+    names with namespace prefix."""
+
+    from_namespaced: NamespacesMapping
+    """The mapping from element names with namespace prefix to element names
+    without namespace prefix."""
+
     def __init__(
         self,
         name: str,
@@ -68,6 +79,8 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
         if not name:
             raise ValueError("The grammar name cannot be empty.")
         self.name = name
+        self.to_namespaced = {}
+        self.from_namespaced = {}
         self.clear()
 
     def __str__(self) -> str:
@@ -168,3 +181,56 @@ class BaseGrammar(collections.abc.Mapping, metaclass=__MetaClass):
     @abc.abstractmethod
     def required_names(self) -> set[str]:
         """The names of the required elements."""
+
+    @abc.abstractmethod
+    def rename_element(self, current_name: str, new_name: str) -> None:
+        """Rename an element.
+
+        Args:
+            current_name: The current name of the element.
+            new_name: The new name of the element.
+        """
+
+    def _update_namespaces_from_grammar(self, grammar: BaseGrammar) -> None:
+        """Update the namespaces according to another grammar namespaces.
+
+        Args:
+            grammar: The grammar to update from.
+        """
+        if grammar.to_namespaced:
+            update_namespaces(self.to_namespaced, grammar.to_namespaced)
+        if grammar.from_namespaced:
+            update_namespaces(self.from_namespaced, grammar.from_namespaced)
+
+    def add_namespace(self, name: str, namespace: str) -> None:
+        """Add a namespace prefix to an existing grammar element.
+
+        The updated element name will be
+        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+
+        Args:
+            name: The element name to rename.
+            namespace: The name of the namespace.
+        """
+        self._check_name(name)
+
+        if namespaces_separator in name:
+            raise ValueError(f"Variable {name} has already a namespace.")
+
+        new_name = namespace + namespaces_separator + name
+        self.rename_element(name, new_name)
+        self.to_namespaced[name] = new_name
+        self.from_namespaced[new_name] = name
+
+    def _check_name(self, *names: str) -> None:
+        """Check that the names of elements are valid.
+
+        Args:
+            *names: The names to be checked.
+
+        Raises:
+            KeyError: If a name is not valid.
+        """
+        for name in names:
+            if name not in self:
+                raise KeyError(f"The name {name} is not in the grammar.")
