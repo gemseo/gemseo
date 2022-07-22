@@ -1,0 +1,1 @@
+The observables are now computed in parallel when executing a :class:`.DOEScenario` using more than one process.
